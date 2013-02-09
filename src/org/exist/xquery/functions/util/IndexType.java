@@ -80,25 +80,25 @@ public class IndexType extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
          }  
 
         Sequence result;
 
     	if (args[0].isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
     	else {
-	        NodeSet nodes = args[0].toNodeSet();
+	        final NodeSet nodes = args[0].toNodeSet();
 	        //Remember it is the default value when no index is defined
 	        if (nodes.getIndexType() == Type.ANY_TYPE)
-	        	result = Sequence.EMPTY_SEQUENCE;
+	        	{result = Sequence.EMPTY_SEQUENCE;}
 	        else
-	        	result = new StringValue(Type.getTypeName(nodes.getIndexType()));  
+	        	{result = new StringValue(Type.getTypeName(nodes.getIndexType()));}  
     	}
     	//TODO : consider modularized indexes. We should thus return a * sequence...
     	
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
 
         return result;
     }

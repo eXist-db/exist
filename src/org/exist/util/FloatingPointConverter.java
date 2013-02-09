@@ -234,7 +234,7 @@ public class FloatingPointConverter {
             Mplus = Mplus * 10;
             low = 2*R < Mminus;
             high = 2*R > 2*S - Mplus;
-            if (low || high) break;
+            if (low || high) {break;}
             if (k == -1) {
                 if (initial) {
                     sb.append('0');
@@ -321,15 +321,15 @@ public class FloatingPointConverter {
         int U;
         while (true) {
             k--;
-            BigInteger R10 = R.multiply(TEN);
+            final BigInteger R10 = R.multiply(TEN);
             U = R10.divide(S).intValue();
             R = R10.mod(S);
             Mminus = Mminus.multiply(TEN);
             Mplus = Mplus.multiply(TEN);
-            BigInteger R2 = R.shiftLeft(1);
+            final BigInteger R2 = R.shiftLeft(1);
             low = R2.compareTo(Mminus) < 0;
             high = R2.compareTo(S.shiftLeft(1).subtract(Mplus)) > 0;
-            if (low || high) break;
+            if (low || high) {break;}
             if (k == -1) {
                 if (initial) {
                     sb.append('0');
@@ -403,22 +403,22 @@ public class FloatingPointConverter {
 
         // end simpleFixup
 
-        int H = k-1;
+        final int H = k-1;
 
         boolean low;
         boolean high;
         int U;
         while (true) {
             k--;
-            BigInteger R10 = R.multiply(TEN);
+            final BigInteger R10 = R.multiply(TEN);
             U = R10.divide(S).intValue();
             R = R10.mod(S);
             Mminus = Mminus.multiply(TEN);
             Mplus = Mplus.multiply(TEN);
-            BigInteger R2 = R.shiftLeft(1);
+            final BigInteger R2 = R.shiftLeft(1);
             low = R2.compareTo(Mminus) < 0;
             high = R2.compareTo(S.shiftLeft(1).subtract(Mplus)) > 0;
-            if (low || high) break;
+            if (low || high) {break;}
 
             sb.append(charForDigit[U]);
             if (initial) {
@@ -473,11 +473,11 @@ public class FloatingPointConverter {
                 s.append('-');
                 d = -d;
             }
-            boolean exponential = (d >= 1000000 || d < 0.000001);
-            long bits = Double.doubleToLongBits(d);
-            long fraction = (1L<<52) | (bits & doubleFractMask);
-            long rawExp = (bits & doubleExpMask) >> doubleExpShift;
-            int exp = (int)rawExp - doubleExpBias;
+            final boolean exponential = (d >= 1000000 || d < 0.000001);
+            final long bits = Double.doubleToLongBits(d);
+            final long fraction = (1L<<52) | (bits & doubleFractMask);
+            final long rawExp = (bits & doubleExpMask) >> doubleExpShift;
+            final int exp = (int)rawExp - doubleExpBias;
             if (rawExp == 0) {
                 // don't know how to handle this currently: hand it over to Java to deal with
                 s.append(Double.toString(value));
@@ -541,12 +541,12 @@ public class FloatingPointConverter {
                 s.append('-');
                 f = -f;
             }
-            boolean exponential = (f >= 1000000 || f < 0.000001F);
-            int bits = Float.floatToIntBits(f);
-            int fraction = (1<<23) | (bits & floatFractMask);
-            int rawExp = ((bits & floatExpMask) >> floatExpShift);
-            int exp = rawExp - floatExpBias;
-            int precision = 23;
+            final boolean exponential = (f >= 1000000 || f < 0.000001F);
+            final int bits = Float.floatToIntBits(f);
+            final int fraction = (1<<23) | (bits & floatFractMask);
+            final int rawExp = ((bits & floatExpMask) >> floatExpShift);
+            final int exp = rawExp - floatExpBias;
+            final int precision = 23;
             if (rawExp == 0) {
                 // don't know how to handle this currently: hand it over to Java to deal with
                 s.append(Float.toString(value));

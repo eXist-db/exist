@@ -67,13 +67,13 @@ public class UserDefinedFunction extends Function implements Cloneable {
     }
     
     public void addVariable(String varName) throws XPathException {
-		QName qname = QName.parse(context, varName, null);
+		final QName qname = QName.parse(context, varName, null);
 		addVariable(qname);
 	}
 	
     public void addVariable(QName varName) throws XPathException {
     	if (parameters.contains(varName))
-			throw new XPathException("XQST0039: function " + getName() + " is already have parameter with the name "+varName);
+			{throw new XPathException("XQST0039: function " + getName() + " is already have parameter with the name "+varName);}
 
 		parameters.add(varName);
     }
@@ -94,13 +94,13 @@ public class UserDefinedFunction extends Function implements Cloneable {
 		
 		if(call != null && !call.isRecursive()) {
 			// Save the local variable stack
-			LocalVariable mark = context.markLocalVariables(true);
+			final LocalVariable mark = context.markLocalVariables(true);
 			if (closureVariables != null)
 				// if this is a inline function, context variables are known
-	        	context.restoreStack(closureVariables);
+	        	{context.restoreStack(closureVariables);}
 			try {
 				LocalVariable var;
-				for(QName varName : parameters) {
+				for(final QName varName : parameters) {
 					var = new LocalVariable(varName);
 					context.declareVariableBinding(var);
 				}
@@ -124,9 +124,9 @@ public class UserDefinedFunction extends Function implements Cloneable {
 //        context.expressionStart(this);
         context.stackEnter(this);
         // Save the local variable stack
-        LocalVariable mark = context.markLocalVariables(true);
+        final LocalVariable mark = context.markLocalVariables(true);
         if (closureVariables != null)
-        	context.restoreStack(closureVariables);
+        	{context.restoreStack(closureVariables);}
         Sequence result = null;
 		try {
 			QName varName;
@@ -137,18 +137,18 @@ public class UserDefinedFunction extends Function implements Cloneable {
 				var = new LocalVariable(varName);
 				var.setValue(currentArguments[j]);
 				if (contextDocs != null)
-					var.setContextDocs(contextDocs[i]);
+					{var.setContextDocs(contextDocs[i]);}
 				context.declareVariableBinding(var);
 				
 				int actualCardinality;
-				if (currentArguments[j].isEmpty()) actualCardinality = Cardinality.EMPTY;
-				else if (currentArguments[j].hasMany()) actualCardinality = Cardinality.MANY;
-				else actualCardinality = Cardinality.ONE;
+				if (currentArguments[j].isEmpty()) {actualCardinality = Cardinality.EMPTY;}
+				else if (currentArguments[j].hasMany()) {actualCardinality = Cardinality.MANY;}
+				else {actualCardinality = Cardinality.ONE;}
 				
 				if (!Cardinality.checkCardinality(getSignature().getArgumentTypes()[j].getCardinality(), actualCardinality))
-					throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid cardinality for parameter $" + varName +  
+					{throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid cardinality for parameter $" + varName +  
  						". Expected " + Cardinality.getDescription(getSignature().getArgumentTypes()[j].getCardinality()) + 
- 						", got " + currentArguments[j].getItemCount());
+ 						", got " + currentArguments[j].getItemCount());}
 			}
 			result = body.eval(contextSequence, contextItem);
 			return result;
@@ -164,13 +164,13 @@ public class UserDefinedFunction extends Function implements Cloneable {
      * @see org.exist.xquery.Function#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        FunctionSignature signature = getSignature();
+        final FunctionSignature signature = getSignature();
         if (signature.getName() != null)
-        	dumper.display(signature.getName());
+        	{dumper.display(signature.getName());}
         dumper.display('(');
         for(int i = 0; i < signature.getArgumentTypes().length; i++) {
 			if(i > 0)
-				dumper.display(", ");
+				{dumper.display(", ");}
 			dumper.display(signature.getArgumentTypes()[i]);
 		}
 		dumper.display(") ");
@@ -181,14 +181,14 @@ public class UserDefinedFunction extends Function implements Cloneable {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        FunctionSignature signature = getSignature();
-        StringBuilder buf = new StringBuilder();
+        final FunctionSignature signature = getSignature();
+        final StringBuilder buf = new StringBuilder();
         if (signature.getName() != null)
-        	buf.append(signature.getName());
+        	{buf.append(signature.getName());}
         buf.append('(');
         for(int i = 0; i < signature.getArgumentTypes().length; i++) {
 			if(i > 0)
-				buf.append(", ");
+				{buf.append(", ");}
 			buf.append(signature.getArgumentTypes()[i]);
 		}
         buf.append(')');
@@ -207,7 +207,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState(boolean postOptimization) {
-		if (reseted) return;
+		if (reseted) {return;}
 		reseted = true;
 		
 		super.resetState(postOptimization);
@@ -230,7 +230,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 	
     public void accept(ExpressionVisitor visitor) {
         if (visited)
-            return;
+            {return;}
         visited = true;
         visitor.visitUserFunction(this);
     }
@@ -247,7 +247,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 
     public synchronized Object clone() {
     	try {
-    		UserDefinedFunction clone = (UserDefinedFunction) super.clone();
+    		final UserDefinedFunction clone = (UserDefinedFunction) super.clone();
     		
     		clone.currentArguments = null;
     		clone.contextDocs = null;
@@ -255,7 +255,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
     		clone.body = this.body; // so body will be analyzed and optimized for all calls of such functions in recursion.  
     	    
     	    return clone;
-    	} catch (CloneNotSupportedException e) {
+    	} catch (final CloneNotSupportedException e) {
     	    // this shouldn't happen, since we are Cloneable
     	    throw new InternalError();
     	}

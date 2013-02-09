@@ -61,16 +61,16 @@ public class ValueComparison extends GeneralComparison {
 
 	protected Sequence genericCompare(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled())
-            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "genericCompare");  
-		Sequence ls = getLeft().eval(contextSequence, contextItem);
-		Sequence rs = getRight().eval(contextSequence, contextItem);
+            {context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "genericCompare");}  
+		final Sequence ls = getLeft().eval(contextSequence, contextItem);
+		final Sequence rs = getRight().eval(contextSequence, contextItem);
 		if(ls.isEmpty() || rs.isEmpty())
-			return Sequence.EMPTY_SEQUENCE;
+			{return Sequence.EMPTY_SEQUENCE;}
 		if (ls.hasOne() && rs.hasOne()) {
             AtomicValue lv, rv;
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
-            Collator collator = getCollator(contextSequence);
+            final Collator collator = getCollator(contextSequence);
 			return BooleanValue.valueOf(compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, relation));
 		} 
         throw new XPathException(this, "Type error: sequence with more than one item is not allowed here");
@@ -78,37 +78,37 @@ public class ValueComparison extends GeneralComparison {
 
 	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {		
         if (context.getProfiler().isEnabled())
-            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");		
-		NodeSet result = new ExtArrayNodeSet();
-        Collator collator = getCollator(contextSequence);
+            {context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");}		
+		final NodeSet result = new ExtArrayNodeSet();
+        final Collator collator = getCollator(contextSequence);
         if (contextSequence != null && !contextSequence.isEmpty()) {
-            for (Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
-                NodeProxy current = i.next();
+            for (final Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
+                final NodeProxy current = i.next();
                 ContextItem context = current.getContext();
                 if (context==null) {
                    throw new XPathException(this,"Context is missing for node set comparison");
                 }
                 do {
-                    AtomicValue lv = current.atomize();
-                    Sequence rs = getRight().eval(context.getNode().toSequence());                    
+                    final AtomicValue lv = current.atomize();
+                    final Sequence rs = getRight().eval(context.getNode().toSequence());                    
                     if (!rs.hasOne())
-                        throw new XPathException(this,
-                                "Type error: sequence with less or more than one item is not allowed here");                    
+                        {throw new XPathException(this,
+                                "Type error: sequence with less or more than one item is not allowed here");}                    
                     if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), Constants.TRUNC_NONE, relation))
-                        result.add(current);
+                        {result.add(current);}
                 } while ((context = context.getNextDirect()) != null);
             }
         } else {
-            Sequence rs = getRight().eval(null);
+            final Sequence rs = getRight().eval(null);
             if (!rs.hasOne())
-                throw new XPathException(this,
-                        "Type error: sequence with less or more than one item is not allowed here");
-            AtomicValue rv = rs.itemAt(0).atomize();
-            for (Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
-                NodeProxy current = i.next();
-                AtomicValue lv = current.atomize();
+                {throw new XPathException(this,
+                        "Type error: sequence with less or more than one item is not allowed here");}
+            final AtomicValue rv = rs.itemAt(0).atomize();
+            for (final Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
+                final NodeProxy current = i.next();
+                final AtomicValue lv = current.atomize();
                 if (compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, Constants.EQ))
-                    result.add(current);
+                    {result.add(current);}
             }
         }
         return result;
@@ -131,7 +131,7 @@ public class ValueComparison extends GeneralComparison {
 		}
 		ltype = lv.getType();
 		rtype = rv.getType();
-		int ctype = Type.getCommonSuperType(ltype, rtype);
+		final int ctype = Type.getCommonSuperType(ltype, rtype);
 		//Next, if possible, the two operands are converted to their least common type 
 		//by a combination of type promotion and subtype substitution.
 		if (ctype == Type.NUMBER) {
@@ -141,22 +141,22 @@ public class ValueComparison extends GeneralComparison {
 			//can be promoted to either of the types xs:float or xs:double. The result of this promotion is created by casting the original value to the required type. This kind of promotion may cause loss of precision.
 			if (ltype == Type.DECIMAL) {
 				if (rtype == Type.FLOAT)
-					lv = lv.convertTo(Type.FLOAT);
+					{lv = lv.convertTo(Type.FLOAT);}
 				else if (rtype == Type.DOUBLE)
-					lv = lv.convertTo(Type.DOUBLE);				
+					{lv = lv.convertTo(Type.DOUBLE);}				
 			} else if (rtype == Type.DECIMAL) {
 				if (ltype == Type.FLOAT)
-					rv = rv.convertTo(Type.FLOAT);
+					{rv = rv.convertTo(Type.FLOAT);}
 				else if (ltype == Type.DOUBLE)
-					rv = rv.convertTo(Type.DOUBLE);				
+					{rv = rv.convertTo(Type.DOUBLE);}				
 			} else {
 				//A value of type xs:float (or any type derived by restriction from xs:float) 
 				//can be promoted to the type xs:double. 
 				//The result is the xs:double value that is the same as the original value.
 				if (ltype == Type.FLOAT && rtype == Type.DOUBLE)
-					lv = lv.convertTo(Type.DOUBLE);
+					{lv = lv.convertTo(Type.DOUBLE);}
 				if (rtype == Type.FLOAT && ltype == Type.DOUBLE)
-					rv = rv.convertTo(Type.DOUBLE);
+					{rv = rv.convertTo(Type.DOUBLE);}
 			}
 		} else {
 			lv = lv.convertTo(ctype);
@@ -187,7 +187,7 @@ public class ValueComparison extends GeneralComparison {
     }
     
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append(getLeft().toString());
         result.append(" ").append(Constants.VOPS[relation]).append(" ");
         result.append(getRight().toString());

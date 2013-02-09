@@ -76,47 +76,47 @@ public class DynamicPIConstructor extends NodeConstructor {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());}
         }
         if (newDocumentContext)
-            context.pushDocumentContext();
+            {context.pushDocumentContext();}
         try {
-            MemTreeBuilder builder = context.getDocumentBuilder();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
             context.proceed(this, builder);
-            Sequence nameSeq = name.eval(contextSequence, contextItem);
+            final Sequence nameSeq = name.eval(contextSequence, contextItem);
             //TODO : get rid of getLength()
             if (!nameSeq.hasOne())
-                throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "The name expression should evaluate to a single value");
-            Item nameItem = nameSeq.itemAt(0);
+                {throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "The name expression should evaluate to a single value");}
+            final Item nameItem = nameSeq.itemAt(0);
             if (!(nameItem.getType() == Type.STRING || nameItem.getType() == Type.NCNAME ||
                     nameItem.getType() == Type.UNTYPED_ATOMIC))
-                throw new XPathException(this, ErrorCodes.XPTY0004,
+                {throw new XPathException(this, ErrorCodes.XPTY0004,
                         "The name expression should evaluate to a " + Type.getTypeName(Type.STRING) +
                         " or a " + Type.getTypeName(Type.NCNAME) +
                         " or a " + Type.getTypeName(Type.UNTYPED_ATOMIC) +
-                        ". Got: " + Type.getTypeName(nameItem.getType()));
+                        ". Got: " + Type.getTypeName(nameItem.getType()));}
             if(!XMLChar.isValidNCName(nameSeq.getStringValue()))
-                throw new XPathException(this, ErrorCodes.XQDY0041,
-                    nameSeq.getStringValue() + "' is not a valid processing instruction name", nameSeq);
+                {throw new XPathException(this, ErrorCodes.XQDY0041,
+                    nameSeq.getStringValue() + "' is not a valid processing instruction name", nameSeq);}
             if (nameSeq.getStringValue().equalsIgnoreCase("XML"))
-                throw new XPathException(this, ErrorCodes.XQDY0064,
-                    nameSeq.getStringValue() + "' is not a valid processing instruction name", nameSeq);
+                {throw new XPathException(this, ErrorCodes.XQDY0064,
+                    nameSeq.getStringValue() + "' is not a valid processing instruction name", nameSeq);}
             String contentString;
-            Sequence contentSeq = content.eval(contextSequence, contextItem);
+            final Sequence contentSeq = content.eval(contextSequence, contextItem);
             if (contentSeq.isEmpty())
-        	contentString = "";
+        	{contentString = "";}
             else {
-                StringBuilder buf = new StringBuilder();
-                for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+                final StringBuilder buf = new StringBuilder();
+                for(final SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
-                    Item next = i.nextItem();
+                    final Item next = i.nextItem();
                     if(buf.length() > 0)
-                        buf.append(' ');
+                        {buf.append(' ');}
                     buf.append(next.getStringValue());
                 }
                 while (buf.length() > 0 && Character.isWhitespace(buf.charAt(0)))
@@ -124,15 +124,15 @@ public class DynamicPIConstructor extends NodeConstructor {
                 contentString = buf.toString();
             }
             if (contentString.indexOf("?>") != Constants.STRING_NOT_FOUND)
-                throw new XPathException(this, ErrorCodes.XQDY0026, contentString + "' is not a valid processing intruction content", contentSeq);
-            int nodeNo = builder.processingInstruction(nameSeq.getStringValue(), contentString);
-            Sequence result = ((DocumentImpl)builder.getDocument()).getNode(nodeNo);
+                {throw new XPathException(this, ErrorCodes.XQDY0026, contentString + "' is not a valid processing intruction content", contentSeq);}
+            final int nodeNo = builder.processingInstruction(nameSeq.getStringValue(), contentString);
+            final Sequence result = ((DocumentImpl)builder.getDocument()).getNode(nodeNo);
             if (context.getProfiler().isEnabled())
-                context.getProfiler().end(this, "", result);
+                {context.getProfiler().end(this, "", result);}
             return result;
         } finally {
             if (newDocumentContext)
-                context.popDocumentContext();
+                {context.popDocumentContext();}
         }
     }
 
@@ -149,7 +149,7 @@ public class DynamicPIConstructor extends NodeConstructor {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("processing-instruction {");
         result.append(name.toString());
         result.append("} {");        

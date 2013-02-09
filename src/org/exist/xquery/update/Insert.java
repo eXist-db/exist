@@ -82,19 +82,19 @@ public class Insert extends Modification {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
 		
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.isEmpty())
-			throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+			{throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));}
         
-        Sequence inSeq = select.eval(contextSequence);      
+        final Sequence inSeq = select.eval(contextSequence);      
         
         //START trap Insert failure
         /* If we try and Insert a node at an invalid location,
@@ -108,8 +108,8 @@ public class Insert extends Modification {
         	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
-        	XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
+        	final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        	final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
         		prevUpdateErrors = new ValueSequence();
@@ -122,27 +122,27 @@ public class Insert extends Modification {
 			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
         	if(!inSeq.isEmpty())
-        		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
+        		{throw xpe;}	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Insert failure
         
         if (!inSeq.isEmpty()) {
         	if (LOG.isDebugEnabled())
-        		LOG.debug("Found: " + inSeq.getItemCount() + " nodes");   
+        		{LOG.debug("Found: " + inSeq.getItemCount() + " nodes");}   
             
         	context.pushInScopeNamespaces();
             contentSeq = deepCopy(contentSeq);
         
             try {
                 //start a transaction
-                Txn transaction = getTransaction();
-                StoredNode[] ql = selectAndLock(transaction, inSeq);
-                NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                IndexListener listener = new IndexListener(ql);                
-                NodeList contentList = seq2nodeList(contentSeq);
+                final Txn transaction = getTransaction();
+                final StoredNode[] ql = selectAndLock(transaction, inSeq);
+                final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+                final IndexListener listener = new IndexListener(ql);                
+                final NodeList contentList = seq2nodeList(contentSeq);
                 for (int i = 0; i < ql.length; i++) {
-                    StoredNode node = ql[i];
-                    DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                    final StoredNode node = ql[i];
+                    final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
@@ -152,7 +152,7 @@ public class Insert extends Modification {
     				if (mode == INSERT_APPEND) {
     					node.appendChildren(transaction, contentList, -1);
     				} else {
-    					NodeImpl parent = (NodeImpl) node.getParentNode();
+    					final NodeImpl parent = (NodeImpl) node.getParentNode();
     	                switch (mode) {
     	                    case INSERT_BEFORE:
     	                        parent.insertBefore(transaction, contentList, node);
@@ -171,13 +171,13 @@ public class Insert extends Modification {
                 finishTriggers(transaction);
                 //commit the transaction
                 commitTransaction(transaction);
-            } catch (PermissionDeniedException e) {
+            } catch (final PermissionDeniedException e) {
     			throw new XPathException(this, e.getMessage(), e);
-    		} catch (EXistException e) {
+    		} catch (final EXistException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (LockException e) {
+    		} catch (final LockException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (TriggerException e) {
+    		} catch (final TriggerException e) {
                 throw new XPathException(this, e.getMessage(), e);
 			} finally {
                 unlockDocuments();
@@ -186,18 +186,18 @@ public class Insert extends Modification {
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
         
         return Sequence.EMPTY_SEQUENCE;
         
 	}
 
 	private NodeList seq2nodeList(Sequence contentSeq) throws XPathException {
-        NodeListImpl nl = new NodeListImpl();
-        for (SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
-            Item item = i.nextItem();
+        final NodeListImpl nl = new NodeListImpl();
+        for (final SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
             if (Type.subTypeOf(item.getType(), Type.NODE)) {
-                NodeValue val = (NodeValue) item;
+                final NodeValue val = (NodeValue) item;
                 nl.add(val.getNode());
             }
         }
@@ -229,7 +229,7 @@ public class Insert extends Modification {
 	}
 	
 	public String toString() {
-		StringBuilder result = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
 		result.append("update insert ");        
 		result.append(value.toString());        
         switch (mode) {

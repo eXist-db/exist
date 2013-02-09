@@ -71,10 +71,10 @@ public class GetAttribute extends Function
 	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
 		
-		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
+		final SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+		final Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
 		
 		if( var == null || var.getValue() == null ) {
 			// throw( new XPathException( this, "Session not set" ) );
@@ -85,20 +85,20 @@ public class GetAttribute extends Function
 			throw( new XPathException( this, "Variable $session is not bound to a Java object." ) );
 		}
 
-		JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
+		final JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
 		
 		// get attribute name parameter
-		String attribName = getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
+		final String attribName = getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
 		
 		if( session.getObject() instanceof SessionWrapper ) {
 			try {
-				Object o = ( (SessionWrapper)session.getObject() ).getAttribute( attribName );
+				final Object o = ( (SessionWrapper)session.getObject() ).getAttribute( attribName );
 				if( o == null ) {
 					return( Sequence.EMPTY_SEQUENCE );
 				}
 				return( XPathUtil.javaObjectToXPath( o, context ) );
 			}
-			catch( IllegalStateException ise ) {
+			catch( final IllegalStateException ise ) {
 				//TODO: if we throw an exception here it means that getAttribute()
 				//cannot be called after invalidate() on the session object. This is the 
 				//way that it works in Java, however this isnt the way it works in xquery currently

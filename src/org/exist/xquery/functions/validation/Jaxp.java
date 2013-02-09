@@ -181,7 +181,7 @@ public class Jaxp extends BasicFunction {
         XMLEntityResolver entityResolver = null;
         GrammarPool grammarPool = null;
 
-        ValidationReport report = new ValidationReport();
+        final ValidationReport report = new ValidationReport();
         ContentHandler contenthandler = null;
         MemTreeBuilder instanceBuilder = null;
         InputSource instance = null;
@@ -198,7 +198,7 @@ public class Jaxp extends BasicFunction {
             report.start();
 
             // Get initialized parser
-            XMLReader xmlReader = getXMLReader();
+            final XMLReader xmlReader = getXMLReader();
 
             // Setup validation reporting
             xmlReader.setContentHandler(contenthandler);
@@ -214,14 +214,14 @@ public class Jaxp extends BasicFunction {
             } else if (args[2].isEmpty()) {
                 // Use system catalog
                 LOG.debug("Using system catalog.");
-                Configuration config = brokerPool.getConfiguration();
+                final Configuration config = brokerPool.getConfiguration();
                 entityResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
                 setXmlReaderEnitityResolver(xmlReader, entityResolver);
 
             } else {
                 // Get URL for catalog
-                String catalogUrls[] = Shared.getUrls(args[2]);
-                String singleUrl = catalogUrls[0];
+                final String catalogUrls[] = Shared.getUrls(args[2]);
+                final String singleUrl = catalogUrls[0];
 
                 if (singleUrl.endsWith("/")) {
                     // Search grammar in collection specified by URL. Just one collection is used.
@@ -242,10 +242,10 @@ public class Jaxp extends BasicFunction {
             }
 
             // Use grammarpool
-            boolean useCache = ((BooleanValue) args[1].itemAt(0)).getValue();
+            final boolean useCache = ((BooleanValue) args[1].itemAt(0)).getValue();
             if (useCache) {
                 LOG.debug("Grammar caching enabled.");
-                Configuration config = brokerPool.getConfiguration();
+                final Configuration config = brokerPool.getConfiguration();
                 grammarPool = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             }
@@ -262,15 +262,15 @@ public class Jaxp extends BasicFunction {
             }
 
 
-        } catch (MalformedURLException ex) {
+        } catch (final MalformedURLException ex) {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             LOG.error(ex.getCause());
             report.setException(ex);
 
-        } catch (Throwable ex) {
+        } catch (final Throwable ex) {
             LOG.error(ex);
             report.setException(ex);
 
@@ -282,7 +282,7 @@ public class Jaxp extends BasicFunction {
 
         // Create response
         if (isCalledAs("jaxp")) {
-            Sequence result = new ValueSequence();
+            final Sequence result = new ValueSequence();
             result.add(new BooleanValue(report.isValid()));
             return result;
 
@@ -298,8 +298,8 @@ public class Jaxp extends BasicFunction {
 
             } else {
 
-                MemTreeBuilder builder = context.getDocumentBuilder();
-                NodeImpl result = Shared.writeReport(report, builder);
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                final NodeImpl result = Shared.writeReport(report, builder);
                 return result;
             }
 
@@ -312,15 +312,15 @@ public class Jaxp extends BasicFunction {
     private XMLReader getXMLReader() throws ParserConfigurationException, SAXException {
 
         // setup sax factory ; be sure just one instance!
-        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
 
         // Enable validation stuff
         saxFactory.setValidating(true);
         saxFactory.setNamespaceAware(true);
 
         // Create xml reader
-        SAXParser saxParser = saxFactory.newSAXParser();
-        XMLReader xmlReader = saxParser.getXMLReader();
+        final SAXParser saxParser = saxFactory.newSAXParser();
+        final XMLReader xmlReader = saxParser.getXMLReader();
 
         setXmlReaderFeature(xmlReader, Namespaces.SAX_VALIDATION, true);
         setXmlReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC, false);
@@ -336,10 +336,10 @@ public class Jaxp extends BasicFunction {
         try {
             xmlReader.setFeature(featureName, value);
             
-        } catch (SAXNotRecognizedException ex) {
+        } catch (final SAXNotRecognizedException ex) {
             LOG.error(ex.getMessage());
 
-        } catch (SAXNotSupportedException ex) {
+        } catch (final SAXNotSupportedException ex) {
             LOG.error(ex.getMessage());
         }
     }
@@ -349,10 +349,10 @@ public class Jaxp extends BasicFunction {
         try {
             xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
 
-        } catch (SAXNotRecognizedException ex) {
+        } catch (final SAXNotRecognizedException ex) {
             LOG.error(ex.getMessage());
 
-        } catch (SAXNotSupportedException ex) {
+        } catch (final SAXNotSupportedException ex) {
             LOG.error(ex.getMessage());
         }
     }
@@ -362,14 +362,14 @@ public class Jaxp extends BasicFunction {
             throws IOException, TransformerConfigurationException, TransformerException {
 
         // prepare output tmp storage
-        File tmp = File.createTempFile("DTDvalidation", "tmp");
+        final File tmp = File.createTempFile("DTDvalidation", "tmp");
         tmp.deleteOnExit();
 
-        StreamResult result = new StreamResult(tmp);
+        final StreamResult result = new StreamResult(tmp);
 
-        TransformerFactory tf = TransformerFactory.newInstance();
+        final TransformerFactory tf = TransformerFactory.newInstance();
 
-        Transformer transformer = tf.newTransformer();
+        final Transformer transformer = tf.newTransformer();
 
         transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, systemId);
         transformer.transform(instance, result);
@@ -378,8 +378,8 @@ public class Jaxp extends BasicFunction {
     }
 
     private static String getStrings(String[] data) {
-        StringBuilder sb = new StringBuilder();
-        for (String field : data) {
+        final StringBuilder sb = new StringBuilder();
+        for (final String field : data) {
             sb.append(field);
             sb.append(" ");
         }

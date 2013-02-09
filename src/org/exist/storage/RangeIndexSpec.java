@@ -128,9 +128,9 @@ public abstract class RangeIndexSpec {
      */
     protected static final int getSuperType(int type) {
         if (Type.subTypeOf(type, Type.INTEGER))
-            return Type.INTEGER;
+            {return Type.INTEGER;}
         if (Type.subTypeOf(type, Type.STRING))
-            return Type.STRING;
+            {return Type.STRING;}
         return type;
     }
 

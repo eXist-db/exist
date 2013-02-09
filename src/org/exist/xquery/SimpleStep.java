@@ -66,20 +66,20 @@ public class SimpleStep extends Step {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
         
         Sequence result = Sequence.EMPTY_SEQUENCE;
-	    Sequence set = expression.eval(contextSequence);
+	    final Sequence set = expression.eval(contextSequence);
 
         if (!set.isEmpty()) {
             if (set.isPersistentSet()) {
-                NodeSet nodeSet = set.toNodeSet();
+                final NodeSet nodeSet = set.toNodeSet();
                 switch(axis) {
                     case Constants.DESCENDANT_SELF_AXIS:
                         result = nodeSet.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT,
@@ -92,8 +92,8 @@ public class SimpleStep extends Step {
                         throw new XPathException(this, "Wrong axis specified");
                 }
             } else {
-                MemoryNodeSet ctxNodes = contextSequence.toMemNodeSet();
-                MemoryNodeSet nodes = set.toMemNodeSet();
+                final MemoryNodeSet ctxNodes = contextSequence.toMemNodeSet();
+                final MemoryNodeSet nodes = set.toMemNodeSet();
                 switch(axis) {
                     case Constants.DESCENDANT_SELF_AXIS:
                         result = ctxNodes.selectDescendants(nodes);
@@ -107,7 +107,7 @@ public class SimpleStep extends Step {
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         //actualReturnType = result.getItemType();
         

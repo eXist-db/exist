@@ -72,36 +72,36 @@ public class DataBackup implements SystemTask {
             f = new File(dest);
         }
         if (f.exists() && !(f.canWrite() && f.isDirectory()))
-            throw new EXistException("Cannot write backup files to " + f.getAbsolutePath() +
-                    ". It should be a writable directory.");
+            {throw new EXistException("Cannot write backup files to " + f.getAbsolutePath() +
+                    ". It should be a writable directory.");}
         else
-            f.mkdirs();
+            {f.mkdirs();}
         dest = f.getAbsolutePath();
         LOG.debug("Setting backup data directory: " + dest);
     }
     
 	public void execute(DBBroker broker) throws EXistException {
 		if (!(broker instanceof NativeBroker))
-			throw new EXistException("DataBackup system task can only be used " +
-					"with the native storage backend");
+			{throw new EXistException("DataBackup system task can only be used " +
+					"with the native storage backend");}
 //		NativeBroker nbroker = (NativeBroker) broker;
 		
 		LOG.debug("Backing up data files ...");
 		
-		String creationDate = creationDateFormat.format(Calendar.getInstance().getTime());
-        String outFilename = dest + File.separatorChar + creationDate + ".zip";
+		final String creationDate = creationDateFormat.format(Calendar.getInstance().getTime());
+        final String outFilename = dest + File.separatorChar + creationDate + ".zip";
         
         // Create the ZIP file
         LOG.debug("Archiving data files into: " + outFilename);
         
         try {
-			ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
+			final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outFilename));
             out.setLevel(Deflater.NO_COMPRESSION);
-            Callback cb = new Callback(out);
+            final Callback cb = new Callback(out);
             broker.backupToArchive(cb);
             // close the zip file
 			out.close();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOG.warn("An IO error occurred while backing up data files: " + e.getMessage(), e);
 		}
 	}

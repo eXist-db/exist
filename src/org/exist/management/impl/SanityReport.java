@@ -99,10 +99,10 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
 
     public MBeanNotificationInfo[] getNotificationInfo() {
-        String[] types = new String[] { AttributeChangeNotification.ATTRIBUTE_CHANGE };
-        String name = AttributeChangeNotification.class.getName();
-        String description = "The status attribute of this MBean has changed";
-        MBeanNotificationInfo info = new MBeanNotificationInfo(types, name, description);
+        final String[] types = new String[] { AttributeChangeNotification.ATTRIBUTE_CHANGE };
+        final String name = AttributeChangeNotification.class.getName();
+        final String description = "The status attribute of this MBean has changed";
+        final MBeanNotificationInfo info = new MBeanNotificationInfo(types, name, description);
         return new MBeanNotificationInfo[] { info };
     }
 
@@ -131,19 +131,19 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
     
     public TabularData getErrors() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
+        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("errorInfo", "Provides information on a consistency check error", itemNames,
                     itemDescriptions, itemTypes);
-            TabularType tabularType = new TabularType("errorList", "List of consistency check errors", infoType, indexNames);
-            TabularDataSupport data = new TabularDataSupport(tabularType);
-            for (ErrorReport error : errors) {
-                Object[] itemValues = { error.getErrcodeString(), error.getMessage() };
+            final TabularType tabularType = new TabularType("errorList", "List of consistency check errors", infoType, indexNames);
+            final TabularDataSupport data = new TabularDataSupport(tabularType);
+            for (final ErrorReport error : errors) {
+                final Object[] itemValues = { error.getErrcodeString(), error.getMessage() };
                 data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
             }
             return data;
-        } catch (OpenDataException e) {
+        } catch (final OpenDataException e) {
             LOG.warn(e.getMessage(), e);
             return null;
         }
@@ -152,14 +152,14 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     public void triggerCheck(String output, String backup, String incremental) {
         try {
             this.output = output;
-            SystemTask task = new ConsistencyCheckTask();
-            Properties properties = parseParameter(output, backup, incremental);
+            final SystemTask task = new ConsistencyCheckTask();
+            final Properties properties = parseParameter(output, backup, incremental);
             task.configure(pool.getConfiguration(), properties);
             pool.triggerSystemTask(task);
-        } catch (EXistException existException) {
+        } catch (final EXistException existException) {
             taskstatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
 
-            List<ErrorReport> errors = new ArrayList<ErrorReport>();
+            final List<ErrorReport> errors = new ArrayList<ErrorReport>();
             errors.add(
             		new ErrorReport(
             				ErrorReport.CONFIGURATION_FAILD, 
@@ -174,7 +174,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
 
     public long ping(boolean checkQueryEngine) {
-    	long start = System.currentTimeMillis();
+    	final long start = System.currentTimeMillis();
     	lastPingRespTime = -1;
     	lastActionInfo = "Ping";
     	
@@ -187,11 +187,11 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     		broker = pool.get(pool.getSecurityManager().getGuestSubject());
     		
     		if (checkQueryEngine) {
-    			XQuery xquery = broker.getXQueryService();
-    			XQueryPool xqPool = xquery.getXQueryPool();
+    			final XQuery xquery = broker.getXQueryService();
+    			final XQueryPool xqPool = xquery.getXQueryPool();
     			CompiledXQuery compiled = xqPool.borrowCompiledXQuery(broker, TEST_XQUERY);
     			if (compiled == null) {
-    				XQueryContext context = xquery.newContext(AccessContext.TEST);
+    				final XQueryContext context = xquery.newContext(AccessContext.TEST);
     				compiled = xquery.compile(context, TEST_XQUERY);
     			}
 				try {
@@ -200,7 +200,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 					xqPool.returnCompiledXQuery(TEST_XQUERY, compiled);
 				}
     		}
-    	} catch (Exception e) {
+    	} catch (final Exception e) {
 			lastPingRespTime = -2;
 			taskstatus.setStatus(TaskStatus.Status.PING_ERROR);
 			taskstatus.setStatusChangeTime();
@@ -219,7 +219,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
     
     private Properties parseParameter(String output, String backup, String incremental) {
-        Properties properties = new Properties();
+        final Properties properties = new Properties();
         final boolean doBackup = backup.equalsIgnoreCase("YES");
         if (backup != null && (doBackup) || backup.equalsIgnoreCase("no")) {
             properties.put("backup", backup);
@@ -244,7 +244,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
                 this.errors = errorList;
                 taskstatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // ignore
         }
 
@@ -269,28 +269,28 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             default:
                 break;
         }
-        TaskStatus oldState = taskstatus;
+        final TaskStatus oldState = taskstatus;
         try {
             taskstatus = status;
-            Notification event = new AttributeChangeNotification(this, seqNum++, taskstatus.getStatusChangeTime().getTime(),
+            final Notification event = new AttributeChangeNotification(this, seqNum++, taskstatus.getStatusChangeTime().getTime(),
                     "Status change", "status", "String", oldState.toString(), taskstatus.toString());
             event.setUserData(taskstatus.getCompositeData());
             sendNotification(event);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // ignore
         }
     }
 
     protected void updateStatus(int percentage) {
         try {
-            int oldPercentage = taskstatus.getPercentage();
+            final int oldPercentage = taskstatus.getPercentage();
             taskstatus.setPercentage(percentage);
-            Notification event = new AttributeChangeNotification(this, seqNum++, taskstatus.getStatusChangeTime().getTime(),
+            final Notification event = new AttributeChangeNotification(this, seqNum++, taskstatus.getStatusChangeTime().getTime(),
                     "Work percentage change", "status", "int", String.valueOf(oldPercentage), String.valueOf(taskstatus
                             .getPercentage()));
             event.setUserData(taskstatus.getCompositeData());
             sendNotification(event);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // ignore
         }
     }

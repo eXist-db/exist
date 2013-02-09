@@ -65,7 +65,7 @@ public class SystemImport {
     public void restore(RestoreListener listener, String username, Object credentials, String newCredentials, File f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException, AuthenticationException, ConfigurationException, PermissionDeniedException {
         
         //login
-        DBBroker broker = db.authenticate(username, credentials);
+        final DBBroker broker = db.authenticate(username, credentials);
         try {
         	//set the new password
 	        setAdminCredentials(broker, newCredentials);
@@ -126,8 +126,8 @@ public class SystemImport {
             contents = null;
 
             final Properties properties = bd.getProperties();
-            if((properties != null ) && properties.getProperty("incremental", "no").equals("yes")) {
-                String previous = properties.getProperty("previous", "");
+            if((properties != null ) && "yes".equals(properties.getProperty("incremental", "no"))) {
+                final String previous = properties.getProperty("previous", "");
 
                 if(previous.length() > 0) {
                     contents = new File(bd.getParentDir(), previous);
@@ -155,7 +155,7 @@ public class SystemImport {
     }
     
     private void setAdminCredentials(DBBroker broker, String newCredentials) throws ConfigurationException, PermissionDeniedException {
-    	Subject subject = broker.getSubject();
+    	final Subject subject = broker.getSubject();
     	subject.setPassword(newCredentials);
     	subject.save(broker);
     }

@@ -97,10 +97,10 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
 	//this method used by Configurator
 	protected final Group addGroup(Configuration conf) throws PermissionDeniedException {
-		if (conf == null) return null;
+		if (conf == null) {return null;}
 		
-		String name = conf.getProperty("name");
-		if (name == null) return null;
+		final String name = conf.getProperty("name");
+		if (name == null) {return null;}
 		
 		return addGroup(name);
 	}
@@ -112,7 +112,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
             return null;
         }
 
-        Account user = getDatabase().getSubject();
+        final Account user = getDatabase().getSubject();
         group.assertCanModifyGroup(user);
 
         if(!groups.contains(group)) {
@@ -151,9 +151,9 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     @Override
     public final void remGroup(String name) throws PermissionDeniedException {
 
-        Account subject = getDatabase().getSubject();
+        final Account subject = getDatabase().getSubject();
 
-        for (Group group : groups) {
+        for (final Group group : groups) {
             if (group.getName().equals(name)) {
 
                 group.assertCanModifyGroup(subject);
@@ -179,11 +179,11 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
     @Override
 	public String[] getGroups() {
-		if (groups == null) return new String[0];
+		if (groups == null) {return new String[0];}
 		
 		int i = 0;
-		String[] names = new String[groups.size()];
-		for (Group role : groups) {
+		final String[] names = new String[groups.size()];
+		for (final Group role : groups) {
                     names[i++] = role.getName();
 		}
 		
@@ -192,11 +192,11 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
     @Override
     public int[] getGroupIds() {
-        if(groups == null) return new int[0];
+        if(groups == null) {return new int[0];}
 
 		int i = 0;
-		int[] ids = new int[groups.size()];
-		for (Group group : groups) {
+		final int[] ids = new int[groups.size()];
+		for (final Group group : groups) {
 	                ids[i++] = group.getId();
 		}
 	
@@ -209,7 +209,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 			return false;
                 }
 		
-		for (Group group : groups) {
+		for (final Group group : groups) {
                     if (group.getName().equals(name)) {
 				return true;
                     }
@@ -225,7 +225,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
     @Override
 	public final String toString() {
-		StringBuilder buf = new StringBuilder();
+		final StringBuilder buf = new StringBuilder();
 		buf.append("<account name=\"");
 		buf.append(name);
 		buf.append("\" ");
@@ -234,7 +234,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		buf.append("\"");
                 buf.append(">");
 		if (groups != null) {
-			for (Group group : groups) {
+			for (final Group group : groups) {
                             buf.append(group.toString());
 			}
 		}
@@ -257,7 +257,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		}
 	
 		if (other != null)
-			return (getRealm() == other.getRealm() && name.equals(other.name)); //id == other.id;
+			{return (getRealm() == other.getRealm() && name.equals(other.name));} //id == other.id;
 
 		return false;
 	}

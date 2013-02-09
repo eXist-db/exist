@@ -83,28 +83,28 @@ public class NodeComparison extends BinaryOp {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());}
         }
         if(contextItem != null)
-            contextSequence = contextItem.toSequence();
+            {contextSequence = contextItem.toSequence();}
         Sequence result;
-        Sequence ls = getLeft().eval(contextSequence, contextItem);
-        Sequence rs = getRight().eval(contextSequence, contextItem);
+        final Sequence ls = getLeft().eval(contextSequence, contextItem);
+        final Sequence rs = getRight().eval(contextSequence, contextItem);
         if (!ls.isEmpty() && !rs.isEmpty()) {
             if (!Type.subTypeOf(ls.itemAt(0).getType(), Type.NODE))
-                throw new XPathException(this, ErrorCodes.XPTY0004,
+                {throw new XPathException(this, ErrorCodes.XPTY0004,
                     "left item is not a node; got '" +
-                    Type.getTypeName(ls.itemAt(0).getType()) + "'");
+                    Type.getTypeName(ls.itemAt(0).getType()) + "'");}
             if (!Type.subTypeOf(rs.itemAt(0).getType(), Type.NODE))
-                throw new XPathException(this, ErrorCodes.XPTY0004,
+                {throw new XPathException(this, ErrorCodes.XPTY0004,
                     "right item is not a node; got '" +
-                    Type.getTypeName(rs.itemAt(0).getType()) + "'");
-            NodeValue lv = (NodeValue)ls.itemAt(0);
-            NodeValue rv = (NodeValue)rs.itemAt(0);
+                    Type.getTypeName(rs.itemAt(0).getType()) + "'");}
+            final NodeValue lv = (NodeValue)ls.itemAt(0);
+            final NodeValue rv = (NodeValue)rs.itemAt(0);
             if (lv.getImplementationType() != rv.getImplementationType()) {
                 // different implementations : can't be the same nodes
                 result =  BooleanValue.FALSE;
@@ -129,18 +129,18 @@ public class NodeComparison extends BinaryOp {
         } else {
             if (ls.isEmpty() && !rs.isEmpty()) {
                 if (!Type.subTypeOf(rs.getItemType(), Type.NODE))
-                    throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "The empty sequence cant be an atomic value");
+                    {throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "The empty sequence cant be an atomic value");}
             }
             if (!ls.isEmpty() && rs.isEmpty()) {
                 if (!Type.subTypeOf(ls.getItemType(), Type.NODE))
-                    throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "The empty sequence cant be an atomic value");
+                    {throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "The empty sequence cant be an atomic value");}
             }
             result = BooleanValue.EMPTY_SEQUENCE;
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 
@@ -154,7 +154,7 @@ public class NodeComparison extends BinaryOp {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append(getLeft().toString());
         result.append(' ').append(Constants.OPS[relation]).append(' ');
         result.append(getRight().toString());

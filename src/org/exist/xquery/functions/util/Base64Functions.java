@@ -91,14 +91,14 @@ public class Base64Functions extends BasicFunction
 		boolean  trim	= true;
 		
         if( !args[0].isEmpty() ) {       
-			String str = args[0].getStringValue();
+			final String str = args[0].getStringValue();
 			
 			if( args.length == 2 ) {
 				trim = args[1].effectiveBooleanValue();
 			}
 	
 	        if( isCalledAs( "base64-encode" ) ) {
-	           	Base64Encoder enc = new Base64Encoder();
+	           	final Base64Encoder enc = new Base64Encoder();
 					
 	        	enc.translate( str.getBytes()  );
 				
@@ -108,7 +108,7 @@ public class Base64Functions extends BasicFunction
 					value = new StringValue( new String( enc.getCharArray() ) );
 				}
 	        } else {
-	            Base64Decoder dec = new Base64Decoder();
+	            final Base64Decoder dec = new Base64Decoder();
 				
 	            dec.translate( str );
 				

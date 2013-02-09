@@ -82,43 +82,43 @@ public class IndexKeyDocuments extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
          }  
         
     	Sequence result;
     	if (args[0].isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
     	else {
-	        NodeSet nodes = args[0].toNodeSet();
-	        DocumentSet docs = nodes.getDocumentSet();	        
+	        final NodeSet nodes = args[0].toNodeSet();
+	        final DocumentSet docs = nodes.getDocumentSet();	        
 	        if (this.getArgumentCount() == 3) {
-	        	IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[2].itemAt(0).getStringValue());
+	        	final IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[2].itemAt(0).getStringValue());
 	        	//Alternate design
 	        	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[2].itemAt(0).getStringValue()).getWorker();	        	
 	        	if (indexWorker == null)
-	        		throw new XPathException(this, "Unknown index: " + args[2].itemAt(0).getStringValue());
-	        	Map<String, Object> hints = new HashMap<String, Object>();
+	        		{throw new XPathException(this, "Unknown index: " + args[2].itemAt(0).getStringValue());}
+	        	final Map<String, Object> hints = new HashMap<String, Object>();
 	        	if (indexWorker instanceof OrderedValuesIndex)
-	        		hints.put(OrderedValuesIndex.START_VALUE, args[1]);
+	        		{hints.put(OrderedValuesIndex.START_VALUE, args[1]);}
 	        	else
-	        		logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );
-	        	Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
+	        		{logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );}
+	        	final Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
 		        if (occur.length == 0)
-		        	result= Sequence.EMPTY_SEQUENCE;
+		        	{result= Sequence.EMPTY_SEQUENCE;}
 		        else
-		        	result = new IntegerValue(occur[0].getDocuments());
+		        	{result = new IntegerValue(occur[0].getDocuments());}
 	        } else {
-		        ValueOccurrences occur[] = context.getBroker().getValueIndex()
+		        final ValueOccurrences occur[] = context.getBroker().getValueIndex()
                 .scanIndexKeys(docs, nodes, (Indexable) args[1]);
 		        if (occur.length == 0)
-		        	result= Sequence.EMPTY_SEQUENCE;
+		        	{result= Sequence.EMPTY_SEQUENCE;}
 		        else
-		        	result = new IntegerValue(occur[0].getDocuments());        	
+		        	{result = new IntegerValue(occur[0].getDocuments());}        	
 	        }
     	}
     	
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
 
         return result;
     }

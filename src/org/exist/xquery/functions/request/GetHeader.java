@@ -73,22 +73,22 @@ public class GetHeader extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
-		RequestModule myModule = (RequestModule) context
+		final RequestModule myModule = (RequestModule) context
 				.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null
 				|| var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(this,
-					"Variable $request is not bound to an Java object.");
+			{throw new XPathException(this,
+					"Variable $request is not bound to an Java object.");}
 
 		// get parameters
-		String param = args[0].getStringValue();
+		final String param = args[0].getStringValue();
 
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
-			String headerValue = ((RequestWrapper) value.getObject())
+			final String headerValue = ((RequestWrapper) value.getObject())
 					.getHeader(param);
 			if (headerValue == null) {
 				return Sequence.EMPTY_SEQUENCE;
@@ -96,7 +96,7 @@ public class GetHeader extends BasicFunction {
 				return XPathUtil.javaObjectToXPath(headerValue, null, false);
 			}
 		} else
-			throw new XPathException(
-					"Variable $request is not bound to a Request object.");
+			{throw new XPathException(
+					"Variable $request is not bound to a Request object.");}
 	}
 }

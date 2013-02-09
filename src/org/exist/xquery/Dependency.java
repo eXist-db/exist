@@ -57,21 +57,21 @@ public class Dependency {
 	
 	public final static String getDependenciesName(int dependencies) {
         if (dependencies == UNKNOWN_DEPENDENCY) 
-            return "UNKNOWN";
+            {return "UNKNOWN";}
         if (dependencies == NO_DEPENDENCY) 
-            return "NO_DEPENDENCY";
-		StringBuilder result = new StringBuilder();
+            {return "NO_DEPENDENCY";}
+		final StringBuilder result = new StringBuilder();
         result.append("[");        
         if ((dependencies & CONTEXT_SET) != 0) 
-            result.append("CONTEXT_SET | ");
+            {result.append("CONTEXT_SET | ");}
 		if ((dependencies & CONTEXT_ITEM) != 0) 
-			result.append("CONTEXT_ITEM | ");
+			{result.append("CONTEXT_ITEM | ");}
 		if ((dependencies & LOCAL_VARS) != 0) 
-			result.append("LOCAL_VARS | ");
+			{result.append("LOCAL_VARS | ");}
 		if ((dependencies & CONTEXT_VARS) != 0) 
-			result.append("CONTEXT_VARS | ");
+			{result.append("CONTEXT_VARS | ");}
 		if ((dependencies & CONTEXT_POSITION) != 0) 
-			result.append("CONTEXT_POSITION | ");	
+			{result.append("CONTEXT_POSITION | ");}	
 		result.delete(result.length() - 3, result.length());
 		result.append("]");
 		return result.toString();

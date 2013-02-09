@@ -86,7 +86,7 @@ public abstract class AbstractMapType extends FunctionReference
     protected Comparator<AtomicValue> getComparator(String collation)
             throws XPathException {
         if (collation != null) {
-            Collator collator = this.context.getCollator(collation);
+            final Collator collator = this.context.getCollator(collation);
             return new FunDistinctValues.ValueComparator(collator);
         }
         return DEFAULT_COMPARATOR;
@@ -107,8 +107,8 @@ public abstract class AbstractMapType extends FunctionReference
      */
     protected void initFunction() {
         if (this.accessorFunc != null)
-            return;
-        Function fn = new AccessorFunc(this.context);
+            {return;}
+        final Function fn = new AccessorFunc(this.context);
         this.accessorFunc = new InternalFunctionCall(fn);
     }
 

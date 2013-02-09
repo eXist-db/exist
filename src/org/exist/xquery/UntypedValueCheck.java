@@ -74,20 +74,20 @@ public class UntypedValueCheck extends AbstractExpression {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
-		Sequence seq = expression.eval(contextSequence, contextItem);
+		final Sequence seq = expression.eval(contextSequence, contextItem);
         Sequence result = null;
         if (seq.hasOne()) {
-            Item item = convert(seq.itemAt(0));
+            final Item item = convert(seq.itemAt(0));
             if (item != null)
-                result = item.toSequence();
+                {result = item.toSequence();}
         } else {
             result = new ValueSequence();
-            for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+            for(final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item item = i.nextItem();
                 //Type untyped values or... refine existing type
                 item = convert(item);
@@ -96,7 +96,7 @@ public class UntypedValueCheck extends AbstractExpression {
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         return result; 
 	}
@@ -105,9 +105,9 @@ public class UntypedValueCheck extends AbstractExpression {
         if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(item.getType(), Type.NUMBER)) {
             try {
                 if (Type.subTypeOf(item.getType(), requiredType))
-                    return item;
+                    {return item;}
                 item = item.convertTo(requiredType);
-            } catch (XPathException e) {
+            } catch (final XPathException e) {
                 error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),
                     Type.getTypeName(item.getType()));
                 throw new XPathException(expression, error.toString());
@@ -136,7 +136,7 @@ public class UntypedValueCheck extends AbstractExpression {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append("untyped-value-check[");
     	result.append(Type.getTypeName(requiredType));
     	result.append(", ");    	
@@ -197,7 +197,7 @@ public class UntypedValueCheck extends AbstractExpression {
     }
     
     public Expression getSubExpression(int index) {
-    	if (index == 0) return expression;
+    	if (index == 0) {return expression;}
     	
 	    throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
     }

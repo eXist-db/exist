@@ -34,26 +34,26 @@ public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
 
 	public void shutdown(long delay) throws XMLDBException {
 		if(!user.hasDbaRole())
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
+			{throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
 				"only users in group dba may " +				
-				"shut down the database");
+				"shut down the database");}
 		if(delay > 0) {
-			TimerTask task = new TimerTask() {
+			final TimerTask task = new TimerTask() {
 				public void run() {
 					pool.shutdown();
 				}
 			};
-			Timer timer = new Timer();
+			final Timer timer = new Timer();
 			timer.schedule(task, delay);
 		} else
-			pool.shutdown();
+			{pool.shutdown();}
 	}
 
 
     public boolean enterServiceMode() throws XMLDBException {
         try {
             pool.enterServiceMode(user);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         }
         return true;
@@ -62,7 +62,7 @@ public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
     public void exitServiceMode() throws XMLDBException {
         try {
             pool.exitServiceMode(user);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         }
     }

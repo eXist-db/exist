@@ -59,7 +59,7 @@ public class RestoreTask extends AbstractXMLDBTask
         }
 
         if( ( dir != null ) && !dir.canRead() ) {
-            String msg = "Cannot read restore file: " + dir.getAbsolutePath();
+            final String msg = "Cannot read restore file: " + dir.getAbsolutePath();
 
             if( failonerror ) {
                 throw( new BuildException( msg ) );
@@ -74,10 +74,10 @@ public class RestoreTask extends AbstractXMLDBTask
 
                 if( dir != null ) {
                     log( "Restoring from " + dir.getAbsolutePath(), Project.MSG_INFO );
-                    File file = new File( dir, "__contents__.xml" );
+                    final File file = new File( dir, "__contents__.xml" );
 
                     if( !file.exists() ) {
-                        String msg = "Did not found file " + file.getAbsolutePath();
+                        final String msg = "Did not found file " + file.getAbsolutePath();
 
                         if( failonerror ) {
                             throw( new BuildException( msg ) );
@@ -91,17 +91,17 @@ public class RestoreTask extends AbstractXMLDBTask
                     }
 
                 } else if( dirSet != null ) {
-                    DirectoryScanner scanner = dirSet.getDirectoryScanner( getProject() );
+                    final DirectoryScanner scanner = dirSet.getDirectoryScanner( getProject() );
                     scanner.scan();
-                    String[] includedFiles = scanner.getIncludedFiles();
+                    final String[] includedFiles = scanner.getIncludedFiles();
                     log( "Found " + includedFiles.length + " files.\n" );
 
-                    for( String included : includedFiles ) {
+                    for( final String included : includedFiles ) {
                         dir = new File( scanner.getBasedir() + File.separator + included );
-                        File contentsFile = new File( dir, "__contents__.xml" );
+                        final File contentsFile = new File( dir, "__contents__.xml" );
 
                         if( !contentsFile.exists() ) {
-                            String msg = "Did not found file " + contentsFile.getAbsolutePath();
+                            final String msg = "Did not found file " + contentsFile.getAbsolutePath();
 
                             if( failonerror ) {
                                 throw( new BuildException( msg ) );
@@ -122,7 +122,7 @@ public class RestoreTask extends AbstractXMLDBTask
                     log( "Restoring from " + zipFile.getAbsolutePath(), Project.MSG_INFO );
 
                     if( !zipFile.exists() ) {
-                        String msg = "File not found: " + zipFile.getAbsolutePath();
+                        final String msg = "File not found: " + zipFile.getAbsolutePath();
 
                         if( failonerror ) {
                             throw( new BuildException( msg ) );
@@ -137,9 +137,9 @@ public class RestoreTask extends AbstractXMLDBTask
                 }
 
             }
-            catch( Exception e ) {
+            catch( final Exception e ) {
                 e.printStackTrace();
-                String msg = "Exception during restore: " + e.getMessage();
+                final String msg = "Exception during restore: " + e.getMessage();
 
                 if( failonerror ) {
                     throw( new BuildException( msg, e ) );

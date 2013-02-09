@@ -48,7 +48,7 @@ public class FavouriteConnections {
         Preferences favouritesNode = prefs.node(FAVOURITES_NODE);
         try {
             favouritesNode.removeNode();
-        } catch (BackingStoreException ex) {
+        } catch (final BackingStoreException ex) {
             ex.printStackTrace();
         }
         
@@ -87,7 +87,7 @@ public class FavouriteConnections {
         String favouriteNodeNames[] =new String[0];
         try {
             favouriteNodeNames = favouritesNode.childrenNames();
-        } catch (BackingStoreException ex) {
+        } catch (final BackingStoreException ex) {
             ex.printStackTrace();
         }
         
@@ -99,7 +99,7 @@ public class FavouriteConnections {
 
             final FavouriteConnection favourite;
             
-            if((!node.get(FavouriteConnection.URI, "").equals("")) && (!node.get(FavouriteConnection.CONFIGURATION, "").equals(""))) {
+            if((!"".equals(node.get(FavouriteConnection.URI, ""))) && (!"".equals(node.get(FavouriteConnection.CONFIGURATION, "")))) {
                 //backwards compatibility with old login favourites
                 
                 if(node.get(FavouriteConnection.URI, "").equals(XmldbURI.EMBEDDED_SERVER_URI.toString())) {
@@ -110,7 +110,7 @@ public class FavouriteConnections {
                     favourite = getRemoteFavourite(favouriteNodeName, node);
                 }
             } else {
-                if(node.get(FavouriteConnection.URI, "").equals("")) {
+                if("".equals(node.get(FavouriteConnection.URI, ""))) {
                     //embedded
                     favourite = getEmbeddedFavourite(favouriteNodeName, node);
                 } else {

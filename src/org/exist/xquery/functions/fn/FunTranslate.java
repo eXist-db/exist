@@ -79,25 +79,25 @@ public class FunTranslate extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
 		
         Sequence result;
-        Sequence seq = getArgument(0).eval(contextSequence);
+        final Sequence seq = getArgument(0).eval(contextSequence);
 		if(seq.isEmpty())
-            result = StringValue.EMPTY_STRING;
+            {result = StringValue.EMPTY_STRING;}
         else {
-    		ValueSequence arg = FunStringToCodepoints.getCodePoints(seq.getStringValue());
-    		ValueSequence mapStr = FunStringToCodepoints.getCodePoints(getArgument(1).eval(contextSequence).getStringValue());
-            ValueSequence transStr = FunStringToCodepoints.getCodePoints(getArgument(2).eval(contextSequence).getStringValue());
+    		final ValueSequence arg = FunStringToCodepoints.getCodePoints(seq.getStringValue());
+    		final ValueSequence mapStr = FunStringToCodepoints.getCodePoints(getArgument(1).eval(contextSequence).getStringValue());
+            final ValueSequence transStr = FunStringToCodepoints.getCodePoints(getArgument(2).eval(contextSequence).getStringValue());
     		int p;
     		IntegerValue ch;
-    		StringBuilder buf = new StringBuilder(arg.getItemCount());
+    		final StringBuilder buf = new StringBuilder(arg.getItemCount());
     		for(int i = 0; i < arg.getItemCount(); i++) {
     			ch = (IntegerValue) arg.itemAt(i);
     			p = FunStringToCodepoints.indexOf(mapStr, ch);
@@ -105,14 +105,14 @@ public class FunTranslate extends Function {
                     buf.append(FunStringToCodepoints.codePointToString(ch));
                 } else {
     				if (p < transStr.getItemCount())
-    					buf.append(FunStringToCodepoints.codePointToString((IntegerValue) transStr.itemAt(p)));
+    					{buf.append(FunStringToCodepoints.codePointToString((IntegerValue) transStr.itemAt(p)));}
     			}
     		}
             result = new StringValue(buf.toString());
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
+            {context.getProfiler().end(this, "", result);}        
         
         return result; 
 	}

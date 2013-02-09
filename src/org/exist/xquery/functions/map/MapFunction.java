@@ -75,42 +75,42 @@ public class MapFunction extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (isCalledAs("new"))
-            return newMap(args);
+            {return newMap(args);}
         if (isCalledAs("entry"))
-            return entry(args);
+            {return entry(args);}
         if (isCalledAs("get"))
-            return get(args);
+            {return get(args);}
         if (isCalledAs("contains"))
-            return contains(args);
+            {return contains(args);}
         if (isCalledAs("keys"))
-            return keys(args);
+            {return keys(args);}
         if (isCalledAs("remove"))
-            return remove(args);
+            {return remove(args);}
         return null;
     }
 
     private Sequence remove(Sequence[] args) {
-        AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         return map.remove((AtomicValue) args[1].itemAt(0));
     }
 
     private Sequence keys(Sequence[] args) {
-        AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         return map.keys();
     }
 
     private Sequence contains(Sequence[] args) {
-        AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         return BooleanValue.valueOf(map.contains((AtomicValue) args[1].itemAt(0)));
     }
 
     private Sequence get(Sequence[] args) {
-        AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         return map.get((AtomicValue) args[1].itemAt(0));
     }
 
     private Sequence entry(Sequence[] args) throws XPathException {
-        AtomicValue key = (AtomicValue) args[0].itemAt(0);
+        final AtomicValue key = (AtomicValue) args[0].itemAt(0);
         return new SingleKeyMapType(this.context, null, key, args[1]);
     }
 
@@ -120,10 +120,10 @@ public class MapFunction extends BasicFunction {
         }
         String collation = null;
         if (args.length == 2)
-            collation = args[1].getStringValue();
-        MapType map = new MapType(this.context, collation);
-        for (SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
-            AbstractMapType m = (AbstractMapType) i.nextItem();
+            {collation = args[1].getStringValue();}
+        final MapType map = new MapType(this.context, collation);
+        for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
+            final AbstractMapType m = (AbstractMapType) i.nextItem();
             map.add(m);
         }
         return map;

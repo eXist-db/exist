@@ -42,11 +42,11 @@ public class MessageDigester {
         try {
             md5 = MessageDigest.getInstance( "MD5" );
             md5.update( message.getBytes() );
-            byte[] digestData = md5.digest();
+            final byte[] digestData = md5.digest();
             
             if(base64)
             {
-            	Base64Encoder enc = new Base64Encoder();
+            	final Base64Encoder enc = new Base64Encoder();
             	enc.translate(digestData);
             	digest = new String(enc.getCharArray());
             }
@@ -54,9 +54,9 @@ public class MessageDigester {
             {
                digest = byteArrayToHex( digestData );
             }
-        } catch ( NoSuchAlgorithmException e ) {
+        } catch ( final NoSuchAlgorithmException e ) {
             LOG.warn( "MD5 not supported. Using plain string as password!" );
-        } catch ( Exception e ) {
+        } catch ( final Exception e ) {
             LOG.warn( "Digest creation failed. Using plain string as password!" );
         }
         return digest;
@@ -70,8 +70,8 @@ public class MessageDigester {
         try {
             md = MessageDigest.getInstance(algorithm);
 
-        } catch (NoSuchAlgorithmException e) {
-            String error = "'"+ algorithm + "' is not a supported MessageDigest algorithm.";
+        } catch (final NoSuchAlgorithmException e) {
+            final String error = "'"+ algorithm + "' is not a supported MessageDigest algorithm.";
             LOG.error(error, e);
             throw new IllegalArgumentException(error);
         }
@@ -79,13 +79,13 @@ public class MessageDigester {
 
         // Calculate hash
         md.update( message.getBytes() );
-        byte[] digestData = md.digest();
+        final byte[] digestData = md.digest();
 
         // Write digest as string
         String digest = null;
         if(base64)
         {
-            Base64Encoder enc = new Base64Encoder();
+            final Base64Encoder enc = new Base64Encoder();
             enc.translate(digestData);
             digest = new String(enc.getCharArray());
 
@@ -102,15 +102,15 @@ public class MessageDigester {
         if ( n < 0 ) {
             n = 256 + n;
         }
-        int d1 = n / 16;
-        int d2 = n % 16;
+        final int d1 = n / 16;
+        final int d2 = n % 16;
         buf.append( hex[d1] );
         buf.append( hex[d2] );
     }
 
 
     public static String byteArrayToHex( byte[] b ) {
-        StringBuilder buf = new StringBuilder( b.length * 2 );
+        final StringBuilder buf = new StringBuilder( b.length * 2 );
         for ( int i = 0; i < b.length; i++ ) {
             byteToHex( buf, b[i] );
         }

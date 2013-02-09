@@ -288,7 +288,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
 
         int mode = 0;
         for(int i = 0; i < modeStr.length(); i=i+3) {
-            for(char c : modeStr.substring(i, i + 3).toCharArray()) {
+            for(final char c : modeStr.substring(i, i + 3).toCharArray()) {
                 switch(c) {
                     case READ_CHAR:
                         mode |= (READ << (6 - i));

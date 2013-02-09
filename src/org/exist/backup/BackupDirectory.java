@@ -62,7 +62,7 @@ public class BackupDirectory
     public BackupDirectory( File directory )
     {
         this.dir = directory;
-        Pattern pattern = Pattern.compile( FILE_REGEX );
+        final Pattern pattern = Pattern.compile( FILE_REGEX );
         matcher = pattern.matcher( "" );
     }
 
@@ -72,7 +72,7 @@ public class BackupDirectory
         File file;
 
         do {
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
             buf.append( incremental ? PREFIX_INC_BACKUP_FILE : PREFIX_FULL_BACKUP_FILE );
             buf.append( DATE_FORMAT.format( new Date() ) );
 
@@ -91,7 +91,7 @@ public class BackupDirectory
 
     public BackupDescriptor lastBackupFile()
     {
-        File[] files      = dir.listFiles();
+        final File[] files      = dir.listFiles();
 
         File newest       = null;
         Date newestDate   = null;
@@ -100,7 +100,7 @@ public class BackupDirectory
             matcher.reset( files[i].getName() );
 
             if( matcher.matches() ) {
-                String dateTime = matcher.group( 2 );
+                final String dateTime = matcher.group( 2 );
 
                 try {
                     Date date = DATE_FORMAT.parse( dateTime );
@@ -110,7 +110,7 @@ public class BackupDirectory
                         newest     = files[i];
                     }
                 }
-                catch( ParseException e ) {
+                catch( final ParseException e ) {
                 }
             }
         }
@@ -126,7 +126,7 @@ public class BackupDirectory
                     descriptor = new FileSystemBackupDescriptor( new File( newest + "/db", BackupDescriptor.COLLECTION_DESCRIPTOR ) );
                 }
             }
-            catch( IOException e ) {
+            catch( final IOException e ) {
                 e.printStackTrace();
             }
         }

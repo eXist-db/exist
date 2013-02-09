@@ -78,17 +78,17 @@ public class LiteralValue extends AbstractExpression {
             value.dump(dumper);
             dumper.display("\"");
         } else
-            value.dump(dumper);
+            {value.dump(dumper);}
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
         if(Type.subTypeOf(value.getType(), Type.STRING)) {
         	result.append("\"");
         	result.append(value.toString());
         	result.append("\"");
         } else
-        	result.append(value.toString());
+        	{result.append(value.toString());}
         return result.toString();
     }    
     

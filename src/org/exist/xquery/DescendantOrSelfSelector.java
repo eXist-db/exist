@@ -37,14 +37,14 @@ public class DescendantOrSelfSelector extends DescendantSelector {
     }
 
     public NodeProxy match(DocumentImpl doc, NodeId nodeId) {
-        NodeProxy contextNode = context.parentWithChild(doc, nodeId, false, true);
+        final NodeProxy contextNode = context.parentWithChild(doc, nodeId, false, true);
         if(contextNode == null)
-            return null;
-        NodeProxy p = new NodeProxy(doc, nodeId);
+            {return null;}
+        final NodeProxy p = new NodeProxy(doc, nodeId);
         if (Expression.NO_CONTEXT_ID != contextId) {
             p.deepCopyContext(contextNode, contextId);
         } else
-            p.copyContext(contextNode);
+            {p.copyContext(contextNode);}
         return p;
     }
 }

@@ -91,13 +91,13 @@ public class Shutdown extends BasicFunction
 			}
 			
 			//get the broker pool and shutdown
-			BrokerPool pool = context.getBroker().getBrokerPool();
+			final BrokerPool pool = context.getBroker().getBrokerPool();
 				
 			if(delay > 0)
 			{
 				logger.info("Shuttting down in " + delay + " milliseconds.");
-				TimerTask task = new DelayedShutdownTask(pool);
-				Timer timer = new Timer();
+				final TimerTask task = new DelayedShutdownTask(pool);
+				final Timer timer = new Timer();
 				timer.schedule(task, delay);
 			}
 			else
@@ -108,7 +108,7 @@ public class Shutdown extends BasicFunction
 		}
 		else
 		{
-			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to shutdown the database");
+			final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to shutdown the database");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
 		}

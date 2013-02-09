@@ -77,7 +77,7 @@ public class GClockCache implements Cache {
 	}
 
 	public void add(Cacheable item, int initialRefCount) {
-		Cacheable old = map.get(item.getKey());
+		final Cacheable old = map.get(item.getKey());
 		if (old != null) {
 			old.incReferenceCount();
 			return;
@@ -97,19 +97,19 @@ public class GClockCache implements Cache {
 	}
 
 	public Cacheable get(long key) {
-		Cacheable item = map.get(key);
+		final Cacheable item = map.get(key);
 		if (item == null) {
 			accounting.missesIncrement();
 		} else
-			accounting.hitIncrement();
+			{accounting.hitIncrement();}
 		return item;
 	}
 
 	public void remove(Cacheable item) {
-		long key = item.getKey();
-		Cacheable cacheable = map.remove(key);
+		final long key = item.getKey();
+		final Cacheable cacheable = map.remove(key);
 		if (cacheable == null)
-			return;
+			{return;}
 		for (int i = 0; i < count; i++) {
 			if (items[i] != null && items[i].getKey() == key) {
 				items[i] = null;
@@ -136,7 +136,7 @@ public class GClockCache implements Cache {
 	public boolean hasDirtyItems() {
 	    for(int i = 0; i < count; i++) {
 			if(items[i] != null && items[i].isDirty())
-				return true;
+				{return true;}
 		}
 	    return false;
 	}
@@ -243,7 +243,7 @@ public class GClockCache implements Cache {
             hitsOld = accounting.getHits();
             return Integer.MAX_VALUE;
         }
-        int load = accounting.getHits() - hitsOld;
+        final int load = accounting.getHits() - hitsOld;
         hitsOld = accounting.getHits();
         return load;
     }

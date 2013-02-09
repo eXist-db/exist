@@ -154,7 +154,7 @@ public class UserXQueryJob extends UserJob {
             if(xqueryresource.indexOf(':') > 0) {
                 source = SourceFactory.getSource(broker, "", xqueryresource, true);
             } else {
-                XmldbURI pathUri = XmldbURI.create(xqueryresource);
+                final XmldbURI pathUri = XmldbURI.create(xqueryresource);
                 resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 
                 if(resource != null) {
@@ -205,8 +205,8 @@ public class UserXQueryJob extends UserJob {
                     
 
                     for(final Entry param : params.entrySet()) {
-                        String key = (String)param.getKey();
-                        String value = (String)param.getValue();
+                        final String key = (String)param.getKey();
+                        final String value = (String)param.getValue();
                         context.declareVariable( bindingPrefix + ":" + key, new StringValue(value));
                     }
                 }

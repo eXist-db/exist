@@ -108,13 +108,13 @@ public class XMLDBUserAccess extends BasicFunction {
     @Override
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
 
-        String userName = args[0].getStringValue();
+        final String userName = args[0].getStringValue();
 
         Collection collection = null;
         try {
             collection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
-            UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-            Account user = ums.getAccount(userName);
+            final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+            final Account user = ums.getAccount(userName);
 
             if(isCalledAs("exists-user")) {
                 return null == user ? BooleanValue.FALSE : BooleanValue.TRUE;
@@ -128,25 +128,25 @@ public class XMLDBUserAccess extends BasicFunction {
                 return new StringValue(user.getPrimaryGroup());
             }
             else if(isCalledAs("get-user-groups")) {
-                ValueSequence groups = new ValueSequence();
-                String[] gl = user.getGroups();
+                final ValueSequence groups = new ValueSequence();
+                final String[] gl = user.getGroups();
                 for(int i = 0; i < gl.length; i++) {
                     groups.add(new StringValue(gl[i]));
                 }
                 return groups;
                 // get-user-home
             } else {
-                XmldbURI home = XmldbURI.DB;
+                final XmldbURI home = XmldbURI.DB;
                 return null == home ? Sequence.EMPTY_SEQUENCE : new AnyURIValue(home);
             }
-        } catch(XMLDBException e) {
+        } catch(final XMLDBException e) {
             logger.error(e.getMessage());
             throw new XPathException(this, "Failed to query user " + userName, e);
         } finally {
             if(null != collection) {
                 try {
                     collection.close();
-                } catch(XMLDBException e) { /* ignore */ }
+                } catch(final XMLDBException e) { /* ignore */ }
             }
         }
     }

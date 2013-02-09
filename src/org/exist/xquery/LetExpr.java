@@ -53,24 +53,24 @@ public class LetExpr extends BindingExpression {
         // bv : Declare grouping key variable(s) 
         if (groupBy != null) {
             for (int i = 0 ; i < groupBy.length ; i++) {
-                LocalVariable groupKeyVar = new LocalVariable(QName.parse(context, groupBy[i].getKeyVarName(),null));
+                final LocalVariable groupKeyVar = new LocalVariable(QName.parse(context, groupBy[i].getKeyVarName(),null));
                 groupKeyVar.setSequenceType(sequenceType);
                 context.declareVariableBinding(groupKeyVar);
             }
         }
         //Save the local variable stack
-        LocalVariable mark = context.markLocalVariables(false);
+        final LocalVariable mark = context.markLocalVariables(false);
         try {
             contextInfo.setParent(this);
-            AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
+            final AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
             inputSequence.analyze(varContextInfo);
             //Declare the iteration variable
-            LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
+            final LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
             inVar.setSequenceType(sequenceType);
             inVar.setStaticType(varContextInfo.getStaticReturnType());
             context.declareVariableBinding(inVar);
             if (whereExpr != null) {
-                AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+                final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
                 newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
                 whereExpr.analyze(newContextInfo);
             }
@@ -108,14 +108,14 @@ public class LetExpr extends BindingExpression {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
             if (resultSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "RESULT SEQUENCE", resultSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "RESULT SEQUENCE", resultSequence);}
         }
         context.expressionStart(this);
         context.pushDocumentContext();
@@ -147,20 +147,20 @@ public class LetExpr extends BindingExpression {
                 context.declareVariableBinding(var);
                 var.setValue(in);
                 if (sequenceType == null)
-                    var.checkType(); //Just because it makes conversions !                	
+                    {var.checkType();} //Just because it makes conversions !                	
                 var.setContextDocs(inputSequence.getContextDocSet());
                 registerUpdateListener(in);
                 if (whereExpr != null) {
-                    Sequence filtered = applyWhereExpression(null);
+                    final Sequence filtered = applyWhereExpression(null);
                     // TODO: don't use returnsType here
                     if (filtered.isEmpty()) {
                         if (context.getProfiler().isEnabled())
-                            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+                            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
                         return Sequence.EMPTY_SEQUENCE;
                     } else if (filtered.getItemType() == Type.BOOLEAN &&
                                !filtered.effectiveBooleanValue()) {
                         if (context.getProfiler().isEnabled())
-                            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+                            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
                         return Sequence.EMPTY_SEQUENCE;
                     }
                 }
@@ -176,7 +176,7 @@ public class LetExpr extends BindingExpression {
                 //order expressions for every item when it is added to the result sequence.
                 if (resultSequence == null) {
                     if(orderSpecs != null && !fastOrderBy)
-                        resultSequence = new OrderedValueSequence(orderSpecs, in.getItemCount());
+                        {resultSequence = new OrderedValueSequence(orderSpecs, in.getItemCount());}
                 }
                 if (groupedSequence==null){
                     if (returnExpr instanceof BindingExpression) {
@@ -188,9 +188,9 @@ public class LetExpr extends BindingExpression {
                     } else {
                         in = returnExpr.eval(null);
                         if (resultSequence == null)
-                            resultSequence = in;
+                            {resultSequence = in;}
                         else
-                            resultSequence.addAll(in);
+                            {resultSequence.addAll(in);}
                     }
                 }
                 else{
@@ -205,22 +205,22 @@ public class LetExpr extends BindingExpression {
                         }
                         ((BindingExpression)returnExpr).eval(null, null, resultSequence, groupedSequence);
                     } else{
-                      Sequence toGroupSequence = context.resolveVariable(groupedSequence.getToGroupVarName()).getValue();
+                      final Sequence toGroupSequence = context.resolveVariable(groupedSequence.getToGroupVarName()).getValue();
                       groupedSequence.addAll(toGroupSequence);
                     }
                 }
                 if (sequenceType != null) {
                     int actualCardinality;
-                    if (var.getValue().isEmpty()) actualCardinality = Cardinality.EMPTY;
-                    else if (var.getValue().hasMany()) actualCardinality = Cardinality.MANY;
-                    else actualCardinality = Cardinality.ONE;
+                    if (var.getValue().isEmpty()) {actualCardinality = Cardinality.EMPTY;}
+                    else if (var.getValue().hasMany()) {actualCardinality = Cardinality.MANY;}
+                    else {actualCardinality = Cardinality.ONE;}
                     //Type.EMPTY is *not* a subtype of other types ; checking cardinality first
                     if (!Cardinality.checkCardinality(sequenceType.getCardinality(), actualCardinality))
-                        throw new XPathException(this, ErrorCodes.XPTY0004,
+                        {throw new XPathException(this, ErrorCodes.XPTY0004,
                             "Invalid cardinality for variable $" + varName +
                             ". Expected " +
                             Cardinality.getDescription(sequenceType.getCardinality()) +
-                            ", got " + Cardinality.getDescription(actualCardinality), in);
+                            ", got " + Cardinality.getDescription(actualCardinality), in);}
                     //TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
                     if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
                         if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue()
@@ -234,10 +234,10 @@ public class LetExpr extends BindingExpression {
                     } else {
                         //Same as above : we probably may factorize 
                         if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType()))
-                            throw new XPathException(this, ErrorCodes.XPTY0004,
+                            {throw new XPathException(this, ErrorCodes.XPTY0004,
                                 "Invalid type for variable $" + varName + ". Expected " +
                                 Type.getTypeName(sequenceType.getPrimaryType()) + ", got " +
-                                Type.getTypeName(var.getValue().getItemType()), in);
+                                Type.getTypeName(var.getValue().getItemType()), in);}
                     }
                 }
             } finally {
@@ -248,8 +248,8 @@ public class LetExpr extends BindingExpression {
             if (groupSpecs!=null) {
                 mark = context.markLocalVariables(false);
                 context.declareVariableBinding(var);
-                for (Iterator<String> it = groupedSequence.iterate(); it.hasNext();){ 
-                    GroupedValueSequence currentGroup = groupedSequence.get(it.next()); 
+                for (final Iterator<String> it = groupedSequence.iterate(); it.hasNext();){ 
+                    final GroupedValueSequence currentGroup = groupedSequence.get(it.next()); 
                     context.proceed(this);
                     // set binding variable to current group
                     var.setValue(currentGroup);
@@ -259,20 +259,20 @@ public class LetExpr extends BindingExpression {
                         groupKeyVar[i].setValue(currentGroup.getGroupKey().itemAt(i).toSequence());
                     }
                     //Evaluate real return expression
-                    Sequence val = groupReturnExpr.eval(null); 
+                    final Sequence val = groupReturnExpr.eval(null); 
                     resultSequence.addAll(val);
                 }
                 context.popLocalVariables(mark);
            }
            if (orderSpecs != null && !fastOrderBy)
-                ((OrderedValueSequence)resultSequence).sort();
+                {((OrderedValueSequence)resultSequence).sort();}
             clearContext(getExpressionId(), in);
             if (context.getProfiler().isEnabled())
-                context.getProfiler().end(this, "", resultSequence);
+                {context.getProfiler().end(this, "", resultSequence);}
             if (resultSequence == null)
-                return Sequence.EMPTY_SEQUENCE;
+                {return Sequence.EMPTY_SEQUENCE;}
             if (!(resultSequence instanceof DeferredFunctionCall))
-                actualReturnType = resultSequence.getItemType();
+                {actualReturnType = resultSequence.getItemType();}
             return resultSequence;
         } finally {
             context.popDocumentContext();
@@ -286,7 +286,7 @@ public class LetExpr extends BindingExpression {
     public int returnsType() {
         //TODO: let must return "return expression type"
         if (sequenceType != null)
-            return sequenceType.getPrimaryType();
+            {return sequenceType.getPrimaryType();}
         //Type.ITEM by default : this may change *after* evaluation
         return actualReturnType;
     }
@@ -313,7 +313,7 @@ public class LetExpr extends BindingExpression {
             dumper.display(" by "); 
             for (int i = 0; i < groupSpecs.length; i++) {
                 if (i > 0) 
-                    dumper.display(", ");
+                    {dumper.display(", ");}
                 dumper.display(groupSpecs[i].getGroupExpression().toString());
                 dumper.display(" as ");
                 dumper.display("$").display(groupSpecs[i].getKeyVarName());
@@ -324,23 +324,23 @@ public class LetExpr extends BindingExpression {
             dumper.nl().display("order by ");
             for(int i = 0; i < orderSpecs.length; i++) {
                 if(i > 0)
-                    dumper.display(", ");
+                    {dumper.display(", ");}
                 //TODO : toString() or... dump ?
                 dumper.display(orderSpecs[i].toString());
             }
         }
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr)
-            dumper.display(", ");
+            {dumper.display(", ");}
         else
-            dumper.nl().display("return ");
+            {dumper.nl().display("return ");}
         dumper.startIndent();
         returnExpr.dump(dumper);
         dumper.endIndent();
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("let ");
         result.append("$").append(varName);
         result.append(" := ");
@@ -358,7 +358,7 @@ public class LetExpr extends BindingExpression {
             result.append(" by ");
             for (int i = 0; i < groupSpecs.length; i++) {
                 if (i > 0)
-                    result.append(", ");
+                    {result.append(", ");}
                 result.append(groupSpecs[i].getGroupExpression().toString());
                 result.append(" as ");
                 result.append("$").append(groupSpecs[i].getKeyVarName());
@@ -369,15 +369,15 @@ public class LetExpr extends BindingExpression {
             result.append(" order by ");
             for (int i = 0 ; i < orderSpecs.length ; i++) {
                 if (i > 0)
-                    result.append(", ");
+                    {result.append(", ");}
                 result.append(orderSpecs[i].toString());
             }
         }
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr)
-            result.append(", ");
+            {result.append(", ");}
         else
-            result.append("return ");
+            {result.append("return ");}
         result.append(returnExpr.toString());
         return result.toString();
     }

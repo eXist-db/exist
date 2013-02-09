@@ -48,16 +48,16 @@ public class BrokerFactory {
     public static DBBroker getInstance(BrokerPool database, Configuration conf) throws EXistException {
             String brokerID = (String) conf.getProperty(PROPERTY_DATABASE);
         if (brokerID == null)
-            throw new RuntimeException("no database defined");
+            {throw new RuntimeException("no database defined");}
         brokerID = brokerID.toUpperCase();
         if (!objClasses.containsKey(brokerID)) {
             throw new RuntimeException("no database backend found for " + brokerID);
         }
         try {
-            Class<? extends DBBroker> clazz = objClasses.get(brokerID);
-            Constructor<? extends DBBroker> constructor = clazz.getConstructor(constructorArgs);
+            final Class<? extends DBBroker> clazz = objClasses.get(brokerID);
+            final Constructor<? extends DBBroker> constructor = clazz.getConstructor(constructorArgs);
             return constructor.newInstance(database, conf);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("can't get database backend " + brokerID, e);
         }
     }

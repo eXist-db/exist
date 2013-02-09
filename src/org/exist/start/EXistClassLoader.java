@@ -18,10 +18,10 @@ public class EXistClassLoader extends URLClassLoader {
     }
 
     public void addURLs(Classpath cp) {
-        for (File file : cp) {
+        for (final File file : cp) {
             try {
                 addURL(file.toURI().toURL());
-            } catch (MalformedURLException e) {
+            } catch (final MalformedURLException e) {
             }
         }
     }

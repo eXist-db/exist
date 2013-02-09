@@ -142,21 +142,21 @@ public class TargetTableModel implements TableModel
 	public Object getValueAt(int row, int col)
 	{
 		if(row == values.length)
-			return "";
-		AttributeValue value = values[row][col];
+			{return "";}
+		final AttributeValue value = values[row][col];
 		if(value == null)
-			return UNSPECIFIED;
+			{return UNSPECIFIED;}
 		
-		URI functionId = functions[row][col];
+		final URI functionId = functions[row][col];
 		if(functionId == null)
-			return UNSPECIFIED;
-		String functionString = abbrev.getAbbreviatedTargetFunctionId(functionId, attributes[col].getType());
+			{return UNSPECIFIED;}
+		final String functionString = abbrev.getAbbreviatedTargetFunctionId(functionId, attributes[col].getType());
 		if(functionString == null)
 		{
 			LOG.warn("Abbreviated function string was unexpectedly null.  FunctionId URI was '" + functionId + "' (Row " + row + ", column " + col + ")");
 			return UNSPECIFIED;
 		}
-		String stringValue = value.encode();
+		final String stringValue = value.encode();
 		if(stringValue == null)
 		{
 			LOG.warn("String representation of a non-null attribute value was unexpectedly null.  (Row " + row + ", column " + col + ")");
@@ -195,10 +195,10 @@ public class TargetTableModel implements TableModel
 				event = new TableModelEvent(this, row, row, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT);
 			}
 			else
-				return;
+				{return;}
 		}
 		else
-			event = new TableModelEvent(this, row, row, col, TableModelEvent.UPDATE);
+			{event = new TableModelEvent(this, row, row, col, TableModelEvent.UPDATE);}
 		
 		values[row][col] = value;
 		functions[row][col] = functionId;
@@ -210,7 +210,7 @@ public class TargetTableModel implements TableModel
 			for(int i = 0; i < attributes.length && empty; ++i)
 			{
 				if(values[row][i] != null)
-					empty = false;
+					{empty = false;}
 			}
 			if(empty)
 			{
@@ -235,8 +235,8 @@ public class TargetTableModel implements TableModel
 	public void removeRow(int row)
 	{
 		if(functions.length == 0 || functions.length >= row || row < 0)
-			return;
-		int row1 = row+1;
+			{return;}
+		final int row1 = row+1;
 		
 		URI[][] newF = new URI[functions.length - 1][];
 		System.arraycopy(functions, 0, newF, 0, row);
@@ -248,28 +248,28 @@ public class TargetTableModel implements TableModel
 		System.arraycopy(values, row1, newV, row1, values.length - row1);
 		values = newV;
 
-		TableModelEvent event = new TableModelEvent(this, row, row, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE);
+		final TableModelEvent event = new TableModelEvent(this, row, row, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE);
 		fireTableChanged(event);
 	}
 	public void setTarget(List target)
 	{
-		int length = (target == null) ? 0 : target.size();
+		final int length = (target == null) ? 0 : target.size();
 		functions = new URI[length][attributes.length];
 		values = new AttributeValue[length][attributes.length];
 		
 		for(int i = 0; i < length; ++i)
 		{
-			List matches = (List)target.get(i);
+			final List matches = (List)target.get(i);
 			int col = -1;
-			for(Iterator it = matches.iterator(); it.hasNext() && col < 0;)
+			for(final Iterator it = matches.iterator(); it.hasNext() && col < 0;)
 			{
-				TargetMatch match = (TargetMatch)it.next();
-				Evaluatable attribute = match.getMatchEvaluatable();
+				final TargetMatch match = (TargetMatch)it.next();
+				final Evaluatable attribute = match.getMatchEvaluatable();
 				if(attribute instanceof AttributeDesignator)
 				{
 					col = getIndex((AttributeDesignator)attribute);
 					if(col >= 0)
-						setValue(i, col, match);
+						{setValue(i, col, match);}
 				}
 			}
 		}
@@ -279,21 +279,21 @@ public class TargetTableModel implements TableModel
 	private void fireTableChanged(TableModelEvent event)
 	{
 		if(listeners == null)
-			return;
+			{return;}
 		
-		for(TableModelListener listener : listeners)
+		for(final TableModelListener listener : listeners)
 			listener.tableChanged(event);
 	}
 	public List<List<TargetMatch>> createTarget()
 	{
-		List<List<TargetMatch>> list = new ArrayList<List<TargetMatch>>(values.length);
+		final List<List<TargetMatch>> list = new ArrayList<List<TargetMatch>>(values.length);
 		for(int row = 0; row < values.length; ++row)
 		{
-			List<TargetMatch> matches = new ArrayList<TargetMatch>(attributes.length);
+			final List<TargetMatch> matches = new ArrayList<TargetMatch>(attributes.length);
 			for(int col = 0; col < attributes.length; ++col)
 			{
-				AttributeValue value = values[row][col];
-				URI functionId = functions[row][col];
+				final AttributeValue value = values[row][col];
+				final URI functionId = functions[row][col];
 				if(value != null && functionId != null)
 				{
 					Function f;
@@ -301,20 +301,20 @@ public class TargetTableModel implements TableModel
 					{
 						f = FunctionFactory.getTargetInstance().createFunction(functionId);
 						if(f != null)
-							matches.add(new TargetMatch(type, f, attributes[col], value));
+							{matches.add(new TargetMatch(type, f, attributes[col], value));}
 					}
-					catch (UnknownIdentifierException e)
+					catch (final UnknownIdentifierException e)
 					{
 						LOG.warn(e);
 					}
-					catch (FunctionTypeException e)
+					catch (final FunctionTypeException e)
 					{
 						LOG.warn(e);
 					}
 				}
 			}
 			if(matches.size() > 0)
-				list.add(matches);
+				{list.add(matches);}
 		}
 		return (list.size() > 0) ? list : null; 
 			
@@ -322,8 +322,8 @@ public class TargetTableModel implements TableModel
 	
 	public void setValue(int row, int col, TargetMatch match)
 	{
-		AttributeValue value = match.getMatchValue();
-		URI functionId = match.getMatchFunction().getIdentifier();
+		final AttributeValue value = match.getMatchValue();
+		final URI functionId = match.getMatchFunction().getIdentifier();
 		setValue(functionId, value, row, col);
 	}
 	public int getIndex(AttributeDesignator attribute)
@@ -331,56 +331,56 @@ public class TargetTableModel implements TableModel
 		for(int i = 0; i < attributes.length; ++i)
 		{
 			if(equals(attribute, (attributes[i])))
-				return i;
+				{return i;}
 		}
 		return -1;
 	}
 	public static boolean equals(AttributeDesignator one, AttributeDesignator two)
 	{
 		if(one == null)
-			return two == null;
+			{return two == null;}
 		if(two == null)
-			return false;
+			{return false;}
 		if(!one.getId().equals(two.getId()))
-			return false;
+			{return false;}
 		if(!one.getType().equals(two.getType()))
-			return false;
+			{return false;}
 		
 		if(!equals(one.getCategory(), two.getCategory()))
-			return false;
+			{return false;}
 		
 		if(!equals(one.getIssuer(), two.getIssuer()))
-			return false;
+			{return false;}
 		return true;
 	}
 	public static boolean equals(URI one, URI two)
 	{
 		if(one == null)
-			return two == null;
+			{return two == null;}
 		if(two == null)
-			return false;
+			{return false;}
 		return one.equals(two);
 	}
 
 	public String getColumnName(int pos)
 	{
-		URI attributeID = attributes[pos].getId();
+		final URI attributeID = attributes[pos].getId();
 		return abbrev.getAbbreviatedId(attributeID);
 	}
 
 	public void addTableModelListener(TableModelListener listener)
 	{
 		if(listener == null)
-			return;
+			{return;}
 		if(listeners == null)
-			listeners = new ArrayList<TableModelListener>(2);
+			{listeners = new ArrayList<TableModelListener>(2);}
 		listeners.add(listener);
 	}
 
 	public void removeTableModelListener(TableModelListener listener)
 	{
 		if(listeners == null || listener == null)
-			return;
+			{return;}
 		listeners.remove(listener);
 	}
 }

@@ -132,20 +132,20 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 	
 	public void add(Item item) {
         if (hasOne)
-            hasOne = false;
+            {hasOne = false;}
         if (isEmpty)
-            hasOne = true;
+            {hasOne = true;}
         cachedSet = null;
         isEmpty = false;
         ++size;
         ensureCapacity();
         values[size] = item;
         if (itemType == item.getType())
-            return;
+            {return;}
         else if (itemType == Type.ANY_TYPE)
-            itemType = item.getType();
+            {itemType = item.getType();}
         else
-            itemType = Type.getCommonSuperType(item.getType(), itemType);
+            {itemType = Type.getCommonSuperType(item.getType(), itemType);}
         noDuplicates = false;
         isOrdered = false;
         setHasChanged();
@@ -162,8 +162,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public void addAll(Sequence otherSequence) throws XPathException {
 		if (otherSequence == null)
-			return;
-        SequenceIterator iterator = otherSequence.iterate();
+			{return;}
+        final SequenceIterator iterator = otherSequence.iterate();
 		if (iterator == null) {
 			LOG.warn("Iterator == null: " + otherSequence.getClass().getName());
 		}
@@ -227,16 +227,16 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 	 */
 	public NodeSet toNodeSet() throws XPathException {
 		if(size == UNSET_SIZE)
-			return NodeSet.EMPTY_SET;
+			{return NodeSet.EMPTY_SET;}
         // for this method to work, all items have to be nodes
 		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
-			NodeSet set = new NewArrayNodeSet();
+			final NodeSet set = new NewArrayNodeSet();
 			NodeValue v;
 			for (int i = 0; i <= size; i++) {
 				v = (NodeValue)values[i];
 				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                     // found an in-memory document
-                    DocumentImpl doc = ((NodeImpl)v).getDocument();
+                    final DocumentImpl doc = ((NodeImpl)v).getDocument();
                     if (doc==null) {
                        continue;
                     }
@@ -244,8 +244,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                     // returns a map of all root node ids mapped to the corresponding
                     // persistent node. We scan the current sequence and replace all
                     // in-memory nodes with their new persistent node objects.
-                    DocumentImpl expandedDoc = doc.expandRefs(null);
-                    org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
+                    final DocumentImpl expandedDoc = doc.expandRefs(null);
+                    final org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
                     if (newDoc != null) {
                         NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
                         for (int j = i; j <= size; j++) {
@@ -254,16 +254,16 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                                 NodeImpl node = (NodeImpl) v;
                                 if (node.getDocument() == doc) {
                                     if (node.getNodeType() == Node.ATTRIBUTE_NODE)
-                                        node = expandedDoc.getAttribute(node.getNodeNumber());
+                                        {node = expandedDoc.getAttribute(node.getNodeNumber());}
                                     else
-                                        node = expandedDoc.getNode(node.getNodeNumber());
+                                        {node = expandedDoc.getNode(node.getNodeNumber());}
                                     NodeId nodeId = node.getNodeId();
                                     if (nodeId == null)
-                                        throw new XPathException("Internal error: nodeId == null");
+                                        {throw new XPathException("Internal error: nodeId == null");}
                                     if (node.getNodeType() == Node.DOCUMENT_NODE)
-                                        nodeId = rootId;
+                                        {nodeId = rootId;}
                                     else
-                                        nodeId = rootId.append(nodeId);
+                                        {nodeId = rootId.append(nodeId);}
                                     NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
                                     if (p != null) {
                                         // replace the node by the NodeProxy
@@ -279,16 +279,16 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 				}
 			}
             if (holderVar != null)
-                holderVar.setValue(set);
+                {holderVar.setValue(set);}
             return set;
 		} else
-			throw new XPathException("Type error: the sequence cannot be converted into" +
-				" a node set. Item type is " + Type.getTypeName(itemType));
+			{throw new XPathException("Type error: the sequence cannot be converted into" +
+				" a node set. Item type is " + Type.getTypeName(itemType));}
 	}
 
     public MemoryNodeSet toMemNodeSet() throws XPathException {
         if(size == UNSET_SIZE)
-            return MemoryNodeSet.EMPTY;
+            {return MemoryNodeSet.EMPTY;}
         if(itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
             throw new XPathException("Type error: the sequence cannot be converted into" +
 				" a node set. Item type is " + Type.getTypeName(itemType));
@@ -297,8 +297,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         for (int i = 0; i <= size; i++) {
             v = (NodeValue)values[i];
             if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                throw new XPathException("Type error: the sequence cannot be converted into" +
-				    " a MemoryNodeSet. It contains nodes from stored resources.");
+                {throw new XPathException("Type error: the sequence cannot be converted into" +
+				    " a MemoryNodeSet. It contains nodes from stored resources.");}
         }
         expand();
         inMemNodeSet = true;
@@ -307,27 +307,27 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public boolean isInMemorySet() {
         if(size == UNSET_SIZE)
-            return true;
+            {return true;}
         if(itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE))
-            return false;
+            {return false;}
         NodeValue v;
         for (int i = 0; i <= size; i++) {
             v = (NodeValue)values[i];
             if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                return false;
+                {return false;}
         }
         return true;
     }
 
     public boolean isPersistentSet() {
         if(size == UNSET_SIZE)
-            return true;
+            {return true;}
         if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
             NodeValue v;
             for (int i = 0; i <= size; i++) {
                 v = (NodeValue)values[i];
                 if(v.getImplementationType() != NodeValue.PERSISTENT_NODE)
-                    return false;
+                    {return false;}
             }
             return true;
         }
@@ -340,13 +340,13 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
      * Expand those references to get a pure in-memory DOM tree.
      */
     private void expand() {
-        Set<DocumentImpl> docs = new HashSet<DocumentImpl>();
+        final Set<DocumentImpl> docs = new HashSet<DocumentImpl>();
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             if (node.getDocument().hasReferenceNodes())
-                docs.add(node.getDocument());
+                {docs.add(node.getDocument());}
         }
-        for (DocumentImpl doc : docs) {
+        for (final DocumentImpl doc : docs) {
             doc.expand();
         }
     }
@@ -361,19 +361,19 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public boolean containsValue(AtomicValue value) {
         for (int i = 0; i <= size; i++) {
             if (values[i] == value)
-                return true;
+                {return true;}
         }
         return false;
     }
     public void sortInDocumentOrder() {
         if (size == UNSET_SIZE)
-            return;
+            {return;}
         if (keepUnOrdered) {
             removeDuplicateNodes();
         	return;
         }
         if (!enforceOrder || isOrdered)
-            return;
+            {return;}
         inMemNodeSet = inMemNodeSet || isInMemorySet();
         if (inMemNodeSet) {
             FastQSort.sort(values, new InMemoryNodeComparator(), 0, size);
@@ -390,7 +390,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     private void ensureCapacity() {
 		if(size == values.length) {
-			int newSize = (int)Math.round((size == 0 ? 1 : size * 3) / (double) 2);
+			final int newSize = (int)Math.round((size == 0 ? 1 : size * 3) / (double) 2);
 			Item newValues[] = new Item[newSize];
 			System.arraycopy(values, 0, newValues, 0, size);
 			values = newValues;
@@ -399,7 +399,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 	
 	private void removeDuplicateNodes() {
         if(noDuplicates || size < 1)
-			return;
+			{return;}
         if (inMemNodeSet) {
             int j = 0;
             for (int i = 1; i <= size; i++) {
@@ -412,31 +412,31 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             size = j;
         } else {
             if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.ATOMIC))
-                return;
+                {return;}
             // check if the sequence contains nodes
             boolean hasNodes = false;
             for(int i = 0; i <= size; i++) {
                 if(Type.subTypeOf(values[i].getType(), Type.NODE))
-                    hasNodes = true;
+                    {hasNodes = true;}
             }
             if(!hasNodes)
-            return;
-            Map<Item, Item> nodes = new TreeMap<Item, Item>();
+            {return;}
+            final Map<Item, Item> nodes = new TreeMap<Item, Item>();
             int j = 0;
             for (int i = 0; i <= size; i++) {
                 if(Type.subTypeOf(values[i].getType(), Type.NODE)) {
-                	Item found = nodes.get(values[i]);
+                	final Item found = nodes.get(values[i]);
                     if(found == null) {
                         Item item = values[i];
                         values[j++] = item;
                         nodes.put(item, item);
                     } else {
-                    	NodeValue nv = (NodeValue) found;
+                    	final NodeValue nv = (NodeValue) found;
                     	if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                    		((NodeProxy) nv).addMatches((NodeProxy) values[i]);
+                    		{((NodeProxy) nv).addMatches((NodeProxy) values[i]);}
                     }
                 } else
-                    values[j++] = values[i];
+                    {values[j++] = values[i];}
             }
             size = j - 1;
         }
@@ -446,7 +446,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public void clearContext(int contextId) throws XPathException {
         for (int i = 0; i <= size; i++) {
             if (Type.subTypeOf(values[i].getType(), Type.NODE))
-                ((NodeValue) values[i]).clearContext(contextId);
+                {((NodeValue) values[i]).clearContext(contextId);}
         }
     }
 
@@ -478,7 +478,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     */
     public DocumentSet getDocumentSet() {
         if (cachedSet != null)
-            return cachedSet.getDocumentSet();
+            {return cachedSet.getDocumentSet();}
         try {
             boolean isPersistentSet = true;
             NodeValue node;
@@ -498,19 +498,19 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                 cachedSet = toNodeSet();
                 return cachedSet.getDocumentSet();
             }
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
         }
         return extractDocumentSet();
     }
 
     private DocumentSet extractDocumentSet() {
-        MutableDocumentSet docs = new DefaultDocumentSet();
+        final MutableDocumentSet docs = new DefaultDocumentSet();
         NodeValue node;
         for (int i = 0; i <= size; i++) {
             if (Type.subTypeOf(values[i].getType(), Type.NODE)) {
                 node = (NodeValue) values[i];
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                    docs.add((org.exist.dom.DocumentImpl) node.getOwnerDocument());
+                    {docs.add((org.exist.dom.DocumentImpl) node.getOwnerDocument());}
             }
         }
         return docs;
@@ -520,10 +520,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence getAttributes(NodeTest test) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             node.selectAttributes(test, nodes);
         }
         return nodes;
@@ -531,10 +531,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence getDescendantAttributes(NodeTest test) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             node.selectDescendantAttributes(test, nodes);
         }
         return nodes;
@@ -542,10 +542,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence getChildren(NodeTest test) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             node.selectChildren(test, nodes);
         }
         return nodes;
@@ -553,22 +553,22 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence getChildrenForParent(NodeImpl parent) {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             if (node.getNodeId().isChildOf(parent.getNodeId()))
-                nodes.add(node);
+                {nodes.add(node);}
         }
         return nodes;
     }
 
     public Sequence getDescendants(boolean includeSelf, NodeTest test) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             node.selectDescendants(includeSelf, test, nodes);
         }
         return nodes;
@@ -576,10 +576,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence getAncestors(boolean includeSelf, NodeTest test) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             node.selectAncestors(includeSelf, test, nodes);
         }
         return nodes;
@@ -587,36 +587,36 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence getParents(NodeTest test) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
-            NodeImpl parent = (NodeImpl) node.selectParentNode();
+            final NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl parent = (NodeImpl) node.selectParentNode();
             if (parent != null && test.matches(parent))
-                nodes.add(parent);
+                {nodes.add(parent);}
         }
         return nodes;
     }
 
     public Sequence getSelf(NodeTest test) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             if ((test.getType() == Type.NODE && node.getNodeType() == Node.ATTRIBUTE_NODE) ||
                     test.matches(node))
-                nodes.add(node);
+                {nodes.add(node);}
         }
         return nodes;
     }
 
     public Sequence getPrecedingSiblings(NodeTest test) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             node.selectPrecedingSiblings(test, nodes);
         }
         return nodes;
@@ -624,10 +624,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence getPreceding(NodeTest test, int position) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             node.selectPreceding(test, nodes, position);
         }
         return nodes;
@@ -635,10 +635,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence getFollowingSiblings(NodeTest test) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             node.selectFollowingSiblings(test, nodes);
         }
         return nodes;
@@ -646,10 +646,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence getFollowing(NodeTest test, int position) throws XPathException {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             node.selectFollowing(test, nodes, position);
         }
         return nodes;
@@ -657,14 +657,14 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence selectDescendants(MemoryNodeSet descendants) {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             for (int j = 0; j < descendants.size(); j++) {
-                NodeImpl descendant = descendants.get(j);
+                final NodeImpl descendant = descendants.get(j);
                 if (descendant.getNodeId().isDescendantOrSelfOf(node.getNodeId()))
-                    nodes.add(node);
+                    {nodes.add(node);}
             }
         }
         return nodes;
@@ -672,14 +672,14 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     public Sequence selectChildren(MemoryNodeSet children) {
         sortInDocumentOrder();
-        ValueSequence nodes = new ValueSequence(true);
+        final ValueSequence nodes = new ValueSequence(true);
         nodes.keepUnOrdered(keepUnOrdered);
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             for (int j = 0; j < children.size(); j++) {
-                NodeImpl descendant = children.get(j);
+                final NodeImpl descendant = children.get(j);
                 if (descendant.getNodeId().isChildOf(node.getNodeId()))
-                    nodes.add(node);
+                    {nodes.add(node);}
             }
         }
         return nodes;
@@ -713,13 +713,13 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         }
 
         public Collection next() {
-            Collection oldCollection = nextCollection;
+            final Collection oldCollection = nextCollection;
             nextCollection = null;
             while (pos <= size) {
                 if (Type.subTypeOf(values[pos].getType(), Type.NODE)) {
-                    NodeValue node = (NodeValue) values[pos];
+                    final NodeValue node = (NodeValue) values[pos];
                     if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        NodeProxy p = (NodeProxy) node;
+                        final NodeProxy p = (NodeProxy) node;
                         if (!p.getDocument().getCollection().equals(oldCollection)) {
                             nextCollection = p.getDocument().getCollection();
                             break;
@@ -739,18 +739,18 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     
     public String toString() {
 		try {
-			StringBuilder result = new StringBuilder();
+			final StringBuilder result = new StringBuilder();
 			result.append("(");
 			boolean moreThanOne = false;
-			for (SequenceIterator i = iterate(); i.hasNext(); ) {
-				Item next = i.nextItem();
-				if (moreThanOne) result.append(", ");				
+			for (final SequenceIterator i = iterate(); i.hasNext(); ) {
+				final Item next = i.nextItem();
+				if (moreThanOne) {result.append(", ");}				
 				moreThanOne = true;
 				result.append(next.toString());						
 			}
 			result.append(")");
 			return result.toString();
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			return "ValueSequence.toString() failed: " + e.getMessage();
 		}
 		
@@ -770,13 +770,13 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     public String getHashKey(){
     	try{
     		String hashKey = "";
-    		for(SequenceIterator i = iterate();i.hasNext();){
-     			Item current = i.nextItem();     			
+    		for(final SequenceIterator i = iterate();i.hasNext();){
+     			final Item current = i.nextItem();     			
     			hashKey+=current.getStringValue();
     			hashKey+="&&";  //bv : sentinel value to separate grouping keys values
      		}
       		return hashKey;
-    	} catch (XPathException e) {
+    	} catch (final XPathException e) {
       		return "ValueSequence.getHashKey() failed: " + e.getMessage();
       	}
     }    
@@ -800,7 +800,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 		 */
 		public Item nextItem() {
 			if(pos <= size)
-				return values[pos++];
+				{return values[pos++];}
 			return null;
 		}
 	}
@@ -808,14 +808,14 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     private static class InMemoryNodeComparator implements Comparator<Item> {
 
         public int compare(Item o1, Item o2) {
-            NodeImpl n1 = (NodeImpl) o1;
-            NodeImpl n2 = (NodeImpl) o2;
+            final NodeImpl n1 = (NodeImpl) o1;
+            final NodeImpl n2 = (NodeImpl) o2;
             final int docCmp = n1.getDocument().compareTo(n2.getDocument());
             if (docCmp == 0) {
                 return n1.getNodeNumber() == n2.getNodeNumber() ? Constants.EQUAL :
                     (n1.getNodeNumber() > n2.getNodeNumber() ? Constants.SUPERIOR : Constants.INFERIOR);
             } else
-                return docCmp;
+                {return docCmp;}
         }
     }
 
@@ -823,10 +823,10 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 		//UNDERSTAND: is it required? -shabanovd
 		sortInDocumentOrder();
 		for (int i = 0; i <= size; i++) {
-			NodeImpl node = (NodeImpl) values[i];
+			final NodeImpl node = (NodeImpl) values[i];
 			if ((test.getType() == Type.NODE && node.getNodeType() == Node.ATTRIBUTE_NODE) ||
 					test.matches(node))
-				return true;
+				{return true;}
 			}
 		return false;
 	}
@@ -835,9 +835,9 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 		//UNDERSTAND: is it required? -shabanovd
         sortInDocumentOrder();
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             if (node.matchChildren(test))
-            	return true;
+            	{return true;}
         }
         return false;
     }
@@ -846,9 +846,9 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 		//UNDERSTAND: is it required? -shabanovd
         sortInDocumentOrder();
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             if (node.matchAttributes(test))
-            	return true;
+            	{return true;}
         }
         return false;
     }
@@ -857,9 +857,9 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 		//UNDERSTAND: is it required? -shabanovd
         sortInDocumentOrder();
         for (int i = 0; i <= size; i++) {
-            NodeImpl node = (NodeImpl) values[i];
+            final NodeImpl node = (NodeImpl) values[i];
             if (node.matchDescendantAttributes(test))
-            	return true;
+            	{return true;}
         }
         return false;
     }

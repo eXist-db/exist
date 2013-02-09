@@ -109,12 +109,12 @@ public class CollectionURI {
 
     public boolean equals(Object object) {
         if (object instanceof CollectionURI) {
-            CollectionURI otherCollectionURI = (CollectionURI)object;
+            final CollectionURI otherCollectionURI = (CollectionURI)object;
             if (this.length == otherCollectionURI.length) {
                 int pos = length - 1;
                 while (pos > -1) {
                     if (this.uri[pos] != otherCollectionURI.uri[pos--])
-                        return false;
+                        {return false;}
                 }
                 return true;
             }

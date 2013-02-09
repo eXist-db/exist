@@ -68,18 +68,18 @@ public class StreamBinary extends BasicFunction {
             return (Sequence.EMPTY_SEQUENCE);
         }
 
-        BinaryValue binary = (BinaryValue) args[0].itemAt(0);
-        String contentType = args[1].getStringValue();
+        final BinaryValue binary = (BinaryValue) args[0].itemAt(0);
+        final String contentType = args[1].getStringValue();
         String filename = null;
 
         if((args.length > 2) && !args[2].isEmpty()) {
             filename = args[2].getStringValue();
         }
 
-        ResponseModule myModule = (ResponseModule) context.getModule(ResponseModule.NAMESPACE_URI);
+        final ResponseModule myModule = (ResponseModule) context.getModule(ResponseModule.NAMESPACE_URI);
 
         // response object is read from global variable $response
-        Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
+        final Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
 
         if((respVar == null) || (respVar.getValue() == null)) {
             throw (new XPathException(this, "No response object found in the current XQuery context."));
@@ -89,13 +89,13 @@ public class StreamBinary extends BasicFunction {
             throw (new XPathException(this, "Variable $response is not bound to an Java object."));
         }
 
-        JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
+        final JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
 
         if(!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName())) {
             throw (new XPathException(this, signature.toString() + " can only be used within the EXistServlet or XQueryServlet"));
         }
 
-        ResponseWrapper response = (ResponseWrapper) respValue.getObject();
+        final ResponseWrapper response = (ResponseWrapper) respValue.getObject();
         response.setHeader("Content-Type", contentType);
 
         if(filename != null) {
@@ -103,13 +103,13 @@ public class StreamBinary extends BasicFunction {
         }
 
         try {
-            OutputStream os = response.getOutputStream();
+            final OutputStream os = response.getOutputStream();
             binary.streamBinaryTo(response.getOutputStream());
             os.close();
 
             //commit the response
             response.flushBuffer();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw (new XPathException(this, "IO exception while streaming data: " + e.getMessage(), e));
         }
 

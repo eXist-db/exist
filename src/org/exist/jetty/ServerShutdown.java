@@ -62,17 +62,17 @@ public class ServerShutdown {
 
     @SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-        CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
+        final CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
         if (optParser.getErrorString() != null) {
             System.err.println("ERROR: " + optParser.getErrorString());
             return;
         }
-        Properties properties = loadProperties();
+        final Properties properties = loadProperties();
         String user = "admin";
         String passwd = "";
         String uri = properties.getProperty("uri", "xmldb:exist://localhost:8080/exist/xmlrpc");
-        List<CLOption> opts = optParser.getArguments();
-        for (CLOption option : opts) {
+        final List<CLOption> opts = optParser.getArguments();
+        for (final CLOption option : opts) {
             switch (option.getId()) {
                 case HELP_OPT:
                     System.out.println("Usage: java "
@@ -92,44 +92,44 @@ public class ServerShutdown {
         }
         try {
             // initialize database drivers
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+            final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             // create the default database
-            Database database = (Database) cl.newInstance();
+            final Database database = (Database) cl.newInstance();
             DatabaseManager.registerDatabase(database);
             if (!uri.endsWith(XmldbURI.ROOT_COLLECTION))
-                uri = uri + XmldbURI.ROOT_COLLECTION;
-            Collection root = DatabaseManager.getCollection(uri, user, passwd);
-            DatabaseInstanceManager manager = (DatabaseInstanceManager) root
+                {uri = uri + XmldbURI.ROOT_COLLECTION;}
+            final Collection root = DatabaseManager.getCollection(uri, user, passwd);
+            final DatabaseInstanceManager manager = (DatabaseInstanceManager) root
                     .getService("DatabaseInstanceManager", "1.0");
             System.out.println("Shutting down database instance at ");
             System.out.println('\t' + uri);
             manager.shutdown();
 
-        } catch (XMLDBException e) {
+        } catch (final XMLDBException e) {
             System.err.println("ERROR: " + e.getMessage());
 
-            Throwable t = e.getCause();
+            final Throwable t = e.getCause();
             if(t!=null && t instanceof XmlRpcException){
                 System.err.println("CAUSE: "+t.getMessage());
             } else {
                 e.printStackTrace();
             }
             
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
     }
 
     private static Properties loadProperties() {
 
-        Properties clientProps = new Properties();
-        File propFile = ConfigurationHelper.lookup("client.properties");
+        final Properties clientProps = new Properties();
+        final File propFile = ConfigurationHelper.lookup("client.properties");
         InputStream pin = null;
 
         // Try to load from file
         try {
             pin = new FileInputStream(propFile);
-        } catch (FileNotFoundException ex) {
+        } catch (final FileNotFoundException ex) {
             // File not found, no exception handling
         }
 
@@ -146,7 +146,7 @@ public class ServerShutdown {
             	} finally {
             		pin.close();
             	}
-            } catch (IOException ex) {
+            } catch (final IOException ex) {
                 //
             }
         }

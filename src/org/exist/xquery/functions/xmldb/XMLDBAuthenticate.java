@@ -138,14 +138,14 @@ public class XMLDBAuthenticate extends BasicFunction {
             return BooleanValue.FALSE;
         }
         
-        String uri = args[0].getStringValue();
-        String userName = args[1].getStringValue();
+        final String uri = args[0].getStringValue();
+        final String userName = args[1].getStringValue();
         if (userName == null) {
             logger.error("Unable to authenticate username == NULL");
             return BooleanValue.FALSE;
         }
         
-        String password = args[2].getStringValue();
+        final String password = args[2].getStringValue();
 		
         boolean createSession = false;
 		
@@ -165,17 +165,17 @@ public class XMLDBAuthenticate extends BasicFunction {
             Subject user;
         	
             try {
-            	SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
+            	final SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
             	user = sm.authenticate(userName, password);
-            } catch (AuthenticationException e) {
+            } catch (final AuthenticationException e) {
                 logger.error("Unable to authenticate user: " + userName + " " + getLocation());
                 return BooleanValue.FALSE;
-            } catch (EXistException e) {
+            } catch (final EXistException e) {
                 logger.error("Unable to authenticate user: " + userName + " " + getLocation(), e);
                 return BooleanValue.FALSE;
             }
             
-            Collection root = DatabaseManager.getCollection( targetColl.toString(), userName, password );
+            final Collection root = DatabaseManager.getCollection( targetColl.toString(), userName, password );
 
             if( root == null ) {
                 logger.error("Unable to authenticate user: target collection " + targetColl + " does not exist " + getLocation());
@@ -190,7 +190,7 @@ public class XMLDBAuthenticate extends BasicFunction {
             }
 			
             return BooleanValue.TRUE;
-        } catch (XMLDBException e) {
+        } catch (final XMLDBException e) {
             logger.error(getLocation() + " : " + e.getMessage(), e);
             return BooleanValue.FALSE;
         }
@@ -209,11 +209,11 @@ public class XMLDBAuthenticate extends BasicFunction {
 	 */
 	private void cacheUserInHttpSession( Subject user, boolean createSession ) throws XPathException
 	{
-		Variable var = getSessionVar( createSession );
+		final Variable var = getSessionVar( createSession );
 		
         if( var != null && var.getValue() != null ) {
     		if( var.getValue().getItemType() == Type.JAVA_OBJECT ) {
-        		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+        		final JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
         		
         		if( session.getObject() instanceof SessionWrapper ) {
         			((SessionWrapper)session.getObject()).setAttribute( XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user );
@@ -229,15 +229,15 @@ public class XMLDBAuthenticate extends BasicFunction {
 	 */
 	private Variable getSessionVar( boolean createSession ) throws XPathException
 	{
-		SessionModule sessionModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
+		final SessionModule sessionModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
         Variable var = sessionModule.resolveVariable( SessionModule.SESSION_VAR );
 		
 		if( createSession && ( var == null || var.getValue() == null ) ) {
 			SessionWrapper session  = null;
-			RequestModule reqModule = (RequestModule)context.getModule( RequestModule.NAMESPACE_URI );
+			final RequestModule reqModule = (RequestModule)context.getModule( RequestModule.NAMESPACE_URI );
 		
 			// request object is read from global variable $request
-			Variable reqVar = reqModule.resolveVariable( RequestModule.REQUEST_VAR );
+			final Variable reqVar = reqModule.resolveVariable( RequestModule.REQUEST_VAR );
 			
 			if( reqVar == null || reqVar.getValue() == null ) {
 			    logger.error("No request object found in the current XQuery context.");
@@ -249,7 +249,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 				throw( new XPathException( this, "Variable $request is not bound to an Java object." ) );
 			}
 			
-			JavaObjectValue reqValue = (JavaObjectValue)reqVar.getValue().itemAt( 0) ;
+			final JavaObjectValue reqValue = (JavaObjectValue)reqVar.getValue().itemAt( 0) ;
 			
 			if( reqValue.getObject() instanceof RequestWrapper ) {
 				session = ((RequestWrapper)reqValue.getObject()).getSession( true );

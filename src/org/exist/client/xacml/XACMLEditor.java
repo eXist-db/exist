@@ -79,11 +79,11 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 			
 		//setSize(600, 480);
 		pack();
-		Dimension size = getSize();
+		final Dimension size = getSize();
 		if(size.width <= MIN_FRAME_WIDTH)
-			size.width = MIN_FRAME_WIDTH;
+			{size.width = MIN_FRAME_WIDTH;}
 		if(size.height <= MIN_FRAME_HEIGHT)
-			size.height = MIN_FRAME_HEIGHT;
+			{size.height = MIN_FRAME_HEIGHT;}
 		setSize(size);
 	}
 	private void createInterface()
@@ -97,19 +97,19 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 		
 		tree = new JTree(model);
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		TreeMutator mutator = new TreeMutator(tree);
+		final TreeMutator mutator = new TreeMutator(tree);
 		tree.addTreeSelectionListener(this);
 		tree.setCellRenderer(new CustomRenderer(mutator));
 		tree.setEditable(false);
 		tree.setShowsRootHandles(true);
 		tree.setRootVisible(false);
 		
-		Dimension minSize = tree.getMinimumSize();
+		final Dimension minSize = tree.getMinimumSize();
 		if(minSize.width < MINIMUM_TREE_WIDTH)
-			minSize.width = MINIMUM_TREE_WIDTH;
+			{minSize.width = MINIMUM_TREE_WIDTH;}
 		tree.setMinimumSize(minSize);
 				
-		JScrollPane scroll = new JScrollPane(tree);
+		final JScrollPane scroll = new JScrollPane(tree);
 		
 		split.setLeftComponent(scroll);
 		split.setRightComponent(new JScrollPane());
@@ -119,13 +119,13 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 	{
 		if(hasUnsavedChanges())
 		{
-			String message = "There are unsaved changes.  Do you want to save your changes before closing?";
-			String title = "Save changes?"; 
-			int ret = JOptionPane.showConfirmDialog(this, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+			final String message = "There are unsaved changes.  Do you want to save your changes before closing?";
+			final String title = "Save changes?"; 
+			final int ret = JOptionPane.showConfirmDialog(this, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 			if(ret == JOptionPane.CANCEL_OPTION)
-				return;
+				{return;}
 			else if(ret == JOptionPane.YES_OPTION)
-				saveAll();
+				{saveAll();}
 		}
 		dispose();
 	}
@@ -136,7 +136,7 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 	public void saveAll()
 	{
 		if(editor != null)
-			editor.pushChanges();
+			{editor.pushChanges();}
 		dbInterface.writePolicies((RootNode)model.getRoot());
 		tree.repaint();
 	}
@@ -147,7 +147,7 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 	}
 	public static PolicySet createDefaultPolicySet(String policySetID)
 	{
-		PolicyCombiningAlgorithm alg = new OrderedPermitOverridesPolicyAlg(); 
+		final PolicyCombiningAlgorithm alg = new OrderedPermitOverridesPolicyAlg(); 
 		return new PolicySet(URI.create(policySetID), alg, createEmptyTarget());
 	}
 
@@ -161,10 +161,10 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 	}
 	public static Policy createDefaultPolicy(String policyID)
 	{
-		Target emptyTarget = createEmptyTarget();
-		RuleCombiningAlgorithm alg = new OrderedPermitOverridesRuleAlg(); 
-		Rule denyEverythingRule = createDefaultRule("DenyAll");
-		List<Rule> rules = Collections.singletonList(denyEverythingRule);
+		final Target emptyTarget = createEmptyTarget();
+		final RuleCombiningAlgorithm alg = new OrderedPermitOverridesRuleAlg(); 
+		final Rule denyEverythingRule = createDefaultRule("DenyAll");
+		final List<Rule> rules = Collections.singletonList(denyEverythingRule);
 		return new Policy(URI.create(policyID), alg, DEFAULT_DESCRIPTION, emptyTarget, rules);
 	}
 	public static Rule createDefaultRule(PolicyElementContainer parent)
@@ -174,7 +174,7 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 	public static String createUniqueId(PolicyElementContainer parent, String base)
 	{
 		if(parent == null)
-			throw new NullPointerException("Parent cannot be null");
+			{throw new NullPointerException("Parent cannot be null");}
 		String newId = base;
 		for(int i = 2; parent.containsId(newId); ++i)
 			newId = base + Integer.toString(i);
@@ -187,20 +187,20 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 	
 	private void setupMenuBar()
 	{
-		JMenuBar menuBar = new JMenuBar();
+		final JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
-		JMenu file = new JMenu("File");
+		final JMenu file = new JMenu("File");
 		file.setMnemonic(KeyEvent.VK_F);
 		menuBar.add(file);
 		
-		JMenuItem saveItem = new JMenuItem(SAVE,KeyEvent.VK_S);
+		final JMenuItem saveItem = new JMenuItem(SAVE,KeyEvent.VK_S);
 		saveItem.setActionCommand(SAVE);
 		saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
 				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		saveItem.addActionListener(this);
 		file.add(saveItem);
 
-		JMenuItem closeItem = new JMenuItem(CLOSE,KeyEvent.VK_W);
+		final JMenuItem closeItem = new JMenuItem(CLOSE,KeyEvent.VK_W);
 		closeItem.setActionCommand(CLOSE);
 		closeItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W,
 				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -209,17 +209,17 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 	}
 	public void actionPerformed(ActionEvent event)
 	{
-		String actionCommand = event.getActionCommand();
+		final String actionCommand = event.getActionCommand();
 		if(CLOSE.equals(actionCommand))
-			close();
+			{close();}
 		else if(SAVE.equals(actionCommand))
-			saveAll();
+			{saveAll();}
 	}
 	//this method fixes dumb repaint issues
 	//when components are updated
 	private void forceRepaint()
 	{
-		Container contentPane = getContentPane();
+		final Container contentPane = getContentPane();
 		contentPane.invalidate();
 		contentPane.validate();
 		contentPane.repaint();
@@ -233,22 +233,22 @@ public class XACMLEditor extends JFrame implements ActionListener, TreeModelList
 			editor = null;
 		}
 		
-		TreePath selectedPath = event.getPath();
-		Object value = selectedPath.getLastPathComponent();
+		final TreePath selectedPath = event.getPath();
+		final Object value = selectedPath.getLastPathComponent();
 		
 		if(value instanceof AbstractPolicyNode)
-			editor = new AbstractPolicyEditor();
+			{editor = new AbstractPolicyEditor();}
 		else if(value instanceof RuleNode)
-			editor = new RuleEditor();
+			{editor = new RuleEditor();}
 		else if(value instanceof ConditionNode)
-			editor = null;//TODO: implement condition editing
+			{editor = null;}//TODO: implement condition editing
 		else if(value instanceof TargetNode)
-			editor = new TargetEditor(dbInterface);
+			{editor = new TargetEditor(dbInterface);}
 		
-		int dividerLocation = split.getDividerLocation();
-		JScrollPane scroll = ((JScrollPane)split.getRightComponent());
+		final int dividerLocation = split.getDividerLocation();
+		final JScrollPane scroll = ((JScrollPane)split.getRightComponent());
 		if(editor == null)
-			scroll.setViewportView(null);
+			{scroll.setViewportView(null);}
 		else				
 		{
 			editor.setNode((XACMLTreeNode)value);

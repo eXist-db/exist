@@ -91,13 +91,13 @@ public class AttrImpl extends NamedNode implements Attr {
     @Override
     public byte[] serialize() {
         if(nodeName.getLocalName() == null)
-            throw new RuntimeException("Local name is null");
+            {throw new RuntimeException("Local name is null");}
         final short id = ownerDocument.getBrokerPool().getSymbols().getSymbol( this );
         final byte idSizeType = Signatures.getSizeType( id );
         int prefixLen = 0;
         if (nodeName.needsNamespaceDecl()) {
             if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
-                prefixLen = UTF8.encoded(nodeName.getPrefix());
+                {prefixLen = UTF8.encoded(nodeName.getPrefix());}
         }
         final int nodeIdLen = nodeId.size();
         final byte[] data = ByteArrayPool.getByteArray(
@@ -110,7 +110,7 @@ public class AttrImpl extends NamedNode implements Attr {
         data[pos] |= idSizeType;
         data[pos] |= (byte) (attributeType << 0x2);
         if(nodeName.needsNamespaceDecl())
-            data[pos] |= 0x10;
+            {data[pos] |= 0x10;}
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
         ByteConversion.shortToByte((short) nodeId.units(), data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
@@ -125,7 +125,7 @@ public class AttrImpl extends NamedNode implements Attr {
             ByteConversion.shortToByte((short)prefixLen, data, pos);
             pos += LENGTH_PREFIX_LENGTH;
             if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
-                UTF8.encode(nodeName.getPrefix(), data, pos);
+                {UTF8.encode(nodeName.getPrefix(), data, pos);}
             pos += prefixLen;
         }
         value.UTF8Encode(data, pos);
@@ -134,19 +134,19 @@ public class AttrImpl extends NamedNode implements Attr {
 
     public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
         int pos = start;
-        byte idSizeType = (byte) ( data[pos] & 0x3 );
-        boolean hasNamespace = (data[pos] & 0x10) == 0x10;
-        int attrType = ( data[pos] & 0x4 ) >> 0x2;
+        final byte idSizeType = (byte) ( data[pos] & 0x3 );
+        final boolean hasNamespace = (data[pos] & 0x10) == 0x10;
+        final int attrType = ( data[pos] & 0x4 ) >> 0x2;
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
-        int dlnLen = ByteConversion.byteToShort(data, pos);
+        final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         pos += dln.size();
-        short id = (short) Signatures.read(idSizeType, data, pos);
+        final short id = (short) Signatures.read(idSizeType, data, pos);
         pos += Signatures.getLength(idSizeType);
-        String name = doc.getBrokerPool().getSymbols().getName(id);
+        final String name = doc.getBrokerPool().getSymbols().getName(id);
         if (name == null)
-            throw new RuntimeException("no symbol for id " + id);
+            {throw new RuntimeException("no symbol for id " + id);}
         short nsId = 0;
         String prefix = null;
         if (hasNamespace) {
@@ -155,19 +155,19 @@ public class AttrImpl extends NamedNode implements Attr {
             int prefixLen = ByteConversion.byteToShort(data, pos);
             pos += LENGTH_PREFIX_LENGTH;
             if (prefixLen > 0)
-                prefix = UTF8.decode(data, pos, prefixLen).toString();
+                {prefix = UTF8.decode(data, pos, prefixLen).toString();}
             pos += prefixLen;
         }
-        String namespace = nsId == 0 ? "" : doc.getBrokerPool().getSymbols().getNamespace(nsId);
+        final String namespace = nsId == 0 ? "" : doc.getBrokerPool().getSymbols().getNamespace(nsId);
         XMLString value = UTF8.decode(data, pos, len - (pos - start));
 
         //OK : we have the necessary material to build the attribute
         AttrImpl attr;
         if(pooled)
-            attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
+            {attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);}
             //attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
         else
-            attr = new AttrImpl();
+            {attr = new AttrImpl();}
         attr.setNodeName(doc.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix));
         attr.value = value;
         attr.setNodeId(dln);
@@ -177,19 +177,19 @@ public class AttrImpl extends NamedNode implements Attr {
 
     public static void addToList(DBBroker broker, byte[] data, int start, int len, AttrList list) {
         int pos = start;
-        byte idSizeType = (byte) ( data[pos] & 0x3 );
-        boolean hasNamespace = (data[pos] & 0x10) == 0x10;
-        int attrType = ( data[pos] & 0x4 ) >> 0x2;
+        final byte idSizeType = (byte) ( data[pos] & 0x3 );
+        final boolean hasNamespace = (data[pos] & 0x10) == 0x10;
+        final int attrType = ( data[pos] & 0x4 ) >> 0x2;
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
-        int dlnLen = ByteConversion.byteToShort(data, pos);
+        final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = broker.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        final NodeId dln = broker.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         pos += dln.size();
-        short id = (short) Signatures.read(idSizeType, data, pos);
+        final short id = (short) Signatures.read(idSizeType, data, pos);
         pos += Signatures.getLength(idSizeType);
-        String name = broker.getBrokerPool().getSymbols().getName(id);
+        final String name = broker.getBrokerPool().getSymbols().getName(id);
         if (name == null)
-            throw new RuntimeException("no symbol for id " + id);
+            {throw new RuntimeException("no symbol for id " + id);}
         short nsId = 0;
         String prefix = null;
         if (hasNamespace) {
@@ -198,14 +198,14 @@ public class AttrImpl extends NamedNode implements Attr {
             int prefixLen = ByteConversion.byteToShort(data, pos);
             pos += LENGTH_PREFIX_LENGTH;
             if (prefixLen > 0)
-                prefix = UTF8.decode(data, pos, prefixLen).toString();
+                {prefix = UTF8.decode(data, pos, prefixLen).toString();}
             pos += prefixLen;
         }
-        String namespace = nsId == 0 ? "" : broker.getBrokerPool().getSymbols().getNamespace(nsId);
+        final String namespace = nsId == 0 ? "" : broker.getBrokerPool().getSymbols().getNamespace(nsId);
         String value;
         try {
             value = new String( data, pos, len - (pos - start), "UTF-8" );
-        } catch (UnsupportedEncodingException uee) {
+        } catch (final UnsupportedEncodingException uee) {
             LOG.warn(uee);
             value = new String( data, pos, len - (pos - start));
         }
@@ -227,11 +227,11 @@ public class AttrImpl extends NamedNode implements Attr {
 
     public static String getAttributeType(int type) {
         if (type == AttrImpl.ID)
-            return "ID";
+            {return "ID";}
         if (type == AttrImpl.IDREF)
-            return "IDREF";
+            {return "IDREF";}
         if (type == AttrImpl.IDREFS)
-            return "IDREFS";
+            {return "IDREFS";}
         return "CDATA";
     }
 
@@ -266,7 +266,7 @@ public class AttrImpl extends NamedNode implements Attr {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append( ' ' );
         buf.append( nodeName );
         buf.append( "=\"" );
@@ -278,7 +278,7 @@ public class AttrImpl extends NamedNode implements Attr {
     @Override
     public String toString(boolean top) {
         if (top) {
-            StringBuilder result = new StringBuilder();
+            final StringBuilder result = new StringBuilder();
             result.append( "<exist:attribute " );
             result.append( "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " );
             result.append( "exist:id=\"" );
@@ -326,9 +326,9 @@ public class AttrImpl extends NamedNode implements Attr {
 
     @Override
     public String getBaseURI() {
-        Element e = getOwnerElement();
+        final Element e = getOwnerElement();
         if (e != null)
-            return e.getBaseURI();
+            {return e.getBaseURI();}
         return null;
     }
 

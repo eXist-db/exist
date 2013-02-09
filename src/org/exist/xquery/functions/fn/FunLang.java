@@ -100,7 +100,7 @@ public class FunLang extends Function {
 		super.analyze(contextInfo);
 		try {
 			query = context.getBroker().getXQueryService().compile(context, queryString);
-		} catch (PermissionDeniedException e) {
+		} catch (final PermissionDeniedException e) {
 			throw new XPathException(this, e);
 		}		
 	}
@@ -110,30 +110,30 @@ public class FunLang extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
 		
 		if (getArgumentCount() == 2) 
-            contextSequence = getArgument(1).eval(contextSequence);
+            {contextSequence = getArgument(1).eval(contextSequence);}
 		
 		if (contextSequence == null)
-			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
 		
         Sequence result; 
 		if (!(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)))
-			throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node");
+			{throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node");}
         else {
-			String lang = getArgument(0).eval(contextSequence).getStringValue();
+			final String lang = getArgument(0).eval(contextSequence).getStringValue();
 			
 			String langValue = null;
 			Sequence seq = null;
 			if (contextSequence.hasOne()) {
-				Item item = contextSequence.itemAt(0);
+				final Item item = contextSequence.itemAt(0);
 				if (item.getType() == Type.ATTRIBUTE) {
 					langValue = item.getStringValue(); 
 				}
@@ -145,11 +145,11 @@ public class FunLang extends Function {
 				result = BooleanValue.FALSE ;   
 			} else if (langValue != null || (seq != null && seq.hasOne())) {
 				if (seq != null)
-					langValue = seq.getStringValue();
+					{langValue = seq.getStringValue();}
 	            
 				boolean include = lang.equalsIgnoreCase(langValue);
 				if (!include) {
-	                int hyphen = langValue.indexOf('-');
+	                final int hyphen = langValue.indexOf('-');
 					if (hyphen != Constants.STRING_NOT_FOUND) {
 						langValue = langValue.substring(0, hyphen);
 						include = lang.equalsIgnoreCase(langValue);
@@ -158,11 +158,11 @@ public class FunLang extends Function {
 				result = new BooleanValue(include);
 			}
             else 
-            	throw new XPathException(this, ErrorCodes.XPTY0004, "Sequence returned more than one item !");
+            	{throw new XPathException(this, ErrorCodes.XPTY0004, "Sequence returned more than one item !");}
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;          
 	}

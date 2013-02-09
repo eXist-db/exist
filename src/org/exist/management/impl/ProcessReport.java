@@ -82,21 +82,21 @@ public class ProcessReport implements ProcessReportMBean {
 
     @Override
     public TabularData getScheduledJobs() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
+        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("scheduledJobs", "Lists currently scheduled jobs in eXist",
                     pItemNames, pItemDescriptions, itemTypes);
-            TabularType tabularType = new TabularType("jobList", "List of currently scheduled jobs", infoType, pIndexNames);
-            TabularDataSupport data = new TabularDataSupport(tabularType);
-            List<ScheduledJobInfo> jobs = scheduler.getScheduledJobs();
+            final TabularType tabularType = new TabularType("jobList", "List of currently scheduled jobs", infoType, pIndexNames);
+            final TabularDataSupport data = new TabularDataSupport(tabularType);
+            final List<ScheduledJobInfo> jobs = scheduler.getScheduledJobs();
             for (final ScheduledJobInfo job : jobs) {
-                Object[] itemValues = { job.getName(), job.getGroup(),
+                final Object[] itemValues = { job.getName(), job.getGroup(),
                         job.getTriggerExpression() };
                 data.put(new CompositeDataSupport(infoType, pItemNames, itemValues));
             }
             return data;
-        } catch (OpenDataException e) {
+        } catch (final OpenDataException e) {
             LOG.warn(e.getMessage(), e);
         }
         return null;
@@ -104,21 +104,21 @@ public class ProcessReport implements ProcessReportMBean {
 
     @Override
     public TabularData getRunningJobs() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
+        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
         try {
             infoType = new CompositeType("runningJobs", "Lists currently running jobs in eXist",
                     pItemNames, pItemDescriptions, itemTypes);
-            TabularType tabularType = new TabularType("jobList", "List of currently running jobs", infoType, pIndexNames);
-            TabularDataSupport data = new TabularDataSupport(tabularType);
-            ProcessMonitor.JobInfo[] jobs = processMonitor.runningJobs();
+            final TabularType tabularType = new TabularType("jobList", "List of currently running jobs", infoType, pIndexNames);
+            final TabularDataSupport data = new TabularDataSupport(tabularType);
+            final ProcessMonitor.JobInfo[] jobs = processMonitor.runningJobs();
             for (int i = 0; i < jobs.length; i++) {
-                Object[] itemValues = { jobs[i].getThread().getName(), jobs[i].getAction(),
+                final Object[] itemValues = { jobs[i].getThread().getName(), jobs[i].getAction(),
                         jobs[i].getAddInfo().toString() };
                 data.put(new CompositeDataSupport(infoType, pItemNames, itemValues));
             }
             return data;
-        } catch (OpenDataException e) {
+        } catch (final OpenDataException e) {
             LOG.warn(e.getMessage(), e);
         }
         return null;
@@ -126,21 +126,21 @@ public class ProcessReport implements ProcessReportMBean {
 
     @Override
     public TabularData getRunningQueries() {
-        OpenType<?>[] itemTypes = { SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING, SimpleType.BOOLEAN };
+        final OpenType<?>[] itemTypes = { SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING, SimpleType.BOOLEAN };
         CompositeType infoType;
         try {
             infoType = new CompositeType("runningQueries", "Lists currently running XQueries",
                     qItemNames, qItemDescriptions, itemTypes);
-            TabularType tabularType = new TabularType("queryList", "List of currently running XQueries", infoType, qIndexNames);
-            TabularDataSupport data = new TabularDataSupport(tabularType);
-            XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
+            final TabularType tabularType = new TabularType("queryList", "List of currently running XQueries", infoType, qIndexNames);
+            final TabularDataSupport data = new TabularDataSupport(tabularType);
+            final XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
             for (int i = 0; i < watchdogs.length; i++) {
-                Object[] itemValues = { new Integer(watchdogs[i].getContext().hashCode()), watchdogs[i].getContext().getXacmlSource().getType(),
+                final Object[] itemValues = { new Integer(watchdogs[i].getContext().hashCode()), watchdogs[i].getContext().getXacmlSource().getType(),
                         watchdogs[i].getContext().getXacmlSource().getKey(), Boolean.valueOf(watchdogs[i].isTerminating()) };
                 data.put(new CompositeDataSupport(infoType, qItemNames, itemValues));
             }
             return data;
-        } catch (OpenDataException e) {
+        } catch (final OpenDataException e) {
             LOG.warn(e.getMessage(), e);
         }
         return null;
@@ -148,20 +148,20 @@ public class ProcessReport implements ProcessReportMBean {
 
     @Override
     public TabularData getRecentQueryHistory() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.LONG, SimpleType.LONG };
+        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.LONG, SimpleType.LONG };
         CompositeType infoType;
         try {
             infoType = new CompositeType("recentQueryHistory", "Lists recently completed XQueries", qhItemNames, qhItemDescriptions, itemTypes);
 
-            TabularType tabularType = new TabularType("queryList", "List of recently completed XQueries", infoType, qhIndexNames);
-            TabularDataSupport data = new TabularDataSupport(tabularType);
-            QueryHistory[] queryHistories = processMonitor.getRecentQueryHistory();
-            for(QueryHistory queryHistory : queryHistories) {
-                Object[] itemValues = { queryHistory.getSource(), queryHistory.getInvocationCount(), queryHistory.getMostRecentExecutionTime(), queryHistory.getMostRecentExecutionDuration()};
+            final TabularType tabularType = new TabularType("queryList", "List of recently completed XQueries", infoType, qhIndexNames);
+            final TabularDataSupport data = new TabularDataSupport(tabularType);
+            final QueryHistory[] queryHistories = processMonitor.getRecentQueryHistory();
+            for(final QueryHistory queryHistory : queryHistories) {
+                final Object[] itemValues = { queryHistory.getSource(), queryHistory.getInvocationCount(), queryHistory.getMostRecentExecutionTime(), queryHistory.getMostRecentExecutionDuration()};
                 data.put(new CompositeDataSupport(infoType, qhItemNames, itemValues));
             }
             return data;
-        } catch (OpenDataException e) {
+        } catch (final OpenDataException e) {
             LOG.warn(e.getMessage(), e);
         }
         return null;

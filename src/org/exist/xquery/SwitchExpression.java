@@ -82,8 +82,8 @@ public class SwitchExpression extends AbstractExpression {
         }
 
         if (contextItem != null)
-            contextSequence = contextItem.toSequence();
-        Sequence opSeq = operand.eval(contextSequence);
+            {contextSequence = contextItem.toSequence();}
+        final Sequence opSeq = operand.eval(contextSequence);
         Sequence result = null;
         if (opSeq.isEmpty()) {
         	result = defaultClause.returnClause.eval(contextSequence);
@@ -91,15 +91,15 @@ public class SwitchExpression extends AbstractExpression {
             if (opSeq.hasMany()) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch operand ", opSeq);
             }
-	        AtomicValue opVal = opSeq.itemAt(0).atomize();
-	        Collator defaultCollator = context.getDefaultCollator();
-	        for (Case next : cases) {
-	            for (Expression caseOperand : next.operands) {
-	                Sequence caseSeq = caseOperand.eval(contextSequence, contextItem);
+	        final AtomicValue opVal = opSeq.itemAt(0).atomize();
+	        final Collator defaultCollator = context.getDefaultCollator();
+	        for (final Case next : cases) {
+	            for (final Expression caseOperand : next.operands) {
+	                final Sequence caseSeq = caseOperand.eval(contextSequence, contextItem);
 	                if (caseSeq.hasMany()) {
 	                    throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch case operand ", caseSeq);
 	                }
-                    AtomicValue caseVal = caseSeq.itemAt(0).atomize();
+                    final AtomicValue caseVal = caseSeq.itemAt(0).atomize();
 	                if (FunDeepEqual.deepEquals(caseVal, opVal, defaultCollator)) {
 	                    return next.returnClause.eval(contextSequence);
 	                }
@@ -128,7 +128,7 @@ public class SwitchExpression extends AbstractExpression {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         operand.analyze(contextInfo);
-        for (Case next : cases) {
+        for (final Case next : cases) {
             next.returnClause.analyze(contextInfo);
         }
         defaultClause.returnClause.analyze(contextInfo);
@@ -144,8 +144,8 @@ public class SwitchExpression extends AbstractExpression {
         operand.dump(dumper);
         dumper.display(')');
         dumper.startIndent();
-        for (Case next : cases) {
-            for (Expression caseOperand : next.operands) {
+        for (final Case next : cases) {
+            for (final Expression caseOperand : next.operands) {
                 dumper.display("case ");
                 dumper.display(caseOperand);
             }
@@ -160,7 +160,7 @@ public class SwitchExpression extends AbstractExpression {
     @Override
     public void accept(ExpressionVisitor visitor) {
         operand.accept(visitor);
-        for (Case next : cases) {
+        for (final Case next : cases) {
             next.returnClause.accept(visitor);
         }
     }
@@ -170,7 +170,7 @@ public class SwitchExpression extends AbstractExpression {
         
         operand.resetState(postOptimization);
         defaultClause.returnClause.resetState(postOptimization);
-        for (Case next : cases) {
+        for (final Case next : cases) {
             next.returnClause.resetState(postOptimization);
         }
     }

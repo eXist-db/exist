@@ -158,7 +158,7 @@ public class Password implements Credential {
         }
     	
     	if(obj instanceof Password) {
-            Password p = (Password) obj;
+            final Password p = (Password) obj;
             
             if(algorithm != p.algorithm) {
                 throw new RuntimeException("Cannot compare passwords with different algorithms i.e. " + algorithm + " and " + p.algorithm);

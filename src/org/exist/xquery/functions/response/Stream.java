@@ -82,38 +82,38 @@ public class Stream extends BasicFunction {
 		if(args[0].isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
-		Sequence inputNode = args[0];
+		final Sequence inputNode = args[0];
 		
-        Properties serializeOptions = new Properties();
-        String serOpts = args[1].getStringValue();
-        String[] contents = Option.tokenize(serOpts);
+        final Properties serializeOptions = new Properties();
+        final String serOpts = args[1].getStringValue();
+        final String[] contents = Option.tokenize(serOpts);
         for (int i = 0; i < contents.length; i++) {
-            String[] pair = Option.parseKeyValuePair(contents[i]);
+            final String[] pair = Option.parseKeyValuePair(contents[i]);
             if (pair == null)
-                throw new XPathException(this, "Found invalid serialization option: " + pair);
+                {throw new XPathException(this, "Found invalid serialization option: " + pair);}
             logger.info("Setting serialization property: " + pair[0] + " = " + pair[1]);
             serializeOptions.setProperty(pair[0], pair[1]);
         }
 
-        ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
+        final ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
         
         // response object is read from global variable $response
-        Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
+        final Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
         
         if(respVar == null)
-            throw new XPathException(this, "No response object found in the current XQuery context.");
+            {throw new XPathException(this, "No response object found in the current XQuery context.");}
         
         if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
-            throw new XPathException(this, "Variable $response is not bound to an Java object.");
-        JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
+            {throw new XPathException(this, "Variable $response is not bound to an Java object.");}
+        final JavaObjectValue respValue = (JavaObjectValue) respVar.getValue().itemAt(0);
         
         if (!"org.exist.http.servlets.HttpResponseWrapper".equals(respValue.getObject().getClass().getName()))
-            throw new XPathException(this, signature.toString() + " can only be used within the EXistServlet or XQueryServlet");
+            {throw new XPathException(this, signature.toString() + " can only be used within the EXistServlet or XQueryServlet");}
         
-        ResponseWrapper response = (ResponseWrapper) respValue.getObject();
+        final ResponseWrapper response = (ResponseWrapper) respValue.getObject();
         
-        String mediaType = serializeOptions.getProperty("media-type", "application/xml");
-        String encoding = serializeOptions.getProperty("encoding", "UTF-8");
+        final String mediaType = serializeOptions.getProperty("media-type", "application/xml");
+        final String encoding = serializeOptions.getProperty("encoding", "UTF-8");
         if(mediaType != null) {
         		response.setContentType(mediaType + "; charset=" + encoding);
         }
@@ -129,12 +129,12 @@ public class Stream extends BasicFunction {
             serializer = broker.getSerializer();
             serializer.reset();
             
-            OutputStream sout = response.getOutputStream();
-            PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, encoding));
+            final OutputStream sout = response.getOutputStream();
+            final PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, encoding));
 
-        	SerializerPool serializerPool = SerializerPool.getInstance();
+        	final SerializerPool serializerPool = SerializerPool.getInstance();
 
-        	SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
+        	final SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
         	try {
         		sax.setOutput(output, serializeOptions);
 
@@ -142,7 +142,7 @@ public class Stream extends BasicFunction {
     	    	serializer.setSAXHandlers(sax, sax);
             	serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false);
             	
-        	} catch (SAXException e) {
+        	} catch (final SAXException e) {
         		e.printStackTrace();
         		throw new IOException(e);
         	} finally {
@@ -153,13 +153,13 @@ public class Stream extends BasicFunction {
             
             //commit the response
             response.flushBuffer();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new XPathException(this, "IO exception while streaming node: " + e.getMessage(), e);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XPathException(this, "Exception while streaming node: " + e.getMessage(), e);
 		} finally {
 			if (db != null)
-				db.release(broker);
+				{db.release(broker);}
 		}
         return Sequence.EMPTY_SEQUENCE;
 	}

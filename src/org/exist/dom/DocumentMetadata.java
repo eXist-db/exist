@@ -92,7 +92,7 @@ public class DocumentMetadata {
     public void setCreated(long created) {
         this.created = created;
         if (lastModified == 0)
-            lastModified = created;
+            {lastModified = created;}
     }
 
     public long getLastModified() {

@@ -443,7 +443,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     @Override
     public boolean isCurrentSubjectInGroup() {
         final int groupId = getGroupId();
-        for(int currentSubjectGroupId : getCurrentSubject().getGroupIds()) {
+        for(final int currentSubjectGroupId : getCurrentSubject().getGroupIds()) {
             if(groupId == currentSubjectGroupId) {
                 return true;
             }

@@ -156,59 +156,59 @@ public class ModuleInfo extends BasicFunction {
 			throws XPathException {
 		
 		if("get-module-description".equals(getSignature().getName().getLocalName())) {
-			String uri = args[0].getStringValue();
-			Module module = context.getModule(uri);
+			final String uri = args[0].getStringValue();
+			final Module module = context.getModule(uri);
 			if(module == null)
-				throw new XPathException(this, "No module found matching namespace URI: " + uri);
+				{throw new XPathException(this, "No module found matching namespace URI: " + uri);}
 			return new StringValue(module.getDescription());
 		} else if ("is-module-registered".equals(getSignature().getName().getLocalName())) {
-			String uri = args[0].getStringValue();
-			Module module = context.getModule(uri);
+			final String uri = args[0].getStringValue();
+			final Module module = context.getModule(uri);
 			return new BooleanValue(module != null);
         } else if ("mapped-modules".equals(getSignature().getName().getLocalName())) {
-            ValueSequence resultSeq = new ValueSequence();
-            for (Iterator<String> i = context.getMappedModuleURIs(); i.hasNext();) {
+            final ValueSequence resultSeq = new ValueSequence();
+            for (final Iterator<String> i = context.getMappedModuleURIs(); i.hasNext();) {
                 resultSeq.add(new StringValue(i.next().toString()));
             }
             return resultSeq;
 		} else if ("is-module-mapped".equals(getSignature().getName().getLocalName())) {
-			String uri = args[0].getStringValue();
+			final String uri = args[0].getStringValue();
 			return new BooleanValue(((Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
 		} else if ("map-module".equals(getSignature().getName().getLocalName())) {
 			if (!context.getSubject().hasDbaRole()) {
-				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
+				final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
 				logger.error("Invalid user", xPathException);
 				throw xPathException;
 			}			
-			String namespace = args[0].getStringValue();
-			String location = args[1].getStringValue();
-			Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
+			final String namespace = args[0].getStringValue();
+			final String location = args[1].getStringValue();
+			final Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
 			moduleMap.put(namespace, location);
 			return Sequence.EMPTY_SEQUENCE;
 		} else if ("unmap-module".equals(getSignature().getName().getLocalName())) {
 			if (!context.getSubject().hasDbaRole()) {
-				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
+				final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
 				logger.error("Invalid user", xPathException);
 				throw xPathException;
 			}			
-			String namespace = args[0].getStringValue();
-			Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
+			final String namespace = args[0].getStringValue();
+			final Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
 			moduleMap.remove(namespace);
 			return Sequence.EMPTY_SEQUENCE;
 		} else if ("get-module-info".equals(getSignature().getName().getLocalName())) {
 			context.pushDocumentContext();
 			
 			try {
-				MemTreeBuilder builder = context.getDocumentBuilder();
+				final MemTreeBuilder builder = context.getDocumentBuilder();
 				builder.startElement(MODULES_QNAME, null);
 				
 				if (getArgumentCount() == 1) {
-					Module module = context.getModule(args[0].getStringValue());
+					final Module module = context.getModule(args[0].getStringValue());
 					if (module != null)
-						outputModule(builder, module);
+						{outputModule(builder, module);}
 				} else {
-					for(Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
-						Module module = i.next();
+					for(final Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
+						final Module module = i.next();
 						outputModule(builder, module);
 					}
 				}
@@ -217,13 +217,13 @@ public class ModuleInfo extends BasicFunction {
 				context.popDocumentContext();
 			}
 		} else {
-			ValueSequence resultSeq = new ValueSequence();
-            XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
-			for(Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
-				Module module = i.next();
+			final ValueSequence resultSeq = new ValueSequence();
+            final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.XMLDB);
+			for(final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
+				final Module module = i.next();
 				resultSeq.add(new StringValue(module.getNamespaceURI()));
 			}
-            for (URI uri : tempContext.getRepository().getJavaModules()) {
+            for (final URI uri : tempContext.getRepository().getJavaModules()) {
                 resultSeq.add(new StringValue(uri.toString()));
             }
 			return resultSeq;
@@ -236,9 +236,9 @@ public class ModuleInfo extends BasicFunction {
 		builder.addAttribute(MODULE_URI_ATTR, module.getNamespaceURI());
 		builder.addAttribute(MODULE_PREFIX_ATTR, module.getDefaultPrefix());
 		if (!module.isInternalModule()) {
-			Source source = ((ExternalModule)module).getSource();
+			final Source source = ((ExternalModule)module).getSource();
 			if (source != null)
-				builder.addAttribute(MODULE_SOURCE_ATTR, source.getKey().toString());
+				{builder.addAttribute(MODULE_SOURCE_ATTR, source.getKey().toString());}
 		}
 		builder.startElement(MODULE_DESC_QNAME, null);
 		builder.characters(module.getDescription());

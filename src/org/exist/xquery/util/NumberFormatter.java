@@ -46,14 +46,14 @@ public abstract class NumberFormatter {
     public abstract String getOrdinalSuffix(long number);
 
     public String formatNumber(long number, String picture) throws XPathException {
-        int min = getMinDigits(picture);
-        int max = getMaxDigits(picture);
+        final int min = getMinDigits(picture);
+        final int max = getMaxDigits(picture);
         return formatNumber(number, picture, min, max);
     }
 
     public String formatNumber(long number, String picture, int min, int max) throws XPathException {
         if (picture == null)
-            return "" + number;
+            {return "" + number;}
 
         boolean ordinal = false;
         if (picture.endsWith("o")) {
@@ -63,18 +63,18 @@ public abstract class NumberFormatter {
             picture = picture.substring(0, picture.length() - 1);
         }
 
-        StringBuilder sb = new StringBuilder();
-        int digitSign = getFirstDigit(picture);
-        int zero = getZeroDigit(digitSign);
+        final StringBuilder sb = new StringBuilder();
+        final int digitSign = getFirstDigit(picture);
+        final int zero = getZeroDigit(digitSign);
 
         int count = 0;
         long n = number;
         while (n > 0) {
-            int digit = zero + (int)n % 10;
+            final int digit = zero + (int)n % 10;
             sb.insert(0, (char)digit);
             count++;
             if (count == max)
-                break;
+                {break;}
             n = n / 10;
         }
         if (sb.length() < min) {
@@ -84,15 +84,15 @@ public abstract class NumberFormatter {
         }
 
         if (ordinal)
-            sb.append(getOrdinalSuffix(number));
+            {sb.append(getOrdinalSuffix(number));}
         return sb.toString();
     }
 
     private int getFirstDigit(String picture) throws XPathException {
         for (int i = 0; i < picture.length(); i++) {
-            char ch = picture.charAt(i);
+            final char ch = picture.charAt(i);
             if (ch != OPTIONAL_DIGIT_SIGN)
-                return ch;
+                {return ch;}
         }
         throw new XPathException("There should be at least one digit sign in the picture string: " + picture);
     }
@@ -100,11 +100,11 @@ public abstract class NumberFormatter {
     public static int getMinDigits(String picture) {
         int count = 0;
         for (int i = 0; i < picture.length(); i++) {
-            char ch = picture.charAt(i);
+            final char ch = picture.charAt(i);
             if ((ch == 'o' || ch == 'c') && i == picture.length() - 1)
-                break;
+                {break;}
             if (ch != OPTIONAL_DIGIT_SIGN)
-                count++;
+                {count++;}
         }
         return count;
     }
@@ -112,9 +112,9 @@ public abstract class NumberFormatter {
     public static int getMaxDigits(String picture) {
         int count = 0;
         for (int i = 0; i < picture.length(); i++) {
-            char ch = picture.charAt(i);
+            final char ch = picture.charAt(i);
             if ((ch == 'o' || ch == 'c') && i == picture.length() - 1)
-                break;
+                {break;}
             count++;
         }
         return count;
@@ -123,11 +123,11 @@ public abstract class NumberFormatter {
     public static NumberFormatter DEFAULT_FORMATTER = new NumberFormatter_en();
 
     public static NumberFormatter getInstance(String language) {
-        String className = NumberFormatter.class.getName() + "_" + language;
+        final String className = NumberFormatter.class.getName() + "_" + language;
         try {
-            Class langClass = Class.forName(className);
+            final Class langClass = Class.forName(className);
             return (NumberFormatter) langClass.newInstance();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             return DEFAULT_FORMATTER;
         }
     }

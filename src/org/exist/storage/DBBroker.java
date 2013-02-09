@@ -115,9 +115,9 @@ public abstract class DBBroker extends Observable {
 
     public DBBroker(BrokerPool pool, Configuration config) {
         this.config = config;
-        Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
+        final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
         if (temp != null)
-            caseSensitive = temp.booleanValue();
+            {caseSensitive = temp.booleanValue();}
         this.pool = pool;
         xqueryService = new XQuery(this);
         initIndexModules();
@@ -208,13 +208,13 @@ public abstract class DBBroker extends Observable {
     /** Observer Design Pattern: add an observer. */
     public void addContentLoadingObserver(ContentLoadingObserver observer) {
         if (!contentLoadingObservers.contains(observer))
-            contentLoadingObservers.add(observer);
+            {contentLoadingObservers.add(observer);}
     }
 
     /** Observer Design Pattern: remove an observer. */
     public void removeContentLoadingObserver(ContentLoadingObserver observer) {
         if (contentLoadingObservers.contains(observer))
-            contentLoadingObservers.remove(observer);
+            {contentLoadingObservers.remove(observer);}
     }
 
     /**

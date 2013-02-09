@@ -58,7 +58,7 @@ public class VirtualTempFileInputSource
 		// Temp file must be immutable from this point
 		vtempFile.close();
 		if(encoding!=null)
-			super.setEncoding(encoding);
+			{super.setEncoding(encoding);}
 		
 		if(vtempFile.tempFile!=null) {
 			absolutePath = vtempFile.tempFile.getAbsolutePath();
@@ -77,7 +77,7 @@ public class VirtualTempFileInputSource
 		this.vtempFile = null;
 		
 		if(encoding!=null)
-			super.setEncoding(encoding);
+			{super.setEncoding(encoding);}
 		
 		if(file!=null) {
 			absolutePath = file.getAbsolutePath();
@@ -91,10 +91,10 @@ public class VirtualTempFileInputSource
 		// An stream is something without a URI, like a memory buffer
 		try {
 			if(vtempFile!=null)
-				bs = vtempFile.getByteStream();
+				{bs = vtempFile.getByteStream();}
 			else if(file!=null)
-				bs = new BufferedInputStream(new FileInputStream(file));
-		} catch(IOException ioe) {
+				{bs = new BufferedInputStream(new FileInputStream(file));}
+		} catch(final IOException ioe) {
 			// DoNothing(R)
 		}
 		
@@ -102,14 +102,14 @@ public class VirtualTempFileInputSource
 	}
 	
 	public Reader getCharacterStream() {
-		String encoding = getEncoding();
+		final String encoding = getEncoding();
 		Reader retval = null;
 		if(encoding!=null) {
-			InputStream is = getByteStream();
+			final InputStream is = getByteStream();
 			if(is!=null) {
 				try {
 					retval = new InputStreamReader(is,encoding);
-				} catch(UnsupportedEncodingException uee) {
+				} catch(final UnsupportedEncodingException uee) {
 					// DoNothing(R)
 				}
 			}
@@ -160,7 +160,7 @@ public class VirtualTempFileInputSource
 			vtempFile = null;
 		}
 		if(file!=null)
-			file=null;
+			{file=null;}
 	}
 	
 	protected void finalize()

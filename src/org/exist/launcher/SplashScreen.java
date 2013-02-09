@@ -52,14 +52,14 @@ public class SplashScreen extends JFrame implements Observer {
 
         getContentPane().setBackground(new Color(255, 255, 255, 255));
 
-        URL imageURL = SplashScreen.class.getResource("logo.png");
-        ImageIcon icon = new ImageIcon(imageURL, "eXist-db Logo");
+        final URL imageURL = SplashScreen.class.getResource("logo.png");
+        final ImageIcon icon = new ImageIcon(imageURL, "eXist-db Logo");
         getContentPane().setLayout(new BorderLayout());
 
         // add the image label
-        JLabel imageLabel = new JLabel();
+        final JLabel imageLabel = new JLabel();
         imageLabel.setIcon(icon);
-        EmptyBorder border = new EmptyBorder(20, 20, 10, 20);
+        final EmptyBorder border = new EmptyBorder(20, 20, 10, 20);
         imageLabel.setBorder(border);
         getContentPane().add(imageLabel, BorderLayout.CENTER);
 

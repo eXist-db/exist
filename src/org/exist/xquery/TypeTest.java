@@ -77,14 +77,14 @@ public class TypeTest implements NodeTest {
                 return true;
         }
         if (type == Node.CDATA_SECTION_NODE)
-            type = Node.TEXT_NODE;
+            {type = Node.TEXT_NODE;}
         return (type == domType);
     }
 
     protected boolean isOfEventType(int type) {
         if (nodeType == Type.NODE)
-            return true;
-        int xpathType = StaXUtil.streamType2Type(type);
+            {return true;}
+        final int xpathType = StaXUtil.streamType2Type(type);
         return xpathType == nodeType;
     }
 
@@ -96,21 +96,21 @@ public class TypeTest implements NodeTest {
      * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
      */
     public boolean matches(NodeProxy proxy) {
-        short otherNodeType = proxy.getNodeType();
+        final short otherNodeType = proxy.getNodeType();
         if(otherNodeType == Type.ITEM || otherNodeType == Type.NODE) {
             //TODO : what are the semantics of Type.NODE ?
             if (this.nodeType == Type.NODE)
-                return true;	
+                {return true;}	
             return isOfType(proxy.getNode().getNodeType());
         } else
-            return isOfType(otherNodeType);
+            {return isOfType(otherNodeType);}
     }
     /* (non-Javadoc)
      * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
      */
     public boolean matches(Node other) {
         if(other == null)
-            return false;
+            {return false;}
         return isOfType(other.getNodeType());
     }
 

@@ -27,17 +27,17 @@ public class AutoDeploymentTrigger implements StartupTrigger {
     @Override
     public void execute(final DBBroker broker, final Map<String, List<? extends Object>> params) {
         // do not process if the system property exist.autodeploy=off
-        String property = System.getProperty(AUTODEPLOY_PROPERTY, "on");
+        final String property = System.getProperty(AUTODEPLOY_PROPERTY, "on");
         if (property.equalsIgnoreCase("off"))
-            return;
+            {return;}
 
-        File homeDir = broker.getConfiguration().getExistHome();
-        File autodeployDir = new File(homeDir, AUTODEPLOY_DIRECTORY);
+        final File homeDir = broker.getConfiguration().getExistHome();
+        final File autodeployDir = new File(homeDir, AUTODEPLOY_DIRECTORY);
         if (!autodeployDir.canRead() && autodeployDir.isDirectory())
-            return;
-        ExistRepository repo = broker.getBrokerPool().getExpathRepo();
-        UserInteractionStrategy interact = new BatchUserInteraction();
-        File[] xars = autodeployDir.listFiles(new FileFilter() {
+            {return;}
+        final ExistRepository repo = broker.getBrokerPool().getExpathRepo();
+        final UserInteractionStrategy interact = new BatchUserInteraction();
+        final File[] xars = autodeployDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
             return file.getName().endsWith(".xar");
@@ -52,21 +52,21 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             LOG.info("Scanning autodeploy directory. Found " + xars.length + " app packages.");
         }
 
-        Deployment deployment = new Deployment(broker);
+        final Deployment deployment = new Deployment(broker);
         // build a map with uri -> file so we can resolve dependencies
         final Map<String, File> packages = new HashMap<String, File>();
-        for (File xar : xars) {
+        for (final File xar : xars) {
             try {
-                String name = deployment.getNameFromDescriptor(xar);
+                final String name = deployment.getNameFromDescriptor(xar);
                 packages.put(name, xar);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.warn("Caught exception while reading app package " + xar.getAbsolutePath(), e);
-            } catch (PackageException e) {
+            } catch (final PackageException e) {
                 LOG.warn("Caught exception while reading app package " + xar.getAbsolutePath(), e);
             }
         }
 
-        PackageLoader loader = new PackageLoader() {
+        final PackageLoader loader = new PackageLoader() {
             @Override
             public File load(String name, PackageLoader.Version version) {
                 // TODO: enforce version check
@@ -74,13 +74,13 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             }
         };
 
-        for (File xar : packages.values()) {
+        for (final File xar : packages.values()) {
             try {
                 deployment.installAndDeploy(xar, loader, false);
-            } catch (PackageException e) {
+            } catch (final PackageException e) {
                 LOG.warn("Exception during deployment of app " + xar.getName() + ": " + e.getMessage(), e);
                 broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.warn("Exception during deployment of app " + xar.getName() + ": " + e.getMessage(), e);
                 broker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
             }

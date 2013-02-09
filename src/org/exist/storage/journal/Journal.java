@@ -166,30 +166,30 @@ public class Journal {
         syncThread = new FileSyncThread(latch);
         syncThread.start();
 
-        Boolean syncOpt = (Boolean) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT);
+        final Boolean syncOpt = (Boolean) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT);
         if (syncOpt != null) {
             syncOnCommit = syncOpt.booleanValue();
             if (LOG.isDebugEnabled())
-                LOG.debug("SyncOnCommit = " + syncOnCommit);
+                {LOG.debug("SyncOnCommit = " + syncOnCommit);}
         }
 
-        String logDir = (String) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_JOURNAL_DIR);
+        final String logDir = (String) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_JOURNAL_DIR);
         if (logDir != null) {
             File f = new File(logDir);
             if (!f.isAbsolute()) {
                if (pool.getConfiguration().getExistHome()!=null) {
                   f = new File(pool.getConfiguration().getExistHome(), logDir);
                } else if (pool.getConfiguration().getConfigFilePath()!=null) {
-                  File confFile = new File(pool.getConfiguration().getConfigFilePath());
+                  final File confFile = new File(pool.getConfiguration().getConfigFilePath());
                   f = new File(confFile.getParent(), logDir);
                }
             }
             if (!f.exists()) {
                 if (LOG.isDebugEnabled())
-                    LOG.debug("Output directory for journal files does not exist. Creating " + f.getAbsolutePath());
+                    {LOG.debug("Output directory for journal files does not exist. Creating " + f.getAbsolutePath());}
                 try {
                     f.mkdirs();
-                } catch (SecurityException e) {
+                } catch (final SecurityException e) {
                     throw new EXistException("Failed to create output directory: " + f.getAbsolutePath());
                 }
             }
@@ -199,19 +199,19 @@ public class Journal {
             this.dir = f;
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Using directory for the journal: " + dir.getAbsolutePath());
+            {LOG.debug("Using directory for the journal: " + dir.getAbsolutePath());}
 
-        Integer sizeOpt = (Integer) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_LIMIT);
+        final Integer sizeOpt = (Integer) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_LIMIT);
         if (sizeOpt != null)
-            journalSizeLimit = sizeOpt.intValue() * 1024 * 1024;
+            {journalSizeLimit = sizeOpt.intValue() * 1024 * 1024;}
     }
 
     public void initialize() throws EXistException, ReadOnlyException {
-        File lck = new File(dir, LCK_FILE);
+        final File lck = new File(dir, LCK_FILE);
         fileLock = new FileLock(pool, lck.getAbsolutePath());
         boolean locked = fileLock.tryLock();
         if (!locked) {
-            String lastHeartbeat =
+            final String lastHeartbeat =
                 DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM)
                     .format(fileLock.getLastHeartbeat());
                     throw new EXistException("The journal log directory seems to be locked by another " +
@@ -228,12 +228,12 @@ public class Journal {
      */
     public synchronized void writeToLog(Loggable loggable) throws TransactionException {
         if (currentBuffer == null)
-            throw new TransactionException("Database is shut down.");
+            {throw new TransactionException("Database is shut down.");}
         SanityCheck.ASSERT(!inRecovery, "Write to log during recovery. Should not happen!");
         final int size = loggable.getLogSize();
         final int required = size + LOG_ENTRY_BASE_LEN;
         if (required > currentBuffer.remaining())
-            flushToLog(false);
+            {flushToLog(false);}
         currentLsn = Lsn.create(currentFile, inFilePos + currentBuffer.position() + 1);
         loggable.setLsn(currentLsn);
         try {
@@ -242,7 +242,7 @@ public class Journal {
             currentBuffer.putShort((short) loggable.getLogSize());
             loggable.write(currentBuffer);
             currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
-        } catch (BufferOverflowException e) {
+        } catch (final BufferOverflowException e) {
             throw new TransactionException("Buffer overflow while writing log record: " + loggable.dump(), e);
         }
         pool.getTransactionManager().trackOperation(loggable.getTransactionId());
@@ -276,7 +276,7 @@ public class Journal {
      */
     public synchronized void flushToLog(boolean fsync, boolean forceSync) {
         if (inRecovery)
-            return;
+            {return;}
         flushBuffer();
         if (forceSync || (fsync && syncOnCommit && currentLsn > lastSyncLsn)) {
             syncThread.triggerSync();
@@ -284,8 +284,8 @@ public class Journal {
         }
         try {
             if (channel.size() >= journalSizeLimit)
-                pool.triggerCheckpoint();
-        } catch (IOException e) {
+                {pool.triggerCheckpoint();}
+        } catch (final IOException e) {
             LOG.warn("Failed to trigger checkpoint!", e);
         }
     }
@@ -295,7 +295,7 @@ public class Journal {
      */
     private void flushBuffer() {
         if (currentBuffer == null)
-            return; // the db has probably been shut down already
+            {return;} // the db has probably been shut down already
         synchronized (latch) {
             try {
                 if (currentBuffer.position() > 0) {
@@ -308,7 +308,7 @@ public class Journal {
                     inFilePos += size;
                     lastLsnWritten = currentLsn;
                 }
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.warn("Flushing log file failed!", e);
             } finally {
                 currentBuffer.clear();
@@ -331,22 +331,22 @@ public class Journal {
         if (switchLogFiles)
             // if we switch files, we don't need to sync.
             // the file will be removed anyway.
-            flushBuffer();
+            {flushBuffer();}
         else
-            flushToLog(true, true);
+            {flushToLog(true, true);}
         try {
             if (switchLogFiles && channel.position() > MIN_REPLACE) {
-                File oldFile = getFile(currentFile);
-                RemoveThread rt = new RemoveThread(channel, oldFile);
+                final File oldFile = getFile(currentFile);
+                final RemoveThread rt = new RemoveThread(channel, oldFile);
                 try {
                     switchFiles();
-                } catch (LogException e) {
+                } catch (final LogException e) {
                     LOG.warn("Failed to create new journal: " + e.getMessage(), e);
                 }
                 rt.start();
             }
             clearBackupFiles();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.warn("IOException while writing checkpoint", e);
         }
     }
@@ -382,27 +382,27 @@ public class Journal {
      */
     public void switchFiles() throws LogException {
         ++currentFile;
-        String fname = getFileName(currentFile);
+        final String fname = getFileName(currentFile);
         File file = new File(dir, fname);
         if (file.exists()) {
             if (LOG.isDebugEnabled())
-                LOG.debug("Journal file " + file.getAbsolutePath() + " already exists. Copying it.");
-            boolean renamed = file.renameTo(new File(file.getAbsolutePath() + BAK_FILE_SUFFIX));
+                {LOG.debug("Journal file " + file.getAbsolutePath() + " already exists. Copying it.");}
+            final boolean renamed = file.renameTo(new File(file.getAbsolutePath() + BAK_FILE_SUFFIX));
             if (renamed && LOG.isDebugEnabled())
-                LOG.debug("Old file renamed to " + file.getAbsolutePath());
+                {LOG.debug("Old file renamed to " + file.getAbsolutePath());}
             file = new File(dir, fname);
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Creating new journal: " + file.getAbsolutePath());
+            {LOG.debug("Creating new journal: " + file.getAbsolutePath());}
         synchronized (latch) {
             close();
             try {
                 //RandomAccessFile raf = new RandomAccessFile(file, "rw");
-                FileOutputStream os = new FileOutputStream(file, true);
+                final FileOutputStream os = new FileOutputStream(file, true);
                 channel = os.getChannel();
                 
                 syncThread.setChannel(channel);
-            } catch (FileNotFoundException e) {
+            } catch (final FileNotFoundException e) {
                 throw new LogException("Failed to open new journal: " + file.getAbsolutePath(), e);
             }
         }
@@ -413,7 +413,7 @@ public class Journal {
         if (channel != null) {
             try {
                 channel.close();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.warn("Failed to close journal", e);
             }
         }
@@ -427,8 +427,8 @@ public class Journal {
     public final static int findLastFile(File files[]) {
         int max = -1;
         for (int i = 0; i < files.length; i++) {
-            int p = files[i].getName().indexOf('.');
-            String baseName = files[i].getName().substring(0, p);
+            final int p = files[i].getName().indexOf('.');
+            final String baseName = files[i].getName().substring(0, p);
             int num = Integer.parseInt(baseName, 16);
             if (num > max) {
                 max = num;
@@ -445,7 +445,7 @@ public class Journal {
      */
     public File[] getFiles() {
         final String suffix = '.' + LOG_FILE_SUFFIX;
-        File files[] = dir.listFiles(
+        final File files[] = dir.listFiles(
                 new FileFilter() {
                     public boolean accept(File file) {
                         if (file.isDirectory())
@@ -477,13 +477,13 @@ public class Journal {
      */
     public void shutdown(long txnId, boolean checkpoint) {
         if (currentBuffer == null)
-            return; // the db has probably shut down already
+            {return;} // the db has probably shut down already
         if (!BrokerPool.FORCE_CORRUPTION) {
             if (checkpoint) {
                 LOG.info("Transaction journal cleanly shutting down with checkpoint...");
                 try {
                     writeToLog(new Checkpoint(txnId));
-                } catch (TransactionException e) {
+                } catch (final TransactionException e) {
                     LOG.error("An error occurred while closing the journal file: " + e.getMessage(), e);
                 }
             }
@@ -493,7 +493,7 @@ public class Journal {
         syncThread.shutdown();
         try {
             syncThread.join();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             //Nothing to do
         }
         currentBuffer = null;
@@ -536,7 +536,7 @@ public class Journal {
         public void run() {
             try {
                 channel.close();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.warn("Exception while closing journal file: " + e.getMessage(), e);
             }
             file.delete();

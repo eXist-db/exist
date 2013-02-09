@@ -35,18 +35,18 @@ public abstract class BinaryValueType<T extends FilterOutputStream> {
     
     private T instantiateCoder(OutputStream stream, boolean encoder) throws IOException {
         try {
-            Constructor<T> c = coder.getConstructor(OutputStream.class, boolean.class);
-            T f = c.newInstance(stream, encoder);
+            final Constructor<T> c = coder.getConstructor(OutputStream.class, boolean.class);
+            final T f = c.newInstance(stream, encoder);
             return f;
-        } catch(NoSuchMethodException nsme) {
+        } catch(final NoSuchMethodException nsme) {
             throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + nsme.getMessage(), nsme);
-        } catch(InstantiationException ie) {
+        } catch(final InstantiationException ie) {
             throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + ie.getMessage(), ie);
-        } catch(IllegalArgumentException iae) {
+        } catch(final IllegalArgumentException iae) {
             throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + iae.getMessage(), iae);
-        } catch(IllegalAccessException iae) {
+        } catch(final IllegalAccessException iae) {
             throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + iae.getMessage(), iae);
-        } catch(InvocationTargetException ite) {
+        } catch(final InvocationTargetException ite) {
             throw new IOException("Unable to get binary coder '" + coder.getName() +  "': " + ite.getMessage(), ite);
         }
     }

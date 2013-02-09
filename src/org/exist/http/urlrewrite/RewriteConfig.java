@@ -72,15 +72,15 @@ public class RewriteConfig {
 
         private Mapping(String regex, URLRewrite action) throws ServletException {
             try {
-            	int xmlVersion = 11;
-            	boolean ignoreWhitespace = false;
-            	boolean caseBlind = false;
+            	final int xmlVersion = 11;
+            	final boolean ignoreWhitespace = false;
+            	final boolean caseBlind = false;
 
             	regex = JDK15RegexTranslator.translate(regex, xmlVersion, true, ignoreWhitespace, caseBlind);
                 
             	this.pattern = Pattern.compile(regex, 0);
                 this.action = action;
-            } catch (RegexSyntaxException e) {
+            } catch (final RegexSyntaxException e) {
                 throw new ServletException("Syntax error in regular expression specified for path. " +
                     e.getMessage(), e);
             }
@@ -88,9 +88,9 @@ public class RewriteConfig {
 
         public String match(String path) {
             if (matcher == null)
-                matcher = pattern.matcher(path);
+                {matcher = pattern.matcher(path);}
             else
-                matcher.reset(path);
+                {matcher.reset(path);}
             if (matcher.lookingAt()) {
                 return path.substring(matcher.start(), matcher.end());
             }
@@ -110,7 +110,7 @@ public class RewriteConfig {
         this.urlRewrite = urlRewrite;
         String controllerConfig = urlRewrite.getConfig().getInitParameter("config");
         if (controllerConfig == null)
-            controllerConfig = CONFIG_FILE;
+            {controllerConfig = CONFIG_FILE;}
 
         configure(controllerConfig);
     }
@@ -123,7 +123,7 @@ public class RewriteConfig {
      * @throws ServletException
      */
     public synchronized URLRewrite lookup(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI().substring(request.getContextPath().length());
+        final String path = request.getRequestURI().substring(request.getContextPath().length());
         
         return lookup(path, request.getServerName(), false);
     }
@@ -138,14 +138,14 @@ public class RewriteConfig {
      * @throws ServletException
      */
     public synchronized URLRewrite lookup(String path, String serverName, boolean staticMapping) throws ServletException {
-        int p = path.lastIndexOf(';');
+        final int p = path.lastIndexOf(';');
         if(p != Constants.STRING_NOT_FOUND)
-            path = path.substring(0, p);
+            {path = path.substring(0, p);}
         for (int i = 0; i < mappings.size(); i++) {
-            Mapping m = mappings.get(i);
-            String matchedString = m.match(path);
+            final Mapping m = mappings.get(i);
+            final String matchedString = m.match(path);
             if (matchedString != null) {
-                URLRewrite action = m.action;
+                final URLRewrite action = m.action;
                 
                 /*
                  * If the URLRewrite is a ControllerForward, then test to see if there is a condition
@@ -154,7 +154,7 @@ public class RewriteConfig {
                  */
                 if (action instanceof ControllerForward) {
                 	if (serverName != null) {
-                		String controllerServerName = ((ControllerForward)action).getServerName();
+                		final String controllerServerName = ((ControllerForward)action).getServerName();
                 		if (controllerServerName != null) {
                 			if (!serverName.equalsIgnoreCase(controllerServerName)) {
                 				continue;
@@ -165,11 +165,11 @@ public class RewriteConfig {
                 }
                 // if the mapping matches a part of the URI only, set the prefix to the
                 // matched string. This will later be stripped from the URI.
-                if (matchedString.length() != path.length() && !matchedString.equals("/"))
-                    action.setPrefix(matchedString);
+                if (matchedString.length() != path.length() && !"/".equals(matchedString))
+                    {action.setPrefix(matchedString);}
                 action.setURI(path);
                 if (!staticMapping || !(action instanceof ControllerForward))
-                    return action;
+                    {return action;}
             }
         }
         return null;
@@ -185,52 +185,52 @@ public class RewriteConfig {
 
                 doc = broker.getXMLResource(XmldbURI.create(controllerConfig), Lock.READ_LOCK);
                 if (doc != null)
-                    parse(doc);
-            } catch (EXistException e) {
+                    {parse(doc);}
+            } catch (final EXistException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
-            } catch (PermissionDeniedException e) {
+            } catch (final PermissionDeniedException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
             } finally {
                 if (doc != null)
-                    doc.getUpdateLock().release(Lock.READ_LOCK);
+                    {doc.getUpdateLock().release(Lock.READ_LOCK);}
                 urlRewrite.pool.release(broker);
             }
         } else {
             try {
-                File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("."));
-                File configFile = new File(d, controllerConfig);
+                final File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("."));
+                final File configFile = new File(d, controllerConfig);
                 if (configFile.canRead()) {
-                    Document doc = parseConfig(configFile);
+                    final Document doc = parseConfig(configFile);
                     parse(doc);
                 }
-            } catch (ParserConfigurationException e) {
+            } catch (final ParserConfigurationException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
-            } catch (SAXException e) {
+            } catch (final SAXException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new ServletException("Failed to parse controller.xml: " + e.getMessage(), e);
             }
         }
         try {
 			urlRewrite.clearCaches();
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
 			throw new ServletException("Failed to update controller.xml: " + e.getMessage(), e);
 		}
     }
 
     private void parse(Document doc) throws ServletException {
-        Element root = doc.getDocumentElement();
+        final Element root = doc.getDocumentElement();
         Node child = root.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE &&
                 child.getNamespaceURI().equals(Namespaces.EXIST_NS)) {
-                Element elem = (Element) child;
-                String pattern = elem.getAttribute(PATTERN_ATTRIBUTE);
+                final Element elem = (Element) child;
+                final String pattern = elem.getAttribute(PATTERN_ATTRIBUTE);
                 if (pattern == null)
-                    throw new ServletException("Action in controller-config.xml has no pattern: " + elem.toString());
-                URLRewrite urw = parseAction(urlRewrite.getConfig(), pattern, elem);
+                    {throw new ServletException("Action in controller-config.xml has no pattern: " + elem.toString());}
+                final URLRewrite urw = parseAction(urlRewrite.getConfig(), pattern, elem);
                 if (urw == null)
-                    throw new ServletException("Unknown action in controller-config.xml: " + elem.getNodeName());
+                    {throw new ServletException("Unknown action in controller-config.xml: " + elem.getNodeName());}
                 mappings.add(new Mapping(pattern, urw));
             }
             child = child.getNextSibling();
@@ -250,7 +250,7 @@ public class RewriteConfig {
         	 * If there is a server-name attribute on the root tag, then add that
         	 * as an attribute on the ControllerForward object.
         	 */
-        	String serverName = action.getAttribute(SERVER_NAME_ATTRIBUTE);
+        	final String serverName = action.getAttribute(SERVER_NAME_ATTRIBUTE);
         	if (serverName != null && serverName.length() > 0) {
         		cf.setServerName(serverName);
         	}
@@ -260,12 +260,12 @@ public class RewriteConfig {
     }
 
     private Document parseConfig(File file) throws ParserConfigurationException, SAXException, IOException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
-        InputSource src = new InputSource(new FileInputStream(file));
-        SAXParser parser = factory.newSAXParser();
-        XMLReader xr = parser.getXMLReader();
-        SAXAdapter adapter = new SAXAdapter();
+        final InputSource src = new InputSource(new FileInputStream(file));
+        final SAXParser parser = factory.newSAXParser();
+        final XMLReader xr = parser.getXMLReader();
+        final SAXAdapter adapter = new SAXAdapter();
         xr.setContentHandler(adapter);
         xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
         xr.parse(src);

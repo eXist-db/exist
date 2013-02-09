@@ -48,30 +48,30 @@ public class AutoScroller implements ActionListener
 	}
 	public void actionPerformed(ActionEvent event)
 	{
-		Container parent = comp.getParent();
+		final Container parent = comp.getParent();
 		if(!(parent instanceof JViewport))
-			return;
-		JViewport view = (JViewport)parent;
-		Rectangle rect = view.getViewRect();
+			{return;}
+		final JViewport view = (JViewport)parent;
+		final Rectangle rect = view.getViewRect();
 		
 		int horizontal = 0;
 		int vertical = 0;
-		int verticalDiffTop = cursorLocation.y - rect.y;
-		int verticalDiffBottom = rect.height - verticalDiffTop;
-		int horizontalDiffLeft = cursorLocation.x - rect.x;
-		int horizontalDiffRight = rect.width - horizontalDiffLeft;
+		final int verticalDiffTop = cursorLocation.y - rect.y;
+		final int verticalDiffBottom = rect.height - verticalDiffTop;
+		final int horizontalDiffLeft = cursorLocation.x - rect.x;
+		final int horizontalDiffRight = rect.width - horizontalDiffLeft;
 		if(verticalDiffTop < DELTA)
-			vertical = -1;
+			{vertical = -1;}
 		else if(verticalDiffBottom < DELTA)
-			vertical = 1;
+			{vertical = 1;}
 		if(horizontalDiffLeft < DELTA)
-			horizontal = -1;
+			{horizontal = -1;}
 		else if(horizontalDiffRight < DELTA)
-			horizontal = 1;
+			{horizontal = 1;}
 		
 		if(comp instanceof Scrollable)
 		{
-			Scrollable scrollable = (Scrollable)comp;
+			final Scrollable scrollable = (Scrollable)comp;
 			vertical *= scrollable.getScrollableUnitIncrement(rect, SwingConstants.VERTICAL, vertical);
 			horizontal *= scrollable.getScrollableUnitIncrement(rect, SwingConstants.HORIZONTAL, horizontal);
 		}
@@ -81,16 +81,16 @@ public class AutoScroller implements ActionListener
 			horizontal *= DEFAULT_INCREMENT;
 		}
 
-		Dimension viewSize = view.getViewSize();
-		Point newPosition = new Point(rect.x + horizontal, rect.y + vertical);
+		final Dimension viewSize = view.getViewSize();
+		final Point newPosition = new Point(rect.x + horizontal, rect.y + vertical);
 		if(newPosition.x < 0)
-			newPosition.x = 0;
+			{newPosition.x = 0;}
 		else if(newPosition.x > viewSize.width - rect.width)
-			newPosition.x = viewSize.width - rect.width;
+			{newPosition.x = viewSize.width - rect.width;}
 		if(newPosition.y < 0)
-			newPosition.y = 0;
+			{newPosition.y = 0;}
 		else if(newPosition.y > viewSize.height - rect.height)
-			newPosition.y = viewSize.height - rect.height;
+			{newPosition.y = viewSize.height - rect.height;}
 
 		if(newPosition.x != rect.x || newPosition.y != rect.y)
 		{

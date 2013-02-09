@@ -60,7 +60,7 @@ public class NodeSerializerThread extends Thread{
         IOException exception=null;
         try {
             //parse serialization options
-            Properties outputProperties = new Properties();
+            final Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             
@@ -73,7 +73,7 @@ public class NodeSerializerThread extends Thread{
         } finally {
             try { // NEEDED!
                 bos.close(exception);
-            } catch (IOException ex) {
+            } catch (final IOException ex) {
                 logger.debug(ex);
             }
             logger.debug("Thread stopped." );

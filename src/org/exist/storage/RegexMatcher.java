@@ -54,9 +54,9 @@ class RegexMatcher implements TermMatcher {
                 flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
             }
             
-            Pattern pattern = Pattern.compile(expr, flags);
+            final Pattern pattern = Pattern.compile(expr, flags);
             matcher = pattern.matcher("");
-        } catch(PatternSyntaxException e) {
+        } catch(final PatternSyntaxException e) {
             throw new EXistException("Invalid regular expression: " + e.getMessage());
         }
         this.matchAll = matchAll;        

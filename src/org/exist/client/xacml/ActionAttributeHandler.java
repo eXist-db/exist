@@ -17,10 +17,10 @@ public class ActionAttributeHandler implements AttributeHandler
 	
 	public void filterFunctions(Set<Object> functions, AttributeDesignator attribute)
 	{
-		URI id = attribute.getId();
+		final URI id = attribute.getId();
 		if(id.equals(XACMLConstants.ACTION_ID_ATTRIBUTE) || id.equals(XACMLConstants.ACTION_NS_ATTRIBUTE))
 		{
-			List<String> retain = new ArrayList<String>(2);
+			final List<String> retain = new ArrayList<String>(2);
 			retain.add("=");
 			retain.add("equals");
 			functions.retainAll(retain);
@@ -29,7 +29,7 @@ public class ActionAttributeHandler implements AttributeHandler
 
 	public boolean getAllowedValues(Set<Object> values, AttributeDesignator attribute)
 	{
-		URI id = attribute.getId();
+		final URI id = attribute.getId();
 		if(id.equals(XACMLConstants.ACTION_NS_ATTRIBUTE))
 		{
 			values.add(XACMLConstants.ACTION_NS);

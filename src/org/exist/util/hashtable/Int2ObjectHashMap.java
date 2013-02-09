@@ -70,9 +70,9 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 	public void put(int key, V value) {
 		try {
 			insert(key, value);
-		} catch (HashtableOverflowException e) {
-			int[] copyKeys = keys;
-			V[] copyValues = values;
+		} catch (final HashtableOverflowException e) {
+			final int[] copyKeys = keys;
+			final V[] copyValues = values;
 			// enlarge the table with a prime value
 			tabSize = (int) nextPrime((int) (tabSize * growthFactor));
 			keys = new int[tabSize];
@@ -81,7 +81,7 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 
 			for (int k = 0; k < copyValues.length; k++) {
 				if (copyValues[k] != null && copyValues[k] != REMOVED)
-					put(copyKeys[k], copyValues[k]);
+					{put(copyKeys[k], copyValues[k]);}
 			}
 			put(key, value);
 		}
@@ -90,22 +90,22 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 	public V get(int key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (values[idx] == null)
-			return null; // key does not exist
+			{return null;} // key does not exist
 		else if (keys[idx] == key) {
 			if (values[idx] == REMOVED)
-				return null;
+				{return null;}
 			return values[idx];
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (values[idx] == null) {
 				return null; // key not found
 			} else if (keys[idx] == key) {
 				if (values[idx] == REMOVED)
-					return null;
+					{return null;}
 				return values[idx];
 			}
 		}
@@ -115,22 +115,22 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 	public boolean containsKey(int key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (values[idx] == null)
-			return false; // key does not exist
+			{return false;} // key does not exist
 		else if (keys[idx] == key) {
 			if (values[idx] == REMOVED)
-				return false;
+				{return false;}
 			return true;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (values[idx] == null) {
 				return false; // key not found
 			} else if (keys[idx] == key) {
 				if (values[idx] == REMOVED)
-					return false;
+					{return false;}
 				return true;
 			}
 		}
@@ -140,19 +140,19 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 	public Object remove(int key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (values[idx] == null) {
 //			System.out.println(key + " not found for remove");
 			return null; // key does not exist
 		} else if (keys[idx] == key) {
 			if (values[idx] == REMOVED)
-				return null; // key has already been removed
-			Object o = values[idx];
+				{return null;} // key has already been removed
+			final Object o = values[idx];
 			values[idx] = (V) REMOVED;
 			--items;
 			return o;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (values[idx] == null) {
@@ -160,8 +160,8 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 				return null; // key not found
 			} else if (keys[idx] == key) {
 				if (values[idx] == REMOVED)
-					return null; // key has already been removed
-				Object o = values[idx];
+					{return null;} // key has already been removed
+				final Object o = values[idx];
 				values[idx] = (V) REMOVED;
 				--items;
 				return o;
@@ -180,10 +180,10 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 
 	protected void insert(int key, V value) throws HashtableOverflowException {
 		if (value == null)
-			throw new IllegalArgumentException("Illegal value: null");
+			{throw new IllegalArgumentException("Illegal value: null");}
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		int bucket = -1;
 		// look for an empty bucket
 		if (values[idx] == null) {
@@ -200,7 +200,7 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 			values[idx] = value;
 			return;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		int rehashCnt = 1;
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
@@ -236,9 +236,9 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 	protected boolean hasEqualKeys(Int2ObjectHashMap<?> other) {
 	    for(int idx = 0; idx < tabSize; idx++) {
 	        if(values[idx] == null || values[idx] == REMOVED)
-	            continue;
+	            {continue;}
 	        if(!other.containsKey(keys[idx]))
-	            return false;
+	            {return false;}
 	    }
 	    return true;
 	}
@@ -246,7 +246,7 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 	protected int rehash(int iVal) {
 		int retVal = (iVal + iVal / 2) % tabSize;
 		if (retVal == 0)
-			retVal = 1;
+			{retVal = 1;}
 		return retVal;
 	}
 	
@@ -267,11 +267,11 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 		 */
 		public boolean hasNext() {
 			if (idx == tabSize)
-				return false;
+				{return false;}
 			while (values[idx] == null || values[idx] == REMOVED) {
 				++idx;
 				if (idx == tabSize)
-					return false;
+					{return false;}
 			}
 			return true;
 		}
@@ -281,11 +281,11 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 		 */
 		public T next() {
 			if (idx == tabSize)
-				return null;
+				{return null;}
 			while (values[idx] == null || values[idx] == REMOVED) {
 				++idx;
 				if (idx == tabSize)
-					return null;
+					{return null;}
 			}
 			switch(returnType) {
 				case VALUES: return (T) values[idx++];
@@ -300,7 +300,7 @@ public class Int2ObjectHashMap<V> extends AbstractHashtable<Integer, V> {
 		 */
 		public void remove() {
 			if(idx == 0)
-				throw new IllegalStateException("remove called before next");
+				{throw new IllegalStateException("remove called before next");}
 			values[idx - 1] = (V) REMOVED;
 			items--;
 		}

@@ -101,37 +101,37 @@ public class SMEvents implements Configurable {
 	
 	protected void runScript(Subject subject, String scriptURI, String script, QName functionName, List<Expression> args) {
         
-		Database db = getDatabase();
+		final Database db = getDatabase();
         DBBroker broker = null;
         try {
             broker = db.get(subject);
 
-            Source source = getQuerySource(broker, scriptURI, script);
-            if(source == null) return;
+            final Source source = getQuerySource(broker, scriptURI, script);
+            if(source == null) {return;}
 
-            XQuery xquery = broker.getXQueryService();
-            XQueryContext context = xquery.newContext(AccessContext.XMLDB);
+            final XQuery xquery = broker.getXQueryService();
+            final XQueryContext context = xquery.newContext(AccessContext.XMLDB);
 
-            CompiledXQuery compiled = xquery.compile(context, source);
+            final CompiledXQuery compiled = xquery.compile(context, source);
 
 //            Sequence result = xquery.execute(compiled, subject.getName());
 
-    		ProcessMonitor pm = db.getProcessMonitor();
+    		final ProcessMonitor pm = db.getProcessMonitor();
 
             //execute the XQuery
             try {
-        		UserDefinedFunction function = context.resolveFunction(functionName, 0);
+        		final UserDefinedFunction function = context.resolveFunction(functionName, 0);
         		if (function != null) {
     	            context.getProfiler().traceQueryStart();
     	            pm.queryStarted(context.getWatchDog());
     	            
-    	            FunctionCall call = new FunctionCall(context, function);
+    	            final FunctionCall call = new FunctionCall(context, function);
     	            if (args != null)
-    	            	call.setArguments(args);
+    	            	{call.setArguments(args);}
     	            call.analyze(new AnalyzeContextInfo());
     	    		call.eval(NodeSet.EMPTY_SET);
         		}
-            } catch(XPathException e) {
+            } catch(final XPathException e) {
             	//XXX: log
             	e.printStackTrace();
             } finally {
@@ -143,7 +143,7 @@ public class SMEvents implements Configurable {
         		context.reset();
             }
             
-        } catch (Exception e) {
+        } catch (final Exception e) {
         	//XXX: log
         	e.printStackTrace();
         } finally {
@@ -155,18 +155,18 @@ public class SMEvents implements Configurable {
 		if(scriptURI != null) {
         	DocumentImpl resource = null;
         	try {
-				XmldbURI pathUri = XmldbURI.create(scriptURI);
+				final XmldbURI pathUri = XmldbURI.create(scriptURI);
 				
 				resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 				if (resource != null)
-					return new DBSource(broker, (BinaryDocument)resource, true);
+					{return new DBSource(broker, (BinaryDocument)resource, true);}
 				
-        	} catch (PermissionDeniedException e) {
+        	} catch (final PermissionDeniedException e) {
         		//XXX: log
 				e.printStackTrace();
 			} finally {
 				if(resource != null)
-					resource.getUpdateLock().release(Lock.READ_LOCK);
+					{resource.getUpdateLock().release(Lock.READ_LOCK);}
 			}
 
 //			try {

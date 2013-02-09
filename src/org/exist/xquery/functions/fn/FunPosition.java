@@ -67,26 +67,26 @@ public class FunPosition extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         Sequence inSequence = context.getContextSequence();
         if (inSequence == null)
-        	inSequence = contextSequence;
+        	{inSequence = contextSequence;}
 
 		if (inSequence == null)
-			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
 		
 		Sequence result;
 		if (inSequence.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else
-            result = new IntegerValue(context.getContextPosition() + 1);
+            {result = new IntegerValue(context.getContextPosition() + 1);}
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;         
     }

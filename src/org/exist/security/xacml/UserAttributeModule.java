@@ -49,56 +49,56 @@ public class UserAttributeModule extends AttributeFinderModule
 	public EvaluationResult findAttribute(URI attributeType, URI attributeId, URI issuer, URI subjectCategory, EvaluationCtx context, int designatorType)
 	{
 		if(designatorType != AttributeDesignator.SUBJECT_TARGET)
-			return errorResult("Invalid designator type: UserAttributeModule only handles subjects");
+			{return errorResult("Invalid designator type: UserAttributeModule only handles subjects");}
 		if(issuer != null)
-			return errorResult("UserAttributeModule cannot handle requests with an issuer specified.");
+			{return errorResult("UserAttributeModule cannot handle requests with an issuer specified.");}
 		if(!XACMLConstants.ACCESS_SUBJECT.equals(subjectCategory))
-			return errorResult("UserAttributeModule can only handle subject category '" + XACMLConstants.ACCESS_SUBJECT + "'");
+			{return errorResult("UserAttributeModule can only handle subject category '" + XACMLConstants.ACCESS_SUBJECT + "'");}
 		if(!XACMLConstants.STRING_TYPE.equals(attributeType))
-			return errorResult("UserAttributeModule can only handle data type '" + XACMLConstants.STRING_TYPE + "'");
+			{return errorResult("UserAttributeModule can only handle data type '" + XACMLConstants.STRING_TYPE + "'");}
 		
-		EvaluationResult subjectID = context.getSubjectAttribute(attributeType, XACMLConstants.SUBJECT_ID_ATTRIBUTE, issuer, subjectCategory);
+		final EvaluationResult subjectID = context.getSubjectAttribute(attributeType, XACMLConstants.SUBJECT_ID_ATTRIBUTE, issuer, subjectCategory);
 		if(subjectID.indeterminate())
-			return subjectID;
+			{return subjectID;}
 		
 		AttributeValue value = subjectID.getAttributeValue();
 		if(value == null)
-			return errorResult("Could not find user for context: null subject-id");
+			{return errorResult("Could not find user for context: null subject-id");}
 		if(value.isBag())
 		{
-			BagAttribute bag = (BagAttribute)value;
+			final BagAttribute bag = (BagAttribute)value;
 			if(bag.isEmpty())
-				return errorResult("Could not find user for context: no subject-id found");
+				{return errorResult("Could not find user for context: no subject-id found");}
 			if(bag.size() > 1)
-				return errorResult("Error finding attribute: Subject-id attribute is not unique.");
+				{return errorResult("Error finding attribute: Subject-id attribute is not unique.");}
 			
 			value = (AttributeValue)bag.iterator().next();
 		}
 		if(!(value instanceof StringAttribute))
-			return errorResult("Error finding attribute: Subject-id attribute must be a string.");
+			{return errorResult("Error finding attribute: Subject-id attribute must be a string.");}
 		
-		String uid = ((StringAttribute)value).getValue();
-		Account user = pdp.getBrokerPool().getSecurityManager().getAccount(uid);
+		final String uid = ((StringAttribute)value).getValue();
+		final Account user = pdp.getBrokerPool().getSecurityManager().getAccount(uid);
 		if(user == null)
-			return errorResult("No user exists for UID '" + uid + "'");
+			{return errorResult("No user exists for UID '" + uid + "'");}
 		
 		if(XACMLConstants.GROUP_ATTRIBUTE.equals(attributeId))
-			return getGroups(user);
+			{return getGroups(user);}
 		else if(XACMLConstants.USER_NAME_ATTRIBUTE.equals(attributeId))
-			return new EvaluationResult(new StringAttribute(user.getName()));
+			{return new EvaluationResult(new StringAttribute(user.getName()));}
 		else
-			return errorResult("UserAttributeModule cannot handle attribute '" + attributeId + "'");
+			{return errorResult("UserAttributeModule cannot handle attribute '" + attributeId + "'");}
 	}
 	
 	//gets a bag consisting of the groups of the user
 	private EvaluationResult getGroups(Account user)
 	{
-		String[] groupArray = user.getGroups();
-		int size = (groupArray == null) ? 0 : groupArray.length;
-		Set<StringAttribute> groupAttributes = new HashSet<StringAttribute>(size);
+		final String[] groupArray = user.getGroups();
+		final int size = (groupArray == null) ? 0 : groupArray.length;
+		final Set<StringAttribute> groupAttributes = new HashSet<StringAttribute>(size);
 		for(int i = 0; i < size; ++i)
 			groupAttributes.add(new StringAttribute(groupArray[i]));
-		AttributeValue value = new BagAttribute(XACMLConstants.STRING_TYPE, groupAttributes);
+		final AttributeValue value = new BagAttribute(XACMLConstants.STRING_TYPE, groupAttributes);
 		return new EvaluationResult(value);
 		
 	}
@@ -135,7 +135,7 @@ public class UserAttributeModule extends AttributeFinderModule
     @Override
 	public Set<Integer> getSupportedDesignatorTypes()
 	{
-		return Collections.singleton(new Integer(AttributeDesignator.SUBJECT_TARGET));
+		return Collections.singleton(Integer.valueOf(AttributeDesignator.SUBJECT_TARGET));
 	}
 	
 	/**
@@ -150,7 +150,7 @@ public class UserAttributeModule extends AttributeFinderModule
     @Override
 	public Set<URI> getSupportedIds()
 	{
-		Set<URI> set = new HashSet<URI>(4);
+		final Set<URI> set = new HashSet<URI>(4);
 		set.add(XACMLConstants.GROUP_ATTRIBUTE);
 		set.add(XACMLConstants.USER_NAME_ATTRIBUTE);
 		return set;

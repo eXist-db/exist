@@ -73,11 +73,11 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
-        QName qn = QName.parse(context, qname, null);
-        Variable var = new VariableImpl(qn);
+        final QName qn = QName.parse(context, qname, null);
+        final Variable var = new VariableImpl(qn);
         var.setIsInitialized(false);
         if (!analyzeDone) {
-            Module myModule = context.getModule(qn.getNamespaceURI());
+            final Module myModule = context.getModule(qn.getNamespaceURI());
             if(myModule != null) {
 // WM: duplicate var declaration is now caught in the XQuery tree parser
 //                if (myModule.isVarDeclared(qn))
@@ -106,18 +106,18 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         context.pushInScopeNamespaces(false);
-		QName qn = QName.parse(context, qname, null);
+		final QName qn = QName.parse(context, qname, null);
         
-		Module myModule = context.getRootModule(qn.getNamespaceURI());		
+		final Module myModule = context.getRootModule(qn.getNamespaceURI());		
         context.pushDocumentContext();
         context.prologEnter(this);
 		// declare the variable
-		Sequence seq = expression.eval(null, null);
+		final Sequence seq = expression.eval(null, null);
         Variable var;
 		if(myModule != null) {
 			var = myModule.declareVariable(qn, seq);
@@ -133,7 +133,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
         
         if (context.getProfiler().isEnabled())
             //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
-            context.getProfiler().end(this, "", seq);
+            {context.getProfiler().end(this, "", seq);}
         context.popInScopeNamespaces();
         context.popDocumentContext();
 		return Sequence.EMPTY_SEQUENCE;
@@ -155,7 +155,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append("declare variable $").append(qname);
         if(sequenceType != null) {
         	result.append(" as ").append(sequenceType.toString());
@@ -227,6 +227,6 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 		super.resetState(postOptimization);
 		expression.resetState(postOptimization);
         if (!postOptimization)
-            analyzeDone = false;
+            {analyzeDone = false;}
     }
 }

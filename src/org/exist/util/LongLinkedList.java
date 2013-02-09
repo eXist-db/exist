@@ -34,11 +34,11 @@ public class LongLinkedList {
 		public int compareTo(ListItem o) {
             final long ol = o.l;
             if(ol == l)
-                return Constants.EQUAL;
+                {return Constants.EQUAL;}
             else if(l < ol)
-                return Constants.INFERIOR;
+                {return Constants.INFERIOR;}
             else
-                return Constants.SUPERIOR;
+                {return Constants.SUPERIOR;}
 		}
 
 	}
@@ -72,32 +72,32 @@ public class LongLinkedList {
     }
     
     public ListItem removeFirst() {
-    	ListItem temp = first;
+    	final ListItem temp = first;
     	first = first.next;
     	if(first != null)
-    		first.prev = null;
+    		{first.prev = null;}
     	return temp;
     }
     
     public long getLast() {
     	if(last != null)
-    		return last.l;
+    		{return last.l;}
     	else
-    		return -1;
+    		{return -1;}
     }
     
     public boolean contains(long l) {
     	ListItem next = first;
     	while( next != null ) {
     		if(next.l == l)
-    			return true;
+    			{return true;}
     		next = next.next;
     	}
     	return false;
     }
     
 	public long[] getData() {
-		long[] data = new long[count];
+		final long[] data = new long[count];
 		ListItem next = first;
 		int i = 0;
 		while( next != null ) {
@@ -108,7 +108,7 @@ public class LongLinkedList {
     }
     
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
+		final StringBuilder buf = new StringBuilder();
 		ListItem next = first;
 		while( next != null ) {
 			buf.append(next.l).append(' ');
@@ -134,7 +134,7 @@ public class LongLinkedList {
         }
         
         public Object next() {
-            Object temp = next;
+            final Object temp = next;
             next = next.next;
             return temp;
         }

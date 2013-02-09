@@ -70,27 +70,27 @@ public class RemoveAttribute extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
-		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
+		final SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
+		final Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException(this, "Session not set");
+			{throw new XPathException(this, "Session not set");}
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(this, "Variable $session is not bound to a Java object.");
-		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+			{throw new XPathException(this, "Variable $session is not bound to a Java object.");}
+		final JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		// get attribute name parameter
-		String attrib = getArgument(0).eval(contextSequence, contextItem).getStringValue();
+		final String attrib = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		if(session.getObject() instanceof SessionWrapper)
-			((SessionWrapper)session.getObject()).removeAttribute(attrib);
+			{((SessionWrapper)session.getObject()).removeAttribute(attrib);}
 		else
-			throw new XPathException(this, "Type error: variable $session is not bound to a session object");
+			{throw new XPathException(this, "Type error: variable $session is not bound to a session object");}
 
 		return Sequence.EMPTY_SEQUENCE;
 	}

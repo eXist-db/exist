@@ -97,10 +97,10 @@ public class SequenceType {
     public boolean checkType(Sequence seq) throws XPathException {
         if (nodeName != null) {
             Item next;
-            for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+            for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 next = i.nextItem();
                 if (!checkType(next))
-                    return false;
+                    {return false;}
             }
             return true;
         } else {
@@ -121,14 +121,14 @@ public class SequenceType {
             type = realNode.getNodeType();
         }
         if(!Type.subTypeOf(type, primaryType))
-			return false;
+			{return false;}
 		if(nodeName != null) {
 			//TODO : how to improve performance ?
             if (realNode == null)
-                realNode = ((NodeValue)item).getNode();
+                {realNode = ((NodeValue)item).getNode();}
 			if (nodeName.getNamespaceURI() != null) {
 				if (!nodeName.getNamespaceURI().equals(realNode.getNamespaceURI()))
-					return false;
+					{return false;}
 			}
 			if (nodeName.getLocalName() != null) {
 				return nodeName.getLocalName().equals(realNode.getLocalName());
@@ -146,18 +146,18 @@ public class SequenceType {
      */
 	public void checkType(int type) throws XPathException {
 		if (type == Type.EMPTY || type == Type.ITEM)
-			return;
+			{return;}
 		
 		//Although xs:anyURI is not a subtype of xs:string, both types are compatible
 		if (type ==	Type.ANY_URI && primaryType == Type.STRING)
-			return;
+			{return;}
         
 		if (!Type.subTypeOf(type, primaryType))
-			throw new XPathException(
+			{throw new XPathException(
 				"Type error: expected type: "
 					+ Type.getTypeName(primaryType)
 					+ "; got: "
-					+ Type.getTypeName(type));
+					+ Type.getTypeName(type));}
 	}
 
     /**
@@ -169,16 +169,16 @@ public class SequenceType {
      */
 	public void checkCardinality(Sequence seq) throws XPathException {
 		if (!seq.isEmpty() && cardinality == Cardinality.EMPTY)
-			throw new XPathException("Empty sequence expected; got " + seq.getItemCount());
+			{throw new XPathException("Empty sequence expected; got " + seq.getItemCount());}
 		if (seq.isEmpty() && (cardinality & Cardinality.ZERO) == 0)
-			throw new XPathException("Empty sequence is not allowed here");
+			{throw new XPathException("Empty sequence is not allowed here");}
 		else if (seq.hasMany() && (cardinality & Cardinality.MANY) == 0)
-			throw new XPathException("Sequence with more than one item is not allowed here");
+			{throw new XPathException("Sequence with more than one item is not allowed here");}
 	}
 
 	public String toString() {
 		if (cardinality == Cardinality.EMPTY)
-			return Cardinality.toString(cardinality);
+			{return Cardinality.toString(cardinality);}
 		return Type.getTypeName(primaryType) + Cardinality.toString(cardinality);
 	}
 

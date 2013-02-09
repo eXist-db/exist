@@ -33,11 +33,11 @@ public class SystemProperties {
                 if(is != null) {
                     properties.load(is);
                 }
-            } catch (IOException ioe) {
+            } catch (final IOException ioe) {
                 LOG.debug("Unable to load system.properties from class loader: " +  ioe.getMessage(), ioe);
             } finally {
                 if(is != null) {
-                    try { is.close(); } catch(IOException ioe) { }
+                    try { is.close(); } catch(final IOException ioe) { }
                 }
             }
         }

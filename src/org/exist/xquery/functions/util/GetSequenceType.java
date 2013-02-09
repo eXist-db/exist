@@ -55,8 +55,8 @@ public class GetSequenceType extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {		
 		
-		Sequence seq = args[0];
-		StringValue stringValue = new StringValue(Type.getTypeName(seq.getItemType()));
+		final Sequence seq = args[0];
+		final StringValue stringValue = new StringValue(Type.getTypeName(seq.getItemType()));
 		return stringValue;
 	}
 

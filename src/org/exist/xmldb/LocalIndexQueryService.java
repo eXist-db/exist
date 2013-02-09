@@ -63,15 +63,15 @@ public class LocalIndexQueryService implements IndexQueryService {
      * @see org.exist.xmldb.IndexQueryService#reindexCollection()
      */
     public void reindexCollection() throws XMLDBException {
-    	Subject preserveSubject = pool.getSubject();
+    	final Subject preserveSubject = pool.getSubject();
         DBBroker broker = null;
         try {
             broker = pool.get(user);
             broker.reindexCollection(parent.getCollection().getURI());
             broker.sync(Sync.MAJOR_SYNC);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
             pool.release(broker);
@@ -87,7 +87,7 @@ public class LocalIndexQueryService implements IndexQueryService {
     public void reindexCollection(String collectionPath) throws XMLDBException {
     	try{
     		reindexCollection(XmldbURI.xmldbUriFor(collectionPath));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
@@ -96,16 +96,16 @@ public class LocalIndexQueryService implements IndexQueryService {
          */
    public void reindexCollection(XmldbURI collectionPath) throws XMLDBException {
        if (parent != null)
-    	   collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);        
-   		Subject preserveSubject = pool.getSubject();
+    	   {collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);}        
+   		final Subject preserveSubject = pool.getSubject();
         DBBroker broker = null;
         try {
             broker = pool.get(user);
             broker.reindexCollection(collectionPath);
             broker.sync(Sync.MAJOR_SYNC);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
             pool.release(broker);
@@ -118,20 +118,20 @@ public class LocalIndexQueryService implements IndexQueryService {
 	 */
     @Override
 	public void configureCollection(String configData) throws XMLDBException {
-    	Subject preserveSubject = pool.getSubject();
+    	final Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn txn = transact.beginTransaction();
         try {
             broker = pool.get(user);
-            CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(txn, broker, parent.getCollection(), configData);
             transact.commit(txn);
             System.out.println("Configured '" + parent.getCollection().getURI() + "'");
-        } catch (CollectionConfigurationException e) {
+        } catch (final CollectionConfigurationException e) {
             transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
             pool.release(broker);
@@ -144,17 +144,17 @@ public class LocalIndexQueryService implements IndexQueryService {
 	 */
 	public Occurrences[] getIndexedElements(boolean inclusive)
 		throws XMLDBException {
-    	Subject preserveSubject = pool.getSubject();
+    	final Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
 			return broker.getElementIndex().scanIndexedElements(parent.getCollection(), inclusive);
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"database access error",
 				e);
-		} catch (PermissionDeniedException e) {
+		} catch (final PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
 				"permission denied", e);
 		} finally {
@@ -182,9 +182,9 @@ public class LocalIndexQueryService implements IndexQueryService {
 	 */
 	public void setCollection(Collection col) throws XMLDBException {
 		if (!(col instanceof LocalCollection))
-			throw new XMLDBException(
+			{throw new XMLDBException(
 				ErrorCodes.INVALID_COLLECTION,
-				"incompatible collection type: " + col.getClass().getName());
+				"incompatible collection type: " + col.getClass().getName());}
 		parent = (LocalCollection) col;
 	}
 
@@ -209,17 +209,17 @@ public class LocalIndexQueryService implements IndexQueryService {
 		String end,
 		boolean inclusive)
 		throws XMLDBException {
-    	Subject preserveSubject = pool.getSubject();
+    	final Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			MutableDocumentSet docs = new DefaultDocumentSet();
+			final MutableDocumentSet docs = new DefaultDocumentSet();
 			parent.getCollection().allDocs(broker, docs, inclusive);
 			return broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(),  start, end);
-		} catch (PermissionDeniedException e) {
+		} catch (final PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 				"permission denied", e);
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"database access error",
@@ -235,23 +235,23 @@ public class LocalIndexQueryService implements IndexQueryService {
 			String start,
 			String end)
 			throws XMLDBException {
-    	Subject preserveSubject = pool.getSubject();
+    	final Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			XQuery xquery = broker.getXQueryService();
-			Sequence nodes = xquery.execute(xpath, null, parent.getAccessContext());
+			final XQuery xquery = broker.getXQueryService();
+			final Sequence nodes = xquery.execute(xpath, null, parent.getAccessContext());
 			return broker.getTextEngine().scanIndexTerms(nodes.getDocumentSet(), 
 					nodes.toNodeSet(),  start, end);
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
 			throw new XMLDBException(
 					ErrorCodes.VENDOR_ERROR,
 					"database access error",
 					e);
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 					e.getMessage(), e);
-		} catch (PermissionDeniedException e) {
+		} catch (final PermissionDeniedException e) {
 			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 					e.getMessage(), e);
 		} finally {

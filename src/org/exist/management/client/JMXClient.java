@@ -61,28 +61,28 @@ public class JMXClient {
     }
 
     public void connect(String address,int port) throws IOException {
-        JMXServiceURL url =
+        final JMXServiceURL url =
                 new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+address+":" + port + "/jmxrmi");
-        Map<String, String[]> env = new HashMap<String, String[]>();
-        String[] creds = {"guest", "guest"};
+        final Map<String, String[]> env = new HashMap<String, String[]>();
+        final String[] creds = {"guest", "guest"};
         env.put(JMXConnector.CREDENTIALS, creds);
 
-        JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
+        final JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
         connection = jmxc.getMBeanServerConnection();
         echo("Connected to MBean server.");
     }
 
     public void memoryStats() {
         try {
-            ObjectName name = new ObjectName("java.lang:type=Memory");
-            CompositeData composite = (CompositeData) connection.getAttribute(name, "HeapMemoryUsage");
+            final ObjectName name = new ObjectName("java.lang:type=Memory");
+            final CompositeData composite = (CompositeData) connection.getAttribute(name, "HeapMemoryUsage");
             if (composite != null) {
                 echo("\nMEMORY:");
                 echo(String.format("Current heap: %,12d k        Committed memory:  %,12d k",
                         ((Long)composite.get("used")) / 1024, ((Long)composite.get("committed")) / 1024));
                 echo(String.format("Max memory:   %,12d k", ((Long)composite.get("max")) / 1024));
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             error(e);
         }
     }
@@ -90,30 +90,30 @@ public class JMXClient {
     public void instanceStats() {
         try {
             echo("\nINSTANCE:");
-            ObjectName name = new ObjectName("org.exist.management." + instance + ":type=Database");
-            Long memReserved = (Long) connection.getAttribute(name, "ReservedMem");
+            final ObjectName name = new ObjectName("org.exist.management." + instance + ":type=Database");
+            final Long memReserved = (Long) connection.getAttribute(name, "ReservedMem");
             echo(String.format("%25s: %10d k", "Reserved memory", memReserved.longValue() / 1024));
-            Long memCache = (Long) connection.getAttribute(name, "CacheMem");
+            final Long memCache = (Long) connection.getAttribute(name, "CacheMem");
             echo(String.format("%25s: %10d k", "Cache memory", memCache.longValue() / 1024));
-            Long memCollCache = (Long) connection.getAttribute(name, "CollectionCacheMem");
+            final Long memCollCache = (Long) connection.getAttribute(name, "CollectionCacheMem");
             echo(String.format("%25s: %10d k", "Collection cache memory", memCollCache.longValue() / 1024));
 
-            String cols[] = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
+            final String cols[] = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
             echo(String.format("\n%17s %17s %17s", cols[0], cols[1], cols[2]));
-            AttributeList attrs = connection.getAttributes(name, cols);
-            Object values[] = getValues(attrs);
+            final AttributeList attrs = connection.getAttributes(name, cols);
+            final Object values[] = getValues(attrs);
             echo(String.format("%17d %17d %17d", values[0], values[1], values[2]));
 
-            TabularData table = (TabularData) connection.getAttribute(name, "ActiveBrokersMap");
+            final TabularData table = (TabularData) connection.getAttribute(name, "ActiveBrokersMap");
             if (table.size() > 0) {
                 echo("\nCurrently active threads:");
             }
             
-            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                CompositeData data = (CompositeData) i.next();
+            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
+                final CompositeData data = (CompositeData) i.next();
                 echo(String.format("\t%20s: %3d", data.get("owner"), data.get("referenceCount")));
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             error(e);
         }
     }
@@ -126,10 +126,10 @@ public class JMXClient {
             Object values[] = getValues(attrs);
             echo(String.format("\nCACHE [%8d pages max. / %8d pages allocated]", values[0], values[1]));
 
-            Set<ObjectName> beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
+            final Set<ObjectName> beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
             cols = new String[] {"Type", "FileName", "Size", "Used", "Hits", "Fails"};
             echo(String.format("%10s %20s %10s %10s %10s %10s", cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]));
-            for (Iterator<ObjectName> i = beans.iterator(); i.hasNext();) {
+            for (final Iterator<ObjectName> i = beans.iterator(); i.hasNext();) {
                 name = i.next();
                 attrs = connection.getAttributes(name, cols);
                 values = getValues(attrs);
@@ -143,7 +143,7 @@ public class JMXClient {
             values = getValues(attrs);
            echo(String.format("Collection Cache: %10d k max / %10d k allocated",
                ((Long)values[0] / 1024), ((Long)values[1] / 1024)));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             error(e);
         }
     }
@@ -152,34 +152,34 @@ public class JMXClient {
         echo("\nList of threads currently waiting for a lock:");
         echo("-----------------------------------------------");
         try {
-            TabularData table = (TabularData) connection.getAttribute(new ObjectName("org.exist.management:type=LockManager"), "WaitingThreads");
-            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                CompositeData data = (CompositeData) i.next();
+            final TabularData table = (TabularData) connection.getAttribute(new ObjectName("org.exist.management:type=LockManager"), "WaitingThreads");
+            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
+                final CompositeData data = (CompositeData) i.next();
                 echo("Thread " + data.get("waitingThread"));
                 echo(String.format("%20s: %s", "Lock type", data.get("lockType")));
                 echo(String.format("%20s: %s", "Lock mode", data.get("lockMode")));
                 echo(String.format("%20s: %s", "Lock id", data.get("id")));
                 echo(String.format("%20s: %s", "Held by", Arrays.toString((String[]) data.get("owner"))));
-                String[] readers = (String[]) data.get("waitingForRead");
+                final String[] readers = (String[]) data.get("waitingForRead");
                 if (readers.length > 0) {
                     echo(String.format("%20s: %s", "Wait for read", Arrays.toString(readers)));
                 }
-                String[] writers = (String[]) data.get("waitingForWrite");
+                final String[] writers = (String[]) data.get("waitingForWrite");
                 if (writers.length > 0) {
                     echo(String.format("%20s: %s", "Wait for write", Arrays.toString(writers)));
                 }
             }
-        } catch (MBeanException e) {
+        } catch (final MBeanException e) {
             error(e);
-        } catch (AttributeNotFoundException e) {
+        } catch (final AttributeNotFoundException e) {
             error(e);
-        } catch (InstanceNotFoundException e) {
+        } catch (final InstanceNotFoundException e) {
             error(e);
-        } catch (ReflectionException e) {
+        } catch (final ReflectionException e) {
             error(e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             error(e);
-        } catch (MalformedObjectNameException e) {
+        } catch (final MalformedObjectNameException e) {
             error(e);
         }
     }
@@ -188,34 +188,34 @@ public class JMXClient {
         echo("\nSanity report");
         echo("-----------------------------------------------");
         try {
-            ObjectName name = new ObjectName("org.exist.management." + instance + ".tasks:type=SanityReport");
-            String status = (String) connection.getAttribute(name, "Status");
-            Date lastCheckStart = (Date) connection.getAttribute(name, "LastCheckStart");
-            Date lastCheckEnd = (Date) connection.getAttribute(name, "LastCheckEnd");
+            final ObjectName name = new ObjectName("org.exist.management." + instance + ".tasks:type=SanityReport");
+            final String status = (String) connection.getAttribute(name, "Status");
+            final Date lastCheckStart = (Date) connection.getAttribute(name, "LastCheckStart");
+            final Date lastCheckEnd = (Date) connection.getAttribute(name, "LastCheckEnd");
             echo(String.format("%22s: %s", "Status", status));
             echo(String.format("%22s: %s", "Last check start", lastCheckStart));
             echo(String.format("%22s: %s", "Last check end", lastCheckEnd));
             if (lastCheckStart != null && lastCheckEnd != null)
-                echo(String.format("%22s: %dms", "Check took", (lastCheckEnd.getTime() - lastCheckStart.getTime())));
+                {echo(String.format("%22s: %dms", "Check took", (lastCheckEnd.getTime() - lastCheckStart.getTime())));}
 
-            TabularData table = (TabularData)
+            final TabularData table = (TabularData)
                     connection.getAttribute(name, "Errors");
-            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                CompositeData data = (CompositeData) i.next();
+            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
+                final CompositeData data = (CompositeData) i.next();
                 echo(String.format("%22s: %s", "Error code", data.get("errcode")));
                 echo(String.format("%22s: %s", "Description", data.get("description")));
             }
-        } catch (MBeanException e) {
+        } catch (final MBeanException e) {
             error(e);
-        } catch (AttributeNotFoundException e) {
+        } catch (final AttributeNotFoundException e) {
             error(e);
-        } catch (InstanceNotFoundException e) {
+        } catch (final InstanceNotFoundException e) {
             error(e);
-        } catch (ReflectionException e) {
+        } catch (final ReflectionException e) {
             error(e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             error(e);
-        } catch (MalformedObjectNameException e) {
+        } catch (final MalformedObjectNameException e) {
             error(e);
         }
     }
@@ -224,14 +224,14 @@ public class JMXClient {
         echo("\nRunning jobs report");
         echo("-----------------------------------------------");
         try {
-            ObjectName name = new ObjectName("org.exist.management." + instance + ":type=ProcessReport");
+            final ObjectName name = new ObjectName("org.exist.management." + instance + ":type=ProcessReport");
 
             TabularData table = (TabularData)
                     connection.getAttribute(name, "RunningJobs");
             String[] cols = new String[] { "ID", "Action", "Info" };
             echo(String.format("%15s %30s %30s", cols[0], cols[1], cols[2]));
-            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                CompositeData data = (CompositeData) i.next();
+            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
+                final CompositeData data = (CompositeData) i.next();
                 echo(String.format("%15s %30s %30s", data.get("id"), data.get("action"), data.get("info")));
             }
 
@@ -241,27 +241,27 @@ public class JMXClient {
                     connection.getAttribute(name, "RunningQueries");
             cols = new String[] { "ID", "Type", "Key", "Terminating" };
             echo(String.format("%10s %10s %30s %s", cols[0], cols[1], cols[2], cols[3]));
-            for (Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                CompositeData data = (CompositeData) i.next();
+            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
+                final CompositeData data = (CompositeData) i.next();
                 echo(String.format("%15s %15s %30s %6s", data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
             }
-        } catch (MBeanException e) {
+        } catch (final MBeanException e) {
             error(e);
-        } catch (AttributeNotFoundException e) {
+        } catch (final AttributeNotFoundException e) {
             error(e);
-        } catch (InstanceNotFoundException e) {
+        } catch (final InstanceNotFoundException e) {
             error(e);
-        } catch (ReflectionException e) {
+        } catch (final ReflectionException e) {
             error(e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             error(e);
-        } catch (MalformedObjectNameException e) {
+        } catch (final MalformedObjectNameException e) {
             error(e);
         }
     }
 
     private Object[] getValues(AttributeList attribs) {
-        Object[] v = new Object[attribs.size()];
+        final Object[] v = new Object[attribs.size()];
         for (int i = 0; i < attribs.size(); i++) {
             v[i] = ((Attribute)attribs.get(i)).getValue();
         }
@@ -322,14 +322,14 @@ public class JMXClient {
     
     @SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-        CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
+        final CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
         if(optParser.getErrorString() != null) {
             System.err.println( "ERROR: " + optParser.getErrorString());
             return;
         }
         String dbInstance = "exist";
         long waitTime = 0;
-        List<CLOption> opts = optParser.getArguments();
+        final List<CLOption> opts = optParser.getArguments();
         int mode = -1;
         int port = 1099;
         String address = "localhost";
@@ -337,7 +337,7 @@ public class JMXClient {
         boolean displayInstance = false;
         boolean displayReport = false;
         boolean jobReport = false;
-        for(CLOption option : opts) {
+        for(final CLOption option : opts) {
             switch(option.getId()) {
                 case HELP_OPT :
                     System.out.println(CLUtil.describeOptions(OPTIONS).toString());
@@ -345,7 +345,7 @@ public class JMXClient {
                 case WAIT_OPT :
                     try {
                         waitTime = Integer.parseInt( option.getArgument() ) * 1000;
-                    } catch( NumberFormatException e ) {
+                    } catch( final NumberFormatException e ) {
                         System.err.println("option -w|--wait requires a numeric argument");
                         return;
                     }
@@ -359,7 +359,7 @@ public class JMXClient {
                 case PORT_OPT :
                     try {
                         port = Integer.parseInt(option.getArgument());
-                    } catch (NumberFormatException e) {
+                    } catch (final NumberFormatException e) {
                         System.err.println("option -p|--port requires a numeric argument");
                         return;
                     }
@@ -367,7 +367,7 @@ public class JMXClient {
                 case ADDRESS_OPT :
                     try {
                         address = option.getArgument();
-                    } catch (NumberFormatException e) {
+                    } catch (final NumberFormatException e) {
                         System.err.println("option -a|--address requires a numeric argument");
                         return;
                     }
@@ -389,7 +389,7 @@ public class JMXClient {
             }
         }
         try {
-            JMXClient stats = new JMXClient(dbInstance);
+            final JMXClient stats = new JMXClient(dbInstance);
             stats.connect(address,port);
             stats.memoryStats();
             while (true) {
@@ -401,22 +401,22 @@ public class JMXClient {
                         stats.lockTable();
                         break;
                 }
-                if (displayInstance) stats.instanceStats();
-                if (displayMem) stats.memoryStats();
-                if (displayReport) stats.sanityReport();
-                if (jobReport) stats.jobReport();
+                if (displayInstance) {stats.instanceStats();}
+                if (displayMem) {stats.memoryStats();}
+                if (displayReport) {stats.sanityReport();}
+                if (jobReport) {stats.jobReport();}
                 if (waitTime > 0) {
                     synchronized (stats) {
                         try {
                             stats.wait(waitTime);
-                        } catch (InterruptedException e) {
+                        } catch (final InterruptedException e) {
                             System.err.println("INTERRUPTED: " + e.getMessage());
                         }
                     }
                 } else
-                    return;
+                    {return;}
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace(); 
         } 
     }

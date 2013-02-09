@@ -53,7 +53,7 @@ public class AddUserTask extends UserTask {
         }
 
         try {
-            UserAider usr = new UserAider( name );
+            final UserAider usr = new UserAider( name );
 
             if( secret != null ) {
                 usr.setPassword( secret );
@@ -67,8 +67,8 @@ public class AddUserTask extends UserTask {
             service.addAccount( usr );
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

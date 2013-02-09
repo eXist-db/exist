@@ -43,13 +43,13 @@ public class Object2LongIdentityHashMap<K> extends Object2LongHashMap<K> {
 	public long get(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (keys[idx] == null)
-			return -1; // key does not exist
+			{return -1;} // key does not exist
 		else if (keys[idx] == key) {
 			return values[idx];
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
@@ -64,13 +64,13 @@ public class Object2LongIdentityHashMap<K> extends Object2LongHashMap<K> {
 	public boolean containsKey(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (keys[idx] == null)
-			return false; // key does not exist
+			{return false;} // key does not exist
 		else if (keys[idx] == key) {
 			return true;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
@@ -85,7 +85,7 @@ public class Object2LongIdentityHashMap<K> extends Object2LongHashMap<K> {
 	public long remove(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (keys[idx] == null) {
 			return -1; // key does not exist
 		} else if (keys[idx] == key) {
@@ -93,7 +93,7 @@ public class Object2LongIdentityHashMap<K> extends Object2LongHashMap<K> {
 			--items;
 			return values[idx];
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
@@ -109,10 +109,10 @@ public class Object2LongIdentityHashMap<K> extends Object2LongHashMap<K> {
 
 	protected void insert(K key, long value) throws HashtableOverflowException {
 		if (key == null)
-			throw new IllegalArgumentException("Illegal value: null");
+			{throw new IllegalArgumentException("Illegal value: null");}
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		int bucket = -1;
 		// look for an empty bucket
 		if (keys[idx] == null) {
@@ -129,7 +129,7 @@ public class Object2LongIdentityHashMap<K> extends Object2LongHashMap<K> {
 			values[idx] = value;
 			return;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		int rehashCnt = 1;
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;

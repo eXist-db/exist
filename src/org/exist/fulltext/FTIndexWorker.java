@@ -71,7 +71,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         this.broker = broker;
         try {
             this.engine = new NativeTextEngine(broker, index.getBFile(), broker.getConfiguration());
-        } catch (DBException e) {
+        } catch (final DBException e) {
             throw new DatabaseConfigurationException(e.getMessage(), e);
         }
     }
@@ -100,9 +100,9 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void setDocument(DocumentImpl doc, int newMode) {
         document = doc;
         mode = newMode;
-        IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
+        final IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null)
-            config = indexConf.getFulltextIndexSpec();
+            {config = indexConf.getFulltextIndexSpec();}
         engine.setDocument(document);
     }
 
@@ -122,16 +122,16 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
-            return null;
-        IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(broker);
+            {return null;}
+        final IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
-            FulltextIndexSpec config = indexConf.getFulltextIndexSpec();
+            final FulltextIndexSpec config = indexConf.getFulltextIndexSpec();
             if (config == null)
-                return null;
+                {return null;}
             boolean reindexRequired = false;
-            int len = node.getNodeType() == Node.ELEMENT_NODE && !includeSelf ? path.length() - 1 : path.length();
+            final int len = node.getNodeType() == Node.ELEMENT_NODE && !includeSelf ? path.length() - 1 : path.length();
             for (int i = 0; i < len; i++) {
-                QName qn = path.getComponent(i);
+                final QName qn = path.getComponent(i);
                 if (config.hasQNameIndex(qn)) {
                     reindexRequired = true;
                     break;
@@ -142,7 +142,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 StoredNode currentNode = node;
                 while (currentNode != null) {
                     if (config.hasQNameIndex(currentNode.getQName()))
-                        topMost = currentNode;
+                        {topMost = currentNode;}
                     currentNode = currentNode.getParentStoredNode();
                 }
                 return topMost;
@@ -166,11 +166,11 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             nextMatch = nextMatch.getNextMatch();
         }
         if (!needToFilter)
-            return null;
+            {return null;}
         if (matchListener == null)
-            matchListener = new FTMatchListener(broker, proxy);
+            {matchListener = new FTMatchListener(broker, proxy);}
         else
-            matchListener.reset(broker, proxy);
+            {matchListener.reset(broker, proxy);}
         return matchListener;
     }
 
@@ -213,9 +213,9 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
-                boolean mixedContent = config.matchMixedElement(path);
+                final boolean mixedContent = config.matchMixedElement(path);
                 if (mixedContent || config.hasQNameIndex(element.getQName())) {
-                    ElementContent contentBuf =
+                    final ElementContent contentBuf =
                             new ElementContent(element.getQName(), mixedContent || config.preserveMixedContent(element.getQName()));
                     contentStack.push(contentBuf);
                 }
@@ -226,9 +226,9 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null) {
-                boolean mixedContent = config.matchMixedElement(path);
+                final boolean mixedContent = config.matchMixedElement(path);
                 if (mixedContent || config.hasQNameIndex(element.getQName())) {
-                    ElementContent contentBuf = contentStack.pop();
+                    final ElementContent contentBuf = contentStack.pop();
                     element.getQName().setNameType(ElementValue.ELEMENT);
                     engine.storeText(element, contentBuf,
                             mixedContent ? NativeTextEngine.FOURTH_OPTION : NativeTextEngine.TEXT_BY_QNAME,
@@ -249,12 +249,12 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (config == null) {
                 engine.storeText(text, NativeTextEngine.TOKENIZE, config, mode == REMOVE_ALL_NODES);
             } else if (config.match(path)) {
-                int tokenize = config.preserveContent(path) ? NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE;
+                final int tokenize = config.preserveContent(path) ? NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE;
                 engine.storeText(text, tokenize, config, mode == REMOVE_ALL_NODES);
             }
             if (!contentStack.isEmpty()) {
                 for (int i = 0; i < contentStack.size(); i++) {
-                    ElementContent next = contentStack.get(i);
+                    final ElementContent next = contentStack.get(i);
                     next.append(text.getXMLString());
                 }
             }

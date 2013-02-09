@@ -52,7 +52,7 @@ public class UserPasswordTask extends UserTask
 
         try {
             log( "Looking up user " + name, Project.MSG_INFO );
-            Account usr = service.getAccount( name );
+            final Account usr = service.getAccount( name );
 
             if( usr != null ) {
                 log( "Setting password for user " + name, Project.MSG_INFO );
@@ -62,7 +62,7 @@ public class UserPasswordTask extends UserTask
                 }
 
             } else {
-                String msg = "user " + name + " not found";
+                final String msg = "user " + name + " not found";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -72,8 +72,8 @@ public class UserPasswordTask extends UserTask
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

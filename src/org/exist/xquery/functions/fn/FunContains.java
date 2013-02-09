@@ -93,31 +93,31 @@ public class FunContains extends CollatingFunction {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());}
         }
         Sequence result;
         //s2 takes precedence over s1
-        String s2 = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+        final String s2 = getArgument(1).eval(contextSequence, contextItem).getStringValue();
         if ("".equals(s2)) {
             result = BooleanValue.TRUE;
         } else {
-            String s1 = getArgument(0).eval(contextSequence, contextItem).getStringValue();
+            final String s1 = getArgument(0).eval(contextSequence, contextItem).getStringValue();
             if ("".equals(s1)) {
                 result = BooleanValue.FALSE;
             } else {
-                Collator collator = getCollator(contextSequence, contextItem, 3);
+                final Collator collator = getCollator(contextSequence, contextItem, 3);
                 if (Collations.indexOf(collator, s1, s2) != Constants.STRING_NOT_FOUND)
-                    return BooleanValue.TRUE;
+                    {return BooleanValue.TRUE;}
                 else
-                    return BooleanValue.FALSE;
+                    {return BooleanValue.FALSE;}
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

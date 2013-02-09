@@ -89,7 +89,7 @@ public class GetParameter extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		
-		RequestModule myModule =
+		final RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 		
 		boolean failOnError = true;
@@ -99,7 +99,7 @@ public class GetParameter extends BasicFunction {
 		}
 		
 		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT) {
 			if( failOnError ) {
 				throw new XPathException(this, "Variable $request is not bound to an Java object.");
@@ -109,11 +109,11 @@ public class GetParameter extends BasicFunction {
 		}
 		
 		// get parameters
-		String param = args[0].getStringValue();
+		final String param = args[0].getStringValue();
 		
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
-			String[] values = ((RequestWrapper)value.getObject()).getParameterValues(param);
+			final String[] values = ((RequestWrapper)value.getObject()).getParameterValues(param);
 			if (values == null || values.length == 0) {
 				return args[1];
 			}

@@ -51,12 +51,12 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
 
     @Override
     public void open() throws DatabaseConfigurationException {
-        File file = new File(getDataDir(), FILE_NAME);
+        final File file = new File(getDataDir(), FILE_NAME);
         LOG.debug("Creating '" + file.getName() + "'...");
         try {
             btree = new BTreeStore(pool, STRUCTURAL_INDEX_ID, false,
                     file, pool.getCacheManager(), DEFAULT_STRUCTURAL_KEY_THRESHOLD);
-        } catch (DBException e) {
+        } catch (final DBException e) {
             LOG.error("Failed to initialize structural index: " + e.getMessage(), e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
         }
@@ -71,15 +71,15 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
     @Override
     public void sync() throws DBException {
         if (btree == null)
-            return;
+            {return;}
         final Lock lock = btree.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
             btree.flush();
-        } catch (LockException e) {
+        } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + btree.getFile().getName() + "'", e);
             //TODO : throw an exception ? -pb
-        } catch (DBException e) {
+        } catch (final DBException e) {
             LOG.error(e.getMessage(), e);
             //TODO : throw an exception ? -pb
         } finally {
@@ -104,7 +104,7 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
 
 	@Override
 	public void backupToArchive(RawDataBackup backup) throws IOException {
-        OutputStream os = backup.newEntry(btree.getFile().getName());
+        final OutputStream os = backup.newEntry(btree.getFile().getName());
         btree.backupToStream(os);
         backup.closeEntry();
 	}

@@ -99,28 +99,28 @@ public class AccountImpl extends AbstractAccount {
     }*/
 
     static public Subject getUserFromServletRequest(HttpServletRequest request) {
-        Principal principal = request.getUserPrincipal();
+        final Principal principal = request.getUserPrincipal();
         if(principal instanceof Subject) {
             return (Subject) principal;
 
             //workaroud strange jetty authentication method, why encapsulate user object??? -shabanovd
         } else if(principal != null && "org.eclipse.jetty.plus.jaas.JAASUserPrincipal".equals(principal.getClass().getName())) {
             try {
-                Method method = principal.getClass().getMethod("getSubject");
-                Object obj = method.invoke(principal);
+                final Method method = principal.getClass().getMethod("getSubject");
+                final Object obj = method.invoke(principal);
                 if(obj instanceof javax.security.auth.Subject) {
-                    javax.security.auth.Subject subject = (javax.security.auth.Subject) obj;
-                    for(Principal _principal_ : subject.getPrincipals()) {
+                    final javax.security.auth.Subject subject = (javax.security.auth.Subject) obj;
+                    for(final Principal _principal_ : subject.getPrincipals()) {
                         if(_principal_ instanceof Subject) {
                             return (Subject) _principal_;
                         }
                     }
                 }
-            } catch(SecurityException e) {
-            } catch(IllegalArgumentException e) {
-            } catch(IllegalAccessException e) {
-            } catch(NoSuchMethodException e) {
-            } catch(InvocationTargetException e) {
+            } catch(final SecurityException e) {
+            } catch(final IllegalArgumentException e) {
+            } catch(final IllegalAccessException e) {
+            } catch(final NoSuchMethodException e) {
+            } catch(final InvocationTargetException e) {
             }
         }
 
@@ -203,7 +203,7 @@ public class AccountImpl extends AbstractAccount {
         setUserMask(from_user.getUserMask());
 
         if(from_user instanceof AccountImpl) {
-            AccountImpl user = (AccountImpl) from_user;
+            final AccountImpl user = (AccountImpl) from_user;
 
             groups = new ArrayList<Group>(user.groups);
 
@@ -214,9 +214,9 @@ public class AccountImpl extends AbstractAccount {
 
             _cred = user._cred;
         } else if(from_user instanceof UserAider) {
-            UserAider user = (UserAider) from_user;
+            final UserAider user = (UserAider) from_user;
 
-            String[] gl = user.getGroups();
+            final String[] gl = user.getGroups();
             for(int i = 0; i < gl.length; i++) {
                 addGroup(gl[i]);
             }
@@ -233,8 +233,8 @@ public class AccountImpl extends AbstractAccount {
         super(realm, from_user.id, from_user.name);
 
         //copy metadata
-        for(SchemaType metadataKey : from_user.getMetadataKeys()) {
-            String metadataValue = from_user.getMetadataValue(metadataKey);
+        for(final SchemaType metadataKey : from_user.getMetadataKeys()) {
+            final String metadataValue = from_user.getMetadataValue(metadataKey);
             setMetadataValue(metadataKey, metadataValue);
         }
 
@@ -309,7 +309,7 @@ public class AccountImpl extends AbstractAccount {
 
         public synchronized boolean isCheckPasswords() {
             if(checkPasswords == null) {
-                String property = getProperty(PROP_CHECK_PASSWORDS);
+                final String property = getProperty(PROP_CHECK_PASSWORDS);
                 if(property == null || property.length() == 0) {
                     checkPasswords = DEFAULT_CHECK_PASSWORDS;
                 } else {
@@ -333,11 +333,11 @@ public class AccountImpl extends AbstractAccount {
                     if(is != null) {
                         loadedSecurityProperties.load(is);
                     }
-                } catch(IOException ioe) {
+                } catch(final IOException ioe) {
                     LOG.error("Unable to load security.properties, using defaults. " + ioe.getMessage(), ioe);
                 } finally {
                     if(is != null) {
-                        try { is.close(); } catch(IOException ioe) { };
+                        try { is.close(); } catch(final IOException ioe) { };
                     }
                 }
             }

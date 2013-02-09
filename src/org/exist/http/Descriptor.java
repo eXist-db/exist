@@ -91,7 +91,7 @@ public class Descriptor implements ErrorHandler
 
         	// First, try to read Descriptor from file. Guess the location if necessary
         	// from the home folder.
-        	File f = ConfigurationHelper.lookup(file);
+        	final File f = ConfigurationHelper.lookup(file);
             if(! f.canRead())
             {
                 LOG.warn("Giving up unable to read descriptor file from " + f);
@@ -121,53 +121,53 @@ public class Descriptor implements ErrorHandler
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
             
-            InputSource src = new InputSource(is);
-            SAXParser parser = factory.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            SAXAdapter adapter = new SAXAdapter();
+            final InputSource src = new InputSource(is);
+            final SAXParser parser = factory.newSAXParser();
+            final XMLReader reader = parser.getXMLReader();
+            final SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
             reader.parse(src);
             
-            Document doc = adapter.getDocument();
+            final Document doc = adapter.getDocument();
             
             //load <xquery-app> attribue settings
-            if(doc.getDocumentElement().getAttribute("request-replay-log").equals("true"))
+            if("true".equals(doc.getDocumentElement().getAttribute("request-replay-log")))
             {
-            	File logFile = new File("request-replay-log.txt");
+            	final File logFile = new File("request-replay-log.txt");
         		bufWriteReplayLog = new BufferedWriter(new FileWriter(logFile));
-                String attr = doc.getDocumentElement().getAttribute("filtered");
+                final String attr = doc.getDocumentElement().getAttribute("filtered");
                 if (attr != null)
-                    requestsFiltered = attr.equals("true");
+                    requestsFiltered = "true".equals(attr);
             }
             
             //load <allow-source> settings
-            NodeList allowsourcexqueries = doc.getElementsByTagName("allow-source");
+            final NodeList allowsourcexqueries = doc.getElementsByTagName("allow-source");
             if(allowsourcexqueries.getLength() > 0)
             {
                 configureAllowSourceXQuery((Element) allowsourcexqueries.item(0));
             }
             
             //load <maps> settings
-            NodeList maps = doc.getElementsByTagName("maps");
+            final NodeList maps = doc.getElementsByTagName("maps");
             if(maps.getLength() > 0)
             {
                 configureMaps((Element) maps.item(0));
             }
         }
-        catch(SAXException e)
+        catch(final SAXException e)
 		{
             LOG.warn("Error while reading descriptor file: " + file, e);
             return;
         }
-        catch(ParserConfigurationException cfg)
+        catch(final ParserConfigurationException cfg)
 		{
             LOG.warn("Error while reading descriptor file: " + file, cfg);
             return;
         }
-        catch(IOException io)
+        catch(final IOException io)
 		{
             LOG.warn("Error while reading descriptor file: " + file, io);
             return;
@@ -197,7 +197,7 @@ public class Descriptor implements ErrorHandler
     private void configureAllowSourceXQuery(Element allowsourcexqueries)
     {
     	//Get the xquery element(s)
-    	NodeList nlXQuery = allowsourcexqueries.getElementsByTagName("xquery");
+    	final NodeList nlXQuery = allowsourcexqueries.getElementsByTagName("xquery");
     	
     	//Setup the hashmap to hold the xquery elements
     	allowSourceList = new String[nlXQuery.getLength()];
@@ -234,7 +234,7 @@ public class Descriptor implements ErrorHandler
     	//TODO: add pattern support for mappings, as an alternative to path - deliriumsky
     	
     	//Get the map element(s)
-    	NodeList nlMap = maps.getElementsByTagName("map");
+    	final NodeList nlMap = maps.getElementsByTagName("map");
     	
     	//Setup the hashmap to hold the map elements
     	mapList = new String[nlMap.getLength()][2];
@@ -324,7 +324,7 @@ public class Descriptor implements ErrorHandler
     public String mapPath(String path)
     {
     	if(mapList == null) //has a list of mappings been specified?
-    		return(path);
+    		{return(path);}
     	
     	//Iterate through the mappings
     	for(int i = 0; i < mapList.length; i++)
@@ -388,13 +388,13 @@ public class Descriptor implements ErrorHandler
     	{
 	    	//Store the date and time
     		bufWriteReplayLog.write("Date: ");
-    		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    		final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     		bufWriteReplayLog.write(formatter.format(new Date()));
 	    	
 	    	bufWriteReplayLog.write(SYSTEM_LINE_SEPARATOR);
 	    	
 	    	//Store the request string excluding the first line
-	    	String requestAsString = request.toString();
+	    	final String requestAsString = request.toString();
 			bufWriteReplayLog.write(requestAsString.substring(requestAsString.indexOf(SYSTEM_LINE_SEPARATOR) + 1));
 	    	
 	    	//End of record indicator
@@ -403,7 +403,7 @@ public class Descriptor implements ErrorHandler
 	    	//flush the buffer to file
 	    	bufWriteReplayLog.flush();
 		}
-    	catch(IOException ioe)
+    	catch(final IOException ioe)
     	{
     		LOG.warn("Could not write request replay log: " + ioe);
     		return;

@@ -70,10 +70,10 @@ public class GetMaxInactiveInterval extends Function
 	public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException 
 	{
 		
-		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
+		final SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+		final Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
 		
 		if( var == null || var.getValue() == null ) {
 			// throw( new XPathException( this, "Session not set" ) );
@@ -84,14 +84,14 @@ public class GetMaxInactiveInterval extends Function
 			throw( new XPathException( this, "Variable $session is not bound to a Java object." ) );
 		}
 
-		JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
+		final JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
 		
 		if( session.getObject() instanceof SessionWrapper ) {
 			try {
-				int interval = ( (SessionWrapper)session.getObject() ).getMaxInactiveInterval();
+				final int interval = ( (SessionWrapper)session.getObject() ).getMaxInactiveInterval();
 				return( XPathUtil.javaObjectToXPath( Integer.valueOf(interval), context ) );
 			}
-			catch( IllegalStateException ise ) {
+			catch( final IllegalStateException ise ) {
 				return( XPathUtil.javaObjectToXPath( Integer.valueOf(-1), context ) );
 			}
 		} else {

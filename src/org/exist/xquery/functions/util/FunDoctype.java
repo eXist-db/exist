@@ -63,32 +63,32 @@ public class FunDoctype extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
-        MutableDocumentSet docs = new DefaultDocumentSet();
+        final MutableDocumentSet docs = new DefaultDocumentSet();
         for (int i = 0; i < getArgumentCount(); i++) {
-            Sequence seq = getArgument(i).eval(contextSequence, contextItem);
-            for (SequenceIterator j = seq.iterate(); j.hasNext();) {
-                String next = j.nextItem().getStringValue();
+            final Sequence seq = getArgument(i).eval(contextSequence, contextItem);
+            for (final SequenceIterator j = seq.iterate(); j.hasNext();) {
+                final String next = j.nextItem().getStringValue();
                 try {
                     context.getBroker().getXMLResourcesByDoctype(next, docs);
-                } catch(PermissionDeniedException pde) {
+                } catch(final PermissionDeniedException pde) {
                     LOG.error(pde.getMessage(), pde);
                     throw new XPathException(pde);
                 }
             }
         }
 
-        NodeSet result = new ExtArrayNodeSet(1);
-        for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+        final NodeSet result = new ExtArrayNodeSet(1);
+        for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
                 result.add(new NodeProxy(i.next(), NodeId.DOCUMENT_NODE));
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
+            {context.getProfiler().end(this, "", result);}        
         
         return result;
 	}

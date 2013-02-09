@@ -65,7 +65,7 @@ public class Setup {
             offset = 1;
         }
         System.setProperty(AutoDeploymentTrigger.AUTODEPLOY_PROPERTY, "off");
-        XQueryService query = initDb(passwd);
+        final XQueryService query = initDb(passwd);
 //        if (query != null) {
 //            try {
 //                installApps(query, args, offset);
@@ -77,24 +77,24 @@ public class Setup {
     }
 
     private static void installApps(XQueryService query, String[] args, int offset) throws EXistException {
-        File home = getExistHome();
-        ExistRepository repository = getRepository(home);
+        final File home = getExistHome();
+        final ExistRepository repository = getRepository(home);
 
-        List<String> uris = new ArrayList<String>();
+        final List<String> uris = new ArrayList<String>();
         for (int i = offset; i < args.length; i++) {
-            String name = args[i];
+            final String name = args[i];
             try {
-                File xar = findApp(home, name);
+                final File xar = findApp(home, name);
                 if (xar != null) {
                     System.out.println("Installing app package " + xar.getName());
-                    UserInteractionStrategy interact = new BatchUserInteraction();
-                    Package pkg = repository.getParentRepo().installPackage(xar, true, interact);
-                    String pkgName = pkg.getName();
+                    final UserInteractionStrategy interact = new BatchUserInteraction();
+                    final Package pkg = repository.getParentRepo().installPackage(xar, true, interact);
+                    final String pkgName = pkg.getName();
                     uris.add(pkgName);
                 } else {
                     System.err.println("App package not found: " + name + ". Skipping it.");
                 }
-            } catch (PackageException e) {
+            } catch (final PackageException e) {
                 System.err.println("Failed to install application package " + name + ": " + e.getMessage());
             }
         }
@@ -102,16 +102,16 @@ public class Setup {
         System.out.println("\n=== Starting the installation process for each application... ===");
         System.out.println("\nPLEASE DO NOT ABORT\n");
 
-        String prolog =
+        final String prolog =
             "import module namespace repo=\"http://exist-db.org/xquery/repo\" " +
             "at \"java:org.exist.xquery.modules.expathrepo.ExpathPackageModule\";\n";
-        for (String uri : uris) {
-            StringBuilder xquery = new StringBuilder(prolog);
+        for (final String uri : uris) {
+            final StringBuilder xquery = new StringBuilder(prolog);
             xquery.append(" repo:deploy(\"" + uri + "\")");
             System.out.print("Installing app package: " + uri + "... ");
             try {
                 query.query(xquery.toString());
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 e.printStackTrace();
                 System.err.println("An error occurred while deploying application: " + uri +
                         ". You can install it later using the package repository.");
@@ -127,13 +127,13 @@ public class Setup {
     }
 
     private static File findApp(File home, String app) {
-        File apps = new File(home, "apps");
+        final File apps = new File(home, "apps");
         System.out.println("Apps directory: " + apps.getAbsolutePath());
         if (apps.canRead() && apps.isDirectory()) {
-            File[] files = apps.listFiles();
-            for (File file : files) {
+            final File[] files = apps.listFiles();
+            for (final File file : files) {
                 if (file.getName().startsWith(app))
-                    return file;
+                    {return file;}
             }
         }
         return null;
@@ -142,20 +142,20 @@ public class Setup {
     private static ExistRepository getRepository(File home) throws EXistException {
         try {
             if (home != null){
-                File repo_dir = new File(home, "webapp/WEB-INF/expathrepo");
+                final File repo_dir = new File(home, "webapp/WEB-INF/expathrepo");
                 // ensure the dir exists
                 repo_dir.mkdir();
-                FileSystemStorage storage = new FileSystemStorage(repo_dir);
+                final FileSystemStorage storage = new FileSystemStorage(repo_dir);
                 return new ExistRepository(storage);
             }else{
-                File repo_dir = new File(System.getProperty("java.io.tmpdir") + "/expathrepo");
+                final File repo_dir = new File(System.getProperty("java.io.tmpdir") + "/expathrepo");
                 // ensure the dir exists
                 repo_dir.mkdir();
-                FileSystemStorage storage = new FileSystemStorage(repo_dir);
+                final FileSystemStorage storage = new FileSystemStorage(repo_dir);
                 return new ExistRepository(storage);
             }
         }
-        catch ( PackageException ex ) {
+        catch ( final PackageException ex ) {
             // problem with pkg-repo.jar throwing exception
             throw new EXistException("Problem setting expath repository", ex);
         }
@@ -164,23 +164,23 @@ public class Setup {
     private static XQueryService initDb(String adminPass) {
         System.out.println("--- Starting embedded database instance ---");
         try {
-            Class<?> cl = Class.forName(DRIVER);
-            Database database = (Database) cl.newInstance();
+            final Class<?> cl = Class.forName(DRIVER);
+            final Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
             Collection root = DatabaseManager.getCollection(URI, "admin", null);
             if (adminPass != null) {
-                UserManagementService service =
+                final UserManagementService service =
                         (UserManagementService) root.getService("UserManagementService", "1.0");
-                Account admin = service.getAccount("admin");
+                final Account admin = service.getAccount("admin");
                 admin.setPassword(adminPass);
                 System.out.println("Setting admin user password...");
                 service.updateAccount(admin);
                 root = DatabaseManager.getCollection(URI, "admin", adminPass);
             }
-            XQueryService query = (XQueryService) root.getService("XQueryService", "1.0");
+            final XQueryService query = (XQueryService) root.getService("XQueryService", "1.0");
             return query;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             System.err.println("Caught an exception while initializing db: " + e.getMessage());
             e.printStackTrace();
         }
@@ -190,11 +190,11 @@ public class Setup {
     private static void shutdown(String adminPass) {
         System.out.println("--- Initialization complete. Shutdown embedded database instance ---");
         try {
-            Collection root = DatabaseManager.getCollection(URI, "admin", adminPass);
-            DatabaseInstanceManager manager = (DatabaseInstanceManager)
+            final Collection root = DatabaseManager.getCollection(URI, "admin", adminPass);
+            final DatabaseInstanceManager manager = (DatabaseInstanceManager)
                     root.getService("DatabaseInstanceManager", "1.0");
             manager.shutdown();
-        } catch (XMLDBException e) {
+        } catch (final XMLDBException e) {
             System.err.println("Caught an exception while initializing db: " + e.getMessage());
             e.printStackTrace();
         }

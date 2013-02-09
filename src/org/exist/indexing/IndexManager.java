@@ -67,12 +67,12 @@ public class IndexManager {
      */
     public IndexManager(BrokerPool pool, Configuration config) throws DatabaseConfigurationException {
         this.pool = pool;
-        Configuration.IndexModuleConfig modConf[] = (Configuration.IndexModuleConfig[])
+        final Configuration.IndexModuleConfig modConf[] = (Configuration.IndexModuleConfig[])
                 config.getProperty(PROPERTY_INDEXER_MODULES);
-        String dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        final String dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
         if (modConf != null) {
             for (int i = 0; i < modConf.length; i++) {
-                String className = modConf[i].getClassName();
+                final String className = modConf[i].getClassName();
                 initIndex(pool, modConf[i].getId(), modConf[i].getConfig(), dataDir, className);
             }
         }
@@ -86,23 +86,23 @@ public class IndexManager {
 
     private AbstractIndex initIndex(BrokerPool pool, String id, Element config, String dataDir, String className) throws DatabaseConfigurationException {
         try {
-            Class<?> clazz = Class.forName(className);
+            final Class<?> clazz = Class.forName(className);
             if (!AbstractIndex.class.isAssignableFrom(clazz)) {
                 throw new DatabaseConfigurationException("Class " + className + " does not implement " +
                         AbstractIndex.class.getName());
             }
-            AbstractIndex index = (AbstractIndex)clazz.newInstance();
+            final AbstractIndex index = (AbstractIndex)clazz.newInstance();
             index.configure(pool, dataDir, config);
             index.open();
             indexers.put(id, index);
             if (LOG.isInfoEnabled())
-                LOG.info("Registered index " + className + " as " + id);
+                {LOG.info("Registered index " + className + " as " + id);}
             return index;
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             LOG.warn("Class " + className + " not found. Cannot configure index.");
-        } catch (IllegalAccessException e) {
+        } catch (final IllegalAccessException e) {
             LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
-        } catch (InstantiationException e) {
+        } catch (final InstantiationException e) {
             LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
         }
         return null;
@@ -112,7 +112,7 @@ public class IndexManager {
         index.open();
         indexers.put(index.getIndexId(), index);
         if (LOG.isInfoEnabled())
-            LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());
+            {LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());}
         return index;
     }
 
@@ -141,10 +141,10 @@ public class IndexManager {
      * @return the index
      */
     public synchronized Index getIndexById(String indexId) {
-        for (Iterator<Index> i = iterator(); i.hasNext(); ) {
-            Index indexer = i.next();
+        for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
+            final Index indexer = i.next();
             if (indexId.equals(indexer.getIndexId()))
-                return indexer;
+                {return indexer;}
         }
         return null;
     }
@@ -166,12 +166,12 @@ public class IndexManager {
      * @return set of IndexWorkers
      */
     protected synchronized List<IndexWorker> getWorkers(DBBroker broker) {
-        List<IndexWorker> workerList = new ArrayList<IndexWorker>(indexers.size());
-        for (Iterator<Index> i = indexers.values().iterator(); i.hasNext(); ) {
-            Index index = i.next();
-            IndexWorker worker = index.getWorker(broker);
+        final List<IndexWorker> workerList = new ArrayList<IndexWorker>(indexers.size());
+        for (final Iterator<Index> i = indexers.values().iterator(); i.hasNext(); ) {
+            final Index index = i.next();
+            final IndexWorker worker = index.getWorker(broker);
             if (worker != null)
-                workerList.add(worker);
+                {workerList.add(worker);}
         }
         return workerList;
     }
@@ -184,7 +184,7 @@ public class IndexManager {
      */
     public void shutdown() throws DBException {
         Index index;
-        for (Iterator<Index> i = iterator(); i.hasNext(); ) {
+        for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
             index = i.next();
             index.close();
         }
@@ -197,7 +197,7 @@ public class IndexManager {
      */
     public void sync() throws DBException {
         Index index;
-        for (Iterator<Index> i = iterator(); i.hasNext(); ) {
+        for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
             index = i.next();
             index.sync();
         }
@@ -211,7 +211,7 @@ public class IndexManager {
      */
     public void removeIndexes() throws DBException {
         Index index;
-        for (Iterator<Index> i = iterator(); i.hasNext();) {
+        for (final Iterator<Index> i = iterator(); i.hasNext();) {
             index = i.next();
             index.remove();
         }
@@ -225,7 +225,7 @@ public class IndexManager {
      */
     public void reopenIndexes() throws DatabaseConfigurationException {
         Index index;
-        for (Iterator<Index> i = iterator(); i.hasNext();) {
+        for (final Iterator<Index> i = iterator(); i.hasNext();) {
             index = i.next();
             index.open();
         }
@@ -233,10 +233,10 @@ public class IndexManager {
 
     public void backupToArchive(RawDataBackup backup) throws IOException {
         Index index;
-        for (Iterator<Index> i = iterator(); i.hasNext();) {
+        for (final Iterator<Index> i = iterator(); i.hasNext();) {
             index = i.next();
             if (index instanceof RawBackupSupport)
-                ((RawBackupSupport)index).backupToArchive(backup);
+                {((RawBackupSupport)index).backupToArchive(backup);}
         }
     }
 }

@@ -152,7 +152,7 @@ public class MemoryMappedFileFilterInputStreamCache implements FilterInputStream
             buf.position(cacheOffset);
 
             //read the data;
-            byte data[] = new byte[len];
+            final byte data[] = new byte[len];
             buf.get(data, 0, len);
 
             System.arraycopy(data, 0, b, off, len);

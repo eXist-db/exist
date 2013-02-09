@@ -138,7 +138,7 @@ public class Accounting {
         if (map.get(cacheable.getKey()) != null) {
             ++thrashing;
         } else
-            map.put(cacheable.getKey(), DUMMY);
+            {map.put(cacheable.getKey(), DUMMY);}
     }
     
     /**
@@ -158,7 +158,7 @@ public class Accounting {
      */
     public boolean resizeNeeded() {
         if (thrashingFactor == 0)
-            return thrashing > 0;
+            {return thrashing > 0;}
         return thrashing > totalSize * thrashingFactor;
     }
     

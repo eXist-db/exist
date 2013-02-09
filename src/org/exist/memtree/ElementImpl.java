@@ -78,10 +78,10 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      */
     @Override
     public Node getFirstChild() {
-        short level    = document.treeLevel[nodeNumber];
-        int   nextNode = nodeNumber + 1;
+        final short level    = document.treeLevel[nodeNumber];
+        final int   nextNode = nodeNumber + 1;
         if( ( nextNode < document.size ) && ( document.treeLevel[nextNode] > level ) )
-            return( document.getNode( nextNode ) );
+            {return( document.getNode( nextNode ) );}
         return null;
     }
 
@@ -90,10 +90,10 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      */
     @Override
     public NodeList getChildNodes() {
-        NodeListImpl nl       = new NodeListImpl();
+        final NodeListImpl nl       = new NodeListImpl();
         int          nextNode = document.getFirstChildFor( nodeNumber );
         while( nextNode > nodeNumber ) {
-            Node n = document.getNode( nextNode );
+            final Node n = document.getNode( nextNode );
             nl.add( n );
             nextNode = document.next[nextNode];
         }
@@ -143,7 +143,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         int attr = document.alpha[nodeNumber];
         if( -1 < attr ) {
             while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
-                QName attrQName = document.attrName[attr];
+                final QName attrQName = document.attrName[attr];
                 if( attrQName.getStringValue().equals( name ) ) {
                     return( document.attrValue[attr] );
                 }
@@ -154,7 +154,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             int ns = document.alphaLen[nodeNumber];
             if( -1 < ns ) {
                 while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
-                    QName nsQName = document.namespaceCode[ns];
+                    final QName nsQName = document.namespaceCode[ns];
                     if( nsQName.getStringValue().equals( name ) ) {
                         return( nsQName.getNamespaceURI() );
                     }
@@ -169,12 +169,12 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      * @see org.w3c.dom.Element#setAttribute(java.lang.String, java.lang.String)
      */
     public void setAttribute( String name, String value ) throws DOMException {
-        int lastNode = document.getLastNode();
+        final int lastNode = document.getLastNode();
 
         QName qname;
 		try {
 			qname = QName.parse(document.context, name);
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			throw new DOMException(DOMException.SYNTAX_ERR, e.getMessage());
 		}
         
@@ -197,7 +197,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      */
     @Override
     public NamedNodeMap getAttributes() {
-        NamedNodeMapImpl map  = new NamedNodeMapImpl();
+        final NamedNodeMapImpl map  = new NamedNodeMapImpl();
         int              attr = document.alpha[nodeNumber];
         if( -1 < attr ) {
             while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
@@ -211,7 +211,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             return( map );
         }
         while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
-            NamespaceNode node = new NamespaceNode( document, ns );
+            final NamespaceNode node = new NamespaceNode( document, ns );
             map.add( node );
             ++ns;
         }
@@ -225,7 +225,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         int attr = document.alpha[nodeNumber];
         if( -1 < attr ) {
             while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
-                QName attrQName = document.attrName[attr];
+                final QName attrQName = document.attrName[attr];
                 if( attrQName.getStringValue().equals( name ) ) {
                     return( new AttributeImpl( document, attr ) );
                 }
@@ -236,7 +236,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             int ns = document.alphaLen[nodeNumber];
             if( -1 < ns ) {
                 while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
-                    QName nsQName = document.namespaceCode[ns];
+                    final QName nsQName = document.namespaceCode[ns];
                     if( nsQName.getStringValue().equals( name ) ) {
                         return( new NamespaceNode( document, ns ) );
                     }
@@ -268,7 +268,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         int attr = document.alpha[nodeNumber];
         if( -1 < attr ) {
             while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
-                AttributeImpl attrib = new AttributeImpl( document, attr );
+                final AttributeImpl attrib = new AttributeImpl( document, attr );
                 if( test.matches( attrib ) ) {
                     result.add( attrib );
                 }
@@ -279,7 +279,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
 
     @Override
     public void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException {
-        int      treeLevel = document.treeLevel[nodeNumber];
+        final int      treeLevel = document.treeLevel[nodeNumber];
         int      nextNode  = nodeNumber;
         NodeImpl n         = document.getNode( nextNode );
         n.selectAttributes( test, result );
@@ -295,7 +295,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     public void selectChildren( NodeTest test, Sequence result ) throws XPathException {
         int nextNode = document.getFirstChildFor( nodeNumber );
         while( nextNode > nodeNumber ) {
-            NodeImpl n = document.getNode( nextNode );
+            final NodeImpl n = document.getNode( nextNode );
             if( test.matches( n ) ) {
                 result.add( n );
             }
@@ -304,7 +304,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     }
 
     public NodeImpl getFirstChild(NodeTest test) throws XPathException {
-    	ValueSequence seq = new ValueSequence();
+    	final ValueSequence seq = new ValueSequence();
     	selectChildren(test, seq);
     	return seq.isEmpty() ? null : seq.get(0);
     }
@@ -312,18 +312,18 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     @Override
     public void selectDescendants( boolean includeSelf, NodeTest test, Sequence result ) 
             throws XPathException {
-        int treeLevel = document.treeLevel[nodeNumber];
+        final int treeLevel = document.treeLevel[nodeNumber];
         int nextNode  = nodeNumber;
 
         if( includeSelf ) {
-            NodeImpl n = document.getNode( nextNode );
+            final NodeImpl n = document.getNode( nextNode );
             if( test.matches( n ) ) {
                 result.add( n );
             }
         }
 
         while( ( ++nextNode < document.size ) && ( document.treeLevel[nextNode] > treeLevel ) ) {
-            NodeImpl n = document.getNode( nextNode );
+            final NodeImpl n = document.getNode( nextNode );
             if( test.matches( n ) ) {
                 result.add( n );
             }
@@ -334,12 +334,12 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
      */
     public NodeList getElementsByTagName( String name ) {
-        NodeListImpl nl       = new NodeListImpl();
+        final NodeListImpl nl       = new NodeListImpl();
         int          nextNode = nodeNumber;
-        int treeLevel = document.treeLevel[nodeNumber];
+        final int treeLevel = document.treeLevel[nodeNumber];
         while( ( ++nextNode < document.size ) && ( document.treeLevel[nextNode] > treeLevel ) ) {
             if( document.nodeKind[nextNode] == Node.ELEMENT_NODE ) {
-                QName qn = document.nodeName[nextNode];
+                final QName qn = document.nodeName[nextNode];
                 if( qn.getStringValue().equals( name ) ) {
                     nl.add( document.getNode( nextNode ) );
                 }
@@ -367,7 +367,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             int ns = document.alphaLen[nodeNumber];
             if( -1 < ns ) {
                 while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
-                    QName nsQName = document.namespaceCode[ns];
+                    final QName nsQName = document.namespaceCode[ns];
                     if( nsQName.getLocalName().equals( localName ) ) {
                         return( nsQName.getNamespaceURI() );
                     }
@@ -411,7 +411,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             int ns = document.alphaLen[nodeNumber];
             if( -1 < ns ) {
                 while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
-                    QName nsQName = document.namespaceCode[ns];
+                    final QName nsQName = document.namespaceCode[ns];
                     if( nsQName.getLocalName().equals( localName ) ) {
                         return( new NamespaceNode( document, ns ) );
                     }
@@ -436,12 +436,12 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      * @see org.w3c.dom.Element#getElementsByTagNameNS(java.lang.String, java.lang.String)
      */
     public NodeList getElementsByTagNameNS( String namespaceURI, String name ) {
-        QName        qname    = new QName( name, namespaceURI );
-        NodeListImpl nl       = new NodeListImpl();
+        final QName        qname    = new QName( name, namespaceURI );
+        final NodeListImpl nl       = new NodeListImpl();
         int          nextNode = nodeNumber;
         while( ++nextNode < document.size ) {
             if( document.nodeKind[nextNode] == Node.ELEMENT_NODE ) {
-                QName qn = document.nodeName[nextNode];
+                final QName qn = document.nodeName[nextNode];
                 if( qname.compareTo( qn ) == 0 ) {
                     nl.add( document.getNode( nextNode ) );
                 }
@@ -478,7 +478,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         int ns = document.alphaLen[nodeNumber];
         if( -1 < ns ) {
             while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
-                QName nsQName = document.namespaceCode[ns];
+                final QName nsQName = document.namespaceCode[ns];
                 if( nsQName.getStringValue().equals( "xmlns:" + name ) ) {
                     return( nsQName.getNamespaceURI() );
                 }
@@ -494,11 +494,11 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      * @return  a <code>Set</code> value
      */
     public Set<String> getPrefixes() {
-        HashSet<String> set = new HashSet<String>();
+        final HashSet<String> set = new HashSet<String>();
         int             ns  = document.alphaLen[nodeNumber];
         if( -1 < ns ) {
             while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
-                QName nsQName = document.namespaceCode[ns];
+                final QName nsQName = document.namespaceCode[ns];
                 set.add( nsQName.getStringValue() );
                 ++ns;
             }
@@ -528,7 +528,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         int ns  = document.alphaLen[nodeNumber];
         if( -1 < ns ) {
             while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
-                QName nsQName = document.namespaceCode[ns];
+                final QName nsQName = document.namespaceCode[ns];
                 map.put( nsQName.getLocalName(), nsQName.getNamespaceURI() );
                 ++ns;
             }
@@ -537,9 +537,9 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         int attr = document.alpha[nodeNumber];
         if( -1 < attr ) {
             while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
-            	QName qname = document.attrName[attr];
+            	final QName qname = document.attrName[attr];
             	if (qname.getPrefix() != null && !qname.getPrefix().isEmpty())
-            		map.put( qname.getPrefix(), qname.getNamespaceURI() );
+            		{map.put( qname.getPrefix(), qname.getNamespaceURI() );}
                 ++attr;
             }
         }
@@ -554,9 +554,9 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
 
     @Override
     public String getBaseURI() {
-    	XmldbURI baseURI = calculateBaseURI();
+    	final XmldbURI baseURI = calculateBaseURI();
     	if (baseURI != null)
-    		return baseURI.toString();
+    		{return baseURI.toString();}
     	
     	return "";//UNDERSTAND: is it ok?
     }
@@ -565,11 +565,11 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     protected XmldbURI calculateBaseURI() {
     	XmldbURI baseURI = null;
     	
-        String nodeBaseURI = getAttributeNS( Namespaces.XML_NS, "base" );
+        final String nodeBaseURI = getAttributeNS( Namespaces.XML_NS, "base" );
         if( nodeBaseURI != null ) {
         	baseURI = XmldbURI.create(nodeBaseURI, false);
         	if (baseURI.isAbsolute())
-        		return baseURI;
+        		{return baseURI;}
         }
         
         int parent = -1;
@@ -588,18 +588,18 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
                 	.calculateBaseURI();
 
                 if (nodeBaseURI.isEmpty())
-                	baseURI = parentsBaseURI;
+                	{baseURI = parentsBaseURI;}
                 else {
                 	baseURI = parentsBaseURI.append(baseURI);
                 }
             }
         } else {
         	if (nodeBaseURI == null)
-        		return XmldbURI.create(getDocument().getBaseURI(), false);
+        		{return XmldbURI.create(getDocument().getBaseURI(), false);}
         	else if (nodeNumber == 1) {
         		;
         	} else {
-        		String docBaseURI = getDocument().getBaseURI();
+        		final String docBaseURI = getDocument().getBaseURI();
                 if (docBaseURI.endsWith("/")) {
                 	baseURI = XmldbURI.create(getDocument().getBaseURI(), false);
                 	baseURI.append(baseURI);
@@ -664,13 +664,13 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     @Override
     public void setTextContent( String textContent ) throws DOMException
     {
-        int nodeNr = document.addNode( Node.TEXT_NODE, (short)( document.getTreeLevel( nodeNumber ) + 1 ), null );
+        final int nodeNr = document.addNode( Node.TEXT_NODE, (short)( document.getTreeLevel( nodeNumber ) + 1 ), null );
         document.addChars( nodeNr, textContent.toCharArray(), 0, textContent.length() );
     }
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append( "in-memory#" );
         result.append( "element {" );
         result.append( getQName().getStringValue() );
@@ -681,7 +681,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
                 if( i > 0 ) {
                     result.append( " " );
                 }
-                Node natt = theAttrs.item( i );
+                final Node natt = theAttrs.item( i );
                 if( "org.exist.memtree.AttributeImpl".equals( natt.getClass().getName() ) ) {
                     result.append( ( (AttributeImpl)natt ).toString() );
                 } else {
@@ -693,7 +693,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             if( i > 0 ) {
                 result.append( " " );
             }
-            Node child = getChildNodes().item( i );
+            final Node child = getChildNodes().item( i );
             result.append( child.toString() );
         }
         result.append( "} " );
@@ -702,9 +702,9 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
 
     @Override
     public String getNodeValue() throws DOMException {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         for( int i = 0; i < this.getChildCount(); i++ ) {
-            Node child = getChildNodes().item( i );
+            final Node child = getChildNodes().item( i );
             if( child instanceof Text ) {
                 if( i > 0 ) {
                     result.append( " " );

@@ -58,20 +58,20 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 	 */
 	public long updateResource(String resource, String xupdate)
 		throws XMLDBException {
-		long start = System.currentTimeMillis();
+		final long start = System.currentTimeMillis();
 		MutableDocumentSet docs = new DefaultDocumentSet();
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-    	Subject preserveSubject = pool.getSubject();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
+    	final Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
-		org.exist.collections.Collection c = parent.getCollection();
+		final org.exist.collections.Collection c = parent.getCollection();
 		try {
 			broker = pool.get(user);
 			if (resource == null) {
 				docs = c.allDocs(broker, docs, true);
 			} else {
-				XmldbURI resourceURI = XmldbURI.xmldbUriFor(resource);
-				DocumentImpl doc = c.getDocument(broker, resourceURI);
+				final XmldbURI resourceURI = XmldbURI.xmldbUriFor(resource);
+				final DocumentImpl doc = c.getDocument(broker, resourceURI);
 				if(doc == null) {
                     transact.abort(transaction);
 					throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource not found: " + resource);
@@ -79,12 +79,12 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 				docs.add(doc);
 			}
 			if(processor == null)
-				processor = new XUpdateProcessor(broker, docs, parent.getAccessContext());
+				{processor = new XUpdateProcessor(broker, docs, parent.getAccessContext());}
 			else {
 				processor.setBroker(broker);
 				processor.setDocumentSet(docs);
 			}
-			Modification modifications[] =
+			final Modification modifications[] =
 				processor.parse(new InputSource(new StringReader(xupdate)));
 			long mods = 0;
 			for (int i = 0; i < modifications.length; i++) {
@@ -99,33 +99,33 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
             LOG.debug("xupdate took " + (System.currentTimeMillis() - start) +
             	"ms.");
 			return mods;
-		} catch (ParserConfigurationException e) {
+		} catch (final ParserConfigurationException e) {
             transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch (IOException e) {
+		} catch (final IOException e) {
             transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch (SAXException e) {
+		} catch (final SAXException e) {
             transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
             transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch (PermissionDeniedException e) {
+		} catch (final PermissionDeniedException e) {
             transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage());
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
             transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch(Exception e) {
+		} catch(final Exception e) {
             transact.abort(transaction);
 			e.printStackTrace();
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
 			if(processor != null)
-				processor.reset();
+				{processor.reset();}
 			pool.release(broker);
 			pool.setSubject(preserveSubject);
 		}

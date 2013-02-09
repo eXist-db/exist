@@ -121,35 +121,35 @@ public class FunNormalizeUnicode extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-		    contextSequence = contextItem.toSequence();
+		    {contextSequence = contextItem.toSequence();}
 		
         Sequence result;
 
-        Sequence s1 = getArgument(0).eval(contextSequence);
+        final Sequence s1 = getArgument(0).eval(contextSequence);
         if (s1.isEmpty())
-            result = StringValue.EMPTY_STRING;
+            {result = StringValue.EMPTY_STRING;}
         else {
             String newNormalizationForm = "NFC";
 			if (getArgumentCount() > 1)
-				newNormalizationForm = getArgument(1).eval(contextSequence).getStringValue().toUpperCase().trim();
+				{newNormalizationForm = getArgument(1).eval(contextSequence).getStringValue().toUpperCase().trim();}
 			//TODO : handle the "FULLY-NORMALIZED" string...
 			if ("".equals(newNormalizationForm))
-				result =  new StringValue(s1.getStringValue());
+				{result =  new StringValue(s1.getStringValue());}
 			else {
 				Object returnedObject = null;
 				try {
 	        		if (clazz == null)
-	        			clazz = Class.forName("com.ibm.icu.text.Normalizer");
+	        			{clazz = Class.forName("com.ibm.icu.text.Normalizer");}
 	        		if (modeField == null || !normalizationForm.equals(newNormalizationForm)) {
 	        			try {
 	        				modeField = clazz.getField(newNormalizationForm);
-	        			} catch (NoSuchFieldException e) {
+	        			} catch (final NoSuchFieldException e) {
                             logger.error("err:FOCH0003: unknown normalization form");
 	        				throw new XPathException(this, ErrorCodes.FOCH0003, "unknown normalization form");
 	        			}
@@ -159,18 +159,18 @@ public class FunNormalizeUnicode extends Function {
 	        		}
 	        		if (constructor == null)
 	        			//Second argument shouldn't be a problem : modeField always has the same type
-	            		constructor = clazz.getConstructor(
+	            		{constructor = clazz.getConstructor(
 	            				new Class[] { String.class, modeField.getType(), Integer.TYPE}
-	    	        		);
-		        	Object[] args = new Object[] { s1.getStringValue(), modeObject, DUMMY_INTEGER };
+	    	        		);}
+		        	final Object[] args = new Object[] { s1.getStringValue(), modeObject, DUMMY_INTEGER };
 		        	if (method == null)
-		        		method = clazz.getMethod( "getText", (Class[])null );
+		        		{method = clazz.getMethod( "getText", (Class[])null );}
 	
 		        	//Normalizer n = new Normalizer(s1.getStringValue(), Normalizer.NFC, 0);
-		        	Object instance = constructor.newInstance(args);
+		        	final Object instance = constructor.newInstance(args);
 		        	//result = new StringValue(n.getText());
 		        	returnedObject = method.invoke( instance, (Object[])null );
-        		} catch (Exception e) {
+        		} catch (final Exception e) {
                     logger.error("Can not find the ICU4J library in the classpath " + e.getMessage());
         			throw new XPathException(this, "Can not find the ICU4J library in the classpath " + e.getMessage());
         		}
@@ -179,7 +179,7 @@ public class FunNormalizeUnicode extends Function {
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;        
     }

@@ -52,10 +52,10 @@ public class LockResourceTask extends UserTask
         }
 
         try {
-            Resource res = base.getResource( resource );
+            final Resource res = base.getResource( resource );
 
             if( res == null ) {
-                String msg = "Resource " + resource + " not found";
+                final String msg = "Resource " + resource + " not found";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -64,10 +64,10 @@ public class LockResourceTask extends UserTask
                 }
 
             } else {
-                Account usr = service.getAccount( name );
+                final Account usr = service.getAccount( name );
 
                 if( usr == null ) {
-                    String msg = "User " + name + " not found";
+                    final String msg = "User " + name + " not found";
 
                     if( failonerror ) {
                         throw( new BuildException( msg ) );
@@ -80,8 +80,8 @@ public class LockResourceTask extends UserTask
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

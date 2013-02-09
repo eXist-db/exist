@@ -155,7 +155,7 @@ public abstract class Match implements Comparable<Match> {
     }
 
     private void addOffsets(Collection<Offset> offsets) {
-        for (Offset o : offsets)
+        for (final Offset o : offsets)
             addOffset(o);
     }
 
@@ -164,7 +164,7 @@ public abstract class Match implements Comparable<Match> {
     }
 
     public List<Offset> getOffsets() {
-        List<Offset> result = new ArrayList<Offset>(currentOffset);
+        final List<Offset> result = new ArrayList<Offset>(currentOffset);
         for (int i = 0; i < currentOffset; i++) {
             result.add(getOffset(i));
         }
@@ -193,24 +193,24 @@ public abstract class Match implements Comparable<Match> {
      *  a match exists or null if no such match found
      */
     public Match followedBy(final Match other, final int minDistance, final int maxDistance) {
-        List<Offset> newMatchOffsets = new LinkedList<Offset>();
+        final List<Offset> newMatchOffsets = new LinkedList<Offset>();
         for (int i = 0; i < currentOffset; i++) {
             for (int j = 0; j < other.currentOffset; j++) {
-                int distance = other.offsets[j] - (offsets[i] + lengths[i]);
+                final int distance = other.offsets[j] - (offsets[i] + lengths[i]);
                 if (distance >= minDistance && distance <= maxDistance) {
                     newMatchOffsets.add(new Offset(offsets[i], lengths[i] + distance + other.lengths[j]));
                 }
             }
         }
         if (newMatchOffsets.isEmpty())
-            return null;
-        int wildCardSize = newMatchOffsets.get(0).length - matchTerm.length() - other.matchTerm.length();
-        StringBuilder matched = new StringBuilder(matchTerm);
+            {return null;}
+        final int wildCardSize = newMatchOffsets.get(0).length - matchTerm.length() - other.matchTerm.length();
+        final StringBuilder matched = new StringBuilder(matchTerm);
         for (int ii = 0; ii < wildCardSize; ii++) {
             matched.append('?');
         }
         matched.append(other.matchTerm);
-        Match result = createInstance(context, nodeId, matched.toString());
+        final Match result = createInstance(context, nodeId, matched.toString());
         result.addOffsets(newMatchOffsets);
         return result;
     }
@@ -228,14 +228,14 @@ public abstract class Match implements Comparable<Match> {
         for (int i = 0; i < currentOffset; i++) {
             if (offsets[i] - minExpand >= 0) {
                 if (result == null) {
-                    StringBuilder matched = new StringBuilder();
+                    final StringBuilder matched = new StringBuilder();
                     for (int ii = 0; ii < minExpand; ii++) {
                         matched.append('?');
                     }
                     matched.append(matchTerm);
                     result = createInstance(context, nodeId, matched.toString());
                 }
-                int expand = Math.min(offsets[i], maxExpand);
+                final int expand = Math.min(offsets[i], maxExpand);
                 result.addOffset(offsets[i] - expand, lengths[i] + expand);
             }
         }
@@ -255,9 +255,9 @@ public abstract class Match implements Comparable<Match> {
         Match result = null;
         for (int i = 0; i < currentOffset; i++) {
             if (offsets[i] + lengths[i] + minExpand <= dataLength) {
-                int expand = Math.min(dataLength - offsets[i] - lengths[i], maxExpand);
+                final int expand = Math.min(dataLength - offsets[i] - lengths[i], maxExpand);
                 if (result == null) {
-                    StringBuilder matched = new StringBuilder(matchTerm);
+                    final StringBuilder matched = new StringBuilder(matchTerm);
                     for (int ii = 0; ii < expand; ii++) {
                         matched.append('?');
                     }
@@ -274,15 +274,15 @@ public abstract class Match implements Comparable<Match> {
     }
 
     private Match filterOffsets(F<Offset, Boolean> predicate) {
-        Match result = createInstance(context, nodeId, matchTerm);
-        for (Offset o : getOffsets()) {
+        final Match result = createInstance(context, nodeId, matchTerm);
+        for (final Offset o : getOffsets()) {
             if (predicate.f(o).booleanValue())
-                result.addOffset(o);
+                {result.addOffset(o);}
         }
         if (result.currentOffset == 0)
-            return null;
+            {return null;}
         else
-            return result;
+            {return result;}
     }
 
     /**
@@ -325,33 +325,33 @@ public abstract class Match implements Comparable<Match> {
      */
     public Match filterOutOverlappingOffsets() {
         if (currentOffset == 0)
-            return newCopy();
-        List<Offset> newMatchOffsets = getOffsets();
+            {return newCopy();}
+        final List<Offset> newMatchOffsets = getOffsets();
         Collections.sort(newMatchOffsets, new Comparator<Offset>() {
             // Sort by descending length to get greedier matches first, then position for left to right matching
             @Override
             public int compare(Offset o1, Offset o2) {
-                int lengthDiff = o2.length - o1.length;
+                final int lengthDiff = o2.length - o1.length;
                 if (lengthDiff != 0)
-                    return lengthDiff;
+                    {return lengthDiff;}
                 else
-                    return o1.offset - o2.offset;
+                    {return o1.offset - o2.offset;}
             }
         });
-        List<Offset> nonOverlappingMatchOffsets = new LinkedList<Offset>();
+        final List<Offset> nonOverlappingMatchOffsets = new LinkedList<Offset>();
         nonOverlappingMatchOffsets.add(newMatchOffsets.remove(0));
-        for (Offset o : newMatchOffsets) {
+        for (final Offset o : newMatchOffsets) {
             boolean overlapsExistingOffset = false;
-            for (Offset eo : nonOverlappingMatchOffsets) {
+            for (final Offset eo : nonOverlappingMatchOffsets) {
                 if (eo.overlaps(o)) {
                     overlapsExistingOffset = true;
                     break;
                 }
             }
             if (!overlapsExistingOffset)
-                nonOverlappingMatchOffsets.add(o);
+                {nonOverlappingMatchOffsets.add(o);}
         }
-        Match result = createInstance(context, nodeId, matchTerm);
+        final Match result = createInstance(context, nodeId, matchTerm);
         result.addOffsets(nonOverlappingMatchOffsets);
         return result;
     }
@@ -366,7 +366,7 @@ public abstract class Match implements Comparable<Match> {
     public boolean hasMatchAt(int pos) {
         for (int i = 0; i < currentOffset; i++) {
             if (offsets[i] == pos)
-                return true;
+                {return true;}
         }
         return false;
     }
@@ -380,7 +380,7 @@ public abstract class Match implements Comparable<Match> {
     public boolean hasMatchAround(int pos) {
         for (int i = 0; i < currentOffset; i++) {
             if (offsets[i] + lengths[i] >= pos)
-                return true;
+                {return true;}
         }
         return false;
     }
@@ -388,7 +388,7 @@ public abstract class Match implements Comparable<Match> {
     public void mergeOffsets(Match other) {
         for (int i = 0; i < other.currentOffset; i++) {
             if (!hasMatchAt(other.offsets[i]))
-                addOffset(other.offsets[i], other.lengths[i]);
+                {addOffset(other.offsets[i], other.lengths[i]);}
         }
     }
 
@@ -401,7 +401,7 @@ public abstract class Match implements Comparable<Match> {
         Match n2 = m2;
         while (n1 != null) {
             if (n2 == null || n1 != n2)
-                return false;
+                {return false;}
             n1 = n1.nextMatch;
             n2 = n2.nextMatch;
         }
@@ -411,8 +411,8 @@ public abstract class Match implements Comparable<Match> {
     @Override
     public boolean equals(Object other) {
         if(!(other instanceof Match))
-            return false;
-        Match om = (Match) other;
+            {return false;}
+        final Match om = (Match) other;
         return om.matchTerm != null &&
             om.matchTerm.equals(matchTerm) &&
             om.nodeId.equals(nodeId);
@@ -420,7 +420,7 @@ public abstract class Match implements Comparable<Match> {
 
     public boolean matchEquals(Match other) {
         if (this == other)
-            return true;
+            {return true;}
         return
             (nodeId == other.nodeId || nodeId.equals(other.nodeId)) &&
             matchTerm.equals(other.matchTerm);
@@ -439,14 +439,14 @@ public abstract class Match implements Comparable<Match> {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder(matchTerm);
+        final StringBuilder buf = new StringBuilder(matchTerm);
         for (int i = 0; i < currentOffset; i++) {
             buf.append(" [");
             buf.append(offsets[i]).append(':').append(lengths[i]);
             buf.append("]");
         }
         if (nextMatch != null)
-            buf.append(' ').append(nextMatch.toString());
+            {buf.append(' ').append(nextMatch.toString());}
         return buf.toString();
     }
 }

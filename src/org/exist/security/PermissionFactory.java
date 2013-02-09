@@ -102,7 +102,7 @@ public class PermissionFactory {
             }
 
             permission = new SimpleACLPermission(sm, owner.getId(), group.getId(), mode);
-        } catch(Throwable ex) {
+        } catch(final Throwable ex) {
         	LOG.error("Exception while instantiating security permission class.", ex);
         }
         return permission;
@@ -115,8 +115,8 @@ public class PermissionFactory {
     public static void updatePermissions(DBBroker broker, XmldbURI pathUri, PermissionModifier permissionModifier) throws PermissionDeniedException {
         Collection collection = null;
         DocumentImpl doc = null;
-        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         try {
             collection = broker.openCollection(pathUri, Lock.WRITE_LOCK);
             if (collection == null) {
@@ -126,7 +126,7 @@ public class PermissionFactory {
                     throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
                 }
 
-                Permission permissions = doc.getPermissions();
+                final Permission permissions = doc.getPermissions();
                 permissionModifier.modify(permissions);
 
                 broker.storeXMLResource(transaction, doc);
@@ -136,26 +136,26 @@ public class PermissionFactory {
                 // keep the write lock in the transaction
                 transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
 
-                Permission permissions = collection.getPermissions();
+                final Permission permissions = collection.getPermissions();
                 permissionModifier.modify(permissions);
 
                 broker.saveCollection(transaction, collection);
                 transact.commit(transaction);
                 broker.flush();
             }
-        } catch(XPathException xpe) {
+        } catch(final XPathException xpe) {
             transact.abort(transaction);
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + xpe.getMessage(), xpe);
-        } catch (PermissionDeniedException pde) {
+        } catch (final PermissionDeniedException pde) {
             transact.abort(transaction);
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
-        } catch (IOException ioe) {
+        } catch (final IOException ioe) {
             transact.abort(transaction);
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + ioe.getMessage(), ioe);
-        } catch (TriggerException te) {
+        } catch (final TriggerException te) {
             transact.abort(transaction);
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + te.getMessage(), te);
-        } catch(TransactionException te) {
+        } catch(final TransactionException te) {
             transact.abort(transaction);
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + te.getMessage(), te);
         } finally {

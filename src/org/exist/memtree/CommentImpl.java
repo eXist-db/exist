@@ -121,7 +121,7 @@ public class CommentImpl extends NodeImpl implements Comment {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("in-memory#");
         result.append("comment {");
         result.append(getData());
@@ -152,9 +152,9 @@ public class CommentImpl extends NodeImpl implements Comment {
 
     @Override
     public String getBaseURI() {
-        Node parent = getParentNode();
+        final Node parent = getParentNode();
         if (parent == null)
-            return null;
+            {return null;}
         return parent.getBaseURI();
     }
 }

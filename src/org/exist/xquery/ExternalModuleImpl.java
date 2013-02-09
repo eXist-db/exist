@@ -85,7 +85,7 @@ public class ExternalModuleImpl implements ExternalModule {
         if (metadata == null) {
             metadata = new HashMap<String, String>();
         }
-        String old = metadata.get(key);
+        final String old = metadata.get(key);
         if (old != null) {
             value = old + ", " + value;
         }
@@ -105,10 +105,10 @@ public class ExternalModuleImpl implements ExternalModule {
 
     public UserDefinedFunction getFunction(QName qname, int arity, XQueryContext callerContext) 
     throws XPathException {
-        FunctionId id = new FunctionId(qname, arity);
-        UserDefinedFunction fn = mFunctionMap.get(id);
+        final FunctionId id = new FunctionId(qname, arity);
+        final UserDefinedFunction fn = mFunctionMap.get(id);
         if (fn == null)
-        	return null;
+        	{return null;}
         if (callerContext != getContext() && fn.getSignature().isPrivate()) {
         	throw new XPathException(ErrorCodes.XPST0017, "Calling a private function from outside its module");
         }
@@ -147,12 +147,12 @@ public class ExternalModuleImpl implements ExternalModule {
      * @see org.exist.xquery.Module#listFunctions()
      */
     public FunctionSignature[] listFunctions() {
-        List<FunctionSignature> signatures = new ArrayList<FunctionSignature>(mFunctionMap.size());
-        for (Iterator<UserDefinedFunction> i = mFunctionMap.values().iterator(); i.hasNext(); ) {
-        	FunctionSignature signature = i.next().getSignature();
+        final List<FunctionSignature> signatures = new ArrayList<FunctionSignature>(mFunctionMap.size());
+        for (final Iterator<UserDefinedFunction> i = mFunctionMap.values().iterator(); i.hasNext(); ) {
+        	final FunctionSignature signature = i.next().getSignature();
     		signatures.add(signature);
         }
-        FunctionSignature[] result = new FunctionSignature[signatures.size()];
+        final FunctionSignature[] result = new FunctionSignature[signatures.size()];
         return signatures.toArray(result);
     }
 
@@ -160,10 +160,10 @@ public class ExternalModuleImpl implements ExternalModule {
      * @see org.exist.xquery.Module#getSignatureForFunction(org.exist.dom.QName)
      */
     public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
-        ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
-        for (UserDefinedFunction func : mFunctionMap.values()) {
+        final ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
+        for (final UserDefinedFunction func : mFunctionMap.values()) {
             if (func.getName().compareTo(qname) == 0)
-                signatures.add(func.getSignature());
+                {signatures.add(func.getSignature());}
         }
         return signatures.iterator();
     }
@@ -180,7 +180,7 @@ public class ExternalModuleImpl implements ExternalModule {
      * @see org.exist.xquery.Module#declareVariable(org.exist.dom.QName, java.lang.Object)
      */
     public Variable declareVariable(QName qname, Object value) throws XPathException {
-        Sequence val = XPathUtil.javaObjectToXPath(value, mContext);
+        final Sequence val = XPathUtil.javaObjectToXPath(value, mContext);
         Variable var = mStaticVariables.get(qname);
         if (var == null) {
             var = new VariableImpl(qname);
@@ -197,15 +197,15 @@ public class ExternalModuleImpl implements ExternalModule {
 
     public void declareVariable(QName qname, VariableDeclaration decl) throws XPathException {
         if (!qname.getNamespaceURI().equals(getNamespaceURI()))
-            throw new XPathException(decl, ErrorCodes.XQST0048, "It is a static error" +
+            {throw new XPathException(decl, ErrorCodes.XQST0048, "It is a static error" +
                 " if a function or variable declared in a library module is" + 
-                " not in the target namespace of the library module.");
+                " not in the target namespace of the library module.");}
         mGlobalVariables.put(qname, decl);
     }
 
     public boolean isVarDeclared(QName qname) {
         if (mGlobalVariables.get(qname) != null)
-            return true;
+            {return true;}
         return mStaticVariables.get(qname) != null;
     }
 
@@ -213,7 +213,7 @@ public class ExternalModuleImpl implements ExternalModule {
      * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
      */
     public Variable resolveVariable(QName qname) throws XPathException {
-        VariableDeclaration decl = mGlobalVariables.get(qname);
+        final VariableDeclaration decl = mGlobalVariables.get(qname);
         Variable var = mStaticVariables.get(qname);
         if (isReady && decl != null && (var == null || var.getValue() == null)) {
             decl.eval(null);
@@ -223,7 +223,7 @@ public class ExternalModuleImpl implements ExternalModule {
     }
 
     public void analyzeGlobalVars() throws XPathException {
-        for (VariableDeclaration decl : mGlobalVariables.values()) {
+        for (final VariableDeclaration decl : mGlobalVariables.values()) {
             decl.resetState(false);
             decl.analyze(new AnalyzeContextInfo());
         }

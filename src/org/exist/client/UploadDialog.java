@@ -58,9 +58,9 @@ class UploadDialog extends JFrame {
 	
 	public UploadDialog() {
 		super(Messages.getString("UploadDialog.0")); //$NON-NLS-1$
-		GridBagLayout grid = new GridBagLayout();
+		final GridBagLayout grid = new GridBagLayout();
 		getContentPane().setLayout(grid);
-		GridBagConstraints c = new GridBagConstraints();
+		final GridBagConstraints c = new GridBagConstraints();
 		c.insets = new Insets(5, 5, 5, 5);
 
 		JLabel label = new JLabel(Messages.getString("UploadDialog.1")); //$NON-NLS-1$
@@ -141,7 +141,7 @@ class UploadDialog extends JFrame {
 		grid.setConstraints(currentSize, c);
 		getContentPane().add(currentSize);
 
-		JLabel status = new JLabel(Messages.getString("UploadDialog.7")); //$NON-NLS-1$
+		final JLabel status = new JLabel(Messages.getString("UploadDialog.7")); //$NON-NLS-1$
 		c.gridx = 0;
 		c.gridy = 4;
 		c.anchor = GridBagConstraints.WEST;
@@ -164,7 +164,7 @@ class UploadDialog extends JFrame {
 		messages = new JTextArea(5, 50);
 		messages.setEditable(false);
 		messages.setLineWrap(true);
-		JScrollPane scroll =
+		final JScrollPane scroll =
 			new JScrollPane(
 				messages,
 				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -184,7 +184,7 @@ class UploadDialog extends JFrame {
 		closeBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (Messages.getString("UploadDialog.20").equals(closeBtn.getText())) //$NON-NLS-1$
-					setVisible(false);
+					{setVisible(false);}
 				else {
 					cancelled = true;
 					closeBtn.setText(Messages.getString("UploadDialog.11")); //$NON-NLS-1$
@@ -218,9 +218,9 @@ class UploadDialog extends JFrame {
 
 	public void setCurrentSize(long size) {
 		if (size >= 1024)
-			currentSize.setText(String.valueOf(size / 1024) + Messages.getString("UploadDialog.12")); //$NON-NLS-1$
+			{currentSize.setText(String.valueOf(size / 1024) + Messages.getString("UploadDialog.12"));} //$NON-NLS-1$
 		else
-			currentSize.setText(String.valueOf(size));
+			{currentSize.setText(String.valueOf(size));}
 	}
 
 	public void setTotalSize(long size) {
@@ -265,14 +265,14 @@ class UploadDialog extends JFrame {
 
 		public void update(Observable o, Object arg) {
 			progress.setIndeterminate(false);
-			ProgressIndicator ind = (ProgressIndicator) arg;
+			final ProgressIndicator ind = (ProgressIndicator) arg;
 			progress.setValue(ind.getPercentage());
 			if (o instanceof TextSearchEngine)
-				progress.setString(Messages.getString("UploadDialog.17")); //$NON-NLS-1$
+				{progress.setString(Messages.getString("UploadDialog.17"));} //$NON-NLS-1$
 			else if (o instanceof ElementIndex)
-				progress.setString(Messages.getString("UploadDialog.18")); //$NON-NLS-1$
+				{progress.setString(Messages.getString("UploadDialog.18"));} //$NON-NLS-1$
 			else
-				progress.setString(Messages.getString("UploadDialog.19")); //$NON-NLS-1$
+				{progress.setString(Messages.getString("UploadDialog.19"));} //$NON-NLS-1$
 		}
 
 	}

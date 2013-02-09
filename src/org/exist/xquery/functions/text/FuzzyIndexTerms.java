@@ -63,16 +63,16 @@ public class FuzzyIndexTerms extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		if(args[0].isEmpty())
-			return Sequence.EMPTY_SEQUENCE;
+			{return Sequence.EMPTY_SEQUENCE;}
 		DocumentSet docs;
 		if(contextSequence instanceof NodeSet)
-			docs = contextSequence.getDocumentSet();
+			{docs = contextSequence.getDocumentSet();}
 		else
-			docs = context.getStaticallyKnownDocuments();
-		String term = args[0].getStringValue();
-		String[] matches =
+			{docs = context.getStaticallyKnownDocuments();}
+		final String term = args[0].getStringValue();
+		final String[] matches =
 			context.getBroker().getTextEngine().getIndexTerms(docs, new FuzzyMatcher(term, 0.65));
-		ValueSequence result = new ValueSequence();
+		final ValueSequence result = new ValueSequence();
 		for(int i = 0; i < matches.length; i++)
 			result.add(new StringValue(matches[i]));
 		return result;

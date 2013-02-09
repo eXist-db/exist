@@ -58,7 +58,7 @@ public class Txn {
     
     public void releaseAll() {
         for (int i = locksHeld.size() - 1; i >= 0; i--) {
-            LockInfo info = locksHeld.get(i);
+            final LockInfo info = locksHeld.get(i);
             info.lock.release(info.lockMode);
         }
         locksHeld.clear();

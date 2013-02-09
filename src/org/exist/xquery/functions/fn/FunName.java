@@ -95,16 +95,16 @@ public class FunName extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         Sequence seq;
         Sequence result;
         
         if (contextItem != null)
-        	contextSequence = contextItem.toSequence();
+        	{contextSequence = contextItem.toSequence();}
  
         /*
 		if (contextSequence == null || contextSequence.isEmpty()) 
@@ -113,31 +113,31 @@ public class FunName extends Function {
         
 		//If we have one argument, we take it into account
 		if (getSignature().getArgumentCount() > 0) 
-			seq = getArgument(0).eval(contextSequence, contextItem);
+			{seq = getArgument(0).eval(contextSequence, contextItem);}
 		//Otherwise, we take the context sequence and we iterate over it
 		else
-			seq = contextSequence; 
+			{seq = contextSequence;} 
 		
 		if (seq == null)
-			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
 
         if (seq.isEmpty())
         	//Bloody specs !
-            result = StringValue.EMPTY_STRING;
+            {result = StringValue.EMPTY_STRING;}
         else {
-            Item item = seq.itemAt(0);
+            final Item item = seq.itemAt(0);
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-            	throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
+            	{throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");}
             //TODO : how to improve performance ?
-            Node n = ((NodeValue)item).getNode();  
+            final Node n = ((NodeValue)item).getNode();  
             if (n instanceof QNameable)
-            	result = new StringValue(((QNameable)n).getQName().getStringValue());
+            	{result = new StringValue(((QNameable)n).getQName().getStringValue());}
             else
-            	result = StringValue.EMPTY_STRING;
+            	{result = StringValue.EMPTY_STRING;}
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;          
         

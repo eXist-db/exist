@@ -85,9 +85,9 @@ public class RemoteBinaryResource
 		String retval="<streamunknown>";
 		
 		if(vfile!=null) {
-			Object content = vfile.getContent();
+			final Object content = vfile.getContent();
 			if(content instanceof File)
-				retval=((File)content).getAbsolutePath();
+				{retval=((File)content).getAbsolutePath();}
 		} else if(inputSource!=null && inputSource instanceof EXistInputSource) {
 			retval=((EXistInputSource)inputSource).getSymbolicPath();
 		} 

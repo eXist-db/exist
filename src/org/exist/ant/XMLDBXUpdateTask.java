@@ -55,10 +55,10 @@ public class XMLDBXUpdateTask extends AbstractXMLDBTask
 
         try {
             log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            Collection base = DatabaseManager.getCollection( uri, user, password );
+            final Collection base = DatabaseManager.getCollection( uri, user, password );
 
             if( base == null ) {
-                String msg = "Collection " + uri + " could not be found.";
+                final String msg = "Collection " + uri + " could not be found.";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -67,14 +67,14 @@ public class XMLDBXUpdateTask extends AbstractXMLDBTask
                 }
 
             } else {
-                XUpdateQueryService service = (XUpdateQueryService)base.getService( "XUpdateQueryService", "1.0" );
+                final XUpdateQueryService service = (XUpdateQueryService)base.getService( "XUpdateQueryService", "1.0" );
 
                 if( resource != null ) {
                     log( "Updating resource: " + resource, Project.MSG_INFO );
-                    Resource res = base.getResource( resource );
+                    final Resource res = base.getResource( resource );
 
                     if( res == null ) {
-                        String msg = "Resource " + resource + " not found.";
+                        final String msg = "Resource " + resource + " not found.";
 
                         if( failonerror ) {
                             throw( new BuildException( msg ) );
@@ -92,8 +92,8 @@ public class XMLDBXUpdateTask extends AbstractXMLDBTask
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception during XUpdate: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception during XUpdate: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

@@ -79,59 +79,59 @@ public class FunQName extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }  
 
         //TODO : currently useless (but for empty sequences) since the type is forced :-(
         if (!args[0].isEmpty() && args[0].getItemType() != Type.STRING)
-        	throw new XPathException(this, ErrorCodes.XPTY0004, "Namespace URI is of type '" +
-        			Type.getTypeName(args[0].getItemType()) + "', 'xs:string' expected", args[0]);
+        	{throw new XPathException(this, ErrorCodes.XPTY0004, "Namespace URI is of type '" +
+        			Type.getTypeName(args[0].getItemType()) + "', 'xs:string' expected", args[0]);}
         String namespace;
 		if (args[0].isEmpty())
-			namespace = "";
+			{namespace = "";}
 		else
-			namespace = args[0].getStringValue();
+			{namespace = args[0].getStringValue();}
 		
-		String param = args[1].getStringValue();
+		final String param = args[1].getStringValue();
 		
 		String prefix = null;
 		String localName = null;		
 		try {
 			prefix = QName.extractPrefix(param);
 			localName = QName.extractLocalName(param);
-        } catch (IllegalArgumentException e) {
-                ValueSequence argsSeq = new ValueSequence(args[0]);
+        } catch (final IllegalArgumentException e) {
+                final ValueSequence argsSeq = new ValueSequence(args[0]);
                 argsSeq.addAll(args[1]);
         	throw new XPathException(this, ErrorCodes.FOCA0002, "Invalid lexical form of either prefix or local name.", argsSeq);
         }
 
 		if ((prefix != null && prefix.length() > 0) && (namespace == null || namespace.length() == 0)){
-                ValueSequence argsSeq = new ValueSequence(args[0]);
+                final ValueSequence argsSeq = new ValueSequence(args[0]);
                 argsSeq.addAll(args[1]);
                 throw new XPathException(this, ErrorCodes.FOCA0002, "Non-empty namespace prefix with empty namespace URI", argsSeq);
         }
 		
 		if (namespace != null) {
 			if (namespace.equalsIgnoreCase(Namespaces.XMLNS_NS))
-				if (prefix == null)
+				{if (prefix == null)
 					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XMLNS_NS+"' can't be use with no prefix");
 				else if (!prefix.equalsIgnoreCase("xmlns"))
-					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XMLNS_NS+"' can't be use with prefix '"+prefix+"'");
+					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XMLNS_NS+"' can't be use with prefix '"+prefix+"'");}
 			
 			if (namespace.equalsIgnoreCase(Namespaces.XML_NS))
-				if (prefix == null)
+				{if (prefix == null)
 					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XML_NS+"' can't be use with no prefix");
 				else if (!prefix.equalsIgnoreCase("xml"))
-					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XML_NS+"' can't be use with prefix '"+prefix+"'");
+					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XML_NS+"' can't be use with prefix '"+prefix+"'");}
 		}
 		
 		if (prefix != null) {
 			if (prefix.equalsIgnoreCase("xml") && !namespace.equalsIgnoreCase(Namespaces.XML_NS))
-				throw new XPathException(this, ErrorCodes.XQDY0044, "prefix 'xml' can be used only with '"+Namespaces.XML_NS+"'");
+				{throw new XPathException(this, ErrorCodes.XQDY0044, "prefix 'xml' can be used only with '"+Namespaces.XML_NS+"'");}
 			
 		}
 		
-		QName qname = new QName(localName, namespace, prefix);
+		final QName qname = new QName(localName, namespace, prefix);
         if (prefix != null && namespace != null) {
             if (context.getURIForPrefix(prefix) == null) {
             	//TOCHECK : context.declareInScopeNamespace(prefix, uri) ?            	
@@ -143,12 +143,12 @@ public class FunQName extends BasicFunction {
         }
 
         if(!XMLChar.isValidName(qname.getLocalName()))
-            throw new XPathException(this, ErrorCodes.FOCA0002, "'" + qname.getLocalName() + "' is not a valid local name.");
+            {throw new XPathException(this, ErrorCodes.FOCA0002, "'" + qname.getLocalName() + "' is not a valid local name.");}
 
-        Sequence result = new QNameValue(context, qname);
+        final Sequence result = new QNameValue(context, qname);
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;
 	}

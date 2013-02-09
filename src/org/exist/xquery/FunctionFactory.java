@@ -46,7 +46,7 @@ public class FunctionFactory {
     	QName qname = null;
         try {
             qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
-        } catch(XPathException xpe) {
+        } catch(final XPathException xpe) {
             xpe.setLocation(ast.getLine(), ast.getColumn());
             throw xpe;
         }
@@ -67,22 +67,22 @@ public class FunctionFactory {
      */
     public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params,
         boolean optimizeStrFuncs) throws XPathException {
-        String local = qname.getLocalName();
-        String uri = qname.getNamespaceURI();
+        final String local = qname.getLocalName();
+        final String uri = qname.getNamespaceURI();
         Expression step = null;
         if (optimizeStrFuncs && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
             //TODO : move to text:near()
-            if (local.equals("near")) {
+            if ("near".equals(local)) {
                 step = near(context, ast, params);
-            } else if(local.equals("phrase")) {
+            } else if("phrase".equals(local)) {
                 step = phrase(context, ast, params);
-            } else if(local.equals("starts-with")) {
+            } else if("starts-with".equals(local)) {
                 step = startsWith(context, ast, parent, params);
-            } else if(local.equals("ends-with")) {
+            } else if("ends-with".equals(local)) {
                 step = endsWith(context, ast, parent, params);
-            } else if(local.equals("contains")) {
+            } else if("contains".equals(local)) {
                 step = contains(context, ast, parent, params);
-            } else if(local.equals("equals")) {
+            } else if("equals".equals(local)) {
                 step = equals(context, ast, parent, params);
             }
         //Check if the namespace belongs to one of the schema namespaces.
@@ -117,8 +117,8 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Second argument of near() is empty");
         }
-        Expression e1 = p1.getExpression(0);
-        ExtNear near = new ExtNear(context);
+        final Expression e1 = p1.getExpression(0);
+        final ExtNear near = new ExtNear(context);
         near.setLocation(ast.getLine(), ast.getColumn());
         near.addTerm(e1);
         near.setPath((PathExpr) params.get(0));
@@ -150,13 +150,13 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Function phrase() requires two arguments");
         }
-        PathExpr p1 = (PathExpr) params.get(1);
+        final PathExpr p1 = (PathExpr) params.get(1);
         if (p1.getLength() == 0) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Second argument of phrase() is empty");
         }
-        Expression e1 = p1.getExpression(0);
-        ExtPhrase phrase = new ExtPhrase(context);
+        final Expression e1 = p1.getExpression(0);
+        final ExtPhrase phrase = new ExtPhrase(context);
         phrase.setLocation(ast.getLine(), ast.getColumn());
         phrase.addTerm(e1);
         phrase.setPath((PathExpr) params.get(0));
@@ -176,13 +176,13 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Function starts-with() requires two or three arguments");
         }
-        PathExpr p0 = (PathExpr) params.get(0);
-        PathExpr p1 = (PathExpr) params.get(1);
+        final PathExpr p0 = (PathExpr) params.get(0);
+        final PathExpr p1 = (PathExpr) params.get(1);
         if (p1.getLength() == 0) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Second argument of starts-with() is empty");
         }
-        GeneralComparison op = new GeneralComparison(context, p0, p1,
+        final GeneralComparison op = new GeneralComparison(context, p0, p1,
             Constants.EQ, Constants.TRUNC_RIGHT);
         op.setLocation(ast.getLine(), ast.getColumn());
         //TODO : not sure for parent -pb
@@ -207,13 +207,13 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Function ends-with() requires two or three arguments");
         }
-        PathExpr p0 = (PathExpr) params.get(0);
-        PathExpr p1 = (PathExpr) params.get(1);
+        final PathExpr p0 = (PathExpr) params.get(0);
+        final PathExpr p1 = (PathExpr) params.get(1);
         if (p1.getLength() == 0) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Second argument of ends-with() is empty");
         }
-        GeneralComparison op = new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
+        final GeneralComparison op = new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
         //TODO : not sure for parent -pb
         context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
             "OPTIMIZATION", "Rewritten ends-with as a general comparison with a left truncations");
@@ -237,13 +237,13 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Function contains() requires two or three arguments");
         }
-        PathExpr p0 = (PathExpr) params.get(0);
-        PathExpr p1 = (PathExpr) params.get(1);
+        final PathExpr p0 = (PathExpr) params.get(0);
+        final PathExpr p1 = (PathExpr) params.get(1);
         if (p1.getLength() == 0) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Second argument of contains() is empty");
         }
-        GeneralComparison op = new GeneralComparison(context, p0, p1,
+        final GeneralComparison op = new GeneralComparison(context, p0, p1,
             Constants.EQ, Constants.TRUNC_BOTH);
         //TODO : not sure for parent -pb
         context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
@@ -268,13 +268,13 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Function equals() requires two or three arguments");
         }
-        PathExpr p0 = (PathExpr) params.get(0);
-        PathExpr p1 = (PathExpr) params.get(1);
+        final PathExpr p0 = (PathExpr) params.get(0);
+        final PathExpr p1 = (PathExpr) params.get(1);
         if (p1.getLength() == 0) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Second argument of equals() is empty");
         }
-        GeneralComparison op = new GeneralComparison(context, p0, p1,
+        final GeneralComparison op = new GeneralComparison(context, p0, p1,
             Constants.EQ, Constants.TRUNC_EQUALS);
         //TODO : not sure for parent -pb
         context.getProfiler().message(parent, Profiler.OPTIMIZATIONS,
@@ -294,9 +294,9 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Wrong number of arguments for constructor function");
         }
-        Expression arg = params.get(0);
-        int code = Type.getType(qname);
-        CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
+        final Expression arg = params.get(0);
+        final int code = Type.getType(qname);
+        final CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
         castExpr.setLocation(ast.getLine(), ast.getColumn());
         return castExpr;
     }
@@ -304,14 +304,14 @@ public class FunctionFactory {
     private static JavaCall javaFunctionBinding(XQueryContext context,
             XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
         //Only allow java binding if specified in config file <xquery enable-java-binding="yes">
-        String javabinding = (String) context.getBroker().getConfiguration()
+        final String javabinding = (String) context.getBroker().getConfiguration()
             .getProperty(PROPERTY_ENABLE_JAVA_BINDING);
-        if(javabinding == null || !javabinding.equals("yes")) {
+        if(javabinding == null || !"yes".equals(javabinding)) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Java binding is disabled in the current configuration (see conf.xml)." +
                 " Call to " + qname.getStringValue() + " denied.");
         }
-        JavaCall call = new JavaCall(context, qname);
+        final JavaCall call = new JavaCall(context, qname);
         call.setLocation(ast.getLine(), ast.getColumn());
         call.setArguments(params);
         return call;
@@ -320,8 +320,8 @@ public class FunctionFactory {
     private static Function functionCall(XQueryContext context,
             XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
         final Function fn;
-        String uri = qname.getNamespaceURI();
-        Module module = context.getModule(uri);
+        final String uri = qname.getNamespaceURI();
+        final Module module = context.getModule(uri);
         if (module != null) {
             //Function belongs to a module
             if (module.isInternalModule()) {
@@ -354,13 +354,13 @@ public class FunctionFactory {
             }
         }
         if (def == null) {
-            List<FunctionSignature> funcs = ((InternalModule) module).getFunctionsByName(qname);
+            final List<FunctionSignature> funcs = ((InternalModule) module).getFunctionsByName(qname);
             if (funcs.isEmpty()) {
                 throw new XPathException(ast.getLine(), ast.getColumn(),
             		ErrorCodes.XPST0017, "Function " + qname.getStringValue() + "() " +
                     " is not defined in module namespace: " + qname.getNamespaceURI());
             } else {
-                StringBuilder buf = new StringBuilder();
+                final StringBuilder buf = new StringBuilder();
                 buf.append("Unexpectedly received ");
                 buf.append(params.size());
                 buf.append(" parameter(s) in call to function ");
@@ -368,7 +368,7 @@ public class FunctionFactory {
                 buf.append(qname.getStringValue());
                 buf.append("()'. ");
                 buf.append("Defined function signatures are:\r\n");
-                for (FunctionSignature sig : funcs) {
+                for (final FunctionSignature sig : funcs) {
                     buf.append(sig.toString()).append("\r\n");
                 }
                 throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017, buf.toString());
@@ -380,7 +380,7 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
         }
-        Function fn = Function.createFunction(context, ast, def);
+        final Function fn = Function.createFunction(context, ast, def);
         fn.setArguments(params);
         fn.setASTNode(ast);
         return new InternalFunctionCall(fn);
@@ -391,7 +391,7 @@ public class FunctionFactory {
      */
     private static FunctionCall getUserDefinedFunction(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
         final FunctionCall fc;
-        UserDefinedFunction func = context.resolveFunction(qname, params.size());
+        final UserDefinedFunction func = context.resolveFunction(qname, params.size());
         if (func != null) {
             fc = new FunctionCall(context, func);
             fc.setLocation(ast.getLine(), ast.getColumn());
@@ -411,7 +411,7 @@ public class FunctionFactory {
     private static FunctionCall getXQueryModuleFunction(XQueryContext context,
             XQueryAST ast, List<Expression> params, QName qname, Module module) throws XPathException {
         final FunctionCall fc;
-        UserDefinedFunction func = ((ExternalModule) module).getFunction(qname, params.size(), context);
+        final UserDefinedFunction func = ((ExternalModule) module).getFunction(qname, params.size(), context);
         if (func == null) {
             // check if the module has been compiled already
             if (module.isReady()) {
@@ -449,36 +449,36 @@ public class FunctionFactory {
      * @throws XPathException
      */
     public static FunctionCall wrap(XQueryContext context, Function call) throws XPathException {
-		int argCount = call.getArgumentCount();
-		QName[] variables = new QName[argCount];
-		List<Expression> innerArgs = new ArrayList<Expression>(argCount);
-		List<Expression> wrapperArgs = new ArrayList<Expression>(argCount);
-		FunctionSignature signature = call.getSignature();
+		final int argCount = call.getArgumentCount();
+		final QName[] variables = new QName[argCount];
+		final List<Expression> innerArgs = new ArrayList<Expression>(argCount);
+		final List<Expression> wrapperArgs = new ArrayList<Expression>(argCount);
+		final FunctionSignature signature = call.getSignature();
 		// the parameters of the newly created inline function:
-		List<SequenceType> newParamTypes = new ArrayList<SequenceType>();
-		SequenceType[] paramTypes = signature.getArgumentTypes();
+		final List<SequenceType> newParamTypes = new ArrayList<SequenceType>();
+		final SequenceType[] paramTypes = signature.getArgumentTypes();
 		for (int i = 0; i < argCount; i++) {
-			Expression param = call.getArgument(i);
+			final Expression param = call.getArgument(i);
 			wrapperArgs.add(param);
 			QName varName = new QName("vp" + i);
 			variables[i] = varName;
-			VariableReference ref = new VariableReference(context, varName.toString());
+			final VariableReference ref = new VariableReference(context, varName.toString());
 			innerArgs.add(ref);
 			
 			// copy parameter sequence types
 			// overloaded functions like concat may have an arbitrary number of arguments
 			if (i < paramTypes.length)
-				newParamTypes.add(paramTypes[i]);
+				{newParamTypes.add(paramTypes[i]);}
 			else
 				// overloaded function: add last sequence type
-				newParamTypes.add(paramTypes[paramTypes.length - 1]);
+				{newParamTypes.add(paramTypes[paramTypes.length - 1]);}
 		}
-		SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
-		FunctionSignature newSignature = new FunctionSignature(signature);
+		final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
+		final FunctionSignature newSignature = new FunctionSignature(signature);
         newSignature.setArgumentTypes(newParamArray);
 
-		UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
-		for (QName varName: variables) {
+		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
+		for (final QName varName: variables) {
 			func.addVariable(varName);
 		}
 		
@@ -486,7 +486,7 @@ public class FunctionFactory {
 		
 		func.setFunctionBody(call);
 		
-		FunctionCall wrappedCall = new FunctionCall(context, func);
+		final FunctionCall wrappedCall = new FunctionCall(context, func);
 		wrappedCall.setArguments(wrapperArgs);
 		return wrappedCall;
 	}

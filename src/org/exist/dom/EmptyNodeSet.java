@@ -195,7 +195,7 @@ public final class EmptyNodeSet extends AbstractNodeSet {
 
         @Override
         public String toString() {
-            StringBuilder result = new StringBuilder();
+            final StringBuilder result = new StringBuilder();
             result.append("Empty#").append(super.toString());
             return result.toString();
         }

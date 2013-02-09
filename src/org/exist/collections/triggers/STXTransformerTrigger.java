@@ -64,7 +64,7 @@ public class STXTransformerTrigger extends FilteringTrigger implements DocumentT
     @Override
     public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, parent, parameters);
-        String stylesheet = (String)parameters.get("src").get(0);
+        final String stylesheet = (String)parameters.get("src").get(0);
         if(stylesheet == null) {
                 throw new TriggerException("STXTransformerTrigger requires an attribute 'src'");
         }
@@ -89,7 +89,7 @@ public class STXTransformerTrigger extends FilteringTrigger implements DocumentT
         XmldbURI stylesheetUri=null;
         try {
             stylesheetUri = XmldbURI.xmldbUriFor(stylesheet);
-        } catch(URISyntaxException e) {
+        } catch(final URISyntaxException e) {
         }
         //TODO: allow full XmldbURIs to be used as well.
         if(stylesheetUri==null || stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
@@ -105,19 +105,19 @@ public class STXTransformerTrigger extends FilteringTrigger implements DocumentT
                     throw new TriggerException("stylesheet " + stylesheetUri + " must be stored as an xml document and not a binary document!");
                 }
                 handler = factory.newTransformerHandler(templatesCache.getOrUpdateTemplate(broker, doc));
-            } catch (TransformerConfigurationException e) {
+            } catch (final TransformerConfigurationException e) {
                     throw new TriggerException(e.getMessage(), e);
-            } catch (PermissionDeniedException e) {
+            } catch (final PermissionDeniedException e) {
                     throw new TriggerException(e.getMessage(), e);
-            } catch (SAXException e) {
+            } catch (final SAXException e) {
                     throw new TriggerException(e.getMessage(), e);
             }
         } else {
             try {
                 LOG.debug("compiling stylesheet " + stylesheet);
-                Templates template = factory.newTemplates(new StreamSource(stylesheet));
+                final Templates template = factory.newTemplates(new StreamSource(stylesheet));
                 handler = factory.newTransformerHandler(template);
-            } catch (TransformerConfigurationException e) {
+            } catch (final TransformerConfigurationException e) {
                 throw new TriggerException(e.getMessage(), e);
             }
         }
@@ -138,7 +138,7 @@ public class STXTransformerTrigger extends FilteringTrigger implements DocumentT
     }
     
     private void prepare() {
-        SAXResult result = new SAXResult();
+        final SAXResult result = new SAXResult();
         result.setHandler(getOutputHandler());
         result.setLexicalHandler(getLexicalOutputHandler());
         handler.setResult(result);

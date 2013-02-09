@@ -92,11 +92,11 @@ public class LRUCache implements Cache {
 	 * @see org.exist.storage.cache.Cache#get(long)
 	 */
 	public Cacheable get(long key) {
-		Cacheable obj = map.get(key);
+		final Cacheable obj = map.get(key);
 		if(obj == null)
-			accounting.missesIncrement();
+			{accounting.missesIncrement();}
 		else
-			accounting.hitIncrement();
+			{accounting.hitIncrement();}
 		return obj;
 	}
 
@@ -134,7 +134,7 @@ public class LRUCache implements Cache {
         while(next != null) {
         	cacheable = next.getValue();
         	if(cacheable.isDirty())
-        		return true;
+        		{return true;}
         	next = next.getNext();
         }
 		return false;
@@ -187,7 +187,7 @@ public class LRUCache implements Cache {
 		boolean removed = false;
 		SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
 		do {
-			Cacheable cached = next.getValue();
+			final Cacheable cached = next.getValue();
 			if(cached.allowUnload() && cached.getKey() != item.getKey()) {
 				cached.sync(true);
 				map.remove(next.getKey());
@@ -255,7 +255,7 @@ public class LRUCache implements Cache {
             hitsOld = accounting.getHits();
             return Integer.MAX_VALUE;
         }
-        int load = accounting.getHits() - hitsOld;
+        final int load = accounting.getHits() - hitsOld;
         hitsOld = accounting.getHits();
         return load;
     }

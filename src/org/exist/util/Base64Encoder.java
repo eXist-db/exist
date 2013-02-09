@@ -56,7 +56,7 @@ public final class Base64Encoder {
 
 
     private void encode_token() {
-        int i = line_length;
+        final int i = line_length;
         line[i] = map[0x3F & (buf >> 18)];   // sextet 1 (octet 1)
         line[i + 1] = map[0x3F & (buf >> 12)];   // sextet 2 (octet 1 and 2)
         line[i + 2] = map[0x3F & (buf >> 6)];    // sextet 3 (octet 2 and 3)
@@ -68,19 +68,19 @@ public final class Base64Encoder {
 
 
     private void encode_partial_token() {
-        int i = line_length;
+        final int i = line_length;
         line[i] = map[0x3F & (buf >> 18)];   // sextet 1 (octet 1)
         line[i + 1] = map[0x3F & (buf >> 12)];   // sextet 2 (octet 1 and 2)
 
         if (buf_bytes == 1)
-            line[i + 2] = '=';
+            {line[i + 2] = '=';}
         else
-            line[i + 2] = map[0x3F & (buf >> 6)];  // sextet 3 (octet 2 and 3)
+            {line[i + 2] = map[0x3F & (buf >> 6)];}  // sextet 3 (octet 2 and 3)
 
         if (buf_bytes <= 2)
-            line[i + 3] = '=';
+            {line[i + 3] = '=';}
         else
-            line[i + 3] = map[0x3F & buf];         // sextet 4 (octet 3)
+            {line[i + 3] = map[0x3F & buf];}         // sextet 4 (octet 3)
         line_length += 4;
         buf = 0;
         buf_bytes = 0;
@@ -100,15 +100,15 @@ public final class Base64Encoder {
      * first if that's desired.
      */
     public final void translate(byte[] in) {
-        int in_length = in.length;
+        final int in_length = in.length;
 
         for (int i = 0; i < in_length; i++) {
             if (buf_bytes == 0)
-                buf = (buf & 0x00FFFF) | (in[i] << 16);
+                {buf = (buf & 0x00FFFF) | (in[i] << 16);}
             else if (buf_bytes == 1)
-                buf = (buf & 0xFF00FF) | ((in[i] << 8) & 0x00FFFF);
+                {buf = (buf & 0xFF00FF) | ((in[i] << 8) & 0x00FFFF);}
             else
-                buf = (buf & 0xFFFF00) | (in[i] & 0x0000FF);
+                {buf = (buf & 0xFFFF00) | (in[i] & 0x0000FF);}
 
             if ((++buf_bytes) == 3) {
                 encode_token();
@@ -119,9 +119,9 @@ public final class Base64Encoder {
 
             if (i == (in_length - 1)) {
                 if ((buf_bytes > 0) && (buf_bytes < 3))
-                    encode_partial_token();
+                    {encode_partial_token();}
                 if (line_length > 0)
-                    flush_line();
+                    {flush_line();}
             }
         }
 
@@ -134,13 +134,13 @@ public final class Base64Encoder {
         char[] ch;
 
         if (buf_bytes != 0)
-            encode_partial_token();
+            {encode_partial_token();}
         flush_line();
         for (int i = 0; i < line.length; i++)
             line[i] = 0;
         ch = new char[out.length()];
         if (out.length() > 0)
-            out.getChars(0, out.length(), ch, 0);
+            {out.getChars(0, out.length(), ch, 0);}
         return ch;
     }
     

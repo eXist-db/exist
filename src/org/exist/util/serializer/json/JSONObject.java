@@ -48,18 +48,18 @@ public class JSONObject extends JSONNode {
 		if (childNode == null) {
 			childNode = getLastChild();
 			if (childNode == null)
-				firstChild = node;
+				{firstChild = node;}
 			else
-				childNode.setNext(node);
+				{childNode.setNext(node);}
 		} else
-			childNode.setNextOfSame(node);
+			{childNode.setNextOfSame(node);}
 	}
 	
 	public JSONNode findChild(String nameToFind) {
 		JSONNode nextNode = firstChild;
 		while (nextNode != null) {
 			if (nextNode.getName().equals(nameToFind))
-				return nextNode;
+				{return nextNode;}
 			nextNode = nextNode.getNext();
 		}
 		return null;
@@ -98,11 +98,11 @@ public class JSONObject extends JSONNode {
 				next.serializeContent(writer);
 				next = next.getNextOfSame();
 				if (next != null)
-					writer.write(", ");
+					{writer.write(", ");}
 			}
 			writer.write("]");
 		} else
-			serializeContent(writer);
+			{serializeContent(writer);}
 	}
 	
 	public void serializeContent(Writer writer) throws IOException {
@@ -119,7 +119,7 @@ public class JSONObject extends JSONNode {
 					)
 				)
 			// if there's only one child and if it is text, it is serialized as simple value
-			firstChild.serialize(writer, false);
+			{firstChild.serialize(writer, false);}
 		else {
 			// complex object
 			writer.write("{ ");
@@ -141,9 +141,9 @@ public class JSONObject extends JSONNode {
                         skipMixedContentText = true;
                     }
 				} else
-					next.serialize(writer, false);
+					{next.serialize(writer, false);}
 				if (next.getType() == Type.SIMPLE_PROPERTY_TYPE)
-					allowText = true;
+					{allowText = true;}
 				next = next.getNext();
 				if (next != null && !skipMixedContentText && !isMixedContentTextLast(next, allowText)) {
 					writer.write(", ");
@@ -157,16 +157,16 @@ public class JSONObject extends JSONNode {
  
    private boolean isMixedContentTextLast(final JSONNode node, final boolean allowText) {
        if (node.getType() == Type.VALUE_TYPE && !allowText && node.equals(getLastChild()))
-            return true;
+            {return true;}
         return false;
     }
 
 	@Override
 	public String toString() {
-		StringWriter writer = new StringWriter();
+		final StringWriter writer = new StringWriter();
 		try {
 			serialize(writer, false);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 		return writer.toString();

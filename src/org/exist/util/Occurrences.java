@@ -35,7 +35,7 @@ public class Occurrences implements Comparable<Occurrences> {
 
     public void addDocument(DocumentImpl doc) {
         if(!docs.contains(doc.getDocId()))
-            docs.add(doc);
+            {docs.add(doc);}
     }
     
     public void add(Occurrences other) {

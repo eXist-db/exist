@@ -64,8 +64,8 @@ public class XmlrpcUpload {
         LOG.debug("Begin document upload");
         try {
             // Setup xmlrpc client
-            XmlRpcClient client = new XmlRpcClient();
-            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            final XmlRpcClient client = new XmlRpcClient();
+            final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
             config.setEncoding("UTF-8");
             config.setEnabledForExtensions(true);
             config.setServerURL(new URL(xmldbURL.getXmlRpcURL()));
@@ -77,18 +77,18 @@ public class XmlrpcUpload {
             client.setConfig(config);
 
             String contentType=MimeType.BINARY_TYPE.getName();
-            MimeType mime
+            final MimeType mime
                     = MimeTable.getInstance().getContentTypeFor(xmldbURL.getDocumentName());
             if (mime != null){
                 contentType = mime.getName();
             }
             
             // Initialize xmlrpc parameters
-            List<Object> params = new ArrayList<Object>(5);
+            final List<Object> params = new ArrayList<Object>(5);
             String handle=null;
             
             // Copy data from inputstream to database
-            byte[] buf = new byte[4096];
+            final byte[] buf = new byte[4096];
             int len;
             while ((len = is.read(buf)) > 0) {
                 params.clear();
@@ -96,7 +96,7 @@ public class XmlrpcUpload {
                     params.add(handle);
                 }
                 params.add(buf);
-                params.add(new Integer(len));
+                params.add(Integer.valueOf(len));
                 handle = (String)client.execute("upload", params);
             }
             
@@ -106,7 +106,7 @@ public class XmlrpcUpload {
             params.add(xmldbURL.getCollectionPath() );
             params.add(Boolean.valueOf(true));
             params.add(contentType);
-            Boolean result =(Boolean)client.execute("parseLocal", params);
+            final Boolean result =(Boolean)client.execute("parseLocal", params);
             
             // Check XMLRPC result
             if(result.booleanValue()){
@@ -116,11 +116,11 @@ public class XmlrpcUpload {
                 throw new IOException("Could not store document.");
             }
             
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             LOG.debug(ex);
             throw ex;
             
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             LOG.debug(ex);
             throw new IOException(ex.getMessage(), ex);
             

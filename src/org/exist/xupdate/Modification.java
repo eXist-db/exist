@@ -110,15 +110,15 @@ public abstract class Modification {
 
 	public final void setAccessContext(AccessContext accessCtx) {
 		if(accessCtx == null)
-			throw new NullAccessContextException();
+			{throw new NullAccessContextException();}
 		if(this.accessCtx != null)
-			throw new IllegalStateException("Access context can only be set once.");
+			{throw new IllegalStateException("Access context can only be set once.");}
 		this.accessCtx = accessCtx;
 		
 	}
 	public final AccessContext getAccessContext() {
 		if(accessCtx == null)
-			throw new IllegalStateException("Access context has not been set.");
+			{throw new IllegalStateException("Access context has not been set.");}
 		return accessCtx;
 	}
 	
@@ -152,15 +152,15 @@ public abstract class Modification {
 	 */
 	protected NodeList select(DocumentSet docs)
 		throws PermissionDeniedException, EXistException, XPathException {
-		XQuery xquery = broker.getXQueryService();
-		XQueryPool pool = xquery.getXQueryPool();
-		Source source = new StringSource(selectStmt);
+		final XQuery xquery = broker.getXQueryService();
+		final XQueryPool pool = xquery.getXQueryPool();
+		final Source source = new StringSource(selectStmt);
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
 		if(compiled == null)
-		    context = xquery.newContext(getAccessContext());
+		    {context = xquery.newContext(getAccessContext());}
 		else
-		    context = compiled.getContext();
+		    {context = compiled.getContext();}
 
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);
@@ -168,7 +168,7 @@ public abstract class Modification {
 		if(compiled == null)
 			try {
 				compiled = xquery.compile(context, source);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
 			}
 		
@@ -180,10 +180,10 @@ public abstract class Modification {
 		}
 
 		if (!(resultSeq.isEmpty() || Type.subTypeOf(resultSeq.getItemType(), Type.NODE)))
-			throw new EXistException("select expression should evaluate to a node-set; got " +
-			        Type.getTypeName(resultSeq.getItemType()));
+			{throw new EXistException("select expression should evaluate to a node-set; got " +
+			        Type.getTypeName(resultSeq.getItemType()));}
 		if (LOG.isDebugEnabled())
-			LOG.debug("found " + resultSeq.getItemCount() + " for select: " + selectStmt);
+			{LOG.debug("found " + resultSeq.getItemCount() + " for select: " + selectStmt);}
 		return (NodeList)resultSeq.toNodeSet();
 	}
 
@@ -192,8 +192,8 @@ public abstract class Modification {
 	 * @throws XPathException
 	 */
 	protected void declareVariables(XQueryContext context) throws XPathException {
-		for (Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
-			Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
+		for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
+			final Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
 			context.declareVariable(entry.getKey().toString(), entry.getValue());
 		}
 	}
@@ -203,7 +203,7 @@ public abstract class Modification {
 	 */
 	protected void declareNamespaces(XQueryContext context) throws XPathException {
 		Map.Entry<String, String> entry;
-		for (Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
+		for (final Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
 			entry = (Map.Entry<String, String>) i.next();
 			context.declareNamespace(
 				entry.getKey(),
@@ -229,11 +229,11 @@ public abstract class Modification {
 	protected final StoredNode[] selectAndLock(Txn transaction)
 			throws LockException, PermissionDeniedException, EXistException,
 			XPathException, TriggerException {
-	    Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
+	    final Lock globalLock = broker.getBrokerPool().getGlobalUpdateLock();
 	    try {
 	        globalLock.acquire(Lock.READ_LOCK);
 	        
-	        NodeList nl = select(docs);
+	        final NodeList nl = select(docs);
 	        lockedDocuments = ((NodeSet)nl).getDocumentSet();
 	        
 		    // acquire a lock on all documents
@@ -241,10 +241,10 @@ public abstract class Modification {
 	        // during the modification
 	        lockedDocuments.lock(broker, true, false);
 	        
-		    StoredNode ql[] = new StoredNode[nl.getLength()];		    
+		    final StoredNode ql[] = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nl.item(i);
-				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
+				final DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
 				
 				// call the eventual triggers
 				// TODO -jmv separate loop on docs and not on nodes
@@ -268,10 +268,10 @@ public abstract class Modification {
 	protected final void unlockDocuments(Txn transaction) throws TriggerException
 	{
 		if(lockedDocuments == null)
-			return;
+			{return;}
 		
 		//finish Trigger
-		Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
+		final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
 		while (iterator.hasNext()) {
 			finishTrigger(transaction, iterator.next());
 		}
@@ -293,13 +293,13 @@ public abstract class Modification {
 	 */
 	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {
         int fragmentationLimit = -1;
-        Object property = broker.getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+        final Object property = broker.getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
         if (property != null)
-	        fragmentationLimit = ((Integer)property).intValue();		
-	    for(Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
-	        DocumentImpl next = i.next();
+	        {fragmentationLimit = ((Integer)property).intValue();}		
+	    for(final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+	        final DocumentImpl next = i.next();
 	        if(next.getMetadata().getSplitCount() > fragmentationLimit)
-	            broker.defragXMLResource(transaction, next);
+	            {broker.defragXMLResource(transaction, next);}
 	        broker.checkXMLResourceConsistency(next);
 	    }
 	}
@@ -313,7 +313,7 @@ public abstract class Modification {
 	 * @throws TriggerException 
 	 */
 	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
-            DocumentTrigger trigger = doc.getCollection().getConfiguration(broker).getDocumentTriggerProxies().instantiateVisitor(broker);
+            final DocumentTrigger trigger = doc.getCollection().getConfiguration(broker).getDocumentTriggerProxies().instantiateVisitor(broker);
             trigger.beforeUpdateDocument(broker, transaction, doc);
             triggers.put(doc.getDocId(), trigger);
 	}
@@ -327,13 +327,13 @@ public abstract class Modification {
 	 * @throws TriggerException 
 	 */
 	private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
-        DocumentTrigger trigger = triggers.get(doc.getDocId());
+        final DocumentTrigger trigger = triggers.get(doc.getDocId());
         if(trigger != null)
-            trigger.afterUpdateDocument(broker, transaction, doc);
+            {trigger.afterUpdateDocument(broker, transaction, doc);}
 	}
 	
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
+		final StringBuilder buf = new StringBuilder();
 		buf.append("<xu:");
 		buf.append(getName());
 		buf.append(" select=\"");
@@ -390,11 +390,11 @@ public abstract class Modification {
 		*/
 		public int compare(StoredNode n1, StoredNode n2) {
 			if (n1.getInternalAddress() == n2.getInternalAddress())
-				return Constants.EQUAL;
+				{return Constants.EQUAL;}
 			if (n1.getInternalAddress() < n2.getInternalAddress())
-				return Constants.INFERIOR;
+				{return Constants.INFERIOR;}
 			else
-				return Constants.SUPERIOR;
+				{return Constants.SUPERIOR;}
 		}
 	}
 }

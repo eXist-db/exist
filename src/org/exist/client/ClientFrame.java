@@ -229,7 +229,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             public void actionPerformed(final ActionEvent e) {
                 try {
                     client.reloadCollection();
-                } catch (XMLDBException e1) {
+                } catch (final XMLDBException e1) {
                     //TODO report message
                 }
             }
@@ -278,7 +278,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             public void actionPerformed(final ActionEvent e) {
                 try {
                     setPermAction(e);
-                } catch(PermissionDeniedException pde) {
+                } catch(final PermissionDeniedException pde) {
                     showErrorMessage(pde.getMessage(), pde);
                 }
             }
@@ -496,7 +496,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             public void actionPerformed(final ActionEvent e) {
                 try {
                     setPermAction(e);
-                } catch(PermissionDeniedException pde) {
+                } catch(final PermissionDeniedException pde) {
                     showErrorMessage(pde.getMessage(), pde);
                 }
             }
@@ -584,9 +584,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             @Override
             public void actionPerformed(final ActionEvent e) {
                 try {
-                    DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
+                    final DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
                     service.enterServiceMode();
-                } catch (XMLDBException ex) {
+                } catch (final XMLDBException ex) {
                     showErrorMessage(ex.getMessage(), ex);
                 }
             }
@@ -599,9 +599,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             @Override
             public void actionPerformed(final ActionEvent e) {
                 try {
-                    DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
+                    final DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
                     service.exitServiceMode();
-                } catch (XMLDBException ex) {
+                } catch (final XMLDBException ex) {
                     showErrorMessage(ex.getMessage(), ex);
                 }
             }
@@ -660,8 +660,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         optionsMenu.setMnemonic(KeyEvent.VK_O);
         menubar.add(optionsMenu);
         
-        JCheckBoxMenuItem check = new JCheckBoxMenuItem(Messages.getString("ClientFrame.81"), properties //$NON-NLS-1$
-                .getProperty(OutputKeys.INDENT).equals("yes")); //$NON-NLS-1$
+        JCheckBoxMenuItem check = new JCheckBoxMenuItem(Messages.getString("ClientFrame.81"), "yes".equals(properties.getProperty(OutputKeys.INDENT))); //$NON-NLS-1$
         check.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -678,8 +677,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         });
         optionsMenu.add(check);
         
-        check = new JCheckBoxMenuItem(Messages.getString("ClientFrame.85"), properties //$NON-NLS-1$
-                .getProperty(EXistOutputKeys.EXPAND_XINCLUDES).equals("yes")); //$NON-NLS-1$
+        check = new JCheckBoxMenuItem(Messages.getString("ClientFrame.85"), "yes".equals(properties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES))); //$NON-NLS-1$
         check.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -1191,7 +1189,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     try {
                         client.parse(files, upload);
                         client.getResources();
-                    } catch (XMLDBException e) {
+                    } catch (final XMLDBException e) {
                         showErrorMessage(Messages.getString("ClientFrame.147") + e.getMessage(), e);
                     }
                 }
@@ -1376,7 +1374,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             return;
         }
         final int[] rows = fileman.getSelectedRows();
-        for (int row : rows) {
+        for (final int row : rows) {
             final ResourceDescriptor desc = resources.getRow(fileman.convertRowIndexToModel(row));
             if(desc.isCollection()) {
                 continue;
@@ -1494,7 +1492,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             
             if (fileman.getSelectedRowCount() == 1) {
                 final int row = fileman.convertRowIndexToModel(fileman.getSelectedRow());
-                ResourceDescriptor desc = resources.getRow(row);
+                final ResourceDescriptor desc = resources.getRow(row);
                 name = desc.getName();
                 
                 final Permission perm;
@@ -1591,7 +1589,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     
     private void historyForward() {
         client.console.getHistory().next();
-        String item = client.console.getHistory().current();
+        final String item = client.console.getHistory().current();
         try {
             if (shell.getCaretPosition() > commandStart) {
                 doc.remove(commandStart, doc.getLength() - commandStart);
@@ -1638,7 +1636,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     try {
                         final Resource doc = client.retrieve(resource.getName(), properties.getProperty(OutputKeys.INDENT, "yes")); //$NON-NLS-1$
                         
-                        if(((EXistResource)doc).getMimeType().equals("application/xquery")) {
+                        if("application/xquery".equals(((EXistResource)doc).getMimeType())) {
                             final Collection collection = client.getCollection();
                             final QueryDialog dialog = new QueryDialog(client, collection, doc, properties);
                             dialog.setVisible(true);

@@ -68,26 +68,26 @@ public class ExtendedDOMSerializer extends DOMSerializer {
     @Override
     protected void startNode(Node node) throws TransformerException {
         if(node.getNodeType() == NodeImpl.REFERENCE_NODE) {
-            SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+            final SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
             handler.setReceiver(receiver);
-            Serializer serializer = broker.getSerializer();
+            final Serializer serializer = broker.getSerializer();
             serializer.setSAXHandlers(handler, handler);
             try {
                 serializer.setProperties(outputProperties);
                 serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-            } catch (SAXNotRecognizedException e) {
+            } catch (final SAXNotRecognizedException e) {
                 //Nothing to do ?
-            } catch (SAXNotSupportedException e) {
+            } catch (final SAXNotSupportedException e) {
                 //Nothing to do ?
             }
             try {
                 serializer.toSAX(((ReferenceNode)node).getReference());
-            } catch (SAXException e) {
+            } catch (final SAXException e) {
                 throw new TransformerException(e.getMessage(), e);
             } finally {
                 SerializerPool.getInstance().returnObject(handler);
             }
         } else
-            super.startNode(node);
+            {super.startNode(node);}
     }
 }

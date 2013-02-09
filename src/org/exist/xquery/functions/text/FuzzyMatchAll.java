@@ -66,23 +66,23 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 	public Sequence evalQuery(NodeSet nodes,
 								List<String> terms) throws XPathException {
 		if (terms == null || terms.size() == 0)
-			return Sequence.EMPTY_SEQUENCE; // no search terms
+			{return Sequence.EMPTY_SEQUENCE;} // no search terms
 		double threshold = 0.65;
 		if (getArgumentCount() == 3) {
-			Sequence thresOpt = getArgument(2).eval(nodes);
+			final Sequence thresOpt = getArgument(2).eval(nodes);
 			//TODO : get rid of getLength()
 			if(!thresOpt.hasOne())
-				throw new XPathException(this, "third argument to " + getName() +
-						"should be a single double value");
+				{throw new XPathException(this, "third argument to " + getName() +
+						"should be a single double value");}
 			threshold = ((DoubleValue) thresOpt.convertTo(Type.DOUBLE)).getDouble();
 		}
-		NodeSet hits[] = new NodeSet[terms.size()];
+		final NodeSet hits[] = new NodeSet[terms.size()];
 		String term;
 		TermMatcher matcher;
 		for (int k = 0; k < terms.size(); k++) {
 		    term = terms.get(k);
 			if(term.length() == 0)
-				hits[k] = null;
+				{hits[k] = null;}
 			else {
 				matcher = new FuzzyMatcher(term, threshold);
 				hits[k] =

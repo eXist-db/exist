@@ -34,34 +34,34 @@ public class InternalFunctionCall extends Function
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
-		QName functionName = function.getName();
+		final QName functionName = function.getName();
 		//check access to the method
 		try {
-			ExistPDP pdp = getContext().getPDP();
+			final ExistPDP pdp = getContext().getPDP();
 			if(pdp != null) {
-				RequestCtx request = pdp.getRequestHelper().createFunctionRequest(context, null, functionName);
+				final RequestCtx request = pdp.getRequestHelper().createFunctionRequest(context, null, functionName);
 				if(request != null)
-					pdp.evaluate(request);
+					{pdp.evaluate(request);}
 			}
-		} catch (PermissionDeniedException pde) {
+		} catch (final PermissionDeniedException pde) {
 			throw new XPathException(function, "Access to function '" + functionName + "'  denied.", pde);
 		}
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         if (context.getProfiler().traceFunctions())
-            context.getProfiler().traceFunctionStart(this);
+            {context.getProfiler().traceFunctionStart(this);}
         
         context.stackEnter(this);
         try {
             return function.eval(contextSequence, contextItem);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             if (e.getLine() <= 0)
-                e.setLocation(line, column, getSource());
+                {e.setLocation(line, column, getSource());}
             throw e;
         } finally {
             context.stackLeave(this);
             
             if (context.getProfiler().traceFunctions())
-                context.getProfiler().traceFunctionEnd(this, System.currentTimeMillis() - start);
+                {context.getProfiler().traceFunctionEnd(this, System.currentTimeMillis() - start);}
         }
     }
 
@@ -94,9 +94,9 @@ public class InternalFunctionCall extends Function
 		contextInfo.setParent(this);
         try {
             function.analyze(contextInfo);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             if (e.getLine() <= 0)
-                e.setLocation(line, column, getSource());
+                {e.setLocation(line, column, getSource());}
             throw e;
         }
     }

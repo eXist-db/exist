@@ -79,8 +79,8 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
         super.read(in);
         page = in.getInt();
         tid = in.getShort();
-        int len = in.getShort();
-        byte[] data = new byte[len];
+        final int len = in.getShort();
+        final byte[] data = new byte[len];
         in.get(data);
         value = new FixedByteArray(data, 0, len);
     }

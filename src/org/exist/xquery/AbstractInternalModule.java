@@ -93,7 +93,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     @Override
     public FunctionSignature[] listFunctions() {
-        FunctionSignature signatures[] = new FunctionSignature[mFunctions.length];
+        final FunctionSignature signatures[] = new FunctionSignature[mFunctions.length];
         for (int i = 0; i < signatures.length; i++) {
             signatures[i] = mFunctions[i].getSignature();
         }
@@ -102,9 +102,9 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     @Override
     public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
-        List<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
+        final List<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
         for (int i = 0; i < mFunctions.length; i++) {
-            FunctionSignature signature = mFunctions[i].getSignature();
+            final FunctionSignature signature = mFunctions[i].getSignature();
             if (signature.getName().compareTo(qname) == 0){
                 signatures.add(signature);
             }
@@ -117,7 +117,7 @@ public abstract class AbstractInternalModule implements InternalModule {
      */
     @Override
     public FunctionDef getFunctionDef(QName qname, int arity) {
-        FunctionId id = new FunctionId(qname, arity);
+        final FunctionId id = new FunctionId(qname, arity);
         if (ordered) {
             return binarySearch(id);
         } else {
@@ -135,9 +135,9 @@ public abstract class AbstractInternalModule implements InternalModule {
         int high = mFunctions.length - 1;
 
         while (low <= high) {
-            int mid = (low + high) >>> 1;
-            FunctionDef midVal = mFunctions[mid];
-            int cmp = midVal.getSignature().getFunctionId().compareTo(id);
+            final int mid = (low + high) >>> 1;
+            final FunctionDef midVal = mFunctions[mid];
+            final int cmp = midVal.getSignature().getFunctionId().compareTo(id);
             if (cmp < 0) {
                 low = mid + 1;
             } else if (cmp > 0) {
@@ -151,9 +151,9 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     @Override
     public List<FunctionSignature> getFunctionsByName(QName qname) {
-        List<FunctionSignature> funcs = new ArrayList<FunctionSignature>();
+        final List<FunctionSignature> funcs = new ArrayList<FunctionSignature>();
         for (int i = 0; i < mFunctions.length; i++) {
-            FunctionSignature sig = mFunctions[i].getSignature();
+            final FunctionSignature sig = mFunctions[i].getSignature();
             if (sig.getName().compareTo(qname) == 0) {
                 funcs.add(sig);
             }
@@ -167,7 +167,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     @Override
     public Variable declareVariable(QName qname, Object value) throws XPathException {
-        Sequence val = XPathUtil.javaObjectToXPath(value, null);
+        final Sequence val = XPathUtil.javaObjectToXPath(value, null);
         Variable var = mGlobalVariables.get(qname);
         if (var == null){
             var = new VariableImpl(qname);

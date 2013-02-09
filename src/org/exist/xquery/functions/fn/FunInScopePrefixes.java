@@ -72,34 +72,34 @@ public class FunInScopePrefixes extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }
         
-		Map<String, String> prefixes = collectPrefixes(context, (NodeValue) args[0].itemAt(0));
+		final Map<String, String> prefixes = collectPrefixes(context, (NodeValue) args[0].itemAt(0));
 
-		ValueSequence result = new ValueSequence();
+		final ValueSequence result = new ValueSequence();
 
-		for (String prefix : prefixes.keySet()) {
+		for (final String prefix : prefixes.keySet()) {
 			//The predefined namespaces (e.g. "exist" for temporary nodes) could have been removed from the static context
 			if (!(context.getURIForPrefix(prefix) == null && 
 					("exist".equals(prefix) || "xs".equals(prefix) || "xsi".equals(prefix) ||
 						"wdt".equals(prefix) || "fn".equals(prefix) || "local".equals(prefix))))
-				result.add(new StringValue(prefix)); 
+				{result.add(new StringValue(prefix));} 
 		}
 		
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;          
 	}
 	
 	public static Map<String, String> collectPrefixes(XQueryContext context, NodeValue nodeValue) {
-		Map<String, String> prefixes = new LinkedHashMap<String, String>();
+		final Map<String, String> prefixes = new LinkedHashMap<String, String>();
         prefixes.put("xml", Namespaces.XML_NS);
         
-        Map<String, String> inScopePrefixes = context.getInScopePrefixes();
+        final Map<String, String> inScopePrefixes = context.getInScopePrefixes();
         if (inScopePrefixes != null)
-        	prefixes.putAll(inScopePrefixes);
+        	{prefixes.putAll(inScopePrefixes);}
 
 		if (nodeValue.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			//NodeProxy proxy = (NodeProxy) node;
@@ -108,7 +108,7 @@ public class FunInScopePrefixes extends BasicFunction {
 				//Horrible hacks to work-around bad in-scope NS : we reconstruct a NS context !
 				if (context.inheritNamespaces()) {
 					//Grab ancestors' NS
-					Stack<Element> stack = new Stack<Element>(); 
+					final Stack<Element> stack = new Stack<Element>(); 
 					do {
 						stack.add((Element)node);
 						node = node.getParentNode();
@@ -127,16 +127,16 @@ public class FunInScopePrefixes extends BasicFunction {
 				} else {
 					//Grab self's NS
 					if (node.getNodeType() == Node.ELEMENT_NODE)
-						collectNamespacePrefixes((Element)node, prefixes);
+						{collectNamespacePrefixes((Element)node, prefixes);}
 				}
 			} else {
 				//untested : copied from below
 				if (context.inheritNamespaces()) {
 					//get the top-most ancestor
-					Stack<Element> stack = new Stack<Element>(); 
+					final Stack<Element> stack = new Stack<Element>(); 
 					do {
  						if (node.getParentNode() == null || node.getParentNode() instanceof DocumentImpl)
- 							stack.add((Element)node);
+ 							{stack.add((Element)node);}
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
 
@@ -152,10 +152,10 @@ public class FunInScopePrefixes extends BasicFunction {
 				//Horrible hacks to work-around bad in-scope NS : we reconstruct a NS context !
 				if (context.inheritNamespaces()) {
 					//Grab ancestors' NS
-					Stack<Element> stack = new Stack<Element>(); 
+					final Stack<Element> stack = new Stack<Element>(); 
 					do {
 						if (node.getNodeType() == Node.ELEMENT_NODE)
-							stack.add((Element)node);
+							{stack.add((Element)node);}
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
 
@@ -166,15 +166,15 @@ public class FunInScopePrefixes extends BasicFunction {
 				} else {
 					//Grab self's NS
 					if (node.getNodeType() == Node.ELEMENT_NODE)
-						collectNamespacePrefixes((Element)node, prefixes);
+						{collectNamespacePrefixes((Element)node, prefixes);}
 				}
 			} else {
 				if (context.inheritNamespaces()) {
 					//get the top-most ancestor
-					Stack<Element> stack = new Stack<Element>(); 
+					final Stack<Element> stack = new Stack<Element>(); 
 					do {
  						if (node.getParentNode() == null || node.getParentNode() instanceof org.exist.memtree.DocumentImpl)
- 							stack.add((Element)node);
+ 							{stack.add((Element)node);}
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
 
@@ -188,12 +188,12 @@ public class FunInScopePrefixes extends BasicFunction {
 		//clean up
 		String key = null;
 		String value = null;
-		for (Entry<String, String> entry : prefixes.entrySet()) {
+		for (final Entry<String, String> entry : prefixes.entrySet()) {
 			key = entry.getKey();
 			value = entry.getValue();
 			
 			if ((key == null || key.isEmpty()) && (value == null || value.isEmpty()))
-				prefixes.remove(key);
+				{prefixes.remove(key);}
 				
 		}
 		
@@ -201,9 +201,9 @@ public class FunInScopePrefixes extends BasicFunction {
 	}
 
 	public static void collectNamespacePrefixes(Element element, Map<String, String> prefixes) {
-		String namespaceURI = element.getNamespaceURI();
+		final String namespaceURI = element.getNamespaceURI();
 		if (namespaceURI != null && namespaceURI.length() > 0) {
-			String prefix = element.getPrefix();
+			final String prefix = element.getPrefix();
 			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
 		}		
 		
@@ -211,17 +211,17 @@ public class FunInScopePrefixes extends BasicFunction {
 			((org.exist.memtree.ElementImpl)element).getNamespaceMap(prefixes);
 		
 		} else {
-			ElementImpl elementImpl = (org.exist.dom.ElementImpl) element;
+			final ElementImpl elementImpl = (org.exist.dom.ElementImpl) element;
 			if (elementImpl.declaresNamespacePrefixes()) {
-				for (Iterator<String> i = elementImpl.getPrefixes(); i.hasNext(); ) {
-					String prefix = i.next();
+				for (final Iterator<String> i = elementImpl.getPrefixes(); i.hasNext(); ) {
+					final String prefix = i.next();
 					prefixes.put(prefix, elementImpl.getNamespaceForPrefix(prefix));
 				}
 			}
 		}
 		
 		if (namespaceURI == null && namespaceURI.isEmpty()) {
-			String prefix = element.getPrefix();
+			final String prefix = element.getPrefix();
 			prefixes.remove(prefix == null ? "" : prefix);
 		}		
     }

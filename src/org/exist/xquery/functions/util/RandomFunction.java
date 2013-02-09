@@ -77,17 +77,17 @@ public class RandomFunction extends BasicFunction {
     	
         final Sequence result;
         
-        Random rnd = new Random();
+        final Random rnd = new Random();
     	
     	if(getArgumentCount() == 0) {
             if(isCalledAs("random")) {
                 result = new DoubleValue(rnd.nextDouble());
             } else {
-                BigInteger rndInt = new BigInteger(64, rnd);
+                final BigInteger rndInt = new BigInteger(64, rnd);
                 result = new IntegerValue(rndInt, Type.UNSIGNED_LONG);
             }
     	} else {
-            IntegerValue upper = (IntegerValue)args[0].convertTo(Type.INTEGER);
+            final IntegerValue upper = (IntegerValue)args[0].convertTo(Type.INTEGER);
             result = new IntegerValue(rnd.nextInt(upper.getInt()));
     	}
         

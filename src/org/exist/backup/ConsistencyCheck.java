@@ -85,7 +85,7 @@ public class ConsistencyCheck
      */
     public List<ErrorReport> checkAll( ProgressCallback callback ) throws TerminatedException, PermissionDeniedException
     {
-        List<ErrorReport> errors = checkCollectionTree( callback );
+        final List<ErrorReport> errors = checkCollectionTree( callback );
         checkDocuments( callback, errors );
         return( errors );
     }
@@ -105,8 +105,8 @@ public class ConsistencyCheck
         AccountImpl.getSecurityProperties().enableCheckPasswords(false);
 
         try {
-            List<ErrorReport> errors = new ArrayList<ErrorReport>();
-            Collection        root   = broker.getCollection( XmldbURI.ROOT_COLLECTION_URI );
+            final List<ErrorReport> errors = new ArrayList<ErrorReport>();
+            final Collection        root   = broker.getCollection( XmldbURI.ROOT_COLLECTION_URI );
             checkCollection( root, errors, callback );
             return( errors );
         }
@@ -118,40 +118,40 @@ public class ConsistencyCheck
 
     private void checkCollection( Collection collection, List<ErrorReport> errors, ProgressCallback callback ) throws TerminatedException
     {
-        XmldbURI uri = collection.getURI();
+        final XmldbURI uri = collection.getURI();
         if (callback != null)
-        	callback.startCollection( uri.toString() );
+        	{callback.startCollection( uri.toString() );}
 
         try {
-            for(Iterator<XmldbURI> i = collection.collectionIteratorNoLock(broker); i.hasNext(); ) {
-                XmldbURI childUri = i.next();
+            for(final Iterator<XmldbURI> i = collection.collectionIteratorNoLock(broker); i.hasNext(); ) {
+                final XmldbURI childUri = i.next();
 
                 try {
-                    Collection child = broker.getCollection( uri.append( childUri ) );
+                    final Collection child = broker.getCollection( uri.append( childUri ) );
 
                     if( child == null ) {
-                        ErrorReport.CollectionError error = new org.exist.backup.ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Child collection not found: " + childUri + ", parent is " + uri );
+                        final ErrorReport.CollectionError error = new org.exist.backup.ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Child collection not found: " + childUri + ", parent is " + uri );
                         error.setCollectionId( collection.getId() );
                         error.setCollectionURI( childUri );
                         errors.add( error );
                         if (callback != null)
-                            callback.error( error );
+                            {callback.error( error );}
                         continue;
                     }
                     if (child.getId() != collection.getId())
-                            checkCollection( child, errors, callback );
+                            {checkCollection( child, errors, callback );}
                 }
-                catch( Exception e ) {
-                    ErrorReport.CollectionError error = new ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Error while loading child collection: " + childUri + ", parent is " + uri );
+                catch( final Exception e ) {
+                    final ErrorReport.CollectionError error = new ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Error while loading child collection: " + childUri + ", parent is " + uri );
                     error.setCollectionId( collection.getId() );
                     error.setCollectionURI( childUri );
                     errors.add( error );
                     if (callback != null)
-                            callback.error( error );
+                            {callback.error( error );}
                 }
             }
-        } catch(PermissionDeniedException pde) {
-            ErrorReport.CollectionError error = new ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Error while loading collection: " + collection.getURI() + ", parent is " + uri );
+        } catch(final PermissionDeniedException pde) {
+            final ErrorReport.CollectionError error = new ErrorReport.CollectionError( org.exist.backup.ErrorReport.CHILD_COLLECTION, "Error while loading collection: " + collection.getURI() + ", parent is " + uri );
             error.setCollectionId(collection.getId() );
             error.setCollectionURI(collection.getURI());
             errors.add(error);
@@ -168,7 +168,7 @@ public class ConsistencyCheck
             AccountImpl.getSecurityProperties().enableCheckPasswords(false);
 
             try {
-                DocumentCallback cb = new DocumentCallback( null, null, false );
+                final DocumentCallback cb = new DocumentCallback( null, null, false );
                 broker.getResourcesFailsafe( cb, directAccess );
                 documentCount = cb.docCount;
             }
@@ -192,7 +192,7 @@ public class ConsistencyCheck
      */
     public List<ErrorReport> checkDocuments( ProgressCallback progress ) throws TerminatedException
     {
-        List<ErrorReport> errors = new ArrayList<ErrorReport>();
+        final List<ErrorReport> errors = new ArrayList<ErrorReport>();
         checkDocuments( progress, errors );
         return( errors );
     }
@@ -212,7 +212,7 @@ public class ConsistencyCheck
         AccountImpl.getSecurityProperties().enableCheckPasswords(false);
 
         try {
-            DocumentCallback cb = new DocumentCallback( errorList, progress, true );
+            final DocumentCallback cb = new DocumentCallback( errorList, progress, true );
             broker.getResourcesFailsafe( cb, directAccess );
         }
         finally {
@@ -236,15 +236,15 @@ public class ConsistencyCheck
                     public Object start()
                     {
                         try {
-                            ElementImpl             root            = (ElementImpl)doc.getDocumentElement();
-                            EmbeddedXMLStreamReader reader          = broker.getXMLStreamReader( root, true );
+                            final ElementImpl             root            = (ElementImpl)doc.getDocumentElement();
+                            final EmbeddedXMLStreamReader reader          = broker.getXMLStreamReader( root, true );
                             NodeId                  nodeId;
                             boolean                 attribsAllowed  = false;
                             int                     expectedAttribs = 0;
                             int                     attributeCount  = 0;
 
                             while( reader.hasNext() ) {
-                                int status = reader.next();
+                                final int status = reader.next();
 
                                 nodeId = (NodeId)reader.getProperty( EmbeddedXMLStreamReader.PROPERTY_NODE_ID );
                                 ElementNode parent = null;
@@ -276,7 +276,7 @@ public class ConsistencyCheck
                                         if( elementStack.isEmpty() ) {
                                             return( new org.exist.backup.ErrorReport.ResourceError( ErrorReport.NODE_HIERARCHY, "Error in node hierarchy: received END_ELEMENT event " + "but stack was empty!" ) );
                                         }
-                                        ElementNode lastElem = elementStack.pop();
+                                        final ElementNode lastElem = elementStack.pop();
                                         if( lastElem.childCount != lastElem.elem.getChildCount() ) {
                                             return( new ErrorReport.ResourceError( org.exist.backup.ErrorReport.NODE_HIERARCHY, "Element reports incorrect child count: expected " + lastElem.elem.getChildCount() + " but found " + lastElem.childCount ) );
                                         }
@@ -290,26 +290,26 @@ public class ConsistencyCheck
                                             // id to the node's storage address
                                             // look up the node id and check if the
                                             // returned storage address is correct
-                                            NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef( doc.getDocId(), nodeId );
+                                            final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef( doc.getDocId(), nodeId );
 
                                             try {
-                                                long p = domDb.findValue( nodeRef );
+                                                final long p = domDb.findValue( nodeRef );
 
                                                 if( p != reader.getCurrentPosition() ) {
-                                                    Value v = domDb.get( p );
+                                                    final Value v = domDb.get( p );
 
                                                     if( v == null ) {
                                                         return( new ErrorReport.IndexError( ErrorReport.DOM_INDEX, "Failed to access node " + nodeId + " through dom.dbx index. Wrong storage address. Expected: " + p + "; got: " + reader.getCurrentPosition() + " - ", doc.getDocId() ) );
                                                     }
                                                 }
                                             }
-                                            catch( Exception e ) {
+                                            catch( final Exception e ) {
                                                 e.printStackTrace();
                                                 return( new ErrorReport.IndexError( ErrorReport.DOM_INDEX, "Failed to access node " + nodeId + " through dom.dbx index.", e, doc.getDocId() ) );
                                             }
                                         }
 
-                                        StoredNode node = reader.getNode();
+                                        final StoredNode node = reader.getNode();
                                         if( node.getNodeType() != Node.ELEMENT_NODE ) {
                                             return( new org.exist.backup.ErrorReport.ResourceError( ErrorReport.INCORRECT_NODE_TYPE, "Expected an element node, received node of type " + node.getNodeType() ) );
                                         }
@@ -338,11 +338,11 @@ public class ConsistencyCheck
                             }
                             return( null );
                         }
-                        catch( IOException e ) {
+                        catch( final IOException e ) {
                             e.printStackTrace();
                             return( new org.exist.backup.ErrorReport.ResourceError( ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e ) );
                         }
-                        catch( XMLStreamException e ) {
+                        catch( final XMLStreamException e ) {
                             e.printStackTrace();
                             return( new ErrorReport.ResourceError( org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e ) );
                         }
@@ -395,14 +395,14 @@ public class ConsistencyCheck
 
         public boolean indexInfo( Value key, long pointer ) throws TerminatedException
         {
-            CollectionStore store        = (CollectionStore)( (NativeBroker)broker ).getStorage( NativeBroker.COLLECTIONS_DBX_ID );
-            @SuppressWarnings( "unused" )
+            final CollectionStore store        = (CollectionStore)( (NativeBroker)broker ).getStorage( NativeBroker.COLLECTIONS_DBX_ID );
+            final @SuppressWarnings( "unused" )
             int             collectionId = CollectionStore.DocumentKey.getCollectionId( key );
-            int             docId        = CollectionStore.DocumentKey.getDocumentId( key );
+            final int             docId        = CollectionStore.DocumentKey.getDocumentId( key );
 
             try {
-                byte              type    = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
-                VariableByteInput istream = store.getAsStream( pointer );
+                final byte              type    = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
+                final VariableByteInput istream = store.getAsStream( pointer );
                 DocumentImpl      doc     = null;
 
                 if( type == DocumentImpl.BINARY_FILE ) {
@@ -426,7 +426,7 @@ public class ConsistencyCheck
                     }
 
                     if( ( type == DocumentImpl.XML_FILE ) && !directAccess ) {
-                        ErrorReport report = checkXMLTree( doc );
+                        final ErrorReport report = checkXMLTree( doc );
 
                         if( report != null ) {
 
@@ -445,12 +445,12 @@ public class ConsistencyCheck
                     }
                 }
             }
-            catch( TerminatedException e ) {
+            catch( final TerminatedException e ) {
                 throw( e );
             }
-            catch( Exception e ) {
+            catch( final Exception e ) {
                 e.printStackTrace();
-                org.exist.backup.ErrorReport.ResourceError error = new org.exist.backup.ErrorReport.ResourceError( org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e );
+                final org.exist.backup.ErrorReport.ResourceError error = new org.exist.backup.ErrorReport.ResourceError( org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e );
                 error.setDocumentId( docId );
 
                 if( errors != null ) {

@@ -39,10 +39,10 @@ public final class Version {
 	private static final String SVN_REVISION;
 	
 	static {
-        Properties properties = new Properties();
+        final Properties properties = new Properties();
 		try {
 			properties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-		} catch (IOException e) {
+		} catch (final IOException e) {
 		}
 		
 		VERSION 		= (String) properties.get("product-version");

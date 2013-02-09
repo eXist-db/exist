@@ -44,16 +44,16 @@ public class UTF8 {
 	public final static XMLString decode(byte[] code) {
 
 		if (null == code)
-			return null;
+			{return null;}
 
 		return decode(code, 0, code.length);
 	}
     
     public final static XMLString decode(byte[] code, int off, int many) {
         if (null == code || 0 >= code.length)
-            return null;
+            {return null;}
 
-        XMLString xs = new XMLString(many);
+        final XMLString xs = new XMLString(many);
         return decode(code, off, many, xs);
     }
     
@@ -66,11 +66,11 @@ public class UTF8 {
 	public final static XMLString decode(byte[] code, int off, int many, XMLString xs) {
 
 		if (null == code || 0 >= code.length)
-			return null;
+			{return null;}
 
 		char ch;
 
-		int end = (off + many);
+		final int end = (off + many);
 
 		byte cc;
 
@@ -138,7 +138,7 @@ public class UTF8 {
 	public final static byte[] encode(char[] str) {
 
 		if (null == str || 0 >= str.length)
-			return null;
+			{return null;}
 
 		return encode(str, 0, str.length, null, 0);
 	}
@@ -157,13 +157,13 @@ public class UTF8 {
 		int offset) {
 
 		if (null == str || 0 >= length)
-			return bytbuf;
+			{return bytbuf;}
 
 		if (bytbuf == null)
-			bytbuf = new byte[encoded(str, start, length)];
+			{bytbuf = new byte[encoded(str, start, length)];}
 
 		char ch, sch;
-		int end = start + length;
+		final int end = start + length;
 		for (int c = start; c < end; c++) {
 
 			ch = str[c];
@@ -177,7 +177,7 @@ public class UTF8 {
 				if (0 < sch) {
 					bytbuf[offset++] = (byte) (b11000000 | (sch & b00011111));
 				} else
-					bytbuf[offset++] = (byte) (b11000000);
+					{bytbuf[offset++] = (byte) (b11000000);}
 
 				bytbuf[offset++] = (byte) (b10000000 | (ch & b00111111));
 			} else {
@@ -188,7 +188,7 @@ public class UTF8 {
 
 					bytbuf[offset++] = (byte) (b11100000 | (sch & b00001111));
 				} else
-					bytbuf[offset++] = (byte) (b11100000);
+					{bytbuf[offset++] = (byte) (b11100000);}
 
 				bytbuf[offset++] = (byte) (b10000000 | ((ch >>> 6) & b00111111));
 
@@ -217,10 +217,10 @@ public class UTF8 {
 		int offset) {
 
 		if (null == str || 0 >= length)
-			return bytbuf;
+			{return bytbuf;}
 
 		char ch, sch;
-		int end = start + length;
+		final int end = start + length;
 		for (int c = start; c < end; c++) {
 
 			ch = str.charAt(c);
@@ -234,7 +234,7 @@ public class UTF8 {
 				if (0 < sch) {
 					bytbuf[offset++] = (byte) (b11000000 | (sch & b00011111));
 				} else
-					bytbuf[offset++] = (byte) (b11000000);
+					{bytbuf[offset++] = (byte) (b11000000);}
 
 				bytbuf[offset++] = (byte) (b10000000 | (ch & b00111111));
 			} else {
@@ -245,7 +245,7 @@ public class UTF8 {
 
 					bytbuf[offset++] = (byte) (b11100000 | (sch & b00001111));
 				} else
-					bytbuf[offset++] = (byte) (b11100000);
+					{bytbuf[offset++] = (byte) (b11100000);}
 
 				bytbuf[offset++] = (byte) (b10000000 | ((ch >>> 6) & b00111111));
 
@@ -262,7 +262,7 @@ public class UTF8 {
 	public final static byte[] encode(String s) {
 
 		if (null == s)
-			return null;
+			{return null;}
 		else {
 
 			return encode(s.toCharArray(), 0, s.length(), null, 0);
@@ -291,7 +291,7 @@ public class UTF8 {
 	public final static int encoded(String str) {
 
 		if (null == str)
-			return 0;
+			{return 0;}
 
 		int bytlen = 0;
 
@@ -302,13 +302,13 @@ public class UTF8 {
 			ch = str.charAt(c);
 
 			if (0x7f >= ch)
-				bytlen++;
+				{bytlen++;}
 
 			else if (0x7ff >= ch)
-				bytlen += 2;
+				{bytlen += 2;}
 
 			else
-				bytlen += 3;
+				{bytlen += 3;}
 
 		}
 
@@ -321,25 +321,25 @@ public class UTF8 {
 	public final static int encoded(char[] str, int start, int len) {
 
 		if (null == str || 0 >= len)
-			return 0;
+			{return 0;}
 
 		int bytlen = 0;
 
 		char ch;
 		//char sch;
-		int end = start + len;
+		final int end = start + len;
 		for (int c = start; c < end; c++) {
 
 			ch = str[c];
 
 			if (0x7f >= ch)
-				bytlen++;
+				{bytlen++;}
 
 			else if (0x7ff >= ch)
-				bytlen += 2;
+				{bytlen += 2;}
 
 			else
-				bytlen += 3;
+				{bytlen += 3;}
 
 		}
 
@@ -358,7 +358,7 @@ public class UTF8 {
      */
      public static int getUTF8Encoding(char in, char in2, byte[] out) {
          // See Tony Graham, "Unicode, a Primer", page 92
-         int i = (int)in;
+         final int i = (int)in;
          if (i<=0x7f) {
              out[0] = (byte)i;
              return 1;
@@ -368,14 +368,14 @@ public class UTF8 {
              return 2;
          } else if (i>=0xd800 && i<=0xdbff) {
              // surrogate pair
-             int j = (int)in2;
+             final int j = (int)in2;
              if (!(j>=0xdc00 && j<=0xdfff)) {
                  throw new IllegalArgumentException("Malformed Unicode Surrogate Pair (" + i + "," + j + ")");
              }
-             byte xxxxxx = (byte)(j & 0x3f);
-             byte yyyyyy = (byte)(((i & 0x03) << 4) | ((j >> 6) & 0x0f));
-             byte zzzz = (byte)((i >> 2) & 0x0f);
-             byte uuuuu = (byte)(((i >> 6) & 0x0f) + 1);
+             final byte xxxxxx = (byte)(j & 0x3f);
+             final byte yyyyyy = (byte)(((i & 0x03) << 4) | ((j >> 6) & 0x0f));
+             final byte zzzz = (byte)((i >> 2) & 0x0f);
+             final byte uuuuu = (byte)(((i >> 6) & 0x0f) + 1);
              out[0] = (byte)(0xf0 | ((uuuuu >> 2) & 0x07));
              out[1] = (byte)(0x80 | ((uuuuu & 0x03) << 4) | zzzz);
              out[2] = (byte)(0x80 | yyyyyy);

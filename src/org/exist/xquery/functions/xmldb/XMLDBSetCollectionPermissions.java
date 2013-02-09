@@ -79,10 +79,10 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
 
         try {
-            UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-            String user = args[1].getStringValue();
-            String group = args[2].getStringValue();
-            int mode = ((IntegerValue) args[3].convertTo(Type.INTEGER)).getInt();
+            final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+            final String user = args[1].getStringValue();
+            final String group = args[2].getStringValue();
+            final int mode = ((IntegerValue) args[3].convertTo(Type.INTEGER)).getInt();
             
             if (null == user || 0 == user.length()) {
                 logger.error("Needs a valid user name, not: " + user);
@@ -96,8 +96,8 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
             }
 
             // Must actually get a User object for the Permission...
-            Permission perms = PermissionFactory.getPermission(user, group, mode);
-            Account usr = ums.getAccount(user);
+            final Permission perms = PermissionFactory.getPermission(user, group, mode);
+            final Account usr = ums.getAccount(user);
             if (usr == null) {
                 logger.error("Needs a valid user name, not: " + user);
                 
@@ -106,9 +106,9 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
             perms.setOwner(usr);
             
             ums.setPermissions(collection, perms);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XPathException(this, "Unable to change collection permissions: " + pde.getMessage(), pde);
-        } catch(XMLDBException xe) {
+        } catch(final XMLDBException xe) {
             throw new XPathException(this, "Unable to change collection permissions: " + xe.getMessage(), xe);
         }
 

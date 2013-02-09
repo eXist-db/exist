@@ -65,9 +65,9 @@ public class FunctionFunction extends BasicFunction {
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	super.analyze(contextInfo);
-    	String funcName = getArgument(0).eval(null).getStringValue();
-    	int arity = ((NumericValue)getArgument(1).eval(null).itemAt(0)).getInt();
-    	FunctionCall funcCall = lookupFunction(funcName, arity);
+    	final String funcName = getArgument(0).eval(null).getStringValue();
+    	final int arity = ((NumericValue)getArgument(1).eval(null).itemAt(0)).getInt();
+    	final FunctionCall funcCall = lookupFunction(funcName, arity);
     	contextInfo.addFlag(SINGLE_STEP_EXECUTION);
     	funcCall.analyze(contextInfo);
     }
@@ -78,8 +78,8 @@ public class FunctionFunction extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
     	
-    	String funcName = args[0].getStringValue();
-    	int arity = ((NumericValue) args[1].itemAt(0)).getInt();
+    	final String funcName = args[0].getStringValue();
+    	final int arity = ((NumericValue) args[1].itemAt(0)).getInt();
     	this.resolvedFunction = lookupFunction(funcName, arity);
         return new FunctionReference(resolvedFunction);
     }
@@ -89,13 +89,13 @@ public class FunctionFunction extends BasicFunction {
 	    QName qname;
 	    try {
 	        qname = QName.parse(context, funcName, context.getDefaultFunctionNamespace());
-	    } catch(XPathException e) {
+	    } catch(final XPathException e) {
             e.setLocation(line, column);
 	        throw e;
 	    }
 	    
 	    // check if the function is from a module 
-	    Module module = context.getModule(qname.getNamespaceURI());
+	    final Module module = context.getModule(qname.getNamespaceURI());
 	    UserDefinedFunction func;
 	    if(module == null) {
 	        func = context.resolveFunction(qname, arity);
@@ -107,8 +107,8 @@ public class FunctionFunction extends BasicFunction {
 	        func = ((ExternalModule)module).getFunction(qname, arity, context);
 	    }
         if (func == null)
-            throw new XPathException(this, Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));
-	    FunctionCall funcCall = new FunctionCall(context, func);
+            {throw new XPathException(this, Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));}
+	    final FunctionCall funcCall = new FunctionCall(context, func);
         funcCall.setLocation(line, column);
 	    return funcCall;
 	}
@@ -116,8 +116,8 @@ public class FunctionFunction extends BasicFunction {
     public void resetState(boolean postOptimization) {
     	super.resetState(postOptimization);
     	if (resolvedFunction != null)
-    		resolvedFunction.resetState(postOptimization);
+    		{resolvedFunction.resetState(postOptimization);}
         if (!postOptimization)
-            resolvedFunction = null;
+            {resolvedFunction = null;}
     }
 }

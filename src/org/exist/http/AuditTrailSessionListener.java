@@ -69,10 +69,10 @@ public class AuditTrailSessionListener implements HttpSessionListener {
      * @param sessionEvent
      */
     public void sessionCreated(HttpSessionEvent sessionEvent) {
-        HttpSession session = sessionEvent.getSession();
+        final HttpSession session = sessionEvent.getSession();
 
         LOG.info("session created " + session.getId());
-        String xqueryResourcePath = System.getProperty(REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY);
+        final String xqueryResourcePath = System.getProperty(REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY);
         executeXQuery(xqueryResourcePath);
     }
 
@@ -81,13 +81,13 @@ public class AuditTrailSessionListener implements HttpSessionListener {
      * @param sessionEvent
      */
     public void sessionDestroyed(HttpSessionEvent sessionEvent) {
-        HttpSession session = (sessionEvent != null) ? sessionEvent.getSession() : null;
+        final HttpSession session = (sessionEvent != null) ? sessionEvent.getSession() : null;
         if (session != null)
-            LOG.info("destroy session " + session.getId());
+            {LOG.info("destroy session " + session.getId());}
         else
-            LOG.info("destroy session");
+            {LOG.info("destroy session");}
 
-        String xqueryResourcePath = System.getProperty(REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY);
+        final String xqueryResourcePath = System.getProperty(REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY);
         executeXQuery(xqueryResourcePath);
     }
 
@@ -111,7 +111,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                     return;
                 }
 
-                XmldbURI pathUri = XmldbURI.create(xqueryResourcePath);
+                final XmldbURI pathUri = XmldbURI.create(xqueryResourcePath);
 
 
                 resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
@@ -125,48 +125,48 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                 }
 
 
-                XQuery xquery = broker.getXQueryService();
+                final XQuery xquery = broker.getXQueryService();
 
                 if (xquery == null) {
                     LOG.error("broker unable to retrieve XQueryService");
                     return;
                 }
 
-                XQueryPool xqpool = xquery.getXQueryPool();
+                final XQueryPool xqpool = xquery.getXQueryPool();
                 CompiledXQuery compiled = xqpool.borrowCompiledXQuery(broker, source);
                 XQueryContext context;
                 if (compiled == null)
-                    context = xquery.newContext(AccessContext.REST);
+                    {context = xquery.newContext(AccessContext.REST);}
                 else
-                    context = compiled.getContext();
+                    {context = compiled.getContext();}
                 context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
                 context.setBaseURI(new AnyURIValue(pathUri.toString()));
 
                 if (compiled == null)
-                    compiled = xquery.compile(context, source);
+                    {compiled = xquery.compile(context, source);}
                 else {
                     compiled.getContext().updateContext(context);
                     context.getWatchDog().reset();
                 }
 
-                Properties outputProperties = new Properties();
+                final Properties outputProperties = new Properties();
                 Sequence result = null;
 
                 try {
-                    long startTime = System.currentTimeMillis();
+                    final long startTime = System.currentTimeMillis();
                     result = xquery.execute(compiled, null, outputProperties);
-                    long queryTime = System.currentTimeMillis() - startTime;
+                    final long queryTime = System.currentTimeMillis() - startTime;
                     LOG.info("XQuery execution results: " + result.toString()  + " in " + queryTime + "ms.");
                 } finally {
                     xqpool.returnCompiledXQuery(source, compiled);
                 }
 
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 LOG.error("Exception while executing [" + xqueryResourcePath + "] script for " + subject.getName(), e);
             }
             finally {
                 if (pool != null)
-                    pool.release(broker);
+                    {pool.release(broker);}
             }
         }
     }

@@ -71,7 +71,7 @@ public class GetRunningXQueries extends BasicFunction
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
 		if( !context.getSubject().hasDbaRole() ) {
-			XPathException xPathException = new XPathException( this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to get the list of running xqueries" );
+			final XPathException xPathException = new XPathException( this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to get the list of running xqueries" );
         	logger.error("Invalid user " + SystemModule.PREFIX + ":get-scheduled-xqueries", xPathException);
 			throw xPathException;
 		}
@@ -84,15 +84,15 @@ public class GetRunningXQueries extends BasicFunction
 	{
 		Sequence    xmlResponse     = null;
         
-        MemTreeBuilder builder = context.getDocumentBuilder();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
         
         builder.startDocument();
         builder.startElement( new QName( "xqueries", NAMESPACE_URI, PREFIX ), null );
         
         //Add all the running xqueries
-        XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
+        final XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
         for (int i = 0; i < watchdogs.length; i++) {
-        	XQueryContext 	context 	= watchdogs[i].getContext();
+        	final XQueryContext 	context 	= watchdogs[i].getContext();
         	
         	getRunningXQuery( builder, context, watchdogs[i] );
         }

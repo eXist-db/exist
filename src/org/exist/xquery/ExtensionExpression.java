@@ -66,29 +66,29 @@ public class ExtensionExpression extends AbstractExpression {
             throws XPathException {
         callBefore();
         Sequence result = null;
-        for (Pragma pragma : pragmas) {
+        for (final Pragma pragma : pragmas) {
             Sequence temp = pragma.eval(contextSequence, contextItem);
             if (temp != null) {
                 if (result != null)
-                    throw new XPathException(this,
-                        "Conflicting pragmas: only one should return a result for eval");
+                    {throw new XPathException(this,
+                        "Conflicting pragmas: only one should return a result for eval");}
                 result = temp;
             }
         }
         if (result == null)
-            result = innerExpression.eval(contextSequence, contextItem);
+            {result = innerExpression.eval(contextSequence, contextItem);}
         callAfter();
         return result;
     }
 
     private void callAfter() throws XPathException {
-        for (Pragma pragma : pragmas) {
+        for (final Pragma pragma : pragmas) {
             pragma.after(context, innerExpression);
         }
     }
 
     private void callBefore() throws XPathException {
-        for (Pragma pragma : pragmas) {
+        for (final Pragma pragma : pragmas) {
             pragma.before(context, innerExpression);
         }
     }
@@ -98,18 +98,18 @@ public class ExtensionExpression extends AbstractExpression {
     }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
-        for (Pragma pragma : pragmas) {
+        final AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
+        for (final Pragma pragma : pragmas) {
             pragma.analyze(newContext);
         }
         innerExpression.analyze(newContext);
     }
 
     public void dump(ExpressionDumper dumper) {
-        for (Pragma pragma : pragmas) {
+        for (final Pragma pragma : pragmas) {
             dumper.display("(# " + pragma.getQName().getStringValue(), line);
             if (pragma.getContents() != null)
-                dumper.display(' ').display(pragma.getContents());
+                {dumper.display(' ').display(pragma.getContents());}
             dumper.display("#)").nl();
         }
         dumper.display('{');
@@ -152,7 +152,7 @@ public class ExtensionExpression extends AbstractExpression {
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         innerExpression.resetState(postOptimization);
-        for (Pragma pragma : pragmas) {
+        for (final Pragma pragma : pragmas) {
             pragma.resetState(postOptimization);
         }
     }

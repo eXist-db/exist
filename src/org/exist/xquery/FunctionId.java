@@ -46,13 +46,13 @@ public class FunctionId implements Comparable<FunctionId> {
 		final int cmp = qname.compareTo(other.qname);
 		if(cmp == 0) {
 			if(argCount == other.argCount || argCount == -1 || other.argCount == -1)
-				return Constants.EQUAL;
+				{return Constants.EQUAL;}
 			else if(argCount < other.argCount)
-				return Constants.INFERIOR;
+				{return Constants.INFERIOR;}
 			else
-				return Constants.SUPERIOR;
+				{return Constants.SUPERIOR;}
 		} else
-			return cmp;
+			{return cmp;}
 	}
 	
 	public String toString() {

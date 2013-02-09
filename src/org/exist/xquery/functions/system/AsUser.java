@@ -62,29 +62,29 @@ public class AsUser extends Function {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
     	logger.info("Entering the " + SystemModule.PREFIX + ":as-user XQuery function");
 
-		DBBroker broker = context.getBroker();
+		final DBBroker broker = context.getBroker();
 
-		Sequence usernameResult = getArgument(0).eval(contextSequence, contextItem);
+		final Sequence usernameResult = getArgument(0).eval(contextSequence, contextItem);
         if (usernameResult.isEmpty()) {
-        	XPathException exception = new XPathException(this, "No user specified");
+        	final XPathException exception = new XPathException(this, "No user specified");
         	logger.error("No user specified, throwing an exception!", exception);
             throw exception;
         }
-        Sequence password = getArgument(1).eval(contextSequence, contextItem);
+        final Sequence password = getArgument(1).eval(contextSequence, contextItem);
 
-        String username = usernameResult.getStringValue();
+        final String username = usernameResult.getStringValue();
         
-        org.exist.security.SecurityManager security = broker.getBrokerPool().getSecurityManager();
+        final org.exist.security.SecurityManager security = broker.getBrokerPool().getSecurityManager();
         Subject user;
         try {
             user = security.authenticate(username, password.getStringValue());
-		} catch (AuthenticationException e) {
-	        XPathException exception = new XPathException(this, "Authentication failed", e);
+		} catch (final AuthenticationException e) {
+	        final XPathException exception = new XPathException(this, "Authentication failed", e);
         	logger.error("Authentication failed for setting the user to [" + username + "] because of ["+e.getMessage()+"], throwing an exception!", exception);
             throw exception;
 		}
 
-		Subject oldUser = broker.getSubject();
+		final Subject oldUser = broker.getSubject();
 		try {
 			logger.info("Setting the authenticated user to: [" + username + "]");
 			broker.setSubject(user);

@@ -66,7 +66,7 @@ public class ProgressIndicator {
 
 	public boolean changed() {
 		if(value_ % step_ == 0)
-			return true;
+			{return true;}
 		return false;
 	}
 	

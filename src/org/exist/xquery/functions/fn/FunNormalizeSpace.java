@@ -100,44 +100,44 @@ public class FunNormalizeSpace extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if(contextItem != null)
-			contextSequence = contextItem.toSequence();		
+			{contextSequence = contextItem.toSequence();}		
 		
 		String value = null;
 		if (getSignature().getArgumentCount() == 0) {
 			if (contextSequence == null)
-				throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+				{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
 			value = !contextSequence.isEmpty() ? contextSequence.itemAt(0).getStringValue() : "";
 		} else {
-			Sequence seq = getArgument(0).eval(contextSequence);
+			final Sequence seq = getArgument(0).eval(contextSequence);
 			if (seq == null)
-				throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");			
+				{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}			
 			if (!seq.isEmpty())
-                value = seq.getStringValue();
+                {value = seq.getStringValue();}
 		}
         
         Sequence result;
         if (value == null)
-            result = StringValue.EMPTY_STRING;
+            {result = StringValue.EMPTY_STRING;}
         else {            
-    		StringBuilder buf = new StringBuilder();
+    		final StringBuilder buf = new StringBuilder();
     		if (value.length() > 0) {
-    			StringTokenizer tok = new StringTokenizer(value);
+    			final StringTokenizer tok = new StringTokenizer(value);
     			while (tok.hasMoreTokens()) {
                     buf.append(tok.nextToken());
-    				if (tok.hasMoreTokens()) buf.append(' ');
+    				if (tok.hasMoreTokens()) {buf.append(' ');}
     			}
     		}
             result = new StringValue(buf.toString());
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;
 	}

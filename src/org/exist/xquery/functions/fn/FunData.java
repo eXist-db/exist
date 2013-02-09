@@ -72,26 +72,26 @@ public class FunData extends Function {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence arg = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence arg = getArgument(0).eval(contextSequence, contextItem);
         Sequence result;
         if (arg.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
             result = new ValueSequence();
             Item item;
-            for (SequenceIterator i = arg.iterate(); i.hasNext(); ) {
+            for (final SequenceIterator i = arg.iterate(); i.hasNext(); ) {
                 item = i.nextItem();
                 result.add(item.atomize());
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

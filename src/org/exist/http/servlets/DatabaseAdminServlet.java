@@ -36,14 +36,14 @@ public class DatabaseAdminServlet extends AbstractExistHttpServlet {
     public void doGet( HttpServletRequest request,
                        HttpServletResponse response )
          throws ServletException, IOException {
-        PrintStream output = new PrintStream( response.getOutputStream() );
+        final PrintStream output = new PrintStream( response.getOutputStream() );
         response.setContentType( "text/html" );
         response.addHeader( "pragma", "no-cache" );
         response.addHeader( "Cache-Control", "no-cache" );
 
         output.println( "<h1>eXist Database Server Status</h1>" );
 
-        String action = request.getParameter( "action" );
+        final String action = request.getParameter( "action" );
         try {
             if ( action != null ) {
                 if ( action.equalsIgnoreCase( "start" ) ) {
@@ -52,7 +52,7 @@ public class DatabaseAdminServlet extends AbstractExistHttpServlet {
                         output.println( "<p>Server has been started...</p>" );
                     }
                     else
-                        output.println( "<p>Server is already running.</p>" );
+                        {output.println( "<p>Server is already running.</p>" );}
                 }
                 else if ( action.equalsIgnoreCase( "shutdown" ) ) {
                     if ( BrokerPool.isConfigured() ) {
@@ -60,17 +60,17 @@ public class DatabaseAdminServlet extends AbstractExistHttpServlet {
                         output.println( "<p>Server has been shut down...</p>" );
                     }
                     else
-                        output.println( "<p>Server is not running ...</p>" );
+                        {output.println( "<p>Server is not running ...</p>" );}
                 }
             }
 
             if ( !BrokerPool.isConfigured() )
-                output.println( "<p>Server is not running ...</p>" );
+                {output.println( "<p>Server is not running ...</p>" );}
             else {
                 output.println( "<p>The database server is running ...</p>" );
 
-                BrokerPool pool = BrokerPool.getInstance();
-                Configuration conf = pool.getConfiguration();
+                final BrokerPool pool = BrokerPool.getInstance();
+                final Configuration conf = pool.getConfiguration();
                 output.println( "<table  width=\"80%\"><tr>" +
                     "<th colspan=\"2\" align=\"left\" bgcolor=\"#0086b2\"><b>Status</b></th></tr>" );
                 output.println( "<tr><td>Address:</td><td>" + request.getRequestURI() +
@@ -92,9 +92,9 @@ public class DatabaseAdminServlet extends AbstractExistHttpServlet {
             output.print( "<input type=\"submit\" name=\"action\" value=\"shutdown\">" );
             output.println( "</form></p>" );
             output.flush();
-        } catch ( EXistException e ) {
+        } catch ( final EXistException e ) {
             throw new ServletException( e.getMessage() );
-        } catch (DatabaseConfigurationException e) {
+        } catch (final DatabaseConfigurationException e) {
             throw new ServletException( e.getMessage() );
         }
     }

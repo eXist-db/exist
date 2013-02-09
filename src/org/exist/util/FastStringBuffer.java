@@ -406,9 +406,9 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      */
 
     public static String diagnosticPrint(CharSequence in) {
-        FastStringBuffer buff = new FastStringBuffer(in.length()*2);
+        final FastStringBuffer buff = new FastStringBuffer(in.length()*2);
         for (int i=0; i<in.length(); i++) {
-            char c = in.charAt(i);
+            final char c = in.charAt(i);
             if (c > 32 && c < 127) {
                 buff.append(c);
             } else {

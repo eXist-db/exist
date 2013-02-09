@@ -79,26 +79,26 @@ public class DescribeFunction extends Function {
 		Item contextItem)
 		throws XPathException {
 		
-		String fname = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-		QName qname = QName.parse(context, fname, context.getDefaultFunctionNamespace());
-		String uri = qname.getNamespaceURI();
+		final String fname = getArgument(0).eval(contextSequence, contextItem).getStringValue();
+		final QName qname = QName.parse(context, fname, context.getDefaultFunctionNamespace());
+		final String uri = qname.getNamespaceURI();
 		
-		MemTreeBuilder builder = context.getDocumentBuilder();
-		AttributesImpl attribs = new AttributesImpl();
+		final MemTreeBuilder builder = context.getDocumentBuilder();
+		final AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute("", "name", "name", "CDATA", qname.getStringValue());
 		attribs.addAttribute("", "module", "module", "CDATA", uri);
-		int nodeNr = builder.startElement("", "function", "function", attribs);
+		final int nodeNr = builder.startElement("", "function", "function", attribs);
 		
 		FunctionSignature signature;
-		Module module = context.getModule(uri);
+		final Module module = context.getModule(uri);
 		if(module != null) {
-			Iterator<FunctionSignature> i = module.getSignaturesForFunction(qname);
+			final Iterator<FunctionSignature> i = module.getSignaturesForFunction(qname);
 			while(i.hasNext()) {
 				signature = i.next();
 				writeSignature(signature, builder);
 			}
 		} else {
-			Iterator<FunctionSignature> i = context.getSignaturesForFunction(qname);
+			final Iterator<FunctionSignature> i = context.getSignaturesForFunction(qname);
 			while(i.hasNext()) {
 				signature = i.next();
 				writeSignature(signature, builder);
@@ -115,7 +115,7 @@ public class DescribeFunction extends Function {
 	 * @throws XPathException if an internal error occurs
 	 */
 	private void writeSignature(FunctionSignature signature, MemTreeBuilder builder) throws XPathException {
-		AttributesImpl attribs = new AttributesImpl();
+		final AttributesImpl attribs = new AttributesImpl();
 		attribs.addAttribute("", "arguments", "arguments", "CDATA", Integer.toString(signature.getArgumentCount()));
 		builder.startElement("", "prototype", "prototype", attribs);
 		attribs.clear();
@@ -128,22 +128,22 @@ public class DescribeFunction extends Function {
 		if(signature.getDescription() != null) {
 			builder.startElement("", "description", "description", attribs);
 
-            StringBuilder description = new StringBuilder();
+            final StringBuilder description = new StringBuilder();
             description.append(signature.getDescription());
 
             description.append("\n\n");
             
-            SequenceType argumentTypes[] = signature.getArgumentTypes();
+            final SequenceType argumentTypes[] = signature.getArgumentTypes();
             
             if(argumentTypes != null && argumentTypes.length>0){
 
-                StringBuilder args = new StringBuilder();
+                final StringBuilder args = new StringBuilder();
                 int noArgs=0;
                 
-                for (SequenceType argumentType : argumentTypes) {
+                for (final SequenceType argumentType : argumentTypes) {
                     if (argumentType instanceof FunctionParameterSequenceType) {
                         noArgs++;
-                        FunctionParameterSequenceType fp
+                        final FunctionParameterSequenceType fp
                                 = (FunctionParameterSequenceType) argumentType;
                         args.append("$");
                         args.append(fp.getAttributeName());
@@ -160,12 +160,12 @@ public class DescribeFunction extends Function {
                 }
             }
 
-            SequenceType returnType = signature.getReturnType();
+            final SequenceType returnType = signature.getReturnType();
             if(returnType != null){             
                 if (returnType instanceof FunctionReturnSequenceType) {
                     description.append("\n");
                     description.append("Returns ");
-                    FunctionReturnSequenceType fp
+                    final FunctionReturnSequenceType fp
                                 = (FunctionReturnSequenceType) returnType;
                         description.append(fp.getDescription());
                         description.append("\n");
@@ -187,17 +187,17 @@ public class DescribeFunction extends Function {
 	}
 
 	private void writeAnnotations(FunctionSignature signature, MemTreeBuilder builder) throws XPathException {
-		AttributesImpl attribs = new AttributesImpl();
-		Annotation[] annots = signature.getAnnotations();
+		final AttributesImpl attribs = new AttributesImpl();
+		final Annotation[] annots = signature.getAnnotations();
 		if (annots != null) {
-			for (Annotation annot : annots) {
+			for (final Annotation annot : annots) {
 				attribs.clear();
 				attribs.addAttribute(null, "name", "name", "CDATA", annot.getName().toString());
 				attribs.addAttribute(null, "namespace", "namespace", "CDATA", annot.getName().getNamespaceURI());
 				builder.startElement(ANNOTATION_QNAME, attribs);
-				LiteralValue[] value = annot.getValue();
+				final LiteralValue[] value = annot.getValue();
 				if (value != null) {
-					for (LiteralValue literal : value) {
+					for (final LiteralValue literal : value) {
 						builder.startElement(ANNOTATION_VALUE_QNAME, null);
 						builder.characters(literal.getValue().getStringValue());
 						builder.endElement();

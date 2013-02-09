@@ -59,29 +59,29 @@ public class LatestFileResolver {
      * a jar file that should be added to the classpath.
      */
     public String getResolvedFileName(String filename) {
-        Matcher matches = latestVersionPattern.matcher(filename);
+        final Matcher matches = latestVersionPattern.matcher(filename);
         if (!matches.find()) {
             return filename;
         }
-        String[] fileinfo = filename.split("%latest%");
+        final String[] fileinfo = filename.split("%latest%");
         // Path of file up to the beginning of the %latest% token.
-        String uptoToken = fileinfo[0];
+        final String uptoToken = fileinfo[0];
 
         // Dir that should contain our jar.
-        String containerDirName = uptoToken.substring(
+        final String containerDirName = uptoToken.substring(
             0, uptoToken.lastIndexOf(File.separatorChar)
         );
 
-        File containerDir = new File(containerDirName);
+        final File containerDir = new File(containerDirName);
 
         // 0-9 . - and _ are valid chars that can occur where the %latest% token
         // was (maybe allow letters too?).
-        String patternString = uptoToken.substring(
+        final String patternString = uptoToken.substring(
             uptoToken.lastIndexOf(File.separatorChar) + 1
         ) + "([\\d\\.\\-_]+)" + fileinfo[1];
         final Pattern pattern = Pattern.compile("^" + patternString + "$");
 
-        File[] jars = containerDir.listFiles(new FilenameFilter() {
+        final File[] jars = containerDir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 Matcher matches = pattern.matcher(name);
                 return matches.find();
@@ -92,7 +92,7 @@ public class LatestFileResolver {
             System.err.println("ERROR: No jars found in "+containerDir.getAbsolutePath());
             
         } else if (jars.length > 0) {
-            String actualFileName = jars[0].getAbsolutePath();
+            final String actualFileName = jars[0].getAbsolutePath();
             if (_debug) {
                 System.err.println(
                     "Found match: " + actualFileName

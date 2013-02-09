@@ -57,8 +57,8 @@ public class DateTimeValue extends AbstractDateTimeValue {
 	public DateTimeValue(String dateTime) throws XPathException {
 		super(dateTime);
 		try {
-			if (calendar.getXMLSchemaType() != DatatypeConstants.DATETIME) throw new IllegalStateException();
-		} catch (IllegalStateException e) {
+			if (calendar.getXMLSchemaType() != DatatypeConstants.DATETIME) {throw new IllegalStateException();}
+		} catch (final IllegalStateException e) {
 			throw new XPathException("xs:dateTime instance must have all fields set");
 		}
 		normalize();
@@ -73,18 +73,18 @@ public class DateTimeValue extends AbstractDateTimeValue {
 	}
 
 	private static XMLGregorianCalendar dateToXMLGregorianCalendar(Date date) {
-		GregorianCalendar gc = new GregorianCalendar();
+		final GregorianCalendar gc = new GregorianCalendar();
 		gc.setTime(date);
-		XMLGregorianCalendar xgc = TimeUtils.getInstance().newXMLGregorianCalendar(gc);
+		final XMLGregorianCalendar xgc = TimeUtils.getInstance().newXMLGregorianCalendar(gc);
 		xgc.normalize();
 		return xgc;
 	}
 	
 	private static XMLGregorianCalendar fillCalendar(XMLGregorianCalendar calendar) {
-		if (calendar.getHour() == DatatypeConstants.FIELD_UNDEFINED) calendar.setHour(0);
-		if (calendar.getMinute() == DatatypeConstants.FIELD_UNDEFINED) calendar.setMinute(0);
-		if (calendar.getSecond() == DatatypeConstants.FIELD_UNDEFINED) calendar.setSecond(0);
-		if (calendar.getMillisecond() == DatatypeConstants.FIELD_UNDEFINED) calendar.setMillisecond(0);
+		if (calendar.getHour() == DatatypeConstants.FIELD_UNDEFINED) {calendar.setHour(0);}
+		if (calendar.getMinute() == DatatypeConstants.FIELD_UNDEFINED) {calendar.setMinute(0);}
+		if (calendar.getSecond() == DatatypeConstants.FIELD_UNDEFINED) {calendar.setSecond(0);}
+		if (calendar.getMillisecond() == DatatypeConstants.FIELD_UNDEFINED) {calendar.setMillisecond(0);}
 		return calendar;
 	}
 

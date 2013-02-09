@@ -74,7 +74,7 @@ public class ModuleUtils {
 	 * @return The NodeValue of XML
 	 */
 	public static NodeValue stringToXML(XQueryContext context, String str) throws SAXException, IOException {
-            Reader reader = new StringReader(str);
+            final Reader reader = new StringReader(str);
             try {
                 return inputSourceToXML(context, new InputSource(reader));
             } finally {
@@ -148,12 +148,12 @@ public class ModuleUtils {
                 LOG.debug( "Parsing XML response ..." );
 
                 // TODO : we should be able to cope with context.getBaseURI()
-                MemTreeBuilder builder = context.getDocumentBuilder();
-                DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder, true );
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder, true );
                 reader.setContentHandler(receiver);
                 reader.setProperty("http://xml.org/sax/properties/lexical-handler", receiver);
                 reader.parse(inputSource);
-                Document doc = receiver.getDocument();
+                final Document doc = receiver.getDocument();
                 // return (NodeValue)doc.getDocumentElement();
                 return((NodeValue)doc);
             }  finally {
@@ -189,11 +189,11 @@ public class ModuleUtils {
                 // in-memory DOM implementation
 
                 // TODO : we should be able to cope with context.getBaseURI()
-                MemTreeBuilder builder = context.getDocumentBuilder();
-                DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
                 reader.setContentHandler(receiver);
                 reader.parse(src.getInputSource());
-                Document doc = receiver.getDocument();
+                final Document doc = receiver.getDocument();
                 return((NodeValue)doc);
             }  finally {
                 context.popDocumentContext();
@@ -217,7 +217,7 @@ public class ModuleUtils {
 	 */
 	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, Source srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws IOException, SAXException {
 		
-            InputSource inputSource = SAXSource.sourceToInputSource(srcHtml);
+            final InputSource inputSource = SAXSource.sourceToInputSource(srcHtml);
         
             if(inputSource == null){
                 throw new IOException(srcHtml.getClass().getName() + " is unsupported.");
@@ -252,7 +252,7 @@ public class ModuleUtils {
                 reader = (XMLReader) Class.forName("org.cyberneko.html.parsers.SAXParser").newInstance();
                 
                 if(parserFeatures != null) {
-                    for(Entry<String, Boolean> parserFeature : parserFeatures.entrySet()) {
+                    for(final Entry<String, Boolean> parserFeature : parserFeatures.entrySet()) {
                         reader.setFeature(parserFeature.getKey(), parserFeature.getValue());
                     }
                 }
@@ -262,12 +262,12 @@ public class ModuleUtils {
                     reader.setProperty("http://cyberneko.org/html/properties/names/elems","match");
                     reader.setProperty("http://cyberneko.org/html/properties/names/attrs","no-change");
                 } else {
-                    for(Entry<String, String> parserProperty : parserProperties.entrySet()) {
+                    for(final Entry<String, String> parserProperty : parserProperties.entrySet()) {
                         reader.setProperty(parserProperty.getKey(), parserProperty.getValue());
                     }
                 }
-            } catch(Exception e) {
-                    String errorMsg = "Error while invoking NekoHTML parser. ("
+            } catch(final Exception e) {
+                    final String errorMsg = "Error while invoking NekoHTML parser. ("
                                     + e.getMessage()
                                     + "). If you want to parse non-wellformed HTML files, put "
                                     + "nekohtml.jar into directory 'lib/user'.";
@@ -276,10 +276,10 @@ public class ModuleUtils {
                     throw new IOException(errorMsg, e);
             }
 
-            SAXAdapter adapter = new SAXAdapter();
+            final SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
             reader.parse(srcHtml);
-            Document doc = adapter.getDocument();
+            final Document doc = adapter.getDocument();
             memtreeDoc = (DocumentImpl) doc;
             memtreeDoc.setContext(context);
             
@@ -324,15 +324,15 @@ public class ModuleUtils {
 	 *         properties
 	 */
 	private static Properties parseProperties(Node container, String elementName) {
-            Properties properties = new Properties();
+            final Properties properties = new Properties();
 
             if(container != null && container.getNodeType() == Node.ELEMENT_NODE) {
-                NodeList params = ((Element) container).getElementsByTagName(elementName);
+                final NodeList params = ((Element) container).getElementsByTagName(elementName);
                 for(int i = 0; i < params.getLength(); i++) {
-                    Element param = ((Element) params.item(i));
+                    final Element param = ((Element) params.item(i));
 
-                    String name = param.getAttribute("name");
-                    String value = param.getAttribute("value");
+                    final String name = param.getAttribute("name");
+                    final String value = param.getAttribute("value");
 
                     if(name != null && value != null) {
                         properties.setProperty(name, value);
@@ -422,7 +422,7 @@ public class ModuleUtils {
         
         @Override
         public void modify(Map<Long, T> map) {
-            for(Entry<Long, T> entry : map.entrySet()) {
+            for(final Entry<Long, T> entry : map.entrySet()) {
                 modify(entry);
             }
         }
@@ -473,7 +473,7 @@ public class ModuleUtils {
     private final static Random random = new Random();
     
     private static long getUID() {
-        BigInteger bi = new BigInteger(64, random);
+        final BigInteger bi = new BigInteger(64, random);
         return bi.longValue();
     }
 }

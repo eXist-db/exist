@@ -107,20 +107,20 @@ public class FunDistinctValues extends CollatingFunction {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-        Collator collator = getCollator(contextSequence, contextItem, 2);		
-        TreeSet<AtomicValue> set = new TreeSet<AtomicValue>(new ValueComparator(collator));
-        ValueSequence result = new ValueSequence();
+        final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+        final Collator collator = getCollator(contextSequence, contextItem, 2);		
+        final TreeSet<AtomicValue> set = new TreeSet<AtomicValue>(new ValueComparator(collator));
+        final ValueSequence result = new ValueSequence();
         Item item;
         AtomicValue value;
         boolean hasAlreadyNaN = false;
-        for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+        for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
             item = i.nextItem();
             value = item.atomize();
             if (!set.contains(value)) {
@@ -144,7 +144,7 @@ public class FunDistinctValues extends CollatingFunction {
             }
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 
@@ -162,17 +162,17 @@ public class FunDistinctValues extends CollatingFunction {
             try {
                 if (ValueComparison.compareAtomic(collator, o1, o2,
                         Constants.TRUNC_NONE, Constants.EQ))
-                    return Constants.EQUAL;
+                    {return Constants.EQUAL;}
                 else if (ValueComparison.compareAtomic(collator, o1, o2,
                         Constants.TRUNC_NONE, Constants.LT))
-                    return Constants.INFERIOR;
+                    {return Constants.INFERIOR;}
                 else if (ValueComparison.compareAtomic(collator, o1, o2,
                         Constants.TRUNC_NONE, Constants.GT))
-                    return Constants.SUPERIOR;
+                    {return Constants.SUPERIOR;}
                 //Fallback
                 else
-                    return o1.compareTo(collator, o2);
-            } catch (XPathException e) {
+                    {return o1.compareTo(collator, o2);}
+            } catch (final XPathException e) {
                 //Values that cannot be compared, i.e. the eq operator
                 //is not defined for their types, are considered to be distinct
                 return Constants.INFERIOR;

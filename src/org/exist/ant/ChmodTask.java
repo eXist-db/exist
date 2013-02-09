@@ -64,8 +64,8 @@ public class ChmodTask extends UserTask
 			
 			setPermissions( res, service );
 		}            
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

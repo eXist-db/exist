@@ -52,22 +52,22 @@ public class GetIndexStatistics extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        IndexStatistics index = (IndexStatistics) context.getBroker().getBrokerPool().
+        final IndexStatistics index = (IndexStatistics) context.getBroker().getBrokerPool().
                 getIndexManager().getIndexById(IndexStatistics.ID);
         if (index == null) {
             // module may not be enabled
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        SAXAdapter adapter = new SAXAdapter(context);
+        final SAXAdapter adapter = new SAXAdapter(context);
         try {
             adapter.startDocument();
             index.toSAX(adapter);
             adapter.endDocument();
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             throw new XPathException(this, "Error caught while retrieving statistics: " + e.getMessage(), e);
         }
-        DocumentImpl doc = (DocumentImpl) adapter.getDocument();
+        final DocumentImpl doc = (DocumentImpl) adapter.getDocument();
         return (NodeImpl) doc.getFirstChild();
     }
 }

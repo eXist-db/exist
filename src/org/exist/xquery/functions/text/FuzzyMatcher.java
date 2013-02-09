@@ -47,10 +47,10 @@ public class FuzzyMatcher implements TermMatcher {
 	 */
 	public boolean matches(CharSequence text) {
 		if(searchTerm.equals(text))
-			return true;
-		int textlen = text.length();
-		int dist = editDistance(text, searchTerm, textlen, termLength);
-		double distance = 1 - ((double)dist / (double)Math.min(textlen, termLength));
+			{return true;}
+		final int textlen = text.length();
+		final int dist = editDistance(text, searchTerm, textlen, termLength);
+		final double distance = 1 - ((double)dist / (double)Math.min(textlen, termLength));
 		return distance > threshold;
 	}
 	
@@ -58,7 +58,7 @@ public class FuzzyMatcher implements TermMatcher {
      Finds and returns the smallest of three integers 
      */
     private static final int min(int a, int b, int c) {
-        int t = (a < b) ? a : b;
+        final int t = (a < b) ? a : b;
         return (t < c) ? t : c;
     }
     
@@ -81,13 +81,13 @@ public class FuzzyMatcher implements TermMatcher {
         if (e.length <= n || e[0].length <= m) {
             e = new int[Math.max(e.length, n+1)][Math.max(e[0].length, m+1)];
         }
-        int d[][] = e; // matrix
+        final int d[][] = e; // matrix
         int i; // iterates through s
         int j; // iterates through t
         char s_i; // ith character of s
         
-        if (n == 0) return m;
-        if (m == 0) return n;
+        if (n == 0) {return m;}
+        if (m == 0) {return n;}
         
         // init matrix d
         for (i = 0; i <= n; i++) d[i][0] = i;
@@ -98,8 +98,8 @@ public class FuzzyMatcher implements TermMatcher {
             s_i = s.charAt(i - 1);
             for (j = 1; j <= m; j++) {
                 if (s_i != t.charAt(j-1))
-                    d[i][j] = min(d[i-1][j], d[i][j-1], d[i-1][j-1])+1;
-                else d[i][j] = min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]);
+                    {d[i][j] = min(d[i-1][j], d[i][j-1], d[i-1][j-1])+1;}
+                else {d[i][j] = min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]);}
             }
         }
         

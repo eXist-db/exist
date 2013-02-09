@@ -90,10 +90,10 @@ public abstract class Function extends PathExpr {
      */
     public int returnsType() {
         if (mySignature == null)
-            return Type.ITEM; // Type is not known yet
+            {return Type.ITEM;} // Type is not known yet
         if (mySignature.getReturnType() == null)
-            throw new IllegalArgumentException("Return type for function " +
-                mySignature.getName() + " is not defined");
+            {throw new IllegalArgumentException("Return type for function " +
+                mySignature.getName() + " is not defined");}
         return mySignature.getReturnType().getPrimaryType();
     }
 
@@ -102,8 +102,8 @@ public abstract class Function extends PathExpr {
      */
     public int getCardinality() {
         if (mySignature.getReturnType() == null)
-            throw new IllegalArgumentException("Return type for function " +
-                mySignature.getName() + " is not defined");
+            {throw new IllegalArgumentException("Return type for function " +
+                mySignature.getName() + " is not defined");}
         return mySignature.getReturnType().getCardinality();
     }
 
@@ -114,17 +114,17 @@ public abstract class Function extends PathExpr {
     public static Function createFunction(XQueryContext context, XQueryAST ast,
             FunctionDef def) throws XPathException {
         if (def == null)
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
-        Class<? extends Function> fclass = def.getImplementingClass();
+            {throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");}
+        final Class<? extends Function> fclass = def.getImplementingClass();
         if (fclass == null)
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
+            {throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");}
         try {
             Object initArgs[] = { context };
             Class<?> constructorArgs[] = { XQueryContext.class }; 
             Constructor<?> construct = null;
             try {
                 construct = fclass.getConstructor(constructorArgs);
-            } catch(NoSuchMethodException e) {
+            } catch(final NoSuchMethodException e) {
                 //Don't ignore ? -pb
             }
             //Not found: check if the constructor takes two arguments
@@ -134,19 +134,19 @@ public abstract class Function extends PathExpr {
                 constructorArgs[1] = FunctionSignature.class;
                 construct = fclass.getConstructor(constructorArgs);
                 if (construct == null)
-                    throw new XPathException(ast.getLine(), ast.getColumn(), "Constructor not found");
+                    {throw new XPathException(ast.getLine(), ast.getColumn(), "Constructor not found");}
                 initArgs = new Object[2];
                 initArgs[0] = context;
                 initArgs[1] = def.getSignature();
             }
-            Object obj = construct.newInstance(initArgs);
+            final Object obj = construct.newInstance(initArgs);
             if (obj instanceof Function) {
                 ((Function)obj).setLocation(ast.getLine(), ast.getColumn());
                 return (Function) obj;
             } else
-                throw new XPathException(ast.getLine(), ast.getColumn(),
-                    "Function object does not implement interface function");
-        } catch (Exception e) {
+                {throw new XPathException(ast.getLine(), ast.getColumn(),
+                    "Function object does not implement interface function");}
+        } catch (final Exception e) {
             LOG.debug(e.getMessage(), e);
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Function implementation class " + fclass.getName() + " not found");
@@ -181,10 +181,10 @@ public abstract class Function extends PathExpr {
      */
     public void setArguments(List<Expression> arguments) throws XPathException {
         if ((!mySignature.isOverloaded()) && arguments.size() != mySignature.getArgumentCount())
-            throw new XPathException(this, ErrorCodes.XPST0017, 
+            {throw new XPathException(this, ErrorCodes.XPST0017, 
                 "Number of arguments of function " + getName() +
                 " doesn't match function signature (expected " +
-                mySignature.getArgumentCount() + ", got " + arguments.size() + ')');
+                mySignature.getArgumentCount() + ", got " + arguments.size() + ')');}
         steps = new ArrayList<Expression>(arguments.size());
         for (int i = 0; i < arguments.size(); i++) {
             steps.add(arguments.get(i).simplify());
@@ -197,12 +197,12 @@ public abstract class Function extends PathExpr {
      */
     protected void checkArguments() throws XPathException {
         if (!argumentsChecked) {
-            SequenceType[] argumentTypes = mySignature.getArgumentTypes();
+            final SequenceType[] argumentTypes = mySignature.getArgumentTypes();
             Expression next;
             SequenceType argType = null;
             for (int i = 0; i < getArgumentCount(); i++) {
                 if (argumentTypes != null && i < argumentTypes.length)
-                    argType = argumentTypes[i];
+                    {argType = argumentTypes[i];}
                 next = checkArgument(getArgument(i), argType, i + 1);
                 steps.set(i, next);
             }
@@ -222,7 +222,7 @@ public abstract class Function extends PathExpr {
     protected Expression checkArgument(Expression expr, SequenceType type, int argPosition)
             throws XPathException {
         if (type == null || expr instanceof Placeholder)
-            return expr;
+            {return expr;}
         // check cardinality if expected cardinality is not zero or more
         boolean cardinalityMatches =
                 expr instanceof VariableReference ||
@@ -233,10 +233,10 @@ public abstract class Function extends PathExpr {
             if (!cardinalityMatches) {
                 if(expr.getCardinality() == Cardinality.ZERO
                         && (type.getCardinality() & Cardinality.ZERO) == 0)
-                    throw new XPathException(this,
+                    {throw new XPathException(this,
                         ErrorCodes.XPTY0004,
                         Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED, 
-                        Integer.valueOf(argPosition), ExpressionDumper.dump(expr)));
+                        Integer.valueOf(argPosition), ExpressionDumper.dump(expr)));}
             }
         }
         expr = new DynamicCardinalityCheck(context, type.getCardinality(), expr,
@@ -244,13 +244,13 @@ public abstract class Function extends PathExpr {
         // check return type if both types are not Type.ITEM
         int returnType = expr.returnsType();
         if (returnType == Type.ANY_TYPE || returnType == Type.EMPTY)
-            returnType = Type.ITEM;
+            {returnType = Type.ITEM;}
         boolean typeMatches = type.getPrimaryType() == Type.ITEM;
         typeMatches = Type.subTypeOf(returnType, type.getPrimaryType());
         if (typeMatches && cardinalityMatches) {
             if (type.getNodeName() != null)
-                expr = new DynamicNameCheck(context, 
-                    new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
+                {expr = new DynamicNameCheck(context, 
+                    new NameTest(type.getPrimaryType(), type.getNodeName()), expr);}
             return expr;
         }
         //Loose argument check : we may move this, or a part hereof, to UntypedValueCheck
@@ -275,10 +275,10 @@ public abstract class Function extends PathExpr {
             //If the required type is an atomic type, convert the argument to an atomic 
             if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
                 if(!Type.subTypeOf(returnType, Type.ATOMIC))
-                    expr = new Atomize(context, expr);
+                    {expr = new Atomize(context, expr);}
                 if (!(type.getPrimaryType() == Type.ATOMIC))
-                    expr = new UntypedValueCheck(context, type.getPrimaryType(),
-                        expr, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
+                    {expr = new UntypedValueCheck(context, type.getPrimaryType(),
+                        expr, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));}
                 returnType = expr.returnsType();
             }
         //Strict argument check : we may move this, or a part hereof, to UntypedValueCheck
@@ -286,7 +286,7 @@ public abstract class Function extends PathExpr {
             //If the required type is an atomic type, convert the argument to an atomic 
             if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
                 if(!Type.subTypeOf(returnType, Type.ATOMIC))
-                    expr = new Atomize(context, expr);
+                    {expr = new Atomize(context, expr);}
                 expr = new UntypedValueCheck(context, type.getPrimaryType(),
                     expr, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
                 returnType = expr.returnsType();
@@ -303,10 +303,10 @@ public abstract class Function extends PathExpr {
         }
         if (!typeMatches) {
             if (type.getNodeName() != null)
-                expr = new DynamicNameCheck(context, 
-                    new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
+                {expr = new DynamicNameCheck(context, 
+                    new NameTest(type.getPrimaryType(), type.getNodeName()), expr);}
             else
-                expr = new DynamicTypeCheck(context, type.getPrimaryType(), expr);
+                {expr = new DynamicTypeCheck(context, type.getPrimaryType(), expr);}
         }
         return expr;
     }
@@ -323,7 +323,7 @@ public abstract class Function extends PathExpr {
         contextId = contextInfo.getContextId();
         contextInfo.setParent(this);
         for(int i = 0; i < getArgumentCount(); i++) {
-            AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+            final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
             getArgument(i).analyze(argContextInfo);
         }
     }
@@ -334,9 +334,9 @@ public abstract class Function extends PathExpr {
     public Sequence[] getArguments(Sequence contextSequence, Item contextItem)
             throws XPathException {
         if (contextItem != null)
-            contextSequence = contextItem.toSequence();
+            {contextSequence = contextItem.toSequence();}
         final int argCount = getArgumentCount();
-        Sequence[] args = new Sequence[argCount];
+        final Sequence[] args = new Sequence[argCount];
         for (int i = 0; i < argCount; i++) {
             args[i] = getArgument(i).eval(contextSequence, contextItem);
         }
@@ -401,9 +401,9 @@ public abstract class Function extends PathExpr {
         dumper.display(getName());
         dumper.display('(');
         boolean moreThanOne = false;
-        for (Expression e : steps) {
+        for (final Expression e : steps) {
             if (moreThanOne)
-                dumper.display(", ");
+                {dumper.display(", ");}
             moreThanOne = true;			
             e.dump(dumper);
         }
@@ -411,13 +411,13 @@ public abstract class Function extends PathExpr {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append(getName());
         result.append('(');
         boolean moreThanOne = false;
-        for (Expression step : steps) {
+        for (final Expression step : steps) {
             if (moreThanOne)
-                result.append(", ");
+                {result.append(", ");}
             moreThanOne = true;
             result.append(step.toString());
         }

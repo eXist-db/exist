@@ -63,7 +63,7 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
         super.configure(pool, dataDir, config);
         String fileName = "stats.dbx";
         if (config.hasAttribute("file"))
-            fileName = config.getAttribute("file");
+            {fileName = config.getAttribute("file");}
         dataFile = new File(dataDir, fileName);
     }
 
@@ -71,16 +71,16 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
         dataGuide = new DataGuide();
         if (dataFile.exists()) {
             try {
-                long start = System.currentTimeMillis();
-                FileInputStream is = new FileInputStream(dataFile);
-                FileChannel fc = is.getChannel();
+                final long start = System.currentTimeMillis();
+                final FileInputStream is = new FileInputStream(dataFile);
+                final FileChannel fc = is.getChannel();
                 dataGuide.read(fc, getBrokerPool().getSymbols());
                 is.close();
                 if (LOG.isDebugEnabled())
-                    LOG.debug("Reading " + dataFile.getName() + " took " +
+                    {LOG.debug("Reading " + dataFile.getName() + " took " +
                         (System.currentTimeMillis() - start) + "ms. Size of " +
-                        "the graph: " + dataGuide.getSize());
-            } catch (IOException e) {
+                        "the graph: " + dataGuide.getSize());}
+            } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
                 throw new DatabaseConfigurationException("Error while loading " +
                     dataFile.getAbsolutePath() + ": " + e.getMessage(), e);
@@ -93,11 +93,11 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
 
     public void sync() throws DBException {
         try {
-            FileOutputStream os = new FileOutputStream(dataFile);
-            FileChannel fc = os.getChannel();
+            final FileOutputStream os = new FileOutputStream(dataFile);
+            final FileChannel fc = os.getChannel();
             dataGuide.write(fc, getBrokerPool().getSymbols());
             os.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
             throw new DBException("Error while writing " + dataFile.getAbsolutePath() +
                     ": " + e.getMessage());
@@ -126,9 +126,9 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
 
 	@Override
 	public void backupToArchive(RawDataBackup backup) throws IOException {
-        OutputStream os = backup.newEntry(dataFile.getName());
-		InputStream is = new FileInputStream(dataFile);
-        byte[] buf = new byte[4096];
+        final OutputStream os = backup.newEntry(dataFile.getName());
+		final InputStream is = new FileInputStream(dataFile);
+        final byte[] buf = new byte[4096];
         int len;
         while ((len = is.read(buf)) > 0) {
             os.write(buf, 0, len);

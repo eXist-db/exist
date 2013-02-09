@@ -73,7 +73,7 @@ public class BaseConverter extends BasicFunction {
         }
 
         static public Base getBase(int otherBase)  {
-            for (Base b : Base.values()) {
+            for (final Base b : Base.values()) {
                 if (otherBase == b.base) {
                     return b;
                 } 
@@ -93,8 +93,8 @@ public class BaseConverter extends BasicFunction {
         throws XPathException {
     	int intValue;
         String stringValue;
-        String number = args[0].itemAt(0).getStringValue();
-        int intBase = ((IntegerValue) args[1].itemAt(0)).getInt();
+        final String number = args[0].itemAt(0).getStringValue();
+        final int intBase = ((IntegerValue) args[1].itemAt(0)).getInt();
 
         if (isCalledAs("base-to-integer")) {
             intValue = Integer.parseInt(number, intBase);

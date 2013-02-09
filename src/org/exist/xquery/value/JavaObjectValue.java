@@ -63,7 +63,7 @@ public class JavaObjectValue extends AtomicValue {
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		if (requiredType == Type.JAVA_OBJECT)
-			return this;
+			{return this;}
 		throw new XPathException(
 			"cannot convert Java object to " + Type.getTypeName(requiredType));
 	}
@@ -104,7 +104,7 @@ public class JavaObjectValue extends AtomicValue {
 	 */
 	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(object.getClass()))
-			return 0;
+			{return 0;}
 
 		return Integer.MAX_VALUE;
 	}

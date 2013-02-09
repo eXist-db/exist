@@ -165,21 +165,21 @@ public class Validation extends BasicFunction  {
 
             } else {
                 // Validate using resource specified in second parameter
-                String url=Shared.getUrl(args[1].itemAt(0));
+                final String url=Shared.getUrl(args[1].itemAt(0));
 
                 report=validator.validate(is, url);
             }
 
 
-        } catch (MalformedURLException ex) {
+        } catch (final MalformedURLException ex) {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             LOG.error(ex);
             report.setException(ex);
 
-        } catch (Throwable ex) {
+        } catch (final Throwable ex) {
             LOG.error(ex);
             report.setException(ex);
 
@@ -188,7 +188,7 @@ public class Validation extends BasicFunction  {
             if(is != null){
                 try {
                     is.close();
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     LOG.debug("Attemted to close stream. ignore.", ex);
                 }
             }
@@ -196,13 +196,13 @@ public class Validation extends BasicFunction  {
 
         // Create response
         if (isCalledAs("validate") || isCalledAs("jing")) {
-            Sequence result = new ValueSequence();
+            final Sequence result = new ValueSequence();
             result.add(new BooleanValue(report.isValid()));
             return result;
 
         } else  /* isCalledAs("validate-report") || isCalledAs("jing-report") */{
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            NodeImpl result = Shared.writeReport(report, builder);
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final NodeImpl result = Shared.writeReport(report, builder);
             return result;
 
         }

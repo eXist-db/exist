@@ -100,7 +100,7 @@ public class BinaryDocument extends DocumentImpl {
         getPermissions().read(istream);
 
         realSize = istream.readLong();
-        DocumentMetadata metadata = new DocumentMetadata();
+        final DocumentMetadata metadata = new DocumentMetadata();
         metadata.read(getBrokerPool(), istream);
         setMetadata(metadata);
     }

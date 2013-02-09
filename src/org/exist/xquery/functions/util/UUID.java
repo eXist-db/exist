@@ -73,16 +73,16 @@ public class UUID extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        Sequence result = new ValueSequence();
+        final Sequence result = new ValueSequence();
 
         // Check input parameters
         if (args.length == 0) {
-            String uuid = UUIDGenerator.getUUIDversion4();
+            final String uuid = UUIDGenerator.getUUIDversion4();
             result.add(new StringValue(uuid));
 
         } else if (args.length == 1) {
-            String parameter = args[0].getStringValue();
-            String uuid = UUIDGenerator.getUUIDversion3(parameter);
+            final String parameter = args[0].getStringValue();
+            final String uuid = UUIDGenerator.getUUIDversion3(parameter);
             result.add(new StringValue(uuid));
 
         } else {

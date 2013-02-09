@@ -128,7 +128,7 @@ public class MemTreeBuilder
      */
     public int startElement( String namespaceURI, String localName, String qname, Attributes attributes )
     {
-        int    p      = qname.indexOf( ':' );
+        final int    p      = qname.indexOf( ':' );
         String prefix = null;
 
         if(context != null && !getDefaultNamespace().equals(namespaceURI == null ? "" : namespaceURI)) {
@@ -138,7 +138,7 @@ public class MemTreeBuilder
         if( prefix == null ) {
             prefix = ( p != Constants.STRING_NOT_FOUND ) ? qname.substring( 0, p ) : null;
         }
-        QName qn = new QName( localName, namespaceURI, prefix );
+        final QName qn = new QName( localName, namespaceURI, prefix );
         return( startElement( qn, attributes ) );
     }
 
@@ -159,17 +159,17 @@ public class MemTreeBuilder
 
             // parse attributes
             for( int i = 0; i < attributes.getLength(); i++ ) {
-                String attrNS        = attributes.getURI( i );
-                String attrLocalName = attributes.getLocalName( i );
-                String attrQName     = attributes.getQName( i );
+                final String attrNS        = attributes.getURI( i );
+                final String attrLocalName = attributes.getLocalName( i );
+                final String attrQName     = attributes.getQName( i );
 
                 // skip xmlns-attributes and attributes in eXist's namespace
                 if( !( attrQName.startsWith( "xmlns" ) ) ) {
 //                  || attrNS.equals(Namespaces.EXIST_NS))) {
-                    int    p          = attrQName.indexOf( ':' );
-                    String attrPrefix = ( p != Constants.STRING_NOT_FOUND ) ? attrQName.substring( 0, p ) : null;
-                    QName  attrQn     = new QName( attrLocalName, attrNS, attrPrefix );
-                    int    type       = getAttribType( attrQn, attributes.getType( i ) );
+                    final int    p          = attrQName.indexOf( ':' );
+                    final String attrPrefix = ( p != Constants.STRING_NOT_FOUND ) ? attrQName.substring( 0, p ) : null;
+                    final QName  attrQn     = new QName( attrLocalName, attrNS, attrPrefix );
+                    final int    type       = getAttribType( attrQn, attributes.getType( i ) );
                     doc.addAttribute( nodeNr, attrQn, attributes.getValue( i ), type );
                 }
             }
@@ -181,7 +181,7 @@ public class MemTreeBuilder
             System.arraycopy( prevNodeInLevel, 0, t, 0, prevNodeInLevel.length );
             prevNodeInLevel = t;
         }
-        int prevNr = prevNodeInLevel[level]; // TODO: remove potential ArrayIndexOutOfBoundsException
+        final int prevNr = prevNodeInLevel[level]; // TODO: remove potential ArrayIndexOutOfBoundsException
 
         if( prevNr > -1 ) {
             doc.next[prevNr] = nodeNr;
@@ -226,7 +226,7 @@ public class MemTreeBuilder
 
     public int addReferenceNode( NodeProxy proxy )
     {
-        int lastNode = doc.getLastNode();
+        final int lastNode = doc.getLastNode();
 
         if( ( 0 < lastNode ) && ( level == doc.getTreeLevel( lastNode ) ) ) {
 
@@ -241,13 +241,13 @@ public class MemTreeBuilder
             if( doc.getNodeType( lastNode ) == NodeImpl.REFERENCE_NODE ) {
 
                 // check if the previous node is a reference node. if yes, check if it is a text node
-                int p = doc.alpha[lastNode];
+                final int p = doc.alpha[lastNode];
 
                 if( ( doc.references[p].getNodeType() == Node.TEXT_NODE ) && ( proxy.getNodeType() == Node.TEXT_NODE ) ) {
 
                     // found a text node reference. create a new char sequence containing
                     // the concatenated text of both nodes
-                    String s = doc.references[p].getStringValue() + proxy.getStringValue();
+                    final String s = doc.references[p].getStringValue() + proxy.getStringValue();
                     doc.replaceReferenceNode( lastNode, s );
                     return( lastNode );
                 }
@@ -262,7 +262,7 @@ public class MemTreeBuilder
 
     public int addAttribute( QName qname, String value )
     {
-        int lastNode = doc.getLastNode();
+        final int lastNode = doc.getLastNode();
 
         //if(0 < lastNode && doc.nodeKind[lastNode] != Node.ELEMENT_NODE) {
         //Definitely wrong !
@@ -270,7 +270,7 @@ public class MemTreeBuilder
         //} else {
         //lastNode = doc.addAttribute(lastNode, qname, value);
         //}
-        int nodeNr   = doc.addAttribute( lastNode, qname, value, AttributeImpl.ATTR_CDATA_TYPE );
+        final int nodeNr   = doc.addAttribute( lastNode, qname, value, AttributeImpl.ATTR_CDATA_TYPE );
 
         //TODO :
         //1) call linkNode(nodeNr); ?
@@ -290,7 +290,7 @@ public class MemTreeBuilder
      */
     public int characters( char[] ch, int start, int len )
     {
-        int lastNode = doc.getLastNode();
+        final int lastNode = doc.getLastNode();
 
         if( ( 0 < lastNode ) && ( level == doc.getTreeLevel( lastNode ) ) ) {
 
@@ -305,13 +305,13 @@ public class MemTreeBuilder
             if( doc.getNodeType( lastNode ) == NodeImpl.REFERENCE_NODE ) {
 
                 // check if the previous node is a reference node. if yes, check if it is a text node
-                int p = doc.alpha[lastNode];
+                final int p = doc.alpha[lastNode];
 
                 if( doc.references[p].getNodeType() == Node.TEXT_NODE ) {
 
                     // found a text node reference. create a new char sequence containing
                     // the concatenated text of both nodes
-                    StringBuilder s = new StringBuilder( doc.references[p].getStringValue() );
+                    final StringBuilder s = new StringBuilder( doc.references[p].getStringValue() );
                     s.append( ch, start, len );
                     doc.replaceReferenceNode( lastNode, s );
                     return( lastNode );
@@ -319,7 +319,7 @@ public class MemTreeBuilder
                 // fall through and add the node below
             }
         }
-        int nodeNr = doc.addNode( Node.TEXT_NODE, level, null );
+        final int nodeNr = doc.addNode( Node.TEXT_NODE, level, null );
         doc.addChars( nodeNr, ch, start, len );
         linkNode( nodeNr );
         return( nodeNr );
@@ -339,7 +339,7 @@ public class MemTreeBuilder
     		return( -1 );
     	}
     	
-        int lastNode = doc.getLastNode();
+        final int lastNode = doc.getLastNode();
 
         if( ( 0 < lastNode ) && ( level == doc.getTreeLevel( lastNode ) ) ) {
 
@@ -354,7 +354,7 @@ public class MemTreeBuilder
             if( doc.getNodeType( lastNode ) == NodeImpl.REFERENCE_NODE ) {
 
                 // check if the previous node is a reference node. if yes, check if it is a text node
-                int p = doc.alpha[lastNode];
+                final int p = doc.alpha[lastNode];
 
                 if( ( doc.references[p].getNodeType() == Node.TEXT_NODE ) || ( doc.references[p].getNodeType() == Node.CDATA_SECTION_NODE ) ) {
 
@@ -366,7 +366,7 @@ public class MemTreeBuilder
                 // fall through and add the node below
             }
         }
-        int nodeNr = doc.addNode( Node.TEXT_NODE, level, null );
+        final int nodeNr = doc.addNode( Node.TEXT_NODE, level, null );
         doc.addChars( nodeNr, s );
         linkNode( nodeNr );
         return( nodeNr );
@@ -375,7 +375,7 @@ public class MemTreeBuilder
 
     public int comment( CharSequence data )
     {
-        int nodeNr = doc.addNode( Node.COMMENT_NODE, level, null );
+        final int nodeNr = doc.addNode( Node.COMMENT_NODE, level, null );
         doc.addChars( nodeNr, data );
         linkNode( nodeNr );
         return( nodeNr );
@@ -384,7 +384,7 @@ public class MemTreeBuilder
 
     public int comment( char[] ch, int start, int len )
     {
-        int nodeNr = doc.addNode( Node.COMMENT_NODE, level, null );
+        final int nodeNr = doc.addNode( Node.COMMENT_NODE, level, null );
         doc.addChars( nodeNr, ch, start, len );
         linkNode( nodeNr );
         return( nodeNr );
@@ -393,7 +393,7 @@ public class MemTreeBuilder
 
     public int cdataSection( CharSequence data )
     {
-        int lastNode = doc.getLastNode();
+        final int lastNode = doc.getLastNode();
 
         if( ( 0 < lastNode ) && ( level == doc.getTreeLevel( lastNode ) ) ) {
 
@@ -408,7 +408,7 @@ public class MemTreeBuilder
             if( doc.getNodeType( lastNode ) == NodeImpl.REFERENCE_NODE ) {
 
                 // check if the previous node is a reference node. if yes, check if it is a text node
-                int p = doc.alpha[lastNode];
+                final int p = doc.alpha[lastNode];
 
                 if( ( doc.references[p].getNodeType() == Node.TEXT_NODE ) || ( doc.references[p].getNodeType() == Node.CDATA_SECTION_NODE ) ) {
 
@@ -420,7 +420,7 @@ public class MemTreeBuilder
                 // fall through and add the node below
             }
         }
-        int nodeNr = doc.addNode( Node.CDATA_SECTION_NODE, level, null );
+        final int nodeNr = doc.addNode( Node.CDATA_SECTION_NODE, level, null );
         doc.addChars( nodeNr, data );
         linkNode( nodeNr );
         return( nodeNr );
@@ -429,8 +429,8 @@ public class MemTreeBuilder
 
     public int processingInstruction( String target, String data )
     {
-        QName qn     = new QName( target, null, null );
-        int   nodeNr = doc.addNode( Node.PROCESSING_INSTRUCTION_NODE, level, qn );
+        final QName qn     = new QName( target, null, null );
+        final int   nodeNr = doc.addNode( Node.PROCESSING_INSTRUCTION_NODE, level, qn );
         doc.addChars( nodeNr, ( data == null ) ? "" : data );
         linkNode( nodeNr );
         return( nodeNr );
@@ -445,9 +445,9 @@ public class MemTreeBuilder
 
     public int namespaceNode( QName qn )
     {
-        int    lastNode   = doc.getLastNode();
-        QName  elemQN     = doc.nodeName[lastNode];
-        String elemPrefix = ( elemQN.getPrefix() == null ) ? "" : elemQN.getPrefix();
+        final int    lastNode   = doc.getLastNode();
+        final QName  elemQN     = doc.nodeName[lastNode];
+        final String elemPrefix = ( elemQN.getPrefix() == null ) ? "" : elemQN.getPrefix();
 
         if( elemPrefix.equals( qn.getLocalName() ) && ( elemQN.getNamespaceURI() != null ) && !elemQN.getNamespaceURI().equals( qn.getNamespaceURI() ) ) {
             return( -1 );
@@ -473,7 +473,7 @@ public class MemTreeBuilder
 
     private void linkNode( int nodeNr )
     {
-        int prevNr = prevNodeInLevel[level];
+        final int prevNr = prevNodeInLevel[level];
 
         if( prevNr > -1 ) {
             doc.next[prevNr] = nodeNr;

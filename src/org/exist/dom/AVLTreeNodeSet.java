@@ -36,7 +36,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
       */
     @Override
     public void addAll(NodeSet other) {
-        for (Iterator<NodeProxy> i = other.iterator(); i.hasNext();)
+        for (final Iterator<NodeProxy> i = other.iterator(); i.hasNext();)
             add(i.next());
     }
 
@@ -60,10 +60,10 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     @Override
     public org.w3c.dom.Node item(int pos) {
         int i = 0;
-        for(Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
-            NodeProxy p = it.next();
+        for(final Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
+            final NodeProxy p = it.next();
             if(i == pos)
-                return p.getNode();
+                {return p.getNode();}
         }
         return null;
     }
@@ -81,7 +81,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
       */
     @Override
     public final NodeProxy get(NodeProxy p) {
-        Node n = searchData(p);
+        final Node n = searchData(p);
         return n == null ? null : n.getData();
     }
 
@@ -101,10 +101,10 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     @Override
     public Item itemAt(int pos) {
         int i = 0;
-        for(Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
-            NodeProxy p = it.next();
+        for(final Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
+            final NodeProxy p = it.next();
             if(i == pos)
-                return p;
+                {return p;}
         }
         //TODO : exception ?
         return null;
@@ -113,7 +113,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     @Override
     public final void add(NodeProxy proxy) {
         if(proxy == null)
-            return;
+            {return;}
         setHasChanged();
         if (root == null) {
             root = new Node(proxy);
@@ -122,7 +122,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         }
         Node tempNode = root;
         while (true) {
-            int c = tempNode.data.compareTo(proxy);
+            final int c = tempNode.data.compareTo(proxy);
             if (c == 0) {
                 return;
             }
@@ -131,7 +131,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                     tempNode = tempNode.leftChild;
                     continue;
                 }
-                Node newNode = tempNode.addLeft(proxy);
+                final Node newNode = tempNode.addLeft(proxy);
                 balance(newNode);
                 ++size;
                 return;
@@ -141,7 +141,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                 tempNode = tempNode.rightChild;
                 continue;
             }
-            Node newNode = tempNode.addRight(proxy);
+            final Node newNode = tempNode.addRight(proxy);
             balance(newNode);
             ++size;
             return;
@@ -150,7 +150,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     public Node getMinNode() {
         if (root == null)
-            return null;
+            {return null;}
         Node tempNode = root;
         while (tempNode.hasLeftChild())
             tempNode = tempNode.getLeftChild();
@@ -159,7 +159,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     public Node getMaxNode() {
         if (root == null)
-            return null;
+            {return null;}
         Node tempNode = root;
         while (tempNode.hasRightChild())
             tempNode = tempNode.getRightChild();
@@ -171,10 +171,10 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         currentNode = node;
         currentParent = node.parent;
         while (currentNode != root) {
-            int h = currentParent.height;
+            final int h = currentParent.height;
             currentParent.setHeight();
             if (h == currentParent.height)
-                return; // Case 1
+                {return;} // Case 1
             if (currentParent.balanced()) {
                 currentNode = currentParent;
                 currentParent = currentNode.parent;
@@ -191,9 +191,9 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                     nodeA.addLeftChild(nodeD);
                     if (nodeA != root) {
                         if (nodeA.isLeftChild())
-                            nodeA.parent.addLeftChild(nodeB);
+                            {nodeA.parent.addLeftChild(nodeB);}
                         else
-                            nodeA.parent.addRightChild(nodeB);
+                            {nodeA.parent.addRightChild(nodeB);}
                     } else {
                         root = nodeB;
                     };
@@ -210,20 +210,20 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                     nodeE = nodeD.getLeftChild();
                     nodeB.addRightChild(nodeE);
                 } else
-                    nodeB.removeRightChild();
+                    {nodeB.removeRightChild();}
                 if (nodeD.hasRightChild()) {
                     nodeF = nodeD.getRightChild();
                     nodeA.addLeftChild(nodeF);
                 } else
-                    nodeA.removeLeftChild();
+                    {nodeA.removeLeftChild();}
 
                 if (currentParent != root) {
                     if (nodeA.isLeftChild())
-                        nodeA.parent.addLeftChild(nodeD);
+                        {nodeA.parent.addLeftChild(nodeD);}
                     else
-                        nodeA.parent.addRightChild(nodeD);
+                        {nodeA.parent.addRightChild(nodeD);}
                 } else
-                    root = nodeD;
+                    {root = nodeD;}
                 nodeD.addLeftChild(nodeB);
                 nodeD.addRightChild(nodeA);
                 nodeB.setHeight();
@@ -236,7 +236,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
             if (currentParent.leftHeight() - currentParent.rightHeight()
                 == -2) {
-                Node nodeA = currentParent;
+                final Node nodeA = currentParent;
                 Node nodeB = nodeA.getRightChild();
                 Node nodeC = nodeB.getLeftChild();
                 //Node nodeD = nodeB.getRightChild();
@@ -246,9 +246,9 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                     nodeA.addRightChild(nodeC);
                     if (nodeA != root) {
                         if (nodeA.isLeftChild())
-                            nodeA.parent.addLeftChild(nodeB);
+                            {nodeA.parent.addLeftChild(nodeB);}
                         else
-                            nodeA.parent.addRightChild(nodeB);
+                            {nodeA.parent.addRightChild(nodeB);}
                     } else {
                         root = nodeB;
                     };
@@ -265,21 +265,21 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                     nodeE = nodeC.getLeftChild();
                     nodeA.addRightChild(nodeE);
                 } else
-                    nodeA.removeRightChild();
+                    {nodeA.removeRightChild();}
                 if (nodeC.hasRightChild()) {
                     nodeF = nodeC.getRightChild();
                     nodeB.addLeftChild(nodeF);
                 } else
-                    nodeB.removeLeftChild();
+                    {nodeB.removeLeftChild();}
 
                 if (nodeA != root) {
                     if (nodeA.isLeftChild())
-                        nodeA.parent.addLeftChild(nodeC);
+                        {nodeA.parent.addLeftChild(nodeC);}
                     else
-                        nodeA.parent.addRightChild(nodeC);
+                        {nodeA.parent.addRightChild(nodeC);}
 
                 } else
-                    root = nodeC;
+                    {root = nodeC;}
                 nodeC.addLeftChild(nodeA);
                 nodeC.addRightChild(nodeB);
                 nodeB.setHeight();
@@ -295,38 +295,38 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     public final Node searchData(NodeProxy proxy) {
         if (root == null)
-            return null;
+            {return null;}
         Node tempNode = root;
         while (tempNode != null) {
-            int c = tempNode.data.compareTo(proxy);
+            final int c = tempNode.data.compareTo(proxy);
             if (c == 0)
-                return tempNode;
+                {return tempNode;}
             if (c < 0)
-                tempNode = tempNode.rightChild;
+                {tempNode = tempNode.rightChild;}
             else
-                tempNode = tempNode.leftChild;
+                {tempNode = tempNode.leftChild;}
         }
         return null;
     }
 
     public final NodeProxy get(DocumentImpl doc, NodeId nodeId) {
         if (root == null)
-            return null;
+            {return null;}
         Node tempNode = root;
         int cmp;
         while (tempNode != null) {
             if (tempNode.data.getDocument().getDocId() == doc.getDocId()) {
             	cmp = tempNode.data.getNodeId().compareTo(nodeId);
                 if (cmp == 0)
-                    return tempNode.data;
+                    {return tempNode.data;}
                 else if (cmp < 0)
-                    tempNode = tempNode.rightChild;
+                    {tempNode = tempNode.rightChild;}
                 else
-                    tempNode = tempNode.leftChild;
+                    {tempNode = tempNode.leftChild;}
             } else if (tempNode.data.getDocument().getDocId() < doc.getDocId())
-                tempNode = tempNode.rightChild;
+                {tempNode = tempNode.rightChild;}
             else
-                tempNode = tempNode.leftChild;
+                {tempNode = tempNode.leftChild;}
         }
         return null;
     }
@@ -362,16 +362,16 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             node = tempNode.parent;
             node.removeLeftChild();
             if (node.hasRightChild())
-                balance(node.getRightChild());
+                {balance(node.getRightChild());}
             else
-                balance(node);
+                {balance(node);}
         } else {
             node = tempNode.parent;
             node.removeRightChild();
             if (node.hasLeftChild())
-                balance(node.getLeftChild());
+                {balance(node.getLeftChild());}
             else
-                balance(node);
+                {balance(node);}
         }
     }
 
@@ -426,14 +426,14 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
         public boolean hasNext() {
             if (nodes.size() == 0)
-                return false;
+                {return false;}
             return true;
         }
 
         public NodeProxy next() {
             if(nodes.isEmpty())
-                return null;
-            Node currentNode = nodes.peek();
+                {return null;}
+            final Node currentNode = nodes.peek();
             nodes.pop();
             if (currentNode.hasRightChild()) {
                 Node tempNode = currentNode.rightChild;
@@ -447,13 +447,13 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
         public NodeProxy peekNode() {
             if(nodes.isEmpty())
-                return null;
-            Node currentNode = nodes.peek();
+                {return null;}
+            final Node currentNode = nodes.peek();
             return currentNode.getData();
         }
         
         public void setPosition(NodeProxy proxy) {
-            Node n = searchData(proxy);
+            final Node n = searchData(proxy);
             nodes.clear();
             if (n != null) {
                 Node tempNode = n;
@@ -476,8 +476,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
        */
         public Item nextItem() {
             if(nodes.isEmpty())
-                return null;
-            Node currentNode = nodes.peek();
+                {return null;}
+            final Node currentNode = nodes.peek();
             nodes.pop();
             if (currentNode.hasRightChild()) {
                 Node tempNode = currentNode.rightChild;
@@ -492,7 +492,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("AVLTree#").append(super.toString());
         return result.toString();
     }
@@ -547,7 +547,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         public Node addLeftChild(Node node) {
             leftChild = node;
             if (node != null)
-                node.parent = this;
+                {node.parent = this;}
             return node;
         }
 
@@ -561,18 +561,18 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         public Node addRightChild(Node node) {
             rightChild = node;
             if (node != null)
-                node.parent = this;
+                {node.parent = this;}
             return node;
         }
 
         public Node removeLeftChild() {
-            Node tempNode = leftChild;
+            final Node tempNode = leftChild;
             leftChild = null;
             return tempNode;
         }
 
         public Node removeRightChild() {
-            Node tempNode = rightChild;
+            final Node tempNode = rightChild;
             rightChild = null;
             return tempNode;
         }
@@ -580,9 +580,9 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         public int degree() {
             int i = 0;
             if (leftChild != null)
-                i++;
+                {i++;}
             if (rightChild != null)
-                i++;
+                {i++;}
             return i;
         }
 
@@ -601,13 +601,13 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
         public int leftHeight() {
             if (hasLeftChild())
-                return (1 + leftChild.height);
+                {return (1 + leftChild.height);}
             return 0;
         }
 
         public int rightHeight() {
             if (hasRightChild())
-                return (1 + rightChild.height);
+                {return (1 + rightChild.height);}
             return 0;
         }
 

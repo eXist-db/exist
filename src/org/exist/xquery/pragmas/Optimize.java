@@ -61,9 +61,9 @@ public class Optimize extends Pragma {
         this.context = context;
         this.enabled = explicit || context.optimizationsEnabled();
         if (contents != null && contents.length() > 0) {
-            String param[] = Option.parseKeyValuePair(contents);
+            final String param[] = Option.parseKeyValuePair(contents);
             if (param == null)
-                throw new XPathException("Invalid content found for pragma exist:optimize: " + contents);
+                {throw new XPathException("Invalid content found for pragma exist:optimize: " + contents);}
             if ("enable".equals(param[0])) {
                 enabled = "yes".equals(param[1]);
             }
@@ -77,7 +77,7 @@ public class Optimize extends Pragma {
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (contextItem != null)
-                contextSequence = contextItem.toSequence();
+                {contextSequence = contextItem.toSequence();}
 
         boolean useCached = false;
         boolean optimize = false;
@@ -87,19 +87,19 @@ public class Optimize extends Pragma {
             // contextSequence will be overwritten
             originalContext = contextSequence == null ? null : contextSequence.toNodeSet();
             if (cachedContext != null && cachedContext == originalContext)
-                useCached = !originalContext.hasChanged(cachedTimestamp);
+                {useCached = !originalContext.hasChanged(cachedTimestamp);}
             if (contextVar != null) {
                 contextSequence = contextVar.eval(contextSequence);
             }
             // check if all Optimizable expressions signal that they can indeed optimize
             // in the current context
             if (useCached)
-                optimize = cachedOptimize;
+                {optimize = cachedOptimize;}
             else {
                 if (optimizables != null && optimizables.length > 0) {
                     for (int i = 0; i < optimizables.length; i++) {
                         if (optimizables[i].canOptimize(contextSequence))
-                            optimize = true;
+                            {optimize = true;}
                         else {
                             optimize = false;
                             break;
@@ -117,20 +117,20 @@ public class Optimize extends Pragma {
             for (int current = 0; current < optimizables.length; current++) {
                 NodeSet selection = optimizables[current].preSelect(contextSequence, current > 0);
                 if (LOG.isTraceEnabled())
-                    LOG.trace("exist:optimize: pre-selection: " + selection.getLength());
+                    {LOG.trace("exist:optimize: pre-selection: " + selection.getLength());}
                 // determine the set of potential ancestors for which the predicate has to
                 // be re-evaluated to filter out wrong matches
                 if (selection.isEmpty())
-                	ancestors = selection;
+                	{ancestors = selection;}
                 else if (contextStep == null || current > 0) {
                 		ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR,
                 				true, contextId, true);
                 } else {
 //                    NodeSelector selector;
-                    long start = System.currentTimeMillis();
+                    final long start = System.currentTimeMillis();
 //                    selector = new AncestorSelector(selection, contextId, true, false);
-                    StructuralIndex index = context.getBroker().getStructuralIndex();
-                    QName ancestorQN = contextStep.getTest().getName();
+                    final StructuralIndex index = context.getBroker().getStructuralIndex();
+                    final QName ancestorQN = contextStep.getTest().getName();
                     if (optimizables[current].optimizeOnSelf()) {
                         ancestors = index.findAncestorsByTagName(ancestorQN.getNameType(), ancestorQN, Constants.SELF_AXIS,
                             selection.getDocumentSet(), selection, contextId);
@@ -152,56 +152,56 @@ public class Optimize extends Pragma {
             } else {
                 contextStep.setPreloadedData(result.getDocumentSet(), result);
                 if (LOG.isTraceEnabled())
-                    LOG.trace("exist:optimize: context after optimize: " + result.getLength());
-                long start = System.currentTimeMillis();
+                    {LOG.trace("exist:optimize: context after optimize: " + result.getLength());}
+                final long start = System.currentTimeMillis();
                 if (originalContext != null)
-                    contextSequence = originalContext.filterDocuments(result);
+                    {contextSequence = originalContext.filterDocuments(result);}
                 else
-                    contextSequence = null;
-                Sequence seq = innerExpr.eval(contextSequence);
+                    {contextSequence = null;}
+                final Sequence seq = innerExpr.eval(contextSequence);
                 if (LOG.isTraceEnabled())
-                    LOG.trace("exist:optimize: inner expr took " + (System.currentTimeMillis() - start) +
-                        "; found: "+ seq.getItemCount());
+                    {LOG.trace("exist:optimize: inner expr took " + (System.currentTimeMillis() - start) +
+                        "; found: "+ seq.getItemCount());}
                 return seq;
             }
         } else {
             if (LOG.isTraceEnabled())
-                LOG.trace("exist:optimize: Cannot optimize expression.");
+                {LOG.trace("exist:optimize: Cannot optimize expression.");}
             if (originalContext != null)
-                contextSequence = originalContext;
+                {contextSequence = originalContext;}
             return innerExpr.eval(contextSequence, contextItem);
         }
     }
 
     public void before(XQueryContext context, Expression expression) throws XPathException {
         if (innerExpr != null)
-            return;
+            {return;}
         innerExpr = expression;
         if (!enabled)
-            return;
+            {return;}
         innerExpr.accept(new BasicExpressionVisitor() {
 
             public void visitPathExpr(PathExpr expression) {
                 for (int i = 0; i < expression.getLength(); i++) {
-                    Expression next = expression.getExpression(i);
+                    final Expression next = expression.getExpression(i);
 			        next.accept(this);
                 }
             }
 
             public void visitLocationStep(LocationStep locationStep) {
-                List<Predicate> predicates = locationStep.getPredicates();
-                for (Predicate pred : predicates) {
+                final List<Predicate> predicates = locationStep.getPredicates();
+                for (final Predicate pred : predicates) {
                     pred.accept(this);
                 }
             }
 
             public void visitFilteredExpr(FilteredExpression filtered) {
-                Expression filteredExpr = filtered.getExpression();
+                final Expression filteredExpr = filtered.getExpression();
                 if (filteredExpr instanceof VariableReference)
-                    contextVar = (VariableReference) filteredExpr;
+                    {contextVar = (VariableReference) filteredExpr;}
 
-                List<Predicate> predicates = filtered.getPredicates();
-                for (Predicate pred : predicates) {
+                final List<Predicate> predicates = filtered.getPredicates();
+                for (final Predicate pred : predicates) {
                     pred.accept(this);
                 }
             }
@@ -212,13 +212,13 @@ public class Optimize extends Pragma {
 
             public void visitFtExpression(ExtFulltext fulltext) {
                 if (LOG.isTraceEnabled())
-                    LOG.trace("exist:optimize: found optimizable: " + fulltext.getClass().getName());
+                    {LOG.trace("exist:optimize: found optimizable: " + fulltext.getClass().getName());}
                 addOptimizable(fulltext);
             }
 
             public void visitGeneralComparison(GeneralComparison comparison) {
                 if (LOG.isTraceEnabled())
-                    LOG.trace("exist:optimize: found optimizable: " + comparison.getClass().getName());
+                    {LOG.trace("exist:optimize: found optimizable: " + comparison.getClass().getName());}
                 addOptimizable(comparison);
             }
 
@@ -229,7 +229,7 @@ public class Optimize extends Pragma {
             public void visitBuiltinFunction(Function function) {
                 if (function instanceof Optimizable) {
                     if (LOG.isTraceEnabled())
-                        LOG.trace("exist:optimize: found optimizable function: " + function.getClass().getName());
+                        {LOG.trace("exist:optimize: found optimizable function: " + function.getClass().getName());}
                     addOptimizable((Optimizable) function);
                 }
             }
@@ -237,7 +237,7 @@ public class Optimize extends Pragma {
 
         contextStep = BasicExpressionVisitor.findFirstStep(innerExpr);
         if (contextStep != null && contextStep.getTest().isWildcardTest())
-            contextStep = null;
+            {contextStep = null;}
         if (LOG.isTraceEnabled()) {
             LOG.trace("exist:optimize: context step: " + contextStep);
             LOG.trace("exist:optimize: context var: " + contextVar);
@@ -247,7 +247,7 @@ public class Optimize extends Pragma {
     public void after(XQueryContext context, Expression expression) throws XPathException {
     }
 
-    private void addOptimizable(Optimizable optimizable) {int axis = optimizable.getOptimizeAxis();
+    private void addOptimizable(Optimizable optimizable) {final int axis = optimizable.getOptimizeAxis();
         if (!(axis == Constants.CHILD_AXIS || axis == Constants.SELF_AXIS || axis == Constants.DESCENDANT_AXIS ||
                 axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
                 axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
@@ -279,25 +279,25 @@ public class Optimize extends Pragma {
      */
     public static int getQNameIndexType(XQueryContext context, Sequence contextSequence, QName qname) {
         if (contextSequence == null || qname == null)
-            return Type.ITEM;
+            {return Type.ITEM;}
         
-        String enforceIndexUse = 
+        final String enforceIndexUse = 
         		(String) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_ENFORCE_INDEX_USE);
         int indexType = Type.ITEM;
-        for (Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = i.next();
+        for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            final Collection collection = i.next();
             if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI))
-                continue;
-            QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);
+                {continue;}
+            final QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);
             if (config == null) {
                 // no index found for this collection
                 if (LOG.isTraceEnabled())
-                    LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
-                        "on " + qname);
+                    {LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
+                        "on " + qname);}
                 // if enfoceIndexUse == "always", continue to check other collections
                 // for indexes. It is sufficient if one collection defines an index
                 if (enforceIndexUse == null || !"always".equals(enforceIndexUse))
-                    return Type.ITEM;   // found a collection without index
+                    {return Type.ITEM;}   // found a collection without index
             } else {
             int type = config.getType();
                 if (indexType == Type.ITEM) {
@@ -305,13 +305,13 @@ public class Optimize extends Pragma {
                     // if enforceIndexUse == "always", it is sufficient if one collection
                     // defines an index. Just return it.
                     if (enforceIndexUse != null && "always".equals(enforceIndexUse))
-                        return indexType;
+                        {return indexType;}
                 } else if (indexType != type) {
                     // found an index with a bad type. cannot optimize.
                     // TODO: should this continue checking other collections?
                     if (LOG.isTraceEnabled())
-                        LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
-                            "with the required type " + Type.getTypeName(type) + " on " + qname);
+                        {LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
+                            "with the required type " + Type.getTypeName(type) + " on " + qname);}
                     return Type.ITEM;   // found a collection with a different type
                 }
             }

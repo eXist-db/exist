@@ -36,7 +36,7 @@ public class TimeUtils {
 		// singleton, keep constructor private
 		try {
 			factory = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
+		} catch (final DatatypeConfigurationException e) {
 			throw new RuntimeException("unable to instantiate an XML datatype factory", e);
 		}
 	}
@@ -64,7 +64,7 @@ public class TimeUtils {
 	}
 	
 	public int getLocalTimezoneOffsetMillis() {
-		int dstOffset = Calendar.getInstance(TimeZone.getDefault()).get(Calendar.DST_OFFSET);
+		final int dstOffset = Calendar.getInstance(TimeZone.getDefault()).get(Calendar.DST_OFFSET);
 		return timezoneOverriden ? timezoneOffset : TimeZone.getDefault().getRawOffset() + dstOffset;
 	}
 	

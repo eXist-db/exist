@@ -123,11 +123,11 @@ public class LocationStep extends Step {
 		// BUT
 		// in a predicate, the expression can't depend on... itself
 		if (!this.inPredicate && this.axis == Constants.SELF_AXIS)
-			deps = deps | Dependency.CONTEXT_ITEM;
+			{deps = deps | Dependency.CONTEXT_ITEM;}
 
 		// TODO : normally, we should call this one...
 		// int deps = super.getDependencies(); ???
-		for (Predicate pred : predicates) {
+		for (final Predicate pred : predicates) {
 			deps |= pred.getDependencies();
 		}
 
@@ -191,15 +191,15 @@ public class LocationStep extends Step {
 	protected Sequence applyPredicate(Sequence outerSequence,
 			Sequence contextSequence) throws XPathException {
 		if (contextSequence == null)
-			return Sequence.EMPTY_SEQUENCE;
+			{return Sequence.EMPTY_SEQUENCE;}
 		if (predicates.size() == 0
 				|| !applyPredicate
 				|| (!(contextSequence instanceof VirtualNodeSet) && contextSequence
 						.isEmpty()))
 			// Nothing to apply
-			return contextSequence;
+			{return contextSequence;}
 		Sequence result;
-		Predicate pred = (Predicate) predicates.get(0);
+		final Predicate pred = (Predicate) predicates.get(0);
 		// If the current step is an // abbreviated step, we have to treat the
 		// predicate
 		// specially to get the context position right. //a[1] translates to
@@ -214,30 +214,30 @@ public class LocationStep extends Step {
 			result = new ValueSequence();
 			((ValueSequence)result).keepUnOrdered(unordered);
 			if (contextSequence.isPersistentSet()) {
-				NodeSet contextSet = contextSequence.toNodeSet();
+				final NodeSet contextSet = contextSequence.toNodeSet();
 				outerSequence = contextSet.getParents(-1);
-				for (SequenceIterator i = outerSequence.iterate(); i.hasNext();) {
-					NodeValue node = (NodeValue) i.nextItem();
-					Sequence newContextSeq = contextSet.selectParentChild(
+				for (final SequenceIterator i = outerSequence.iterate(); i.hasNext();) {
+					final NodeValue node = (NodeValue) i.nextItem();
+					final Sequence newContextSeq = contextSet.selectParentChild(
 							(NodeSet) node, NodeSet.DESCENDANT,
 							getExpressionId());
-					Sequence temp = processPredicate(outerSequence,
+					final Sequence temp = processPredicate(outerSequence,
 							newContextSeq);
 					result.addAll(temp);
 				}
 			} else {
-				MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+				final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 				outerSequence = nodes.getParents(new AnyNodeTest());
-				for (SequenceIterator i = outerSequence.iterate(); i.hasNext();) {
-					NodeValue node = (NodeValue) i.nextItem();
-					InMemoryNodeSet newSet = new InMemoryNodeSet();
+				for (final SequenceIterator i = outerSequence.iterate(); i.hasNext();) {
+					final NodeValue node = (NodeValue) i.nextItem();
+					final InMemoryNodeSet newSet = new InMemoryNodeSet();
 					((NodeImpl) node).selectChildren(test, newSet);
-					Sequence temp = processPredicate(outerSequence, newSet);
+					final Sequence temp = processPredicate(outerSequence, newSet);
 					result.addAll(temp);
 				}
 			}
 		} else
-			result = processPredicate(outerSequence, contextSequence);
+			{result = processPredicate(outerSequence, contextSequence);}
 		return result;
 	}
 
@@ -245,7 +245,7 @@ public class LocationStep extends Step {
 			Sequence contextSequence) throws XPathException {
 		Predicate pred;
 		Sequence result = contextSequence;
-		for (Iterator<Predicate> i = predicates.iterator(); i.hasNext()
+		for (final Iterator<Predicate> i = predicates.iterator(); i.hasNext()
 				&& (result instanceof VirtualNodeSet || !result.isEmpty());) {
 			// TODO : log and/or profile ?
 			pred = i.next();
@@ -269,7 +269,7 @@ public class LocationStep extends Step {
 
 		parentDeps = parent.getDependencies();
 		if ((contextInfo.getFlags() & IN_UPDATE) > 0)
-			inUpdate = true;
+			{inUpdate = true;}
 //		if ((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
 //			preloadedData = true;
 //		}
@@ -283,7 +283,7 @@ public class LocationStep extends Step {
 		// even though it may *also* be relevant with atomic sequences
 		if (this.axis == Constants.SELF_AXIS
 				&& this.test.getType() == Type.NODE)
-			contextInfo.addFlag(DOT_TEST);
+			{contextInfo.addFlag(DOT_TEST);}
 		
 		//Change axis from descendant-or-self to descendant for '//'
 		if (this.axis == Constants.DESCENDANT_SELF_AXIS && isAbbreviated()) {
@@ -298,15 +298,15 @@ public class LocationStep extends Step {
 				
 				contextStep = contextInfo.getContextStep();
 				if (contextStep instanceof LocationStep) {
-					LocationStep cStep = (LocationStep) contextStep;
+					final LocationStep cStep = (LocationStep) contextStep;
 					
 					if (!Type.subTypeOf(getTest().getType(), cStep.getTest().getType()))
-						throw new XPathException(this, 
-								ErrorCodes.XPST0005, "Got nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));
+						{throw new XPathException(this, 
+								ErrorCodes.XPST0005, "Got nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));}
 					
 					if (!cStep.getTest().isWildcardTest() && cStep.getTest() != getTest())
-						throw new XPathException(this, 
-								ErrorCodes.XPST0005, "Self::"+getTest()+" called on set of nodes which do not contain any nodes of this name.");
+						{throw new XPathException(this, 
+								ErrorCodes.XPST0005, "Self::"+getTest()+" called on set of nodes which do not contain any nodes of this name.");}
 				}
 			}
 			break;
@@ -314,15 +314,15 @@ public class LocationStep extends Step {
 		case Constants.DESCENDANT_SELF_AXIS:
 			contextStep = contextInfo.getContextStep();
 			if (contextStep instanceof LocationStep) {
-				LocationStep cStep = (LocationStep) contextStep;
+				final LocationStep cStep = (LocationStep) contextStep;
 				
 				if ((
 						cStep.getTest().getType() == Type.ATTRIBUTE || 
 						cStep.getTest().getType() == Type.TEXT
 					)
 						&& cStep.getTest() != getTest())
-					throw new XPathException(this, 
-							ErrorCodes.XPST0005, "Descendant-or-self::"+getTest()+" from an attribute gets nothing.");
+					{throw new XPathException(this, 
+							ErrorCodes.XPST0005, "Descendant-or-self::"+getTest()+" from an attribute gets nothing.");}
 			}
 			break;
 //		case Constants.PARENT_AXIS:
@@ -354,11 +354,11 @@ public class LocationStep extends Step {
 					"DEPENDENCIES",
 					Dependency.getDependenciesName(this.getDependencies()));
 			if (contextSequence != null)
-				context.getProfiler().message(this, Profiler.START_SEQUENCES,
-						"CONTEXT SEQUENCE", contextSequence);
+				{context.getProfiler().message(this, Profiler.START_SEQUENCES,
+						"CONTEXT SEQUENCE", contextSequence);}
 			if (contextItem != null)
-				context.getProfiler().message(this, Profiler.START_SEQUENCES,
-						"CONTEXT ITEM", contextItem.toSequence());
+				{context.getProfiler().message(this, Profiler.START_SEQUENCES,
+						"CONTEXT ITEM", contextItem.toSequence());}
 		}
 
 		Sequence result;
@@ -391,9 +391,9 @@ public class LocationStep extends Step {
 		// // }
 		if (needsComputation()) {
 			if (contextSequence == null)
-				throw new XPathException(this,
+				{throw new XPathException(this,
 						ErrorCodes.XPDY0002, "Undefined context sequence for '"
-								+ this.toString() + "'");
+								+ this.toString() + "'");}
 			switch (axis) {
 			case Constants.DESCENDANT_AXIS:
 			case Constants.DESCENDANT_SELF_AXIS:
@@ -424,8 +424,8 @@ public class LocationStep extends Step {
 					// This test is copied from the legacy method
 					// getSelfAtomic()
 					if (!test.isWildcardTest())
-						throw new XPathException(this, test.toString()
-								+ " cannot be applied to an atomic value.");
+						{throw new XPathException(this, test.toString()
+								+ " cannot be applied to an atomic value.");}
 					result = contextSequence;
 				} else {
 					result = getSelf(context, contextSequence);
@@ -464,7 +464,7 @@ public class LocationStep extends Step {
 		result = applyPredicate(contextSequence, result);
 
 		if (context.getProfiler().isEnabled())
-			context.getProfiler().end(this, "", result);
+			{context.getProfiler().end(this, "", result);}
 		// actualReturnType = result.getItemType();
 
 		return result;
@@ -479,13 +479,13 @@ public class LocationStep extends Step {
 		case Constants.PARENT_AXIS:
 			// case Constants.SELF_AXIS:
 			if (nodeTestType == null)
-				nodeTestType = Integer.valueOf(test.getType());
+				{nodeTestType = Integer.valueOf(test.getType());}
 			if (nodeTestType.intValue() != Type.NODE
 					&& nodeTestType.intValue() != Type.ELEMENT
 					&& nodeTestType.intValue() != Type.PROCESSING_INSTRUCTION) {
 				if (context.getProfiler().isEnabled())
-					context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-							"OPTIMIZATION", "avoid useless computations");
+					{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+							"OPTIMIZATION", "avoid useless computations");}
 				return false;
 			}
 
@@ -505,7 +505,7 @@ public class LocationStep extends Step {
 	protected Sequence getSelf(XQueryContext context, Sequence contextSequence)
 			throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			return nodes.getSelf(test);
 		}
 		if (hasPreloadedData()) {
@@ -515,22 +515,22 @@ public class LocationStep extends Step {
 			}
 			NodeProxy np = null;
 
-			for (Iterator<NodeProxy> i = currentSet.iterator(); i.hasNext(); ) {
-				NodeProxy p = i.next();
+			for (final Iterator<NodeProxy> i = currentSet.iterator(); i.hasNext(); ) {
+				final NodeProxy p = i.next();
 				p.addContextNode(contextId, p);
 				
 				if (ns != null) {
 					np = ns.get(p);
 					
 					if (np != null && np.getMatches() != null)
-						p.addMatch( np.getMatches() );
+						{p.addMatch( np.getMatches() );}
 				}
 			}
 			return currentSet;
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-			VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
+			final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return vset;
@@ -549,28 +549,28 @@ public class LocationStep extends Step {
 					} else if (Type.subTypeOf(contextSet.getItemType(),
 							Type.NODE)) {
 						NodeProxy p;
-						for (Iterator<NodeProxy> i = contextSet.iterator(); i.hasNext();) {
+						for (final Iterator<NodeProxy> i = contextSet.iterator(); i.hasNext();) {
 							p = i.next();
 							if (test.matches(p))
-								p.addContextNode(contextId, p);
+								{p.addContextNode(contextId, p);}
 						}
 					}
 				}
 				return contextSet;
 			} else {
-				VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(),
+				final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(),
 						axis, test, contextId, contextSet);
 				vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 				return vset;
 			}
 		} else {
-			DocumentSet docs = getDocumentSet(contextSet);
-			StructuralIndex index = context.getBroker().getStructuralIndex();
+			final DocumentSet docs = getDocumentSet(contextSet);
+			final StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
-						"Using structural index '" + index.toString() + "'");
-			NodeSelector selector = new SelfSelector(contextSet, contextId);
+						"Using structural index '" + index.toString() + "'");}
+			final NodeSelector selector = new SelfSelector(contextSet, contextId);
 			return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
 					.getName(), selector);
 		}
@@ -588,36 +588,36 @@ public class LocationStep extends Step {
 	protected Sequence getAttributes(XQueryContext context,
 			Sequence contextSequence) throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-				return nodes.getDescendantAttributes(test);
+				{return nodes.getDescendantAttributes(test);}
 			else
-				return nodes.getAttributes(test);
+				{return nodes.getAttributes(test);}
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		boolean selectDirect = false;
 		if (useDirectAttrSelect && axis == Constants.ATTRIBUTE_AXIS) {
 			if (contextSet instanceof VirtualNodeSet)
-				selectDirect = ((VirtualNodeSet) contextSet)
+				{selectDirect = ((VirtualNodeSet) contextSet)
 						.preferTreeTraversal()
-						&& contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
+						&& contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;}
 			else
-				selectDirect = contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
+				{selectDirect = contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;}
 		}
 		if (selectDirect) {
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-						"OPTIMIZATION", "direct attribute selection");
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+						"OPTIMIZATION", "direct attribute selection");}
 			if (contextSet.isEmpty())
-				return NodeSet.EMPTY_SET;
+				{return NodeSet.EMPTY_SET;}
 			// TODO : why only the first node ?
-			NodeProxy proxy = contextSet.get(0);
+			final NodeProxy proxy = contextSet.get(0);
 			if (proxy != null)
-				return contextSet.directSelectAttribute(context.getBroker(),
-						test, contextId);
+				{return contextSet.directSelectAttribute(context.getBroker(),
+						test, contextId);}
 		}
 		if (!hasPreloadedData() && test.isWildcardTest()) {
-			NodeSet result = new VirtualNodeSet(context.getBroker(), axis,
+			final NodeSet result = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			((VirtualNodeSet) result)
 					.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
@@ -632,14 +632,14 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					// TODO : why a null selector here ? We have one below !
 					currentSet = index.findElementsByTagName(
 							ElementValue.ATTRIBUTE, docs, test.getName(), null);
@@ -659,12 +659,12 @@ public class LocationStep extends Step {
 				}
 			}
 		} else {
-			DocumentSet docs = getDocumentSet(contextSet);
-			StructuralIndex index = context.getBroker().getStructuralIndex();
+			final DocumentSet docs = getDocumentSet(contextSet);
+			final StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
-						"Using structural index '" + index.toString() + "'");
+						"Using structural index '" + index.toString() + "'");}
 			if (!contextSet.getProcessInReverseOrder()) {
 				return index.findDescendantsByTagName(ElementValue.ATTRIBUTE,
 						test.getName(), axis, docs, contextSet,
@@ -700,17 +700,17 @@ public class LocationStep extends Step {
 	protected Sequence getChildren(XQueryContext context,
 			Sequence contextSequence) throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			return nodes.getChildren(test);
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		// TODO : understand this. I guess comments should be treated in a
 		// similar way ? -pb
 		if ((!hasPreloadedData() && test.isWildcardTest())
 				|| test.getType() == Type.PROCESSING_INSTRUCTION) {
 			// test is one out of *, text(), node() including
 			// processing-instruction(targetname)
-			VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
+			final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return vset;
@@ -723,8 +723,8 @@ public class LocationStep extends Step {
 		// LOG.debug("parentDepth for " + test.getName() + ": " + parentDepth);
 
 		if (useDirectChildSelect) {
-			NewArrayNodeSet result = new NewArrayNodeSet();
-			for (NodeProxy p : contextSet) {
+			final NewArrayNodeSet result = new NewArrayNodeSet();
+			for (final NodeProxy p : contextSet) {
 				result.addAll(p.directSelectChild(test.getName(), contextId));
 			}
 			return result;
@@ -737,14 +737,14 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					currentSet = index.findElementsByTagName(
 							ElementValue.ELEMENT, docs, test.getName(), null);
 					currentDocs = docs;
@@ -754,12 +754,12 @@ public class LocationStep extends Step {
 						NodeSet.DESCENDANT, contextId);
 			}
 		} else {
-			DocumentSet docs = getDocumentSet(contextSet);
-			StructuralIndex index = context.getBroker().getStructuralIndex();
+			final DocumentSet docs = getDocumentSet(contextSet);
+			final StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
-						"Using structural index '" + index.toString() + "'");
+						"Using structural index '" + index.toString() + "'");}
 			if (!contextSet.getProcessInReverseOrder() && !(contextSet instanceof VirtualNodeSet) &&
 					contextSet.getLength() < INDEX_SCAN_THRESHOLD) {
 				return index.findDescendantsByTagName(ElementValue.ELEMENT,
@@ -768,7 +768,7 @@ public class LocationStep extends Step {
 			} else {
 				// if (contextSet instanceof VirtualNodeSet)
 				// ((VirtualNodeSet)contextSet).realize();
-				NodeSelector selector = new ChildSelector(contextSet, contextId);
+				final NodeSelector selector = new ChildSelector(contextSet, contextId);
 				return index.findElementsByTagName(ElementValue.ELEMENT, docs,
 						test.getName(), selector);
 			}
@@ -787,18 +787,18 @@ public class LocationStep extends Step {
 	protected Sequence getDescendants(XQueryContext context,
 			Sequence contextSequence) throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			return nodes.getDescendants(axis == Constants.DESCENDANT_SELF_AXIS,
 					test);
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		// TODO : understand this. I guess comments should be treated in a
 		// similar way ? -pb
 		if ((!hasPreloadedData() && test.isWildcardTest())
 				|| test.getType() == Type.PROCESSING_INSTRUCTION) {
 			// test is one out of *, text(), node() including
 			// processing-instruction(targetname)
-			VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
+			final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return vset;
@@ -811,14 +811,14 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					currentSet = index.findElementsByTagName(
 							ElementValue.ELEMENT, docs, test.getName(), null);
 					currentDocs = docs;
@@ -826,7 +826,7 @@ public class LocationStep extends Step {
 				}
 				switch (axis) {
 				case Constants.DESCENDANT_SELF_AXIS:
-					NodeSet tempSet = currentSet.selectAncestorDescendant(
+					final NodeSet tempSet = currentSet.selectAncestorDescendant(
 							contextSet, NodeSet.DESCENDANT, true, contextId,
 							true);
 					return tempSet;
@@ -839,8 +839,8 @@ public class LocationStep extends Step {
 				}
 			}
 		} else {
-			DocumentSet docs = contextSet.getDocumentSet();
-			StructuralIndex index = context.getBroker().getStructuralIndex();
+			final DocumentSet docs = contextSet.getDocumentSet();
+			final StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled()) {
 				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
@@ -883,45 +883,45 @@ public class LocationStep extends Step {
 	protected Sequence getSiblings(XQueryContext context,
 			Sequence contextSequence) throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			if (axis == Constants.PRECEDING_SIBLING_AXIS)
-				return nodes.getPrecedingSiblings(test);
+				{return nodes.getPrecedingSiblings(test);}
 			else
-				return nodes.getFollowingSiblings(test);
+				{return nodes.getFollowingSiblings(test);}
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		// TODO : understand this. I guess comments should be treated in a
 		// similar way ? -pb
 		if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-			VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
+			final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return vset;
 		}
 		if (test.isWildcardTest()) {
-			NewArrayNodeSet result = new NewArrayNodeSet(contextSet.getLength());
+			final NewArrayNodeSet result = new NewArrayNodeSet(contextSet.getLength());
 			try {
-				for (NodeProxy current : contextSet) {
+				for (final NodeProxy current : contextSet) {
 					//ignore document elements to avoid NPE at getXMLStreamReader
 					if (NodeId.ROOT_NODE.equals(current.getNodeId()))
-						continue;
+						{continue;}
 					
-					NodeProxy parent = new NodeProxy(current.getDocument(),
+					final NodeProxy parent = new NodeProxy(current.getDocument(),
 							current.getNodeId().getParentId());
 					StreamFilter filter;
 					if (axis == Constants.PRECEDING_SIBLING_AXIS)
-						filter = new PrecedingSiblingFilter(test, current,
-								result, contextId);
+						{filter = new PrecedingSiblingFilter(test, current,
+								result, contextId);}
 					else
-						filter = new FollowingSiblingFilter(test, current,
-								result, contextId);
-					EmbeddedXMLStreamReader reader = context.getBroker()
+						{filter = new FollowingSiblingFilter(test, current,
+								result, contextId);}
+					final EmbeddedXMLStreamReader reader = context.getBroker()
 							.getXMLStreamReader(parent, false);
 					reader.filter(filter);
 				}
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new XPathException(this, e);
-			} catch (XMLStreamException e) {
+			} catch (final XMLStreamException e) {
 				throw new XPathException(this, e);
 			}
 			return result;
@@ -931,14 +931,14 @@ public class LocationStep extends Step {
 			synchronized (context) {
 				if (currentSet == null || currentDocs == null
 						|| !(docs.equalDocs(currentDocs))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					currentSet = index.findElementsByTagName(
 							ElementValue.ELEMENT, docs, test.getName(), null);
 					currentDocs = docs;
@@ -976,7 +976,7 @@ public class LocationStep extends Step {
 		public boolean visit(StoredNode current) {
 			if (contextNode.getNodeId().getTreeLevel() == current.getNodeId()
 					.getTreeLevel()) {
-				int cmp = current.getNodeId()
+				final int cmp = current.getNodeId()
 						.compareTo(contextNode.getNodeId());
 				if (((axis == Constants.FOLLOWING_SIBLING_AXIS && cmp > 0) || (axis == Constants.PRECEDING_SIBLING_AXIS && cmp < 0))
 						&& test.matches(current)) {
@@ -989,11 +989,11 @@ public class LocationStep extends Step {
 						if (Expression.NO_CONTEXT_ID != contextId) {
 							sibling.addContextNode(contextId, contextNode);
 						} else
-							sibling.copyContext(contextNode);
+							{sibling.copyContext(contextNode);}
 						resultSet.add(sibling);
 						resultSet.setSorted(sibling.getDocument(), true);
 					} else if (Expression.NO_CONTEXT_ID != contextId)
-						sibling.addContextNode(contextId, contextNode);
+						{sibling.addContextNode(contextId, contextNode);}
 				}
 			}
 			return true;
@@ -1015,49 +1015,49 @@ public class LocationStep extends Step {
 			Sequence contextSequence) throws XPathException {
 		int position = -1;
 		if (hasPositionalPredicate) {
-			Predicate pred = (Predicate) predicates.get(0);
-			Sequence seq = pred.preprocess();
+			final Predicate pred = (Predicate) predicates.get(0);
+			final Sequence seq = pred.preprocess();
 
-			NumericValue v = (NumericValue) seq.itemAt(0);
+			final NumericValue v = (NumericValue) seq.itemAt(0);
 			// Non integers return... nothing, not even an error !
 			if (!v.hasFractionalPart() && !v.isZero()) {
 				position = v.getInt();
 			}
 		}
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			if (hasPositionalPredicate && position > -1)
-				applyPredicate = false;
+				{applyPredicate = false;}
 			return nodes.getPreceding(test, position);
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		// TODO : understand this. I guess comments should be treated in a
 		// similar way ? -pb
 		if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-			VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
+			final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return vset;
 		}
 		if (test.isWildcardTest()) {
 			try {
-				NodeSet result = new NewArrayNodeSet();
-				for (NodeProxy next : contextSet) {
-					NodeList cl = next.getDocument().getChildNodes();
+				final NodeSet result = new NewArrayNodeSet();
+				for (final NodeProxy next : contextSet) {
+					final NodeList cl = next.getDocument().getChildNodes();
 					for (int j = 0; j < cl.getLength(); j++) {
-						StoredNode node = (StoredNode) cl.item(j);
-						NodeProxy root = new NodeProxy(node);
-						PrecedingFilter filter = new PrecedingFilter(test,
+						final StoredNode node = (StoredNode) cl.item(j);
+						final NodeProxy root = new NodeProxy(node);
+						final PrecedingFilter filter = new PrecedingFilter(test,
 								next, result, contextId);
-						EmbeddedXMLStreamReader reader = context.getBroker()
+						final EmbeddedXMLStreamReader reader = context.getBroker()
 								.getXMLStreamReader(root, false);
 						reader.filter(filter);
 					}
 				}
 				return result;
-			} catch (XMLStreamException e) {
+			} catch (final XMLStreamException e) {
 				throw new XPathException(this, e);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new XPathException(this, e);
 			}
 		} else {
@@ -1066,14 +1066,14 @@ public class LocationStep extends Step {
 			synchronized (context) {
 				if (currentSet == null || currentDocs == null
 						|| !(docs.equalDocs(currentDocs))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					currentSet = index.findElementsByTagName(
 							ElementValue.ELEMENT, docs, test.getName(), null);
 					currentDocs = docs;
@@ -1084,12 +1084,12 @@ public class LocationStep extends Step {
 						applyPredicate = false;
 						return currentSet.selectPreceding(contextSet, position,
 								contextId);
-					} catch (UnsupportedOperationException e) {
+					} catch (final UnsupportedOperationException e) {
 						return currentSet
 								.selectPreceding(contextSet, contextId);
 					}
 				} else
-					return currentSet.selectPreceding(contextSet, contextId);
+					{return currentSet.selectPreceding(contextSet, contextId);}
 			}
 		}
 	}
@@ -1109,26 +1109,26 @@ public class LocationStep extends Step {
 			Sequence contextSequence) throws XPathException {
 		int position = -1;
 		if (hasPositionalPredicate) {
-			Predicate pred = (Predicate) predicates.get(0);
-			Sequence seq = pred.preprocess();
+			final Predicate pred = (Predicate) predicates.get(0);
+			final Sequence seq = pred.preprocess();
 
-			NumericValue v = (NumericValue) seq.itemAt(0);
+			final NumericValue v = (NumericValue) seq.itemAt(0);
 			// Non integers return... nothing, not even an error !
 			if (!v.hasFractionalPart() && !v.isZero()) {
 				position = v.getInt();
 			}
 		}
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			if (hasPositionalPredicate && position > -1)
-				applyPredicate = false;
+				{applyPredicate = false;}
 			return nodes.getFollowing(test, position);
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		// TODO : understand this. I guess comments should be treated in a
 		// similar way ? -pb
 		if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-			VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
+			final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return vset;
@@ -1137,23 +1137,23 @@ public class LocationStep extends Step {
 				&& test.getType() != Type.PROCESSING_INSTRUCTION) {
 			// handle wildcard steps like following::node()
 			try {
-				NodeSet result = new NewArrayNodeSet();
-				for (NodeProxy next : contextSet) {
-					NodeList cl = next.getDocument().getChildNodes();
+				final NodeSet result = new NewArrayNodeSet();
+				for (final NodeProxy next : contextSet) {
+					final NodeList cl = next.getDocument().getChildNodes();
 					for (int j = 0; j < cl.getLength(); j++) {
-						StoredNode node = (StoredNode) cl.item(j);
-						NodeProxy root = new NodeProxy(node);
-						FollowingFilter filter = new FollowingFilter(test,
+						final StoredNode node = (StoredNode) cl.item(j);
+						final NodeProxy root = new NodeProxy(node);
+						final FollowingFilter filter = new FollowingFilter(test,
 								next, result, contextId);
-						EmbeddedXMLStreamReader reader = context.getBroker()
+						final EmbeddedXMLStreamReader reader = context.getBroker()
 								.getXMLStreamReader(root, false);
 						reader.filter(filter);
 					}
 				}
 				return result;
-			} catch (XMLStreamException e) {
+			} catch (final XMLStreamException e) {
 				throw new XPathException(this, e);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new XPathException(this, e);
 			}
 		} else {
@@ -1162,14 +1162,14 @@ public class LocationStep extends Step {
 			synchronized (context) {
 				if (currentSet == null || currentDocs == null
 						|| !(docs.equalDocs(currentDocs))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					currentSet = index.findElementsByTagName(
 							ElementValue.ELEMENT, docs, test.getName(), null);
 					currentDocs = docs;
@@ -1180,12 +1180,12 @@ public class LocationStep extends Step {
 						applyPredicate = false;
 						return currentSet.selectFollowing(contextSet, position,
 								contextId);
-					} catch (UnsupportedOperationException e) {
+					} catch (final UnsupportedOperationException e) {
 						return currentSet
 								.selectFollowing(contextSet, contextId);
 					}
 				} else
-					return currentSet.selectFollowing(contextSet, contextId);
+					{return currentSet.selectFollowing(contextSet, contextId);}
 			}
 		}
 	}
@@ -1202,27 +1202,27 @@ public class LocationStep extends Step {
 	protected Sequence getAncestors(XQueryContext context,
 			Sequence contextSequence) throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			return nodes.getAncestors(axis == Constants.ANCESTOR_SELF_AXIS,
 					test);
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		if (test.isWildcardTest()) {
-			NodeSet result = new NewArrayNodeSet();
+			final NodeSet result = new NewArrayNodeSet();
 			result.setProcessInReverseOrder(true);
-			for (NodeProxy current : contextSet) {
+			for (final NodeProxy current : contextSet) {
 				NodeProxy ancestor;
 				if (axis == Constants.ANCESTOR_SELF_AXIS
 						&& test.matches(current)) {
 					ancestor = new NodeProxy(current.getDocument(), current
 							.getNodeId(), Node.ELEMENT_NODE, current
 							.getInternalAddress());
-					NodeProxy t = result.get(ancestor);
+					final NodeProxy t = result.get(ancestor);
 					if (t == null) {
 						if (Expression.NO_CONTEXT_ID != contextId)
-							ancestor.addContextNode(contextId, current);
+							{ancestor.addContextNode(contextId, current);}
 						else
-							ancestor.copyContext(current);
+							{ancestor.copyContext(current);}
 						ancestor.addMatches(current);
 						result.add(ancestor);
 					} else {
@@ -1240,12 +1240,12 @@ public class LocationStep extends Step {
 									.getDocument().getCollection()
 									.isTempCollection())) {
 						if (test.matches(ancestor)) {
-							NodeProxy t = result.get(ancestor);
+							final NodeProxy t = result.get(ancestor);
 							if (t == null) {
 								if (Expression.NO_CONTEXT_ID != contextId)
-									ancestor.addContextNode(contextId, current);
+									{ancestor.addContextNode(contextId, current);}
 								else
-									ancestor.copyContext(current);
+									{ancestor.copyContext(current);}
 								ancestor.addMatches(current);
 								result.add(ancestor);
 							} else {
@@ -1265,14 +1265,14 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					currentSet = index.findElementsByTagName(
 							ElementValue.ELEMENT, docs, test.getName(), null);
 					currentDocs = docs;
@@ -1291,12 +1291,12 @@ public class LocationStep extends Step {
 				}
 			}
 		} else {
-			DocumentSet docs = getDocumentSet(contextSet);
-			StructuralIndex index = context.getBroker().getStructuralIndex();
+			final DocumentSet docs = getDocumentSet(contextSet);
+			final StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
-						"Using structural index '" + index.toString() + "'");
+						"Using structural index '" + index.toString() + "'");}
             return index.findAncestorsByTagName(ElementValue.ELEMENT, test.getName(), axis, docs, contextSet, contextId);
 		}
 	}
@@ -1313,15 +1313,15 @@ public class LocationStep extends Step {
 	protected Sequence getParents(XQueryContext context,
 			Sequence contextSequence) throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			return nodes.getParents(test);
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		if (test.isWildcardTest()) {
-			NodeSet temp = contextSet.getParents(contextId);
-			NodeSet result = new NewArrayNodeSet();
+			final NodeSet temp = contextSet.getParents(contextId);
+			final NodeSet result = new NewArrayNodeSet();
 			NodeProxy p;
-			for (Iterator<NodeProxy> i = temp.iterator(); i.hasNext();) {
+			for (final Iterator<NodeProxy> i = temp.iterator(); i.hasNext();) {
 				p = i.next();
 
 				if (test.matches(p)) {
@@ -1336,14 +1336,14 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					currentSet = index.findElementsByTagName(
 							ElementValue.ELEMENT, docs, test.getName(), null);
 					currentDocs = docs;
@@ -1353,12 +1353,12 @@ public class LocationStep extends Step {
 						NodeSet.ANCESTOR);
 			}
 		} else {
-			DocumentSet docs = getDocumentSet(contextSet);
-			StructuralIndex index = context.getBroker().getStructuralIndex();
+			final DocumentSet docs = getDocumentSet(contextSet);
+			final StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
-						"Using structural index '" + index.toString() + "'");
+						"Using structural index '" + index.toString() + "'");}
             return index.findAncestorsByTagName(ElementValue.ELEMENT, test.getName(), Constants.PARENT_AXIS, docs, contextSet, contextId);
 		}
 	}
@@ -1373,7 +1373,7 @@ public class LocationStep extends Step {
 	protected DocumentSet getDocumentSet(NodeSet contextSet) {
 		DocumentSet ds = getContextDocSet();
 		if (ds == null)
-			ds = contextSet.getDocumentSet();
+			{ds = contextSet.getDocumentSet();}
 		return ds;
 	}
 
@@ -1486,8 +1486,8 @@ public class LocationStep extends Step {
 			if (reader.getEventType() == XMLStreamReader.END_ELEMENT) {
 				return true;
 			}
-			NodeId refId = referenceNode.getNodeId();
-			NodeId currentId = (NodeId) reader
+			final NodeId refId = referenceNode.getNodeId();
+			final NodeId currentId = (NodeId) reader
 					.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
 			if (!isAfter) {
 				isAfter = currentId.equals(refId);
@@ -1511,7 +1511,7 @@ public class LocationStep extends Step {
 					}
 					result.add(sibling);
 				} else if (Expression.NO_CONTEXT_ID != contextId)
-					sibling.addContextNode(contextId, referenceNode);
+					{sibling.addContextNode(contextId, referenceNode);}
 			}
 			return true;
 		}
@@ -1536,8 +1536,8 @@ public class LocationStep extends Step {
 			if (reader.getEventType() == XMLStreamReader.END_ELEMENT) {
 				return true;
 			}
-			NodeId refId = referenceNode.getNodeId();
-			NodeId currentId = (NodeId) reader
+			final NodeId refId = referenceNode.getNodeId();
+			final NodeId currentId = (NodeId) reader
 					.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
 			if (currentId.equals(refId)) {
 				return false;
@@ -1560,7 +1560,7 @@ public class LocationStep extends Step {
 					}
 					result.add(sibling);
 				} else if (Expression.NO_CONTEXT_ID != contextId)
-					sibling.addContextNode(contextId, referenceNode);
+					{sibling.addContextNode(contextId, referenceNode);}
 
 			}
 			return true;
@@ -1585,16 +1585,16 @@ public class LocationStep extends Step {
 
 		public boolean accept(XMLStreamReader reader) {
 			if (reader.getEventType() == XMLStreamReader.END_ELEMENT)
-				return true;
-			NodeId refId = referenceNode.getNodeId();
-			NodeId currentId = (NodeId) reader
+				{return true;}
+			final NodeId refId = referenceNode.getNodeId();
+			final NodeId currentId = (NodeId) reader
 					.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
 			if (!isAfter)
-				isAfter = currentId.compareTo(refId) > 0
-						&& !currentId.isDescendantOf(refId);
+				{isAfter = currentId.compareTo(refId) > 0
+						&& !currentId.isDescendantOf(refId);}
 			if (isAfter && !refId.isDescendantOf(currentId)
 					&& test.matches(reader)) {
-				NodeProxy proxy = new NodeProxy(referenceNode.getDocument(),
+				final NodeProxy proxy = new NodeProxy(referenceNode.getDocument(),
 						currentId, StaXUtil.streamType2DOM(reader
 								.getEventType()),
 						((EmbeddedXMLStreamReader) reader).getCurrentPosition());
@@ -1628,14 +1628,14 @@ public class LocationStep extends Step {
 
 		public boolean accept(XMLStreamReader reader) {
 			if (reader.getEventType() == XMLStreamReader.END_ELEMENT)
-				return true;
-			NodeId refId = referenceNode.getNodeId();
-			NodeId currentId = (NodeId) reader
+				{return true;}
+			final NodeId refId = referenceNode.getNodeId();
+			final NodeId currentId = (NodeId) reader
 					.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
 			if (currentId.compareTo(refId) >= 0)
-				return false;
+				{return false;}
 			if (!refId.isDescendantOf(currentId) && test.matches(reader)) {
-				NodeProxy proxy = new NodeProxy(referenceNode.getDocument(),
+				final NodeProxy proxy = new NodeProxy(referenceNode.getDocument(),
 						currentId, StaXUtil.streamType2DOM(reader
 								.getEventType()),
 						((EmbeddedXMLStreamReader) reader).getCurrentPosition());
@@ -1660,19 +1660,19 @@ public class LocationStep extends Step {
 					"DEPENDENCIES",
 					Dependency.getDependenciesName(this.getDependencies()));
 			if (contextSequence != null)
-				context.getProfiler().message(this, Profiler.START_SEQUENCES,
-						"CONTEXT SEQUENCE", contextSequence);
+				{context.getProfiler().message(this, Profiler.START_SEQUENCES,
+						"CONTEXT SEQUENCE", contextSequence);}
 			if (contextItem != null)
-				context.getProfiler().message(this, Profiler.START_SEQUENCES,
-						"CONTEXT ITEM", contextItem.toSequence());
+				{context.getProfiler().message(this, Profiler.START_SEQUENCES,
+						"CONTEXT ITEM", contextItem.toSequence());}
 		}
 
 		Boolean result;
 		if (needsComputation()) {
 			if (contextSequence == null)
-				throw new XPathException(this,
+				{throw new XPathException(this,
 						ErrorCodes.XPDY0002, "Undefined context sequence for '"
-								+ this.toString() + "'");
+								+ this.toString() + "'");}
 			switch (axis) {
 			case Constants.DESCENDANT_AXIS:
 			case Constants.DESCENDANT_SELF_AXIS:
@@ -1734,7 +1734,7 @@ public class LocationStep extends Step {
 		result = matchPredicate(contextSequence, (Node)contextItem, result);
 
 		if (context.getProfiler().isEnabled())
-			context.getProfiler().end(this, "", null);
+			{context.getProfiler().end(this, "", null);}
 		// actualReturnType = result.getItemType();
 
 		return result;
@@ -1743,20 +1743,20 @@ public class LocationStep extends Step {
 	private Boolean matchPredicate(Sequence contextSequence, Node contextItem,
 			Boolean result) throws XPathException {
 
-		if (result == null) return false;
+		if (result == null) {return false;}
 		
 		if (!result)
-			return result;
+			{return result;}
 
 		if (contextSequence == null)
-			return false;
+			{return false;}
 
 		if (predicates.size() == 0)
-			return result;
+			{return result;}
 		
 		Predicate pred;
 
-		for (Iterator<Predicate> i = predicates.iterator(); i.hasNext();) {
+		for (final Iterator<Predicate> i = predicates.iterator(); i.hasNext();) {
 //				&& (result instanceof VirtualNodeSet || !result.isEmpty());) {
 			// TODO : log and/or profile ?
 			pred = i.next();
@@ -1766,7 +1766,7 @@ public class LocationStep extends Step {
 			result = pred.matchPredicate(contextSequence, (Item)contextItem, axis);
 
 			if (!result)
-				return false;
+				{return false;}
 			
 			// subsequent predicates operate on the result of the previous one
 //			outerSequence = null;
@@ -1776,12 +1776,12 @@ public class LocationStep extends Step {
 
 	private Boolean matchSelf(XQueryContext context, Sequence contextSequence) throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			return nodes.matchSelf(test);
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-			VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
+			final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return !vset.isEmpty();
@@ -1800,27 +1800,27 @@ public class LocationStep extends Step {
 					} else if (Type.subTypeOf(contextSet.getItemType(),
 							Type.NODE)) {
 
-						for (NodeProxy p : contextSet) {
+						for (final NodeProxy p : contextSet) {
 							if (test.matches(p))
-								return true;
+								{return true;}
 						}
 					}
 				}
 				return false;
 			} else {
-				VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(),
+				final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(),
 						axis, test, contextId, contextSet);
 				vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 				return !vset.isEmpty();
 			}
 		} else {
-			DocumentSet docs = getDocumentSet(contextSet);
-			StructuralIndex index = context.getBroker().getStructuralIndex();
+			final DocumentSet docs = getDocumentSet(contextSet);
+			final StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
-						"Using structural index '" + index.toString() + "'");
-			NodeSelector selector = new SelfSelector(contextSet, contextId);
+						"Using structural index '" + index.toString() + "'");}
+			final NodeSelector selector = new SelfSelector(contextSet, contextId);
 			return index.matchElementsByTagName(ElementValue.ELEMENT, docs, test
 					.getName(), selector);
 		}
@@ -1829,17 +1829,17 @@ public class LocationStep extends Step {
 	protected Boolean matchChildren(XQueryContext context,
 			Sequence contextSequence) throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			return nodes.matchChildren(test);
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		// TODO : understand this. I guess comments should be treated in a
 		// similar way ? -pb
 		if (test.isWildcardTest()
 				|| test.getType() == Type.PROCESSING_INSTRUCTION) {
 			// test is one out of *, text(), node() including
 			// processing-instruction(targetname)
-			VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
+			final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
 			return !vset.isEmpty();
@@ -1853,13 +1853,13 @@ public class LocationStep extends Step {
 
 		if (useDirectChildSelect) {
 			//NewArrayNodeSet result = new NewArrayNodeSet();
-			for (NodeProxy p : contextSet) {
+			for (final NodeProxy p : contextSet) {
 				if (p.directMatchChild(test.getName(), contextId))
-					return true;
+					{return true;}
 			}
 			return false;
 		} else if (hasPreloadedData()) {
-			DocumentSet docs = getDocumentSet(contextSet);
+			final DocumentSet docs = getDocumentSet(contextSet);
 			synchronized (context) {
 				// TODO : understand why this one is different from the other
 				// ones
@@ -1867,14 +1867,14 @@ public class LocationStep extends Step {
 //						|| currentDocs == null
 //						|| (!optimized && !(docs == currentDocs || docs
 //								.equalDocs(currentDocs)))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					return index.matchElementsByTagName(
 							ElementValue.ELEMENT, docs, test.getName(), null);
 //					currentDocs = docs;
@@ -1884,12 +1884,12 @@ public class LocationStep extends Step {
 //						NodeSet.DESCENDANT, contextId);
 //			}
 		} else {
-			DocumentSet docs = getDocumentSet(contextSet);
-			StructuralIndex index = context.getBroker().getStructuralIndex();
+			final DocumentSet docs = getDocumentSet(contextSet);
+			final StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
-						"Using structural index '" + index.toString() + "'");
+						"Using structural index '" + index.toString() + "'");}
 			if (contextSet instanceof ExtNodeSet
 					&& !contextSet.getProcessInReverseOrder()) {
 				return index.matchDescendantsByTagName(ElementValue.ELEMENT,
@@ -1898,7 +1898,7 @@ public class LocationStep extends Step {
 			} else {
 				// if (contextSet instanceof VirtualNodeSet)
 				// ((VirtualNodeSet)contextSet).realize();
-				NodeSelector selector = new ChildSelector(contextSet, contextId);
+				final NodeSelector selector = new ChildSelector(contextSet, contextId);
 				return index.matchElementsByTagName(ElementValue.ELEMENT, docs,
 						test.getName(), selector);
 			}
@@ -1908,36 +1908,36 @@ public class LocationStep extends Step {
 	protected boolean matchAttributes(XQueryContext context,
 			Sequence contextSequence) throws XPathException {
 		if (!contextSequence.isPersistentSet()) {
-			MemoryNodeSet nodes = contextSequence.toMemNodeSet();
+			final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
 			if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-				return nodes.matchDescendantAttributes(test);
+				{return nodes.matchDescendantAttributes(test);}
 			else
-				return nodes.matchAttributes(test);
+				{return nodes.matchAttributes(test);}
 		}
-		NodeSet contextSet = contextSequence.toNodeSet();
+		final NodeSet contextSet = contextSequence.toNodeSet();
 		boolean selectDirect = false;
 		if (useDirectAttrSelect && axis == Constants.ATTRIBUTE_AXIS) {
 			if (contextSet instanceof VirtualNodeSet)
-				selectDirect = ((VirtualNodeSet) contextSet)
+				{selectDirect = ((VirtualNodeSet) contextSet)
 						.preferTreeTraversal()
-						&& contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
+						&& contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;}
 			else
-				selectDirect = contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
+				{selectDirect = contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;}
 		}
 		if (selectDirect) {
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-						"OPTIMIZATION", "direct attribute selection");
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+						"OPTIMIZATION", "direct attribute selection");}
 			if (contextSet.isEmpty())
-				return false;
+				{return false;}
 			// TODO : why only the first node ?
-			NodeProxy proxy = contextSet.get(0);
+			final NodeProxy proxy = contextSet.get(0);
 			if (proxy != null)
-				return contextSet.directMatchAttribute(context.getBroker(),
-						test, contextId);
+				{return contextSet.directMatchAttribute(context.getBroker(),
+						test, contextId);}
 		}
 		if (test.isWildcardTest()) {
-			NodeSet result = new VirtualNodeSet(context.getBroker(), axis,
+			final NodeSet result = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
 			((VirtualNodeSet) result)
 					.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
@@ -1952,14 +1952,14 @@ public class LocationStep extends Step {
 						|| currentDocs == null
 						|| (!optimized && !(docs == currentDocs || docs
 								.equalDocs(currentDocs)))) {
-					StructuralIndex index = context.getBroker().getStructuralIndex();
+					final StructuralIndex index = context.getBroker().getStructuralIndex();
 					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(
+						{context.getProfiler().message(
 								this,
 								Profiler.OPTIMIZATIONS,
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
-										+ "'");
+										+ "'");}
 					// TODO : why a null selector here ? We have one below !
 					currentSet = index.findElementsByTagName(
 							ElementValue.ATTRIBUTE, docs, test.getName(), null);
@@ -1979,12 +1979,12 @@ public class LocationStep extends Step {
 				}
 			}
 		} else {
-			DocumentSet docs = getDocumentSet(contextSet);
-			StructuralIndex index = context.getBroker().getStructuralIndex();
+			final DocumentSet docs = getDocumentSet(contextSet);
+			final StructuralIndex index = context.getBroker().getStructuralIndex();
 			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+				{context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
 						"OPTIMIZATION",
-						"Using structural index '" + index.toString() + "'");
+						"Using structural index '" + index.toString() + "'");}
 			if (contextSet instanceof ExtNodeSet
 					&& !contextSet.getProcessInReverseOrder()) {
 				return index.matchDescendantsByTagName(ElementValue.ATTRIBUTE,

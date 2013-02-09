@@ -38,7 +38,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     @Override
     public void visitPathExpr(PathExpr expression) {
         if (expression.getLength() == 1) {
-            Expression next = expression.getExpression(0);
+            final Expression next = expression.getExpression(0);
             next.accept(this);
         }
     }
@@ -105,8 +105,8 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
 
     public static LocationStep findFirstStep(Expression expr) {
         if (expr instanceof LocationStep)
-            return (LocationStep) expr;
-        FirstStepVisitor visitor = new FirstStepVisitor();
+            {return (LocationStep) expr;}
+        final FirstStepVisitor visitor = new FirstStepVisitor();
         expr.accept(visitor);
         return visitor.firstStep;
     }
@@ -122,7 +122,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
                 @Override
                 public void visitPathExpr(PathExpr expression) {
                     for (int i = 0; i < expression.getLength(); i++) {
-                        Expression next = expression.getExpression(i);
+                        final Expression next = expression.getExpression(i);
                         next.accept(this);
                         if (steps.size() - 1 != i) {
                         	steps.add(null);
@@ -139,7 +139,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     public static VariableReference findVariableRef(Expression expr) {
-        VariableRefVisitor visitor = new VariableRefVisitor();
+        final VariableRefVisitor visitor = new VariableRefVisitor();
         expr.accept(visitor);
         return visitor.ref;
     }
@@ -224,7 +224,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         @Override
         public void visitPathExpr(PathExpr expression) {
             for (int i = 0; i < expression.getLength(); i++) {
-                Expression next = expression.getExpression(i);
+                final Expression next = expression.getExpression(i);
                 next.accept(this);
             }
         }

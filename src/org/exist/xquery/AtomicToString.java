@@ -54,12 +54,12 @@ public class AtomicToString extends AbstractExpression {
      * org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        Sequence seq = expression.eval(contextSequence, contextItem);
+        final Sequence seq = expression.eval(contextSequence, contextItem);
         if (seq.isEmpty())
-            return Sequence.EMPTY_SEQUENCE;
+            {return Sequence.EMPTY_SEQUENCE;}
         Item next;
-        ValueSequence result = new ValueSequence();
-        for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+        final ValueSequence result = new ValueSequence();
+        for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
             next = i.nextItem();
             result.add(new StringValue(next.getStringValue()));
         }
@@ -76,7 +76,7 @@ public class AtomicToString extends AbstractExpression {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("xs:string(");
         result.append(expression.toString());
         result.append(")");

@@ -49,10 +49,10 @@ public class HTTPUtils {
     public static void addLastModifiedHeader(Sequence result,
 			XQueryContext context) {
 		try {
-			DocumentSet documentSet = result.getDocumentSet();
+			final DocumentSet documentSet = result.getDocumentSet();
 			long mostRecentDocumentTime = 0;
-			for (Iterator<DocumentImpl> i = documentSet.getDocumentIterator(); i.hasNext(); ) {
-				DocumentImpl doc = i.next();
+			for (final Iterator<DocumentImpl> i = documentSet.getDocumentIterator(); i.hasNext(); ) {
+				final DocumentImpl doc = i.next();
 				if (doc != null) {
 					mostRecentDocumentTime = Math.max(doc.getMetadata().getLastModified(),
 							mostRecentDocumentTime);
@@ -63,35 +63,35 @@ public class HTTPUtils {
 			LOG.debug("mostRecentDocumentTime: " + mostRecentDocumentTime);
 
 			if (mostRecentDocumentTime > 0) {
-				ResponseModule myModule = (ResponseModule) context
+				final ResponseModule myModule = (ResponseModule) context
 						.getModule(ResponseModule.NAMESPACE_URI);
 				if (myModule == null)
-					return;
+					{return;}
 				// response servlet object is read from global variable $response
-				Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
+				final Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
 				
 				if (var != null && var.getValue() != null) {
-					JavaObjectValue value = (JavaObjectValue) var.getValue()
+					final JavaObjectValue value = (JavaObjectValue) var.getValue()
 							.itemAt(0);
 					if (value != null
 							&& value.getObject() instanceof ResponseWrapper) {
 						// have to take in account that if the header has allready been explicitely set 
 						// by the XQuery script, we should not modify it .
-						ResponseWrapper responseWrapper = ((ResponseWrapper) value.getObject());
+						final ResponseWrapper responseWrapper = ((ResponseWrapper) value.getObject());
 						if ( responseWrapper.getDateHeader("Last-Modified") == 0 )
-							responseWrapper.setDateHeader(
-								"Last-Modified", mostRecentDocumentTime);
+							{responseWrapper.setDateHeader(
+								"Last-Modified", mostRecentDocumentTime);}
 					}
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOG.debug(e.getMessage(), e);
 		}
 	}
     
     public static String printStackTraceHTML(Throwable e) {
-        StringBuilder buf = new StringBuilder();
-        StackTraceElement[] trace = e.getStackTrace();
+        final StringBuilder buf = new StringBuilder();
+        final StackTraceElement[] trace = e.getStackTrace();
         buf.append("<table id=\"javatrace\">");
         buf.append("<caption>Java Stack Trace:</caption>");
         buf.append("<tr><th>Class Name</th><th>Method Name</th><th>File Name</th><th>Line</th></tr>");

@@ -70,15 +70,15 @@ public class Conditional extends Modification {
 	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 			EXistException, XPathException, TriggerException {
 		LOG.debug("Processing xupdate:if ...");
-		XQuery xquery = broker.getXQueryService();
-		XQueryPool pool = xquery.getXQueryPool();
-		Source source = new StringSource(selectStmt);
+		final XQuery xquery = broker.getXQueryService();
+		final XQueryPool pool = xquery.getXQueryPool();
+		final Source source = new StringSource(selectStmt);
 		CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
 		XQueryContext context;
 		if(compiled == null)
-		    context = xquery.newContext(getAccessContext());
+		    {context = xquery.newContext(getAccessContext());}
 		else
-		    context = compiled.getContext();
+		    {context = compiled.getContext();}
 
 		//context.setBackwardsCompatibility(true);
 		context.setStaticallyKnownDocuments(docs);
@@ -87,7 +87,7 @@ public class Conditional extends Modification {
 		if(compiled == null)
 			try {
 				compiled = xquery.compile(context, source);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
 			}
 		
@@ -99,17 +99,17 @@ public class Conditional extends Modification {
 		}
 		if(seq.effectiveBooleanValue()) {
 			long mods = 0;
-			for (Modification modification : modifications) {
+			for (final Modification modification : modifications) {
 				mods += modification.process(transaction);
 				broker.flush();
 			}
 			
 			if (LOG.isDebugEnabled())
-				LOG.debug(mods + " modifications processed.");
+				{LOG.debug(mods + " modifications processed.");}
 			
 			return mods;
 		} else
-			return 0;
+			{return 0;}
 	}
 
 	/* (non-Javadoc)

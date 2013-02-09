@@ -10,18 +10,18 @@ public abstract class AbstractNodeEditor implements NodeEditor {
 	private List<ChangeListener> listeners = new ArrayList<ChangeListener>(2);
 
 	protected void fireChanged() {
-		ChangeEvent event = new ChangeEvent(this);
-		for(ChangeListener listener : listeners)
+		final ChangeEvent event = new ChangeEvent(this);
+		for(final ChangeListener listener : listeners)
 			listener.stateChanged(event);
 	}
 	
 	public void addChangeListener(ChangeListener listener) {
 		if(listener != null)
-			listeners.add(listener);
+			{listeners.add(listener);}
 	}
 	
 	public void removeChangeListener(ChangeListener listener) {
 		if(listeners != null)
-			listeners.remove(listener);
+			{listeners.remove(listener);}
 	}
 }

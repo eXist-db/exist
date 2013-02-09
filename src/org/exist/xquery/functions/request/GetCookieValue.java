@@ -72,21 +72,21 @@ public class GetCookieValue extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+		final RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
 		// get the cookieName to match
-		String cookieName = args[0].getStringValue();
+		final String cookieName = args[0].getStringValue();
 
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper)
 		{
-			Cookie[] cookies = ((RequestWrapper)value.getObject()).getCookies();
+			final Cookie[] cookies = ((RequestWrapper)value.getObject()).getCookies();
 			if(cookies != null)
 			{
 				for(int c = 0; c < cookies.length; c++)
@@ -101,7 +101,7 @@ public class GetCookieValue extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		else
-			throw new XPathException(this, "Variable $request is not bound to a Request object.");
+			{throw new XPathException(this, "Variable $request is not bound to a Request object.");}
 	}
 	
 	// TODO: remove this hack after fixing HTTP 1.1	
@@ -109,7 +109,7 @@ public class GetCookieValue extends BasicFunction {
 	{
 		try {
 			return new String(value.getBytes("ISO-8859-1"));
-		} catch (UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			return value;
 		}
 	}

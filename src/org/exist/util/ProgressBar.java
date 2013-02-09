@@ -40,13 +40,13 @@ public class ProgressBar {
 	}
 
 	public void set(double value) {
-		int percent = (int)((value / mMax) * 100);
+		final int percent = (int)((value / mMax) * 100);
 		if(percent % 2 > 0)
-			return;
+			{return;}
 		int pos = percent / 2;
 		if(pos == mPosition)
-			return;
-		StringBuffer buf = new StringBuffer();
+			{return;}
+		final StringBuffer buf = new StringBuffer();
 		buf.append(mMessage);
 		buf.append(" [");
 		int i = 0;

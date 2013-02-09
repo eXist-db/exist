@@ -47,27 +47,27 @@ public class SerializerPool extends StackKeyedObjectPool {
     public synchronized Object borrowObject(Object key) {
         try {
             return super.borrowObject(key);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalStateException("Error while creating serializer: " + e.getMessage());
         }
     }
     
     public DOMStreamer borrowDOMStreamer(Serializer delegate) {
         try {
-            ExtendedDOMStreamer serializer = (ExtendedDOMStreamer)borrowObject(DOMStreamer.class);
+            final ExtendedDOMStreamer serializer = (ExtendedDOMStreamer)borrowObject(DOMStreamer.class);
             serializer.setSerializer(delegate);
             return serializer;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
     
     public synchronized void returnObject(Object obj) {
         if (obj == null)
-            return;
+            {return;}
         try {
             super.returnObject(obj.getClass(), obj);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalStateException("Error while returning serializer: " + e.getMessage());
         }
     }

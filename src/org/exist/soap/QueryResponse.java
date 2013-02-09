@@ -88,10 +88,10 @@ public class QueryResponse  implements java.io.Serializable {
 
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
-        if (!(obj instanceof QueryResponse)) return false;
-        QueryResponse other = (QueryResponse) obj;
-        if (obj == null) return false;
-        if (this == obj) return true;
+        if (!(obj instanceof QueryResponse)) {return false;}
+        final QueryResponse other = (QueryResponse) obj;
+        if (obj == null) {return false;}
+        if (this == obj) {return true;}
         if (__equalsCalc != null) {
             return (__equalsCalc == obj);
         }
@@ -118,7 +118,7 @@ public class QueryResponse  implements java.io.Serializable {
             _hashCode += getCollections().hashCode();
         }
         _hashCode += getHits();
-        _hashCode += new Long(getQueryTime()).hashCode();
+        _hashCode += Long.valueOf(getQueryTime()).hashCode();
         __hashCodeCalc = false;
         return _hashCode;
     }

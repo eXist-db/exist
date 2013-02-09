@@ -64,10 +64,10 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
 
         try {
             log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            Collection base = DatabaseManager.getCollection( uri, user, password );
+            final Collection base = DatabaseManager.getCollection( uri, user, password );
 
             if( base == null ) {
-                String msg = "Collection " + uri + " could not be found.";
+                final String msg = "Collection " + uri + " could not be found.";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -77,14 +77,14 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
 
             } else {
                 log( "Create collection management service for collection " + base.getName(), Project.MSG_DEBUG );
-                CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)base.getService( "CollectionManagementService", "1.0" );
+                final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)base.getService( "CollectionManagementService", "1.0" );
 
                 if( resource != null ) {
                     log( "Copying resource: " + resource, Project.MSG_INFO );
-                    Resource res = base.getResource( resource );
+                    final Resource res = base.getResource( resource );
 
                     if( res == null ) {
-                        String msg = "Resource " + resource + " not found.";
+                        final String msg = "Resource " + resource + " not found.";
 
                         if( failonerror ) {
                             throw( new BuildException( msg ) );
@@ -103,8 +103,8 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
                 }
             }
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception during copy: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception during copy: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -113,8 +113,8 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
             }
 
         }
-        catch( URISyntaxException e ) {
-            String msg = "URI syntax exception: " + e.getMessage();
+        catch( final URISyntaxException e ) {
+            final String msg = "URI syntax exception: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

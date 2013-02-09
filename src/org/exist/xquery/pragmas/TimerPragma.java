@@ -39,12 +39,12 @@ public class TimerPragma extends Pragma {
     public TimerPragma(QName qname, String contents) throws XPathException {
         super(qname, contents);
         if (contents != null && contents.length() > 0) {
-            String options[] = Option.tokenize(contents);
+            final String options[] = Option.tokenize(contents);
             for (int i = 0; i < options.length; i++) {
-                String param[] = Option.parseKeyValuePair(options[i]);
+                final String param[] = Option.parseKeyValuePair(options[i]);
                 if (param == null)
-                    throw new XPathException("Invalid content found for pragma " + TIMER_PRAGMA.getStringValue() +
-                        ": " + contents);
+                    {throw new XPathException("Invalid content found for pragma " + TIMER_PRAGMA.getStringValue() +
+                        ": " + contents);}
                 if ("verbose".equals(param[0])) {
                     verbose = "yes".equals(param[1]);
                 } else if ("logger".equals(param[0])) {
@@ -53,16 +53,16 @@ public class TimerPragma extends Pragma {
             }
         }
         if (log == null)
-            log = Logger.getLogger(TimerPragma.class);
+            {log = Logger.getLogger(TimerPragma.class);}
     }
 
     public void after(XQueryContext context, Expression expression) throws XPathException {
-        long elapsed = System.currentTimeMillis() - start;
+        final long elapsed = System.currentTimeMillis() - start;
         if (log.isTraceEnabled()) {
             if (verbose)
-                log.trace("Elapsed: " + elapsed + "ms. for expression:\n" + ExpressionDumper.dump(expression));
+                {log.trace("Elapsed: " + elapsed + "ms. for expression:\n" + ExpressionDumper.dump(expression));}
             else
-                log.trace("Elapsed: " + elapsed + "ms.");
+                {log.trace("Elapsed: " + elapsed + "ms.");}
         }
     }
 

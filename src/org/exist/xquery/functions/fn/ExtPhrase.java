@@ -71,12 +71,12 @@ public class ExtPhrase extends ExtFulltext {
         String[] terms;
         try {
             terms = getSearchTerms(searchArg);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XPathException(e.getMessage());
         }
-        NodeSet hits = processQuery(terms, nodes);
+        final NodeSet hits = processQuery(terms, nodes);
         if (hits == null)
-            return Sequence.EMPTY_SEQUENCE;
+            {return Sequence.EMPTY_SEQUENCE;}
         boolean hasWildcards = false;
         for (int i = 0; i < terms.length; i++) {
             hasWildcards |=	NativeTextEngine.containsWildcards(terms[i]);
@@ -91,18 +91,18 @@ public class ExtPhrase extends ExtFulltext {
      */
     private Sequence exactMatch(XQueryContext context, String[] terms, NodeSet result) {
         TextToken token;
-        NodeSet r = new ExtArrayNodeSet();
+        final NodeSet r = new ExtArrayNodeSet();
         final Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
         //Define search phrase for matches
         String matchTerm = "";
         for (int k = 0; k < terms.length ; k++) {
             matchTerm = matchTerm + terms[k];
             if (k != terms.length - 1)
-                matchTerm = matchTerm + "\\W*"; 
+                {matchTerm = matchTerm + "\\W*";} 
         }
         //Iterate on results
-        for (NodeProxy current : result) {
-            Vector<NodeId> matchNodeIDs = new Vector<NodeId>();
+        for (final NodeProxy current : result) {
+            final Vector<NodeId> matchNodeIDs = new Vector<NodeId>();
             //Get first match
             Match nextMatch = current.getMatches();
             //Remove previously found matches on current
@@ -110,32 +110,32 @@ public class ExtPhrase extends ExtFulltext {
             //Iterate on attach matches, with unicity of related nodeproxy gid
             String term;
             while(nextMatch != null) {
-                NodeId nodeId= nextMatch.getNodeId();
+                final NodeId nodeId= nextMatch.getNodeId();
                 //If current node id has not been previously processed
                 if (!matchNodeIDs.contains(nodeId)) {
-                    NodeProxy mcurrent = new NodeProxy(current.getDocument(), nodeId);
+                    final NodeProxy mcurrent = new NodeProxy(current.getDocument(), nodeId);
                     Match match = null;
                     int firstOffset = -1;
                     matchNodeIDs.add(nodeId);
-                    String value = mcurrent.getNodeValue();
+                    final String value = mcurrent.getNodeValue();
                     tok.setText(value);
                     int j = 0;
                     if (j < terms.length)
-                        term = terms[j];
+                        {term = terms[j];}
                     else
-                        break;
+                        {break;}
                     int frequency = 0;
                     while ((token = tok.nextToken()) != null) {
-                        String word = token.getText().toLowerCase();
+                        final String word = token.getText().toLowerCase();
                         if (word.equalsIgnoreCase(term)) {
                             j++;
                             if (j == terms.length) {
                                 //All terms found
                                 if (match == null)
-                                    match = nextMatch.createInstance(getExpressionId(),
-                                        nodeId, matchTerm);
+                                    {match = nextMatch.createInstance(getExpressionId(),
+                                        nodeId, matchTerm);}
                                 if (firstOffset < 0)
-                                    firstOffset = token.startOffset();
+                                    {firstOffset = token.startOffset();}
                                 match.addOffset(firstOffset, token.endOffset() - firstOffset);
                                 frequency++;
                                 //Start again on fist term
@@ -145,7 +145,7 @@ public class ExtPhrase extends ExtFulltext {
                             } else {
                                 term = terms[j];
                                 if (firstOffset < 0)
-                                    firstOffset = token.startOffset();
+                                    {firstOffset = token.startOffset();}
                             }
                         } else if (j > 0 && word.equalsIgnoreCase(terms[0])) {
                             //First search term found: start again
@@ -185,45 +185,45 @@ public class ExtPhrase extends ExtFulltext {
      */
     private Sequence patternMatch(XQueryContext context, String[] terms, NodeSet result) {
         //Generate list of search term patterns
-        Pattern patterns[] = new Pattern[terms.length];
-        Matcher matchers[] = new Matcher[terms.length];
+        final Pattern patterns[] = new Pattern[terms.length];
+        final Matcher matchers[] = new Matcher[terms.length];
         for (int i = 0; i < patterns.length; i++) {
             try {
                 patterns[i] = Pattern.compile(GlobToRegex.globToRegexp(terms[i]), 
                         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 matchers[i] = patterns[i].matcher("");
-            } catch (PatternSyntaxException e) {
+            } catch (final PatternSyntaxException e) {
                 logger.error("malformed pattern" + e.getMessage());
                 return Sequence.EMPTY_SEQUENCE;
             }
         }
         //Walk through hits 
-        ExtArrayNodeSet r = new ExtArrayNodeSet();
+        final ExtArrayNodeSet r = new ExtArrayNodeSet();
         final Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
         Matcher matcher;
-        for (NodeProxy current : result) {
+        for (final NodeProxy current : result) {
             Match nextMatch;
-            Vector<NodeId> matchGid = new Vector<NodeId>();
+            final Vector<NodeId> matchGid = new Vector<NodeId>();
             //Get first match
             nextMatch = current.getMatches();
             //Remove previously found matches on current
             current.setMatches(null);
             //Iterate on attach matches, with unicity of related nodeproxy gid
             while (nextMatch != null) {
-                Hashtable<String, Match> matchTable = new Hashtable<String, Match>();
-                NodeId nodeId = nextMatch.getNodeId(); 
+                final Hashtable<String, Match> matchTable = new Hashtable<String, Match>();
+                final NodeId nodeId = nextMatch.getNodeId(); 
                 //If current node id has not been previously processed
                 if (!matchGid.contains(nodeId)) {
-                    NodeProxy mcurrent = new NodeProxy(current.getDocument(), nodeId);
+                    final NodeProxy mcurrent = new NodeProxy(current.getDocument(), nodeId);
                     //Add it in node id array
                     matchGid.add(nodeId);
-                    String value = mcurrent.getNodeValue();
+                    final String value = mcurrent.getNodeValue();
                     tok.setText(value);
                     int j = 0;
                     if (j < patterns.length) {
                         matcher = matchers[j];
                     } else
-                        break;
+                        {break;}
                     String matchTerm = null;
                     TextToken token;
                     while ((token = tok.nextToken()) != null) {
@@ -233,17 +233,17 @@ public class ExtPhrase extends ExtFulltext {
                         if (matcher.matches()) {
                             j++;
                             if (matchTerm == null)
-                                matchTerm=word;
+                                {matchTerm=word;}
                             else
-                                matchTerm = matchTerm + "\\W*" + word;
+                                {matchTerm = matchTerm + "\\W*" + word;}
                             if (j == patterns.length) {
                                 //All terms found
                                 if (matchTable.containsKey(matchTerm)) {
                                     //Previously found matchTerm
-                                    Match match = matchTable.get(matchTerm);
+                                    final Match match = matchTable.get(matchTerm);
                                     match.addOffset(token.startOffset(), matchTerm.length());
                                 } else {
-                                    Match match = nextMatch.createInstance(getExpressionId(),
+                                    final Match match = nextMatch.createInstance(getExpressionId(),
                                         nodeId, matchTerm);
                                     match.addOffset(token.startOffset(), matchTerm.length());
                                     matchTable.put(matchTerm,match);
@@ -273,9 +273,9 @@ public class ExtPhrase extends ExtFulltext {
                     }
                     //One or more match found
                     if (matchTable.size() != 0) {
-                        Enumeration<Match> eMatch = matchTable.elements();
+                        final Enumeration<Match> eMatch = matchTable.elements();
                         while (eMatch.hasMoreElements()){
-                            Match match = eMatch.nextElement();
+                            final Match match = eMatch.nextElement();
                             current.addMatch(match);
                         }
                         //Add current to result
@@ -301,7 +301,7 @@ public class ExtPhrase extends ExtFulltext {
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("phrase(");
         buf.append(path);
         buf.append(", ");

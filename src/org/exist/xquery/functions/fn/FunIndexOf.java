@@ -118,35 +118,35 @@ public class FunIndexOf extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }
         
         Sequence result;
 		if (args[0].isEmpty())
-			return Sequence.EMPTY_SEQUENCE;
+			{return Sequence.EMPTY_SEQUENCE;}
         else {
-    		AtomicValue srch = args[1].itemAt(0).atomize();
+    		final AtomicValue srch = args[1].itemAt(0).atomize();
     		Collator collator;
     		if (getSignature().getArgumentCount() == 3) {
-    			String collation = args[2].getStringValue();
+    			final String collation = args[2].getStringValue();
     			collator = context.getCollator(collation);
     		} else
-    			collator = context.getDefaultCollator();
+    			{collator = context.getDefaultCollator();}
     		result = new ValueSequence();
     		int j = 1;
-    		for (SequenceIterator i = args[0].iterate(); i.hasNext(); j++) {
-    			AtomicValue next = i.nextItem().atomize();
+    		for (final SequenceIterator i = args[0].iterate(); i.hasNext(); j++) {
+    			final AtomicValue next = i.nextItem().atomize();
     			try {
 	    			if (ValueComparison.compareAtomic(collator, next, srch, Constants.TRUNC_NONE, Constants.EQ))
-	    				result.add(new IntegerValue(j));
-    			} catch (XPathException e) {
+	    				{result.add(new IntegerValue(j));}
+    			} catch (final XPathException e) {
     				//Ignore me : values can not be compared
     			}
     		}    		
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result; 
         

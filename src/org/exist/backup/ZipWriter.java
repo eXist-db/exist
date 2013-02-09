@@ -59,7 +59,7 @@ public class ZipWriter implements BackupWriter
 
     public void closeContents() throws IOException
     {
-        ZipEntry entry = new ZipEntry( mkRelative( currentPath ) + "/__contents__.xml" );
+        final ZipEntry entry = new ZipEntry( mkRelative( currentPath ) + "/__contents__.xml" );
         out.putNextEntry( entry );
         out.write( contents.toString().getBytes( "UTF-8" ) );
         out.closeEntry();
@@ -69,7 +69,7 @@ public class ZipWriter implements BackupWriter
 
     public OutputStream newEntry( String name ) throws IOException
     {
-        ZipEntry entry = new ZipEntry( mkRelative( currentPath ) + '/' + name );
+        final ZipEntry entry = new ZipEntry( mkRelative( currentPath ) + '/' + name );
         out.putNextEntry( entry );
         dataWritten = true;
         return( out );
@@ -94,7 +94,7 @@ public class ZipWriter implements BackupWriter
 
     public void closeCollection()
     {
-        int p = currentPath.lastIndexOf( '/' );
+        final int p = currentPath.lastIndexOf( '/' );
 
         if( p > 0 ) {
             currentPath = currentPath.substring( 0, p );
@@ -113,7 +113,7 @@ public class ZipWriter implements BackupWriter
         if( dataWritten ) {
             throw( new IOException( "Backup properties need to be set before any backup data is written" ) );
         }
-        ZipEntry entry = new ZipEntry( "backup.properties" );
+        final ZipEntry entry = new ZipEntry( "backup.properties" );
         out.putNextEntry( entry );
         properties.store( out, "Backup properties" );
         out.closeEntry();
@@ -123,12 +123,12 @@ public class ZipWriter implements BackupWriter
         if (dataWritten) {
             throw new IOException("Additional files have to be added before backup data is written");
         }
-        ZipEntry entry = new ZipEntry(name);
+        final ZipEntry entry = new ZipEntry(name);
         out.putNextEntry(entry);
 
-        byte[] buf = new byte[4096];
+        final byte[] buf = new byte[4096];
         int len;
-        FileInputStream is = new FileInputStream(file);
+        final FileInputStream is = new FileInputStream(file);
         try {
             while ((len = is.read(buf)) > 0) {
                 out.write(buf, 0, len);

@@ -74,11 +74,11 @@ public class GetUploadedFile extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
 
-        RequestModule myModule =
+        final RequestModule myModule =
                 (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
         // request object is read from global variable $request
-        Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+        final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
         if (var == null || var.getValue() == null) {
             throw new XPathException(this, "No request object found in the current XQuery context.");
         }
@@ -88,15 +88,15 @@ public class GetUploadedFile extends BasicFunction {
         }
 
         // get parameters
-        String uploadParamName = args[0].getStringValue();
+        final String uploadParamName = args[0].getStringValue();
 
-        JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+        final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 
         if (value.getObject() instanceof RequestWrapper) {
 
-            RequestWrapper request = (RequestWrapper) value.getObject();
+            final RequestWrapper request = (RequestWrapper) value.getObject();
 
-            List<File> files = request.getFileUploadParam(uploadParamName);
+            final List<File> files = request.getFileUploadParam(uploadParamName);
             if (files == null) {
                 logger.debug("File param not found: " + uploadParamName);
                 return Sequence.EMPTY_SEQUENCE;
@@ -131,8 +131,8 @@ public class GetUploadedFile extends BasicFunction {
                 }
             } */
 
-            ValueSequence result = new ValueSequence();
-            for (File file : files) {
+            final ValueSequence result = new ValueSequence();
+            for (final File file : files) {
             	result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file));
             }
 

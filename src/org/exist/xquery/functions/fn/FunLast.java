@@ -60,10 +60,10 @@ public class FunLast extends Function {
 	 */
 	public int getDependencies() {
 		if (inPredicate)
-			return Dependency.CONTEXT_SET;
+			{return Dependency.CONTEXT_SET;}
 		else
-			return Dependency.CONTEXT_SET +
-			Dependency.CONTEXT_POSITION;				
+			{return Dependency.CONTEXT_SET +
+			Dependency.CONTEXT_POSITION;}				
 	}
 
 	/* (non-Javadoc)
@@ -74,25 +74,25 @@ public class FunLast extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         Sequence inSequence = context.getContextSequence();
         if (inSequence == null)
-        	inSequence = contextSequence;
+        	{inSequence = contextSequence;}
         
         Sequence result;
 		if (inSequence == null)
-			throw new XPathException(this, ErrorCodes.XPDY0002, "undefined context item");
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "undefined context item");}
         else if (inSequence.isEmpty())
-        	result = Sequence.EMPTY_SEQUENCE;
+        	{result = Sequence.EMPTY_SEQUENCE;}
         else
-        	result = new IntegerValue(inSequence.getItemCount());
+        	{result = new IntegerValue(inSequence.getItemCount());}
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;           
 		

@@ -180,21 +180,21 @@ public class Indexer extends Observable implements ContentHandler,
         this.transaction = transaction;
         // TODO : move the configuration in the constructor or in a dedicated
         // method
-        Configuration config = broker.getConfiguration();
-        String suppressWS = (String) config
+        final Configuration config = broker.getConfiguration();
+        final String suppressWS = (String) config
             .getProperty(PROPERTY_SUPPRESS_WHITESPACE);
         if (suppressWS != null) {
             if ("leading".equals(suppressWS))
-                normalize = XMLString.SUPPRESS_LEADING_WS;
+                {normalize = XMLString.SUPPRESS_LEADING_WS;}
             else if ("trailing".equals(suppressWS))
-                normalize = XMLString.SUPPRESS_TRAILING_WS;
+                {normalize = XMLString.SUPPRESS_TRAILING_WS;}
             else if ("none".equals(suppressWS))
-                normalize = 0;
+                {normalize = 0;}
         }
         Boolean temp;
         if ((temp = (Boolean) config
                 .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null)
-            suppressWSmixed = temp.booleanValue();
+            {suppressWSmixed = temp.booleanValue();}
     }
 
     public void setValidating(boolean validate) {
@@ -217,7 +217,7 @@ public class Indexer extends Observable implements ContentHandler,
             CollectionConfiguration collectionConfig) {
         document = doc;
         if (collectionConfig != null)
-            indexSpec = collectionConfig.getIndexConfiguration();
+            {indexSpec = collectionConfig.getIndexConfiguration();}
         // reset internal fields
         level = 0;
         currentPath.reset();
@@ -249,20 +249,20 @@ public class Indexer extends Observable implements ContentHandler,
 
     public void characters(char[] ch, int start, int length) {
         if (length <= 0)
-            return;
+            {return;}
         if (charBuf != null) {
             charBuf.append(ch, start, length);
         } else {
             charBuf = new XMLString(ch, start, length);
         }
         if (currentEntityName != null)
-            currentEntityValue.append(ch, start, length);
+            {currentEntityValue.append(ch, start, length);}
     }
 
     public void comment(char[] ch, int start, int length) {
         if (insideDTD)
-            return;
-        CommentImpl comment = new CommentImpl(ch, start, length);
+            {return;}
+        final CommentImpl comment = new CommentImpl(ch, start, length);
         comment.setOwnerDocument(document);
         if (stack.empty()) {
             comment.setNodeId(broker.getBrokerPool().getNodeFactory()
@@ -272,7 +272,7 @@ public class Indexer extends Observable implements ContentHandler,
             }
             document.appendChild(comment);
         } else {
-            ElementImpl last = stack.peek();
+            final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
                 text.setData(charBuf);
                 text.setOwnerDocument(document);
@@ -293,9 +293,9 @@ public class Indexer extends Observable implements ContentHandler,
 
     public void endCDATA() {
         if (!stack.isEmpty()) {
-            ElementImpl last = stack.peek();
+            final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
-                CDATASectionImpl cdata = new CDATASectionImpl(charBuf);
+                final CDATASectionImpl cdata = new CDATASectionImpl(charBuf);
                 cdata.setOwnerDocument(document);
                 last.appendChildInternal(prevNode, cdata);
                 if (!validate) {
@@ -306,7 +306,7 @@ public class Indexer extends Observable implements ContentHandler,
                 }
                 setPrevious(cdata);
                 if (!nodeContentStack.isEmpty()) {
-                    for (XMLString next : nodeContentStack) {
+                    for (final XMLString next : nodeContentStack) {
                         next.append(charBuf);
                     }
                 }
@@ -348,7 +348,7 @@ public class Indexer extends Observable implements ContentHandler,
                     text.setOwnerDocument(document);
                     last.appendChildInternal(prevNode, text);
                     if (!validate)
-                        storeText();
+                        {storeText();}
                     setPrevious(text);
                 }
                 charBuf.reset();
@@ -363,12 +363,12 @@ public class Indexer extends Observable implements ContentHandler,
                         null : elemContent.toString();
                 broker.endElement(last, currentPath, content);
                 if (indexListener != null)
-                    indexListener.endElement(transaction, last, currentPath);
+                    {indexListener.endElement(transaction, last, currentPath);}
             }
             currentPath.removeLastComponent();
             if (validate) {
                 if (childCnt != null)
-                    setChildCount(last);
+                    {setChildCount(last);}
             } else {
                 document.setOwnerDocument(document);
                 if ((childCnt == null && last.getChildCount() > 0)
@@ -406,14 +406,14 @@ public class Indexer extends Observable implements ContentHandler,
     }
 
     public void error(SAXParseException e) throws SAXException {
-        String msg = "error at (" + e.getLineNumber() + ","
+        final String msg = "error at (" + e.getLineNumber() + ","
             + e.getColumnNumber() + ") : " + e.getMessage();
         LOG.debug(msg);
         throw new SAXException(msg, e);
     }
 
     public void fatalError(SAXParseException e) throws SAXException {
-        String msg = "fatal error at (" + e.getLineNumber() + ","
+        final String msg = "fatal error at (" + e.getLineNumber() + ","
             + e.getColumnNumber() + ") : " + e.getMessage();
         LOG.debug(msg);
         throw new SAXException(msg, e);
@@ -424,7 +424,7 @@ public class Indexer extends Observable implements ContentHandler,
     }
 
     public void processingInstruction(String target, String data) {
-        ProcessingInstructionImpl pi = new ProcessingInstructionImpl(target, data);
+        final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(target, data);
         pi.setOwnerDocument(document);
         if (stack.isEmpty()) {
             pi.setNodeId(broker.getBrokerPool().getNodeFactory()
@@ -434,9 +434,9 @@ public class Indexer extends Observable implements ContentHandler,
             }
             document.appendChild(pi);
         } else {
-            ElementImpl last = stack.peek();
+            final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
-                XMLString normalized = charBuf.normalize(normalize);
+                final XMLString normalized = charBuf.normalize(normalize);
                 if (normalized.length() > 0) {
                     // TextImpl text =
                     // new TextImpl( normalized );
@@ -484,13 +484,13 @@ public class Indexer extends Observable implements ContentHandler,
 
     public void startCDATA() {
         if (!stack.isEmpty()) {
-            ElementImpl last = stack.peek();
+            final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
                 text.setData(charBuf);
                 text.setOwnerDocument(document);
                 last.appendChildInternal(prevNode, text);
                 if (!validate)
-                    storeText();
+                    {storeText();}
                 setPrevious(text);
                 charBuf.reset();
             }
@@ -502,7 +502,7 @@ public class Indexer extends Observable implements ContentHandler,
     // used to determine Doctype
 
     public void startDTD(String name, String publicId, String systemId) {
-        DocumentTypeImpl docType = new DocumentTypeImpl(name, publicId,
+        final DocumentTypeImpl docType = new DocumentTypeImpl(name, publicId,
                 systemId);
         document.setDocumentType(docType);
         insideDTD = true;
@@ -537,14 +537,14 @@ public class Indexer extends Observable implements ContentHandler,
             attrQName = attributes.getQName(i);
             if (attrQName.startsWith("xmlns")
                     || attrNS.equals(Namespaces.EXIST_NS))
-                --attrLength;
+                {--attrLength;}
         }
         ElementImpl last;
         ElementImpl node;
         int p = qname.indexOf(':');
-        String prefix = (p != Constants.STRING_NOT_FOUND) ? 
+        final String prefix = (p != Constants.STRING_NOT_FOUND) ? 
                 qname.substring(0, p) : "";
-        QName qn = broker.getBrokerPool().getSymbols().getQName(
+        final QName qn = broker.getBrokerPool().getSymbols().getQName(
                 Node.ELEMENT_NODE, namespace, name, prefix);
         if (!stack.empty()) {
             last = stack.peek();
@@ -556,7 +556,7 @@ public class Indexer extends Observable implements ContentHandler,
                             text.setOwnerDocument(document);
                             last.appendChildInternal(prevNode, text);
                             if (!validate)
-                                storeText();
+                                {storeText();}
                             setPrevious(text);
                         }
                     }
@@ -568,7 +568,7 @@ public class Indexer extends Observable implements ContentHandler,
                     text.setOwnerDocument(document);
                     last.appendChildInternal(prevNode, text);
                     if (!validate)
-                        storeText();
+                        {storeText();}
                     setPrevious(text);
                 }
                 charBuf.reset();
@@ -638,7 +638,7 @@ public class Indexer extends Observable implements ContentHandler,
             // skip xmlns-attributes and attributes in eXist's namespace
             if (attrQName.startsWith("xmlns")
                     || attrNS.equals(Namespaces.EXIST_NS))
-                --attrLength;
+                {--attrLength;}
             else {
                 p = attrQName.indexOf(':');
                 attrPrefix = (p != Constants.STRING_NOT_FOUND) ?
@@ -661,9 +661,9 @@ public class Indexer extends Observable implements ContentHandler,
                     attr.setValue(StringValue.trimWhitespace(StringValue
                             .collapseWhitespace(attr.getValue())));
                     if (!XMLChar.isValidNCName(attr.getValue()))
-                        throw new SAXException(
+                        {throw new SAXException(
                             "Value of xml:id attribute is not a valid NCName: "
-                            + attr.getValue());
+                            + attr.getValue());}
                     attr.setType(AttrImpl.ID);
                 } else if (attr.getQName().equalsSimple(Namespaces.XML_SPACE_QNAME)) {
                     node.setPreserveSpace("preserve".equals(attr.getValue()));
@@ -673,12 +673,12 @@ public class Indexer extends Observable implements ContentHandler,
                 if (!validate) {
                     broker.storeNode(transaction, attr, currentPath, indexSpec);
                     if (indexListener != null)
-                        indexListener.attribute(transaction, attr, currentPath);
+                        {indexListener.attribute(transaction, attr, currentPath);}
                 }
             }
         }
         if (attrLength > 0)
-            node.setAttributes((short) attrLength);
+            {node.setAttributes((short) attrLength);}
         // notify observers about progress every 100 lines
         if (locator != null) {
             currentLine = locator.getLineNumber();
@@ -695,7 +695,7 @@ public class Indexer extends Observable implements ContentHandler,
 
     private void storeText() {
         if (!nodeContentStack.isEmpty()) {
-            for (XMLString next : nodeContentStack) {
+            for (final XMLString next : nodeContentStack) {
                 next.append(charBuf);
             }
         }
@@ -708,10 +708,10 @@ public class Indexer extends Observable implements ContentHandler,
     private void storeElement(ElementImpl node) {
         broker.storeNode(transaction, node, currentPath, indexSpec);
         if (indexListener != null)
-            indexListener.startElement(transaction, node, currentPath);
+            {indexListener.startElement(transaction, node, currentPath);}
         node.setChildCount(0);
         if (RangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
-            XMLString contentBuf = new XMLString();
+            final XMLString contentBuf = new XMLString();
             nodeContentStack.push(contentBuf);
         }
     }
@@ -721,7 +721,7 @@ public class Indexer extends Observable implements ContentHandler,
         // to cache them for later use
         if (validate) {
             if (entityMap == null)
-                entityMap = new HashMap<String, String>();
+                {entityMap = new HashMap<String, String>();}
             currentEntityName = name;
         }
     }
@@ -737,9 +737,9 @@ public class Indexer extends Observable implements ContentHandler,
 
     public void skippedEntity(String name) {
         if (!validate && entityMap != null) {
-            String value = entityMap.get(name);
+            final String value = entityMap.get(name);
             if (value != null)
-                characters(value.toCharArray(), 0, value.length());
+                {characters(value.toCharArray(), 0, value.length());}
         }
 	}
 
@@ -753,7 +753,7 @@ public class Indexer extends Observable implements ContentHandler,
     }
 
     public void warning(SAXParseException e) throws SAXException {
-        String msg = "warning at (" + e.getLineNumber() + ","
+        final String msg = "warning at (" + e.getLineNumber() + ","
             + e.getColumnNumber() + ") : " + e.getMessage();
         throw new SAXException(msg, e);
     }

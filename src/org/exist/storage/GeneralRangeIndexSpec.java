@@ -41,11 +41,11 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
     
     public GeneralRangeIndexSpec(Map<String, String> namespaces, String pathStr, String typeStr) throws DatabaseConfigurationException {
         if(pathStr.length() == 0)
-            throw new DatabaseConfigurationException("The path attribute is required in index.create");
+            {throw new DatabaseConfigurationException("The path attribute is required in index.create");}
         path = new NodePath(namespaces, pathStr, false);
         try {
             type = getSuperType(Type.getType(typeStr));
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             throw new DatabaseConfigurationException("Unknown type: " + typeStr);
         }
     }
@@ -69,7 +69,7 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
     }
     
     public String toString() {
-		StringBuilder result = new StringBuilder("General range index\n");
+		final StringBuilder result = new StringBuilder("General range index\n");
 		result.append("\ttype : ").append(Type.getTypeName(this.type)).append('\n');
 		result.append("\tpath : ").append(path.toString()).append('\n');
 		result.append("\thas Qname index : ").append(hasQNameIndex(this.type)).append('\n');

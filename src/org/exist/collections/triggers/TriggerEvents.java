@@ -113,9 +113,9 @@ public class TriggerEvents {
 
 	public static Set<EVENTS> convertFromString(String events) throws TriggerException {
 		
-		Set<EVENTS> result = new HashSet<EVENTS>();
+		final Set<EVENTS> result = new HashSet<EVENTS>();
 		
-	    StringTokenizer tok = new StringTokenizer(events, ", ");
+	    final StringTokenizer tok = new StringTokenizer(events, ", ");
 	    String event;
 	    while(tok.hasMoreTokens()) {
 	        event = tok.nextToken();
@@ -146,9 +146,9 @@ public class TriggerEvents {
 
 	public static Set<EVENTS> convertFromOldDesign(String events) throws TriggerException {
 		
-		Set<EVENTS> result = new HashSet<EVENTS>();
+		final Set<EVENTS> result = new HashSet<EVENTS>();
 		
-	    StringTokenizer tok = new StringTokenizer(events, ", ");
+	    final StringTokenizer tok = new StringTokenizer(events, ", ");
 	    String event;
 	    while(tok.hasMoreTokens()) {
 	        event = tok.nextToken();

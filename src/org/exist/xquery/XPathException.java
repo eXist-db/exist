@@ -241,7 +241,7 @@ public class XPathException extends Exception {
      */
     @Override
     public String getMessage() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         if(message == null) {
             message = "";
         }
@@ -272,8 +272,8 @@ public class XPathException extends Exception {
         }
         if(callStack != null) {
             buf.append("\nIn function:\n");
-            for(Iterator<FunctionStackElement> i = callStack.iterator(); i.hasNext();) {
-                FunctionStackElement stack = i.next();
+            for(final Iterator<FunctionStackElement> i = callStack.iterator(); i.hasNext();) {
+                final FunctionStackElement stack = i.next();
                 buf.append('\t').append(stack);
                 if(i.hasNext()) {
                     buf.append('\n');
@@ -294,7 +294,7 @@ public class XPathException extends Exception {
     }
 
     public String getMessageAsHTML() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         if(message == null) {
             message = "";
         }
@@ -312,7 +312,7 @@ public class XPathException extends Exception {
             buf.append("<table id=\"xquerytrace\">");
             buf.append("<caption>XQuery Stack Trace</caption>");
 
-            for(FunctionStackElement e : callStack) {
+            for(final FunctionStackElement e : callStack) {
                 buf.append("<tr><td class=\"func\">").append(e.function).append("</td>");
                 buf.append("<td class=\"lineinfo\">").append(e.line).append(':').append(e.column).append("</td>");
                 buf.append("</tr>");
@@ -353,7 +353,7 @@ public class XPathException extends Exception {
         }
 
         public String toString() {
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
             buf.append(function).append(" [");
             buf.append(line).append(":");
             buf.append(column).append(":").append(file).append(']');

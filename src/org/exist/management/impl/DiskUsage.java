@@ -48,13 +48,13 @@ public class DiskUsage implements DiskUsageMBean {
 
     private long getSpace(File dir, String method) {
         try {
-            Class<?> cls = dir.getClass();
-            Method m = cls.getMethod(method, new Class[0]);
-            Long a = (Long) m.invoke(dir, new Object[0]);
+            final Class<?> cls = dir.getClass();
+            final Method m = cls.getMethod(method, new Class[0]);
+            final Long a = (Long) m.invoke(dir, new Object[0]);
             return a;
-        } catch (NoSuchMethodException ex) {
+        } catch (final NoSuchMethodException ex) {
             // method not 
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             ex.printStackTrace();
         }
 
@@ -70,22 +70,22 @@ public class DiskUsage implements DiskUsageMBean {
     }
 
     public long getDataDirectoryTotalSpace() {
-        File dir = new File(getDataDirectory());
+        final File dir = new File(getDataDirectory());
         return getSpace(dir, "getTotalSpace");
     }
 
     public long getDataDirectoryFreeSpace() {
-        File dir = new File(getDataDirectory());
+        final File dir = new File(getDataDirectory());
         return getSpace(dir, "getUsableSpace");
     }
 
     public long getJournalDirectoryTotalSpace() {
-        File dir = new File(getJournalDirectory());
+        final File dir = new File(getJournalDirectory());
         return getSpace(dir, "getTotalSpace");
     }
 
     public long getJournalDirectoryFreeSpace() {
-        File dir = new File(getJournalDirectory());
+        final File dir = new File(getJournalDirectory());
         return getSpace(dir, "getUsableSpace");
     }
 
@@ -93,9 +93,9 @@ public class DiskUsage implements DiskUsageMBean {
 
         long totalSize = 0;
 
-        File dir = new File(getDataDirectory());
-        File[] files = dir.listFiles(new DbxFilenameFilter());
-        for (File file : files) {
+        final File dir = new File(getDataDirectory());
+        final File[] files = dir.listFiles(new DbxFilenameFilter());
+        for (final File file : files) {
             totalSize += file.length();
         }
 
@@ -105,9 +105,9 @@ public class DiskUsage implements DiskUsageMBean {
     public long getJournalDirectoryUsedSpace() {
         long totalSize = 0;
 
-        File dir = new File(getJournalDirectory());
-        File[] files = dir.listFiles(new JournalFilenameFilter());
-        for (File file : files) {
+        final File dir = new File(getJournalDirectory());
+        final File[] files = dir.listFiles(new JournalFilenameFilter());
+        for (final File file : files) {
             totalSize += file.length();
         }
 
@@ -115,8 +115,8 @@ public class DiskUsage implements DiskUsageMBean {
     }
 
     public int getJournalDirectoryNumberOfFiles() {
-       File dir = new File(getJournalDirectory());
-       File[] files = dir.listFiles(new JournalFilenameFilter());
+       final File dir = new File(getJournalDirectory());
+       final File[] files = dir.listFiles(new JournalFilenameFilter());
        return files.length;
     }
 }

@@ -71,10 +71,10 @@ public class JnlpJarFiles {
      * @return File object of jar file, null if not found.
      */
     private File getJarFromLocation(File folder, String jarFileBaseName){
-        String fileToFind = folder.getAbsolutePath() + File.separatorChar
+        final String fileToFind = folder.getAbsolutePath() + File.separatorChar
                 + jarFileBaseName + ".jar";
-        String resolvedFile = jarFileResolver.getResolvedFileName( fileToFind );
-        File jar = new File(resolvedFile);
+        final String resolvedFile = jarFileResolver.getResolvedFileName( fileToFind );
+        final File jar = new File(resolvedFile);
         if (jar.exists()) {
             logger.debug( "Found match: " + resolvedFile + " for file pattern: " + fileToFind );
             return jar;
@@ -92,7 +92,7 @@ public class JnlpJarFiles {
             allFiles.put(jar.getName(), jar);
 
             // Add jar.pack.gz if existent
-            File pkgz = getJarPackGz(jar);
+            final File pkgz = getJarPackGz(jar);
             if (pkgz != null) {
                 allFiles.put(pkgz.getName(), pkgz);
             }
@@ -111,13 +111,13 @@ public class JnlpJarFiles {
         logger.debug("Number of webstart jars="+allJarNames.length);
         
         // Setup CORE jars
-        for(String jarname : allJarNames){
-            File jar = getJarFromLocation(jnlpHelper.getCoreJarsFolder(), jarname);
+        for(final String jarname : allJarNames){
+            final File jar = getJarFromLocation(jnlpHelper.getCoreJarsFolder(), jarname);
             addToJars(jar);
          }
         
         // Setup exist.jar
-        File mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
+        final File mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
         addToJars(mainJar);
     }
     
@@ -128,9 +128,9 @@ public class JnlpJarFiles {
      * @return list of jar files.
      */
     public List<File> getAllWebstartJars(){
-        List<File> corejars = new ArrayList<File>();
+        final List<File> corejars = new ArrayList<File>();
 
-        for(File file: allFiles.values()){
+        for(final File file: allFiles.values()){
             if(file.getName().endsWith(".jar")){
                 corejars.add(file);
             }
@@ -146,13 +146,13 @@ public class JnlpJarFiles {
      * @return Reference to the jar file, NULL if not existent.
      */
     public File getJarFile(String key){
-        File retVal = allFiles.get(key);
+        final File retVal = allFiles.get(key);
         return retVal;
     }
 
     private File getJarPackGz(File jarName){
-        String path = jarName.getAbsolutePath()+".pack.gz";
-        File pkgz = new File(path);
+        final String path = jarName.getAbsolutePath()+".pack.gz";
+        final File pkgz = new File(path);
 
         if(pkgz.exists()){
             return pkgz;

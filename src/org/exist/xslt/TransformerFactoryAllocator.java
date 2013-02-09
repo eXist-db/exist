@@ -78,7 +78,7 @@ public class TransformerFactoryAllocator {
     public static SAXTransformerFactory getTransformerFactory(BrokerPool pool) {
         SAXTransformerFactory factory;
         //Get the transformer class name from conf.xml
-        String transformerFactoryClassName = (String)pool.getConfiguration().getProperty(PROPERTY_TRANSFORMER_CLASS);
+        final String transformerFactoryClassName = (String)pool.getConfiguration().getProperty(PROPERTY_TRANSFORMER_CLASS);
         //Was a TransformerFactory class specified?
         if( transformerFactoryClassName == null ) {
             //No, use the system default
@@ -90,11 +90,11 @@ public class TransformerFactoryAllocator {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug( "Set transformer factory: " + transformerFactoryClassName );
                 }
-                Hashtable<String,Object> attributes = (Hashtable<String, Object>)pool.getConfiguration().getProperty( PROPERTY_TRANSFORMER_ATTRIBUTES);
-                Enumeration<String> attrNames = attributes.keys();
+                final Hashtable<String,Object> attributes = (Hashtable<String, Object>)pool.getConfiguration().getProperty( PROPERTY_TRANSFORMER_ATTRIBUTES);
+                final Enumeration<String> attrNames = attributes.keys();
                 while( attrNames.hasMoreElements() ) {
-                    String name = attrNames.nextElement();
-                    Object value = attributes.get( name );
+                    final String name = attrNames.nextElement();
+                    final Object value = attributes.get( name );
                     try {
                         factory.setAttribute( name, value );
                         if( LOG.isDebugEnabled() ) {
@@ -102,7 +102,7 @@ public class TransformerFactoryAllocator {
                                 "name: " + name + ", value: " + value );
                         }
                     }
-                    catch(IllegalArgumentException iae ) {
+                    catch(final IllegalArgumentException iae ) {
                         LOG.warn( "Unable to set attribute for TransformerFactory: '" +
                             transformerFactoryClassName +
                             "', name: " + name +
@@ -112,11 +112,11 @@ public class TransformerFactoryAllocator {
                 }
                 try {
                     factory.setAttribute(PROPERTY_BROKER_POOL, pool);
-                } catch(Exception e) {
+                } catch(final Exception e) {
                     //some transformers do not support "setAttribute"
                 }
             } 
-            catch( ClassNotFoundException cnfe ) {
+            catch( final ClassNotFoundException cnfe ) {
                 if( LOG.isDebugEnabled() ) {
                     LOG.debug("Cannot find the requested TrAX factory '" +
                         transformerFactoryClassName + "'. Using default TrAX Transformer Factory instead." );
@@ -124,7 +124,7 @@ public class TransformerFactoryAllocator {
                 //Fallback to system default
                 factory = (SAXTransformerFactory)TransformerFactory.newInstance();
             }
-            catch( ClassCastException cce ) {
+            catch( final ClassCastException cce ) {
                 if( LOG.isDebugEnabled() ) {
                     LOG.debug( "The indicated class '" + transformerFactoryClassName +
                         "' is not a TrAX Transformer Factory. Using default TrAX Transformer Factory instead." );
@@ -132,7 +132,7 @@ public class TransformerFactoryAllocator {
                 //Fallback to system default
                 factory = (SAXTransformerFactory)TransformerFactory.newInstance();
             }
-            catch( Exception e ) {
+            catch( final Exception e ) {
                 if( LOG.isDebugEnabled() ) {
                     LOG.debug( "Error found loading the requested TrAX Transformer Factory '" + transformerFactoryClassName + "'. Using default TrAX Transformer Factory instead: " + e );
                 }

@@ -291,7 +291,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             try {
                 broker = pool.get(null);
                 broker.getResourceMetadata(this);
-            } catch (EXistException e) {
+            } catch (final EXistException e) {
                 LOG.warn("Error while loading document metadata: " + e.getMessage(), e);
             } finally {
                 pool.release(broker);
@@ -325,7 +325,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         metadata.copyOf(other.getMetadata());
 
         //update timestamp
-        long timestamp = System.currentTimeMillis();
+        final long timestamp = System.currentTimeMillis();
         metadata.setCreated(timestamp);
         metadata.setLastModified(timestamp);
 
@@ -359,7 +359,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     public final synchronized Lock getUpdateLock() {
         if(updateLock == null)
-            updateLock = new MultiReadReentrantLock(fileURI);
+            {updateLock = new MultiReadReentrantLock(fileURI);}
         return updateLock;
     }
 
@@ -378,9 +378,9 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return an <code>User</code> value
      */
     public Account getUserLock() {
-        int lockOwnerId = getMetadata().getUserLock();
+        final int lockOwnerId = getMetadata().getUserLock();
         if(lockOwnerId == 0)
-            return null;
+            {return null;}
         final SecurityManager secman = pool.getSecurityManager();
         return secman.getAccount(lockOwnerId);
     }
@@ -393,7 +393,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * 
      */
     public long getContentLength() {
-        long length = getMetadata().getPageCount() * pool.getPageSize();
+        final long length = getMetadata().getPageCount() * pool.getPageSize();
         return (length < 0) ? 0 : length;
     }
 
@@ -403,11 +403,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     public void triggerDefrag() {		
         int fragmentationLimit = -1;
-        Object property = pool.getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+        final Object property = pool.getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
         if (property != null)
-            fragmentationLimit = ((Integer)property).intValue();
+            {fragmentationLimit = ((Integer)property).intValue();}
         if (fragmentationLimit != -1)
-            getMetadata().setSplitCount(fragmentationLimit);
+            {getMetadata().setSplitCount(fragmentationLimit);}
     }
 
     /**
@@ -418,12 +418,12 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     public Node getNode(NodeId nodeId) {
         if (nodeId.getTreeLevel() == 1)
-            return getDocumentElement();
+            {return getDocumentElement();}
         DBBroker broker = null;
         try {
             broker = pool.get(null);
             return broker.objectWith(this, nodeId);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.warn("Error occured while retrieving node: " + e.getMessage(), e);
         } finally {
             pool.release(broker);
@@ -439,12 +439,12 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     public Node getNode(NodeProxy p) {
         if(p.getNodeId().getTreeLevel() == 1)
-            return getDocumentElement();
+            {return getDocumentElement();}
         DBBroker broker = null;
         try {
             broker = pool.get(null);
             return broker.objectWith(p);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.warn("Error occured while retrieving node: " + e.getMessage(), e);
         } finally {
             pool.release(broker);
@@ -459,7 +459,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     private void resizeChildList() {
         long[] newChildList = new long[children];
         if(childAddress != null)
-            System.arraycopy(childAddress, 0, newChildList, 0, childAddress.length);
+            {System.arraycopy(childAddress, 0, newChildList, 0, childAddress.length);}
         childAddress = newChildList;
     }
 
@@ -497,7 +497,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
                 }
             }
             getMetadata().write(pool, ostream);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.warn("io error while writing document data", e);
             //TODO : raise exception ?
         }
@@ -521,7 +521,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             for (int i = 0; i < children; i++) { 
                 childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error("IO error while reading document data for document " + fileURI, e);
             //TODO : raise exception ?
         }
@@ -540,7 +540,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             }
             metadata = new DocumentMetadata();
             metadata.read(pool, istream);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error("IO error while reading document data for document " + fileURI, e);
             //TODO : raise exception ?
         }
@@ -560,7 +560,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             //istream.skip(2 + 2); //uid, gid, mode, children count
             istream.skip(1); //unix style permission uses a single long
             if(permissions instanceof ACLPermission) {
-                int aceCount = istream.read();
+                final int aceCount = istream.read();
                 istream.skip(aceCount);
             }
             
@@ -570,7 +570,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             metadata = new DocumentMetadata();
             metadata.read(pool, istream);
             
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error("IO error while reading document metadata for " + fileURI, e);
             //TODO : raise exception ?
         }
@@ -588,11 +588,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         }
         final long otherId = ((DocumentImpl)other).docId;
         if (otherId == docId)
-            return Constants.EQUAL;
+            {return Constants.EQUAL;}
         else if (docId < otherId)
-            return Constants.INFERIOR;
+            {return Constants.INFERIOR;}
         else
-            return Constants.SUPERIOR;
+            {return Constants.SUPERIOR;}
     }
 
     /* (non-Javadoc)
@@ -601,12 +601,12 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     @Override
     public StoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
         if (!(oldChild instanceof StoredNode))
-            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
+            {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");}
         final StoredNode oldNode = (StoredNode) oldChild;
         final StoredNode newNode = (StoredNode) newChild;
         final StoredNode previousNode = (StoredNode) oldNode.getPreviousSibling();
         if (previousNode == null)
-            throw new DOMException(DOMException.NOT_FOUND_ERR, "No previous sibling for the old child");
+            {throw new DOMException(DOMException.NOT_FOUND_ERR, "No previous sibling for the old child");}
         DBBroker broker = null;
         try {
             broker = pool.get(null);
@@ -614,14 +614,14 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
                 // replace the document-element
                 //TODO : be more precise in the type test -pb
                 if (newChild.getNodeType() != Node.ELEMENT_NODE)
-                    throw new DOMException(
+                    {throw new DOMException(
                        DOMException.INVALID_MODIFICATION_ERR,
-                       "A node replacing the document root needs to be an element");
+                       "A node replacing the document root needs to be an element");}
                 broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
                 broker.endRemove(transaction);
                 newNode.setNodeId(oldNode.getNodeId());
                 broker.insertNodeAfter(null, previousNode, newNode);
-                NodePath path = newNode.getPath();
+                final NodePath path = newNode.getPath();
                 broker.indexNode(transaction, newNode, path);
                 broker.endElement(newNode, path, null);
                 broker.flush();
@@ -631,7 +631,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
                 newNode.setNodeId(oldNode.getNodeId());
                 broker.insertNodeAfter(transaction, previousNode, newNode);
             }
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.warn("Exception while updating child node: " + e.getMessage(), e);
             //TODO : thow exception ?
         } finally {
@@ -660,12 +660,12 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     @Override
     public Node getFirstChild() {
         if (children == 0)
-            return null;
+            {return null;}
         DBBroker broker = null;
         try {
             broker = pool.get(null);
             return broker.objectWith(new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[0]));
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
             //TODO : throw exception ?
         } finally {
@@ -685,7 +685,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     public long getFirstChildAddress() {
         if (children == 0)
-            return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
+            {return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;}
         return childAddress[0];
     }
 
@@ -696,15 +696,15 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     @Override
     public NodeList getChildNodes() {
-        NodeListImpl list = new NodeListImpl();
+        final NodeListImpl list = new NodeListImpl();
         DBBroker broker = null;
         try {
             broker = pool.get(null);
             for (int i = 0; i < children; i++) {
-                Node child = broker.objectWith(new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[i]));
+                final Node child = broker.objectWith(new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[i]));
                 list.add(child);
             }
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.warn("Exception while retrieving child nodes: " + e.getMessage(), e);
         } finally {
             pool.release(broker);
@@ -719,11 +719,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>Node</code> value
      */
     protected Node getPreviousSibling(StoredNode node) {
-        NodeList cl = getChildNodes();
+        final NodeList cl = getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
-            StoredNode next = (StoredNode) cl.item(i);
+            final StoredNode next = (StoredNode) cl.item(i);
             if (StorageAddress.equals(node.getInternalAddress(), next.getInternalAddress()))
-                return i == 0 ? null : cl.item(i - 1);
+                {return i == 0 ? null : cl.item(i - 1);}
         }
         return null;
     }
@@ -735,11 +735,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>Node</code> value
      */
     protected Node getFollowingSibling(StoredNode node) {
-        NodeList cl = getChildNodes();
+        final NodeList cl = getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
-            StoredNode next = (StoredNode) cl.item(i);
+            final StoredNode next = (StoredNode) cl.item(i);
             if (StorageAddress.equals(node.getInternalAddress(), next.getInternalAddress()))
-                return i == children - 1 ? null : cl.item(i + 1);
+                {return i == children - 1 ? null : cl.item(i + 1);}
         }
         return null;
     }
@@ -755,12 +755,12 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         DBBroker broker = null;
         try {
             broker = pool.get(null);
-            MutableDocumentSet docs = new DefaultDocumentSet();
+            final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
-            NodeProxy p = new NodeProxy(this, root.getNodeId(), root.getInternalAddress());
-            NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
+            final NodeProxy p = new NodeProxy(this, root.getNodeId(), root.getInternalAddress());
+            final NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
             return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
         } finally {
             pool.release(broker);
@@ -809,7 +809,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     public void setOwnerDocument(Document doc) {
         if (doc != this)
-            throw new IllegalArgumentException("Can't set owner document");
+            {throw new IllegalArgumentException("Can't set owner document");}
     }
 
     /**
@@ -858,7 +858,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @exception DOMException if an error occurs
      */
     public Attr createAttribute(String name) throws DOMException {
-        AttrImpl attr = new AttrImpl(new QName(name, "", null));
+        final AttrImpl attr = new AttrImpl(new QName(name, "", null));
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -874,7 +874,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
         String name;
         String prefix;
-        int p = qualifiedName.indexOf(':');
+        final int p = qualifiedName.indexOf(':');
         if (p == Constants.STRING_NOT_FOUND) {
             prefix =null; 
             name =  qualifiedName;
@@ -882,7 +882,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             prefix = qualifiedName.substring(0, p);
             name = qualifiedName.substring(p); 
         }
-        AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix));
+        final AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix));
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -895,7 +895,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @exception DOMException if an error occurs
      */
     public Element createElement(String tagName) throws DOMException {
-        ElementImpl element = new ElementImpl(new QName(tagName, "", null));
+        final ElementImpl element = new ElementImpl(new QName(tagName, "", null));
         element.setOwnerDocument(this);
         return element;
     }
@@ -911,7 +911,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
         String name;
         String prefix;
-        int p = qualifiedName.indexOf(':');
+        final int p = qualifiedName.indexOf(':');
         if (p == Constants.STRING_NOT_FOUND) {
             prefix =null;
             name = qualifiedName;
@@ -919,7 +919,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             prefix = qualifiedName.substring(0, p); 
             name = qualifiedName.substring(p);
         }
-        ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix));
+        final ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix));
         element.setOwnerDocument(this);
         return element;
     }
@@ -931,7 +931,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>Text</code> value
      */
     public Text createTextNode(String data) {
-        TextImpl text = new TextImpl(data);
+        final TextImpl text = new TextImpl(data);
         text.setOwnerDocument(this);
         return text;
     }
@@ -946,10 +946,10 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return an <code>Element</code> value
      */
     public Element getDocumentElement() {
-        NodeList cl = getChildNodes();
+        final NodeList cl = getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
             if (cl.item(i).getNodeType() == Node.ELEMENT_NODE)
-                return (Element) cl.item(i);
+                {return (Element) cl.item(i);}
         }
         return null;
     }
@@ -975,11 +975,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         DBBroker broker = null;
         try {
             broker = pool.get(null);
-            MutableDocumentSet docs = new DefaultDocumentSet();
+            final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
-            QName qname = new QName(localName, namespaceURI, null);
+            final QName qname = new QName(localName, namespaceURI, null);
             return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
             //TODO : throw exception ?
         } finally {
@@ -1015,7 +1015,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     public void setChildCount(int count) {
         children = count;
         if (children == 0)
-            childAddress = null;
+            {childAddress = null;}
     }
 
     /**
@@ -1274,7 +1274,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     public String getBaseURI() {
         try {
             return getURI() + "";
-        } catch (Exception e) {
+        } catch (final Exception e) {
             System.out.println("dom/DocumentImpl::getBaseURI() 2 exception catched: ");
         }
         return XmldbURI.ROOT_COLLECTION_URI + "";

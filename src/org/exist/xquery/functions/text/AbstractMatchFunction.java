@@ -50,21 +50,21 @@ public abstract class AbstractMatchFunction extends DeprecatedExtRegexp {
 		if(result != null) {
 			for(int k = 1; k < hits.length; k++) {
 				if(hits[k] != null)
-					result = (type == Constants.FULLTEXT_AND ? 
-							result.deepIntersection(hits[k]) : result.union(hits[k]));
+					{result = (type == Constants.FULLTEXT_AND ? 
+							result.deepIntersection(hits[k]) : result.union(hits[k]));}
 			}
 			return result;
 		} else
-			return NodeSet.EMPTY_SET;
+			{return NodeSet.EMPTY_SET;}
 	}
 	
 	protected List<String> getSearchTerms(XQueryContext context,
 										Sequence contextSequence)
 			throws XPathException {
-		String searchString = getArgument(1).eval(contextSequence)
+		final String searchString = getArgument(1).eval(contextSequence)
 				.getStringValue();
-		List<String> tokens = new ArrayList<String>();
-		Tokenizer tokenizer = context.getBroker().getTextEngine()
+		final List<String> tokens = new ArrayList<String>();
+		final Tokenizer tokenizer = context.getBroker().getTextEngine()
 				.getTokenizer();
 		tokenizer.setText(searchString);
 		org.exist.storage.analysis.TextToken token;

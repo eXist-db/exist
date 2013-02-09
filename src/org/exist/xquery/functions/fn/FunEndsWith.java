@@ -92,19 +92,19 @@ public class FunEndsWith extends CollatingFunction {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence s1 = getArgument(0).eval(contextSequence, contextItem);
-        Sequence s2 = getArgument(1).eval(contextSequence, contextItem);
+        final Sequence s1 = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence s2 = getArgument(1).eval(contextSequence, contextItem);
         Sequence result;
         if (s1.isEmpty() || s2.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
-            Collator collator = getCollator(contextSequence, contextItem, 3);
+            final Collator collator = getCollator(contextSequence, contextItem, 3);
             if (Collations.endsWith(collator, s1.getStringValue(), s2.getStringValue())) {
                 result = BooleanValue.TRUE;
             } else {
@@ -112,7 +112,7 @@ public class FunEndsWith extends CollatingFunction {
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

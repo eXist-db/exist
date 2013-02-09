@@ -85,33 +85,33 @@ public class Parse extends BasicFunction {
         if (args[0].getItemCount() == 0) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        String xmlContent = args[0].itemAt(0).getStringValue();
+        final String xmlContent = args[0].itemAt(0).getStringValue();
         if (xmlContent.length() == 0) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        StringReader reader = new StringReader(xmlContent);
-        ValidationReport report = new ValidationReport();
-        SAXAdapter adapter = new SAXAdapter(context);
+        final StringReader reader = new StringReader(xmlContent);
+        final ValidationReport report = new ValidationReport();
+        final SAXAdapter adapter = new SAXAdapter(context);
         try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
-            InputSource src = new InputSource(reader);
+            final InputSource src = new InputSource(reader);
 
             XMLReader xr = null;
             if (isCalledAs("parse-html")) {
                 try {
-                    Class<?> clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
+                    final Class<?> clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
                     xr = (XMLReader) clazz.newInstance();
                     //do not modify the case of elements and attributes
                     xr.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
                     xr.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     logger.warn("Could not instantiate neko HTML parser for function util:parse-html, falling back to " +
                             "default XML parser.", e);
                 }
             }
             if (xr == null) {
-                SAXParser parser = factory.newSAXParser();
+                final SAXParser parser = factory.newSAXParser();
                 xr = parser.getXMLReader();
             }
 
@@ -119,19 +119,19 @@ public class Parse extends BasicFunction {
             xr.setContentHandler(adapter);
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
-        } catch (ParserConfigurationException e) {
+        } catch (final ParserConfigurationException e) {
             throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while constructing XML parser: " + e.getMessage(), args[0], e);
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             logger.debug("Error while parsing XML: " + e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while parsing XML: " + e.getMessage(), args[0], e);
         }
         
         if (report.isValid())
-        	return (DocumentImpl) adapter.getDocument();
+        	{return (DocumentImpl) adapter.getDocument();}
         else {
-        	MemTreeBuilder builder = context.getDocumentBuilder();
-            NodeImpl result = Shared.writeReport(report, builder);
+        	final MemTreeBuilder builder = context.getDocumentBuilder();
+            final NodeImpl result = Shared.writeReport(report, builder);
     		throw new XPathException(this, ErrorCodes.EXXQDY0002, report.toString(), result);
         }
     }

@@ -217,7 +217,7 @@ public class FunctionSignature {
         if(annotations != null) {
             for(final Annotation annot : annotations) {
                 final QName qn = annot.getName();
-                if(qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && qn.getLocalName().equals("private")) {
+                if(qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && "private".equals(qn.getLocalName())) {
                     return true;
                 }
             }

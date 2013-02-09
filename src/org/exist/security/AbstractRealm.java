@@ -103,16 +103,16 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
             transact.commit(txn);
             
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             transact.abort(txn);
             throw new EXistException(pde);
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             transact.abort(txn);
             throw new EXistException(ioe);
-        } catch(LockException le) {
+        } catch(final LockException le) {
             transact.abort(txn);
             throw new EXistException(le);
-        } catch(TriggerException te) {
+        } catch(final TriggerException te) {
             transact.abort(txn);
             throw new EXistException(te);
         }
@@ -123,7 +123,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             
             final AbstractRealm r = this;
             
-            for(Iterator<DocumentImpl> i = collectionGroups.iterator(broker); i.hasNext(); ) {
+            for(final Iterator<DocumentImpl> i = collectionGroups.iterator(broker); i.hasNext(); ) {
                 final Configuration conf = Configurator.parse(i.next());
                 final String name = conf.getProperty("name");
                 
@@ -135,7 +135,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                         if(name != null && !principalDb.containsKey(name)) {
 
                             //Group group = instantiateGroup(this, conf);
-                            GroupImpl group = new GroupImpl(r, conf);
+                            final GroupImpl group = new GroupImpl(r, conf);
 
                             getSecurityManager().addGroup(group.getId(), group);
                             principalDb.put(group.getName(), group);
@@ -154,14 +154,14 @@ public abstract class AbstractRealm implements Realm, Configurable {
     private void loadRemovedGroupsFromRealmStorage(final DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
         //load marked for remove groups information
         if (collectionRemovedGroups != null && collectionRemovedGroups.getDocumentCount(broker) > 0) {
-            for(Iterator<DocumentImpl> i = collectionRemovedGroups.iterator(broker); i.hasNext(); ) {
-                Configuration conf = Configurator.parse(i.next());
-                Integer id = conf.getPropertyInteger("id");
+            for(final Iterator<DocumentImpl> i = collectionRemovedGroups.iterator(broker); i.hasNext(); ) {
+                final Configuration conf = Configurator.parse(i.next());
+                final Integer id = conf.getPropertyInteger("id");
                 
                 if (id != null && !getSecurityManager().hasGroup(id)) {
                     
                     //G group = instantiateGroup(this, conf, true);
-                    GroupImpl group = new GroupImpl(this, conf);
+                    final GroupImpl group = new GroupImpl(this, conf);
                     group.removed = true;
                     
                     getSecurityManager().addGroup(group.getId(), group);
@@ -176,7 +176,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             
             final AbstractRealm r = this;
             
-            for(Iterator<DocumentImpl> i = collectionAccounts.iterator(broker); i.hasNext(); ) {
+            for(final Iterator<DocumentImpl> i = collectionAccounts.iterator(broker); i.hasNext(); ) {
                 final Configuration conf = Configurator.parse(i.next());
                 final String name = conf.getProperty("name");
                 
@@ -185,7 +185,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                     public void execute(final Map<String, Account> principalDb) throws ConfigurationException {
                         if(name != null && !principalDb.containsKey(name)) {
                             //A account = instantiateAccount(this, conf);
-                            Account account = new AccountImpl(r, conf);
+                            final Account account = new AccountImpl(r, conf);
 
                             getSecurityManager().addUser(account.getId(), account);
                             principalDb.put(account.getName(), account);
@@ -204,14 +204,14 @@ public abstract class AbstractRealm implements Realm, Configurable {
     private void loadRemovedAccountsFromRealmStorage(final DBBroker broker) throws ConfigurationException, PermissionDeniedException, LockException {
         //load marked for remove accounts information
         if (collectionRemovedAccounts != null && collectionRemovedAccounts.getDocumentCount(broker) > 0) {
-            for(Iterator<DocumentImpl> i = collectionRemovedAccounts.iterator(broker); i.hasNext(); ) {
-                Configuration conf = Configurator.parse(i.next());
+            for(final Iterator<DocumentImpl> i = collectionRemovedAccounts.iterator(broker); i.hasNext(); ) {
+                final Configuration conf = Configurator.parse(i.next());
 	            	
-                Integer id = conf.getPropertyInteger("id");
+                final Integer id = conf.getPropertyInteger("id");
                 if (id != null && !getSecurityManager().hasUser(id)) {
                     
                     //A account = instantiateAccount(this, conf, true);
-	            AccountImpl account = new AccountImpl( this, conf );
+	            final AccountImpl account = new AccountImpl( this, conf );
 	            account.removed = true;
 		    
                     getSecurityManager().addUser(account.getId(), account);
@@ -232,9 +232,9 @@ public abstract class AbstractRealm implements Realm, Configurable {
            
             loadAccountsFromRealmStorage(broker);
             loadRemovedAccountsFromRealmStorage(broker);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new EXistException(pde);
-        } catch(LockException le) {
+        } catch(final LockException le) {
             throw new EXistException(le);
         }
     }
@@ -488,7 +488,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
     protected <R> R executeAsSystemUser(Unit<R> unit) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
-        Subject currentSubject = getDatabase().getSubject();
+        final Subject currentSubject = getDatabase().getSubject();
         try {
             //elevate to system privs
             broker = getDatabase().get(getSecurityManager().getSystemSubject());

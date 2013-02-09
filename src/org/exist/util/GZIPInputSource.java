@@ -54,9 +54,9 @@ public final class GZIPInputSource extends EXistInputSource {
 	public InputStream getByteStream() {
 		InputStream retval = null;
 		try {
-			InputStream is = new BufferedInputStream(new FileInputStream(file));
+			final InputStream is = new BufferedInputStream(new FileInputStream(file));
 			retval = inputStream = new GZIPInputStream(is);
-		} catch(IOException ioe) {
+		} catch(final IOException ioe) {
 			// No way to notify :-(
 		}
 		
@@ -67,7 +67,7 @@ public final class GZIPInputSource extends EXistInputSource {
         if (inputStream != null) {
             try {
                 inputStream.close();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 // ignore if the stream is already closed
             } finally {
                 inputStream = null;
@@ -101,8 +101,8 @@ public final class GZIPInputSource extends EXistInputSource {
 	
 	public long getByteStreamLength() {
 		if(streamLength==-1L) {
-			InputStream str=getByteStream();
-			byte[] buffer=new byte[4096];
+			final InputStream str=getByteStream();
+			final byte[] buffer=new byte[4096];
 			long retval=0;
 			int readed;
 			try {
@@ -111,7 +111,7 @@ public final class GZIPInputSource extends EXistInputSource {
 				}
 				streamLength = retval;
 				close();
-			} catch(IOException ioe) {
+			} catch(final IOException ioe) {
 				// DoNothing(R)
 			}
 		}

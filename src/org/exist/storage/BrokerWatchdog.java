@@ -34,8 +34,8 @@ public class BrokerWatchdog {
 		
 		void trace() {
 			trace.append("Reference count: ").append(broker.getReferenceCount()).append("\n");
-			StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-			int showElementCount = stack.length > 20 ? 20 : stack.length;
+			final StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+			final int showElementCount = stack.length > 20 ? 20 : stack.length;
 			for (int i = 4; i < showElementCount; i++) {
 				trace.append(stack[i].toString()).append('\n');
 			}
@@ -46,7 +46,7 @@ public class BrokerWatchdog {
 	private Map<DBBroker, WatchedBroker> watched = new IdentityHashMap<DBBroker, WatchedBroker>();
 	
 	public void add(DBBroker broker) throws EXistException {
-		WatchedBroker old = watched.get(broker);
+		final WatchedBroker old = watched.get(broker);
 		if (old == null) {
 			checkForTimeout();
 			watched.put(broker, new WatchedBroker(broker));
@@ -61,7 +61,7 @@ public class BrokerWatchdog {
 	}
 	
 	public String get(DBBroker broker) {
-		WatchedBroker w = watched.get(broker);
+		final WatchedBroker w = watched.get(broker);
 		if (w != null) {
 			return w.trace.toString();
 		}
@@ -69,7 +69,7 @@ public class BrokerWatchdog {
 	}
 	
 	public void checkForTimeout() throws EXistException {
-		for (WatchedBroker broker : watched.values()) {
+		for (final WatchedBroker broker : watched.values()) {
 			if (System.currentTimeMillis() - broker.timeAdded > 30000) {
 				throw new EXistException("Broker: " + broker.broker.getId() + 
 						" did not return for 30sec.\n\n" + broker.trace.toString());
@@ -79,7 +79,7 @@ public class BrokerWatchdog {
 	
 	public void dump(PrintWriter writer) {
 		writer.println("Active brokers:");
-		for (WatchedBroker broker: watched.values()) {
+		for (final WatchedBroker broker: watched.values()) {
 			writer.format("%20s: %s\n", "Broker", broker.broker.getId());
 			writer.format("%20s: %s\n", "Active since", df.format(new Date(broker.timeAdded)));
 			writer.println("\nStack:");

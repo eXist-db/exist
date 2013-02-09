@@ -103,9 +103,9 @@ public class GroupedValueSequence extends AbstractSequence {
      */ 
     public void add(Item item) throws XPathException { 
         if (hasOne) 
-            hasOne = false; 
+            {hasOne = false;} 
         if (isEmpty) 
-            hasOne = true; 
+            {hasOne = true;} 
         isEmpty = false; 
         if(count == items.length) { 
             Entry newItems[] = new Entry[count * 2]; 
@@ -121,30 +121,30 @@ public class GroupedValueSequence extends AbstractSequence {
      */ 
     public void addAll(Sequence other) throws XPathException { 
         if(other.hasOne()) 
-            add(other.itemAt(0));         
+            {add(other.itemAt(0));}         
         else if(!other.isEmpty()) { 
-            for(SequenceIterator i = other.iterate(); i.hasNext(); ) {  
-                Item next = i.nextItem(); 
+            for(final SequenceIterator i = other.iterate(); i.hasNext(); ) {  
+                final Item next = i.nextItem(); 
                 if(next != null) 
-                    add(next); 
+                    {add(next);} 
             } 
         }  
     } 
      
     public Item itemAt(int pos) { 
         if(items != null && pos > -1 && pos < count) 
-            return items[pos].item; 
+            {return items[pos].item;} 
         else 
-            return null; 
+            {return null;} 
     } 
  
     private void checkItemType(int type) { 
         if(itemType == Type.NODE || itemType == type) 
-            return; 
+            {return;} 
         if(itemType == Type.ANY_TYPE) 
-            itemType = type; 
+            {itemType = type;} 
         else 
-            itemType = Type.NODE; 
+            {itemType = Type.NODE;} 
     } 
      
     /* (non-Javadoc) 
@@ -160,12 +160,12 @@ public class GroupedValueSequence extends AbstractSequence {
     public NodeSet toNodeSet() throws XPathException { 
         // for this method to work, all items have to be nodes 
         if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) { 
-            NodeSet set = new ExtArrayNodeSet(); 
+            final NodeSet set = new ExtArrayNodeSet(); 
             //We can't make it from an ExtArrayNodeSet (probably because it is sorted ?) 
             //NodeSet set = new ArraySet(100); 
             for (int i = 0; i < this.count; i++) { 
                 NodeValue v = null; 
-                Entry temp = items[i]; 
+                final Entry temp = items[i]; 
                 v = (NodeValue)temp.item; 
                     if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) { 
                     set.add((NodeProxy)v); 
@@ -175,14 +175,14 @@ public class GroupedValueSequence extends AbstractSequence {
             } 
             return set; 
         } else 
-            throw new XPathException("Type error: the sequence cannot be converted into" + 
-                " a node set. Item type is " + Type.getTypeName(itemType)); 
+            {throw new XPathException("Type error: the sequence cannot be converted into" + 
+                " a node set. Item type is " + Type.getTypeName(itemType));} 
  
     } 
 
     public MemoryNodeSet toMemNodeSet() throws XPathException {
         if(count == 0)
-            return MemoryNodeSet.EMPTY;
+            {return MemoryNodeSet.EMPTY;}
         if(itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
             throw new XPathException("Type error: the sequence cannot be converted into" +
 				" a node set. Item type is " + Type.getTypeName(itemType));
@@ -191,7 +191,7 @@ public class GroupedValueSequence extends AbstractSequence {
         for (int i = 0; i <= count; i++) {
             v = (NodeValue)items[i];
             if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                return null;
+                {return null;}
         }
         return new ValueSequence(this);
     }
@@ -210,15 +210,15 @@ public class GroupedValueSequence extends AbstractSequence {
             this.item = item; 
             values = new AtomicValue[groupSpecs.length]; 
             for(int i = 0; i < groupSpecs.length; i++) { 
-                Sequence seq = groupSpecs[i].getGroupExpression().eval(null); 
+                final Sequence seq = groupSpecs[i].getGroupExpression().eval(null); 
                 values[i] = AtomicValue.EMPTY_VALUE; 
                 //TODO : get rid of getLength() 
                 if(seq.hasOne()) { 
                     values[i] = seq.itemAt(0).atomize(); 
                 } else if(seq.hasMany()) 
-                    throw new XPathException("expected a single value for group by expression " + 
+                    {throw new XPathException("expected a single value for group by expression " + 
                         ExpressionDumper.dump(groupSpecs[i].getGroupExpression()) +  
-                        " ; found: " + seq.getItemCount()); 
+                        " ; found: " + seq.getItemCount());} 
             } 
         } 
  

@@ -24,7 +24,7 @@ public class CharArrayPool {
 			final char[][] pool = pools_.get();
 			for(int i = 0; i < pool.length; i++) {
 				if(pool[i] != null && pool[i].length == size) {
-						char[] b = pool[i];
+						final char[] b = pool[i];
 						pool[i] = null;
 						return b;
 				}
@@ -36,7 +36,7 @@ public class CharArrayPool {
 	
 	public static void releaseCharArray(final char[] b) {
 		if(b == null || b.length > MAX)
-			return;
+			{return;}
 		final char[][] pool = pools_.get();
 		for(int i = 0; i < pool.length; i++) {
 			if(pool[i] == null) {
@@ -47,7 +47,7 @@ public class CharArrayPool {
 		
 		int s = slot_++;
 		if (s < 0)
-			s = -s;
+			{s = -s;}
 		pool[s % pool.length] = b;
 	}
 	

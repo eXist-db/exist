@@ -25,22 +25,22 @@ public class NumberFormatter_en extends NumberFormatter {
     @Override
     public String getAmPm(int hour) {
         if (hour > 12)
-            return "pm";
+            {return "pm";}
         else
-            return "am";
+            {return "am";}
     }
 
     public String getOrdinalSuffix(long number) {
         if (number > 10 && number < 20)
-            return "th";
-        long mod = number % 10;
+            {return "th";}
+        final long mod = number % 10;
         if (mod == 1)
-            return "st";
+            {return "st";}
         else if (mod == 2)
-            return "nd";
+            {return "nd";}
         else if (mod == 3)
-            return "rd";
+            {return "rd";}
         else
-            return "th";
+            {return "th";}
     }
 }

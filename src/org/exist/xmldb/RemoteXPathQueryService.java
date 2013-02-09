@@ -82,28 +82,28 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     public ResourceSet query(String query, String sortExpr)
         throws XMLDBException {
         try {
-        	HashMap<String, Object> optParams = new HashMap<String, Object>();
+        	final HashMap<String, Object> optParams = new HashMap<String, Object>();
             if(sortExpr != null)
-            	optParams.put(RpcAPI.SORT_EXPR, sortExpr);
+            	{optParams.put(RpcAPI.SORT_EXPR, sortExpr);}
             if(namespaceMappings.size() > 0)
-            	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+            	{optParams.put(RpcAPI.NAMESPACES, namespaceMappings);}
             if(variableDecls.size() > 0)
-            	optParams.put(RpcAPI.VARIABLES, variableDecls);
+            	{optParams.put(RpcAPI.VARIABLES, variableDecls);}
             optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
             if (moduleLoadPath != null)
-                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
+                {optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);}
             if (protectedMode)
-                optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
-            List<Object> params = new ArrayList<Object>(2);
+                {optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());}
+            final List<Object> params = new ArrayList<Object>(2);
 			params.add(query.getBytes("UTF-8"));
 			params.add(optParams);
-            HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute("queryP", params);
+            final HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute("queryP", params);
             
             if(result.get(RpcAPI.ERROR) != null)
-            	throwException(result);
+            	{throwException(result);}
             
-            Object[] resources = (Object[]) result.get("results");
+            final Object[] resources = (Object[]) result.get("results");
             int handle = -1;
             int hash = -1;
             if(resources != null && resources.length > 0) {
@@ -111,9 +111,9 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
                 hash = ((Integer)result.get("hash")).intValue();
             }
             return new RemoteResourceSet( collection, outputProperties, resources, handle, hash );
-        } catch ( XmlRpcException xre ) {
+        } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
-        } catch ( IOException ioe ) {
+        } catch ( final IOException ioe ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe );
         }
     }
@@ -128,7 +128,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     public CompiledExpression compile(String query) throws XMLDBException {
         try {
             return compileAndCheck(query);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, e.getMessage(), e );
         }
     }
@@ -143,26 +143,26 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      */
     public CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException {
         try {
-            HashMap<String, Object> optParams = new HashMap<String, Object>();
+            final HashMap<String, Object> optParams = new HashMap<String, Object>();
             if(namespaceMappings.size() > 0)
-                optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+                {optParams.put(RpcAPI.NAMESPACES, namespaceMappings);}
             if(variableDecls.size() > 0)
-                optParams.put(RpcAPI.VARIABLES, variableDecls);
+                {optParams.put(RpcAPI.VARIABLES, variableDecls);}
             if (moduleLoadPath != null)
-                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
+                {optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);}
             optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
-            List<Object> params = new ArrayList<Object>(2);
+            final List<Object> params = new ArrayList<Object>(2);
             params.add(query.getBytes("UTF-8"));
             params.add(optParams);
-            HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute( "compile", params );
+            final HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute( "compile", params );
             
             if (result.get(RpcAPI.ERROR) != null)
-                throwXPathException(result);
+                {throwXPathException(result);}
             return new RemoteCompiledExpression(query);
-        } catch ( XmlRpcException xre ) {
+        } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
-        } catch ( IOException ioe ) {
+        } catch ( final IOException ioe ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe );
         }
     }
@@ -174,12 +174,12 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      * @exception XMLDBException if an error occurs
      */
     private void throwException(HashMap<?,?> result) throws XMLDBException {
-		String message = (String)result.get(RpcAPI.ERROR);
-		Integer lineInt = (Integer)result.get(RpcAPI.LINE);
-		Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
-		int line = lineInt == null ? 0 : lineInt.intValue();
-		int column = columnInt == null ? 0 : columnInt.intValue();
-		XPathException cause = new XPathException(line, column, message);
+		final String message = (String)result.get(RpcAPI.ERROR);
+		final Integer lineInt = (Integer)result.get(RpcAPI.LINE);
+		final Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
+		final int line = lineInt == null ? 0 : lineInt.intValue();
+		final int column = columnInt == null ? 0 : columnInt.intValue();
+		final XPathException cause = new XPathException(line, column, message);
 		throw new XMLDBException(ErrorCodes.VENDOR_ERROR, message, cause);
 	}
 
@@ -190,11 +190,11 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      * @exception XPathException if an error occurs
      */
     private void throwXPathException(HashMap<?,?> result) throws XPathException {
-        String message = (String)result.get(RpcAPI.ERROR);
-        Integer lineInt = (Integer)result.get(RpcAPI.LINE);
-        Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
-        int line = lineInt == null ? 0 : lineInt.intValue();
-        int column = columnInt == null ? 0 : columnInt.intValue();
+        final String message = (String)result.get(RpcAPI.ERROR);
+        final Integer lineInt = (Integer)result.get(RpcAPI.LINE);
+        final Integer columnInt = (Integer)result.get(RpcAPI.COLUMN);
+        final int line = lineInt == null ? 0 : lineInt.intValue();
+        final int column = columnInt == null ? 0 : columnInt.intValue();
         throw new XPathException(line, column, message);
     }
     
@@ -263,35 +263,35 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      */
     public ResourceSet query(XMLResource res, String query, String sortExpr)
         throws XMLDBException {
-        RemoteXMLResource resource = (RemoteXMLResource) res;
+        final RemoteXMLResource resource = (RemoteXMLResource) res;
         try {
-        	HashMap<String, Object> optParams = new HashMap<String, Object>();
+        	final HashMap<String, Object> optParams = new HashMap<String, Object>();
         	if(namespaceMappings.size() > 0)
-            	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+            	{optParams.put(RpcAPI.NAMESPACES, namespaceMappings);}
             if(variableDecls.size() > 0)
-            	optParams.put(RpcAPI.VARIABLES, variableDecls);
+            	{optParams.put(RpcAPI.VARIABLES, variableDecls);}
         	if(sortExpr != null)
-        		optParams.put(RpcAPI.SORT_EXPR, sortExpr);
+        		{optParams.put(RpcAPI.SORT_EXPR, sortExpr);}
             if (moduleLoadPath != null)
-                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
+                {optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);}
 			optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
             if (protectedMode)
-                optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
-            List<Object> params = new ArrayList<Object>(5);
+                {optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());}
+            final List<Object> params = new ArrayList<Object>(5);
             params.add(query.getBytes("UTF-8"));
             params.add(resource.path.toString());
             if(resource.id == null)
-            	params.add("");
+            	{params.add("");}
             else
-            	params.add(resource.id);
+            	{params.add(resource.id);}
             params.add(optParams);
-			HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute("queryP", params);
+			final HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute("queryP", params);
 			
 			if(result.get(RpcAPI.ERROR) != null)
-            	throwException(result);
+            	{throwException(result);}
 			
-			Object[] resources = (Object[]) result.get("results");
+			final Object[] resources = (Object[]) result.get("results");
 			int handle = -1;
             int hash = -1;
 			if(resources != null && resources.length > 0) {
@@ -299,9 +299,9 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
                 hash = ((Integer)result.get("hash")).intValue();
             }
 			return new RemoteResourceSet(collection, outputProperties, resources, handle, hash);
-        } catch (XmlRpcException xre) {
+        } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-        } catch (IOException ioe) {
+        } catch (final IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         }
     }
@@ -316,12 +316,12 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      */
     public ResourceSet queryResource(String resource, String query)
         throws XMLDBException {
-    	Resource res = collection.getResource(resource);
+    	final Resource res = collection.getResource(resource);
     	if(res == null)
-    		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " not found");
+    		{throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " not found");}
     	if(!"XMLResource".equals(res.getResourceType()))
-    		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + 
-    				" is not an XML resource");
+    		{throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + 
+    				" is not an XML resource");}
         return query((XMLResource) res, query);
     }
 
@@ -397,9 +397,9 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      */
     public void removeNamespace(final String ns)
         throws XMLDBException {
-        for(Iterator<String> i = namespaceMappings.values().iterator(); i.hasNext(); ) {
+        for(final Iterator<String> i = namespaceMappings.values().iterator(); i.hasNext(); ) {
         	if(i.next().equals(ns))
-        		i.remove();
+        		{i.remove();}
         }
     }
 
@@ -413,7 +413,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     public void setNamespace(String prefix, String namespace)
              throws XMLDBException {
     	if (prefix == null)
-    		prefix = "";
+    		{prefix = "";}
         namespaceMappings.put(prefix, namespace);
     }
 
@@ -427,7 +427,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
     public String getNamespace(String prefix)
         throws XMLDBException {
     	if (prefix == null)
-    		prefix = "";
+    		{prefix = "";}
         return (String)namespaceMappings.get(prefix);
     }
 
@@ -475,23 +475,23 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
      */
     public void dump(CompiledExpression expression, Writer writer)
         throws XMLDBException {
-        String query = ((RemoteCompiledExpression)expression).getQuery();
-        HashMap<String, Object> optParams = new HashMap<String, Object>();
+        final String query = ((RemoteCompiledExpression)expression).getQuery();
+        final HashMap<String, Object> optParams = new HashMap<String, Object>();
     	if(namespaceMappings.size() > 0)
-        	optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+        	{optParams.put(RpcAPI.NAMESPACES, namespaceMappings);}
         if(variableDecls.size() > 0)
-        	optParams.put(RpcAPI.VARIABLES, variableDecls);
+        	{optParams.put(RpcAPI.VARIABLES, variableDecls);}
         optParams.put(RpcAPI.BASE_URI, 
                 outputProperties.getProperty("base-uri", collection.getPath()));
-        List<Object> params = new ArrayList<Object>(2);
+        final List<Object> params = new ArrayList<Object>(2);
         params.add(query);
         params.add(optParams);
         try {
-            String dump = (String)collection.getClient().execute("printDiagnostics", params);
+            final String dump = (String)collection.getClient().execute("printDiagnostics", params);
             writer.write(dump);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
         }
     }

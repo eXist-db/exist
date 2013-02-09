@@ -35,18 +35,18 @@ public class FunGenerateId extends BasicFunction {
         NodeValue node = null;
         if (getArgumentCount() == 0) {
             if (contextSequence.isEmpty())
-                throw new XPathException(this, ErrorCodes.XPDY0002, "No context item available in call to generate-id");
-            Item contextItem = contextSequence.itemAt(0);
+                {throw new XPathException(this, ErrorCodes.XPDY0002, "No context item available in call to generate-id");}
+            final Item contextItem = contextSequence.itemAt(0);
             if (Type.subTypeOf(contextItem.getType(), Type.NODE))
-                throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node in call to generate-id");
+                {throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node in call to generate-id");}
             node = (NodeValue) contextItem;
         } else {
             if (args[0].isEmpty())
-                return StringValue.EMPTY_STRING;
+                {return StringValue.EMPTY_STRING;}
             node = (NodeValue) args[0].itemAt(0);
         }
 
-        String id = node.getNodeId().toString();
+        final String id = node.getNodeId().toString();
         return new StringValue("N" + id);
     }
 }

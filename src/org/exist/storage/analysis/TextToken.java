@@ -117,17 +117,17 @@ public class TextToken implements Comparable<Object> {
 
     public CharSequence getCharSequence() {
     	if(start >= tokenText.length() || end > tokenText.length())
-            throw new StringIndexOutOfBoundsException("start: " + start +
-                "; end=" + end + "; text=" + tokenText);
+            {throw new StringIndexOutOfBoundsException("start: " + start +
+                "; end=" + end + "; text=" + tokenText);}
         return tokenText.subSequence( start, end );
     }
     
     public String getText() {
         if(start >= tokenText.length() || end > tokenText.length())
-            throw new StringIndexOutOfBoundsException("start: " + start +
-                "; end=" + end + "; text=" + tokenText);
+            {throw new StringIndexOutOfBoundsException("start: " + start +
+                "; end=" + end + "; text=" + tokenText);}
         if (tokenText instanceof XMLString)
-            return ((XMLString) tokenText).substring(start, end - start);
+            {return ((XMLString) tokenText).substring(start, end - start);}
         return tokenText.subSequence( start, end ).toString();
     }
     
@@ -156,14 +156,14 @@ public class TextToken implements Comparable<Object> {
     }
     
     public boolean equals(Object obj) {
-    	if (obj == null) return false;
-        String other = obj.toString();
-        int len = end - start;
+    	if (obj == null) {return false;}
+        final String other = obj.toString();
+        final int len = end - start;
         if (len == other.length()) {
             int j = start;
             for (int i = 0; i < len; i++) {
                 if (tokenText.charAt(j++) != other.charAt(i))
-                    return false;
+                    {return false;}
             }
             return true;
         }

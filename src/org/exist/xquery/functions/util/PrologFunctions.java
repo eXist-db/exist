@@ -104,20 +104,20 @@ public class PrologFunctions extends BasicFunction {
 		
 		String prefix;
 		if (args[0].isEmpty())
-			prefix = "";
+			{prefix = "";}
 		else
-			prefix = args[0].getStringValue();
-		String uri = args[1].getStringValue();
+			{prefix = args[0].getStringValue();}
+		final String uri = args[1].getStringValue();
 		context.declareNamespace(prefix, uri);
 	}
 	
 	private void importModule(Sequence[] args) throws XPathException {
 		context.saveState();
 		
-		String uri = args[0].getStringValue();
-		String prefix = args[1].getStringValue();
-		String location = args[2].getStringValue();
-		Module module = context.importModule(uri, prefix, location);
+		final String uri = args[0].getStringValue();
+		final String prefix = args[1].getStringValue();
+		final String location = args[2].getStringValue();
+		final Module module = context.importModule(uri, prefix, location);
 
 		context.getRootContext().resolveForwardReferences();
 
@@ -129,15 +129,15 @@ public class PrologFunctions extends BasicFunction {
 	}
 	
 	private void declareOption(Sequence[] args) throws XPathException {
-		String qname = args[0].getStringValue();
-		String options = args[1].getStringValue();
+		final String qname = args[0].getStringValue();
+		final String options = args[1].getStringValue();
 		context.addDynamicOption(qname, options);
 	}
 
         private Sequence getOption(Sequence[] args) throws XPathException {
-            String qnameString = args[0].getStringValue();
-            QName qname = QName.parse(context, qnameString, context.getDefaultFunctionNamespace());
-            Option option = context.getOption(qname);
+            final String qnameString = args[0].getStringValue();
+            final QName qname = QName.parse(context, qnameString, context.getDefaultFunctionNamespace());
+            final Option option = context.getOption(qname);
 
             if(option != null) {
                 return new StringValue(option.getContents());

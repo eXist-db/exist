@@ -127,7 +127,7 @@ public class GrammarTooling extends BasicFunction  {
     /** Creates a new instance */
     public GrammarTooling(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
-        BrokerPool brokerPool = context.getBroker().getBrokerPool();
+        final BrokerPool brokerPool = context.getBroker().getBrokerPool();
         config = brokerPool.getConfiguration();
     }
     
@@ -137,22 +137,22 @@ public class GrammarTooling extends BasicFunction  {
     public Sequence eval(Sequence[] args, Sequence contextSequence)
     throws XPathException {
         
-        GrammarPool grammarpool
+        final GrammarPool grammarpool
             = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
         
         if (isCalledAs("clear-grammar-cache")){
             
-            Sequence result = new ValueSequence();
+            final Sequence result = new ValueSequence();
             
-            int before = countTotalNumberOfGrammar(grammarpool);
+            final int before = countTotalNumberOfGrammar(grammarpool);
             LOG.debug("Clearing "+before+" grammars");
             
             clearGrammarPool(grammarpool);
             
-            int after = countTotalNumberOfGrammar(grammarpool);
+            final int after = countTotalNumberOfGrammar(grammarpool);
             LOG.debug("Remained "+after+" grammars");
             
-            int delta=before-after;
+            final int delta=before-after;
             
             result.add(new IntegerValue(delta));
             
@@ -160,24 +160,24 @@ public class GrammarTooling extends BasicFunction  {
             
             
         } else if (isCalledAs("show-grammar-cache")){
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            NodeImpl result = writeReport(grammarpool, builder);
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final NodeImpl result = writeReport(grammarpool, builder);
             return result;
             
         } else if (isCalledAs("pre-parse-grammar")){
             
             if (args[0].isEmpty())
-                return Sequence.EMPTY_SEQUENCE;
+                {return Sequence.EMPTY_SEQUENCE;}
             
             // Setup for XML schema support only
-            XMLGrammarPreparser parser = new XMLGrammarPreparser();
+            final XMLGrammarPreparser parser = new XMLGrammarPreparser();
             parser.registerPreparser(TYPE_XSD , null);
             
            
-            List<Grammar> allGrammars = new ArrayList<Grammar>();
+            final List<Grammar> allGrammars = new ArrayList<Grammar>();
             
              // iterate through the argument sequence and parse url
-            for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
+            for (final SequenceIterator i = args[0].iterate(); i.hasNext();) {
                 String url = i.nextItem().getStringValue();
                 
                 // Fix database urls
@@ -191,9 +191,9 @@ public class GrammarTooling extends BasicFunction  {
                 try {
                     if(url.endsWith(".xsd")){
                         
-                        InputStream is = new URL(url).openStream();
-                        XMLInputSource xis = new XMLInputSource(null, url, url, is, null);
-                        Grammar schema = parser.preparseGrammar(TYPE_XSD, xis);
+                        final InputStream is = new URL(url).openStream();
+                        final XMLInputSource xis = new XMLInputSource(null, url, url, is, null);
+                        final Grammar schema = parser.preparseGrammar(TYPE_XSD, xis);
                         is.close();
 
                         allGrammars.add(schema);
@@ -202,11 +202,11 @@ public class GrammarTooling extends BasicFunction  {
                         throw new XPathException(this, "Only XMLSchemas can be preparsed.");
                     }
 
-                } catch(IOException ex) {
+                } catch(final IOException ex) {
                     LOG.debug(ex);
                     throw new XPathException(this, ex);
                     
-                } catch(Exception ex) {
+                } catch(final Exception ex) {
                     LOG.debug(ex);
                     throw new XPathException(this, ex);
                 }
@@ -222,8 +222,8 @@ public class GrammarTooling extends BasicFunction  {
             grammarpool.cacheGrammars(TYPE_XSD, grammars);
  
             // Construct result to end user
-            ValueSequence result = new ValueSequence();
-            for(Grammar one : grammars){
+            final ValueSequence result = new ValueSequence();
+            for(final Grammar one : grammars){
                 result.add( new StringValue(one.getGrammarDescription().getNamespace()) );
             }
             
@@ -252,14 +252,14 @@ public class GrammarTooling extends BasicFunction  {
     
     private NodeImpl writeReport(GrammarPool grammarpool, MemTreeBuilder builder) {
         
-        int nodeNr = builder.startElement("", "report", "report",null);
+        final int nodeNr = builder.startElement("", "report", "report",null);
         
-        Grammar xsds[] = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);
+        final Grammar xsds[] = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);
         for(int i=0; i<xsds.length; i++){
             writeGrammar(xsds[i], builder);
         }
         
-        Grammar dtds[] = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
+        final Grammar dtds[] = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
         for(int i=0; i<dtds.length; i++){
             writeGrammar(dtds[i], builder);
         }
@@ -271,41 +271,41 @@ public class GrammarTooling extends BasicFunction  {
     
     private void writeGrammar(Grammar grammar,  MemTreeBuilder builder){
         
-            XMLGrammarDescription xgd = grammar.getGrammarDescription();
+            final XMLGrammarDescription xgd = grammar.getGrammarDescription();
             
-            AttributesImpl attribs = new AttributesImpl();
+            final AttributesImpl attribs = new AttributesImpl();
             attribs.addAttribute("", "type", "type", "CDATA", xgd.getGrammarType());
             
             builder.startElement("", "grammar", "grammar", attribs);
       
-            String namespace=xgd.getNamespace();
+            final String namespace=xgd.getNamespace();
             if(namespace!=null){
                 builder.startElement("", "Namespace", "Namespace", null);
                 builder.characters(namespace);
                 builder.endElement();
             }
             
-            String publicId=xgd.getPublicId();
+            final String publicId=xgd.getPublicId();
             if(publicId!=null){
                 builder.startElement("", "PublicId", "PublicId", null);
                 builder.characters(publicId);
                 builder.endElement();
             }
-            String baseSystemId=xgd.getBaseSystemId();
+            final String baseSystemId=xgd.getBaseSystemId();
             if(baseSystemId!=null){
                 builder.startElement("", "BaseSystemId", "BaseSystemId", null);
                 builder.characters(baseSystemId);
                 builder.endElement();
             }
 
-            String literalSystemId=xgd.getLiteralSystemId();
+            final String literalSystemId=xgd.getLiteralSystemId();
             if(literalSystemId!=null){
                 builder.startElement("", "LiteralSystemId", "LiteralSystemId", null);
                 builder.characters(literalSystemId);
                 builder.endElement();
             }
             
-            String expandedSystemId=xgd.getExpandedSystemId();
+            final String expandedSystemId=xgd.getExpandedSystemId();
             if(expandedSystemId!=null){
                 builder.startElement("", "ExpandedSystemId", "ExpandedSystemId", null);
                 builder.characters(expandedSystemId);

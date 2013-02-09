@@ -76,16 +76,16 @@ public class FunCodepointsToString extends BasicFunction {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
         }
         Sequence result;
         if (args[0].isEmpty()) {
             result = StringValue.EMPTY_STRING;
         } else {
-            StringBuilder buf = new StringBuilder();
-            for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-                long next = ((NumericValue)i.nextItem()).getLong();
+            final StringBuilder buf = new StringBuilder();
+            for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+                final long next = ((NumericValue)i.nextItem()).getLong();
                 if (next < 0 || next > Integer.MAX_VALUE ||
                         !XMLChar.isValid((int)next)) {
                     throw new XPathException(this,
@@ -102,7 +102,7 @@ public class FunCodepointsToString extends BasicFunction {
             result = new StringValue(buf.toString());
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

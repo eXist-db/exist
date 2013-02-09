@@ -119,7 +119,7 @@ public final class CharSlice implements CharSequence, Serializable {
 
     public int hashCode() {
         // Same algorithm as String#hashCode(), but not cached
-        int end = offset+count;
+        final int end = offset+count;
         int h = 0;
         for (int i = offset; i < end; i++) {
             h = 31 * h + array[i];
@@ -135,7 +135,7 @@ public final class CharSlice implements CharSequence, Serializable {
      */
 
     public int indexOf(char c) {
-        int end = offset+count;
+        final int end = offset+count;
         for (int i = offset; i < end; i++) {
             if (array[i] == c) {
                 return i-offset;

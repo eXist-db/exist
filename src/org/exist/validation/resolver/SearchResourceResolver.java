@@ -74,10 +74,10 @@ public class SearchResourceResolver implements XMLEntityResolver {
 
         String resourcePath = null;
         
-        DatabaseResources databaseResources = new DatabaseResources(brokerPool);
+        final DatabaseResources databaseResources = new DatabaseResources(brokerPool);
         
         //UNDERSTAND: why using guest account, it can be disabled 
-        Subject user = brokerPool.getSecurityManager().getGuestSubject();
+        final Subject user = brokerPool.getSecurityManager().getGuestSubject();
         
         if( xri.getNamespace() !=null ){
             
@@ -99,14 +99,14 @@ public class SearchResourceResolver implements XMLEntityResolver {
                 catalogPath="xmldb:exist://"+catalogPath;
             }
             
-            eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
+            final eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
             resolver.setCatalogList(new String[]{catalogPath});
             try {
-                InputSource source = resolver.resolveEntity(xri.getPublicId(), "");
+                final InputSource source = resolver.resolveEntity(xri.getPublicId(), "");
                 if(source!=null){
                     resourcePath=source.getSystemId();
                 }
-            } catch (Exception ex) {
+            } catch (final Exception ex) {
                 LOG.debug(ex);
                 ex.printStackTrace();
             }
@@ -130,9 +130,9 @@ public class SearchResourceResolver implements XMLEntityResolver {
         
         LOG.debug("resourcePath='"+resourcePath+"'");
         
-        InputStream is = new URL(resourcePath).openStream();
+        final InputStream is = new URL(resourcePath).openStream();
         
-        XMLInputSource xis = new XMLInputSource(xri.getPublicId(),
+        final XMLInputSource xis = new XMLInputSource(xri.getPublicId(),
             xri.getExpandedSystemId(), xri.getBaseSystemId(), is, "UTF-8");
 
         if(LOG.isDebugEnabled()) {
@@ -143,7 +143,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
     }
     
     private String getXriDetails(XMLResourceIdentifier xrid){
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
         sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
         sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");
@@ -153,7 +153,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
     }
 
     private String getXisDetails(XMLInputSource xis){
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("PublicId='").append(xis.getPublicId()).append("' ");
         sb.append("SystemId='").append(xis.getSystemId()).append("' ");
         sb.append("BaseSystemId='").append(xis.getBaseSystemId()).append("' ");

@@ -50,62 +50,62 @@ public class XACMLSource
 	public static XACMLSource getInstance(Class<?> source)
 	{
 		if(source == null)
-			throw new NullPointerException("Source class cannot be null");
+			{throw new NullPointerException("Source class cannot be null");}
 		return getInstance(source.getName());
 	}
 	public static XACMLSource getInstance(String sourceClassName)
 	{
 		if(sourceClassName == null)
-			throw new NullPointerException("Source class name cannot be null");
+			{throw new NullPointerException("Source class name cannot be null");}
 		return new XACMLSource(XACMLConstants.CLASS_SOURCE_TYPE, sourceClassName);
 	}
 	public static XACMLSource getInstance(Source source)
 	{
 		if(source == null)
-			throw new NullPointerException("Source cannot be null");
+			{throw new NullPointerException("Source cannot be null");}
 		if(source instanceof FileSource)
-			return new XACMLSource(XACMLConstants.FILE_SOURCE_TYPE, ((FileSource)source).getFilePath());
+			{return new XACMLSource(XACMLConstants.FILE_SOURCE_TYPE, ((FileSource)source).getFilePath());}
 		if(source instanceof URLSource)
 		{
-			URL url = ((URLSource)source).getURL();
-			String protocol = url.getProtocol();
-			String host = url.getHost();
-			if(protocol.equals(FILE_PROTOCOL) && (host == null || host.length() == 0 || host.equals("localhost") || host.equals("127.0.0.1")))
+			final URL url = ((URLSource)source).getURL();
+			final String protocol = url.getProtocol();
+			final String host = url.getHost();
+			if(protocol.equals(FILE_PROTOCOL) && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host)))
 			{
-				String path = url.getFile();
+				final String path = url.getFile();
 				return new XACMLSource(XACMLConstants.FILE_SOURCE_TYPE, path);
 			}
-			String key = url.toExternalForm();
-			String type = (source instanceof ClassLoaderSource) ? XACMLConstants.CLASSLOADER_SOURCE_TYPE : XACMLConstants.URL_SOURCE_TYPE; 
+			final String key = url.toExternalForm();
+			final String type = (source instanceof ClassLoaderSource) ? XACMLConstants.CLASSLOADER_SOURCE_TYPE : XACMLConstants.URL_SOURCE_TYPE; 
 			return new XACMLSource(type, key);
 		}
 		if(source instanceof StringSource || source instanceof StringSourceWithMapKey)
-			return new XACMLSource(XACMLConstants.STRING_SOURCE_TYPE, XACMLConstants.STRING_SOURCE_TYPE);
+			{return new XACMLSource(XACMLConstants.STRING_SOURCE_TYPE, XACMLConstants.STRING_SOURCE_TYPE);}
 
         // Cocoon classes are not on classpath during compile time.
         Class<?> class1;
         try {
             class1 = Class.forName("org.exist.source.CocoonSource");
-            Method method1 = class1.getMethod("getInstance", org.exist.source.Source.class);
-            Object o1 = method1.invoke(null, source);
+            final Method method1 = class1.getMethod("getInstance", org.exist.source.Source.class);
+            final Object o1 = method1.invoke(null, source);
 
-            Method method2 = class1.getMethod("getKey", (java.lang.Class<?>[]) null);
-            Object o2 = method2.invoke(o1, (Object[])null);
+            final Method method2 = class1.getMethod("getKey", (java.lang.Class<?>[]) null);
+            final Object o2 = method2.invoke(o1, (Object[])null);
 
 
-            String key = (String) o2;
+            final String key = (String) o2;
             System.out.println("Found CocoonSource with key "+key);
 
 			return new XACMLSource(XACMLConstants.COCOON_SOURCE_TYPE, key);
 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             // just continue
         } 
 
         
 		if(source instanceof DBSource)
 		{
-			XmldbURI key = ((DBSource)source).getDocumentPath();
+			final XmldbURI key = ((DBSource)source).getDocumentPath();
 			/*
 			 * TODO: not sure what implications using toString here has, when the key
 			 * is really an XmldbURI?

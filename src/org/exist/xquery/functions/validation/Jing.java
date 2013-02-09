@@ -126,7 +126,7 @@ public class Jing extends BasicFunction  {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        ValidationReport report = new ValidationReport();
+        final ValidationReport report = new ValidationReport();
         InputSource instance=null;
         InputSource grammar =null;
 
@@ -140,22 +140,22 @@ public class Jing extends BasicFunction  {
             grammar = Shared.getInputSource(args[1].itemAt(0), context);
 
             // Special setup for compact notation
-            String grammarUrl = grammar.getSystemId();
-            SchemaReader schemaReader 
+            final String grammarUrl = grammar.getSystemId();
+            final SchemaReader schemaReader 
                     = ( (grammarUrl != null) && (grammarUrl.endsWith(".rnc")) )
                     ? CompactSchemaReader.getInstance() : null;
 
             // Setup validation properties. see Jing interface
-            PropertyMapBuilder properties = new PropertyMapBuilder();
+            final PropertyMapBuilder properties = new PropertyMapBuilder();
             ValidateProperty.ERROR_HANDLER.put(properties, report);
             
             // Register resolver for xmldb:exist:/// embedded URLs
-            ExistResolver resolver = new ExistResolver(brokerPool);
+            final ExistResolver resolver = new ExistResolver(brokerPool);
             ValidateProperty.URI_RESOLVER.put(properties, resolver);
             ValidateProperty.ENTITY_RESOLVER.put(properties, resolver);
 
             // Setup driver
-            ValidationDriver driver = new ValidationDriver(properties.toPropertyMap(), schemaReader);
+            final ValidationDriver driver = new ValidationDriver(properties.toPropertyMap(), schemaReader);
 
             // Load schema
             driver.loadSchema(grammar);
@@ -163,15 +163,15 @@ public class Jing extends BasicFunction  {
             // Validate XML instance
             driver.validate(instance);
             
-        } catch (MalformedURLException ex) {
+        } catch (final MalformedURLException ex) {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             LOG.error(ex);
             report.setException(ex);
 
-        } catch (Throwable ex) {
+        } catch (final Throwable ex) {
             LOG.error(ex);
             report.setException(ex);
 
@@ -183,13 +183,13 @@ public class Jing extends BasicFunction  {
 
         // Create response
         if (isCalledAs("jing")) {
-            Sequence result = new ValueSequence();
+            final Sequence result = new ValueSequence();
             result.add(new BooleanValue(report.isValid()));
             return result;
 
         } else  /* isCalledAs("jing-report") */{
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            NodeImpl result = Shared.writeReport(report, builder);
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final NodeImpl result = Shared.writeReport(report, builder);
             return result;
         } 
     }

@@ -81,15 +81,15 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 
 	private JTable createTargetPanel(int type, JTabbedPane tabbed)
 	{
-		TargetTableModel tm = new TargetTableModel(type, abbrev);
-		JTable table = new ResizingTable(tm);
+		final TargetTableModel tm = new TargetTableModel(type, abbrev);
+		final JTable table = new ResizingTable(tm);
 		table.getSelectionModel().addListSelectionListener(this);
 		table.getColumnModel().getSelectionModel().addListSelectionListener(this);
 		table.setMinimumSize(new Dimension(300,150));
 		table.setMaximumSize(new Dimension(600,500));
 		table.setCellSelectionEnabled(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		JScrollPane scroll = new JScrollPane(table);
+		final JScrollPane scroll = new JScrollPane(table);
 		tabbed.add(getLabel(type), scroll);
 		return table;
 	}
@@ -123,9 +123,9 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 	public void setNode(XACMLTreeNode treeNode)
 	{
 		if(!(treeNode instanceof TargetNode))
-			throw new IllegalArgumentException("TargetEditor can only edit TargetNodes");
+			{throw new IllegalArgumentException("TargetEditor can only edit TargetNodes");}
 		this.node = (TargetNode)treeNode;
-		Target target = node.getTarget();
+		final Target target = node.getTarget();
 		
 		((TargetTableModel)subjectTargetTable.getModel()).setTarget(target == null ? null : target.getSubjects());
 		((TargetTableModel)actionTargetTable.getModel()).setTarget(target == null ? null : target.getActions());
@@ -137,44 +137,44 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 	public void pushChanges()
 	{
 		if(!node.isModified(false))
-			return;
+			{return;}
 		
-		List<List<TargetMatch>> subjects = ((TargetTableModel)subjectTargetTable.getModel()).createTarget();
-		List<List<TargetMatch>> resources = ((TargetTableModel)resourceTargetTable.getModel()).createTarget();
-		List<List<TargetMatch>> actions = ((TargetTableModel)actionTargetTable.getModel()).createTarget();
+		final List<List<TargetMatch>> subjects = ((TargetTableModel)subjectTargetTable.getModel()).createTarget();
+		final List<List<TargetMatch>> resources = ((TargetTableModel)resourceTargetTable.getModel()).createTarget();
+		final List<List<TargetMatch>> actions = ((TargetTableModel)actionTargetTable.getModel()).createTarget();
 		//XACML 2.0:
 		//List environments = ((TargetTableModel)environmentTargetTable.getModel()).createTarget();
-		Target target = new Target(subjects, resources, actions);
+		final Target target = new Target(subjects, resources, actions);
 		node.setTarget(target);
 	}
 	public void valueChanged(ListSelectionEvent event)
 	{
 		if(event.getValueIsAdjusting())
-			return;
-		JTable table = getCurrentTargetTable();
+			{return;}
+		final JTable table = getCurrentTargetTable();
 		if(table == null)
 		{
 			matchEditor.setMatch(null, null, null);
 			return;
 		}
 
-		int selectedRow = table.getSelectedRow();
-		int selectedColumn = table.getSelectedColumn();
+		final int selectedRow = table.getSelectedRow();
+		final int selectedColumn = table.getSelectedColumn();
 		if(selectedRow < 0 || selectedColumn < 0)
 		{
 			matchEditor.setMatch(null, null, null);
 			return;
 		}
 		
-		TargetTableModel model = (TargetTableModel)table.getModel();
-		AttributeDesignator attribute = model.getAttribute(selectedColumn);
-		URI functionId = model.getFunctionId(selectedRow, selectedColumn);
-		AttributeValue value = model.getValue(selectedRow, selectedColumn); 
+		final TargetTableModel model = (TargetTableModel)table.getModel();
+		final AttributeDesignator attribute = model.getAttribute(selectedColumn);
+		final URI functionId = model.getFunctionId(selectedRow, selectedColumn);
+		final AttributeValue value = model.getValue(selectedRow, selectedColumn); 
 		matchEditor.setMatch(attribute, functionId, value);
 	}
 	private JTable getCurrentTargetTable()
 	{
-		int currentTab = tabbed.getSelectedIndex();
+		final int currentTab = tabbed.getSelectedIndex();
 		switch(currentTab)
 		{
 			case 0:
@@ -189,23 +189,23 @@ public class TargetEditor extends AbstractNodeEditor implements ChangeListener, 
 	}
 	public void stateChanged(ChangeEvent event)
 	{
-		JTable table = getCurrentTargetTable();
+		final JTable table = getCurrentTargetTable();
 		if(table == null)
 		{
 			matchEditor.setMatch(null, null, null);
 			return;
 		}
 
-		int selectedRow = table.getSelectedRow();
-		int selectedColumn = table.getSelectedColumn();
+		final int selectedRow = table.getSelectedRow();
+		final int selectedColumn = table.getSelectedColumn();
 		if(selectedRow < 0 || selectedColumn < 0)
 		{
 			matchEditor.setMatch(null, null, null);
 			return;
 		}
 		
-		URI functionId = matchEditor.getFunctionId();
-		AttributeValue value = matchEditor.getValue();
+		final URI functionId = matchEditor.getFunctionId();
+		final AttributeValue value = matchEditor.getValue();
 		removeSelectionListeners(table);
 		((TargetTableModel)table.getModel()).setValue(functionId, value, selectedRow, selectedColumn);
 		table.setRowSelectionInterval(selectedRow, selectedRow);

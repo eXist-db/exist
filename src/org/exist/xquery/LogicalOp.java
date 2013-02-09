@@ -80,9 +80,9 @@ public abstract class LogicalOp extends BinaryOp {
 				//The boolean value will be returned by derived classes
 				//See below, returnsType() however... 
 				!(getParent() instanceof EnclosedExpr)*/)
-			optimize = true;
+			{optimize = true;}
 		else
-			optimize = false;
+			{optimize = false;}
 		rewritable = (contextInfo.getFlags() & Expression.IN_PREDICATE) == 0;
 	}
 	
@@ -102,9 +102,9 @@ public abstract class LogicalOp extends BinaryOp {
 	 */
 	public int getDependencies() {
 		if(!optimize)
-			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+			{return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;}
 		else
-			return Dependency.CONTEXT_SET;
+			{return Dependency.CONTEXT_SET;}
 	}
 
     public Expression getParent() {

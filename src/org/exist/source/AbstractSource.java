@@ -90,15 +90,15 @@ public abstract class AbstractSource implements Source {
      * @return The guessed encoding.
      */
     protected final static String guessXQueryEncoding(InputStream is) {
-        XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
-        DeclScanner scanner = new DeclScanner(lexer);
+        final XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
+        final DeclScanner scanner = new DeclScanner(lexer);
         try {
             scanner.versionDecl();
-        } catch (RecognitionException e) {
+        } catch (final RecognitionException e) {
             //Nothing to do
-        } catch (TokenStreamException e) {
+        } catch (final TokenStreamException e) {
             //Nothing to do
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             //Nothing to do
         }
         return scanner.getEncoding();
@@ -113,15 +113,15 @@ public abstract class AbstractSource implements Source {
      * a module.
      */
     protected final static QName getModuleDecl(InputStream is) {
-        XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
-        DeclScanner scanner = new DeclScanner(lexer);
+        final XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
+        final DeclScanner scanner = new DeclScanner(lexer);
         try {
             scanner.versionDecl();
-        } catch (RecognitionException e) {
+        } catch (final RecognitionException e) {
             //Nothing to do
-        } catch (TokenStreamException e) {
+        } catch (final TokenStreamException e) {
             //Nothing to do
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             //Nothing to do
         }
         if (scanner.getNamespace() != null) {

@@ -23,12 +23,12 @@ public class CaseVariants {
     }
 
     private static void cv(int a, int b, int c) {
-        int[] v = {b, c};
+        final int[] v = {b, c};
         polyVariants.put(a, v);
     }
 
     private static void cv(int a, int b, int c, int d) {
-        int[] v = {b, c, d};
+        final int[] v = {b, c, d};
         polyVariants.put(a, v);
     }
 
@@ -40,12 +40,12 @@ public class CaseVariants {
      */
 
     public static int[] getCaseVariants(int code) {
-        int mono = (Integer) monoVariants.get(code);
+        final int mono = (Integer) monoVariants.get(code);
         //UNDERSTAND: is it safe?
 //        if (mono != monoVariants.getDefaultValue()) {
 //            return new int[]{mono};
 //        } else {
-            int[] result = polyVariants.get(code);
+            final int[] result = polyVariants.get(code);
             if (result == null) {
                 return EMPTY_INT_ARRAY;
             } else {

@@ -61,7 +61,7 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
 
         try {
             log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            Collection base = DatabaseManager.getCollection( uri, user, password );
+            final Collection base = DatabaseManager.getCollection( uri, user, password );
 
             if( base == null ) {
                 throw( new BuildException( "Collection " + uri + " could not be found." ) );
@@ -69,10 +69,10 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
 
             if( resource != null ) {
                 log( "Removing resource: " + resource, Project.MSG_INFO );
-                Resource res = base.getResource( resource );
+                final Resource res = base.getResource( resource );
 
                 if( res == null ) {
-                    String msg = "Resource " + resource + " not found.";
+                    final String msg = "Resource " + resource + " not found.";
 
                     if( failonerror ) {
                         throw( new BuildException( msg ) );
@@ -85,13 +85,13 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
 
             } else {
                 log( "Removing collection: " + collection, Project.MSG_INFO );
-                CollectionManagementService service = (CollectionManagementService)base.getService( "CollectionManagementService", "1.0" );
+                final CollectionManagementService service = (CollectionManagementService)base.getService( "CollectionManagementService", "1.0" );
                 service.removeCollection( collection );
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception during remove: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception during remove: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

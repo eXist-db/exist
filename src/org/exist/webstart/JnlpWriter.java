@@ -64,18 +64,18 @@ public class JnlpWriter {
         logger.debug("Writing JNLP file");
 
         // Format URL: "http://host:8080/CONTEXT/webstart/exist.jnlp"
-        String currentUrl = request.getRequestURL().toString();
+        final String currentUrl = request.getRequestURL().toString();
 
         // Find BaseUrl http://host:8080/CONTEXT
-        int webstartPos = currentUrl.indexOf("/webstart");
-        String existBaseUrl = currentUrl.substring(0, webstartPos);
+        final int webstartPos = currentUrl.indexOf("/webstart");
+        final String existBaseUrl = currentUrl.substring(0, webstartPos);
 
         // Find codeBase for jarfiles http://host:8080/CONTEXT/webstart/
-        String codeBase = existBaseUrl + "/webstart/";
+        final String codeBase = existBaseUrl + "/webstart/";
 
         // Perfom sanity checks
         int counter = 0;
-        for (File jar : jnlpFiles.getAllWebstartJars()) {
+        for (final File jar : jnlpFiles.getAllWebstartJars()) {
             counter++; // debugging
             if (jar == null || !jar.exists()) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -86,13 +86,13 @@ public class JnlpWriter {
 
 
         // Find URL to connect to with client
-        String startUrl = existBaseUrl.replaceFirst("http:", "xmldb:exist:")
+        final String startUrl = existBaseUrl.replaceFirst("http:", "xmldb:exist:")
                 .replaceFirst("https:", "xmldb:exist:").replaceAll("-", "%2D") + "/xmlrpc";
 
 //        response.setDateHeader("Last-Modified", mainJar.lastModified());
         response.setContentType("application/x-java-jnlp-file");
         try {
-            XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(response.getOutputStream());
+            final XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(response.getOutputStream());
 
 
             writer.writeStartDocument();
@@ -174,7 +174,7 @@ public class JnlpWriter {
             writer.writeAttribute("version", "1.6+");
             writer.writeEndElement();
 
-            for (File jar : jnlpFiles.getAllWebstartJars()) {
+            for (final File jar : jnlpFiles.getAllWebstartJars()) {
                 writer.writeStartElement("jar");
                 writer.writeAttribute("href", jar.getName());
                 writer.writeAttribute("size", "" + jar.length());
@@ -210,7 +210,7 @@ public class JnlpWriter {
             writer.flush();
             writer.close();
 
-        } catch (Throwable ex) {
+        } catch (final Throwable ex) {
             logger.error(ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
         }
@@ -229,7 +229,7 @@ public class JnlpWriter {
 
         logger.debug("Send jar file " + filename);
 
-        File localFile = jnlpFiles.getJarFile(filename);
+        final File localFile = jnlpFiles.getJarFile(filename);
         if (localFile == null || !localFile.exists()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Jar file '" + filename + "' not found.");
             return;
@@ -253,21 +253,21 @@ public class JnlpWriter {
         response.setHeader("Content-Length", Long.toString(localFile.length()));
         response.setDateHeader("Last-Modified", localFile.lastModified());
 
-        FileInputStream fis = new FileInputStream(localFile);
-        ServletOutputStream os = response.getOutputStream();
+        final FileInputStream fis = new FileInputStream(localFile);
+        final ServletOutputStream os = response.getOutputStream();
 
         try {
             // Transfer bytes from in to out
-            byte[] buf = new byte[4096];
+            final byte[] buf = new byte[4096];
             int len;
             while ((len = fis.read(buf)) > 0) {
                 os.write(buf, 0, len);
             }
 
-        } catch (IllegalStateException ex) {
+        } catch (final IllegalStateException ex) {
             logger.debug(ex.getMessage());
 
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             logger.debug("Ignore IOException for '" + filename + "'");
         }
 
@@ -288,7 +288,7 @@ public class JnlpWriter {
             type = "image/jpeg";
         }
         
-        InputStream is = this.getClass().getResourceAsStream("resources/"+filename); 
+        final InputStream is = this.getClass().getResourceAsStream("resources/"+filename); 
         if (is == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
                     "Image file '" + filename + "' not found.");
@@ -296,7 +296,7 @@ public class JnlpWriter {
         }
         
         // Copy data
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         IOUtils.copy(is, baos);
         IOUtils.closeQuietly(is);
         
@@ -306,14 +306,14 @@ public class JnlpWriter {
         response.setContentLength(baos.size());
         //response.setHeader("Content-Length", ""+baos.size());
 
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        ServletOutputStream os = response.getOutputStream();
+        final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        final ServletOutputStream os = response.getOutputStream();
 
         try {
             IOUtils.copy(bais, os);
-        } catch (IllegalStateException ex) {
+        } catch (final IllegalStateException ex) {
             logger.debug(ex.getMessage());
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             logger.debug("Ignored IOException for '" + filename + "' " + ex.getMessage());
         }
 

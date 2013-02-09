@@ -269,7 +269,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         chkSsl.setSelected(getDefaultConnectionSettings().isSsl());
         chkSsl.setText(getLabel("LoginPanel.47"));
 
-        javax.swing.GroupLayout panRemoteLayout = new javax.swing.GroupLayout(panRemote);
+        final javax.swing.GroupLayout panRemoteLayout = new javax.swing.GroupLayout(panRemote);
         panRemote.setLayout(panRemoteLayout);
         panRemoteLayout.setHorizontalGroup(
             panRemoteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -310,7 +310,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
             }
         });
 
-        javax.swing.GroupLayout panEmbeddedLayout = new javax.swing.GroupLayout(panEmbedded);
+        final javax.swing.GroupLayout panEmbeddedLayout = new javax.swing.GroupLayout(panEmbedded);
         panEmbedded.setLayout(panEmbeddedLayout);
         panEmbeddedLayout.setHorizontalGroup(
             panEmbeddedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -354,7 +354,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
             }
         });
 
-        javax.swing.GroupLayout panFavouritesLayout = new javax.swing.GroupLayout(panFavourites);
+        final javax.swing.GroupLayout panFavouritesLayout = new javax.swing.GroupLayout(panFavourites);
         panFavourites.setLayout(panFavouritesLayout);
         panFavouritesLayout.setHorizontalGroup(
             panFavouritesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -391,7 +391,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        final javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -579,7 +579,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         if(evt.getClickCount() == 2 && lstFavourites.getSelectedIndex() >= 0) {
             final FavouriteConnection favourite = (FavouriteConnection)lstFavourites.getSelectedValue();
             
-            final boolean favouriteHasEmbeddedMode = favourite.getUri().equals("");
+            final boolean favouriteHasEmbeddedMode = "".equals(favourite.getUri());
             
             if(disableEmbeddedConnectionType && favouriteHasEmbeddedMode) {
                 JOptionPane.showMessageDialog(this, "The favourite connection '" + favourite.getName() + "' uses an Embedded Connection Type, but Embedded Connections have been disabled at client startup.", "Favourite Selection Error", JOptionPane.ERROR_MESSAGE);

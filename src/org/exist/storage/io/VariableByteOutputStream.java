@@ -33,9 +33,9 @@ public class VariableByteOutputStream extends OutputStream {
 
     public void clear() {
         if (buf.size() > MAX_BUFFER_SIZE)
-            buf = new FastByteBuffer(9);
+            {buf = new FastByteBuffer(9);}
         else
-            buf.setLength(0);
+            {buf.setLength(0);}
     }
 
     @Override
@@ -57,7 +57,7 @@ public class VariableByteOutputStream extends OutputStream {
     }
 
     public byte[] toByteArray() {
-        byte[] b = new byte[buf.size()];
+        final byte[] b = new byte[buf.size()];
         buf.copyTo(b, 0);
         return b;
     }
@@ -153,7 +153,7 @@ public class VariableByteOutputStream extends OutputStream {
         byte[] data = null;
         try {
             data = s.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
             LOG.warn(e);
             data = s.getBytes();
         }

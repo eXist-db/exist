@@ -70,11 +70,11 @@ public class FileSource extends AbstractSource {
      * @see org.exist.source.Source#isValid()
      */
     public int isValid(DBBroker broker) {
-        File f = new File(filePath);
+        final File f = new File(filePath);
         if(f.lastModified() > lastModified)
-            return INVALID;
+            {return INVALID;}
         else
-            return VALID;
+            {return VALID;}
     }
 
     /* (non-Javadoc)
@@ -101,11 +101,11 @@ public class FileSource extends AbstractSource {
      */
     public String getContent() throws IOException {
         checkEncoding();
-        FileInputStream is = new FileInputStream(new File(filePath));
+        final FileInputStream is = new FileInputStream(new File(filePath));
 		try {
-			Reader reader = new InputStreamReader(is, encoding);
-			char[] chars = new char[1024];
-			StringBuilder buf = new StringBuilder();
+			final Reader reader = new InputStreamReader(is, encoding);
+			final char[] chars = new char[1024];
+			final StringBuilder buf = new StringBuilder();
 			int read;
 			while((read = reader.read(chars)) > -1)
 				buf.append(chars, 0, read);
@@ -117,11 +117,11 @@ public class FileSource extends AbstractSource {
     
     private void checkEncoding() throws IOException {
         if (checkEncoding) {
-            FileInputStream is = new FileInputStream(filePath);
+            final FileInputStream is = new FileInputStream(filePath);
             try {
                 String checkedEnc = guessXQueryEncoding(is);
                 if (checkedEnc != null)
-                    encoding = checkedEnc;
+                    {encoding = checkedEnc;}
             } finally {
                 is.close();
             }
@@ -130,7 +130,7 @@ public class FileSource extends AbstractSource {
 
     @Override
     public QName isModule() throws IOException {
-        FileInputStream is = new FileInputStream(filePath);
+        final FileInputStream is = new FileInputStream(filePath);
         try {
             return getModuleDecl(is);
         } finally {

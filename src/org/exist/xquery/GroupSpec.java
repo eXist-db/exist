@@ -72,7 +72,7 @@ public class GroupSpec {
     } 
      
     public String toString() { 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append(ExpressionDumper.dump(expression)); 
         return buf.toString(); 
     } 

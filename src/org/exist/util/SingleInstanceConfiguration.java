@@ -64,7 +64,7 @@ public class SingleInstanceConfiguration extends Configuration {
      */
     public static String getPath() {
         if (_configFile == null) {
-            File f = ConfigurationHelper.lookup("conf.xml");
+            final File f = ConfigurationHelper.lookup("conf.xml");
             return f.getAbsolutePath();
         }
         return _configFile;
@@ -114,7 +114,7 @@ public class SingleInstanceConfiguration extends Configuration {
         try {
             File tmpFolder = webappFolder.getCanonicalFile();
             webappFolder=tmpFolder;
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             // oops ; use previous path
         }
         
@@ -131,7 +131,7 @@ public class SingleInstanceConfiguration extends Configuration {
     @SuppressWarnings("unused")
 	private static boolean containsConfig(File dir, String config) {
         if (dir != null && dir.exists() && dir.isDirectory() && dir.canRead()) {
-            File c = new File(dir, config);
+            final File c = new File(dir, config);
             return c.exists() && c.isFile() && c.canRead();
         }
         return false;

@@ -57,8 +57,8 @@ public class LogEntryTypes {
         }
 
         public Loggable newInstance(DBBroker broker, long transactId) throws Exception {
-            Constructor<? extends Loggable> constructor = clazz.getConstructor(constructorArgs);
-            return constructor.newInstance(new Object[] { broker, new Long(transactId) });
+            final Constructor<? extends Loggable> constructor = clazz.getConstructor(constructorArgs);
+            return constructor.newInstance(new Object[] { broker, Long.valueOf(transactId) });
         }
     }
 
@@ -84,7 +84,7 @@ public class LogEntryTypes {
      * @param clazz the class implementing {@link Loggable}.
      */
     public final static void addEntryType(byte type, Class<? extends Loggable> clazz) {
-        LogEntry entry = new LogEntry(type, clazz);
+        final LogEntry entry = new LogEntry(type, clazz);
         entryTypes.put(type, entry);
     }
 
@@ -96,12 +96,12 @@ public class LogEntryTypes {
      * @throws LogException
      */
     public final static Loggable create(byte type, DBBroker broker, long transactId) throws LogException {
-        LogEntry entry = entryTypes.get(type);
+        final LogEntry entry = entryTypes.get(type);
         if (entry == null)
-            return null;
+            {return null;}
         try {
             return entry.newInstance(broker, transactId);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new LogException("Failed to create log entry object", e);
         }
     }

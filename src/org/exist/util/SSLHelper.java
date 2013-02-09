@@ -109,7 +109,7 @@ public class SSLHelper {
         SSLContext sc = null;
         try {
             sc = SSLContext.getInstance("SSL");
-        } catch (NoSuchAlgorithmException ex) {
+        } catch (final NoSuchAlgorithmException ex) {
             LOG.error("Unable to initialize SSL.", ex);
             return false;
         }
@@ -122,7 +122,7 @@ public class SSLHelper {
                 LOG.debug("Installing SSL trust manager");
                 sc.init(null, nonvalidatingTrustManager, new java.security.SecureRandom());
 
-            } catch (KeyManagementException ex) {
+            } catch (final KeyManagementException ex) {
                 LOG.error("Unable to initialize keychain validation.", ex);
                 return false;
             }

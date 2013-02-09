@@ -29,7 +29,7 @@ public class RemoveGroupTask extends UserTask
         log( "Removing group " + name, Project.MSG_INFO );
 
         try {
-            Group group = service.getGroup( name );
+            final Group group = service.getGroup( name );
 
             if( group != null ) {
                 service.removeGroup( group );
@@ -38,8 +38,8 @@ public class RemoveGroupTask extends UserTask
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

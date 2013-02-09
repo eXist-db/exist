@@ -44,7 +44,7 @@ public class AttributeConstructor extends NodeConstructor {
 	public AttributeConstructor(XQueryContext context, String name) {
 		super(context);
 		if(name.startsWith("xmlns"))
-			isNamespaceDecl = true;
+			{isNamespaceDecl = true;}
 		this.qname = name;
 	}
 	
@@ -54,8 +54,8 @@ public class AttributeConstructor extends NodeConstructor {
 	
 	public void addEnclosedExpr(Expression expr) throws XPathException {
 		if(isNamespaceDecl)
-			throw new XPathException(this, "enclosed expressions are not allowed in namespace " +
-				"declaration attributes");
+			{throw new XPathException(this, "enclosed expressions are not allowed in namespace " +
+				"declaration attributes");}
 		contents.add(expr);
 	}
 	
@@ -73,9 +73,9 @@ public class AttributeConstructor extends NodeConstructor {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
         contextInfo.setParent(this);
-        for(Object next : contents) {
+        for(final Object next : contents) {
 			if(next instanceof Expression)
-				((Expression)next).analyze(contextInfo);
+				{((Expression)next).analyze(contextInfo);}
 		}
     }
     
@@ -86,16 +86,16 @@ public class AttributeConstructor extends NodeConstructor {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		StringBuilder buf = new StringBuilder();
+		final StringBuilder buf = new StringBuilder();
 
-		for(Object next : contents) {
+		for(final Object next : contents) {
 			if(next instanceof Expression)
-				evalEnclosedExpr(((Expression)next).eval(contextSequence, contextItem), buf);
+				{evalEnclosedExpr(((Expression)next).eval(contextSequence, contextItem), buf);}
 			else
-				buf.append(next);
+				{buf.append(next);}
 		}
 		//TODO : include that tricky attribute normalization here
-		StringValue result = new StringValue(buf.toString());
+		final StringValue result = new StringValue(buf.toString());
         // String values as expressions are already expanded by
         // the parser -- Alex
 		//result.expand();
@@ -105,12 +105,12 @@ public class AttributeConstructor extends NodeConstructor {
 	private void evalEnclosedExpr(Sequence seq, StringBuilder buf) throws XPathException {
 		Item item;
 		AtomicValue atomic;
-		for(SequenceIterator i = seq.iterate(); i.hasNext();) {
+		for(final SequenceIterator i = seq.iterate(); i.hasNext();) {
 			item = i.nextItem();
 			atomic = item.atomize();
 			buf.append(atomic.getStringValue());
 			if(i.hasNext())
-				buf.append(' ');
+				{buf.append(' ');}
 		}
 	}
 	
@@ -120,7 +120,7 @@ public class AttributeConstructor extends NodeConstructor {
 	 */
 	public String getLiteralValue() {
 		if(contents.size() == 0)
-			return "";
+			{return "";}
 		return (String)contents.get(0);
 	}
 	
@@ -136,18 +136,18 @@ public class AttributeConstructor extends NodeConstructor {
         dumper.display("{");
         dumper.startIndent();
 
-		for(Object next : contents) {
+		for(final Object next : contents) {
 			if(next instanceof Expression)
-				((Expression)next).dump(dumper);
+				{((Expression)next).dump(dumper);}
 			else
-				dumper.display(next);
+				{dumper.display(next);}
 		}
         dumper.endIndent();
         dumper.nl().display("} ");
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append("attribute ");
         //TODO : remove curly braces if Qname
         result.append("{"); 
@@ -155,11 +155,11 @@ public class AttributeConstructor extends NodeConstructor {
         result.append("} "); 
         result.append("{");        
 
-		for(Object next : contents) {
+		for(final Object next : contents) {
 			if(next instanceof Expression)
-				result.append(next.toString());
+				{result.append(next.toString());}
 			else
-				result.append(next.toString());
+				{result.append(next.toString());}
 		}      
 		result.append("} ");
 		return result.toString();
@@ -172,9 +172,9 @@ public class AttributeConstructor extends NodeConstructor {
     public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
 
-		for(Object object : contents) {
+		for(final Object object : contents) {
 			if(object instanceof Expression)
-				((Expression)object).resetState(postOptimization);
+				{((Expression)object).resetState(postOptimization);}
 		}
 	}
 

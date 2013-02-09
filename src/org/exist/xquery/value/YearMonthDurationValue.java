@@ -50,8 +50,8 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 				//Always set !
 				//!duration.getField(DatatypeConstants.SECONDS).equals(BigInteger.ZERO))
 				duration.isSet(DatatypeConstants.SECONDS))
-				throw new XPathException(ErrorCodes.XPTY0004, "The value '" + duration + "' is not an " + Type.getTypeName(getType()) + 
-						" since it specifies days, hours, minutes or seconds values");
+				{throw new XPathException(ErrorCodes.XPTY0004, "The value '" + duration + "' is not an " + Type.getTypeName(getType()) + 
+						" since it specifies days, hours, minutes or seconds values");}
 		}		
 	}
 
@@ -62,7 +62,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	private static Duration createDurationYearMonth(String str) throws XPathException {
 		try {
 			return TimeUtils.getInstance().newDurationYearMonth(StringValue.trimWhitespace(str));
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(Type.YEAR_MONTH_DURATION) +
 					" from \"" + str + "\"");            
 		}
@@ -85,7 +85,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	}
 	
 	public String getStringValue() {
-        FastStringBuffer sb = new FastStringBuffer(32);
+        final FastStringBuffer sb = new FastStringBuffer(32);
         if (getCanonicalDuration().getSign() < 0) {
             sb.append('-');
         }
@@ -136,9 +136,9 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		try {
-			if (other.getType() == Type.TIME) throw new IllegalArgumentException();
+			if (other.getType() == Type.TIME) {throw new IllegalArgumentException();}
 			return super.plus(other);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			throw new XPathException(
 					"Operand to plus should be of type xdt:yearMonthDuration, xs:date, "
 						+ "or xs:dateTime; got: "
@@ -157,18 +157,18 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 				throw new XPathException(ErrorCodes.FODT0002, "Multiplication by infinity overflow");		
 			}		
 		}
-		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
+		final BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
 		
-		boolean isFactorNegative = factor.signum() < 0;		
+		final boolean isFactorNegative = factor.signum() < 0;		
 		
-		YearMonthDurationValue product = fromDecimalMonths(
+		final YearMonthDurationValue product = fromDecimalMonths(
 			new BigDecimal(monthsValueSigned())
 			.multiply(factor.abs())
 			.setScale(0, (isFactorNegative)? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP)
 		);
 		
 		if (isFactorNegative)
-			return product.negate();
+			{return product.negate();}
 		
 		return product;
 	}
@@ -189,16 +189,16 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 				throw new XPathException(ErrorCodes.FODT0002, "Division by zero overflow");
 			}			
 		}
-		BigDecimal divisor = numberToBigDecimal(other, "Can not divide xdt:yearMonthDuration by '" + Type.getTypeName(other.getType())+ "'");
+		final BigDecimal divisor = numberToBigDecimal(other, "Can not divide xdt:yearMonthDuration by '" + Type.getTypeName(other.getType())+ "'");
 		
-		boolean isDivisorNegative = divisor.signum() < 0;
+		final boolean isDivisorNegative = divisor.signum() < 0;
 		
-		YearMonthDurationValue quotient = fromDecimalMonths(
+		final YearMonthDurationValue quotient = fromDecimalMonths(
 			new BigDecimal(monthsValueSigned())
 			.divide(divisor.abs(), 0, (isDivisorNegative)? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP));		
 		
 		if (isDivisorNegative)
-			return quotient.negate();
+			{return quotient.negate();}
 		
 		return new YearMonthDurationValue(quotient.getCanonicalDuration());	
 	}

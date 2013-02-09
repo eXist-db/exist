@@ -65,11 +65,11 @@ public final class NodeIterator implements Iterator<StoredNode> {
      *@return <code>true</code> if there is at least one more node to read
      */
     public boolean hasNext() {
-        Lock lock = db.getLock();
+        final Lock lock = db.getLock();
         try {
             try {
                 lock.acquire(Lock.READ_LOCK);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
                 //TODO : throw exception here ? -pb
                 return false;
@@ -79,17 +79,17 @@ public final class NodeIterator implements Iterator<StoredNode> {
                 db.getPageBuffer().add(page);
                 final DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
                 if (offset < pageHeader.getDataLength())
-                    return true;
+                    {return true;}
                 else if (pageHeader.getNextDataPage() == Page.NO_PAGE)
-                    return false;
+                    {return false;}
                 else
                     //Mmmmh... strange -pb
-                    return true;
+                    {return true;}
             }
-        } catch (BTreeException e) {
+        } catch (final BTreeException e) {
             LOG.warn(e);
             //TODO : throw exception here ? -pb
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.warn(e);
             //TODO : throw exception here ? -pb
         } finally {
@@ -102,11 +102,11 @@ public final class NodeIterator implements Iterator<StoredNode> {
      *  Returns the next node in document order. 
      */
     public StoredNode next() {
-        Lock lock = db.getLock();
+        final Lock lock = db.getLock();
         try {
             try {
                 lock.acquire(Lock.READ_LOCK);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
                 //TODO : throw exception here ? -pb
                 return null;
@@ -116,7 +116,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
             if (gotoNextPosition()) {
                 long backLink = 0;
                 do {
-                    DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
+                    final DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
                     //Next value larger than length of the current page?
                     if (offset >= pageHeader.getDataLength()) {
                         //Load next page in chain
@@ -166,7 +166,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
                             final byte[] overflowValue = db.getOverflowValue(overflow);
                             nextNode = StoredNode.deserialize(overflowValue, 0, overflowValue.length,
                                 doc, useNodePool);
-                        } catch(Exception e) {
+                        } catch(final Exception e) {
                             LOG.warn("Exception while loading overflow value: " + e.getMessage() +
                                 "; originating page: " + page.page.getPageInfo());
                             //TODO : rethrow exception ? -pb
@@ -176,7 +176,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
                         try {
                             nextNode = StoredNode.deserialize(page.data, offset, vlen, doc, useNodePool);
                             offset += vlen;
-                        } catch(Exception e) {
+                        } catch(final Exception e) {
                             LOG.error("Error while deserializing node: " + e.getMessage(), e);
                             LOG.error("Reading from offset: " + offset + "; len = " + vlen);
                             LOG.debug(db.debugPageContents(page));
@@ -205,10 +205,10 @@ public final class NodeIterator implements Iterator<StoredNode> {
                 } while (nextNode == null);
             }
             return nextNode;
-        } catch (BTreeException e) {
+        } catch (final BTreeException e) {
             LOG.error(e.getMessage(), e);
             //TODO : re-throw exception ? -pb
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
             //TODO : re-throw exception ? -pb
         } finally {
@@ -222,11 +222,11 @@ public final class NodeIterator implements Iterator<StoredNode> {
         if (node != null) {
             RecordPos rec = null;
             if (StorageAddress.hasAddress(node.getInternalAddress()))
-                rec = db.findRecord(node.getInternalAddress());
+                {rec = db.findRecord(node.getInternalAddress());}
             if (rec == null) {
-                long addr = db.findValue(broker, new NodeProxy(node));
+                final long addr = db.findValue(broker, new NodeProxy(node));
                 if (addr == BTree.KEY_NOT_FOUND)
-                    return false;
+                    {return false;}
                 rec = db.findRecord(addr);
             }
             pageNum = rec.getPage().getPageNum();
@@ -238,7 +238,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
         } else if (StorageAddress.hasAddress(startAddress)) {
             final RecordPos rec = db.findRecord(startAddress);
             if(rec == null)
-                throw new IOException("Node not found at specified address.");
+                {throw new IOException("Node not found at specified address.");}
             pageNum = rec.getPage().getPageNum();
             //Position the stream at the very beginning of the record
             offset = rec.offset - DOMFile.LENGTH_TID;

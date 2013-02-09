@@ -38,10 +38,10 @@ import java.util.Map;
 public class LockManager implements LockManagerMBean {
 
     public TabularData getWaitingThreads() {
-        Map<String, LockInfo> map = DeadlockDetection.getWaitingThreads();
+        final Map<String, LockInfo> map = DeadlockDetection.getWaitingThreads();
         try {
             return lockMapToComposite(map);
-        } catch (OpenDataException e) {
+        } catch (final OpenDataException e) {
             e.printStackTrace();
             return null;
         }
@@ -60,15 +60,15 @@ public class LockManager implements LockManagerMBean {
     private static String[] indexNames = { "waitingThread" };
 
     private TabularData lockMapToComposite(Map<String, LockInfo> map) throws OpenDataException {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, new ArrayType<Object>(1, SimpleType.STRING),
+        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, new ArrayType<Object>(1, SimpleType.STRING),
                 new ArrayType<Object>(1, SimpleType.STRING), new ArrayType<Object>(1, SimpleType.STRING) };
-        CompositeType lockType = new CompositeType("lockInfo", "Provides information on a thread waiting for a lock",
+        final CompositeType lockType = new CompositeType("lockInfo", "Provides information on a thread waiting for a lock",
                 itemNames, itemDescriptions, itemTypes);
-        TabularType tabularType = new TabularType("waitingThreads", "Lists all threads waiting for a lock", lockType, indexNames);
-        TabularDataSupport data = new TabularDataSupport(tabularType);
-        for (Map.Entry<String, LockInfo> entry : map.entrySet()) {
-            LockInfo info = entry.getValue();
-            Object[] itemValues = {entry.getKey(), info.getLockType(), info.getLockMode(), info.getId(), info.getOwners(), info.getWaitingForRead(),
+        final TabularType tabularType = new TabularType("waitingThreads", "Lists all threads waiting for a lock", lockType, indexNames);
+        final TabularDataSupport data = new TabularDataSupport(tabularType);
+        for (final Map.Entry<String, LockInfo> entry : map.entrySet()) {
+            final LockInfo info = entry.getValue();
+            final Object[] itemValues = {entry.getKey(), info.getLockType(), info.getLockMode(), info.getId(), info.getOwners(), info.getWaitingForRead(),
                     info.getWaitingForWrite()};
             data.put(new CompositeDataSupport(lockType, itemNames, itemValues));
         }

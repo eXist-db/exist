@@ -39,7 +39,7 @@ public class Abbreviator
 	public String getAbbreviatedId(URI uri)
 	{
 		if(uri == null)
-			return null;
+			{return null;}
 		String toString = uri.toString();
 		if(toString.startsWith(XACMLConstants.EXIST_XACML_NS))
 		{
@@ -49,21 +49,21 @@ public class Abbreviator
 			{
 				i = toString.lastIndexOf('/');
 				if(i != -1)
-					toString = toString.substring(i+1);
+					{toString = toString.substring(i+1);}
 			}
 			else
-				toString = toString.substring(i+1);
+				{toString = toString.substring(i+1);}
 			
 		}
 		else if(toString.startsWith(XACMLConstants.VERSION_1_0_BASE))
 		{
 			toString = toString.substring(XACMLConstants.VERSION_1_0_BASE.length());
-			int i = toString.lastIndexOf(':');
+			final int i = toString.lastIndexOf(':');
 			if(i != -1)
-				toString = toString.substring(i+1);
+				{toString = toString.substring(i+1);}
 		}
 		else
-			return toString;
+			{return toString;}
 		
 		attributeIdMap.put(toString, uri);
 		return toString;
@@ -76,16 +76,16 @@ public class Abbreviator
 	public String getAbbreviatedType(URI type)
 	{
 		if(type == null)
-			return null;
+			{return null;}
 		String toString = type.toString();
 		if(toString.startsWith(XACMLConstants.XACML_DATATYPE_BASE))
-			toString = toString.substring(XACMLConstants.XACML_DATATYPE_BASE.length());
+			{toString = toString.substring(XACMLConstants.XACML_DATATYPE_BASE.length());}
 		else if(toString.startsWith(Namespaces.SCHEMA_NS))
-			toString = toString.substring(Namespaces.SCHEMA_NS.length()+1);
+			{toString = toString.substring(Namespaces.SCHEMA_NS.length()+1);}
 		else if(toString.startsWith(XACMLConstants.XQUERY_OPERATORS_NS))
-			toString = toString.substring(XACMLConstants.XQUERY_OPERATORS_NS.length()+1);
+			{toString = toString.substring(XACMLConstants.XQUERY_OPERATORS_NS.length()+1);}
 		else
-			return toString;
+			{return toString;}
 		
 		typeMap.put(toString, type);
 		return toString;
@@ -98,41 +98,41 @@ public class Abbreviator
 	public String getAbbreviatedCombiningID(URI uri)
 	{
 		if(uri == null)
-			return null;
+			{return null;}
 		String toString = uri.toString();
 		if(toString.startsWith(XACMLConstants.RULE_COMBINING_BASE))
-			toString = toString.substring(XACMLConstants.RULE_COMBINING_BASE.length());
+			{toString = toString.substring(XACMLConstants.RULE_COMBINING_BASE.length());}
 		else if(toString.startsWith(XACMLConstants.POLICY_COMBINING_BASE))
-			toString = toString.substring(XACMLConstants.POLICY_COMBINING_BASE.length());
+			{toString = toString.substring(XACMLConstants.POLICY_COMBINING_BASE.length());}
 		else
-			return toString;
+			{return toString;}
 		
 		return toString;
 	}
 	public URI getFullCombiningURI(String abbrev, boolean isRuleAlg)
 	{
 		if(abbrev == null)
-			return null;
-		String prefix = isRuleAlg ? XACMLConstants.RULE_COMBINING_BASE : XACMLConstants.POLICY_COMBINING_BASE;
+			{return null;}
+		final String prefix = isRuleAlg ? XACMLConstants.RULE_COMBINING_BASE : XACMLConstants.POLICY_COMBINING_BASE;
 		return URI.create(prefix + abbrev);
 	}
 	
 	public String getAbbreviatedFunctionId(URI functionId)
 	{
 		if(functionId == null)
-			return null;
+			{return null;}
 	
 		String toString = functionId.toString();
 		if(toString.startsWith(FunctionBase.FUNCTION_NS))
-			toString = toString.substring(FunctionBase.FUNCTION_NS.length());
+			{toString = toString.substring(FunctionBase.FUNCTION_NS.length());}
 		else
 		{
 			functionMap.put(functionId, toString);
 			return toString;
 		}
 		
-		if(toString.equals("regexp-string-match"))
-			toString = "string-match";
+		if("regexp-string-match".equals(toString))
+			{toString = "string-match";}
 		
 		for(int i = 0; i < comparisonMap.length; ++i)
 		{
@@ -148,15 +148,15 @@ public class Abbreviator
 	public URI getFullFunctionId(String abbrev, URI dataType)
 	{
 		if(abbrev == null || dataType == null)
-			return null;
-		URI uri = (URI)functionMap.get(abbrev);
+			{return null;}
+		final URI uri = (URI)functionMap.get(abbrev);
 		if(uri != null)
-			return uri;
+			{return uri;}
 		
-		String abbrevType = getAbbreviatedType(dataType);
+		final String abbrevType = getAbbreviatedType(dataType);
 		
-		if(abbrev.equals("match") && abbrevType.equals("string"))
-			return URI.create(MatchFunction.NAME_REGEXP_STRING_MATCH);
+		if("match".equals(abbrev) && "string".equals(abbrevType))
+			{return URI.create(MatchFunction.NAME_REGEXP_STRING_MATCH);}
 		
 		for(int i = 0; i < comparisonMap.length; ++i)
 		{
@@ -177,36 +177,36 @@ public class Abbreviator
 		//this is almost certainly wrong
 		//abbrevTargetFunctionId filters these out because they do
 		//not include the data type in their name (not, and, or, n-or)
-		FunctionFactory factory = FunctionFactory.getTargetInstance();
-		Set functionIds = factory.getSupportedFunctions();
+		final FunctionFactory factory = FunctionFactory.getTargetInstance();
+		final Set functionIds = factory.getSupportedFunctions();
 		
-		Set<Object> ret = new HashSet<Object>();
-		String abbrevType = getAbbreviatedType(dataType);
+		final Set<Object> ret = new HashSet<Object>();
+		final String abbrevType = getAbbreviatedType(dataType);
 		String functionId;
-		for(Iterator it = functionIds.iterator(); it.hasNext();)
+		for(final Iterator it = functionIds.iterator(); it.hasNext();)
 		{
 			functionId = (String)it.next();
 			functionId = abbrevTargetFunctionId(functionId, abbrevType);
 			if(functionId != null)
-				ret.add(functionId);
+				{ret.add(functionId);}
 		}
 		return ret;
 	}
 	public String getAbbreviatedTargetFunctionId(URI functionId, URI dataType)
 	{
 		if(functionId == null || dataType == null)
-			return null;
+			{return null;}
 		return abbrevTargetFunctionId(functionId.toString(), getAbbreviatedType(dataType));
 	}
 	private String abbrevTargetFunctionId(String functionId, String abbrevType)
 	{
 		if(functionId.startsWith(FunctionBase.FUNCTION_NS))
-			functionId = functionId.substring(FunctionBase.FUNCTION_NS.length());
+			{functionId = functionId.substring(FunctionBase.FUNCTION_NS.length());}
 		else
-			return null;
+			{return null;}
 		
-		if(functionId.equals("regexp-string-match"))
-			functionId = "string-match";
+		if("regexp-string-match".equals(functionId))
+			{functionId = "string-match";}
 		if(functionId.startsWith(abbrevType))
 		{
 			functionId = functionId.substring(abbrevType.length() + 1);
@@ -225,7 +225,7 @@ public class Abbreviator
 	
 	private static URI get(Map<String, URI> map, String abbrev)
 	{
-		URI ret = map.get(abbrev);
+		final URI ret = map.get(abbrev);
 		return (ret == null) ? parse(abbrev) : ret;
 	}
 	private static URI parse(String abbrev)
@@ -234,7 +234,7 @@ public class Abbreviator
 		{
 			return new URI(abbrev);
 		}
-		catch (URISyntaxException e)
+		catch (final URISyntaxException e)
 		{
 			LOG.warn("Invalid URI '" + abbrev + "'", e);
 			return null;

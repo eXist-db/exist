@@ -97,27 +97,27 @@ public class Profiler {
      * @param pragma
      */
     public final void configure(Option pragma) {
-        String options[] = pragma.tokenizeContents();
+        final String options[] = pragma.tokenizeContents();
         String params[];
         for (int i = 0; i < options.length; i++) {
             params = Option.parseKeyValuePair(options[i]);
             if (params != null) {
-                if (params[0].equals("trace")) {
+                if ("trace".equals(params[0])) {
                     stats.setEnabled(true);
                     
-                } else if (params[0].equals("tracelog")) {
-                    logEnabled = params[1].equals("yes");
+                } else if ("tracelog".equals(params[0])) {
+                    logEnabled = "yes".equals(params[1]);
                 
-                } else if (params[0].equals("logger")) {
+                } else if ("logger".equals(params[0])) {
                     log = Logger.getLogger(params[1]);
                 
-                } else if (params[0].equals("enabled")) {
-                    enabled = params[1].equals("yes");
+                } else if ("enabled".equals(params[0])) {
+                    enabled = "yes".equals(params[1]);
                 
                 } else if ("verbosity".equals(params[0])) {
                     try {
                         verbosity = Integer.parseInt(params[1]);
-                    } catch (NumberFormatException e) {
+                    } catch (final NumberFormatException e) {
                     	log.warn( "invalid value for verbosity: " +
                     			"should be an integer between 0 and " + 
                     			SEQUENCE_DUMP );                   	
@@ -126,7 +126,7 @@ public class Profiler {
             }
         }
         if (verbosity == 0) 
-            enabled=false;
+            {enabled=false;}
     }
     
     /**
@@ -139,8 +139,8 @@ public class Profiler {
     }
 
     public final boolean isLogEnabled() {
-    	DBBroker broker = db.getActiveBroker();
-        Boolean globalProp = (Boolean) broker.getConfiguration().getProperty(CONFIG_PROPERTY_TRACELOG);
+    	final DBBroker broker = db.getActiveBroker();
+        final Boolean globalProp = (Boolean) broker.getConfiguration().getProperty(CONFIG_PROPERTY_TRACELOG);
         return logEnabled || (globalProp != null && globalProp.booleanValue());
     }
 
@@ -218,7 +218,7 @@ public class Profiler {
      */
     public final void start(Expression expr, String message) {
         if (!enabled)
-            return;
+            {return;}
         
         if (stack.size() == 0) {
             log.debug("QUERY START");                
@@ -228,7 +228,7 @@ public class Profiler {
     	for (int i = 0; i < stack.size(); i++)
     		buf.append('\t');             
         
-        ProfiledExpr e = new ProfiledExpr(expr);
+        final ProfiledExpr e = new ProfiledExpr(expr);
     	stack.push(e);
             
         buf.append("START\t");
@@ -258,10 +258,10 @@ public class Profiler {
      */
     public final void end(Expression expr, String message, Sequence result) {
         if (!enabled)
-            return;        
+            {return;}        
         
         try {         	     	
-			ProfiledExpr e = stack.pop(); 
+			final ProfiledExpr e = stack.pop(); 
 		
 			if (e.expr != expr) {
 			    log.warn("Error: the object passed to end() does not correspond to the expression on top of the stack.");
@@ -269,7 +269,7 @@ public class Profiler {
 			    return;
 			}
             
-            long elapsed = System.currentTimeMillis() - e.start;
+            final long elapsed = System.currentTimeMillis() - e.start;
             
             if (message != null && !"".equals(message)) {                
                 buf.setLength(0);
@@ -293,7 +293,7 @@ public class Profiler {
                 else if (verbosity >= SEQUENCE_PREVIEW)
                     buf.append(sequencePreview(result));
                 else*/ if (verbosity >= ITEM_COUNT) 
-                    buf.append(result.getItemCount() + " item(s)");   
+                    {buf.append(result.getItemCount() + " item(s)");}   
                 buf.append("\t");     
                 printPosition(e.expr);   
                 buf.append(expr.toString());
@@ -323,7 +323,7 @@ public class Profiler {
             if (stack.size() == 0) {
                 log.debug("QUERY END");                
             }
-		} catch (RuntimeException e) {
+		} catch (final RuntimeException e) {
 			log.debug("Profiler: could not pop from expression stack - " + expr + " - "+ message + ". Error : "+ e.getMessage());
 		}
     }
@@ -340,24 +340,24 @@ public class Profiler {
      */
     public final void message(Expression expr, int level, String title, Sequence sequence) {
     	if (!enabled)
-    		return;
+    		{return;}
         if (level > verbosity)
-            return;
+            {return;}
     	
     	buf.setLength(0);  
     	for (int i = 0; i < stack.size() - 1; i++)
     		buf.append('\t');
         if (title != null && !"".equals(title))
-            buf.append(title);
+            {buf.append(title);}
         else
-            buf.append("MSG");        
+            {buf.append("MSG");}        
         buf.append("\t");        
         /* if (verbosity >= SEQUENCE_DUMP) 
             buf.append(sequence.toString()); 
         else if (verbosity >= SEQUENCE_PREVIEW)
             buf.append(sequencePreview(sequence));
         else */ if (verbosity >= ITEM_COUNT) 
-            buf.append(sequence.getItemCount() + " item(s)"); 
+            {buf.append(sequence.getItemCount() + " item(s)");} 
         buf.append("\t"); 
         buf.append(expr.toString());        
     	log.debug(buf.toString());        
@@ -365,17 +365,17 @@ public class Profiler {
     
     public final void message(Expression expr, int level, String title, String message) {
         if (!enabled)            
-            return;
+            {return;}
         if (level > verbosity)
-            return;        
+            {return;}        
         
         buf.setLength(0);
     	for (int i = 0; i < stack.size() - 1; i++)
     		buf.append('\t');        
         if (title != null && !"".equals(title))
-            buf.append(title);
+            {buf.append(title);}
         else
-            buf.append("MSG");        
+            {buf.append("MSG");}        
         if (message != null && !"".equals(message)) {
             buf.append("\t");
             buf.append(message);        	
@@ -388,7 +388,7 @@ public class Profiler {
     
     public void reset() {
         if (stack.size() > 0)
-            log.debug("QUERY RESET");  
+            {log.debug("QUERY RESET");}  
         stack.clear();
         if (stats.isEnabled() && stats.hasData()) {
             save();
@@ -405,29 +405,29 @@ public class Profiler {
             buf.append("]\t");
         }
         else
-            buf.append("\t");
+            {buf.append("\t");}
     }
     
     //TODO : find a way to preview "abstract" sequences
     // never used locally
     @SuppressWarnings("unused")
 	private String sequencePreview(Sequence sequence) {
-        StringBuilder truncation = new StringBuilder();
+        final StringBuilder truncation = new StringBuilder();
         if (sequence.isEmpty())
-            truncation.append(sequence.toString());
+            {truncation.append(sequence.toString());}
         else if (sequence.hasOne()) {
             truncation.append("(");            
             if (sequence.itemAt(0).toString().length() > 20) 
-                truncation.append(sequence.itemAt(0).toString().substring(0, 20)).append("... "); 
+                {truncation.append(sequence.itemAt(0).toString().substring(0, 20)).append("... ");} 
             else
-                truncation.append(sequence.itemAt(0).toString());            
+                {truncation.append(sequence.itemAt(0).toString());}            
             truncation.append(")");        
         } else  {
             truncation.append("(");
             if (sequence.itemAt(0).toString().length() > 20) 
-                truncation.append(sequence.itemAt(0).toString().substring(0, 20)).append("... "); 
+                {truncation.append(sequence.itemAt(0).toString().substring(0, 20)).append("... ");} 
             else
-                truncation.append(sequence.itemAt(0).toString());
+                {truncation.append(sequence.itemAt(0).toString());}
             truncation.append(", ... )"); 
         }                  
         return truncation.toString();

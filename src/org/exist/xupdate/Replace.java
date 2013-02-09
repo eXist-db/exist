@@ -47,39 +47,39 @@ public class Replace extends Modification {
 	 */
 	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 			EXistException, XPathException, TriggerException {
-		NodeList children = content;
+		final NodeList children = content;
         if (children.getLength() == 0) 
-            return 0;
+            {return 0;}
         if (children.getLength() > 1)
-        	throw new EXistException("xupdate:replace requires exactly one content node");
+        	{throw new EXistException("xupdate:replace requires exactly one content node");}
         LOG.debug("processing replace ...");
         int modifications = children.getLength();
         try {
-            StoredNode ql[] = selectAndLock(transaction);
-            IndexListener listener = new IndexListener(ql);
-            NotificationService notifier = broker.getBrokerPool().getNotificationService();
+            final StoredNode ql[] = selectAndLock(transaction);
+            final IndexListener listener = new IndexListener(ql);
+            final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             Node temp;
             TextImpl text;
             AttrImpl attribute;
             ElementImpl parent;
             for (int i = 0; i < ql.length; i++) {
-                StoredNode node = ql[i];
+                final StoredNode node = ql[i];
                 if (node == null) {
                     LOG.warn("select " + selectStmt + " returned empty node set");
                     continue;
                 }
-                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 doc.getMetadata().setIndexListener(listener);
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
                 parent = (ElementImpl) node.getParentStoredNode();
                 if (parent == null)
-                    throw new EXistException("The root element of a document can not be replaced with 'xu:replace'. " +
-                        "Please consider removing the document or use 'xu:update' to just replace the children of the root.");
+                    {throw new EXistException("The root element of a document can not be replaced with 'xu:replace'. " +
+                        "Please consider removing the document or use 'xu:update' to just replace the children of the root.");}
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
-                        if (modifications == 0) modifications = 1;
+                        if (modifications == 0) {modifications = 1;}
                         temp = children.item(0);
                         parent.replaceChild(transaction, temp, node);
                         break;
@@ -91,7 +91,7 @@ public class Replace extends Modification {
                         parent.updateChild(transaction, node, text);
                         break;
                     case Node.ATTRIBUTE_NODE:
-                        AttrImpl attr = (AttrImpl) node;
+                        final AttrImpl attr = (AttrImpl) node;
                         temp = children.item(0);
                         attribute = new AttrImpl(attr.getQName(), temp.getNodeValue());
                         attribute.setOwnerDocument(doc);

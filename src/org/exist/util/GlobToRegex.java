@@ -143,14 +143,14 @@ public class GlobToRegex {
             switch (c) {
                 case '*':
                     if (inCharSet)
-                        buffer.append('*');
+                        {buffer.append('*');}
                     else {
                         buffer.append(".*");
                     }
                     break;
                 case '?':
                     if (inCharSet)
-                        buffer.append('?');
+                        {buffer.append('?');}
                     else {
                         buffer.append(".?");
                     }
@@ -187,13 +187,13 @@ public class GlobToRegex {
                     if (ch == pattern.length() - 1) {
                         buffer.append('\\');
                     } else if (__isGlobMetaCharacter(pattern.charAt(ch + 1)))
-                        buffer.append(pattern.charAt(++ch));
+                        {buffer.append(pattern.charAt(++ch));}
                     else
-                        buffer.append('\\');
+                        {buffer.append('\\');}
                     break;
                 default:
                     if (!inCharSet && __isPerl5MetaCharacter(c))
-                        buffer.append('\\');
+                        {buffer.append('\\');}
                     buffer.append(c);
                     break;
             }
@@ -206,13 +206,13 @@ public class GlobToRegex {
      * @param args
      */
     public static void main(String[] args) {
-        String glob = "[gG]enerate? ";
-        String re = globToRegexp(glob);
+        final String glob = "[gG]enerate? ";
+        final String re = globToRegexp(glob);
         
-        String str = "This is generated text";
-        Pattern pattern = Pattern.compile(re);
-        Matcher matcher = pattern.matcher(str);
-        @SuppressWarnings("unused")
+        final String str = "This is generated text";
+        final Pattern pattern = Pattern.compile(re);
+        final Matcher matcher = pattern.matcher(str);
+        final @SuppressWarnings("unused")
 		boolean match = matcher.find();
         System.out.println(str.substring(matcher.start(), matcher.end()));
     }

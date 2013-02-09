@@ -73,24 +73,24 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		if(getSignature().getArgumentCount() == 2) {
-			String doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
+			final String doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
 			try {
-				Resource resource = collection.getResource(doc);
+				final Resource resource = collection.getResource(doc);
 				if (resource == null) {
                     logger.error("Resource " + doc + " not found");
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
 				collection.removeResource(resource);
-			} catch (XMLDBException e) {
+			} catch (final XMLDBException e) {
                 logger.error(e.getMessage());
                 throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
 			}
 		} else {
 			try {
-				CollectionManagementService service = (CollectionManagementService)
+				final CollectionManagementService service = (CollectionManagementService)
 					collection.getService("CollectionManagementService", "1.0");
 				service.removeCollection(collection.getName());
-			} catch (XMLDBException e) {
+			} catch (final XMLDBException e) {
                 logger.error("Cannot remove collection: " + e.getMessage());
                 throw new XPathException(this, "Cannot remove collection: " + e.getMessage(), e);
 			}

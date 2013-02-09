@@ -50,7 +50,7 @@ public class ExistSAXParserFactory {
         try {
             clazz = Class.forName(className);
 
-        } catch (Exception ex) { // ClassNotFoundException
+        } catch (final Exception ex) { // ClassNotFoundException
             // quick escape
             LOG.debug(className + ": " + ex.getMessage(), ex);
             return null;
@@ -60,7 +60,7 @@ public class ExistSAXParserFactory {
         Method method = null;
         try {
             method = clazz.getMethod("newInstance", (Class[]) null);
-        } catch (Exception ex) { // SecurityException and NoSuchMethodException
+        } catch (final Exception ex) { // SecurityException and NoSuchMethodException
             // quick escape
             LOG.debug("Method " + className + ".newInstance not found.", ex);
             return null;
@@ -71,7 +71,7 @@ public class ExistSAXParserFactory {
         try {
             result = method.invoke(null, (Object[]) null);
 
-        } catch (Exception ex) { //IllegalAccessException and InvocationTargetException
+        } catch (final Exception ex) { //IllegalAccessException and InvocationTargetException
             // quick escape
             LOG.debug("Could not invoke method " + className + ".newInstance.", ex);
             return null;
@@ -97,7 +97,7 @@ public class ExistSAXParserFactory {
 
         SAXParserFactory factory = null;
 
-        String config = System.getProperty(systemProperty);
+        final String config = System.getProperty(systemProperty);
 
         // Get SAXparser factory specified by system property
         if (config != null) {

@@ -66,20 +66,20 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
         super.configure(pool, dataDir, config);
         String fileName = FILE_NAME;
         if (config.hasAttribute(CONFIG_ATTR_FILE))
-            fileName = config.getAttribute(CONFIG_ATTR_FILE);
+            {fileName = config.getAttribute(CONFIG_ATTR_FILE);}
         dataFile = new File(dataDir + File.separatorChar + fileName);
     }
 
     @Override
     public void open() throws DatabaseConfigurationException {
-        double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
-        double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
-        double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
+        final double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
+        final double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
+        final double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
         LOG.debug("Creating '" + dataFile.getName() + "'...");
         try {
             db = new BFile(pool, (byte)0, false, dataFile, pool.getCacheManager(),
                 cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
-        } catch (DBException e) {
+        } catch (final DBException e) {
             throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.getAbsolutePath() + ": " +
                 e.getMessage());
         }
@@ -106,7 +106,7 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
         //TODO : ensure singleton ? a pool ?
         try {
             return new FTIndexWorker(this, broker);
-        } catch (DatabaseConfigurationException e) {
+        } catch (final DatabaseConfigurationException e) {
             LOG.warn("Failed to create index worker for full text index: " + e.getMessage(), e);
         }
         return null;
@@ -122,7 +122,7 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public void backupToArchive(RawDataBackup backup) throws IOException {
-        OutputStream os = backup.newEntry(db.getFile().getName());
+        final OutputStream os = backup.newEntry(db.getFile().getName());
         db.backupToStream(os);
         backup.closeEntry();
     }

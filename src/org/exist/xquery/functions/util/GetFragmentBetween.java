@@ -102,47 +102,47 @@ public class GetFragmentBetween extends Function {
    * @throws XPathException
    */
   public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-    int argumentCount = getArgumentCount();
+    final int argumentCount = getArgumentCount();
     if (argumentCount < 2) {
       logger.error("requires at least 2 arguments");
       throw new XPathException (this, "requires at least 2 arguments");
     }
-    Sequence ms1 = getArgument(0).eval(contextSequence, contextItem);    
-    Sequence ms2 = getArgument(1).eval(contextSequence, contextItem);    
+    final Sequence ms1 = getArgument(0).eval(contextSequence, contextItem);    
+    final Sequence ms2 = getArgument(1).eval(contextSequence, contextItem);    
     if (ms1.isEmpty()) {
       throw new XPathException(this, "your first argument delivers an empty node (no valid node position in document)");
     }
     Node ms1Node = null;
     if (! (ms1.itemAt(0) == null)) 
-      ms1Node = ((NodeValue) ms1.itemAt(0)).getNode(); 
+      {ms1Node = ((NodeValue) ms1.itemAt(0)).getNode();} 
     Node ms2Node = null;
     if (! (ms2.itemAt(0) == null)) 
-      ms2Node = ((NodeValue) ms2.itemAt(0)).getNode();
+      {ms2Node = ((NodeValue) ms2.itemAt(0)).getNode();}
     boolean pathCompletion = true;  // default
     if (argumentCount > 2) {
-      Sequence seqPathCompletion = getArgument(2).eval(contextSequence, contextItem);    
+      final Sequence seqPathCompletion = getArgument(2).eval(contextSequence, contextItem);    
       pathCompletion = seqPathCompletion.effectiveBooleanValue();
     }
     boolean displayRootNamespace = false;  // default
     if (argumentCount > 3) {
-      Sequence seqDisplayRootNamespace = getArgument(3).eval(contextSequence, contextItem);    
+      final Sequence seqDisplayRootNamespace = getArgument(3).eval(contextSequence, contextItem);    
       displayRootNamespace = seqDisplayRootNamespace.effectiveBooleanValue();
     }
     // fetch the fragment between the two milestones
-    StringBuilder fragment = getFragmentBetween(ms1Node, ms2Node);
+    final StringBuilder fragment = getFragmentBetween(ms1Node, ms2Node);
     if (pathCompletion) {
-      String msFromPathName = getNodeXPath(ms1Node.getParentNode(), displayRootNamespace);
-      String openElementsOfMsFrom = pathName2XmlTags(msFromPathName, "open");    
+      final String msFromPathName = getNodeXPath(ms1Node.getParentNode(), displayRootNamespace);
+      final String openElementsOfMsFrom = pathName2XmlTags(msFromPathName, "open");    
       String closingElementsOfMsTo = "";
       if (!(ms2Node == null)) {
-        String msToPathName = getNodeXPath(ms2Node.getParentNode(), displayRootNamespace);
+        final String msToPathName = getNodeXPath(ms2Node.getParentNode(), displayRootNamespace);
         closingElementsOfMsTo = pathName2XmlTags(msToPathName, "close");  
       }
       fragment.insert(0, openElementsOfMsFrom);
       fragment.append(closingElementsOfMsTo);
     }
-    StringValue strValFragment = new StringValue(fragment.toString());
-    ValueSequence resultFragment = new ValueSequence();
+    final StringValue strValFragment = new StringValue(fragment.toString());
+    final ValueSequence resultFragment = new ValueSequence();
     resultFragment.add(strValFragment);
     return resultFragment;
   }
@@ -155,29 +155,29 @@ public class GetFragmentBetween extends Function {
    * @throws XPathException
    */
   private StringBuilder getFragmentBetween(Node node1, Node node2) throws XPathException {
-    StoredNode storedNode1 = (StoredNode) node1;
-    StoredNode storedNode2 = (StoredNode) node2;
-    String node1NodeId = storedNode1.getNodeId().toString();
+    final StoredNode storedNode1 = (StoredNode) node1;
+    final StoredNode storedNode2 = (StoredNode) node2;
+    final String node1NodeId = storedNode1.getNodeId().toString();
     String node2NodeId = "-1";
     if (! (node2 == null))
-      node2NodeId = storedNode2.getNodeId().toString();
-    DocumentImpl docImpl = (DocumentImpl) node1.getOwnerDocument();
+      {node2NodeId = storedNode2.getNodeId().toString();}
+    final DocumentImpl docImpl = (DocumentImpl) node1.getOwnerDocument();
     BrokerPool brokerPool = null;
     DBBroker dbBroker = null;
-    StringBuilder resultFragment = new StringBuilder("");
+    final StringBuilder resultFragment = new StringBuilder("");
     String actualNodeId = "-2";
     boolean getFragmentMode = false;
     try {
       brokerPool = docImpl.getBrokerPool();
       dbBroker = brokerPool.get(null);
       EmbeddedXMLStreamReader reader = null;
-      NodeList children = docImpl.getChildNodes();
+      final NodeList children = docImpl.getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
-        StoredNode docChildStoredNode = (StoredNode) children.item(i);
-        int docChildStoredNodeType = docChildStoredNode.getNodeType();
+        final StoredNode docChildStoredNode = (StoredNode) children.item(i);
+        final int docChildStoredNodeType = docChildStoredNode.getNodeType();
         reader = dbBroker.getXMLStreamReader(docChildStoredNode, false);
         while (reader.hasNext() && ! node2NodeId.equals(actualNodeId) && docChildStoredNodeType != Node.PROCESSING_INSTRUCTION_NODE && docChildStoredNodeType != Node.COMMENT_NODE) {
-          int status = reader.next();
+          final int status = reader.next();
           switch (status) {
             case XMLStreamReader.START_DOCUMENT:
             case XMLStreamReader.END_DOCUMENT:
@@ -185,100 +185,100 @@ public class GetFragmentBetween extends Function {
             case XMLStreamReader.START_ELEMENT :
               actualNodeId = reader.getNode().getNodeId().toString();
               if (actualNodeId.equals(node1NodeId)) 
-                getFragmentMode = true;
+                {getFragmentMode = true;}
               if (actualNodeId.equals(node2NodeId)) 
-                getFragmentMode = false;
+                {getFragmentMode = false;}
               if (getFragmentMode) {
-                String startElementTag = getStartElementTag(reader);
+                final String startElementTag = getStartElementTag(reader);
                 resultFragment.append(startElementTag);
               }
               break;
             case XMLStreamReader.END_ELEMENT :
               if (getFragmentMode) {
-                String endElementTag = getEndElementTag(reader);
+                final String endElementTag = getEndElementTag(reader);
                 resultFragment.append(endElementTag);
               }
               break;
             case XMLStreamReader.CHARACTERS :
               if (getFragmentMode) {
-                String characters = getCharacters(reader);
+                final String characters = getCharacters(reader);
                 resultFragment.append(characters);
               }
               break;
             case XMLStreamReader.CDATA :
               if (getFragmentMode) {
-                String cdata = getCDataTag(reader);
+                final String cdata = getCDataTag(reader);
                 resultFragment.append(cdata);
               }
               break;
             case XMLStreamReader.COMMENT :
               if (getFragmentMode) {
-                String comment = getCommentTag(reader);
+                final String comment = getCommentTag(reader);
                 resultFragment.append(comment);
               }
               break;
             case XMLStreamReader.PROCESSING_INSTRUCTION :
               if (getFragmentMode) {
-                String piTag = getPITag(reader);
+                final String piTag = getPITag(reader);
                 resultFragment.append(piTag);
               }
               break;
           }
         }
       }
-    } catch (EXistException e) {
+    } catch (final EXistException e) {
       throw new XPathException(this, "An error occurred while getFragmentBetween: " + e.getMessage(), e);
-    } catch (XMLStreamException e) {
+    } catch (final XMLStreamException e) {
       throw new XPathException(this, "An error occurred while getFragmentBetween: " + e.getMessage(), e);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new XPathException(this, "An error occurred while getFragmentBetween: " + e.getMessage(), e);
     } finally {
       if (brokerPool != null)
-        brokerPool.release(dbBroker);  
+        {brokerPool.release(dbBroker);}  
     }
     return resultFragment;
   }
 
   private String getStartElementTag(EmbeddedXMLStreamReader reader) {
-    String elemName = reader.getLocalName();
+    final String elemName = reader.getLocalName();
     String elemAttrString = "";
     String elemNsString ="";
-    int nsCount = reader.getNamespaceCount();
+    final int nsCount = reader.getNamespaceCount();
     for (int ni = 0; ni < nsCount; ni++) {
-      String nsPrefix = reader.getNamespacePrefix(ni);
-      String nsUri = reader.getNamespaceURI(ni);
+      final String nsPrefix = reader.getNamespacePrefix(ni);
+      final String nsUri = reader.getNamespaceURI(ni);
       String nsString = "xmlns:" + nsPrefix + "=\"" + nsUri + "\"";
-      if (nsPrefix != null && nsPrefix.equals(""))  
-        nsString = "xmlns" + "=\"" + nsUri + "\"";  
+      if (nsPrefix != null && "".equals(nsPrefix))  
+        {nsString = "xmlns" + "=\"" + nsUri + "\"";}  
       elemNsString = elemNsString + " " +nsString;
     }
-    int attrCount = reader.getAttributeCount();
+    final int attrCount = reader.getAttributeCount();
     for (int j = 0; j < attrCount; j++) {
-      String attrNamePrefix = reader.getAttributePrefix(j);
-      String attrName = reader.getAttributeLocalName(j);
+      final String attrNamePrefix = reader.getAttributePrefix(j);
+      final String attrName = reader.getAttributeLocalName(j);
       String attrValue = reader.getAttributeValue(j);
       attrValue = escape(attrValue);
       String attrString = "";
       if (! (attrNamePrefix == null || attrNamePrefix.length() == 0))
-        attrString = attrNamePrefix + ":";
+        {attrString = attrNamePrefix + ":";}
       attrString = attrString + attrName + "=\"" + attrValue + "\"";
       elemAttrString = elemAttrString + " " + attrString;
     }
-    String elemPrefix = reader.getPrefix();
+    final String elemPrefix = reader.getPrefix();
     String elemPart = "";
     if (! (elemPrefix == null || elemPrefix.length() == 0))
-      elemPart = elemPrefix + ":";
+      {elemPart = elemPrefix + ":";}
     elemPart = elemPart + elemName;
-    String elementString = "<" + elemPart + elemNsString + elemAttrString + ">";
+    final String elementString = "<" + elemPart + elemNsString + elemAttrString + ">";
     return elementString;
   }
 
   private String getEndElementTag(EmbeddedXMLStreamReader reader) {
-    String elemName = reader.getLocalName();
-    String elemPrefix = reader.getPrefix();
+    final String elemName = reader.getLocalName();
+    final String elemPrefix = reader.getPrefix();
     String elemPart = "";
     if (! (elemPrefix == null || elemPrefix.length() == 0))
-      elemPart = elemPrefix + ":";
+      {elemPart = elemPrefix + ":";}
     elemPart = elemPart + elemName;
     return "</" + elemPart + ">";
   }
@@ -290,29 +290,29 @@ public class GetFragmentBetween extends Function {
   }
 
   private String getCDataTag(EmbeddedXMLStreamReader reader) {
-    char[] chars = reader.getTextCharacters();
+    final char[] chars = reader.getTextCharacters();
     return "<![CDATA[\n" + new String(chars) + "\n]]>";
   }
 
   private String getCommentTag(EmbeddedXMLStreamReader reader) {
-    char[] chars = reader.getTextCharacters();
+    final char[] chars = reader.getTextCharacters();
     return "<!--" + new String(chars) + "-->";
   }
 
   private String getPITag(EmbeddedXMLStreamReader reader) {
-    String piTarget = reader.getPITarget();
+    final String piTarget = reader.getPITarget();
     String piData = reader.getPIData();
     if (! (piData == null || piData.length() == 0))
-      piData = " " + piData;
+      {piData = " " + piData;}
     else
-      piData = "";
+      {piData = "";}
     return "<?" + piTarget + piData + "?>";
   }
 
   private String escape(String inputStr) {
-    StringBuilder resultStrBuf = new StringBuilder();
+    final StringBuilder resultStrBuf = new StringBuilder();
     for (int i = 0; i < inputStr.length(); i++) {
-      char ch = inputStr.charAt(i);
+      final char ch = inputStr.charAt(i);
       switch (ch) {
         case '<' :
           resultStrBuf.append("&lt;");
@@ -347,8 +347,8 @@ public class GetFragmentBetween extends Function {
    */
   private String pathName2XmlTags(String pathName, String mode) {
     String result = "";
-    ArrayList<String> elements = pathName2ElementsWithAttributes(pathName);
-    if (mode.equals("open")) {
+    final ArrayList<String> elements = pathName2ElementsWithAttributes(pathName);
+    if ("open".equals(mode)) {
       for (int i=0; i < elements.size(); i++) {
         String element = elements.get(i);
         element = element.replaceAll("\\[", " ");  // opening element: replace open bracket with space
@@ -356,33 +356,33 @@ public class GetFragmentBetween extends Function {
         element = element.replaceAll("@", "");  // opening element: remove @ character 
         element = element.replaceAll("\\]", "");  // opening element: remove closing bracket
         if (! (element.length() == 0))
-          result += "<" + element + ">\n";
+          {result += "<" + element + ">\n";}
       }
-    } else if (mode.equals("close")) {
+    } else if ("close".equals(mode)) {
       for (int i=elements.size()-1; i >= 0; i--) {
         String element = elements.get(i);
         element = element.replaceAll("\\[[^\\]]*\\]", "");  // closing element: remove brackets with attributes
         if (! (element.length() == 0))
-          result += "</" + element + ">\n";
+          {result += "</" + element + ">\n";}
       }
     }
     return result;
   }
   
   private ArrayList<String> pathName2ElementsWithAttributes(String pathName) {
-    ArrayList<String> result = new ArrayList<String>();
+    final ArrayList<String> result = new ArrayList<String>();
     if (pathName.charAt(0) == '/')
-      pathName = pathName.substring(1, pathName.length());  // without first "/" character
-    String regExpr = "[a-zA-Z0-9:]+?\\[.+?\\]/" + "|" + "[a-zA-Z0-9:]+?/" + "|" + "[a-zA-Z0-9:]+?\\[.+\\]$" + "|" + "[a-zA-Z0-9:]+?$"; // pathName example: "/archimedes[@xmlns:xlink eq "http://www.w3.org/1999/xlink"]/text/body/chap/p[@type eq "main"]/s/foreign[@lang eq "en"]"
-    Pattern p = Pattern.compile(regExpr, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // both flags enabled
-    Matcher m = p.matcher(pathName);
+      {pathName = pathName.substring(1, pathName.length());}  // without first "/" character
+    final String regExpr = "[a-zA-Z0-9:]+?\\[.+?\\]/" + "|" + "[a-zA-Z0-9:]+?/" + "|" + "[a-zA-Z0-9:]+?\\[.+\\]$" + "|" + "[a-zA-Z0-9:]+?$"; // pathName example: "/archimedes[@xmlns:xlink eq "http://www.w3.org/1999/xlink"]/text/body/chap/p[@type eq "main"]/s/foreign[@lang eq "en"]"
+    final Pattern p = Pattern.compile(regExpr, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // both flags enabled
+    final Matcher m = p.matcher(pathName);
     while (m.find()) {
-      int msBeginPos = m.start();
-      int msEndPos = m.end();
+      final int msBeginPos = m.start();
+      final int msEndPos = m.end();
       String elementName = pathName.substring(msBeginPos, msEndPos);
-      int elemNameSize = elementName.length();
+      final int elemNameSize = elementName.length();
       if (elemNameSize > 0 && elementName.charAt(elemNameSize - 1) == '/')
-        elementName = elementName.substring(0, elemNameSize - 1);  // without last "/" character
+        {elementName = elementName.substring(0, elemNameSize - 1);}  // without last "/" character
       result.add(elementName);
     }
     return result;
@@ -391,12 +391,12 @@ public class GetFragmentBetween extends Function {
   private String getNodeXPath(Node n, boolean setRootNamespace) {
     //if at the document level just return /
     if(n.getNodeType() == Node.DOCUMENT_NODE)
-      return "/";
+      {return "/";}
     /* walk up the node hierarchy
      * - node names become path names 
      * - attributes become predicates
      */
-    StringBuilder buf = new StringBuilder(nodeToXPath(n, setRootNamespace));
+    final StringBuilder buf = new StringBuilder(nodeToXPath(n, setRootNamespace));
     while((n = n.getParentNode()) != null) {
       if(n.getNodeType() == Node.ELEMENT_NODE) {
         buf.insert(0, nodeToXPath(n, setRootNamespace));
@@ -413,25 +413,25 @@ public class GetFragmentBetween extends Function {
    * @return StringBuilder containing the XPath
    */
   private StringBuilder nodeToXPath(Node n, boolean setRootNamespace) {
-    StringBuilder xpath = new StringBuilder("/" + getFullNodeName(n));
+    final StringBuilder xpath = new StringBuilder("/" + getFullNodeName(n));
     if (setRootNamespace) {
       // set namespace only if node is root node
-      Node parentNode = n.getParentNode();
-      short parentNodeType = parentNode.getNodeType();
+      final Node parentNode = n.getParentNode();
+      final short parentNodeType = parentNode.getNodeType();
       if (parentNodeType == Node.DOCUMENT_NODE) {
-        String nsUri = n.getNamespaceURI();
+        final String nsUri = n.getNamespaceURI();
         if (nsUri != null) {
           xpath.append("[@" + "xmlns" + " eq \"" + nsUri + "\"]");
         }
       }
     }
-    NamedNodeMap attrs = n.getAttributes();
+    final NamedNodeMap attrs = n.getAttributes();
     for(int i = 0; i < attrs.getLength(); i++) {
-      Node attr = attrs.item(i);
-      String fullNodeName = getFullNodeName(attr);
-      String attrNodeValue = attr.getNodeValue();
-      if (!fullNodeName.equals("") && (! (fullNodeName == null)))
-        xpath.append("[@" + fullNodeName + " eq \"" + attrNodeValue + "\"]");
+      final Node attr = attrs.item(i);
+      final String fullNodeName = getFullNodeName(attr);
+      final String attrNodeValue = attr.getNodeValue();
+      if (!"".equals(fullNodeName) && (! (fullNodeName == null)))
+        {xpath.append("[@" + fullNodeName + " eq \"" + attrNodeValue + "\"]");}
     }
     return xpath;
   }
@@ -443,18 +443,18 @@ public class GetFragmentBetween extends Function {
    * @return The full name of the node
    */
   private String getFullNodeName(Node n) {
-    String prefix = n.getPrefix();
-    String localName = n.getLocalName();
-    if (prefix == null || prefix.equals("")) {
-      if (localName == null || localName.equals(""))
-        return "";
+    final String prefix = n.getPrefix();
+    final String localName = n.getLocalName();
+    if (prefix == null || "".equals(prefix)) {
+      if (localName == null || "".equals(localName))
+        {return "";}
       else
-        return localName;
+        {return localName;}
     } else {
-      if (localName == null || localName.equals(""))
-        return "";
+      if (localName == null || "".equals(localName))
+        {return "";}
       else
-        return prefix + ":" + localName;
+        {return prefix + ":" + localName;}
     }
   }
 }

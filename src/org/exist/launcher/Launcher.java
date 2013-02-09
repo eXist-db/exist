@@ -66,13 +66,13 @@ public class Launcher extends Observable implements Observer {
     public final static String PACKAGE_EXIDE = "http://exist-db.org/apps/eXide";
 
     public static void main(final String[] args) {
-        String os = System.getProperty("os.name", "");
+        final String os = System.getProperty("os.name", "");
         // Switch to native look and feel except for Linux (ugly)
-        if (!os.equals("Linux")) {
-            String nativeLF = UIManager.getSystemLookAndFeelClassName();
+        if (!"Linux".equals(os)) {
+            final String nativeLF = UIManager.getSystemLookAndFeelClassName();
             try {
                 UIManager.setLookAndFeel(nativeLF);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // can be safely ignored
             }
         }
@@ -105,7 +105,7 @@ public class Launcher extends Observable implements Observer {
         final String home = getJettyHome();
 
         if (isSystemTraySupported())
-            initSystemTray = initSystemTray(home);
+            {initSystemTray = initSystemTray(home);}
 
 
         splash = new SplashScreen(this);
@@ -119,7 +119,7 @@ public class Launcher extends Observable implements Observer {
                             jetty = new JettyStart();
                             jetty.addObserver(splash);
                             jetty.run(new String[]{home}, splash);
-                        } catch (Exception e) {
+                        } catch (final Exception e) {
                             showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check the logs.", true);
                             System.exit(1);
                         }
@@ -143,11 +143,11 @@ public class Launcher extends Observable implements Observer {
     }
 
     private boolean initSystemTray(String home) {
-        Dimension iconDim = tray.getTrayIconSize();
+        final Dimension iconDim = tray.getTrayIconSize();
         BufferedImage image = null;
         try {
             image = ImageIO.read(getClass().getResource("icon32.png"));
-        } catch (IOException e) {
+        } catch (final IOException e) {
             showMessageAndExit("Launcher failed", "Failed to read system tray icon.", false);
         }
         trayIcon = new TrayIcon(image.getScaledInstance(iconDim.width, iconDim.height, Image.SCALE_SMOOTH), "eXist-db Launcher");
@@ -181,7 +181,7 @@ public class Launcher extends Observable implements Observer {
             hiddenFrame.pack();
             hiddenFrame.setVisible(true);
             tray.add(trayIcon);
-        } catch (AWTException e) {
+        } catch (final AWTException e) {
             return false;
         }
 
@@ -189,7 +189,7 @@ public class Launcher extends Observable implements Observer {
     }
 
     private PopupMenu createMenu(final String home) {
-        PopupMenu popup = new PopupMenu();
+        final PopupMenu popup = new PopupMenu();
         startItem = new MenuItem("Start server");
         startItem.setEnabled(false);
         popup.add(startItem);
@@ -223,7 +223,7 @@ public class Launcher extends Observable implements Observer {
 
         popup.addSeparator();
 
-        MenuItem toolbar = new MenuItem("Show Tool Window");
+        final MenuItem toolbar = new MenuItem("Show Tool Window");
         popup.add(toolbar);
         toolbar.addActionListener(new ActionListener() {
             @Override
@@ -292,7 +292,7 @@ public class Launcher extends Observable implements Observer {
             public void run() {
                 jetty.shutdown();
                 if (tray != null)
-                    tray.remove(trayIcon);
+                    {tray.remove(trayIcon);}
                 System.exit(0);
             }
         });
@@ -301,15 +301,15 @@ public class Launcher extends Observable implements Observer {
     protected void dashboard(Desktop desktop) {
         utilityPanel.setStatus("Opening dashboard in browser ...");
         try {
-            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/dashboard/");
+            final URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/dashboard/");
             desktop.browse(url);
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             if (isSystemTraySupported())
-                trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
+                {trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);}
             utilityPanel.setStatus("Unable to launch browser");
-        } catch (IOException e) {
+        } catch (final IOException e) {
             if (isSystemTraySupported())
-                trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
+                {trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);}
             utilityPanel.setStatus("Unable to launch browser");
         }
     }
@@ -317,21 +317,21 @@ public class Launcher extends Observable implements Observer {
     protected void eXide(Desktop desktop) {
         utilityPanel.setStatus("Opening dashboard in browser ...");
         try {
-            URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/eXide/");
+            final URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/eXide/");
             desktop.browse(url);
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             if (isSystemTraySupported())
-                trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
+                {trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);}
             utilityPanel.setStatus("Unable to launch browser");
-        } catch (IOException e) {
+        } catch (final IOException e) {
             if (isSystemTraySupported())
-                trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);
+                {trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);}
             utilityPanel.setStatus("Unable to launch browser");
         }
     }
 
     protected void client() {
-        LauncherWrapper wrapper = new LauncherWrapper("client");
+        final LauncherWrapper wrapper = new LauncherWrapper("client");
         wrapper.launch();
     }
 
@@ -359,34 +359,34 @@ public class Launcher extends Observable implements Observer {
         try {
             pool = BrokerPool.getInstance();
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            XQuery xquery = broker.getXQueryService();
-            Sequence pkgs = xquery.execute("repo:list()", null, AccessContext.INITIALIZE);
-            for (SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
-                ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
+            final XQuery xquery = broker.getXQueryService();
+            final Sequence pkgs = xquery.execute("repo:list()", null, AccessContext.INITIALIZE);
+            for (final SequenceIterator i = pkgs.iterate(); i.hasNext(); ) {
+                final ExistRepository.Notification notification = new ExistRepository.Notification(ExistRepository.Action.INSTALL, i.nextItem().getStringValue());
                 update(pool.getExpathRepo(), notification);
                 utilityPanel.update(pool.getExpathRepo(), notification);
             }
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             System.err.println("Failed to check installed packages: " + e.getMessage());
             e.printStackTrace();
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             System.err.println("Failed to check installed packages: " + e.getMessage());
             e.printStackTrace();
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             System.err.println("Failed to check installed packages: " + e.getMessage());
             e.printStackTrace();
         } finally {
             if (pool != null)
-                pool.release(broker);
+                {pool.release(broker);}
         }
     }
 
     private void registerObserver() {
         try {
-            BrokerPool pool = BrokerPool.getInstance();
+            final BrokerPool pool = BrokerPool.getInstance();
             pool.getExpathRepo().addObserver(this);
             pool.getExpathRepo().addObserver(utilityPanel);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             System.err.println("Failed to register as observer for package manager events");
             e.printStackTrace();
         }
@@ -394,7 +394,7 @@ public class Launcher extends Observable implements Observer {
 
     @Override
     public void update(Observable observable, Object o) {
-        ExistRepository.Notification notification = (ExistRepository.Notification) o;
+        final ExistRepository.Notification notification = (ExistRepository.Notification) o;
         if (notification.getPackageURI().equals(PACKAGE_DASHBOARD)) {
             dashboardItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
         } else if (notification.getPackageURI().equals(PACKAGE_EXIDE)) {
@@ -405,24 +405,24 @@ public class Launcher extends Observable implements Observer {
     private String getJettyHome() {
         String jettyProperty = System.getProperty("jetty.home");
         if(jettyProperty==null) {
-            File home = ConfigurationHelper.getExistHome();
-            File jettyHome = new File(new File(home, "tools"), "jetty");
+            final File home = ConfigurationHelper.getExistHome();
+            final File jettyHome = new File(new File(home, "tools"), "jetty");
             jettyProperty = jettyHome.getAbsolutePath();
             System.setProperty("jetty.home", jettyProperty);
         }
-        File standaloneFile = new File(new File(jettyProperty, "etc"), "jetty.xml");
+        final File standaloneFile = new File(new File(jettyProperty, "etc"), "jetty.xml");
         return standaloneFile.getAbsolutePath();
     }
 
     protected void showMessageAndExit(String title, String message, boolean logs) {
-        JPanel panel = new JPanel();
+        final JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        JLabel label = new JLabel(message);
+        final JLabel label = new JLabel(message);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(label, BorderLayout.CENTER);
         if (logs) {
-            JButton displayLogs = new JButton("View Log");
+            final JButton displayLogs = new JButton("View Log");
             displayLogs.addActionListener(new LogActionListener());
             label.setHorizontalAlignment(SwingConstants.CENTER);
             panel.add(displayLogs, BorderLayout.SOUTH);
@@ -441,7 +441,7 @@ public class Launcher extends Observable implements Observer {
     }
 
     public PrintStream createLoggingProxy(final PrintStream realStream) {
-        OutputStream out = new OutputStream() {
+        final OutputStream out = new OutputStream() {
             @Override
             public void write(int i) throws IOException {
                 realStream.write(i);
@@ -474,16 +474,16 @@ public class Launcher extends Observable implements Observer {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             if (!Desktop.isDesktopSupported())
-                return;
-            Desktop desktop = Desktop.getDesktop();
-            File home = ConfigurationHelper.getExistHome();
-            File logFile = new File(home, "webapp/WEB-INF/logs/exist.log");
+                {return;}
+            final Desktop desktop = Desktop.getDesktop();
+            final File home = ConfigurationHelper.getExistHome();
+            final File logFile = new File(home, "webapp/WEB-INF/logs/exist.log");
             if (!logFile.canRead()) {
                 trayIcon.displayMessage(null, "Log file not found", TrayIcon.MessageType.ERROR);
             } else {
                 try {
                     desktop.open(logFile);
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     trayIcon.displayMessage(null, "Failed to open log file", TrayIcon.MessageType.ERROR);
                 }
             }

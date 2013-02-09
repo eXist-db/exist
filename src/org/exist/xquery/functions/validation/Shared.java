@@ -76,7 +76,7 @@ public class Shared {
      *  Get input stream for specified resource.
      */
     public static InputStream getInputStream(Item s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
-        StreamSource streamSource = getStreamSource(s, context);
+        final StreamSource streamSource = getStreamSource(s, context);
         return streamSource.getInputStream();
     }
 
@@ -86,14 +86,14 @@ public class Shared {
      */
     public static StreamSource[] getStreamSource(Sequence s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
 
-        ArrayList<StreamSource> sources = new ArrayList<StreamSource>();
+        final ArrayList<StreamSource> sources = new ArrayList<StreamSource>();
 
-        SequenceIterator i = s.iterate();
+        final SequenceIterator i = s.iterate();
 
         while (i.hasNext()) {
-            Item next = i.nextItem();
+            final Item next = i.nextItem();
 
-            StreamSource streamsource = getStreamSource(next, context);
+            final StreamSource streamsource = getStreamSource(next, context);
             sources.add(streamsource);
         }
 
@@ -104,17 +104,17 @@ public class Shared {
 
     public static StreamSource getStreamSource(Item item, XQueryContext context) throws XPathException, MalformedURLException, IOException {
 
-        StreamSource streamSource = new StreamSource();
+        final StreamSource streamSource = new StreamSource();
         if (item.getType() == Type.JAVA_OBJECT) {
             LOG.debug("Streaming Java object");
 
-            Object obj = ((JavaObjectValue) item).getObject();
+            final Object obj = ((JavaObjectValue) item).getObject();
             if (!(obj instanceof File)) {
                 throw new XPathException("Passed java object should be a File");
             }
 
-            File inputFile = (File) obj;
-            InputStream is = new FileInputStream(inputFile);
+            final File inputFile = (File) obj;
+            final InputStream is = new FileInputStream(inputFile);
             streamSource.setInputStream(is);
             streamSource.setSystemId(inputFile.toURI().toURL().toString());
 
@@ -129,7 +129,7 @@ public class Shared {
                 url = "xmldb:exist://" + url;
             }
 
-            InputStream is = new URL(url).openStream();
+            final InputStream is = new URL(url).openStream();
             streamSource.setInputStream(is);
             streamSource.setSystemId(url);
 
@@ -137,33 +137,33 @@ public class Shared {
             LOG.debug("Streaming element or document node");
 
             if (item instanceof NodeProxy) {
-                NodeProxy np = (NodeProxy) item;
-                String url = "xmldb:exist://" + np.getDocument().getBaseURI();
+                final NodeProxy np = (NodeProxy) item;
+                final String url = "xmldb:exist://" + np.getDocument().getBaseURI();
                 LOG.debug("Document detected, adding URL " + url);
                 streamSource.setSystemId(url);
             }
 
             // Node provided
-            Serializer serializer = context.getBroker().newSerializer();
+            final Serializer serializer = context.getBroker().newSerializer();
 
-            NodeValue node = (NodeValue) item;
-            InputStream is = new NodeInputStream(serializer, node); 
+            final NodeValue node = (NodeValue) item;
+            final InputStream is = new NodeInputStream(serializer, node); 
             streamSource.setInputStream(is);
 
         } else if (item.getType() == Type.BASE64_BINARY || item.getType() == Type.HEX_BINARY) {
             LOG.debug("Streaming base64 binary");
 
-            BinaryValue binary = (BinaryValue) item;
+            final BinaryValue binary = (BinaryValue) item;
             
-            byte[] data = (byte[]) binary.toJavaObject(byte[].class);
-            InputStream is = new ByteArrayInputStream(data);
+            final byte[] data = (byte[]) binary.toJavaObject(byte[].class);
+            final InputStream is = new ByteArrayInputStream(data);
             streamSource.setInputStream(is);
 
             //TODO consider using BinaryValue.getInputStream()
 
             if (item instanceof Base64BinaryDocument) {
-                Base64BinaryDocument b64doc = (Base64BinaryDocument) item;
-                String url = "xmldb:exist://" + b64doc.getUrl();
+                final Base64BinaryDocument b64doc = (Base64BinaryDocument) item;
+                final String url = "xmldb:exist://" + b64doc.getUrl();
                 LOG.debug("Base64BinaryDocument detected, adding URL " + url);
                 streamSource.setSystemId(url);
             }
@@ -182,9 +182,9 @@ public class Shared {
      */
     public static InputSource getInputSource(Item s, XQueryContext context) throws XPathException, MalformedURLException, IOException {
 
-        StreamSource streamSource = getStreamSource(s, context);
+        final StreamSource streamSource = getStreamSource(s, context);
 
-        InputSource inputSource = new InputSource();
+        final InputSource inputSource = new InputSource();
         inputSource.setByteStream(streamSource.getInputStream());
         inputSource.setSystemId(streamSource.getSystemId());
 
@@ -194,7 +194,7 @@ public class Shared {
 
     public static StreamSource getStreamSource(InputSource in) throws XPathException, MalformedURLException, IOException {
 
-        StreamSource streamSource = new StreamSource();
+        final StreamSource streamSource = new StreamSource();
         streamSource.setInputStream(in.getByteStream());
         streamSource.setSystemId(in.getSystemId());
 
@@ -217,7 +217,7 @@ public class Shared {
             LOG.debug("Retreiving URL from (document) node");
 
             if (item instanceof NodeProxy) {
-                NodeProxy np = (NodeProxy) item;
+                final NodeProxy np = (NodeProxy) item;
                 url = np.getDocument().getBaseURI();
                 LOG.debug("Document detected, adding URL " + url);
             }
@@ -240,14 +240,14 @@ public class Shared {
      */
     public static String[] getUrls(Sequence s) throws XPathException {
 
-        ArrayList<String> urls = new ArrayList<String>();
+        final ArrayList<String> urls = new ArrayList<String>();
 
-        SequenceIterator i = s.iterate();
+        final SequenceIterator i = s.iterate();
 
         while (i.hasNext()) {
-            Item next = i.nextItem();
+            final Item next = i.nextItem();
 
-            String url = getUrl(next);
+            final String url = getUrl(next);
 
             urls.add(url);
         }
@@ -264,7 +264,7 @@ public class Shared {
     static public NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
 
         // start root element
-        int nodeNr = builder.startElement("", "report", "report", null);
+        final int nodeNr = builder.startElement("", "report", "report", null);
 
         // validation status: valid or invalid
         builder.startElement("", "status", "status", null);
@@ -284,7 +284,7 @@ public class Shared {
 
 
         // validation duration
-        AttributesImpl durationAttribs = new AttributesImpl();
+        final AttributesImpl durationAttribs = new AttributesImpl();
         durationAttribs.addAttribute("", "unit", "unit", "CDATA", "msec");
 
         builder.startElement("", "duration", "duration", durationAttribs);
@@ -295,21 +295,21 @@ public class Shared {
         if (report.getThrowable() != null) {
             builder.startElement("", "exception", "exception", null);
 
-            String className = report.getThrowable().getClass().getName();
+            final String className = report.getThrowable().getClass().getName();
             if (className != null) {
                 builder.startElement("", "class", "class", null);
                 builder.characters(className);
                 builder.endElement();
             }
 
-            String message = report.getThrowable().getMessage();
+            final String message = report.getThrowable().getMessage();
             if (message != null) {
                 builder.startElement("", "message", "message", null);
                 builder.characters(message);
                 builder.endElement();
             }
 
-            String stacktrace = report.getStackTrace();
+            final String stacktrace = report.getStackTrace();
             if (stacktrace != null) {
                 builder.startElement("", "stacktrace", "stacktrace", null);
                 builder.characters(stacktrace);
@@ -320,12 +320,12 @@ public class Shared {
         }
 
         // reusable attributes
-        AttributesImpl attribs = new AttributesImpl();
+        final AttributesImpl attribs = new AttributesImpl();
 
         // iterate validation report items, write message
-        List<ValidationReportItem> cr = report.getValidationReportItemList();
-        for (Iterator<ValidationReportItem> iter = cr.iterator(); iter.hasNext();) {
-            ValidationReportItem vri = iter.next();
+        final List<ValidationReportItem> cr = report.getValidationReportItemList();
+        for (final Iterator<ValidationReportItem> iter = cr.iterator(); iter.hasNext();) {
+            final ValidationReportItem vri = iter.next();
 
             // construct attributes
             attribs.addAttribute("", "level", "level", "CDATA", vri.getTypeText());
@@ -362,14 +362,14 @@ public class Shared {
             return;
         }
 
-        InputStream is = source.getByteStream();
+        final InputStream is = source.getByteStream();
         if(is==null){
             return;
         }
 
         try {
             is.close();
-        } catch (Exception ex){
+        } catch (final Exception ex){
             LOG.error("Problem while closing inputstream. ("
                     + getDetails(source) + ") "
                     + ex.getMessage(), ex);
@@ -386,14 +386,14 @@ public class Shared {
             return;
         }
 
-        InputStream is = source.getInputStream();
+        final InputStream is = source.getInputStream();
         if(is==null){
             return;
         }
 
         try {
             is.close();
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             LOG.error("Problem while closing inputstream. (" 
                     + getDetails(source) + ") "
                     + ex.getMessage(), ex);
@@ -410,14 +410,14 @@ public class Shared {
             return;
         }
 
-        for(StreamSource source : sources){
+        for(final StreamSource source : sources){
             closeStreamSource(source);
         }
 
     }
 
     private static String getDetails(InputSource source) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
         if(source.getPublicId()!=null){
             sb.append("PublicId='");
@@ -441,7 +441,7 @@ public class Shared {
     }
 
     private static String getDetails(StreamSource source) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
         if(source.getPublicId()!=null){
             sb.append("PublicId='");

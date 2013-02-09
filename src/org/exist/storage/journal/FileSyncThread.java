@@ -94,7 +94,7 @@ public class FileSyncThread extends Thread {
         synchronized (latch) {
             try {
                 endOfLog.close();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 //Nothing to do
             }
         }
@@ -109,7 +109,7 @@ public class FileSyncThread extends Thread {
             synchronized (this) { 
                 try {
                     wait();
-                } catch (InterruptedException e) {
+                } catch (final InterruptedException e) {
                     //Nothing to do
                 }
                 if (syncTriggered) {
@@ -126,7 +126,7 @@ public class FileSyncThread extends Thread {
         synchronized (latch) {
             try {
                 endOfLog.force(false);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 // may occur during shutdown
             }
             syncTriggered = false;

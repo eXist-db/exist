@@ -86,10 +86,10 @@ public class SetMaxInactiveInterval extends Function
 			}
 		}
         
-		SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
+		final SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
 
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+		final Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
 		
 		if( var == null || var.getValue() == null ) {
 			// No saved session, so create one
@@ -101,7 +101,7 @@ public class SetMaxInactiveInterval extends Function
 		}
 		
 		// get attribute name parameter
-		int interval = ((IntegerValue)getArgument(0).eval( contextSequence, contextItem ).convertTo(Type.INT)).getInt();
+		final int interval = ((IntegerValue)getArgument(0).eval( contextSequence, contextItem ).convertTo(Type.INT)).getInt();
 		
 		if( session.getObject() instanceof SessionWrapper ) {
 			((SessionWrapper)session.getObject()).setMaxInactiveInterval(interval);

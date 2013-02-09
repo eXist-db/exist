@@ -24,7 +24,7 @@ public class DOM {
    public static void forEachChild(Element parent,NodeHandler filter) {
       Node current = parent.getFirstChild();
       while (current!=null) {
-         Node toProcess = current;
+         final Node toProcess = current;
          current = current.getNextSibling();
          filter.process(parent,toProcess);
       }
@@ -43,7 +43,7 @@ public class DOM {
             continue;
          }
          if (current.getLocalName().equals(localName)) {
-            Node toProcess = current;
+            final Node toProcess = current;
             current = current.getNextSibling();
             filter.process(parent,toProcess);
          } else {
@@ -104,7 +104,7 @@ public class DOM {
    public static void removeChildren(Element parent) {
       Node current = parent.getFirstChild();
       while (current!=null) {
-         Node toRemove = current;
+         final Node toRemove = current;
          current = current.getNextSibling();
          parent.removeChild(toRemove);
       }
@@ -112,10 +112,10 @@ public class DOM {
    
    public static String textContent(Node n) {
       if (n.getNodeType()==Node.ELEMENT_NODE) {
-    	 StringBuilder builder = new StringBuilder();
+    	 final StringBuilder builder = new StringBuilder();
          Node current = n.getFirstChild();
          while (current!=null) {
-            int type = current.getNodeType();
+            final int type = current.getNodeType();
             if (type==Node.CDATA_SECTION_NODE || type==Node.TEXT_NODE) {
                builder.append(current.getNodeValue());
             }

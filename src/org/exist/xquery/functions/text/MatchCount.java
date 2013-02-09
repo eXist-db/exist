@@ -70,23 +70,23 @@ public class MatchCount extends BasicFunction {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }  
         
         Sequence result;
         // return 0 if the argument sequence is empty
     	//TODO : return empty sequence ?
 		if(args[0].isEmpty())
-			result = IntegerValue.ZERO;
+			{result = IntegerValue.ZERO;}
 		else {
 			int count = 0;
-			for(SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-			    Item next = i.nextItem();
+			for(final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+			    final Item next = i.nextItem();
 			    if(Type.subTypeOf(next.getType(), Type.NODE)) {
-			        NodeValue nv = (NodeValue)next;
+			        final NodeValue nv = (NodeValue)next;
 			        if(nv.getImplementationType() != NodeValue.PERSISTENT_NODE)
-			        	throw new XPathException(this, getName() + " cannot be applied to in-memory nodes.");
-			        NodeProxy np = (NodeProxy)nv;
+			        	{throw new XPathException(this, getName() + " cannot be applied to in-memory nodes.");}
+			        final NodeProxy np = (NodeProxy)nv;
 			        Match match = np.getMatches();
 			        while (match != null) {
 				        if (match.getNodeId().isDescendantOrSelfOf(np.getNodeId())) {
@@ -100,7 +100,7 @@ public class MatchCount extends BasicFunction {
 		}
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         return result;
     }

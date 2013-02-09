@@ -56,8 +56,8 @@ public class XmlrpcDownload {
     public void stream(XmldbURL xmldbURL, OutputStream os) throws IOException {
         LOG.debug("Begin document download");
         try {
-            XmlRpcClient client = new XmlRpcClient();
-            XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+            final XmlRpcClient client = new XmlRpcClient();
+            final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
             config.setEncoding("UTF-8");
             config.setEnabledForExtensions(true);
             config.setServerURL(new URL(xmldbURL.getXmlRpcURL()));
@@ -70,12 +70,12 @@ public class XmlrpcDownload {
             client.setConfig(config);
 
             // Setup xml serializer
-            Hashtable<String, String> options = new Hashtable<String, String>();
+            final Hashtable<String, String> options = new Hashtable<String, String>();
             options.put("indent", "no");
             options.put("encoding", "UTF-8");
             
             // Setup client parameters
-            Vector<Object> params = new Vector<Object>();
+            final Vector<Object> params = new Vector<Object>();
             params.addElement( xmldbURL.getCollectionPath() );
             params.addElement( options );
             
@@ -83,7 +83,7 @@ public class XmlrpcDownload {
             Hashtable ht = (Hashtable) client.execute("getDocumentData", params);
             int offset = ((Integer)ht.get("offset")).intValue();
             byte[]data= (byte[]) ht.get("data");
-            String handle = (String) ht.get("handle");
+            final String handle = (String) ht.get("handle");
             os.write(data);
             
             // When there is more data to download
@@ -91,7 +91,7 @@ public class XmlrpcDownload {
                 // Clean and re-setup client parameters
                 params.clear();
                 params.addElement(handle);
-                params.addElement(new Integer(offset));
+                params.addElement(Integer.valueOf(offset));
                 
                 // Get and write next chunk
                 ht = (Hashtable) client.execute("getNextChunk", params);
@@ -100,11 +100,11 @@ public class XmlrpcDownload {
                 os.write(data);
             }
             
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             LOG.error(ex);
             throw ex;
             
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             LOG.error(ex);
             throw new IOException(ex.getMessage(), ex);
                        

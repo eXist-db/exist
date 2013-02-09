@@ -76,9 +76,9 @@ public abstract class LibFunction extends BasicFunction {
     }
     
     private File getLib(File folder, String libFileBaseName){
-        String fileToFind = folder.getAbsolutePath() + File.separatorChar + libFileBaseName;
-        String resolvedFile = libFileResolver.getResolvedFileName(fileToFind);
-        File lib = new File(resolvedFile);
+        final String fileToFind = folder.getAbsolutePath() + File.separatorChar + libFileBaseName;
+        final String resolvedFile = libFileResolver.getResolvedFileName(fileToFind);
+        final File lib = new File(resolvedFile);
         if (lib.exists()) {
             return lib;
         } else {
@@ -91,7 +91,7 @@ public abstract class LibFunction extends BasicFunction {
     	if (allFiles.keySet().contains(key)){
     		return retVal; 
     	}
-        for (File libFolder : libFolders){
+        for (final File libFolder : libFolders){
         	retVal = getLib(libFolder, key);
         	if (retVal != null){
         		break;

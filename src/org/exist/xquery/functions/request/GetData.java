@@ -75,10 +75,10 @@ public class GetData extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException {
 		
-        RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+        final RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
         // request object is read from global variable $request
-        Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+        final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 
         if(var == null || var.getValue() == null) {
             throw new XPathException(this, "No request object found in the current XQuery context.");
@@ -88,12 +88,12 @@ public class GetData extends BasicFunction {
             throw new XPathException(this, "Variable $request is not bound to an Java object.");
         }
 
-        JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+        final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 
         if(!(value.getObject() instanceof RequestWrapper)) {
             throw new XPathException(this, "Variable $request is not bound to a Request object.");
         }
-        RequestWrapper request = (RequestWrapper)value.getObject();
+        final RequestWrapper request = (RequestWrapper)value.getObject();
 
         //if the content length is unknown or 0, return
         if(request.getContentLength() == -1 || request.getContentLength() == 0) {
@@ -125,7 +125,7 @@ public class GetData extends BasicFunction {
                         contentType = contentType.substring(0, contentType.indexOf(";"));
                     }
 
-                    MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
+                    final MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
                     if(mimeType != null && !mimeType.isXMLType()) {
 
                         //binary data
@@ -169,7 +169,7 @@ public class GetData extends BasicFunction {
                                 is.reset();
 
                                 result = parseAsString(is, encoding);
-                            } catch(IOException ioe) {
+                            } catch(final IOException ioe) {
                                 throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
                             }
                         }
@@ -178,7 +178,7 @@ public class GetData extends BasicFunction {
                         if(cache != null) {
                             try {
                                 cache.invalidate();
-                            } catch(IOException ioe) {
+                            } catch(final IOException ioe) {
                                 LOG.error(ioe.getMessage(), ioe);
                             }
                         }
@@ -186,7 +186,7 @@ public class GetData extends BasicFunction {
                         if(is != null) {
                             try {
                                 is.close();
-                            } catch(IOException ioe) {
+                            } catch(final IOException ioe) {
                                 LOG.error(ioe.getMessage(), ioe);
                             }
                         }
@@ -195,7 +195,7 @@ public class GetData extends BasicFunction {
                 
                 //NOTE we do not close isRequest, because it may be needed further by the caching input stream wrapper
             }
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             throw new XPathException(this, "An IO exception occurred: " + ioe.getMessage(), ioe);
         }
 
@@ -212,19 +212,19 @@ public class GetData extends BasicFunction {
             //try and construct xml document from input stream, we use eXist's in-memory DOM implementation
 
             //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
-            InputSource src = new InputSource(new CloseShieldInputStream(is));
+            final InputSource src = new InputSource(new CloseShieldInputStream(is));
 
             reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
             reader.setContentHandler(receiver);
             reader.parse(src);
-            Document doc = receiver.getDocument();
+            final Document doc = receiver.getDocument();
 
             result = (NodeValue)doc;
-        } catch(SAXException saxe) {
+        } catch(final SAXException saxe) {
             //do nothing, we will default to trying to return a string below
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             //do nothing, we will default to trying to return a string below
         } finally {
             context.popDocumentContext();
@@ -238,13 +238,13 @@ public class GetData extends BasicFunction {
     }
 
     private Sequence parseAsString(InputStream is, String encoding) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] buf = new byte[4096];
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        final byte[] buf = new byte[4096];
         int read = -1;
         while ((read = is.read(buf)) > -1) {
             bos.write(buf, 0, read);
         }
-        String s = new String(bos.toByteArray(), encoding);
+        final String s = new String(bos.toByteArray(), encoding);
         return new StringValue(s);
     }
 }

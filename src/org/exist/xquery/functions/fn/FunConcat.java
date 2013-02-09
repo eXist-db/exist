@@ -94,7 +94,7 @@ public class FunConcat extends Function {
 	                Cardinality.ZERO_OR_ONE, argument,
 	                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
 	            if (!Type.subTypeOf(argument.returnsType(), Type.ATOMIC))
-	                argument = new Atomize(context, argument);
+	                {argument = new Atomize(context, argument);}
         	}
             steps.add(argument);
         }
@@ -116,23 +116,23 @@ public class FunConcat extends Function {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
        if (getArgumentCount() < 2) {
            throw new XPathException (this, ErrorCodes.XPST0017,
                "concat() requires at least two arguments");
        }
-       StringBuilder concat = new StringBuilder();
+       final StringBuilder concat = new StringBuilder();
        for (int i = 0; i < getArgumentCount(); i++) {
             concat.append(getArgument(i).eval(contextSequence, contextItem).getStringValue());
        }
-       Sequence result = new StringValue(concat.toString());
+       final Sequence result = new StringValue(concat.toString());
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

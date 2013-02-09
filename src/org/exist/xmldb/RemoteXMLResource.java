@@ -112,12 +112,12 @@ public class RemoteXMLResource
         if (content != null) {
             return new StringValue(content).getStringValue(true);
         }
-        Object res=super.getContent();
+        final Object res=super.getContent();
         if(res!=null) {
 		if(res instanceof byte[]) {
 			try {
 				return new String((byte[])res,"UTF-8");
-			} catch(UnsupportedEncodingException uee) {
+			} catch(final UnsupportedEncodingException uee) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
 			}
 		} else {
@@ -163,24 +163,24 @@ public class RemoteXMLResource
     	}
     	
 		try {
-		    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		    final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		    factory.setNamespaceAware(true);
 		    factory.setValidating(false);
-		    DocumentBuilder builder = factory.newDocumentBuilder();
-		    Document doc = builder.parse(is);
+		    final DocumentBuilder builder = factory.newDocumentBuilder();
+		    final Document doc = builder.parse(is);
 	        // <frederic.glorieux@ajlsm.com> return a full DOM doc, with root PI and comments
 		    return doc;
-		} catch (SAXException saxe) {
+		} catch (final SAXException saxe) {
 		    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
-		} catch (ParserConfigurationException pce) {
+		} catch (final ParserConfigurationException pce) {
 		    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
-		} catch(IOException ioe) {
+		} catch(final IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		} finally {
 			if(cis != null) {
 				try {
 					cis.close();
-				} catch(IOException ioe) {
+				} catch(final IOException ioe) {
 					// IgnoreIT(R)
 				}
 			}
@@ -202,15 +202,15 @@ public class RemoteXMLResource
     	
         XMLReader reader = xmlReader;
 		if (reader == null) {
-		    SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+		    final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
 		    saxFactory.setNamespaceAware(true);
 		    saxFactory.setValidating(false);
             try {
-                SAXParser sax = saxFactory.newSAXParser();
+                final SAXParser sax = saxFactory.newSAXParser();
                 reader = sax.getXMLReader();
-            } catch (ParserConfigurationException pce) {
+            } catch (final ParserConfigurationException pce) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, pce.getMessage(), pce);
-            } catch (SAXException saxe) {
+            } catch (final SAXException saxe) {
                 saxe.printStackTrace();
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
             }
@@ -221,16 +221,16 @@ public class RemoteXMLResource
 		    	reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
 	        }
 		    reader.parse(is);
-        } catch (SAXException saxe) {
+        } catch (final SAXException saxe) {
             saxe.printStackTrace();
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, saxe.getMessage(), saxe);
-        } catch (IOException ioe) {
+        } catch (final IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         } finally {
         	if(cis!=null) {
         		try {
         			cis.close();
-        		} catch(IOException ioe) {
+        		} catch(final IOException ioe) {
         			// IgnoreIT(R)
         		}
         	}
@@ -246,8 +246,8 @@ public class RemoteXMLResource
     }
 
     public String getId() throws XMLDBException {
-	if (id == null || id.equals("1")) 
-	    return getDocumentId(); 
+	if (id == null || "1".equals(id)) 
+	    {return getDocumentId();} 
 	return getDocumentId() + '_' + id;
     }
 
@@ -272,7 +272,7 @@ public class RemoteXMLResource
     		} else if(value instanceof byte[]) {
     			try {
     				content = new String((byte[])value,"UTF-8");
-    			} catch(UnsupportedEncodingException uee) {
+    			} catch(final UnsupportedEncodingException uee) {
     				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
     			}
     		} else {
@@ -283,12 +283,12 @@ public class RemoteXMLResource
 
     public void setContentAsDOM(Node root) throws XMLDBException {
     	try {
-    		VirtualTempFile vtmpfile = new VirtualTempFile();
+    		final VirtualTempFile vtmpfile = new VirtualTempFile();
     		vtmpfile.setTempPrefix("eXistRXR");
     		vtmpfile.setTempPostfix(".xml");
     		
-	    	OutputStreamWriter osw=new OutputStreamWriter(vtmpfile,"UTF-8");
-			DOMSerializer xmlout = new DOMSerializer(osw, getProperties());
+	    	final OutputStreamWriter osw=new OutputStreamWriter(vtmpfile,"UTF-8");
+			final DOMSerializer xmlout = new DOMSerializer(osw, getProperties());
 			try {
 			    switch (root.getNodeType()) {
 				    case Node.ELEMENT_NODE :
@@ -303,22 +303,22 @@ public class RemoteXMLResource
 				    default :
 				    	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "invalid node type");
 				}
-			} catch (TransformerException e) {
+			} catch (final TransformerException e) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 			} finally {
 				try {
 					osw.close();
-				} catch(IOException ioe) {
+				} catch(final IOException ioe) {
 					// IgnoreIT(R)
 				}
 				try {
 					vtmpfile.close();
-				} catch(IOException ioe) {
+				} catch(final IOException ioe) {
 					// IgnoreIT(R)
 				}
 			}
 			setContent(vtmpfile);
-    	} catch(IOException ioe) {
+    	} catch(final IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
     	}
     }
@@ -349,7 +349,7 @@ public class RemoteXMLResource
 		    	writer=new OutputStreamWriter(vtmpfile,"UTF-8");
 				setOutput(writer, emptyProperties);
 			
-			} catch(IOException ioe) {
+			} catch(final IOException ioe) {
 		    	throw new SAXException("Unable to create temp file for serialization data",ioe);
 			}
 
@@ -364,21 +364,21 @@ public class RemoteXMLResource
 		    
 		    try {
 		    	if (writer != null)
-		    		writer.close();
-			} catch (IOException e) {
+		    		{writer.close();}
+			} catch (final IOException e) {
 		    	throw new SAXException("Unable to close temp file containing serialized data",e);
 			}
 			
 		    try {
 		    	if (vtmpfile != null)
-		    		vtmpfile.close();
-			} catch (IOException e) {
+		    		{vtmpfile.close();}
+			} catch (final IOException e) {
 		    	throw new SAXException("Unable to close temp file containing serialized data",e);
 			}
 			
 		    try {
 		    	setContent(vtmpfile);
-		    } catch(XMLDBException xe) {
+		    } catch(final XMLDBException xe) {
 		    	throw new SAXException("Unable to set file content containing serialized data",xe);
 		    }
 		}
@@ -413,27 +413,27 @@ public class RemoteXMLResource
 
     public  DocumentType getDocType() throws XMLDBException {
     	DocumentType result = null;
-        List<Object> params = new ArrayList<Object>(1);
+        final List<Object> params = new ArrayList<Object>(1);
     	Object[] request = null;
     	params.add(path.toString());
     	try {
     		
     		request = (Object[]) parent.getClient().execute("getDocType", params);
     		
-    		if (!request[0].equals("")) {
+    		if (!"".equals(request[0])) {
     			result = new DocumentTypeImpl((String)request[0],(String)request[1],(String)request[2]);
     		}
     		
     	    return result;
     	    
-    	} catch (XmlRpcException e) {
+    	} catch (final XmlRpcException e) {
     	    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
     	}
     }
     
     public void setDocType(DocumentType doctype) throws XMLDBException {
     	if (doctype != null ) {
-            List<Object> params = new ArrayList<Object>(4);
+            final List<Object> params = new ArrayList<Object>(4);
     		params.add(path.toString());
     		params.add(doctype.getName());
     		params.add(doctype.getPublicId() == null ? "" : doctype.getPublicId());
@@ -441,7 +441,7 @@ public class RemoteXMLResource
     		
     		try {
     		    parent.getClient().execute("setDocType", params);
-    		} catch (XmlRpcException e) {
+    		} catch (final XmlRpcException e) {
     		    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
     		}
 

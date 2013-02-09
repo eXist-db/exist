@@ -44,10 +44,10 @@ public class ModuleAttributeHandler implements AttributeHandler
 	}
 	public void filterFunctions(Set<Object> functions, AttributeDesignator attribute)
 	{
-		URI id = attribute.getId();
+		final URI id = attribute.getId();
 		if(id.equals(XACMLConstants.MODULE_CATEGORY_ATTRIBUTE))
 		{
-			List<String> retain = new ArrayList<String>(2);
+			final List<String> retain = new ArrayList<String>(2);
 			retain.add("=");
 			retain.add("equals");
 			functions.retainAll(retain);
@@ -60,7 +60,7 @@ public class ModuleAttributeHandler implements AttributeHandler
 
 	public boolean getAllowedValues(Set<Object> values, AttributeDesignator attribute)
 	{
-		URI id = attribute.getId();
+		final URI id = attribute.getId();
 		if(id.equals(XACMLConstants.MODULE_CATEGORY_ATTRIBUTE))
 		{
 			values.add(XACMLConstants.MAIN_MODULE);

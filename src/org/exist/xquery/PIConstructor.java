@@ -52,7 +52,7 @@ public class PIConstructor extends NodeConstructor {
             if(++p < pi.length()) {
                 data = pi.substring(p);
 
-                Matcher m = wsContentStart.matcher(data);
+                final Matcher m = wsContentStart.matcher(data);
                 if (m.matches()) {
                     data = m.group(2);
                 }
@@ -71,15 +71,15 @@ public class PIConstructor extends NodeConstructor {
 		Item contextItem)
 		throws XPathException {
         if (newDocumentContext)
-            context.pushDocumentContext();
+            {context.pushDocumentContext();}
         try {
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            int nodeNr = builder.processingInstruction(target, data);
-            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final int nodeNr = builder.processingInstruction(target, data);
+            final NodeImpl node = builder.getDocument().getNode(nodeNr);
             return node;
         } finally {
             if (newDocumentContext)
-                context.popDocumentContext();
+                {context.popDocumentContext();}
         }
     }
 
@@ -96,7 +96,7 @@ public class PIConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append("processing-instruction {");
     	result.append(target.toString());
     	result.append("} {");        

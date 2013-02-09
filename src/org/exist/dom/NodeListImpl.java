@@ -36,13 +36,13 @@ public class NodeListImpl extends ArrayList<Node> implements NodeList {
 
     public boolean add(Node node) {
         if (node == null)
-            return false;
+            {return false;}
         return super.add(node);
     }
 
     public boolean addAll(NodeList other) {
         if (other.getLength() == 0)
-            return false;
+            {return false;}
         boolean result = true;
         for (int i = 0; i < other.getLength(); i++) {
             if (!add(other.item(i))) {
@@ -59,7 +59,7 @@ public class NodeListImpl extends ArrayList<Node> implements NodeList {
 
     public Node item(int pos) {
         if (pos >= size())
-            return null;
+            {return null;}
         return (Node) get(pos);
     }
 }

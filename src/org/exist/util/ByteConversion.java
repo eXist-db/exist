@@ -156,7 +156,7 @@ public class ByteConversion {
      *@return   the byte array
      */
     public final static byte[] longToByte( final long v ) {
-        byte[] data = new byte[8];
+        final byte[] data = new byte[8];
         data[7] = (byte) ( ( v >>> 0 ) & 0xff );
         data[6] = (byte) ( ( v >>> 8 ) & 0xff );
         data[5] = (byte) ( ( v >>> 16 ) & 0xff );
@@ -205,8 +205,8 @@ public class ByteConversion {
     }
 
     public static void main(String[] args) {
-        short i = 783;
-        byte[] data = new byte[2];
+        final short i = 783;
+        final byte[] data = new byte[2];
         ByteConversion.shortToByte(i, data, 0);
         System.out.println("i = " + ByteConversion.byteToShort(data, 0));
     }

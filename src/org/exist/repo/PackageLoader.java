@@ -59,9 +59,9 @@ public interface PackageLoader {
 
         public Version(String version, boolean semver) {
             if (semver)
-                this.semVer = version;
+                {this.semVer = version;}
             else
-                this.version = version;
+                {this.version = version;}
         }
 
         public Version(String min, String max) {

@@ -92,7 +92,7 @@ public class IndexStatisticsWorker implements IndexWorker {
 
     public StreamListener getListener() {
         if (mode == StreamListener.STORE)
-            return listener;
+            {return listener;}
         return null;
     }
 
@@ -110,45 +110,45 @@ public class IndexStatisticsWorker implements IndexWorker {
 
     public void updateIndex(DBBroker broker) {
         perDocGuide = new DataGuide();
-        DocumentCallback cb = new DocumentCallback(broker);
+        final DocumentCallback cb = new DocumentCallback(broker);
         try {
             broker.getResourcesFailsafe(cb, false);
-        } catch (TerminatedException e) {
+        } catch (final TerminatedException e) {
             // thrown when the db shuts down. ignore.
         }
         index.updateStats(perDocGuide);
     }
 
     private void updateDocument(DBBroker broker, DocumentImpl doc) {
-        ElementImpl root = (ElementImpl) doc.getDocumentElement();
+        final ElementImpl root = (ElementImpl) doc.getDocumentElement();
         try {
-            NodePath path = new NodePath();
-            Stack<NodeStats> stack = new Stack<NodeStats>();
+            final NodePath path = new NodePath();
+            final Stack<NodeStats> stack = new Stack<NodeStats>();
             QName qname;
-            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
+            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
             while (reader.hasNext()) {
-                int status = reader.next();
+                final int status = reader.next();
                 switch (status) {
                     case XMLStreamReader.START_ELEMENT:
                         for (int i = 0; i < stack.size(); i++) {
-                            NodeStats next = stack.elementAt(i);
+                            final NodeStats next = stack.elementAt(i);
                             next.incDepth();
                         }
                         qname = reader.getQName();
                         path.addComponent(qname);
-                        NodeStats nodeStats = perDocGuide.add(path);
+                        final NodeStats nodeStats = perDocGuide.add(path);
                         stack.push(nodeStats);
                         break;
                     case XMLStreamReader.END_ELEMENT:
                         path.removeLastComponent();
-                        NodeStats stats = stack.pop();
+                        final NodeStats stats = stack.pop();
                         stats.updateMaxDepth();
                         break;
                 }
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
-        } catch (XMLStreamException e) {
+        } catch (final XMLStreamException e) {
             e.printStackTrace();
         }
     }
@@ -172,10 +172,10 @@ public class IndexStatisticsWorker implements IndexWorker {
             super.startElement(transaction, element, path);
             if (perDocGuide != null) {
                 for (int i = 0; i < stack.size(); i++) {
-                    NodeStats next = stack.elementAt(i);
+                    final NodeStats next = stack.elementAt(i);
                     next.incDepth();
                 }
-                NodeStats nodeStats = perDocGuide.add(path);
+                final NodeStats nodeStats = perDocGuide.add(path);
                 stack.push(nodeStats);
             }
         }
@@ -183,7 +183,7 @@ public class IndexStatisticsWorker implements IndexWorker {
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
             super.endElement(transaction, element, path);
             if (perDocGuide != null) {
-                NodeStats stats = (NodeStats) stack.pop();
+                final NodeStats stats = (NodeStats) stack.pop();
                 stats.updateMaxDepth();
             }
         }
@@ -202,17 +202,17 @@ public class IndexStatisticsWorker implements IndexWorker {
         }
 
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
-            CollectionStore store = (CollectionStore) ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
+            final CollectionStore store = (CollectionStore) ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             try {
-                byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
-                VariableByteInput istream = store.getAsStream(pointer);
+                final byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
+                final VariableByteInput istream = store.getAsStream(pointer);
                 DocumentImpl doc = null;
                 if (type == DocumentImpl.XML_FILE) {
                     doc = new DocumentImpl(broker.getBrokerPool());
                     doc.read(istream);
                     updateDocument(broker, doc);
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 IndexStatistics.LOG.warn("An error occurred while regenerating index statistics: " + e.getMessage(), e);
             }
             return true;

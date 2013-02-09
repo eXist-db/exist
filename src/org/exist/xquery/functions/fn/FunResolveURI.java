@@ -96,40 +96,40 @@ public class FunResolveURI extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-		    contextSequence = contextItem.toSequence();
+		    {contextSequence = contextItem.toSequence();}
 		
 		AnyURIValue base;		
 		if (getArgumentCount() == 1) {
 			if (!context.isBaseURIDeclared())
-				throw new XPathException(this, ErrorCodes.FONS0005, 
-					"base URI of the static context has not been assigned a value.");
+				{throw new XPathException(this, ErrorCodes.FONS0005, 
+					"base URI of the static context has not been assigned a value.");}
 			base = context.getBaseURI();
 		} else {
 			try {
-				Item item = getArgument(1).eval(contextSequence).itemAt(0).convertTo(Type.ANY_URI);
+				final Item item = getArgument(1).eval(contextSequence).itemAt(0).convertTo(Type.ANY_URI);
 				base = (AnyURIValue)item;
-			} catch (XPathException e) {
+			} catch (final XPathException e) {
 	        	throw new XPathException(this, ErrorCodes.FORG0002, "invalid argument to fn:resolve-uri(): " + e.getMessage(), null, e);
 			}
 		}
 		
 		Sequence result;
 
-		Sequence seq = getArgument(0).eval(contextSequence);
+		final Sequence seq = getArgument(0).eval(contextSequence);
 		if (seq.isEmpty()) {			
 			result = Sequence.EMPTY_SEQUENCE;
 		} else {
 			AnyURIValue relative;
 			try {
-				Item item = seq.itemAt(0).convertTo(Type.ANY_URI);
+				final Item item = seq.itemAt(0).convertTo(Type.ANY_URI);
 				relative = (AnyURIValue)item;
-			} catch (XPathException e) {				
+			} catch (final XPathException e) {				
 	        	throw new XPathException(this, ErrorCodes.FORG0002, "invalid argument to fn:resolve-uri(): " + e.getMessage(), seq, e);
 			}			
 			URI relativeURI;
@@ -137,7 +137,7 @@ public class FunResolveURI extends Function {
 			try {
 				relativeURI = new URI(relative.getStringValue());
 				baseURI = new URI(base.getStringValue() );
-			} catch (URISyntaxException e) {
+			} catch (final URISyntaxException e) {
 				throw new XPathException(this, ErrorCodes.FORG0009, "unable to resolve a relative URI against a base URI in fn:resolve-uri(): " + e.getMessage(), null, e);
 			}
 			if (relativeURI.isAbsolute()) {
@@ -148,7 +148,7 @@ public class FunResolveURI extends Function {
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
 
         return result;
     }

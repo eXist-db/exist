@@ -64,32 +64,32 @@ public class Update extends Modification {
      */
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException, TriggerException {
-        NodeList children = content;
+        final NodeList children = content;
         if (children.getLength() == 0) 
-            return 0;
+            {return 0;}
         int modifications = children.getLength();
         try {
-            StoredNode ql[] = selectAndLock(transaction);
-            IndexListener listener = new IndexListener(ql);
-            NotificationService notifier = broker.getBrokerPool().getNotificationService();
+            final StoredNode ql[] = selectAndLock(transaction);
+            final IndexListener listener = new IndexListener(ql);
+            final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             Node temp;
             TextImpl text;
             AttrImpl attribute;
             ElementImpl parent;
             for (int i = 0; i < ql.length; i++) {
-            	StoredNode node = ql[i];
+            	final StoredNode node = ql[i];
                 if (node == null) {
                     LOG.warn("select " + selectStmt + " returned empty node");
                     continue;
                 }
-                DocumentImpl  doc = (DocumentImpl)node.getOwnerDocument();
+                final DocumentImpl  doc = (DocumentImpl)node.getOwnerDocument();
                 doc.getMetadata().setIndexListener(listener);
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                      throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
-                        if (modifications == 0) modifications = 1;
+                        if (modifications == 0) {modifications = 1;}
                         ((ElementImpl) node).update(transaction, children);
                         break;
                     case Node.TEXT_NODE:
@@ -107,7 +107,7 @@ public class Update extends Modification {
                                     + node.getNodeId());
                             break;
                         }
-                        AttrImpl attr = (AttrImpl) node;
+                        final AttrImpl attr = (AttrImpl) node;
                         temp = children.item(0);
                         attribute = new AttrImpl(attr.getQName(), temp.getNodeValue());
                         attribute.setOwnerDocument(doc);

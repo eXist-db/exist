@@ -82,13 +82,13 @@ public class FunctionTrace extends BasicFunction {
 
         } else if (isCalledAs("enable-tracing")) {
         	logger.info("Entering the " + SystemModule.PREFIX + ":enable-tracing XQuery function");
-            boolean enable = args[0].effectiveBooleanValue();
+            final boolean enable = args[0].effectiveBooleanValue();
             context.getBroker().getBrokerPool().getPerformanceStats().setEnabled(enable);
             if (getArgumentCount() == 2) {
                 if (args[1].effectiveBooleanValue())
-                    context.getBroker().getConfiguration().setProperty(Profiler.CONFIG_PROPERTY_TRACELOG, Boolean.TRUE);
+                    {context.getBroker().getConfiguration().setProperty(Profiler.CONFIG_PROPERTY_TRACELOG, Boolean.TRUE);}
                 else
-                    context.getBroker().getConfiguration().setProperty(Profiler.CONFIG_PROPERTY_TRACELOG, Boolean.FALSE);
+                    {context.getBroker().getConfiguration().setProperty(Profiler.CONFIG_PROPERTY_TRACELOG, Boolean.FALSE);}
             }
 
         } else if (isCalledAs("tracing-enabled")) {
@@ -98,10 +98,10 @@ public class FunctionTrace extends BasicFunction {
             
         } else {
         	logger.info("Entering the " + SystemModule.PREFIX + ":trace XQuery function");
-            MemTreeBuilder builder = context.getDocumentBuilder();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
 
             builder.startDocument();
-            BrokerPool brokerPool = context.getBroker().getBrokerPool();
+            final BrokerPool brokerPool = context.getBroker().getBrokerPool();
             brokerPool.getPerformanceStats().toXML(builder);
             builder.endDocument();
         	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());

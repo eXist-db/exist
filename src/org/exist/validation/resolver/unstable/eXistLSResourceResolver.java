@@ -55,10 +55,10 @@ public class eXistLSResourceResolver implements LSResourceResolver {
         LSInput lsInput = new eXistLSInput();
 
         try {
-            InputStream is = getInputStream(systemId);
+            final InputStream is = getInputStream(systemId);
             lsInput.setByteStream(is);
 
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             LOG.error(ex.getMessage());
             lsInput=null;            
         } 
@@ -74,7 +74,7 @@ public class eXistLSResourceResolver implements LSResourceResolver {
 
         InputStream is = null;
         if(resourcePath.startsWith("xmldb:")){
-            XmldbURL xmldbURL = new XmldbURL(resourcePath);
+            final XmldbURL xmldbURL = new XmldbURL(resourcePath);
             if(xmldbURL.isEmbedded()){
                 is = new EmbeddedInputStream( xmldbURL );
 

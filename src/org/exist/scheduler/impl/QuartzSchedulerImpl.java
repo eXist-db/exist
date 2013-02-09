@@ -173,7 +173,7 @@ public class QuartzSchedulerImpl implements Scheduler {
         boolean isShutdown = false;
         try {
             isShutdown = getScheduler().isShutdown();
-        } catch(SchedulerException se) {
+        } catch(final SchedulerException se) {
             LOG.warn("Unable to determine the status of the Scheuler: " + se.getMessage(), se);
         }
         return isShutdown;

@@ -32,20 +32,20 @@ public class BinaryValueFromFile extends BinaryValue {
             this.file = file;
             this.channel = new RandomAccessFile(file, "r").getChannel();
             this.buf = channel.map(MapMode.READ_ONLY, 0, channel.size());
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             throw new XPathException(ioe);
         }
     }
 
     public static BinaryValueFromFile getInstance(BinaryValueManager manager, BinaryValueType binaryValueType, File file) throws XPathException {
-        BinaryValueFromFile binaryFile = new BinaryValueFromFile(manager, binaryValueType, file);
+        final BinaryValueFromFile binaryFile = new BinaryValueFromFile(manager, binaryValueType, file);
         manager.registerBinaryValueInstance(binaryFile);
         return binaryFile;
     }
 
     @Override
     public BinaryValue convertTo(BinaryValueType binaryValueType) throws XPathException {
-        BinaryValueFromFile binaryFile = new BinaryValueFromFile(getManager(), binaryValueType, file);
+        final BinaryValueFromFile binaryFile = new BinaryValueFromFile(getManager(), binaryValueType, file);
         getManager().registerBinaryValueInstance(binaryFile);
         return binaryFile;
     }
@@ -59,7 +59,7 @@ public class BinaryValueFromFile extends BinaryValue {
         try {
             byte data[] = new byte[READ_BUFFER_SIZE];
             while(buf.hasRemaining()) {
-                int remaining = buf.remaining();
+                final int remaining = buf.remaining();
                 if(remaining < READ_BUFFER_SIZE) {
                     data = new byte[remaining];
                 }
@@ -106,10 +106,10 @@ public class BinaryValueFromFile extends BinaryValue {
         // do not close if this object is part of the contextSequence
         if (contextSequence == this ||
                 (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))
-            return;
+            {return;}
         try {
             this.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             // ignore at this point
         }
         context.destroyBinaryValue(this);

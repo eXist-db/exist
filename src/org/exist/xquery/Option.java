@@ -54,7 +54,7 @@ public class Option {
 	
 	public Option(QName qname, String contents)  throws XPathException {
 		if (qname.getPrefix() == null || "".equals(qname.getPrefix()))
-			throw new XPathException("XPST0081: options must have a prefix"); 
+			{throw new XPathException("XPST0081: options must have a prefix");} 
 		this.qname = qname;
 		this.contents = contents;
 	}
@@ -73,9 +73,9 @@ public class Option {
 
     public static String[] tokenize(String contents) {
         if(contents == null)
-			return new String[0];
-		StringTokenizer tok = new StringTokenizer(contents, " \r\t\n");
-		String[] items = new String[tok.countTokens()];
+			{return new String[0];}
+		final StringTokenizer tok = new StringTokenizer(contents, " \r\t\n");
+		final String[] items = new String[tok.countTokens()];
 		for(int i = 0; tok.hasMoreTokens(); i++) {
 			items[i] = tok.nextToken();
 		}
@@ -87,7 +87,7 @@ public class Option {
 		if(matcher.matches()) {
 			String value = matcher.group(2);
 			if(value.charAt(0) == '\'' || value.charAt(0) == '"')
-				value = value.substring(1, value.length() - 1);
+				{value = value.substring(1, value.length() - 1);}
 			return new String[] { matcher.group(1), value };
 		}
 		return null;

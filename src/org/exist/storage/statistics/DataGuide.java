@@ -58,7 +58,7 @@ public class DataGuide {
     protected NodeStats add(NodePath path, NodeStats mergeWith) {
         NodeStats current = root;
         for (int i = 0; i < path.length(); i++) {
-            QName qn = path.getComponent(i);
+            final QName qn = path.getComponent(i);
             if (qn.getNameType() != ElementValue.ELEMENT) {
                 return null;
             }
@@ -67,7 +67,7 @@ public class DataGuide {
         if (mergeWith != null) {
             current.mergeStats(mergeWith);
         } else
-            current.addOccurrence();
+            {current.addOccurrence();}
         return current;
     }
 
@@ -84,16 +84,16 @@ public class DataGuide {
     }
 
     public int getMaxParentDepth(QName qname) {
-        NodeStats temp = new NodeStats(qname);
+        final NodeStats temp = new NodeStats(qname);
         root.getMaxParentDepth(qname, temp);
         return temp.getMaxDepth();
     }
 
     public String toString() {
-        List<StringBuilder> paths = new ArrayList<StringBuilder>();
+        final List<StringBuilder> paths = new ArrayList<StringBuilder>();
         root.dump(new StringBuilder(), paths);
 
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         for (int i = 0; i < paths.size(); i++) {
             buf.append(paths.get(i));
             buf.append('\n');
@@ -106,15 +106,15 @@ public class DataGuide {
     }
 
     public void write(FileChannel fc, SymbolTable symbols) throws IOException {
-        int nodeCount = root.getSize();
-        ByteBuffer buffer = ByteBuffer.allocate(nodeCount * BYTES_PER_NODE + 4);
+        final int nodeCount = root.getSize();
+        final ByteBuffer buffer = ByteBuffer.allocate(nodeCount * BYTES_PER_NODE + 4);
         root.write(buffer, symbols);
         buffer.flip();
         fc.write(buffer);
     }
 
     public void read(FileChannel fc, SymbolTable symbols) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate((int) fc.size());
+        final ByteBuffer buffer = ByteBuffer.allocate((int) fc.size());
         fc.read(buffer);
         buffer.flip();
         root.read(buffer, symbols);
@@ -128,7 +128,7 @@ public class DataGuide {
 
         protected void write(ByteBuffer buffer, SymbolTable symbols) {
             if (children == null)
-                buffer.putInt(0);
+                {buffer.putInt(0);}
             else {
                 buffer.putInt(children.length);
                 for (int i = 0; i < children.length; i++) {
@@ -138,7 +138,7 @@ public class DataGuide {
         }
 
         protected void read(ByteBuffer buffer, SymbolTable symbols) {
-            int childCount = buffer.getInt();
+            final int childCount = buffer.getInt();
             if (childCount > 0) {
                 children = new NodeStats[childCount];
                 for (int i = 0; i < childCount; i++) {

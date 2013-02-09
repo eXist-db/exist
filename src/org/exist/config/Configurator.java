@@ -96,17 +96,17 @@ public class Configurator {
 
     //TODO should be replaced with a naturally ordered List, we need to maintain the order of XML elements based on the order of class members!!!
     protected static AFields getConfigurationAnnotatedFields(Class<?> clazz) {
-        AFields fields = new AFields();
-        for (Field field : clazz.getDeclaredFields()) {
+        final AFields fields = new AFields();
+        for (final Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(ConfigurationFieldAsAttribute.class)) {
                 fields.addAttribute(new AField<ConfigurationFieldAsAttribute>(field.getAnnotation(ConfigurationFieldAsAttribute.class), field));
             } else if (field.isAnnotationPresent(ConfigurationFieldAsElement.class)) {
                 fields.addElement(new AField<ConfigurationFieldAsElement>(field.getAnnotation(ConfigurationFieldAsElement.class), field));
             }
         }
-        Class<?> superClass = clazz.getSuperclass();
+        final Class<?> superClass = clazz.getSuperclass();
         if (superClass.isAnnotationPresent(ConfigurationClass.class)) { //XXX: remove? this force to have annotation at superclass
-            AFields superFields = getConfigurationAnnotatedFields(superClass);
+            final AFields superFields = getConfigurationAnnotatedFields(superClass);
             fields.addAllAttributes(superFields.getAttributes());
             fields.addAllElements(superFields.getElements());
         }
@@ -125,15 +125,15 @@ public class Configurator {
         try {
             String methodName = "get" + property;
             methodName = methodName.toLowerCase();
-            for (Method method : clazz.getMethods()) {
+            for (final Method method : clazz.getMethods()) {
                 if (method.getName().toLowerCase().equals(methodName)) {
                     return method;
                 }
             }
             
-        } catch (SecurityException e) {
+        } catch (final SecurityException e) {
             //Nothing to do
-        } catch (NoClassDefFoundError e) {
+        } catch (final NoClassDefFoundError e) {
             //Nothing to do
         }
         
@@ -144,15 +144,15 @@ public class Configurator {
         try {
             String methodName = "set" + field.getName();
             methodName = methodName.toLowerCase();
-            for (Method method : clazz.getMethods()) {
+            for (final Method method : clazz.getMethods()) {
                 if (method.getName().toLowerCase().equals(methodName)) {
                     return method;
                 }
             }
             
-        } catch (SecurityException e) {
+        } catch (final SecurityException e) {
             //Nothing to do
-        } catch (NoClassDefFoundError e) {
+        } catch (final NoClassDefFoundError e) {
             //Nothing to do
         }
         
@@ -163,17 +163,17 @@ public class Configurator {
         try {
             String methodName = "add" + property;
             methodName = methodName.toLowerCase();
-            for (Method method : clazz.getMethods()) {
+            for (final Method method : clazz.getMethods()) {
                 if (method.getName().toLowerCase().equals(methodName)
                         && method.getParameterTypes().length == 1
-                        && method.getParameterTypes()[0].getName().equals("java.lang.String")) {
+                        && "java.lang.String".equals(method.getParameterTypes()[0].getName())) {
                     return method;
                 }
             }
             
-        } catch (SecurityException e) {
+        } catch (final SecurityException e) {
             //Nothing to do
-        } catch (NoClassDefFoundError e) {
+        } catch (final NoClassDefFoundError e) {
             //Nothing to do
         }
         
@@ -185,21 +185,21 @@ public class Configurator {
             return null;
         }
         
-        Class<?> clazz = instance.getClass();
+        final Class<?> clazz = instance.getClass();
         instance.getClass().getAnnotations();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
             return null;
         }
         
-        String configName = clazz.getAnnotation(ConfigurationClass.class).value();
-        Configuration config = configuration.getConfiguration(configName);
+        final String configName = clazz.getAnnotation(ConfigurationClass.class).value();
+        final Configuration config = configuration.getConfiguration(configName);
         if (config == null) {
             System.out.println("No configuration [" + configName + "]");
             return null;
         }
         
         if (config instanceof ConfigurationImpl) {
-            ConfigurationImpl impl = (ConfigurationImpl) config;
+            final ConfigurationImpl impl = (ConfigurationImpl) config;
             //XXX: lock issue here, fix it
             Configurable configurable = null;
             if (impl.configuredObjectReference != null) {
@@ -223,35 +223,35 @@ public class Configurator {
     }
 
     private static Configuration configureByCurrent(Configurable instance, Configuration configuration) {
-        AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
-        Set<String> properties = configuration.getProperties();
+        final AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
+        final Set<String> properties = configuration.getProperties();
         if (properties.isEmpty()) {
             return configuration;
         }
         
         //process simple types: String, int, long, boolean
-        for (String property : properties) {
-            AField annotatedField = annotatedFields.findByAnnotationValue(property);
+        for (final String property : properties) {
+            final AField annotatedField = annotatedFields.findByAnnotationValue(property);
             if (annotatedField == null) {
                 System.out.println("Unused property " + property + " @" + configuration.getName());
                 continue;
             }
             
-            Field field = annotatedField.getField();
+            final Field field = annotatedField.getField();
             field.setAccessible(true);
             Object value = null;
-            String typeName = field.getType().getName();
+            final String typeName = field.getType().getName();
             
             try {
-                NewClass newClass = getAnnotation(field, NewClass.class);
+                final NewClass newClass = getAnnotation(field, NewClass.class);
                 if (newClass != null) {
                     value = org.exist.config.mapper.Constructor.load(newClass,
                             instance, configuration.getConfiguration(property));
                     
-                } else if (typeName.equals("java.lang.String")) {
+                } else if ("java.lang.String".equals(typeName)) {
                     value = configuration.getProperty(property);
                     
-                } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+                } else if ("int".equals(typeName) || "java.lang.Integer".equals(typeName)) {
                     
                     if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
                         final String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
@@ -270,21 +270,21 @@ public class Configurator {
                         value = configuration.getPropertyInteger(property);
                     }
                     
-                } else if (typeName.equals("long") || typeName.equals("java.lang.Long")) {
+                } else if ("long".equals(typeName) || "java.lang.Long".equals(typeName)) {
                     value = configuration.getPropertyLong(property);
                     
-                } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
+                } else if ("boolean".equals(typeName) || "java.lang.Boolean".equals(typeName)) {
                     value = configuration.getPropertyBoolean(property);
                     
-                } else if (typeName.equals("java.util.Map")) {
+                } else if ("java.util.Map".equals(typeName)) {
                     value = configuration.getPropertyMap(property);
                     //TODO: skip, it will be processed as structure
                     
-                } else if (typeName.equals("java.util.List")) {
+                } else if ("java.util.List".equals(typeName)) {
                     //skip, it will be processed as structure
                     //TODO what about simple generic types?
                     
-                } else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
+                } else if ("org.exist.xmldb.XmldbURI".equals(typeName)) {
                     //use annotation ConfigurationFieldClassMask
                     value = org.exist.xmldb.XmldbURI.create(configuration.getProperty(property));
                     
@@ -306,7 +306,7 @@ public class Configurator {
                     if (method != null) {
                         try {
                             method.invoke(instance, value);
-                        } catch (InvocationTargetException e) {
+                        } catch (final InvocationTargetException e) {
                             method = null;
                         }
                     }
@@ -315,14 +315,14 @@ public class Configurator {
                     }
                 }
                 
-            } catch (IllegalArgumentException e) {
+            } catch (final IllegalArgumentException e) {
                 LOG.error("Configuration error: " + EOL
                         + " config: " + configuration.getName() + EOL
                         + " property: " + property + EOL
                         + " message: " + e.getMessage());
                 return null; //XXX: throw configuration error
                 
-            } catch (IllegalAccessException e) {
+            } catch (final IllegalAccessException e) {
                 LOG.error("Security error: " + e.getMessage());
                 return null; //XXX: throw configuration error
             }
@@ -330,13 +330,13 @@ public class Configurator {
         
         //process simple structures: List
         try {
-            for (AField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
+            for (final AField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
                 
                 final Field field = element.getField();
-                String typeName = field.getType().getName();
+                final String typeName = field.getType().getName();
                 
-                if (typeName.equals("java.util.List")) {
-                    String confName = element.getAnnotation().value();
+                if ("java.util.List".equals(typeName)) {
+                    final String confName = element.getAnnotation().value();
                     field.setAccessible(true);
                     List list = (List) field.get(instance);
                     String referenceBy;
@@ -358,8 +358,8 @@ public class Configurator {
                     
                     if (confs != null) {
                         //remove & update
-                        for (Iterator<?> iterator = list.iterator(); iterator.hasNext();) {
-                            Object obj = iterator.next();
+                        for (final Iterator<?> iterator = list.iterator(); iterator.hasNext();) {
+                            final Object obj = iterator.next();
                             Configuration current_conf = null;
                             
                             if (!(obj instanceof Configurable)) {
@@ -384,8 +384,8 @@ public class Configurator {
                             
                             //Lookup for new configuration, update if found
                             boolean found = false;
-                            for (Iterator<Configuration> i = confs.iterator(); i.hasNext();) {
-                                Configuration conf = i.next();
+                            for (final Iterator<Configuration> i = confs.iterator(); i.hasNext();) {
+                                final Configuration conf = i.next();
                                 if (referenceBy != null && current_conf.equals(conf, referenceBy)) {
                                     i.remove();
                                     found = true;
@@ -407,10 +407,10 @@ public class Configurator {
                         }
                         
                         //create
-                        for (Configuration conf : confs) {
+                        for (final Configuration conf : confs) {
                             
                             if (referenceBy != null) {
-                                String value = conf.getProperty(referenceBy);
+                                final String value = conf.getProperty(referenceBy);
                                 if (value != null) {
                                     Method method = searchForAddMethod(instance.getClass(), confName);
                                     if (method != null) {
@@ -418,7 +418,7 @@ public class Configurator {
                                             method.invoke(instance, value);
                                             continue;
                                             
-                                        } catch (Exception e) {
+                                        } catch (final Exception e) {
                                             LOG.warn("Could not execute method on class " + instance.getClass().getName() + " for configuration '" + conf.getName() + "' referenceBy '" + referenceBy + "' for value '" + value + "'", e);
                                             method = null;
                                         }
@@ -426,12 +426,12 @@ public class Configurator {
                                 }
                                 
                             } else {
-                                Type genericType = field.getGenericType();
+                                final Type genericType = field.getGenericType();
                                 if (genericType != null) {
                                     
                                     if ("java.util.List<java.lang.String>".equals(genericType.toString())) {
                                         
-                                        String value = conf.getValue();
+                                        final String value = conf.getValue();
                                         
                                         if (value != null) {
                                             Method method = searchForAddMethod(instance.getClass(), confName);
@@ -440,7 +440,7 @@ public class Configurator {
                                                     method.invoke(instance, value);
                                                     continue;
                                                     
-                                                } catch (Exception e) {
+                                                } catch (final Exception e) {
                                                     method = null;
                                                 }
                                             }
@@ -450,13 +450,13 @@ public class Configurator {
                                 //TODO: AddMethod with Configuration argument
                             }
                             
-                            ConfigurationFieldClassMask annotation =
+                            final ConfigurationFieldClassMask annotation =
                                     getAnnotation(field, ConfigurationFieldClassMask.class);
                             
                             if (annotation == null) {
-                                NewClass newClass = getAnnotation(field, NewClass.class);
+                                final NewClass newClass = getAnnotation(field, NewClass.class);
                                 if (newClass != null) {
-                                    Object obj = org.exist.config.mapper.Constructor.load(
+                                    final Object obj = org.exist.config.mapper.Constructor.load(
                                             newClass, instance, conf);
                                     if (obj != null) {
                                         list.add(obj);
@@ -470,7 +470,7 @@ public class Configurator {
                                 continue;
                             }
                             
-                            String id = conf.getProperty(Configuration.ID);
+                            final String id = conf.getProperty(Configuration.ID);
                             Object[] objs;
                             
                             if (id == null) {
@@ -480,8 +480,8 @@ public class Configurator {
                                 objs = new Object[]{id.toLowerCase(), id};
                             }
                             
-                            String clazzName = String.format(annotation.value(), objs);
-                            Configurable obj = create(conf, instance, clazzName);
+                            final String clazzName = String.format(annotation.value(), objs);
+                            final Configurable obj = create(conf, instance, clazzName);
                             
                             if (obj != null) {
                                 list.add(obj);
@@ -491,12 +491,12 @@ public class Configurator {
                 }
             }
             
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             LOG.error(e);
             e.printStackTrace();
             return null;
             
-        } catch (IllegalAccessException e) {
+        } catch (final IllegalAccessException e) {
             LOG.error(e);
             e.printStackTrace();
             return null;
@@ -513,11 +513,11 @@ public class Configurator {
 
             Configurable obj = null;
             try {
-                Constructor<Configurable> constructor = (Constructor<Configurable>) clazz.getConstructor(instance.getClass(), Configuration.class);
+                final Constructor<Configurable> constructor = (Constructor<Configurable>) clazz.getConstructor(instance.getClass(), Configuration.class);
                 obj = constructor.newInstance(instance, conf);
                 
-            } catch (NoSuchMethodException e) {
-                Constructor<Configurable> constructor = (Constructor<Configurable>) clazz.getConstructor(Configuration.class);
+            } catch (final NoSuchMethodException e) {
+                final Constructor<Configurable> constructor = (Constructor<Configurable>) clazz.getConstructor(Configuration.class);
                 obj = constructor.newInstance(conf);
             }
             
@@ -530,7 +530,7 @@ public class Configurator {
                 
                 try {
                     db = BrokerPool.getInstance();
-                } catch (EXistException e) {
+                } catch (final EXistException e) {
                     //ignore if database is starting-up
                     //TODO: add to BrokerPool static list to activate when ready
                 }
@@ -549,34 +549,34 @@ public class Configurator {
             }
             return obj;
             
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             LOG.error("Class [" + clazzName + "] not found, "
                     + "skip instance creation.");
             
-        } catch (SecurityException e) {
+        } catch (final SecurityException e) {
             LOG.error("Security exception on class [" + clazzName
                     + "] creation, skip instance creation.");
             
-        } catch (NoSuchMethodException e) {
+        } catch (final NoSuchMethodException e) {
             LOG.error("Class [" + clazzName + "] constructor "
                     + "(" + instance.getClass().getName() + ", " + Configuration.class.getName() + ")"
                     + " or "
                     + "(" + Configuration.class.getName() + ")"
                     + "not found, skip instance creation.");
             
-        } catch (InstantiationException e) {
+        } catch (final InstantiationException e) {
             LOG.error("Instantiation exception on class [" + clazzName
                     + "] creation, skip instance creation.");
             
-        } catch (InvocationTargetException e) {
+        } catch (final InvocationTargetException e) {
             LOG.error("Invocation target exception on class ["
                     + clazzName + "] creation, skip instance creation.");
             
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.error("Databasse exception on class [" + clazzName
                     + "] startup, skip instance creation.");
             
-        } catch (IllegalAccessException e) {
+        } catch (final IllegalAccessException e) {
             LOG.error(e);
         }
         
@@ -587,30 +587,30 @@ public class Configurator {
         try {
             return parse(new FileInputStream(file));
             
-        } catch (FileNotFoundException e) {
+        } catch (final FileNotFoundException e) {
             throw new ConfigurationException(e);
         }
     }
 
     public static Configuration parse(InputStream is) throws ConfigurationException {
         try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
-            InputSource src = new InputSource(is);
-            SAXParser parser = factory.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            SAXAdapter adapter = new SAXAdapter();
+            final InputSource src = new InputSource(is);
+            final SAXParser parser = factory.newSAXParser();
+            final XMLReader reader = parser.getXMLReader();
+            final SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
             reader.parse(src);
             
             return new ConfigurationImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
-        } catch (ParserConfigurationException e) {
+        } catch (final ParserConfigurationException e) {
             throw new ConfigurationException(e);
             
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             throw new ConfigurationException(e);
             
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new ConfigurationException(e);
         }
         
@@ -620,13 +620,13 @@ public class Configurator {
         try {
             return parse(new FileInputStream(ConfigurationHelper.lookup("conf.xml")));
             
-        } catch (FileNotFoundException e) {
+        } catch (final FileNotFoundException e) {
             throw new ConfigurationException(e);
         }
     }
 
     private static Boolean implementsInterface(Class<?> object, Class<?> interf) {
-        for (Class<?> c : object.getInterfaces()) {
+        for (final Class<?> c : object.getInterfaces()) {
             if (c.equals(interf)) {
                 return true;
             }
@@ -638,34 +638,34 @@ public class Configurator {
     protected static void serializeByReference(Configurable instance,
             SAXSerializer serializer, String fieldAsElementName,
             String referenceBy) throws SAXException {
-        Configurable resolved = ((ReferenceImpl) instance).resolve();
-        Method getMethod = searchForGetMethod(resolved.getClass(), referenceBy);
+        final Configurable resolved = ((ReferenceImpl) instance).resolve();
+        final Method getMethod = searchForGetMethod(resolved.getClass(), referenceBy);
         Object value;
         
         try {
             value = getMethod.invoke(resolved);
             
-        } catch (IllegalArgumentException iae) {
+        } catch (final IllegalArgumentException iae) {
             LOG.error(iae);
             //TODO : throw exception ? -pb
             return;
             
-        } catch (IllegalAccessException iae) {
+        } catch (final IllegalAccessException iae) {
             LOG.error(iae);
             //TODO : throw exception ? -pb
             return;
             
-        } catch (InvocationTargetException ite) {
+        } catch (final InvocationTargetException ite) {
             LOG.error(ite);
             //TODO : throw exception ? -pb
             return;
         }
         
-        QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
+        final QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
         
         if (value == null) {
-            String comment = "<" + qnConfig + " " + referenceBy + "=''/>";
-            char[] ch = comment.toCharArray();
+            final String comment = "<" + qnConfig + " " + referenceBy + "=''/>";
+            final char[] ch = comment.toCharArray();
             serializer.characters(EOL.toCharArray(), 0, EOL.length());
             serializer.comment(ch, 0, ch.length);
             
@@ -684,14 +684,14 @@ public class Configurator {
             return;
         }
         
-        Class<?> clazz = instance.getClass();
+        final Class<?> clazz = instance.getClass();
         instance.getClass().getAnnotations();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
             return; //UNDERSTAND: throw exception
         }
         
-        AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
-        AField<?> annotatedField = annotatedFields.findByAnnotationValue(referenceBy);
+        final AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
+        final AField<?> annotatedField = annotatedFields.findByAnnotationValue(referenceBy);
         if (annotatedField == null) {
             return; //UNDERSTAND: throw exception
         }
@@ -708,21 +708,21 @@ public class Configurator {
         try {
             value = extractFieldValue(field, instance);
             
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             LOG.error(e);
             //TODO : throw exception , -pb
             return;
             
-        } catch (IllegalAccessException e) {
+        } catch (final IllegalAccessException e) {
             LOG.error(e);
             //TODO : throw exception ? -pb
             return;
         }
         
-        QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
+        final QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
         if (value == null) {
-            String comment = "<" + qnConfig + " " + referenceBy + "=''/>";
-            char[] ch = comment.toCharArray();
+            final String comment = "<" + qnConfig + " " + referenceBy + "=''/>";
+            final char[] ch = comment.toCharArray();
             serializer.characters(EOL.toCharArray(), 0, EOL.length());
             serializer.comment(ch, 0, ch.length);
             
@@ -734,12 +734,12 @@ public class Configurator {
     }
 
     private static String extractFieldValue(Field field, Configurable instance) throws IllegalArgumentException, IllegalAccessException {
-        String typeName = field.getType().getName();
+        final String typeName = field.getType().getName();
         
-        if (typeName.equals("java.lang.String")) {
+        if ("java.lang.String".equals(typeName)) {
             return field.get(instance).toString();
             
-        } else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+        } else if ("int".equals(typeName) || "java.lang.Integer".equals(typeName)) {
             
             if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
                 final String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
@@ -749,7 +749,7 @@ public class Configurator {
                     try {
                         final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
                         return Integer.toString((Integer) field.get(instance), radix);
-                    } catch (Exception e) {
+                    } catch (final Exception e) {
                         //UNDERSTAND: ignore, set back to default or throw error?
                     }
                     
@@ -764,13 +764,13 @@ public class Configurator {
                 return field.get(instance).toString();
             }
             
-        } else if (typeName.equals("long") || typeName.equals("java.lang.Long")) {
+        } else if ("long".equals(typeName) || "java.lang.Long".equals(typeName)) {
             return field.get(instance).toString();
             
-        } else if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
+        } else if ("boolean".equals(typeName) || "java.lang.Boolean".equals(typeName)) {
             return Boolean.valueOf(field.get(instance).toString()).toString();
             
-        } else if (typeName.equals("org.exist.xmldb.XmldbURI")) {
+        } else if ("org.exist.xmldb.XmldbURI".equals(typeName)) {
             return field.get(instance).toString();
         }
         
@@ -858,7 +858,7 @@ public class Configurator {
                     
                     String value = null;
                     final String typeName = field.getType().getName();
-                    if (typeName.equals("java.util.List")) {
+                    if ("java.util.List".equals(typeName)) {
                         serializeList(instance, element, serializer);
                         continue;
                         
@@ -867,7 +867,7 @@ public class Configurator {
                         serialize(subInstance, serializer);
                         continue;
                         
-                    } else if (typeName.equals("java.util.Map")) {
+                    } else if ("java.util.Map".equals(typeName)) {
                         serializeMap(element.getAnnotation().value(), (Map<String, String>) field.get(instance), serializer);
                         continue;
                         
@@ -929,11 +929,11 @@ public class Configurator {
         field.setAccessible(true);
         
         //determine the list entries type from its generic type
-        Type fieldGenericType = field.getGenericType();
+        final Type fieldGenericType = field.getGenericType();
         if (fieldGenericType instanceof ParameterizedType) {
-            Type genericTypeArgs[] = ((ParameterizedType) fieldGenericType).getActualTypeArguments();
+            final Type genericTypeArgs[] = ((ParameterizedType) fieldGenericType).getActualTypeArguments();
             if (genericTypeArgs != null && genericTypeArgs.length == 1) {
-                Type genericListType = genericTypeArgs[0];
+                final Type genericListType = genericTypeArgs[0];
                 if (genericListType.equals(String.class)) {
                     serializeStringList((List<String>) field.get(instance), element, serializer);
                 } else {
@@ -955,7 +955,7 @@ public class Configurator {
         final String fieldAsElementName = element.getAnnotation().value();
         final QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
         
-        for (String listItem : list) {
+        for (final String listItem : list) {
             serializer.startElement(qnConfig, null);
             serializer.characters(listItem);
             serializer.endElement(qnConfig);
@@ -971,7 +971,7 @@ public class Configurator {
             referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
         }
         
-        for (Configurable el : list) {
+        for (final Configurable el : list) {
             if (referenceBy == null) {
                 serialize(el, serializer);
                 
@@ -988,7 +988,7 @@ public class Configurator {
             final QName mapQName = new QName(mapName, Configuration.NS);
             final QName attrQName = new QName("key");
             
-            for (Map.Entry<String, String> entry : map.entrySet()) {
+            for (final Map.Entry<String, String> entry : map.entrySet()) {
                 serializer.startElement(mapQName, null);
                 serializer.attribute(attrQName, entry.getKey());
                 serializer.characters(entry.getValue());
@@ -1002,7 +1002,7 @@ public class Configurator {
             return (FullXmldbURI) uri;
         }
         
-        StringBuilder accessor = new StringBuilder(XmldbURI.XMLDB_URI_PREFIX);
+        final StringBuilder accessor = new StringBuilder(XmldbURI.XMLDB_URI_PREFIX);
         accessor.append(db.getId());
         accessor.append("://");
         accessor.append("");
@@ -1014,7 +1014,7 @@ public class Configurator {
             Collection collection, XmldbURI fileURL) throws ConfigurationException {
         
         Configuration conf = null;
-        FullXmldbURI key = getFullURI(broker.getBrokerPool(), collection.getURI().append(fileURL));
+        final FullXmldbURI key = getFullURI(broker.getBrokerPool(), collection.getURI().append(fileURL));
         conf = hotConfigs.get(key);
         if (conf != null) {
             return conf;
@@ -1025,7 +1025,7 @@ public class Configurator {
         try {
             document = collection.getDocument(broker, fileURL);
             
-        } catch (PermissionDeniedException pde) {
+        } catch (final PermissionDeniedException pde) {
             throw new ConfigurationException(pde.getMessage(), pde);
         }
         
@@ -1034,21 +1034,21 @@ public class Configurator {
                 //database in read-only mode & there no configuration file, 
                 //create in memory document & configuration 
                 try {
-                    StringWriter writer = new StringWriter();
-                    SAXSerializer serializer = new SAXSerializer(writer, null);
+                    final StringWriter writer = new StringWriter();
+                    final SAXSerializer serializer = new SAXSerializer(writer, null);
                     serializer.startDocument();
                     serialize(instance, serializer);
                     serializer.endDocument();
-                    String data = writer.toString();
+                    final String data = writer.toString();
                     if (data == null || data.length() == 0) {
                         return null;
                     }
                     return parse(new ByteArrayInputStream(data.getBytes("UTF-8")));
                     
-                } catch (SAXException saxe) {
+                } catch (final SAXException saxe) {
                     throw new ConfigurationException(saxe.getMessage(), saxe);
                     
-                } catch (UnsupportedEncodingException e) {
+                } catch (final UnsupportedEncodingException e) {
                     return null;
                 }
             }
@@ -1056,7 +1056,7 @@ public class Configurator {
             try {
                 document = save(instance, broker, collection, fileURL);
                 
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : throw exception ? -pb
                 return null;
@@ -1067,7 +1067,7 @@ public class Configurator {
             return null; //possibly on corrupted database, find better solution (recovery flag?)
         }
         
-        ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
+        final ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
         if (confElement == null) {
             return null; //possibly on corrupted database, find better solution (recovery flag?)
         }
@@ -1083,14 +1083,14 @@ public class Configurator {
         }
         
         Configuration conf;
-        FullXmldbURI key = getFullURI(document.getDatabase(), document.getURI());
+        final FullXmldbURI key = getFullURI(document.getDatabase(), document.getURI());
         
         conf = hotConfigs.get(key);
         if (conf != null) {
             return conf;
         }
         
-        ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
+        final ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
         if (confElement == null) {
             return null; //possibly on corrupted database, find better solution (recovery flag?)
         }
@@ -1105,7 +1105,7 @@ public class Configurator {
         try {
             database = BrokerPool.getInstance();
             
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new IOException(e);
         }
         
@@ -1115,7 +1115,7 @@ public class Configurator {
 
             return save(broker, instance, uri);
 
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new IOException(e);
             
         } finally {
@@ -1125,16 +1125,16 @@ public class Configurator {
 
     public static DocumentAtExist save(DBBroker broker, Configurable instance, XmldbURI uri) throws IOException {
         try {
-            Collection collection = broker.getCollection(uri.removeLastSegment());
+            final Collection collection = broker.getCollection(uri.removeLastSegment());
             if (collection == null) {
                 throw new IOException("Collection URI = " + uri.removeLastSegment() + " not found.");
             }
             return save(instance, broker, collection, uri.lastSegment());
             
-        } catch (PermissionDeniedException pde) {
+        } catch (final PermissionDeniedException pde) {
             throw new IOException(pde);
             
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new IOException(e);
         }
     }
@@ -1143,36 +1143,36 @@ public class Configurator {
 
     public static DocumentAtExist save(Configurable instance, DBBroker broker, Collection collection, XmldbURI uri) throws IOException, ConfigurationException {
         
-        StringWriter writer = new StringWriter();
-        SAXSerializer serializer = new SAXSerializer(writer, null);
+        final StringWriter writer = new StringWriter();
+        final SAXSerializer serializer = new SAXSerializer(writer, null);
         
         try {
             serializer.startDocument();
             serialize(instance, serializer);
             serializer.endDocument();
             
-        } catch (SAXException saxe) {
+        } catch (final SAXException saxe) {
             throw new ConfigurationException(saxe.getMessage(), saxe);
         }
         
-        String data = writer.toString();
+        final String data = writer.toString();
         if (data == null || data.length() == 0) {
             return null;
         }
         
         FullXmldbURI fullURI = null;
-        BrokerPool pool = broker.getBrokerPool();
-        TransactionManager transact = pool.getTransactionManager();
+        final BrokerPool pool = broker.getBrokerPool();
+        final TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
         LOG.info("Storing configuration " + collection.getURI() + "/" + uri);
-        Subject currentUser = broker.getSubject();
+        final Subject currentUser = broker.getSubject();
         
         try {
             broker.setSubject(pool.getSecurityManager().getSystemSubject());
             txn = transact.beginTransaction();
             txn.acquireLock(collection.getLock(), Lock.WRITE_LOCK);
-            IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
-            DocumentImpl doc = info.getDocument();
+            final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
+            final DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             doc.getPermissions().setMode(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM);
             fullURI = getFullURI(broker.getBrokerPool(), doc.getURI());
@@ -1186,7 +1186,7 @@ public class Configurator {
             broker.sync(Sync.MAJOR_SYNC);
             return collection.getDocument(broker, uri.lastSegment());
             
-        } catch (Exception e) {
+        } catch (final Exception e) {
 
             if (fullURI != null) {
                 saving.remove(fullURI);
@@ -1205,10 +1205,10 @@ public class Configurator {
     }
 
     public static synchronized void clear(Database db) {
-        for (Entry<FullXmldbURI, Configuration> entry : hotConfigs.entrySet()) {
-            FullXmldbURI uri = entry.getKey();
+        for (final Entry<FullXmldbURI, Configuration> entry : hotConfigs.entrySet()) {
+            final FullXmldbURI uri = entry.getKey();
             if (uri.getInstanceName().equals(db.getId())) {
-                Configuration conf = entry.getValue();
+                final Configuration conf = entry.getValue();
                 if (conf instanceof ConfigurationImpl) {
                     ((ConfigurationImpl) conf).configuredObjectReference = null;
                 }
@@ -1223,7 +1223,7 @@ public class Configurator {
         }
         
         if (hotConfigs.containsValue(configuration)) {
-            for (Entry<FullXmldbURI, Configuration> entry : hotConfigs.entrySet()) {
+            for (final Entry<FullXmldbURI, Configuration> entry : hotConfigs.entrySet()) {
                 if (entry.getValue() == configuration) {
                     hotConfigs.remove(entry.getKey());
                     return;
@@ -1234,11 +1234,11 @@ public class Configurator {
 
     private static Object instantiateObject(String className, Configuration configuration) throws ConfigurationException {
         try {
-            Class<?> clazz = Class.forName(className);
-            Constructor<?> cstr = clazz.getConstructor(Configuration.class);
+            final Class<?> clazz = Class.forName(className);
+            final Constructor<?> cstr = clazz.getConstructor(Configuration.class);
             return cstr.newInstance(configuration);
             
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new ConfigurationException(e.getMessage(), e);
         }
     }
@@ -1276,13 +1276,13 @@ public class Configurator {
         }
 
         public AField findByAnnotationValue(String value) {
-            for (AField<ConfigurationFieldAsAttribute> attr : attributes) {
+            for (final AField<ConfigurationFieldAsAttribute> attr : attributes) {
                 if (attr.getAnnotation().value().equals(value)) {
                     return attr;
                 }
             }
             
-            for (AField<ConfigurationFieldAsElement> element : elements) {
+            for (final AField<ConfigurationFieldAsElement> element : elements) {
                 if (element.getAnnotation().value().equals(value)) {
                     return element;
                 }

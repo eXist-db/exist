@@ -86,12 +86,12 @@ public class FunResolveQName extends BasicFunction {
             }
         }
     
-        Sequence qnameSeq = args[0];
+        final Sequence qnameSeq = args[0];
         if (qnameSeq.isEmpty()) {
             return EmptySequence.EMPTY_SEQUENCE;
         } else {
         	context.pushInScopeNamespaces();        	        	
-            String qnameString = args[0].getStringValue();
+            final String qnameString = args[0].getStringValue();
             if (QName.isQName(qnameString)) {
                 String prefix = QName.extractPrefix(qnameString);
 
@@ -101,13 +101,13 @@ public class FunResolveQName extends BasicFunction {
 
                 String uri = null;
 
-                NodeValue node = (NodeValue) args[1].itemAt(0);
+                final NodeValue node = (NodeValue) args[1].itemAt(0);
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     NodeProxy proxy = (NodeProxy) node;
-                    NodeSet ancestors = proxy.getAncestors(contextId, true);
-                    for (Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext();) {
+                    final NodeSet ancestors = proxy.getAncestors(contextId, true);
+                    for (final Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext();) {
                         proxy = i.next();
-                        ElementImpl e = (ElementImpl) proxy.getNode(); 
+                        final ElementImpl e = (ElementImpl) proxy.getNode(); 
                         uri = findNamespaceURI(e, prefix);
                         if (uri != null) {
                             break;
@@ -129,13 +129,13 @@ public class FunResolveQName extends BasicFunction {
                     throw new XPathException(this, ErrorCodes.FONS0004, "No namespace found for prefix. No binding for prefix '" + prefix
                                              + "' was found.", args[0]);
                 }
-                String localPart = QName.extractLocalName(qnameString);
-                QName qn = new QName(localPart, uri);
+                final String localPart = QName.extractLocalName(qnameString);
+                final QName qn = new QName(localPart, uri);
                 qn.setPrefix(prefix);
         
-                QNameValue result = new QNameValue(context, qn);
+                final QNameValue result = new QNameValue(context, qn);
                 if (context.getProfiler().isEnabled()) 
-                    context.getProfiler().end(this, "", result); 
+                    {context.getProfiler().end(this, "", result);} 
                 
                 context.popInScopeNamespaces();
           
@@ -155,13 +155,13 @@ public class FunResolveQName extends BasicFunction {
      * @return a <code>String</code> value
      */
     public String findNamespaceURI(ElementImpl element, String prefix) {
-        String namespaceURI = element.getNamespaceURI();
+        final String namespaceURI = element.getNamespaceURI();
         if (namespaceURI != null && namespaceURI.length() > 0 && prefix.equals(element.getPrefix())) {
             return namespaceURI;
         }
         if (element.declaresNamespacePrefixes()) {
-            for (Iterator<String> i = element.getPrefixes(); i.hasNext();) {            	
-                String elementPrefix = i.next();
+            for (final Iterator<String> i = element.getPrefixes(); i.hasNext();) {            	
+                final String elementPrefix = i.next();
                 context.declareInScopeNamespace(elementPrefix, element.getNamespaceForPrefix(elementPrefix));
                 if (prefix.equals(elementPrefix)) {
                     return element.getNamespaceForPrefix(prefix);
@@ -180,7 +180,7 @@ public class FunResolveQName extends BasicFunction {
      */
     public static String findNamespaceURI(Element element, String prefix) {
         //TODO how do you get to the declared namespaces on plain elements?
-        String namespaceURI = element.getNamespaceURI();
+        final String namespaceURI = element.getNamespaceURI();
         if (namespaceURI != null && namespaceURI.length() > 0 && prefix.equals(element.getPrefix())) {
             return namespaceURI;
         } else {
@@ -196,7 +196,7 @@ public class FunResolveQName extends BasicFunction {
      * @return a <code>String</code> value
      */
     public static String findNamespaceURI(org.exist.memtree.ElementImpl element, String prefix) {
-        String namespaceURI = element.getNamespaceURI();
+        final String namespaceURI = element.getNamespaceURI();
         if (namespaceURI != null && namespaceURI.length() > 0 && prefix.equals(element.getPrefix())) {
             return namespaceURI;
         }

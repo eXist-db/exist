@@ -40,9 +40,9 @@ public class ElementContent {
 
     public void append(XMLString string) {
         if (mixedContent)
-            appendString(string);
+            {appendString(string);}
         else
-            appendSpan(string);
+            {appendSpan(string);}
     }
 
     public void appendSpan(XMLString string) {
@@ -79,7 +79,7 @@ public class ElementContent {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         TextSpan span = getFirst();
         while (span != null) {
             buf.append(span.getContent()).append('|');

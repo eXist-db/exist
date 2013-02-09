@@ -23,8 +23,8 @@ public class NodeExpander implements ActionListener
 	public void actionPerformed(ActionEvent event)
 	{
 		if(contextNode == null)
-			return;
-		TreePath path = XACMLTreeModel.getPathToNode(contextNode);
+			{return;}
+		final TreePath path = XACMLTreeModel.getPathToNode(contextNode);
 		tree.expandPath(path);
 		contextNode = null;
 	}

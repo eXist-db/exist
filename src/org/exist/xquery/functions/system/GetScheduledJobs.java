@@ -67,25 +67,25 @@ public class GetScheduledJobs extends BasicFunction {
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
         if( !context.getSubject().hasDbaRole() ) {
-            XPathException xPathException = new XPathException( this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to get the list of scheduled jobs" );
+            final XPathException xPathException = new XPathException( this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to get the list of scheduled jobs" );
         	logger.error("Invalid user " + SystemModule.PREFIX + ":get-scheduled-jobs", xPathException);
 			throw xPathException;
         }
 
-        MemTreeBuilder builder = context.getDocumentBuilder();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
 
         builder.startDocument();
         builder.startElement( new QName( "jobs", NAMESPACE_URI, PREFIX ), null );
 
-        BrokerPool brokerPool = context.getBroker().getBrokerPool();
+        final BrokerPool brokerPool = context.getBroker().getBrokerPool();
         logger.trace("brokerPool = " + brokerPool.toString());
         
         if( brokerPool != null ) {
-            org.exist.scheduler.Scheduler existScheduler = brokerPool.getScheduler();
+            final org.exist.scheduler.Scheduler existScheduler = brokerPool.getScheduler();
             
             if( existScheduler != null ) {
-                List<ScheduledJobInfo> scheduledJobsInfo = existScheduler.getScheduledJobs();
-                ScheduledJobInfo[] executingJobsInfo = existScheduler.getExecutingJobs();
+                final List<ScheduledJobInfo> scheduledJobsInfo = existScheduler.getScheduledJobs();
+                final ScheduledJobInfo[] executingJobsInfo = existScheduler.getExecutingJobs();
                 
                 if( scheduledJobsInfo != null ) {
                     for(final ScheduledJobInfo scheduledJobInfo : scheduledJobsInfo) {
@@ -109,16 +109,16 @@ public class GetScheduledJobs extends BasicFunction {
     private void addRow(ScheduledJobInfo scheduledJobInfo, MemTreeBuilder builder, boolean isRunning) {
     	logger.trace("Entring addRow");
     	
-        String name = scheduledJobInfo.getName();
-    	String group = scheduledJobInfo.getGroup();
-    	String triggerName = scheduledJobInfo.getTriggerName();
-    	Date startTime = scheduledJobInfo.getStartTime();
-    	Date endTime = scheduledJobInfo.getEndTime();
-    	Date fireTime = scheduledJobInfo.getPreviousFireTime();
-    	Date nextFireTime = scheduledJobInfo.getNextFireTime();
-    	Date finalFireTime = scheduledJobInfo.getFinalFireTime();
-    	String triggerExpression = scheduledJobInfo.getTriggerExpression();
-    	TriggerState triggerState = scheduledJobInfo.getTriggerState();
+        final String name = scheduledJobInfo.getName();
+    	final String group = scheduledJobInfo.getGroup();
+    	final String triggerName = scheduledJobInfo.getTriggerName();
+    	final Date startTime = scheduledJobInfo.getStartTime();
+    	final Date endTime = scheduledJobInfo.getEndTime();
+    	final Date fireTime = scheduledJobInfo.getPreviousFireTime();
+    	final Date nextFireTime = scheduledJobInfo.getNextFireTime();
+    	final Date finalFireTime = scheduledJobInfo.getFinalFireTime();
+    	final String triggerExpression = scheduledJobInfo.getTriggerExpression();
+    	final TriggerState triggerState = scheduledJobInfo.getTriggerState();
 		
         builder.startElement(new QName("job", NAMESPACE_URI, PREFIX), null);
         builder.addAttribute(new QName("name", null, null), name);
@@ -146,7 +146,7 @@ public class GetScheduledJobs extends BasicFunction {
     		if( isToday( aDate ) ) {
     			formatString = TODAY_TIMESTAMP;
     		}
-    		SimpleDateFormat format = new SimpleDateFormat( formatString );
+    		final SimpleDateFormat format = new SimpleDateFormat( formatString );
 			
     		returnValue = format.format(aDate);
     	}
@@ -156,10 +156,10 @@ public class GetScheduledJobs extends BasicFunction {
 
     private boolean isToday( Date aDate )
     {
-        Calendar aCal1 = Calendar.getInstance();
+        final Calendar aCal1 = Calendar.getInstance();
         aCal1.setTime( aDate );
 
-        Calendar aCal2 = Calendar.getInstance();
+        final Calendar aCal2 = Calendar.getInstance();
 
         if( ( aCal1.get( Calendar.DATE ) == aCal2.get( Calendar.DATE ) ) &&
             ( aCal1.get( Calendar.YEAR ) == aCal2.get( Calendar.YEAR ) ) &&

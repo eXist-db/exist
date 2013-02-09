@@ -83,7 +83,7 @@ public class FunctionCall extends Function {
         this.mySignature = this.functionDef.getSignature();
         this.expression = this.functionDef;
         this.functionDef.setCaller(this);
-        SequenceType returnType = this.functionDef.getSignature().getReturnType();
+        final SequenceType returnType = this.functionDef.getSignature().getReturnType();
         
         // add return type checks
         if(returnType.getCardinality() != Cardinality.ZERO_OR_MORE) {
@@ -110,15 +110,15 @@ public class FunctionCall extends Function {
 	 */
 	private void updateFunction() throws XPathException {
 		if (functionDef.getContext() instanceof ModuleContext) {
-			ModuleContext modContext = (ModuleContext) functionDef.getContext();
+			final ModuleContext modContext = (ModuleContext) functionDef.getContext();
 			// util:eval will stuff non-module function declarations into a module context sometimes,
 			// so watch out for those and ignore them.
 			if (functionDef.getName() != null && 
 					functionDef.getName().getNamespaceURI().equals(modContext.getModuleNamespace()) &&
                     modContext.getRootContext() != context.getRootContext()) {
-                ExternalModule rootModule = (ExternalModule) context.getRootModule(functionDef.getName().getNamespaceURI());
+                final ExternalModule rootModule = (ExternalModule) context.getRootModule(functionDef.getName().getNamespaceURI());
                 if (rootModule != null) {
-                    UserDefinedFunction replacementFunctionDef =
+                    final UserDefinedFunction replacementFunctionDef =
                         rootModule.getFunction(functionDef.getName(), getArgumentCount(), modContext);
                     if (replacementFunctionDef != null) {
                         expression = functionDef = (UserDefinedFunction) replacementFunctionDef.clone();
@@ -136,7 +136,7 @@ public class FunctionCall extends Function {
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		//updateFunction();
 		contextInfo.setParent(this);
-         AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+         final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
          newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
          super.analyze(newContextInfo);
 		if (context.tailRecursiveCall(functionDef.getSignature())) {
@@ -204,8 +204,8 @@ public class FunctionCall extends Function {
      */
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        Sequence[] seq = new Sequence[getArgumentCount()];
-        DocumentSet[] contextDocs = new DocumentSet[getArgumentCount()];
+        final Sequence[] seq = new Sequence[getArgumentCount()];
+        final DocumentSet[] contextDocs = new DocumentSet[getArgumentCount()];
         for(int i = 0; i < getArgumentCount(); i++) {
             try {
                 seq[i] = getArgument(i).eval(contextSequence, contextItem);
@@ -216,7 +216,7 @@ public class FunctionCall extends Function {
                     }
                 }
                 //System.out.println("found " + seq[i].getLength() + " for " + getArgument(i).pprint());
-            } catch(XPathException e) {
+            } catch(final XPathException e) {
                 if(e.getLine() <= 0) {
                     e.setLocation(line, column, getSource());
                 }
@@ -237,7 +237,7 @@ public class FunctionCall extends Function {
             if(!(result instanceof DeferredFunctionCall) && !(result instanceof VirtualNodeSet) && !result.isEmpty()) {
                 getSignature().getReturnType().checkType(result.getItemType());
             }
-        } catch(XPathException e) {
+        } catch(final XPathException e) {
             throw new XPathException(this, ErrorCodes.XPTY0004, "err:XPTY0004: return type of function '" + getSignature().getName() + "'. " + e.getMessage(), Sequence.EMPTY_SEQUENCE, e);
         }
 
@@ -292,7 +292,7 @@ public class FunctionCall extends Function {
                     pdp.evaluate(request);
                 }
             }
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             final XPathException xe = new XPathException(this, "Access to function '" + getName() + "'  denied.", pde);
             xe.addFunctionCall(functionDef, this);
             throw xe;
@@ -311,7 +311,7 @@ public class FunctionCall extends Function {
             long start = System.currentTimeMillis();
             if(context.getProfiler().traceFunctions()) {
                 if (context.tailRecursiveCall(getSignature()))
-                    start = -1;
+                    {start = -1;}
                 context.getProfiler().traceFunctionStart(this);
             }
             context.functionStart(functionDef.getSignature());
@@ -338,7 +338,7 @@ public class FunctionCall extends Function {
                 
                 return returnSeq;
     		
-            } catch(XPathException e) {
+            } catch(final XPathException e) {
                 // append location of the function call to the exception message:
                 if(e.getLine() <= 0) {
                     e.setLocation(line, column);
@@ -418,7 +418,7 @@ public class FunctionCall extends Function {
                 returnSeq = expression.eval(contextSequence, contextItem);
                 LOG.trace("Returning from execute()");
                 return returnSeq;
-            } catch(XPathException e) {
+            } catch(final XPathException e) {
                 // append location of the function call to the exception message:
                 if(e.getLine() == 0) {
                     e.setLocation(line, column);

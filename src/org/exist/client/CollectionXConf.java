@@ -88,10 +88,10 @@ public class CollectionXConf
 		collection = client.getCollection(path);
 		
 		if(collection == null) //if no config collection for this collection exists, just return
-			return;
+			{return;}
 		
 		//get the resource from the db
-        String[] resources = collection.listResources();
+        final String[] resources = collection.listResources();
         for (int i = 0; i < resources.length; i++) {
             if (resources[i].endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
                 resConfig = collection.getResource(resources[i]);
@@ -100,31 +100,31 @@ public class CollectionXConf
         }
 		
 		if(resConfig == null) //if, no config file exists for that collection
-			return;
+			{return;}
 		
 		//Parse the configuration file into a DOM
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		Document docConfig = null;
 		try
 		{
-			DocumentBuilder builder = factory.newDocumentBuilder();
+			final DocumentBuilder builder = factory.newDocumentBuilder();
 			docConfig = builder.parse( new java.io.ByteArrayInputStream(resConfig.getContent().toString().getBytes()) );
 		}
-		catch(ParserConfigurationException pce)
+		catch(final ParserConfigurationException pce)
 		{
 			//TODO: do something here, throw xmldbexception?
 		} 
-		catch(SAXException se)
+		catch(final SAXException se)
 		{
 			//TODO: do something here, throw xmldbexception?
 		}
-		catch(IOException ioe)
+		catch(final IOException ioe)
 		{
 			//TODO: do something here, throw xmldbexception?
 		}
 		
 		//Get the root of the collection.xconf
-		Element xconf = docConfig.getDocumentElement();
+		final Element xconf = docConfig.getDocumentElement();
 		
 		//Read any custom namespaces from xconf
 		customNamespaces = getCustomNamespaces(xconf);
@@ -301,13 +301,13 @@ public class CollectionXConf
 		hasChanged = true;
 
         if (type != null)
-            fulltextIndex.setType(index, type);
+            {fulltextIndex.setType(index, type);}
 
         if(XPath != null)
-			fulltextIndex.setPath(index, XPath);
+			{fulltextIndex.setPath(index, XPath);}
 		
 		if(action != null)
-			fulltextIndex.setAction(index, action);
+			{fulltextIndex.setAction(index, action);}
 	}
 
 	/**
@@ -408,13 +408,13 @@ public class CollectionXConf
 		hasChanged = true;
 
         if (type != null)
-            rangeIndexes[index].setType(type);
+            {rangeIndexes[index].setType(type);}
         
         if(XPath != null)
-			rangeIndexes[index].setXPath(XPath);
+			{rangeIndexes[index].setXPath(XPath);}
 		
 		if(xsType != null)
-			rangeIndexes[index].setxsType(xsType);
+			{rangeIndexes[index].setxsType(xsType);}
 	}
 	
 	/**
@@ -563,19 +563,19 @@ public class CollectionXConf
 	//given the root element of collection.xconf it will return the fulltext index
 	private LinkedHashMap<String, String> getCustomNamespaces(Element xconf)
 	{
-		NamedNodeMap attrs = xconf.getAttributes();
+		final NamedNodeMap attrs = xconf.getAttributes();
 		
 		//there will always be one attribute - the default namespace
 		if(attrs.getLength() > 1)
 		{
-			LinkedHashMap<String, String> namespaces = new LinkedHashMap<String, String>();
+			final LinkedHashMap<String, String> namespaces = new LinkedHashMap<String, String>();
 			
 			for(int i = 0; i < attrs.getLength(); i++)
 			{
-				Node a = attrs.item(i);
+				final Node a = attrs.item(i);
 				if(a.getNodeName().startsWith("xmlns:"))
 				{
-					String namespaceLocalName = a.getNodeName().substring(a.getNodeName().indexOf(":")+1); 
+					final String namespaceLocalName = a.getNodeName().substring(a.getNodeName().indexOf(":")+1); 
 					namespaces.put(namespaceLocalName, a.getNodeValue());
 				}
 			}
@@ -589,7 +589,7 @@ public class CollectionXConf
 	//given the root element of collection.xconf it will return the fulltext index
 	private FullTextIndex getFullTextIndex(Element xconf)
 	{
-		NodeList nlFullTextIndex = xconf.getElementsByTagName("fulltext");
+		final NodeList nlFullTextIndex = xconf.getElementsByTagName("fulltext");
 		if(nlFullTextIndex.getLength() > 0)
 		{
 			boolean defaultAll = true;
@@ -597,16 +597,16 @@ public class CollectionXConf
 			boolean alphanum = false;
 			FullTextIndexPath[] paths = null;
 
-            Element elemFullTextIndex = (Element)nlFullTextIndex.item(0);
-			defaultAll = elemFullTextIndex.getAttribute("default").equals("all");
-			attributes = elemFullTextIndex.getAttribute("attributes").equals("true");
-			alphanum = elemFullTextIndex.getAttribute("alphanum").equals("true");
+            final Element elemFullTextIndex = (Element)nlFullTextIndex.item(0);
+			defaultAll = "all".equals(elemFullTextIndex.getAttribute("default"));
+			attributes = "true".equals(elemFullTextIndex.getAttribute("attributes"));
+			alphanum = "true".equals(elemFullTextIndex.getAttribute("alphanum"));
 			
-			NodeList nlInclude = elemFullTextIndex.getElementsByTagName("include");
-			NodeList nlExclude = elemFullTextIndex.getElementsByTagName("exclude");
-			NodeList nlQName = elemFullTextIndex.getElementsByTagName("create");
+			final NodeList nlInclude = elemFullTextIndex.getElementsByTagName("include");
+			final NodeList nlExclude = elemFullTextIndex.getElementsByTagName("exclude");
+			final NodeList nlQName = elemFullTextIndex.getElementsByTagName("create");
 
-            int iPaths = nlInclude.getLength() + nlExclude.getLength() + nlQName.getLength();
+            final int iPaths = nlInclude.getLength() + nlExclude.getLength() + nlQName.getLength();
 			int pos = 0;
 			if(iPaths > 0 )
 			{
@@ -644,18 +644,18 @@ public class CollectionXConf
 	//given the root element of collection.xconf it will return an array of range indexes
 	private RangeIndex[] getRangeIndexes(Element xconf)
 	{
-		NodeList nlRangeIndexes = xconf.getElementsByTagName("create");
+		final NodeList nlRangeIndexes = xconf.getElementsByTagName("create");
         if(nlRangeIndexes.getLength() > 0)
 		{
-            List<RangeIndex> rl = new ArrayList<RangeIndex>();
+            final List<RangeIndex> rl = new ArrayList<RangeIndex>();
             for(int i = 0; i < nlRangeIndexes.getLength(); i++)
 			{	
-				Element rangeIndex = (Element)nlRangeIndexes.item(i);
+				final Element rangeIndex = (Element)nlRangeIndexes.item(i);
                 if (rangeIndex.hasAttribute("type")) {
                     if (rangeIndex.hasAttribute("qname"))
-                        rl.add(new RangeIndex(TYPE_QNAME, rangeIndex.getAttribute("qname"), rangeIndex.getAttribute("type")));
+                        {rl.add(new RangeIndex(TYPE_QNAME, rangeIndex.getAttribute("qname"), rangeIndex.getAttribute("type")));}
                     else
-                        rl.add(new RangeIndex(TYPE_PATH, rangeIndex.getAttribute("path"), rangeIndex.getAttribute("type")));
+                        {rl.add(new RangeIndex(TYPE_PATH, rangeIndex.getAttribute("path"), rangeIndex.getAttribute("type")));}
                 }
             }
             RangeIndex[] rangeIndexes = new RangeIndex[rl.size()];
@@ -668,22 +668,22 @@ public class CollectionXConf
 	//given the root element of collection.xconf it will return an array of triggers
 	private Trigger[] getTriggers(Element xconf)
 	{
-		NodeList nlTriggers = xconf.getElementsByTagName("trigger");
+		final NodeList nlTriggers = xconf.getElementsByTagName("trigger");
 		if(nlTriggers.getLength() > 0)
 		{
-			Trigger[] triggers = new Trigger[nlTriggers.getLength()]; 
+			final Trigger[] triggers = new Trigger[nlTriggers.getLength()]; 
 			
 			for(int i = 0; i < nlTriggers.getLength(); i++)
 			{	
-				Element trigger = (Element)nlTriggers.item(i);
+				final Element trigger = (Element)nlTriggers.item(i);
 				
-				Properties parameters = new Properties();
-				NodeList nlTriggerParameters = trigger.getElementsByTagName("parameter");
+				final Properties parameters = new Properties();
+				final NodeList nlTriggerParameters = trigger.getElementsByTagName("parameter");
 				if(nlTriggerParameters.getLength() > 0)
 				{
 					for(int x = 0; x < nlTriggerParameters.getLength(); x++)
 					{
-						Element parameter = (Element)nlTriggerParameters.item(x);
+						final Element parameter = (Element)nlTriggerParameters.item(x);
 						parameters.setProperty(parameter.getAttribute("name"), parameter.getAttribute("value"));
 					}
 				}
@@ -711,16 +711,16 @@ public class CollectionXConf
 	//produces a string of XML describing the collection.xconf
 	private String toXMLString()
 	{
-		StringBuilder xconf = new StringBuilder();
+		final StringBuilder xconf = new StringBuilder();
 		
 		xconf.append("<collection xmlns=\"http://exist-db.org/collection-config/1.0\"");
 		if(customNamespaces != null)
 		{
-			for (Map.Entry<String, String> entry : customNamespaces.entrySet())
+			for (final Map.Entry<String, String> entry : customNamespaces.entrySet())
 			{
 				xconf.append(" ");
-				String namespaceLocalName = entry.getKey();
-				String namespaceURL = entry.getValue();
+				final String namespaceLocalName = entry.getKey();
+				final String namespaceURL = entry.getValue();
 				xconf.append("xmlns:" + namespaceLocalName + "=\"" + namespaceURL + "\"");
 			}
 		}
@@ -812,7 +812,7 @@ public class CollectionXConf
 			//store the collection.xconf
 			collection.storeResource(resConfig);
 		}
-		catch(XMLDBException xmldbe)
+		catch(final XMLDBException xmldbe)
 		{
 			return false;
 		}
@@ -1001,7 +1001,7 @@ public class CollectionXConf
 		//produces a collection.xconf suitable string of XML describing the fulltext index
 		protected String toXMLString()
 		{
-			StringBuilder fulltext = new StringBuilder();
+			final StringBuilder fulltext = new StringBuilder();
 			
 			fulltext.append("<fulltext default=\"");
 			fulltext.append(defaultAll ? "all" : "none");
@@ -1091,12 +1091,12 @@ public class CollectionXConf
         //produces a collection.xconf suitable string of XML describing the range index
 		protected String toXMLString()
 		{
-			StringBuilder range = new StringBuilder();
+			final StringBuilder range = new StringBuilder();
 
             if (TYPE_PATH.equals(type))
-                range.append("<create path=\"");
+                {range.append("<create path=\"");}
             else
-                range.append("<create qname=\"");
+                {range.append("<create qname=\"");}
             range.append(XPath);
 			range.append("\" type=\"");
 			range.append(xsType);
@@ -1139,9 +1139,9 @@ public class CollectionXConf
 		//produces a collection.xconf suitable string of XML describing the trigger
 		protected String toXMLString()
 		{
-			StringBuilder trigger = new StringBuilder();
+			final StringBuilder trigger = new StringBuilder();
 			
-			if(!triggerClass.equals(""))
+			if(!"".equals(triggerClass))
 			{
 			
 				trigger.append("<trigger class=\"");
@@ -1153,11 +1153,11 @@ public class CollectionXConf
 				{
 					if(parameters.size() > 0)
 					{
-						Enumeration pKeys = parameters.keys();
+						final Enumeration pKeys = parameters.keys();
 						while(pKeys.hasMoreElements())
 						{
-							String name = (String)pKeys.nextElement();
-							String value = parameters.getProperty(name);
+							final String name = (String)pKeys.nextElement();
+							final String value = parameters.getProperty(name);
 						
 							trigger.append("<parameter name=\"");
 							trigger.append(name);

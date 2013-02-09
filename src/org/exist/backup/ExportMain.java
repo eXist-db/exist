@@ -76,10 +76,10 @@ public class ExportMain
             BrokerPool.configure( 1, 5, config );
             return( BrokerPool.getInstance() );
         }
-        catch( DatabaseConfigurationException e ) {
+        catch( final DatabaseConfigurationException e ) {
             System.err.println( "ERROR: Failed to open database: " + e.getMessage() );
         }
-        catch( EXistException e ) {
+        catch( final EXistException e ) {
             System.err.println( "ERROR: Failed to open database: " + e.getMessage() );
         }
         return( null );
@@ -89,7 +89,7 @@ public class ExportMain
     @SuppressWarnings( "unchecked" )
     public static void main( String[] args )
     {
-        CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
+        final CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
 
         if( optParser.getErrorString() != null ) {
             System.err.println( "ERROR: " + optParser.getErrorString() );
@@ -103,9 +103,9 @@ public class ExportMain
         String         exportTarget = "export/";
         String         dbConfig     = null;
 
-        List<CLOption> opts         = optParser.getArguments();
+        final List<CLOption> opts         = optParser.getArguments();
 
-        for( CLOption option : opts ) {
+        for( final CLOption option : opts ) {
 
             switch( option.getId() ) {
 
@@ -152,7 +152,7 @@ public class ExportMain
             }
         }
 
-        BrokerPool pool = startDB( dbConfig );
+        final BrokerPool pool = startDB( dbConfig );
 
         if( pool == null ) {
             System.exit( 1 );
@@ -165,7 +165,7 @@ public class ExportMain
             List<ErrorReport> errors  = null;
             
             if(!nocheck) {
-                ConsistencyCheck  checker = new ConsistencyCheck( broker, direct );
+                final ConsistencyCheck  checker = new ConsistencyCheck( broker, direct );
                 errors = checker.checkAll( new CheckCallback() );
             }
 
@@ -177,24 +177,24 @@ public class ExportMain
             }
 
             if( export ) {
-                File dir = new File( exportTarget );
+                final File dir = new File( exportTarget );
 
                 if( !dir.exists() ) {
                     dir.mkdirs();
                 }
-                SystemExport sysexport = new SystemExport( broker, new Callback(), null, direct );
+                final SystemExport sysexport = new SystemExport( broker, new Callback(), null, direct );
                 sysexport.export( exportTarget, incremental, true, errors );
             }
         }
-        catch( EXistException e ) {
+        catch( final EXistException e ) {
             System.err.println( "ERROR: Failed to retrieve database broker: " + e.getMessage() );
             retval = 2;
         }
-        catch( TerminatedException e ) {
+        catch( final TerminatedException e ) {
             System.err.println( "WARN: Export was terminated by db." );
             retval = 3;
         }
-        catch(PermissionDeniedException pde) {
+        catch(final PermissionDeniedException pde) {
             System.err.println( "ERROR: Failed to retrieve database data: " + pde.getMessage() );
             retval = 4;
         }

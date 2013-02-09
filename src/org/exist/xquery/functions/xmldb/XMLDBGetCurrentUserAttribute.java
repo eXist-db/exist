@@ -68,16 +68,16 @@ public class XMLDBGetCurrentUserAttribute extends BasicFunction
             return Sequence.EMPTY_SEQUENCE;
         }
         
-        String attributeName = args[0].getStringValue();
+        final String attributeName = args[0].getStringValue();
         
-        AXSchemaType type = AXSchemaType.valueOfNamespace(attributeName);
+        final AXSchemaType type = AXSchemaType.valueOfNamespace(attributeName);
         
         if (type == null)
-        	return Sequence.EMPTY_SEQUENCE; //UNDERSTAND: error?
+        	{return Sequence.EMPTY_SEQUENCE;} //UNDERSTAND: error?
         
-        Object value = context.getSubject().getMetadataValue(type);
+        final Object value = context.getSubject().getMetadataValue(type);
         if (value != null) {
-            StringValue stringValue = new StringValue((String) value);
+            final StringValue stringValue = new StringValue((String) value);
             return stringValue;
         } else {
             return Sequence.EMPTY_SEQUENCE;

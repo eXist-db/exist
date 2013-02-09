@@ -48,7 +48,7 @@ public class EnclosedExpr extends PathExpr {
     }
     
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+		final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
 		newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
 		super.analyze(newContextInfo);
 	}
@@ -64,11 +64,11 @@ public class EnclosedExpr extends PathExpr {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());}
         }
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
@@ -82,11 +82,11 @@ public class EnclosedExpr extends PathExpr {
             context.popDocumentContext();
         }
         // create the output
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+        final MemTreeBuilder builder = context.getDocumentBuilder();
+        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         receiver.checkNS = true;
         try {
-            SequenceIterator i = result.iterate();
+            final SequenceIterator i = result.iterate();
             Item next = i.nextItem();
             StringBuilder buf = null;
             boolean allowAttribs = true;
@@ -96,9 +96,9 @@ public class EnclosedExpr extends PathExpr {
                 // following atomic values and separate them by a space.
                 if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
                     if (buf == null)
-                        buf = new StringBuilder();
+                        {buf = new StringBuilder();}
                     else if (buf.length() > 0)
-                        buf.append(' ');
+                        {buf.append(' ');}
                     buf.append(next.getStringValue());
                     allowAttribs = false;
                     next = i.nextItem();
@@ -118,8 +118,8 @@ public class EnclosedExpr extends PathExpr {
                         buf.setLength(0);
                     }
                     if (next.getType() == Type.ATTRIBUTE && !allowAttribs)
-                        throw new XPathException(this, ErrorCodes.XQTY0024,
-                            "An attribute may not appear after another child node.");
+                        {throw new XPathException(this, ErrorCodes.XQTY0024,
+                            "An attribute may not appear after another child node.");}
                     next.copyTo(context.getBroker(), receiver);
                     allowAttribs = next.getType() == Type.ATTRIBUTE;
                     next = i.nextItem();
@@ -127,13 +127,13 @@ public class EnclosedExpr extends PathExpr {
             }
             // flush remaining character data
             if (buf != null && buf.length() > 0)
-                receiver.characters(buf);
-        } catch (SAXException e) {
+                {receiver.characters(buf);}
+        } catch (final SAXException e) {
             LOG.warn("SAXException during serialization: " + e.getMessage(), e);
             throw new XPathException(this, e);
         }
        if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
        return result;
     }
 
@@ -149,7 +149,7 @@ public class EnclosedExpr extends PathExpr {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("{");
         result.append(super.toString());
         result.append("}");

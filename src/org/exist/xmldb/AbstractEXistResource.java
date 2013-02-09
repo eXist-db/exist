@@ -106,13 +106,13 @@ public abstract class AbstractEXistResource implements EXistResource {
 	    try {
 	    	parentCollection = parent.getCollectionWithLock(lockMode);
 		    if(parentCollection == null)
-		    	throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + parent.getPath() + " not found");
+		    	{throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + parent.getPath() + " not found");}
 	        try {
 	        	document = parentCollection.getDocumentWithLock(broker, docId, lockMode);
-	        } catch (PermissionDeniedException pde) {
+	        } catch (final PermissionDeniedException pde) {
                     throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 	        			"Permission denied for document " + docId + ": " + pde.getMessage());
-                } catch (LockException e) {
+                } catch (final LockException e) {
 	        	throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 	        			"Failed to acquire lock on document " + docId);
 	        }
@@ -123,13 +123,13 @@ public abstract class AbstractEXistResource implements EXistResource {
 		    return document;
 	    } finally {
 	    	if(parentCollection != null)
-	    		parentCollection.release(lockMode);
+	    		{parentCollection.release(lockMode);}
 	    }
 	}
 	
 	protected void closeDocument(DocumentImpl doc, int lockMode) throws XMLDBException {
 		if(doc == null)
-			return;
+			{return;}
 //		System.out.println("Closed " + doc.getName() + " mode = " + lockMode);
 		doc.getUpdateLock().release(lockMode);
 	}

@@ -44,29 +44,29 @@ public class OpAnd extends LogicalOp {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
         Sequence result; 
         if (getLength() == 0) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
             if (contextItem != null)
-                contextSequence = contextItem.toSequence();
+                {contextSequence = contextItem.toSequence();}
             boolean doOptimize = optimize;
             if (contextSequence != null && !contextSequence.isPersistentSet())
-                doOptimize = false;
-            Expression left = getLeft();
-            Expression right = getRight();
+                {doOptimize = false;}
+            final Expression left = getLeft();
+            final Expression right = getRight();
             
 //            setContextId(getExpressionId());
             if (doOptimize && contextSequence != null)
-            	contextSequence.setSelfAsContext(getContextId());
+            	{contextSequence.setSelfAsContext(getContextId());}
             
-            Sequence ls = left.eval(contextSequence, null);
+            final Sequence ls = left.eval(contextSequence, null);
             doOptimize = doOptimize && (ls.isPersistentSet() || ls.isEmpty());
             if (doOptimize) {
             	
@@ -75,22 +75,22 @@ public class OpAnd extends LogicalOp {
                     lr = lr.getContextNodes(getContextId()); 
 
                     if (lr.isEmpty())
-                        return NodeSet.EMPTY_SET;
+                        {return NodeSet.EMPTY_SET;}
 
-                    Sequence rs = right.eval(lr, null);
+                    final Sequence rs = right.eval(lr, null);
                     
-                    NodeSet rr = rs.toNodeSet();
+                    final NodeSet rr = rs.toNodeSet();
                     result = rr.getContextNodes(getContextId()); 
 
             	} else {
-            		Sequence rs = right.eval(contextSequence, null);
+            		final Sequence rs = right.eval(contextSequence, null);
 
 	            	if (rs.isPersistentSet()) {
 	                    NodeSet rl = ls.toNodeSet();
 	                    rl = rl.getContextNodes(left.getContextId());
 
                         if (rl.isEmpty())
-                            return NodeSet.EMPTY_SET;
+                            {return NodeSet.EMPTY_SET;}
 
 	                    // TODO: optimize and return false if rl.isEmpty() ?
 	                    NodeSet rr = rs.toNodeSet();
@@ -108,7 +108,7 @@ public class OpAnd extends LogicalOp {
 	                    if (!rl) {
 	                        result = BooleanValue.FALSE;
 	                    } else {
-	                        boolean rr = rs.effectiveBooleanValue();
+	                        final boolean rr = rs.effectiveBooleanValue();
 	                        result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
 	                    }
 	                }
@@ -119,14 +119,14 @@ public class OpAnd extends LogicalOp {
                 if (!rl) {
                     result = BooleanValue.FALSE;
                 } else {
-                    Sequence rs = right.eval(contextSequence, null);
-                    boolean rr = rs.effectiveBooleanValue();
+                    final Sequence rs = right.eval(contextSequence, null);
+                    final boolean rr = rs.effectiveBooleanValue();
                     result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
                 }
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 
@@ -139,7 +139,7 @@ public class OpAnd extends LogicalOp {
      */
     public void dump(ExpressionDumper dumper) {
         if (getLength() == 0)
-            return;
+            {return;}
         getExpression(0).dump(dumper);
         for (int i = 1; i < getLength(); i++) {
             dumper.display(") and (");
@@ -149,8 +149,8 @@ public class OpAnd extends LogicalOp {
 
     public String toString() {
         if (getLength() == 0)
-            return "";
-        StringBuilder result = new StringBuilder("(");
+            {return "";}
+        final StringBuilder result = new StringBuilder("(");
         result.append(getExpression(0).toString());
         for (int i = 1; i < getLength(); i++) {
             result.append(") and (");

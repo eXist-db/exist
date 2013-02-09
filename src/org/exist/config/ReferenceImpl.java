@@ -70,17 +70,17 @@ public class ReferenceImpl<R, O extends Configurable> implements Reference<R, O>
 	@Override
 	public O resolve() {
 		if (cached == null) {
-			Class<? extends Object> clazz = resolver.getClass();
+			final Class<? extends Object> clazz = resolver.getClass();
 			
-			for (Method method : clazz.getMethods()) {
+			for (final Method method : clazz.getMethods()) {
 				if (method.getName().equals(methodName)
 						&& method.getParameterTypes().length == 1
-						&& method.getParameterTypes()[0].getName().equals("java.lang.String")
+						&& "java.lang.String".equals(method.getParameterTypes()[0].getName())
 					)
 					try {
 						cached = (O) method.invoke(resolver, name);
 						break;
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						cached = null;
 					}
 
@@ -98,16 +98,16 @@ public class ReferenceImpl<R, O extends Configurable> implements Reference<R, O>
 
 	@Override
 	public boolean isConfigured() {
-		O obj = resolve();
-		if (obj == null) return false;
+		final O obj = resolve();
+		if (obj == null) {return false;}
 		
 		return obj.isConfigured();
 	}
 
 	@Override
 	public Configuration getConfiguration() {
-		O obj = resolve();
-		if (obj == null) return null;
+		final O obj = resolve();
+		if (obj == null) {return null;}
 		
 		return obj.getConfiguration();
 	}

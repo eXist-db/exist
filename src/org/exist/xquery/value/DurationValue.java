@@ -69,10 +69,10 @@ public class DurationValue extends ComputableValue {
 	public static DurationValue wrap(Duration duration) {
 		try {
 			return new DayTimeDurationValue(duration);
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			try {
 				return new YearMonthDurationValue(duration);
-			} catch (XPathException e2) {
+			} catch (final XPathException e2) {
 				return new DurationValue(duration);
 			}
 		}
@@ -85,7 +85,7 @@ public class DurationValue extends ComputableValue {
 	public DurationValue(String str) throws XPathException {
 		try {
 			this.duration = TimeUtils.getInstance().newDuration(StringValue.trimWhitespace(str));
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
 					" from \"" + str + "\"");            
 		}
@@ -118,28 +118,28 @@ public class DurationValue extends ComputableValue {
 	}
 	
 	private static BigInteger nullIfZero(BigInteger x) {
-		if (BigInteger.ZERO.compareTo(x) == Constants.EQUAL) x = null;		
+		if (BigInteger.ZERO.compareTo(x) == Constants.EQUAL) {x = null;}		
 		return x;
 	}
 	
 	private static BigInteger zeroIfNull(BigInteger x) {
-		if (x == null) x = BigInteger.ZERO;
+		if (x == null) {x = BigInteger.ZERO;}
 		return x;
 	}
 	
 	private static BigDecimal nullIfZero(BigDecimal x) {
-		if (ZERO_DECIMAL.compareTo(x) == Constants.EQUAL) x = null;
+		if (ZERO_DECIMAL.compareTo(x) == Constants.EQUAL) {x = null;}
 		return x;
 	}
 	
 	private static BigDecimal zeroIfNull(BigDecimal x) {
-		if (x == null) x = ZERO_DECIMAL;
+		if (x == null) {x = ZERO_DECIMAL;}
 		return x;
 	}
 	
 	private void canonicalize() {
 		if (canonicalDuration != null)
-			return;
+			{return;}
 		
 		BigInteger years, months, days, hours, minutes;
 		BigDecimal seconds;
@@ -155,8 +155,8 @@ public class DurationValue extends ComputableValue {
 //		r = rd[0].toBigInteger().divideAndRemainder(SIXTY);
 
 		// segment to be replaced:
-		BigDecimal secondsValue = secondsValue();		
-		BigDecimal m = secondsValue.divide(SIXTY_DECIMAL, 0, BigDecimal.ROUND_DOWN);
+		final BigDecimal secondsValue = secondsValue();		
+		final BigDecimal m = secondsValue.divide(SIXTY_DECIMAL, 0, BigDecimal.ROUND_DOWN);
 		seconds = nullIfZero(secondsValue.subtract(SIXTY_DECIMAL.multiply(m)));	
 		r = m.toBigInteger().divideAndRemainder(SIXTY);		
 		
@@ -188,7 +188,7 @@ public class DurationValue extends ComputableValue {
 
 	protected BigDecimal secondsValueSigned() {
 		BigDecimal x = secondsValue();
-		if (duration.getSign() < 0) x = x.negate();
+		if (duration.getSign() < 0) {x = x.negate();}
 		return x;
 	}
 	
@@ -201,7 +201,7 @@ public class DurationValue extends ComputableValue {
 	
 	protected BigInteger monthsValueSigned() {
 		BigInteger x = monthsValue();
-		if (duration.getSign() < 0) x = x.negate();
+		if (duration.getSign() < 0) {x = x.negate();}
 		return x;
 	}
 	
@@ -224,7 +224,7 @@ public class DurationValue extends ComputableValue {
 	}
 	
 	public double getSeconds() {
-		Number n = duration.getField(DatatypeConstants.SECONDS);
+		final Number n = duration.getField(DatatypeConstants.SECONDS);
 		return n == null ? 0 : n.doubleValue() * duration.getSign();
 	}
 	
@@ -238,27 +238,27 @@ public class DurationValue extends ComputableValue {
 			case Type.YEAR_MONTH_DURATION:
 				if (canonicalDuration.getField(DatatypeConstants.YEARS) != null || 
 						canonicalDuration.getField(DatatypeConstants.MONTHS) != null)
-					return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
+					{return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
 							canonicalDuration.getSign() >= 0,
 						(BigInteger) canonicalDuration.getField(DatatypeConstants.YEARS),
-						(BigInteger) canonicalDuration.getField(DatatypeConstants.MONTHS)));
+						(BigInteger) canonicalDuration.getField(DatatypeConstants.MONTHS)));}
 				else 
-					return new YearMonthDurationValue(YearMonthDurationValue.CANONICAL_ZERO_DURATION);
+					{return new YearMonthDurationValue(YearMonthDurationValue.CANONICAL_ZERO_DURATION);}
 			case Type.DAY_TIME_DURATION:
 				if (canonicalDuration.isSet(DatatypeConstants.DAYS) ||
 						canonicalDuration.isSet(DatatypeConstants.HOURS) ||
 						canonicalDuration.isSet(DatatypeConstants.MINUTES) ||
 						canonicalDuration.isSet(DatatypeConstants.SECONDS))				
-					return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
+					{return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
 						canonicalDuration.getSign() >= 0,
 						null,
 						null,
 						(BigInteger) canonicalDuration.getField(DatatypeConstants.DAYS),
 						(BigInteger) canonicalDuration.getField(DatatypeConstants.HOURS),
 						(BigInteger) canonicalDuration.getField(DatatypeConstants.MINUTES),
-						(BigDecimal) canonicalDuration.getField(DatatypeConstants.SECONDS)));
+						(BigDecimal) canonicalDuration.getField(DatatypeConstants.SECONDS)));}
 				else
-					return new DayTimeDurationValue(DayTimeDurationValue.CANONICAL_ZERO_DURATION);
+					{return new DayTimeDurationValue(DayTimeDurationValue.CANONICAL_ZERO_DURATION);}
 			case Type.STRING:
 				canonicalize();
 				return new StringValue(getStringValue());
@@ -277,23 +277,23 @@ public class DurationValue extends ComputableValue {
 			case Constants.EQ :
 			{
 				if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
-					throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
+					{throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));}
 				//TODO : upgrade so that P365D is *not* equal to P1Y
 				boolean r = duration.equals(((DurationValue)other).duration);
 				//confirm strict equality to work around the JDK standard behaviour
 				if (r)
-					r = r & areReallyEqual(getCanonicalDuration(), ((DurationValue)other).getCanonicalDuration());
+					{r = r & areReallyEqual(getCanonicalDuration(), ((DurationValue)other).getCanonicalDuration());}
 				return r;
 			}
 			case Constants.NEQ :
 			{
 				if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
-					throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
+					{throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));}
 				//TODO : upgrade so that P365D is *not* equal to P1Y
 				boolean r = duration.equals(((DurationValue)other).duration);
 				//confirm strict equality to work around the JDK standard behaviour
 				if (r)
-					r = r & areReallyEqual(getCanonicalDuration(), ((DurationValue)other).getCanonicalDuration());
+					{r = r & areReallyEqual(getCanonicalDuration(), ((DurationValue)other).getCanonicalDuration());}
 				return !r;
 			}
 			case Constants.LT :			
@@ -308,7 +308,7 @@ public class DurationValue extends ComputableValue {
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
-			throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
+			{throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));}
 		//TODO : what to do with the collator ?
 		return duration.compare(((DurationValue)other).duration);
 	}
@@ -338,8 +338,8 @@ public class DurationValue extends ComputableValue {
 	}
 
 	public int conversionPreference(Class<?> target) {
-		if (target.isAssignableFrom(getClass())) return 0;
-		if (target.isAssignableFrom(Duration.class)) return 1;
+		if (target.isAssignableFrom(getClass())) {return 0;}
+		if (target.isAssignableFrom(Duration.class)) {return 1;}
 		return Integer.MAX_VALUE;
 	}
 
@@ -359,7 +359,7 @@ public class DurationValue extends ComputableValue {
     }
     
     public static boolean areReallyEqual(Duration duration1, Duration duration2) {
-    	boolean secondsEqual = zeroIfNull((BigDecimal)duration1.getField(DatatypeConstants.SECONDS)).compareTo(
+    	final boolean secondsEqual = zeroIfNull((BigDecimal)duration1.getField(DatatypeConstants.SECONDS)).compareTo(
     				zeroIfNull((BigDecimal)duration2.getField(DatatypeConstants.SECONDS))) == Constants.EQUAL;    		
     	return secondsEqual &&
     	duration1.getMinutes() == duration2.getMinutes() &&
@@ -372,9 +372,9 @@ public class DurationValue extends ComputableValue {
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
-            return true;
+            {return true;}
         if (DurationValue.class.isAssignableFrom(obj.getClass()))
-            return duration.equals(((DurationValue)obj).duration);
+            {return duration.equals(((DurationValue)obj).duration);}
         return false;
     }
 }

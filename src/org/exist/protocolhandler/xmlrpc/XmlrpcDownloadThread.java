@@ -57,7 +57,7 @@ public class XmlrpcDownloadThread extends Thread {
         logger.debug("Thread started." );
         IOException exception=null;
         try {
-            XmlrpcDownload xuc = new XmlrpcDownload();
+            final XmlrpcDownload xuc = new XmlrpcDownload();
             xuc.stream(xmldbURL, bos);
             
         } catch (IOException ex) {
@@ -67,7 +67,7 @@ public class XmlrpcDownloadThread extends Thread {
         } finally {
             try { // NEEDED!
                 bos.close(exception);
-            } catch (IOException ex) {
+            } catch (final IOException ex) {
                 logger.debug(ex);
             }
             logger.debug("Thread stopped." );

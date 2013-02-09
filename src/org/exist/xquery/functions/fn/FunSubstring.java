@@ -93,31 +93,31 @@ public class FunSubstring extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }  
         
 		//get arguments
-        Expression argSourceString = getArgument(0);
-		Expression argStartingLoc = getArgument(1);
+        final Expression argSourceString = getArgument(0);
+		final Expression argStartingLoc = getArgument(1);
 		Expression argLength = null;
 		
 		//get the context sequence
 		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
         Sequence result;
-		Sequence seqSourceString = argSourceString.eval(contextSequence);
+		final Sequence seqSourceString = argSourceString.eval(contextSequence);
 		
 		//If the value of $sourceString is the empty sequence return EMPTY_STRING, there must be a string to operate on!
 		if(seqSourceString.isEmpty()) {
 			result = StringValue.EMPTY_STRING;
 		} else {
 			//get the string to substring
-        	String sourceString = seqSourceString.getStringValue();
+        	final String sourceString = seqSourceString.getStringValue();
     		
         	//check for a valid start position for the substring
-        	NumericValue startingLoc = ((NumericValue)(argStartingLoc.eval(contextSequence).itemAt(0).convertTo(Type.NUMBER))).round();
+        	final NumericValue startingLoc = ((NumericValue)(argStartingLoc.eval(contextSequence).itemAt(0).convertTo(Type.NUMBER))).round();
         	if(!validStartPosition(startingLoc, sourceString.length())) {
         		//invalid start position
         		result = StringValue.EMPTY_STRING;
@@ -161,7 +161,7 @@ public class FunSubstring extends Function {
         
 		//end profiler
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;
 	}
@@ -178,18 +178,18 @@ public class FunSubstring extends Function {
 	{
 		//if start position is not a number return false
 		if(startPosition.isNaN())
-			return false;
+			{return false;}
 		
 		//if start position is infinite return false
 		if(startPosition.isInfinite())
-			return false;
+			{return false;}
 		
 		//if the start position extends beyond $sourceString return EMPTY_STRING
     	try {
     		//fn:substring("he",2) must return "e"
     		if(startPosition.getInt() > stringLength) 
-    			return false;
-    	} catch(XPathException xpe) {
+    			{return false;}
+    	} catch(final XPathException xpe) {
     		return false;
     	}
     	
@@ -209,19 +209,19 @@ public class FunSubstring extends Function {
         throws XPathException {
         //if end position is not a number
         if (end.isNaN())
-            return false;
+            {return false;}
 
         //if end position is +/-infinite
         if (end.isInfinite())
-            return true;
+            {return true;}
         
         //if end position is less than 1
         if (end.getInt() < 1)
-			return false;
+			{return false;}
 
         //if end position is less than start position
         if(end.getInt() <= start.getInt())
-			return false;
+			{return false;}
 		
 		//length is valid
 		return true;
@@ -244,7 +244,7 @@ public class FunSubstring extends Function {
 			//start value is 1 or less, so just return the string
 			return new StringValue(sourceString);
 		}
-        ValueSequence codepoints = FunStringToCodepoints.getCodePoints(sourceString);
+        final ValueSequence codepoints = FunStringToCodepoints.getCodePoints(sourceString);
         // transition from xs:string index to Java string index.
         return new StringValue(FunStringToCodepoints.subSequence(codepoints, startingLoc.getInt() - 1));
  	}
@@ -263,7 +263,7 @@ public class FunSubstring extends Function {
 	 */
 	private StringValue substring(String sourceString, NumericValue startingLoc, NumericValue endingLoc)
         throws XPathException {
-        ValueSequence codepoints = FunStringToCodepoints.getCodePoints(sourceString);
+        final ValueSequence codepoints = FunStringToCodepoints.getCodePoints(sourceString);
         // transition from xs:string index to Java string index.
         return new StringValue(FunStringToCodepoints.subSequence(codepoints,
                                                                  startingLoc.getInt() - 1,

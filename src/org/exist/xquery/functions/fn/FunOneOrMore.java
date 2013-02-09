@@ -69,17 +69,17 @@ public class FunOneOrMore extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
-		Sequence result = getArgument(0).eval(contextSequence, contextItem);
+		final Sequence result = getArgument(0).eval(contextSequence, contextItem);
 		if(result.isEmpty())
-			throw new XPathException(this, ErrorCodes.FORG0004, "fn:one-or-more called with a sequence containing zero items");
+			{throw new XPathException(this, ErrorCodes.FORG0004, "fn:one-or-more called with a sequence containing zero items");}
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result; 
         

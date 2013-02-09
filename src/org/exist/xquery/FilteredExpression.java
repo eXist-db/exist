@@ -62,7 +62,7 @@ public class FilteredExpression extends AbstractExpression {
 
     public Expression getExpression() {
         if (expression instanceof PathExpr)
-            return ((PathExpr)expression).getExpression(0);
+            {return ((PathExpr)expression).getExpression(0);}
         return expression;
     }
 
@@ -74,10 +74,10 @@ public class FilteredExpression extends AbstractExpression {
         contextInfo.setParent(this);
         expression.analyze(contextInfo);
         if (predicates.size() > 0) {
-            AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
+            final AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
             newContext.setParent(this);
             newContext.setContextStep(this);
-            for (Predicate pred : predicates) {
+            for (final Predicate pred : predicates) {
                 pred.analyze(newContext);
             }
         }
@@ -92,20 +92,20 @@ public class FilteredExpression extends AbstractExpression {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
         if (contextItem != null)
-            contextSequence = contextItem.toSequence();
+            {contextSequence = contextItem.toSequence();}
         Sequence result;
-        Sequence seq = expression.eval(contextSequence, contextItem);
+        final Sequence seq = expression.eval(contextSequence, contextItem);
         if (seq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
-            Predicate pred = predicates.get(0);
+            final Predicate pred = predicates.get(0);
             context.setContextSequencePosition(0, seq);
             // If the current step is an // abbreviated step, we have to treat the predicate
             // specially to get the context position right. //a[1] translates 
@@ -116,23 +116,23 @@ public class FilteredExpression extends AbstractExpression {
                     !seq.isPersistentSet())) {
                 result = new ValueSequence();
                 if (seq.isPersistentSet()) {
-                    NodeSet contextSet = seq.toNodeSet();
-                    Sequence outerSequence = contextSet.getParents(getExpressionId());
-                    for (SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
-                        NodeValue node = (NodeValue) i.nextItem();
-                        Sequence newContextSeq =
+                    final NodeSet contextSet = seq.toNodeSet();
+                    final Sequence outerSequence = contextSet.getParents(getExpressionId());
+                    for (final SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
+                        final NodeValue node = (NodeValue) i.nextItem();
+                        final Sequence newContextSeq =
                             contextSet.selectParentChild((NodeSet) node, NodeSet.DESCENDANT,
                             getExpressionId());
-                        Sequence temp = processPredicate(outerSequence, newContextSeq);
+                        final Sequence temp = processPredicate(outerSequence, newContextSeq);
                         result.addAll(temp);
                     }
                 } else {
-                    MemoryNodeSet nodes = seq.toMemNodeSet();
-                    Sequence outerSequence = nodes.getParents(new AnyNodeTest());
-                    for (SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
-                        NodeValue node = (NodeValue) i.nextItem();
-                        Sequence newSet = nodes.getChildrenForParent((NodeImpl) node);
-                        Sequence temp = processPredicate(outerSequence, newSet);
+                    final MemoryNodeSet nodes = seq.toMemNodeSet();
+                    final Sequence outerSequence = nodes.getParents(new AnyNodeTest());
+                    for (final SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
+                        final NodeValue node = (NodeValue) i.nextItem();
+                        final Sequence newSet = nodes.getChildrenForParent((NodeImpl) node);
+                        final Sequence temp = processPredicate(outerSequence, newSet);
                         result.addAll(temp);
                     }
                 }
@@ -141,12 +141,12 @@ public class FilteredExpression extends AbstractExpression {
             }
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         return result;
     }
 
     private Sequence processPredicate(Sequence contextSequence, Sequence seq) throws XPathException {
-        for (Predicate pred : predicates) {
+        for (final Predicate pred : predicates) {
             seq = pred.evalPredicate(contextSequence, seq, Constants.DESCENDANT_SELF_AXIS);
             //subsequent predicates operate on the result of the previous one
             contextSequence = null;
@@ -159,15 +159,15 @@ public class FilteredExpression extends AbstractExpression {
     */
     public void dump(ExpressionDumper dumper) {
         expression.dump(dumper);
-        for (Predicate pred : predicates) {
+        for (final Predicate pred : predicates) {
             pred.dump(dumper);
         }
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append(expression.toString());
-        for (Predicate pred : predicates) {
+        for (final Predicate pred : predicates) {
             result.append(pred.toString());
         }
         return result.toString();
@@ -186,7 +186,7 @@ public class FilteredExpression extends AbstractExpression {
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         expression.resetState(postOptimization);
-        for (Predicate pred : predicates) {
+        for (final Predicate pred : predicates) {
             pred.resetState(postOptimization);
         }
     }
@@ -211,7 +211,7 @@ public class FilteredExpression extends AbstractExpression {
      */
     public int getDependencies() {
         int deps = Dependency.CONTEXT_SET;
-        for (Predicate pred : predicates) {
+        for (final Predicate pred : predicates) {
             deps |= pred.getDependencies();
         }
         return deps;

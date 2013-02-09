@@ -78,10 +78,10 @@ public class Collations {
             URI u = null;
             try {
                 u = new URI(uri);
-            } catch (URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 return null;
             }
-            String query = u.getQuery();
+            final String query = u.getQuery();
             String strength = null;
             /*
              * Check if the db broker is configured to be case insensitive. If
@@ -98,19 +98,19 @@ public class Collations {
             } else {
                 String lang = null;
                 String decomposition = null;
-                StringTokenizer queryTokenizer = new StringTokenizer(query,
+                final StringTokenizer queryTokenizer = new StringTokenizer(query,
                         ";&");
                 while (queryTokenizer.hasMoreElements()) {
-                    String param = queryTokenizer.nextToken();
-                    int eq = param.indexOf('=');
+                    final String param = queryTokenizer.nextToken();
+                    final int eq = param.indexOf('=');
                     if (eq > 0) {
-                        String kw = param.substring(0, eq);
+                        final String kw = param.substring(0, eq);
                         String val = param.substring(eq + 1);
-                        if (kw.equals("lang")) {
+                        if ("lang".equals(kw)) {
                             lang = val;
-                        } else if (kw.equals("strength")) {
+                        } else if ("strength".equals(kw)) {
                             strength = val;
-                        } else if (kw.equals("decomposition")) {
+                        } else if ("decomposition".equals(kw)) {
                             decomposition = val;
                         }
                     }
@@ -122,14 +122,14 @@ public class Collations {
             // java.text.RuleBasedCollator
             uri = uri.substring("java:".length());
             try {
-                Class<?> collatorClass = Class.forName(uri);
+                final Class<?> collatorClass = Class.forName(uri);
                 if (!Collator.class.isAssignableFrom(collatorClass)) {
                     logger.error("The specified collator class is not a subclass of java.text.Collator");
                     throw new XPathException(
                             "The specified collator class is not a subclass of java.text.Collator");
                 }
                 return (Collator) collatorClass.newInstance();
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 logger.error("The specified collator class " + uri + " could not be found");
                 throw new XPathException(
                         ErrorCodes.FOCH0002, 
@@ -145,21 +145,21 @@ public class Collations {
 
     public final static boolean equals(Collator collator, String s1, String s2) {
         if (collator == null)
-            return s1.equals(s2);
+            {return s1.equals(s2);}
         else
-            return collator.equals(s1, s2);
+            {return collator.equals(s1, s2);}
     }
 
     public final static int compare(Collator collator, String s1, String s2) {
         if (collator == null)
-            return s1==null ? (s2==null ? 0 : -1)  : s1.compareTo(s2);
+            {return s1==null ? (s2==null ? 0 : -1)  : s1.compareTo(s2);}
         else
-            return collator.compare(s1, s2);
+            {return collator.compare(s1, s2);}
     }
 
     public final static boolean startsWith(Collator collator, String s1, String s2) {
         if (collator == null)
-            return s1.startsWith(s2);
+            {return s1.startsWith(s2);}
         else {
             final RuleBasedCollator rbc = (RuleBasedCollator) collator;
             final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
@@ -170,7 +170,7 @@ public class Collations {
 
     public final static boolean endsWith(Collator collator, String s1, String s2) {
         if (collator == null)
-            return s1.endsWith(s2);
+            {return s1.endsWith(s2);}
         else {
             final RuleBasedCollator rbc = (RuleBasedCollator) collator;
             final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
@@ -181,7 +181,7 @@ public class Collations {
 
     public final static boolean contains(Collator collator, String s1, String s2) {
         if (collator == null)
-            return s1.indexOf(s2) != Constants.STRING_NOT_FOUND;
+            {return s1.indexOf(s2) != Constants.STRING_NOT_FOUND;}
         else {
             final RuleBasedCollator rbc = (RuleBasedCollator) collator;
             final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
@@ -192,16 +192,16 @@ public class Collations {
 
     public final static int indexOf(Collator collator, String s1, String s2) {
         if (collator == null)
-            return s1.indexOf(s2);
+            {return s1.indexOf(s2);}
         else {
             final int offsets[] = new int[2];
             final RuleBasedCollator rbc = (RuleBasedCollator) collator;
             final CollationElementIterator i1 = rbc.getCollationElementIterator(s1);
             final CollationElementIterator i2 = rbc.getCollationElementIterator(s2);           
             if (collationContains(i1, i2, offsets, false))
-                return offsets[0];
+                {return offsets[0];}
             else
-                return Constants.STRING_NOT_FOUND;
+                {return Constants.STRING_NOT_FOUND;}
         }
     }
 
@@ -249,7 +249,7 @@ public class Collations {
                 }
             }
             // matched first character, note the position of the possible match
-            int start = s0.getOffset();
+            final int start = s0.getOffset();
             if (collationStartsWith(s0, s1)) {
                 if (matchAtEnd) {
                     do {
@@ -298,13 +298,13 @@ public class Collations {
         Collator collator = null;
         if (lang == null) {
             collator = Collator.getInstance();
-        } else if (lang.equals("sme-SE")) {
+        } else if ("sme-SE".equals(lang)) {
             // Collation rules contained in a String object.
             // Codes for the representation of names of languages:
             // http://www.loc.gov/standards/iso639-2/englangn.html
             // UTF-8 characters from:
             // http://chouette.info/entities/table-utf8.php
-            String Samisk = "< a,A< \u00E1,\u00C1< b,B< c,C"
+            final String Samisk = "< a,A< \u00E1,\u00C1< b,B< c,C"
                     + "< \u010d,\u010c< d,D< \u0111,\u0110< e,E"
                     + "< f,F< g,G< h,H< i,I< j,J< k,K< l,L< m,M"
                     + "< n,N< \u014b,\u014a< o,O< p,P< r,R< s,S"
@@ -312,24 +312,24 @@ public class Collations {
                     + "< v,V< z,Z< \u017e,\u017d";
             try {
                 collator = new RuleBasedCollator(Samisk);
-            } catch (ParseException pe) {
+            } catch (final ParseException pe) {
                 return null;
             }
         } else {
-            Locale locale = getLocale(lang);
+            final Locale locale = getLocale(lang);
             collator = Collator.getInstance(locale);
         }
 
         if (strength != null) {
             if ("primary".equals(strength))
-                collator.setStrength(Collator.PRIMARY);
+                {collator.setStrength(Collator.PRIMARY);}
             else if ("secondary".equals(strength))
-                collator.setStrength(Collator.SECONDARY);
+                {collator.setStrength(Collator.SECONDARY);}
             else if ("tertiary".equals(strength))
-                collator.setStrength(Collator.TERTIARY);
+                {collator.setStrength(Collator.TERTIARY);}
             else if (strength.length() == 0 || "identical".equals(strength))
                 // the default setting
-                collator.setStrength(Collator.IDENTICAL);
+                {collator.setStrength(Collator.IDENTICAL);}
             else {
                 logger.error("Collation strength should be either 'primary', 'secondary', 'tertiary' or 'identical");
                 throw new XPathException(
@@ -341,13 +341,13 @@ public class Collations {
 
         if (decomposition != null) {
             if ("none".equals(decomposition))
-                collator.setDecomposition(Collator.NO_DECOMPOSITION);
+                {collator.setDecomposition(Collator.NO_DECOMPOSITION);}
             else if ("full".equals(decomposition))
-                collator.setDecomposition(Collator.FULL_DECOMPOSITION);
+                {collator.setDecomposition(Collator.FULL_DECOMPOSITION);}
             else if (decomposition.length() == 0
                     || "standard".equals(decomposition))
                 // the default setting
-                collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+                {collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);}
             else {
                 logger.error("Collation decomposition should be either 'none', 'full' or 'standard");
                 throw new XPathException(
@@ -364,11 +364,11 @@ public class Collations {
      * @return The locale
      */
     private static Locale getLocale(String lang) {
-        int dashPos = lang.indexOf('-');
+        final int dashPos = lang.indexOf('-');
         if (dashPos == Constants.STRING_NOT_FOUND)
-            return new Locale(lang);
+            {return new Locale(lang);}
         else
-            return new Locale(lang.substring(0, dashPos), lang.substring(dashPos + 1));
+            {return new Locale(lang.substring(0, dashPos), lang.substring(dashPos + 1));}
     }
 
 }

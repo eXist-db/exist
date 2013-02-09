@@ -50,10 +50,10 @@ public class Base64BinaryArray  implements java.io.Serializable {
 
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
-        if (!(obj instanceof Base64BinaryArray)) return false;
-        Base64BinaryArray other = (Base64BinaryArray) obj;
-        if (obj == null) return false;
-        if (this == obj) return true;
+        if (!(obj instanceof Base64BinaryArray)) {return false;}
+        final Base64BinaryArray other = (Base64BinaryArray) obj;
+        if (obj == null) {return false;}
+        if (this == obj) {return true;}
         if (__equalsCalc != null) {
             return (__equalsCalc == obj);
         }
@@ -78,7 +78,7 @@ public class Base64BinaryArray  implements java.io.Serializable {
             for (int i=0;
                  i<java.lang.reflect.Array.getLength(getElements());
                  i++) {
-                java.lang.Object obj = java.lang.reflect.Array.get(getElements(), i);
+                final java.lang.Object obj = java.lang.reflect.Array.get(getElements(), i);
                 if (obj != null &&
                     !obj.getClass().isArray()) {
                     _hashCode += obj.hashCode();
@@ -95,7 +95,7 @@ public class Base64BinaryArray  implements java.io.Serializable {
 
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("urn:exist", "Base64BinaryArray"));
-        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        final org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("elements");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "elements"));
         elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "base64Binary"));

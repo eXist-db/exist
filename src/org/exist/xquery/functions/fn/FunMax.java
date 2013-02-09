@@ -129,26 +129,26 @@ public class FunMax extends CollatingFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         } 
         
         Sequence result;
-		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
+		final Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if(arg.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
         	boolean computableProcessing = false;
         	//TODO : test if a range index is defined *iff* it is compatible with the collator
-    		Collator collator = getCollator(contextSequence, contextItem, 2);
-    		SequenceIterator iter = arg.unorderedIterator();
+    		final Collator collator = getCollator(contextSequence, contextItem, 2);
+    		final SequenceIterator iter = arg.unorderedIterator();
     		AtomicValue max = null;
     		while (iter.hasNext()) {
-                Item item = iter.nextItem();
+                final Item item = iter.nextItem();
 
                 if (item instanceof QNameValue)
-            		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(item.getType()), arg);
+            		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(item.getType()), arg);}
                 
                 AtomicValue value = item.atomize();                 
 
@@ -157,23 +157,23 @@ public class FunMax extends CollatingFunction {
         			value = ((DurationValue)value).wrap();
         			if (value.getType() == Type.YEAR_MONTH_DURATION) {
 	                	if (max != null && max.getType() != Type.YEAR_MONTH_DURATION)
-	                		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
-	                				" and " + Type.getTypeName(value.getType()), value);
+	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
+	                				" and " + Type.getTypeName(value.getType()), value);}
             		
         			} else if (value.getType() == Type.DAY_TIME_DURATION) {
 	                	if (max != null && max.getType() != Type.DAY_TIME_DURATION)
-	                		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
-	                				" and " + Type.getTypeName(value.getType()), value);
+	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
+	                				" and " + Type.getTypeName(value.getType()), value);}
         				
         			} else
-        				throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(value.getType()), value);
+        				{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(value.getType()), value);}
 
         		//Any value of type xdt:untypedAtomic is cast to xs:double
         		} else if (value.getType() == Type.UNTYPED_ATOMIC) 
-                	value = value.convertTo(Type.DOUBLE);
+                	{value = value.convertTo(Type.DOUBLE);}
                 
                 if (max == null)
-                    max = value;
+                    {max = value;}
                 
                 else {
                 	if (Type.getCommonSuperType(max.getType(), value.getType()) == Type.ATOMIC) {
@@ -182,25 +182,25 @@ public class FunMax extends CollatingFunction {
                 	}
                     //Any value of type xdt:untypedAtomic is cast to xs:double
                     if (value.getType() == Type.UNTYPED_ATOMIC) 
-                    	value = value.convertTo(Type.DOUBLE);                	
+                    	{value = value.convertTo(Type.DOUBLE);}                	
 
                     //Numeric tests
 	                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
 	                	//Don't mix comparisons
 	                	if (!Type.subTypeOf(max.getType(), Type.NUMBER))
-	                		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
-	                				" and " + Type.getTypeName(value.getType()), max);
+	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
+	                				" and " + Type.getTypeName(value.getType()), max);}
 	                	if (((NumericValue) value).isNaN()) {
 	                		//Type NaN correctly
 	                		value = value.promote(max);
                             if (value.getType() == Type.FLOAT)
-                                   max = FloatValue.NaN;
+                                   {max = FloatValue.NaN;}
                                else
-                                   max = DoubleValue.NaN;
+                                   {max = DoubleValue.NaN;}
                             //although result will be NaN, we need to continue on order to type correctly 
                             continue;
 	                	} else
-	                		max = max.promote(value);
+	                		{max = max.promote(value);}
 	                }
 	                //Ugly test
 	                if (max instanceof ComputableValue && value instanceof ComputableValue) {
@@ -210,10 +210,10 @@ public class FunMax extends CollatingFunction {
 	                    computableProcessing = true;
                 	} else {
 	                	if (computableProcessing)
-	                		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
-	                				" and " + Type.getTypeName(value.getType()), max);
+	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
+	                				" and " + Type.getTypeName(value.getType()), max);}
 	                	if (Collations.compare(collator, value.getStringValue(), max.getStringValue()) > 0)	               
-	                		max = value;	                	
+	                		{max = value;}	                	
 	                }
                 }
             }           
@@ -221,7 +221,7 @@ public class FunMax extends CollatingFunction {
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;   
         

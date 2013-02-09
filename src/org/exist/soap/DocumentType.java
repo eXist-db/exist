@@ -24,9 +24,9 @@ public class DocumentType implements java.io.Serializable {
     public java.lang.String getValue() { return _value_;}
     public static DocumentType fromValue(java.lang.String value)
           throws java.lang.IllegalArgumentException {
-        DocumentType enumeration = (DocumentType)
+        final DocumentType enumeration = (DocumentType)
             _table_.get(value);
-        if (enumeration==null) throw new java.lang.IllegalArgumentException();
+        if (enumeration==null) {throw new java.lang.IllegalArgumentException();}
         return enumeration;
     }
     public static DocumentType fromString(java.lang.String value)

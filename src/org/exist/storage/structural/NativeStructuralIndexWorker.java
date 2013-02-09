@@ -63,37 +63,37 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
         final Lock lock = index.btree.getLock();
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
-        FindElementsCallback callback = new FindElementsCallback(type, result, docs, selector);
+        final FindElementsCallback callback = new FindElementsCallback(type, result, docs, selector);
         // scan the document set to find document id ranges to query
-        List<Range> ranges = new ArrayList<Range>();
+        final List<Range> ranges = new ArrayList<Range>();
         Range next = null;
-        for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
-            DocumentImpl doc = i.next();
+        for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+            final DocumentImpl doc = i.next();
             if (next == null)
-                next = new Range(doc.getDocId());
+                {next = new Range(doc.getDocId());}
             else if (next.end + 1 == doc.getDocId())
-                next.end++;
+                {next.end++;}
             else {
                 ranges.add(next);
                 next = new Range(doc.getDocId());
             }
         }
         if (next != null)
-            ranges.add(next);
+            {ranges.add(next);}
 
         // for each document id range, scan the index to find matches
-        for (Range range : ranges) {
-            byte[] fromKey = computeKey(type, qname, range.start);
-            byte[] toKey = computeKey(type, qname, range.end + 1);
-            IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
+        for (final Range range : ranges) {
+            final byte[] fromKey = computeKey(type, qname, range.start);
+            final byte[] toKey = computeKey(type, qname, range.end + 1);
+            final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
             try {
                 lock.acquire(Lock.READ_LOCK);
                 index.btree.query(query, callback);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
-            } catch (TerminatedException e) {
+            } catch (final TerminatedException e) {
                 NativeStructuralIndex.LOG.warn("Query was terminated while searching structural index: " + e.getMessage(), e);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
             } finally {
                 lock.release(Lock.READ_LOCK);
@@ -126,12 +126,12 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet, int contextId) {
         final Lock lock = index.btree.getLock();
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
-        FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, result);
+        final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, result);
         try {
             lock.acquire(Lock.READ_LOCK);
-            for (NodeProxy ancestor : contextSet) {
-                DocumentImpl doc = ancestor.getDocument();
-                NodeId ancestorId = ancestor.getNodeId();
+            for (final NodeProxy ancestor : contextSet) {
+                final DocumentImpl doc = ancestor.getDocument();
+                final NodeId ancestorId = ancestor.getNodeId();
                 callback.setAncestor(doc, ancestor);
                 byte[] fromKey, toKey;
                 if (ancestorId == NodeId.DOCUMENT_NODE) {
@@ -141,14 +141,14 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                     fromKey = computeKey(type, qname, doc.getDocId(), ancestorId);
                     toKey = computeKey(type, qname, doc.getDocId(), ancestorId.nextSibling());
                 }
-                IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
+                final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
                 try {
                     index.btree.query(query, callback);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
                 }
             }
-        } catch (LockException e) {
+        } catch (final LockException e) {
             NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
         } finally {
             lock.release(Lock.READ_LOCK);
@@ -163,37 +163,37 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
         try {
             lock.acquire(Lock.READ_LOCK);
-            for (NodeProxy descendant : contextSet) {
+            for (final NodeProxy descendant : contextSet) {
                 NodeId parentId;
                 if (axis == Constants.ANCESTOR_SELF_AXIS || axis == Constants.SELF_AXIS)
-                    parentId = descendant.getNodeId();
+                    {parentId = descendant.getNodeId();}
                 else
-                    parentId = descendant.getNodeId().getParentId();
-                DocumentImpl doc = descendant.getDocument();
+                    {parentId = descendant.getNodeId().getParentId();}
+                final DocumentImpl doc = descendant.getDocument();
                 while (parentId != NodeId.DOCUMENT_NODE) {
-                    byte[] key = computeKey(type, qname, doc.getDocId(), parentId);
-                    long address = index.btree.findValue(new Value(key));
+                    final byte[] key = computeKey(type, qname, doc.getDocId(), parentId);
+                    final long address = index.btree.findValue(new Value(key));
                     if (address != -1) {
-                        NodeProxy storedNode = new NodeProxy(doc, parentId,
+                        final NodeProxy storedNode = new NodeProxy(doc, parentId,
                             type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, address);
                         result.add(storedNode);
                         if (Expression.NO_CONTEXT_ID != contextId) {
                             storedNode.deepCopyContext(descendant, contextId);
                         } else
-                            storedNode.copyContext(descendant);
+                            {storedNode.copyContext(descendant);}
                         if (contextSet.getTrackMatches())
-                        	storedNode.addMatches(descendant);
+                        	{storedNode.addMatches(descendant);}
                     }
                     // stop after first iteration if we are on the self axis
                     if (axis == Constants.SELF_AXIS || axis == Constants.PARENT_AXIS)
-                        break;
+                        {break;}
                     // continue with the parent of the parent
                     parentId = parentId.getParentId();
                 }
             }
-        } catch (LockException e) {
+        } catch (final LockException e) {
             NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
         } finally {
             lock.release(Lock.READ_LOCK);
@@ -206,14 +206,14 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     		NodeSet contextSet, int contextId) {
         final Lock lock = index.btree.getLock();
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
-        FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, useSelfAsContext, result);
-        for (NodeProxy ancestor : contextSet) {
-            DocumentImpl doc = ancestor.getDocument();
-            NodeId ancestorId = ancestor.getNodeId();
-            List<QName> qnames = getQNamesForDoc(doc);
+        final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, useSelfAsContext, result);
+        for (final NodeProxy ancestor : contextSet) {
+            final DocumentImpl doc = ancestor.getDocument();
+            final NodeId ancestorId = ancestor.getNodeId();
+            final List<QName> qnames = getQNamesForDoc(doc);
             try {
 	            lock.acquire(Lock.READ_LOCK);
-	            for (QName qname : qnames) {
+	            for (final QName qname : qnames) {
 	            	if (test.getName() == null || test.matches(qname)) {
 	            		callback.setAncestor(doc, ancestor);
 	            		byte[] fromKey, toKey;
@@ -224,15 +224,15 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 	                        fromKey = computeKey(type, qname, doc.getDocId(), ancestorId);
 	                        toKey = computeKey(type, qname, doc.getDocId(), ancestorId.nextSibling());
 	                    }
-	                    IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
+	                    final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
 	                    try {
 	                        index.btree.query(query, callback);
-	                    } catch (Exception e) {
+	                    } catch (final Exception e) {
 	                        NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
 	                    }
 	            	}
 	            }
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
             } finally {
                 lock.release(Lock.READ_LOCK);
@@ -256,16 +256,16 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         }
 
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-            byte[] key = value.getData();
-            NodeId nodeId = readNodeId(key, pointer);
-            DocumentImpl doc = docs.getDoc(readDocId(key));
+            final byte[] key = value.getData();
+            final NodeId nodeId = readNodeId(key, pointer);
+            final DocumentImpl doc = docs.getDoc(readDocId(key));
             if (doc != null) {
                 if (selector == null) {
-                    NodeProxy storedNode = new NodeProxy(doc, nodeId,
+                    final NodeProxy storedNode = new NodeProxy(doc, nodeId,
                         type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, pointer);
                     result.add(storedNode);
                 } else {
-                    NodeProxy storedNode = selector.match(doc, nodeId);
+                    final NodeProxy storedNode = selector.match(doc, nodeId);
                     if (storedNode != null) {
                         storedNode.setNodeType(type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
                         storedNode.setInternalAddress(pointer);
@@ -304,23 +304,23 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         }
 
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-            NodeId nodeId = readNodeId(value.getData(), pointer);
+            final NodeId nodeId = readNodeId(value.getData(), pointer);
 
             boolean match = axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS;
             if (!match) {
-                int relation = nodeId.computeRelation(ancestor.getNodeId());
+                final int relation = nodeId.computeRelation(ancestor.getNodeId());
                 match = (((axis == Constants.CHILD_AXIS) || (axis == Constants.ATTRIBUTE_AXIS)) && (relation == NodeId.IS_CHILD)) ||
                     ((axis == Constants.DESCENDANT_AXIS) && ((relation == NodeId.IS_DESCENDANT) || (relation == NodeId.IS_CHILD)));
             }
             if (match) {
-                NodeProxy storedNode =
+                final NodeProxy storedNode =
                     new NodeProxy(doc, nodeId, type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, pointer);
                 result.add(storedNode);
                 if (Expression.NO_CONTEXT_ID != contextId) {
                 	if (selfAsContext)
-                		storedNode.addContextNode(contextId, storedNode);
+                		{storedNode.addContextNode(contextId, storedNode);}
                 	else
-                		storedNode.deepCopyContext(ancestor, contextId);
+                		{storedNode.deepCopyContext(ancestor, contextId);}
                 } else {
             		storedNode.copyContext(ancestor);
                 }
@@ -393,23 +393,23 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     protected void removeSome() {
         if (pending.size() == 0)
-            return;
+            {return;}
 
         try {
             final Lock lock = index.btree.getLock();
-            for (Map.Entry<QName,List<NodeProxy>> entry: pending.entrySet()) {
-                QName qname = entry.getKey();
+            for (final Map.Entry<QName,List<NodeProxy>> entry: pending.entrySet()) {
+                final QName qname = entry.getKey();
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
-                    List<NodeProxy> nodes = entry.getValue();
-                    for (NodeProxy proxy : nodes) {
-                        NodeId nodeId = proxy.getNodeId();
-                        byte[] key = computeKey(qname.getNameType(), qname, document.getDocId(), nodeId);
+                    final List<NodeProxy> nodes = entry.getValue();
+                    for (final NodeProxy proxy : nodes) {
+                        final NodeId nodeId = proxy.getNodeId();
+                        final byte[] key = computeKey(qname.getNameType(), qname, document.getDocId(), nodeId);
                         index.btree.removeValue(new Value(key));
                     }
-                } catch (LockException e) {
+                } catch (final LockException e) {
                     NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     NativeStructuralIndex.LOG.warn("Exception caught while writing to structural index: " + e.getMessage(), e);
                 } finally {
                     lock.release(Lock.WRITE_LOCK);
@@ -422,19 +422,19 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     protected void removeDocument(DocumentImpl docToRemove) {
         if (index.btree == null)
-            return;
-        List<QName> qnames = getQNamesForDoc(docToRemove);
-        for (QName qname : qnames) {
-            byte[] fromKey = computeKey(qname.getNameType(), qname, docToRemove.getDocId());
-            byte[] toKey = computeKey(qname.getNameType(), qname, docToRemove.getDocId() + 1);
+            {return;}
+        final List<QName> qnames = getQNamesForDoc(docToRemove);
+        for (final QName qname : qnames) {
+            final byte[] fromKey = computeKey(qname.getNameType(), qname, docToRemove.getDocId());
+            final byte[] toKey = computeKey(qname.getNameType(), qname, docToRemove.getDocId() + 1);
             final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
             final Lock lock = index.btree.getLock();
             try {
                 lock.acquire(Lock.WRITE_LOCK);
                 index.btree.remove(query, null);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 NativeStructuralIndex.LOG.warn("Exception caught while removing structural index for document " +
                     docToRemove.getURI() + ": " + e.getMessage(), e);
             } finally {
@@ -445,16 +445,16 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     protected void removeQNamesForDoc(DocumentImpl doc) {
-        byte[] fromKey = computeDocKey(doc.getDocId());
-        byte[] toKey = computeDocKey(doc.getDocId() + 1);
+        final byte[] fromKey = computeDocKey(doc.getDocId());
+        final byte[] toKey = computeDocKey(doc.getDocId() + 1);
         final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
         final Lock lock = index.btree.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
             index.btree.remove(query, null);
-        } catch (LockException e) {
+        } catch (final LockException e) {
             NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             NativeStructuralIndex.LOG.warn("Exception caught while reading structural index for document " +
                 doc.getURI() + ": " + e.getMessage(), e);
         } finally {
@@ -465,23 +465,23 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     protected List<QName> getQNamesForDoc(DocumentImpl doc) {
         final List<QName> qnames = new ArrayList<QName>();
         if (index.btree == null)
-            return qnames;
-        byte[] fromKey = computeDocKey(doc.getDocId());
-        byte[] toKey = computeDocKey(doc.getDocId() + 1);
+            {return qnames;}
+        final byte[] fromKey = computeDocKey(doc.getDocId());
+        final byte[] toKey = computeDocKey(doc.getDocId() + 1);
         final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
         final Lock lock = index.btree.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
             index.btree.query(query, new BTreeCallback() {
                 public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-                    QName qname = readQName(value.getData());
+                    final QName qname = readQName(value.getData());
                     qnames.add(qname);
                     return true;
                 }
             });
-        } catch (LockException e) {
+        } catch (final LockException e) {
             NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             NativeStructuralIndex.LOG.warn("Exception caught while reading structural index for document " +
                 doc.getURI() + ": " + e.getMessage(), e);
         } finally {
@@ -492,8 +492,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     @Override
     public void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException {
-        for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
-            DocumentImpl doc = i.next();
+        for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+            final DocumentImpl doc = i.next();
             removeDocument(doc);
         }
     }
@@ -527,29 +527,29 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      */
     private void processPending() {
         if (pending.size() == 0)
-            return;
+            {return;}
 
         try {
             final Lock lock = index.btree.getLock();
-            for (Map.Entry<QName,List<NodeProxy>> entry: pending.entrySet()) {
-                QName qname = entry.getKey();
+            for (final Map.Entry<QName,List<NodeProxy>> entry: pending.entrySet()) {
+                final QName qname = entry.getKey();
                 try {
                     lock.acquire(Lock.WRITE_LOCK);
-                    List<NodeProxy> nodes = entry.getValue();
-                    for (NodeProxy proxy : nodes) {
-                        NodeId nodeId = proxy.getNodeId();
-                        byte[] key = computeKey(qname.getNameType(), qname, document.getDocId(), nodeId);
+                    final List<NodeProxy> nodes = entry.getValue();
+                    for (final NodeProxy proxy : nodes) {
+                        final NodeId nodeId = proxy.getNodeId();
+                        final byte[] key = computeKey(qname.getNameType(), qname, document.getDocId(), nodeId);
                         index.btree.addValue(new Value(key), computeValue(proxy));
                     }
-                    Value docKey = new Value(computeDocKey(qname.getNameType(), document.getDocId(), qname));
+                    final Value docKey = new Value(computeDocKey(qname.getNameType(), document.getDocId(), qname));
                     if (index.btree.findValue(docKey) == -1) {
                         index.btree.addValue(docKey, 0);
                     }
-                } catch (LockException e) {
+                } catch (final LockException e) {
                     NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
                 // } catch (ReadOnlyException e) {
                 //    NativeStructuralIndex.LOG.warn("Read-only error: " + e.getMessage(), e);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     NativeStructuralIndex.LOG.warn("Exception caught while writing to structural index: " + e.getMessage(), e);
                 } finally {
                     lock.release(Lock.WRITE_LOCK);
@@ -562,9 +562,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     private byte[] computeKey(byte type, QName qname, int documentId, NodeId nodeId) {
         final SymbolTable symbols = index.getBrokerPool().getSymbols();
-        short sym = symbols.getSymbol(qname.getLocalName());
-        short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-        byte[] data = new byte[9 + nodeId.size()];
+        final short sym = symbols.getSymbol(qname.getLocalName());
+        final short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
+        final byte[] data = new byte[9 + nodeId.size()];
 
         data[0] = type;
         ByteConversion.shortToByteH(sym, data, 1);
@@ -576,9 +576,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     private byte[] computeKey(byte type, QName qname, int documentId) {
         final SymbolTable symbols = index.getBrokerPool().getSymbols();
-        short sym = symbols.getSymbol(qname.getLocalName());
-        short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-        byte[] data = new byte[9];
+        final short sym = symbols.getSymbol(qname.getLocalName());
+        final short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
+        final byte[] data = new byte[9];
 
         data[0] = type;
         ByteConversion.shortToByteH(sym, data, 1);
@@ -588,7 +588,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     private byte[] computeKey(byte type, int documentId) {
-    	byte[] data = new byte[5];
+    	final byte[] data = new byte[5];
 
         data[0] = type;
         ByteConversion.intToByteH(documentId, data, 1);
@@ -597,9 +597,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     
     private byte[] computeDocKey(byte type, int documentId, QName qname) {
         final SymbolTable symbols = index.getBrokerPool().getSymbols();
-        short sym = symbols.getSymbol(qname.getLocalName());
-        short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-        byte[] data = new byte[10];
+        final short sym = symbols.getSymbol(qname.getLocalName());
+        final short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
+        final byte[] data = new byte[10];
 
         data[0] = 2;
         ByteConversion.intToByteH(documentId, data, 1);
@@ -610,7 +610,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     private byte[] computeDocKey(int documentId) {
-        byte[] data = new byte[5];
+        final byte[] data = new byte[5];
 
         data[0] = 2;
         ByteConversion.intToByteH(documentId, data, 1);
@@ -621,8 +621,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         // dirty hack: encode the extra number of bits needed for the node id into the
         // storage address. this way, everything fits into the long address and
         // we don't need to change the btree.
-        long address = proxy.getInternalAddress();
-        short nodeIdLen = (short)(proxy.getNodeId().units() % 8);
+        final long address = proxy.getInternalAddress();
+        final short nodeIdLen = (short)(proxy.getNodeId().units() % 8);
         return address | ((long)(nodeIdLen << 24) & 0xFF000000L);
     }
 
@@ -634,18 +634,18 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         // extra number of bits of the node id is encoded in the long address
         short bits = (short)((value >>> 24) & 0xFFL);
         if (bits == 0)
-            bits = 8;
+            {bits = 8;}
         // compute total number of bits for node id
-        int units = (key.length - 10) * 8 + bits;
+        final int units = (key.length - 10) * 8 + bits;
         return index.getBrokerPool().getNodeFactory().createFromData(units, key, 9);
     }
 
     private QName readQName(byte[] key) {
         final SymbolTable symbols = index.getBrokerPool().getSymbols();
-        byte type = key[5];
-        short sym = ByteConversion.byteToShortH(key, 6);
-        short nsSym = ByteConversion.byteToShortH(key, 8);
-        QName qname = new QName(symbols.getName(sym), symbols.getNamespace(nsSym));
+        final byte type = key[5];
+        final short sym = ByteConversion.byteToShortH(key, 6);
+        final short nsSym = ByteConversion.byteToShortH(key, 8);
+        final QName qname = new QName(symbols.getName(sym), symbols.getNamespace(nsSym));
         qname.setNameType(type);
         return qname;
     }
@@ -662,8 +662,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             if (mode == StreamListener.STORE || mode == StreamListener.REMOVE_SOME_NODES) {
                 short indexType = RangeIndexSpec.NO_INDEX;
                 if (element.getIndexType() != RangeIndexSpec.NO_INDEX)
-                    indexType = (short) element.getIndexType();
-                NodeProxy proxy = new NodeProxy(document, element.getNodeId(), Node.ELEMENT_NODE, element.getInternalAddress());
+                    {indexType = (short) element.getIndexType();}
+                final NodeProxy proxy = new NodeProxy(document, element.getNodeId(), Node.ELEMENT_NODE, element.getInternalAddress());
                 proxy.setIndexType(indexType);
                 addNode(element.getQName(), proxy);
             }
@@ -679,8 +679,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             if (mode == StreamListener.STORE || mode == StreamListener.REMOVE_SOME_NODES) {
                 short indexType = RangeIndexSpec.NO_INDEX;
                 if (attrib.getIndexType() != RangeIndexSpec.NO_INDEX)
-                    indexType = (short) attrib.getIndexType();
-                NodeProxy proxy = new NodeProxy(document, attrib.getNodeId(), Node.ATTRIBUTE_NODE,
+                    {indexType = (short) attrib.getIndexType();}
+                final NodeProxy proxy = new NodeProxy(document, attrib.getNodeId(), Node.ATTRIBUTE_NODE,
                     attrib.getInternalAddress());
                 proxy.setIndexType(indexType);
                 addNode(attrib.getQName(), proxy);

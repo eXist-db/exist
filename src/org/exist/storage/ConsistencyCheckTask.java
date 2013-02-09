@@ -85,22 +85,22 @@ public class ConsistencyCheckTask implements SystemTask {
             LOG.debug("Using output directory " + exportDir);
         }
 
-        String backup = properties.getProperty(BACKUP_PROP_NAME, "no");
+        final String backup = properties.getProperty(BACKUP_PROP_NAME, "no");
         createBackup = backup.equalsIgnoreCase("YES");
 
-        String zip = properties.getProperty(ZIP_PROP_NAME, "yes");
+        final String zip = properties.getProperty(ZIP_PROP_NAME, "yes");
         createZip = zip.equalsIgnoreCase("YES");
         
-        String inc = properties.getProperty(INCREMENTAL_PROP_NAME, "no");
+        final String inc = properties.getProperty(INCREMENTAL_PROP_NAME, "no");
         incremental = inc.equalsIgnoreCase("YES");
 
-        String incCheck = properties.getProperty(INCREMENTAL_CHECK_PROP_NAME, "yes");
+        final String incCheck = properties.getProperty(INCREMENTAL_CHECK_PROP_NAME, "yes");
         incrementalCheck = incCheck.equalsIgnoreCase("YES");
 
-        String max = properties.getProperty(MAX_PROP_NAME, "5");
+        final String max = properties.getProperty(MAX_PROP_NAME, "5");
         try {
             maxInc = Integer.parseInt(max);
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             throw new EXistException("Parameter 'max' has to be an integer");
         }
     }
@@ -109,7 +109,7 @@ public class ConsistencyCheckTask implements SystemTask {
     public void execute(DBBroker broker) throws EXistException {
         final Agent agentInstance = AgentFactory.getInstance();
         final BrokerPool brokerPool = broker.getBrokerPool();
-        TaskStatus endStatus = new TaskStatus(TaskStatus.Status.STOPPED_OK);
+        final TaskStatus endStatus = new TaskStatus(TaskStatus.Status.STOPPED_OK);
 
         agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.INIT));
 
@@ -131,9 +131,9 @@ public class ConsistencyCheckTask implements SystemTask {
                 LOG.info("Starting consistency check...");
                 
                 report = openLog();
-                CheckCallback cb = new CheckCallback(report);
+                final CheckCallback cb = new CheckCallback(report);
 
-                ConsistencyCheck check = new ConsistencyCheck(broker, false);
+                final ConsistencyCheck check = new ConsistencyCheck(broker, false);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_CHECK));
                 errors = check.checkAll(cb);
                 
@@ -157,7 +157,7 @@ public class ConsistencyCheckTask implements SystemTask {
             if (doBackup) {
                 LOG.info("Starting backup...");
 
-                SystemExport sysexport = new SystemExport(broker, logCallback, monitor, false);
+                final SystemExport sysexport = new SystemExport(broker, logCallback, monitor, false);
                 lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, createZip, errors);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
 
@@ -168,10 +168,10 @@ public class ConsistencyCheckTask implements SystemTask {
                 LOG.info("Finished backup");
             }
 
-        } catch (TerminatedException e) {
+        } catch (final TerminatedException e) {
             throw new EXistException(e.getMessage(), e);
             
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             //TODO should maybe throw PermissionDeniedException instead!
             throw new EXistException(e.getMessage(), e);
             
@@ -194,7 +194,7 @@ public class ConsistencyCheckTask implements SystemTask {
     }
 
     private boolean fatalErrorsFound(List<ErrorReport> errors) {
-        for (ErrorReport error : errors) {
+        for (final ErrorReport error : errors) {
             switch (error.getErrcode()) {
             // the following errors are considered fatal: export the db and
                 // stop the task
@@ -209,12 +209,12 @@ public class ConsistencyCheckTask implements SystemTask {
 
     private PrintWriter openLog() throws EXistException {
         try {
-            File file = SystemExport.getUniqueFile("report", ".log", exportDir);
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+            final File file = SystemExport.getUniqueFile("report", ".log", exportDir);
+            final OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
             return new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
             throw new EXistException("ERROR: failed to create report file in " + exportDir, e);
-        } catch (FileNotFoundException e) {
+        } catch (final FileNotFoundException e) {
             throw new EXistException("ERROR: failed to create report file in " + exportDir, e);
         }
     }

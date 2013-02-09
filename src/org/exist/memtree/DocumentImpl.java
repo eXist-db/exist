@@ -163,7 +163,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (db == null)
             try {
                 db = BrokerPool.getInstance();
-            } catch (EXistException e) {
+            } catch (final EXistException e) {
                 throw new NullPointerException();
             }
         return db;
@@ -282,7 +282,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     }
 
     public void appendChars(int nodeNum, CharSequence s) {
-        int len = s.length();
+        final int len = s.length();
         if (characters == null) {
             characters = new char[(len > CHAR_BUF_SIZE) ? len : CHAR_BUF_SIZE];
         } else if ((nextChar + len) >= characters.length) {
@@ -334,15 +334,15 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         //Check if an attribute with the same qname exists in the parent element
         while ((nodeNum > 0) && (prevAttr > -1) && (attrParent[prevAttr] == nodeNum)) {
             attrN = prevAttr--;
-            QName prevQn = attrName[attrN];
+            final QName prevQn = attrName[attrN];
             if (prevQn.equalsSimple(qname)) {
                 if (replaceAttribute) {
                     attrValue[attrN] = value;
                     attrType[attrN] = type;
                     return attrN;
                 } else
-                    throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
-                        "err:XQDY0025: element has more than one attribute '" + qname + "'");
+                    {throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
+                        "err:XQDY0025: element has more than one attribute '" + qname + "'");}
             }
         }
         if (nextAttr == attrName.length) {
@@ -396,13 +396,13 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     public String getStringValue() {
     	if (document == null)
-    		return "";
+    		{return "";}
     	
     	return super.getStringValue();
     }
     
     private void grow() {
-        int newSize = (size * 3) / 2;
+        final int newSize = (size * 3) / 2;
         short[] newNodeKind = new short[newSize];
         System.arraycopy(nodeKind, 0, newNodeKind, 0, size);
         nodeKind = newNodeKind;
@@ -429,8 +429,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     }
 
     private void growAttributes() {
-        int size = attrName.length;
-        int newSize = (size * 3) / 2;
+        final int size = attrName.length;
+        final int newSize = (size * 3) / 2;
         QName[] newAttrName = new QName[newSize];
         System.arraycopy(attrName, 0, newAttrName, 0, size);
         attrName = newAttrName;
@@ -452,8 +452,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (references == null) {
             references = new NodeProxy[REF_SIZE];
         } else {
-            int size = references.length;
-            int newSize = (size * 3) / 2;
+            final int size = references.length;
+            final int newSize = (size * 3) / 2;
             NodeProxy[] newReferences = new NodeProxy[newSize];
             System.arraycopy(references, 0, newReferences, 0, size);
             references = newReferences;
@@ -465,8 +465,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             namespaceCode = new QName[5];
             namespaceParent = new int[5];
         } else {
-            int size = namespaceCode.length;
-            int newSize = (size * 3) / 2;
+            final int size = namespaceCode.length;
+            final int newSize = (size * 3) / 2;
             QName[] newCodes = new QName[newSize];
             System.arraycopy(namespaceCode, 0, newCodes, 0, size);
             namespaceCode = newCodes;
@@ -586,7 +586,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         int nodeNum = 1;
         while (nodeKind[nodeNum] != Node.ELEMENT_NODE) {
             if (next[nodeNum] < nodeNum)
-                return null;
+                {return null;}
             nodeNum = next[nodeNum];
         }
         return (Element)getNode(nodeNum);
@@ -600,7 +600,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     @Override
     public Node getFirstChild() {
         if (size > 1)
-            return getNode(1);
+            {return getNode(1);}
         return null;
     }
 
@@ -641,15 +641,15 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     }
 
     public int getFirstChildFor(int nodeNumber) {
-        short level = treeLevel[nodeNumber];
-        int nextNode = nodeNumber + 1;
+        final short level = treeLevel[nodeNumber];
+        final int nextNode = nodeNumber + 1;
         if ((nextNode < size) && (treeLevel[nextNode] > level))
-            return nextNode;
+            {return nextNode;}
         return -1;
     }
 
     public int getNextSiblingFor(int nodeNumber) {
-        int nextNr = next[nodeNumber];
+        final int nextNr = next[nodeNumber];
         return (nextNr < nodeNumber ) ? -1 : nextNr;
     }
 
@@ -721,11 +721,11 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (size == 1) {
             return null;
         }
-        ElementImpl root = (ElementImpl)getDocumentElement();
+        final ElementImpl root = (ElementImpl)getDocumentElement();
         if (hasIdAttribute(root.getNodeNumber(), id)) {
             return root;
         }
-        int treeLevel = this.treeLevel[root.getNodeNumber()];
+        final int treeLevel = this.treeLevel[root.getNodeNumber()];
         int nextNode  = root.getNodeNumber();
         while ((++nextNode < document.size) && (document.treeLevel[nextNode] > treeLevel)) {
             if ((document.nodeKind[nextNode] == Node.ELEMENT_NODE) &&
@@ -740,12 +740,12 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (size == 1) {
             return null;
         }
-        ElementImpl root = (ElementImpl)getDocumentElement();
+        final ElementImpl root = (ElementImpl)getDocumentElement();
         AttributeImpl attr = getIdrefAttribute(root.getNodeNumber(), id);
         if (attr != null) {
             return attr;
         }
-        int treeLevel = this.treeLevel[root.getNodeNumber()];
+        final int treeLevel = this.treeLevel[root.getNodeNumber()];
         int nextNode  = root.getNodeNumber();
         while ((++nextNode < document.size ) && (document.treeLevel[nextNode] > treeLevel)) {
             if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
@@ -850,10 +850,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         try {
             qn = QName.parse(getContext(), tagName);
         }
-        catch (XPathException e) {
+        catch (final XPathException e) {
             throw new DOMException(DOMException.NAMESPACE_ERR, e.getMessage());
         }
-        int nodeNum = addNode(Node.ELEMENT_NODE, (short)1, qn);
+        final int nodeNum = addNode(Node.ELEMENT_NODE, (short)1, qn);
         return new ElementImpl(this, nodeNum);
     }
 
@@ -935,10 +935,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#getElementsByTagName(java.lang.String)
      */
     public NodeList getElementsByTagName(String name) {
-        NodeListImpl nl = new NodeListImpl();
+        final NodeListImpl nl = new NodeListImpl();
         for (int i = 1; i < size; i++) {
             if (nodeKind[i] == Node.ELEMENT_NODE) {
-                QName qn = nodeName[i];
+                final QName qn = nodeName[i];
                 if (qn.getStringValue().equals(name)) {
                     nl.add(getNode(i));
                 }
@@ -986,10 +986,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *           java.lang.String)
      */
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-        NodeListImpl nl = new NodeListImpl();
+        final NodeListImpl nl = new NodeListImpl();
         for (int i = 1; i < size; i++) {
             if (nodeKind[i] == Node.ELEMENT_NODE) {
-                QName qn = nodeName[i];
+                final QName qn = nodeName[i];
                 if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalName().equals(localName)) {
                     nl.add(getNode(i));
                 }
@@ -1032,7 +1032,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     protected void copyTo(NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs)
             throws SAXException {
-        NodeImpl top = node;
+        final NodeImpl top = node;
         while (node != null) {
             copyStartNode(node, receiver, expandRefs);
             NodeImpl nextNode;
@@ -1063,15 +1063,15 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     private void copyStartNode(NodeImpl node, DocumentBuilderReceiver receiver, boolean expandRefs)
             throws SAXException {
-        int nr = node.nodeNumber;
+        final int nr = node.nodeNumber;
         switch(node.getNodeType()) {
         case Node.ELEMENT_NODE: {
-            QName nodeName = document.nodeName[nr];
+            final QName nodeName = document.nodeName[nr];
             receiver.startElement(nodeName, null);
             int attr = document.alpha[nr];
             if(-1 < attr) {
                 while ((attr < document.nextAttr) && (document.attrParent[attr] == nr)) {
-                    QName attrQName = document.attrName[attr];
+                    final QName attrQName = document.attrName[attr];
                     receiver.attribute( attrQName, attrValue[attr] );
                     ++attr;
                 }
@@ -1079,7 +1079,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             int ns = document.alphaLen[nr];
             if (-1 < ns) {
                 while ((ns < document.nextNamespace) && (document.namespaceParent[ns] == nr)) {
-                    QName nsQName = document.namespaceCode[ns];
+                    final QName nsQName = document.namespaceCode[ns];
                     receiver.addNamespaceNode(nsQName);
                     ++ns;
                 }
@@ -1093,15 +1093,15 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             receiver.cdataSection(document.characters, document.alpha[nr], document.alphaLen[nr]);
             break;
         case Node.ATTRIBUTE_NODE:
-            QName attrQName = document.attrName[nr];
+            final QName attrQName = document.attrName[nr];
             receiver.attribute(attrQName, attrValue[nr]);
             break;
         case Node.COMMENT_NODE:
             receiver.comment(document.characters, document.alpha[nr], document.alphaLen[nr]);
             break;
         case Node.PROCESSING_INSTRUCTION_NODE:
-            QName qn   = document.nodeName[nr];
-            String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
+            final QName qn   = document.nodeName[nr];
+            final String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
             receiver.processingInstruction(qn.getLocalName(), data);
             break;
         case NodeImpl.REFERENCE_NODE:
@@ -1109,12 +1109,12 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
                 DBBroker broker = null;
                 try {
                     broker = getDatabase().get(null);
-                    Serializer serializer = broker.getSerializer();
+                    final Serializer serializer = broker.getSerializer();
                     serializer.reset();
                     serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
                     serializer.setReceiver(receiver);
                     serializer.toReceiver(document.references[document.alpha[nr]], false, false);
-                } catch (EXistException e) {
+                } catch (final EXistException e) {
                     throw new SAXException(e);
                 } finally {
                     getDatabase().release(broker);
@@ -1146,7 +1146,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (size == 0) {
             return;
         }
-        DocumentImpl newDoc = expandRefs(null);
+        final DocumentImpl newDoc = expandRefs(null);
         copyDocContents(newDoc);
     }
 
@@ -1156,8 +1156,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
                 computeNodeIds();
                 return( this );
             }
-            MemTreeBuilder builder = new MemTreeBuilder(context);
-            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+            final MemTreeBuilder builder = new MemTreeBuilder(context);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
             try {
                 builder.startDocument();
                 NodeImpl node = (rootNode == null) ? (NodeImpl)getFirstChild() : rootNode;
@@ -1166,13 +1166,13 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
                     node = (NodeImpl)node.getNextSibling();
                 }
                 receiver.endDocument();
-            } catch (SAXException e) {
+            } catch (final SAXException e) {
                 throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
             }
-            DocumentImpl newDoc = builder.getDocument();
+            final DocumentImpl newDoc = builder.getDocument();
             newDoc.computeNodeIds();
             return newDoc;
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
         }
     }
@@ -1191,7 +1191,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (nodeId[0] != null) {
             return;
         }
-        NodeIdFactory nodeFactory = getDatabase().getNodeFactory();
+        final NodeIdFactory nodeFactory = getDatabase().getNodeFactory();
         nodeId[0] = nodeFactory.documentNodeId();
         if (size == 1) {
             return;
@@ -1270,7 +1270,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     public void streamTo( Serializer serializer, NodeImpl node, Receiver receiver )
             throws SAXException {
-        NodeImpl top = node;
+        final NodeImpl top = node;
         while (node != null) {
             startNode(serializer, node, receiver);
             NodeImpl nextNode;
@@ -1300,15 +1300,15 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     private void startNode(Serializer serializer, NodeImpl node, Receiver receiver)
             throws SAXException {
-        int nr = node.nodeNumber;
+        final int nr = node.nodeNumber;
         switch (node.getNodeType()) {
         case Node.ELEMENT_NODE:
-            QName nodeName = document.nodeName[nr];
+            final QName nodeName = document.nodeName[nr];
             //Output required namespace declarations
             int ns = document.alphaLen[nr];
             if (-1 < ns) {
                 while ((ns < document.nextNamespace) && (document.namespaceParent[ns] == nr)) {
-                    QName nsQName = document.namespaceCode[ns];
+                    final QName nsQName = document.namespaceCode[ns];
                     if ("xmlns".equals(nsQName.getLocalName())) {
                         receiver.startPrefixMapping("", nsQName.getNamespaceURI());
                     } else {
@@ -1323,7 +1323,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             if (-1 < attr) {
                 attribs = new AttrList();
                 while ((attr < document.nextAttr) && (document.attrParent[attr] == nr)) {
-                    QName attrQName = document.attrName[attr];
+                    final QName attrQName = document.attrName[attr];
                     attribs.addAttribute(attrQName, attrValue[attr]);
                     ++attr;
                 }
@@ -1335,15 +1335,15 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
                 document.alphaLen[nr]));
             break;
         case Node.ATTRIBUTE_NODE:
-            QName attrQName = document.attrName[nr];
+            final QName attrQName = document.attrName[nr];
             receiver.attribute(attrQName, attrValue[nr]);
             break;
         case Node.COMMENT_NODE:
             receiver.comment(document.characters, document.alpha[nr], document.alphaLen[nr]);
             break;
         case Node.PROCESSING_INSTRUCTION_NODE:
-            QName qn = document.nodeName[nr];
-            String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
+            final QName qn = document.nodeName[nr];
+            final String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
             receiver.processingInstruction(qn.getLocalName(), data);
             break;
         case Node.CDATA_SECTION_NODE:
@@ -1359,11 +1359,11 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             receiver.endElement(node.getQName());
             //End all prefix mappings used for the element
-            int nr = node.nodeNumber;
+            final int nr = node.nodeNumber;
             int ns = document.alphaLen[nr];
             if (-1 < ns) {
                 while ((ns < document.nextNamespace) && (document.namespaceParent[ns] == nr)) {
-                    QName nsQName = document.namespaceCode[ns];
+                    final QName nsQName = document.namespaceCode[ns];
                     if ("xmlns".equals( nsQName.getLocalName())) {
                         receiver.endPrefixMapping("");
                     } else {
@@ -1398,10 +1398,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     }
 
     public NodeList getChildNodes() {
-        NodeListImpl nl = new NodeListImpl(1);
-        Element el = getDocumentElement();
+        final NodeListImpl nl = new NodeListImpl(1);
+        final Element el = getDocumentElement();
         if (el != null)
-            nl.add(el);
+            {nl.add(el);}
         return nl;
     }
 
@@ -1577,20 +1577,20 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      */
     @Override
     public String getBaseURI() {
-        Element el = getDocumentElement();
+        final Element el = getDocumentElement();
         if (el != null) {
-            String baseURI = getDocumentElement().getAttributeNS(Namespaces.XML_NS, "base");
+            final String baseURI = getDocumentElement().getAttributeNS(Namespaces.XML_NS, "base");
             if (baseURI != null)
-                return baseURI;
+                {return baseURI;}
         }
-        String docURI = getDocumentURI();
+        final String docURI = getDocumentURI();
         if (docURI != null)
-            return docURI;
+            {return docURI;}
         else {
             if (context.isBaseURIDeclared()) {
                 try {
                     return context.getBaseURI().getStringValue();
-                } catch (XPathException e) {
+                } catch (final XPathException e) {
                     //TODO : make something !
                 }
             }
@@ -1605,7 +1605,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("in-memory#");
         result.append("document {");
         if (size != 1) {

@@ -68,22 +68,22 @@ public class BasicAuthenticator implements Authenticator {
 		String password = null;
                 try {
                     if (credentials != null) {
-                            Base64Decoder dec = new Base64Decoder();
+                            final Base64Decoder dec = new Base64Decoder();
                             dec.translate(credentials.substring("Basic ".length()));
-                            byte[] c = dec.getByteArray();
-                            String s = new String(c);
+                            final byte[] c = dec.getByteArray();
+                            final String s = new String(c);
                             // LOG.debug("BASIC auth credentials: "+s);
-                            int p = s.indexOf(':');
+                            final int p = s.indexOf(':');
                             username = p < 0 ? s : s.substring(0, p);
                             password = p < 0 ? null : s.substring(p + 1);
                     }
-                } catch(IllegalArgumentException iae) {
+                } catch(final IllegalArgumentException iae) {
                     LOG.warn("Invalid BASIC authentication header received: " + iae.getMessage(), iae);
                     credentials = null;
                 }
 
 		// get the user from the session if possible
-		HttpSession session = request.getSession(false);
+		final HttpSession session = request.getSession(false);
 		Subject user = null;
 		if (session != null) {
 			user = (Subject) session.getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
@@ -101,17 +101,17 @@ public class BasicAuthenticator implements Authenticator {
 			// prompt for credentials
 
 			// LOG.debug("Sending BASIC auth challenge.");
-			if (sendChallenge) sendChallenge(request, response);
+			if (sendChallenge) {sendChallenge(request, response);}
 			return null;
 		}
 
 		// authenticate the credentials
-		SecurityManager secman = pool.getSecurityManager();
+		final SecurityManager secman = pool.getSecurityManager();
 		try {
 			user = secman.authenticate(username, password);
-		} catch (AuthenticationException e) {
+		} catch (final AuthenticationException e) {
 			// if authentication failed then send a challenge request again
-			if (sendChallenge) sendChallenge(request, response);
+			if (sendChallenge) {sendChallenge(request, response);}
 			return null;
 		}
 

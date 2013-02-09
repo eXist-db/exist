@@ -78,18 +78,18 @@ public class LocalResourceSet implements ResourceSet {
 		String sortExpr)
 		throws XMLDBException {
 		if(col == null)
-			throw new NullPointerException("Collection cannot be null");
+			{throw new NullPointerException("Collection cannot be null");}
 		this.user = user;
 		this.brokerPool = pool;
 		this.outputProperties = properties;
 		this.collection = col;
 		if(val.isEmpty())
-			return;
+			{return;}
 		if(Type.subTypeOf(val.getItemType(), Type.NODE) && sortExpr != null) {
 			SortedNodeSet sorted = new SortedNodeSet(brokerPool, user, sortExpr, collection.getAccessContext());
 			try {
 				sorted.addAll(val);
-			} catch (XPathException e) {
+			} catch (final XPathException e) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
 					e.getMessage(), e);
 			}
@@ -97,11 +97,11 @@ public class LocalResourceSet implements ResourceSet {
 		}
 		Item item;
 		try {
-			for(SequenceIterator i = val.iterate(); i.hasNext(); ) {
+			for(final SequenceIterator i = val.iterate(); i.hasNext(); ) {
 				item = i.nextItem();
 				resources.add(item);
 			}
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
 					e.getMessage(), e);
 		}
@@ -116,11 +116,11 @@ public class LocalResourceSet implements ResourceSet {
 	public void clear() throws XMLDBException {
 
             //cleanup any binary values
-            for(Object resource : resources) {
+            for(final Object resource : resources) {
                 if(resource instanceof BinaryValue) {
                     try {
                         ((BinaryValue) resource).close();
-                    } catch(IOException ioe) {
+                    } catch(final IOException ioe) {
                         LOG.warn("Unable to cleanup BinaryValue: " + resource.hashCode(), ioe);
                     }
                 }
@@ -138,15 +138,15 @@ public class LocalResourceSet implements ResourceSet {
 	}
 
 	public Resource getMembersAsResource() throws XMLDBException {
-        SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-		StringWriter writer = new StringWriter();
+        final SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+		final StringWriter writer = new StringWriter();
 		handler.setOutput(writer, outputProperties);
 		
 		DBBroker broker = null;
 		try {
 			broker = brokerPool.get(user);
 			// configure the serializer
-			Serializer serializer = broker.getSerializer();
+			final Serializer serializer = broker.getSerializer();
 			serializer.reset();
 			collection.properties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 			serializer.setProperties(outputProperties);
@@ -156,7 +156,7 @@ public class LocalResourceSet implements ResourceSet {
 			//	serialize results
 			handler.startDocument();
 			handler.startPrefixMapping("exist", Namespaces.EXIST_NS);
-			AttributesImpl attribs = new AttributesImpl();
+			final AttributesImpl attribs = new AttributesImpl();
 			attribs.addAttribute(
 				"",
 				"hitCount",
@@ -170,7 +170,7 @@ public class LocalResourceSet implements ResourceSet {
 						attribs);
 			Item current;
 			char[] value;
-			for(Iterator<Object> i = resources.iterator(); i.hasNext(); ) {
+			for(final Iterator<Object> i = resources.iterator(); i.hasNext(); ) {
 				current = (Item)i.next();
 				if(Type.subTypeOf(current.getType(), Type.NODE)) {
 					((NodeValue)current).toSAX(broker, handler, outputProperties);
@@ -182,14 +182,14 @@ public class LocalResourceSet implements ResourceSet {
 			handler.endElement(Namespaces.EXIST_NS, "result", "exist:result");
 			handler.endPrefixMapping("exist");
 			handler.endDocument();
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "serialization error", e);
-		} catch (SAXException e) {
+		} catch (final SAXException e) {
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "serialization error", e);
 		} finally {
 			brokerPool.release(broker);
 		}
-		Resource res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
+		final Resource res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
 		res.setContent(writer.toString());
         SerializerPool.getInstance().returnObject(handler);
 		return res;
@@ -197,11 +197,11 @@ public class LocalResourceSet implements ResourceSet {
 
 	public Resource getResource(long pos) throws XMLDBException {
 		if (pos < 0 || pos >= resources.size())
-			return null;
-		Object r = resources.get((int) pos);
+			{return null;}
+		final Object r = resources.get((int) pos);
 		LocalXMLResource res = null;
 		if (r instanceof NodeProxy) {
-			NodeProxy p = (NodeProxy) r;
+			final NodeProxy p = (NodeProxy) r;
 			// the resource might belong to a different collection
 			// than the one by which this resource set has been
 			// generated: adjust if necessary.
@@ -219,19 +219,19 @@ public class LocalResourceSet implements ResourceSet {
 			res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
 			res.setContent(r);
 		} else if (r instanceof Resource)
-			return (Resource) r;
+			{return (Resource) r;}
 		res.setProperties(outputProperties);
 		return res;
 	}
 
     public Sequence toSequence() {
         if (resources.size() == 0)
-            return Sequence.EMPTY_SEQUENCE;
+            {return Sequence.EMPTY_SEQUENCE;}
         if (resources.size() == 1)
-            return ((Item) resources.get(0)).toSequence();
-        ValueSequence s = new ValueSequence();
+            {return ((Item) resources.get(0)).toSequence();}
+        final ValueSequence s = new ValueSequence();
         for (int i = 0; i < resources.size(); i++) {
-            Item item = (Item) resources.get(i);
+            final Item item = (Item) resources.get(i);
             s.add(item);
         }
         return s;

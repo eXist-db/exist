@@ -52,12 +52,12 @@ public class JnlpServlet extends HttpServlet {
     public void init() {
         logger.info("Initializing JNLP servlet");
         
-        String realPath = getServletContext().getRealPath("/");
+        final String realPath = getServletContext().getRealPath("/");
         if(realPath==null){
             logger.error("getServletContext().getRealPath() did not return a "+
                     "value. Webstart is not available.");
         }
-        File contextRoot=new File( realPath );
+        final File contextRoot=new File( realPath );
  
         jh = new JnlpHelper(contextRoot);
         jf = new JnlpJarFiles(jh);
@@ -65,7 +65,7 @@ public class JnlpServlet extends HttpServlet {
     }
     
     private String stripFilename(String URI){
-        int lastPos=URI.lastIndexOf("/");
+        final int lastPos=URI.lastIndexOf("/");
         return URI.substring(lastPos+1);
     }
     
@@ -81,10 +81,10 @@ public class JnlpServlet extends HttpServlet {
                                            throws ServletException, IOException{
 
         try {
-            JnlpWriter jw=new JnlpWriter();
+            final JnlpWriter jw=new JnlpWriter();
 
-            String requestURI = request.getRequestURI();
-            String filename = stripFilename( request.getPathInfo() );
+            final String requestURI = request.getRequestURI();
+            final String filename = stripFilename( request.getPathInfo() );
             logger.debug("Requested URI="+requestURI);
 
             if(requestURI.endsWith(".jnlp")){
@@ -102,13 +102,13 @@ public class JnlpServlet extends HttpServlet {
                 return;
             }
 
-        } catch(EOFException ex) {
+        } catch(final EOFException ex) {
             logger.debug(ex.getMessage());
 
-        } catch(SocketException ex) {
+        } catch(final SocketException ex) {
             logger.debug(ex.getMessage());
 
-        } catch (Throwable e){
+        } catch (final Throwable e){
             logger.error(e);
             throw new ServletException("An error occurred: " + e.getMessage());
         }

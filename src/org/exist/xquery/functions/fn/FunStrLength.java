@@ -73,28 +73,28 @@ public class FunStrLength extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }  
         
         
 		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
         
         
 		if(getSignature().getArgumentCount() == 1)
-			contextSequence = getArgument(0).eval(contextSequence);
+			{contextSequence = getArgument(0).eval(contextSequence);}
 		
 		if (contextSequence == null)
-			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
 		
-		String strval = contextSequence.getStringValue();
+		final String strval = contextSequence.getStringValue();
 
-		Sequence result = new IntegerValue(FunStringToCodepoints.getCodePointCount(strval));
+		final Sequence result = new IntegerValue(FunStringToCodepoints.getCodePointCount(strval));
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;            
 	}

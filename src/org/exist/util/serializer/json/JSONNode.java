@@ -53,7 +53,7 @@ public abstract class JSONNode {
 	
 	public void setNextOfSame(JSONNode nextOfSame) {
 		if (this.nextOfSame == null)
-			this.nextOfSame = nextOfSame;
+			{this.nextOfSame = nextOfSame;}
 		else {
 			JSONNode current = this.nextOfSame;
 			while (current.nextOfSame != null) {

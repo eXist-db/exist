@@ -137,17 +137,17 @@ public abstract class AbstractXMLDBTask extends Task
     {
         try {
             log( "Registering database", Project.MSG_DEBUG );
-            Database[] allDataBases = DatabaseManager.getDatabases();
+            final Database[] allDataBases = DatabaseManager.getDatabases();
 
-            for( Database database : allDataBases ) {
+            for( final Database database : allDataBases ) {
 
                 if( database.acceptsURI( uri ) ) {
                     return;
                 }
             }
 
-            Class<?> clazz    = Class.forName( driver );
-            Database database = (Database)clazz.newInstance();
+            final Class<?> clazz    = Class.forName( driver );
+            final Database database = (Database)clazz.newInstance();
             database.setProperty( "create-database", createDatabase ? "true" : "false" );
 
             if( configuration != null ) {
@@ -159,7 +159,7 @@ public abstract class AbstractXMLDBTask extends Task
             log( "Database driver registered." );
 
         }
-        catch( Exception e ) {
+        catch( final Exception e ) {
             throw( new BuildException( "failed to initialize XMLDB database driver" ) );
         }
     }
@@ -173,7 +173,7 @@ public abstract class AbstractXMLDBTask extends Task
         String                      token;
 
         ///TODO : use dedicated function in XmldbURI
-        StringTokenizer             tokenizer = new StringTokenizer( relPath, "/" );
+        final StringTokenizer             tokenizer = new StringTokenizer( relPath, "/" );
 
         while( tokenizer.hasMoreTokens() ) {
 
@@ -217,7 +217,7 @@ public abstract class AbstractXMLDBTask extends Task
             base = DatabaseManager.getCollection( uri, user, password );
 
             if( base == null ) {
-                String msg = "Collection " + uri + " could not be found.";
+                final String msg = "Collection " + uri + " could not be found.";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -231,8 +231,8 @@ public abstract class AbstractXMLDBTask extends Task
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -250,8 +250,8 @@ public abstract class AbstractXMLDBTask extends Task
                  setPermissions( null, (UserManagementService)col.getService( "UserManagementService", "1.0" ) );
             }
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -272,7 +272,7 @@ public abstract class AbstractXMLDBTask extends Task
 				
 				if( permissions.matches( UNIX_PERMS_REGEX ) ) {
 					// Unix-style permissions string provided
-					Permission perm = UnixStylePermissionAider.fromString( permissions );
+					final Permission perm = UnixStylePermissionAider.fromString( permissions );
 	
 					if( res != null ) {
 						service.chmod( res, perm.getMode() );
@@ -289,8 +289,8 @@ public abstract class AbstractXMLDBTask extends Task
 				}
 			}
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -298,8 +298,8 @@ public abstract class AbstractXMLDBTask extends Task
                 log( msg, e, Project.MSG_ERR );
             }
         }
-        catch( SyntaxException e ) {
-            String msg = "Syntax error in permissions: " + permissions;
+        catch( final SyntaxException e ) {
+            final String msg = "Syntax error in permissions: " + permissions;
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

@@ -31,14 +31,14 @@ public class OrderedLongLinkedList extends LongLinkedList {
 			while (prev != null) {
                 final int cmp = newItem.compareTo(prev);
                 if(cmp == 0)
-                    return;
+                    {return;}
                 if(cmp > 0) {
                     newItem.prev = prev;
                     newItem.next = prev.next;
                     if(prev == last)
-                        last = newItem;
+                        {last = newItem;}
                     else
-                        newItem.next.prev = newItem;
+                        {newItem.next.prev = newItem;}
                     prev.next = newItem;
                     ++count;
                     return;
@@ -54,7 +54,7 @@ public class OrderedLongLinkedList extends LongLinkedList {
 	}
 
     public static void main(String[] args) {
-        OrderedLongLinkedList list = new OrderedLongLinkedList();
+        final OrderedLongLinkedList list = new OrderedLongLinkedList();
         list.add(7);
         list.add(44);
         list.add(4);
@@ -63,7 +63,7 @@ public class OrderedLongLinkedList extends LongLinkedList {
         list.add(-122);
         list.add(1);
         System.out.println("size: " + list.getSize());
-        for(Iterator i = list.iterator(); i.hasNext(); ) {
+        for(final Iterator i = list.iterator(); i.hasNext(); ) {
             final OrderedLongLinkedList.ListItem item =
                 (OrderedLongLinkedList.ListItem)i.next();
             System.out.println(item.l);

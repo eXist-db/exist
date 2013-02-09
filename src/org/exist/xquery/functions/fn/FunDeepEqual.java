@@ -111,16 +111,16 @@ public class FunDeepEqual extends CollatingFunction {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
         Sequence result;
-        Sequence[] args = getArguments(contextSequence, contextItem);
-        Collator collator = getCollator(contextSequence, contextItem, 3);
-        int length = args[0].getItemCount();
+        final Sequence[] args = getArguments(contextSequence, contextItem);
+        final Collator collator = getCollator(contextSequence, contextItem, 3);
+        final int length = args[0].getItemCount();
         if (length != args[1].getItemCount()) {
             result = BooleanValue.FALSE;
         } else {
@@ -133,7 +133,7 @@ public class FunDeepEqual extends CollatingFunction {
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         return result;
     }
 
@@ -143,33 +143,33 @@ public class FunDeepEqual extends CollatingFunction {
             final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ATOMIC);
             if (aAtomic || bAtomic) {
                 if (!aAtomic || !bAtomic)
-                    return false;
+                    {return false;}
                 try {
-                    AtomicValue av = (AtomicValue) a;
-                    AtomicValue bv = (AtomicValue) b;
+                    final AtomicValue av = (AtomicValue) a;
+                    final AtomicValue bv = (AtomicValue) b;
                     if (Type.subTypeOf(av.getType(), Type.NUMBER) &&
                         Type.subTypeOf(bv.getType(), Type.NUMBER)) {
                         //or if both values are NaN
                         if (((NumericValue) a).isNaN() && ((NumericValue) b).isNaN())
-                            return true;
+                            {return true;}
                     }
                     return ValueComparison.compareAtomic(collator, av, bv,
                         Constants.TRUNC_NONE, Constants.EQ);
-                } catch (XPathException e) {
+                } catch (final XPathException e) {
                     return false;
                 }
             }
             if (a.getType() != b.getType())
-                return false;
+                {return false;}
             NodeValue nva = (NodeValue) a, nvb = (NodeValue) b;
-            if (nva == nvb) return true;
+            if (nva == nvb) {return true;}
             try {
                 //Don't use this shortcut for in-memory nodes
                 //since the symbol table is ignored.
                 if (nva.getImplementationType() != NodeValue.IN_MEMORY_NODE &&
                     nva.equals(nvb))
-                    return true; // shortcut!
-            } catch (XPathException e) {
+                    {return true;} // shortcut!
+            } catch (final XPathException e) {
                 // apparently incompatible values, do manual comparison
             }
             Node na, nb;
@@ -199,7 +199,7 @@ public class FunDeepEqual extends CollatingFunction {
             default:
                 throw new RuntimeException("unexpected item type " + Type.getTypeName(a.getType()));
             }
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             logger.error(e.getMessage());
             e.printStackTrace();
             return false;
@@ -215,33 +215,33 @@ public class FunDeepEqual extends CollatingFunction {
         a = findNextTextOrElementNode(a.getFirstChild());
         b = findNextTextOrElementNode(b.getFirstChild());
         while (!(a == null || b == null)) {
-            int nodeTypeA = getEffectiveNodeType(a);
-            int nodeTypeB = getEffectiveNodeType(b);
+            final int nodeTypeA = getEffectiveNodeType(a);
+            final int nodeTypeB = getEffectiveNodeType(b);
             if (nodeTypeA != nodeTypeB)
-                return false;
+                {return false;}
             switch (nodeTypeA) {
             case Node.TEXT_NODE:
                 if (a.getNodeType() == NodeImpl.REFERENCE_NODE &&
                         b.getNodeType() == NodeImpl.REFERENCE_NODE) {
                     if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(),
                             ((ReferenceNode)b).getReference().getNodeValue()))
-                        return false;
+                        {return false;}
                 } else if (a.getNodeType() == NodeImpl.REFERENCE_NODE) {
                     if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(),
                             b.getNodeValue()))
-                        return false;
+                        {return false;}
                 } else if (b.getNodeType() == NodeImpl.REFERENCE_NODE) {
                     if (!safeEquals(a.getNodeValue(), 
                             ((ReferenceNode)b).getReference().getNodeValue()))
-                        return false;
+                        {return false;}
                 } else {
                     if (!safeEquals(a.getNodeValue(), b.getNodeValue()))
-                        return false;
+                        {return false;}
                 }
                 break;
             case Node.ELEMENT_NODE:
                 if (!compareElements(a, b))
-                    return false;
+                    {return false;}
                 break;
             default:
                 throw new RuntimeException("unexpected node type " + nodeTypeA);
@@ -255,10 +255,10 @@ public class FunDeepEqual extends CollatingFunction {
     private static Node findNextTextOrElementNode(Node n) {
         for(;;) {
             if (n == null)
-                return null;
-            int nodeType = getEffectiveNodeType(n);
+                {return null;}
+            final int nodeType = getEffectiveNodeType(n);
             if (nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE)
-                return n;
+                {return n;}
             n = n.getNextSibling();
         }
     }
@@ -272,18 +272,18 @@ public class FunDeepEqual extends CollatingFunction {
     }
 
     private static boolean compareAttributes(Node a, Node b) {
-        NamedNodeMap nnma = a.getAttributes();
-        NamedNodeMap nnmb = b.getAttributes();
-        if (getAttrCount(nnma) != getAttrCount(nnmb)) return false;
+        final NamedNodeMap nnma = a.getAttributes();
+        final NamedNodeMap nnmb = b.getAttributes();
+        if (getAttrCount(nnma) != getAttrCount(nnmb)) {return false;}
         for (int i = 0; i < nnma.getLength(); i++) {
-            Node ta = nnma.item(i);
+            final Node ta = nnma.item(i);
             if (Namespaces.XMLNS_NS.equals(ta.getNamespaceURI()))
-                continue;
-            Node tb = ta.getLocalName() == null ?
+                {continue;}
+            final Node tb = ta.getLocalName() == null ?
                 nnmb.getNamedItem(ta.getNodeName()) :
                 nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());
             if (tb == null || !safeEquals(ta.getNodeValue(), tb.getNodeValue()))
-                return false;
+                {return false;}
         }
         return true;
     }
@@ -295,9 +295,9 @@ public class FunDeepEqual extends CollatingFunction {
     private static int getAttrCount(NamedNodeMap nnm) {
         int count = 0;
         for (int i=0; i<nnm.getLength(); i++) {
-            Node n = nnm.item(i);
+            final Node n = nnm.item(i);
             if (!Namespaces.XMLNS_NS.equals(n.getNamespaceURI()))
-                ++count;
+                {++count;}
         }
         return count;
     }

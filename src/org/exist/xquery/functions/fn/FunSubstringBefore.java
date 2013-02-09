@@ -93,21 +93,21 @@ public class FunSubstringBefore extends CollatingFunction {
                     "DEPENDENCIES",
                     Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());}
         }
         
-		Expression arg0 = getArgument(0);
-		Expression arg1 = getArgument(1);
+		final Expression arg0 = getArgument(0);
+		final Expression arg1 = getArgument(1);
 
 		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
 
-		Sequence seq1 = arg0.eval(contextSequence);
-		Sequence seq2 = arg1.eval(contextSequence);
+		final Sequence seq1 = arg0.eval(contextSequence);
+		final Sequence seq2 = arg1.eval(contextSequence);
 
         String value;
         String cmp;
@@ -125,17 +125,17 @@ public class FunSubstringBefore extends CollatingFunction {
         }
 
         if (cmp.length() == 0)
-            result = StringValue.EMPTY_STRING;
+            {result = StringValue.EMPTY_STRING;}
         else {
-            Collator collator = getCollator(contextSequence, contextItem, 3);
-            int p = Collations.indexOf(collator, value, cmp);
+            final Collator collator = getCollator(contextSequence, contextItem, 3);
+            final int p = Collations.indexOf(collator, value, cmp);
             if (p == Constants.STRING_NOT_FOUND)
-                result = StringValue.EMPTY_STRING;
+                {result = StringValue.EMPTY_STRING;}
             else
-                result = new StringValue(value.substring(0, p));        			
+                {result = new StringValue(value.substring(0, p));}        			
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         return result;        
 	}

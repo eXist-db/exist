@@ -68,24 +68,24 @@ public class XMLDBIsAdmin extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		String userName = args[0].getStringValue();
+		final String userName = args[0].getStringValue();
         
         Collection collection = null;
 		try {
             collection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
-			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			Account user = ums.getAccount(userName);
+			final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+			final Account user = ums.getAccount(userName);
 
 			if(user == null)
                 // todo - why not just return false()? /ljo
-				return Sequence.EMPTY_SEQUENCE;
+				{return Sequence.EMPTY_SEQUENCE;}
 			return user.hasDbaRole() ? BooleanValue.TRUE : BooleanValue.FALSE;
-		} catch (XMLDBException xe) {
+		} catch (final XMLDBException xe) {
             logger.error("Failed to access user " + userName);
 			throw new XPathException(this, "Failed to access user " + userName, xe);
         } finally {
             if (null != collection)
-                try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
+                try { collection.close(); } catch (final XMLDBException e) { /* ignore */ }
 		}
 	}
 

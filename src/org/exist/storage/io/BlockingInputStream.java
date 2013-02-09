@@ -85,7 +85,7 @@ public class BlockingInputStream extends InputStream {
      */
     @Override
     public synchronized int read() throws IOException {
-        byte bb[] = new byte[1];
+        final byte bb[] = new byte[1];
         return (read(bb, 0, 1) == EOS) ? EOS : bb[0];
     }
 
@@ -122,20 +122,20 @@ public class BlockingInputStream extends InputStream {
         int count = EOS;
         try {
             while (empty() && !closed()) wait();
-            if (outException != null) throw new IOException(
-              "BlockingOutputStream closed with an exception.", outException);
+            if (outException != null) {throw new IOException(
+              "BlockingOutputStream closed with an exception.", outException);}
             else if (!closed()) {
                 count = Math.min(len, available());
-                int count1 = Math.min(count, availablePart1());
+                final int count1 = Math.min(count, availablePart1());
                 System.arraycopy(buffer, head, b, off, count1);
-                int count2 = count - count1;
+                final int count2 = count - count1;
                 if (count2 > 0) {
                     System.arraycopy(buffer, 0, b, off + count1, count2);
                 }
                 head = next(head, count);
-                if (empty()) head = tail = 0; // Reset to optimal situation.
+                if (empty()) {head = tail = 0;} // Reset to optimal situation.
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             throw new IOException("Read operation interrupted.", e);
         } finally {
             notifyAll();
@@ -207,7 +207,7 @@ public class BlockingInputStream extends InputStream {
      *             output stream has been closed.
      */
     synchronized void writeOutputStream(int b) throws IOException {
-        byte bb[] = { (byte) b };
+        final byte bb[] = { (byte) b };
         writeOutputStream(bb, 0, 1);
     }
 
@@ -239,19 +239,19 @@ public class BlockingInputStream extends InputStream {
             int count;
             try {
                 while (full() && !closed()) wait();
-            if (inException != null) throw new IOException(
-              "BlockingInputStream closed with exception.", inException);
-            else if (closed()) throw new IOException(
-                    "Writing to closed stream", inException);
+            if (inException != null) {throw new IOException(
+              "BlockingInputStream closed with exception.", inException);}
+            else if (closed()) {throw new IOException(
+                    "Writing to closed stream", inException);}
                 count = Math.min(len, free());
-                int count1 = Math.min(count, freePart1());
+                final int count1 = Math.min(count, freePart1());
                 System.arraycopy(b, off, buffer, tail, count1);
-                int count2 = count - count1;
+                final int count2 = count - count1;
                 if (count2 > 0) {
                     System.arraycopy(b, off + count1, buffer, 0, count2);                    
                 }
                 tail = next(tail, count);
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
                 throw new IOException("Write operation interrupted.", e);
             } finally {
                 notifyAll();
@@ -274,16 +274,16 @@ public class BlockingInputStream extends InputStream {
      * @throws IOException  if an I/O error occurs.
      */
     synchronized void closeOutputStream() throws IOException {
-        if (outException == null) flushOutputStream();
+        if (outException == null) {flushOutputStream();}
         outClosed = true;
         notifyAll();
         try {
             while(!inClosed) wait();
-            if (inException != null) throw new IOException(
-                "BlockingInputStream closed with an exception.", inException);
-            else if (!empty()) throw new IOException(
-                "Closing non empty closed stream.", inException);
-        } catch (InterruptedException e) {
+            if (inException != null) {throw new IOException(
+                "BlockingInputStream closed with an exception.", inException);}
+            else if (!empty()) {throw new IOException(
+                "Closing non empty closed stream.", inException);}
+        } catch (final InterruptedException e) {
             throw new IOException(
                 "Close OutputStream operation interrupted.", e);
         }
@@ -315,11 +315,11 @@ public class BlockingInputStream extends InputStream {
     synchronized void flushOutputStream() throws IOException {
         try {
             while(!empty() && !closed()) wait();
-            if (inException != null) throw new IOException(
-                "BlockingInputStream closed with an exception.", inException);
-            else if (!empty()) throw new IOException(
-                "Flushing non empty closed stream.", inException);
-        } catch (InterruptedException e) {
+            if (inException != null) {throw new IOException(
+                "BlockingInputStream closed with an exception.", inException);}
+            else if (!empty()) {throw new IOException(
+                "Flushing non empty closed stream.", inException);}
+        } catch (final InterruptedException e) {
             throw new IOException("Flush operation interrupted.", e);
         } finally {
             notifyAll();
@@ -337,19 +337,19 @@ public class BlockingInputStream extends InputStream {
      * @throws IOException  if an I/O error occurs.
      */
     private synchronized int free() {
-        int prevhead = prev(head);
+        final int prevhead = prev(head);
         return (prevhead - tail + SIZE) % SIZE;
     }
 
     private int freePart1() {
-        int prevhead = prev(head);
+        final int prevhead = prev(head);
         return (prevhead >= tail) ? prevhead - tail : SIZE - tail;
     }
 
     // DWES Never called?
     @SuppressWarnings("unused")
 	private int freePart2() {
-        int prevhead = prev(head);
+        final int prevhead = prev(head);
         return (prevhead >= tail) ? 0 : prevhead;
     }
 

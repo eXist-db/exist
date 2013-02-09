@@ -57,9 +57,9 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 	public void put(long key, V value) {
 		try {
 			insert(key, value);
-		} catch (HashtableOverflowException e) {
-			long[] copyKeys = keys;
-			V[] copyValues = values;
+		} catch (final HashtableOverflowException e) {
+			final long[] copyKeys = keys;
+			final V[] copyValues = values;
 			// enlarge the table with a prime value
 			tabSize = (int) nextPrime(tabSize + tabSize / 2);
 			keys = new long[tabSize];
@@ -68,7 +68,7 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 
 			for (int k = 0; k < copyValues.length; k++) {
 				if (copyValues[k] != null && copyValues[k] != REMOVED)
-					put(copyKeys[k], copyValues[k]);
+					{put(copyKeys[k], copyValues[k]);}
 			}
 			put(key, value);
 		}
@@ -77,22 +77,22 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 	public V get(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (values[idx] == null)
-			return null; // key does not exist
+			{return null;} // key does not exist
 		else if (keys[idx] == key) {
 			if(values[idx] == REMOVED)
-				return null;
+				{return null;}
 			return values[idx];
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (values[idx] == null) {
 				return null; // key not found
 			} else if (keys[idx] == key) {
 				if(values[idx] == REMOVED)
-					return null;
+					{return null;}
 				return values[idx];
 			}
 		}
@@ -102,26 +102,26 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 	public V remove(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (values[idx] == null) {
 			return null; // key does not exist
 		} else if (keys[idx] == key) {
 			if(values[idx] == REMOVED)
-				return null;	// key has already been removed
-			V o = values[idx];
+				{return null;}	// key has already been removed
+			final V o = values[idx];
 			values[idx] = (V) REMOVED;
 			--items;
 			return o;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (values[idx] == null) {
 				return null; // key not found
 			} else if (keys[idx] == key) {
 				if(values[idx] == REMOVED)
-					return null;	// key has already been removed
-				V o = values[idx];
+					{return null;}	// key has already been removed
+				final V o = values[idx];
 				values[idx] = (V) REMOVED;
 				--items;
 				return o;
@@ -147,10 +147,10 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 	
 	protected V insert(long key, V value) throws HashtableOverflowException {
 		if (value == null)
-			throw new IllegalArgumentException("Illegal value: null");
+			{throw new IllegalArgumentException("Illegal value: null");}
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
-			idx *= -1;
+			{idx *= -1;}
         int bucket = -1;
 		// look for an empty bucket
 		if (values[idx] == null) {
@@ -164,17 +164,17 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
             bucket = idx;
         } else if (keys[idx] == key) {
 			// duplicate value
-        	V dup = values[idx];
+        	final V dup = values[idx];
 			values[idx] = value;
 			return dup;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		int rehashCnt = 1;
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
             if(values[idx] == REMOVED) {
             	if(bucket == -1)
-            		bucket = idx;
+            		{bucket = idx;}
 			} else if (values[idx] == null) {
                 if(bucket > -1) {
                     // store key into the empty bucket first found
@@ -186,7 +186,7 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 				return null;
 			} else if(keys[idx] == key) {
 				// duplicate value
-				V dup = values[idx];
+				final V dup = values[idx];
 				values[idx] = value;
 				return dup;
 			}
@@ -206,7 +206,7 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 	protected int rehash(int iVal) {
 		int retVal = (iVal + iVal / 2) % tabSize;
 		if (retVal == 0)
-			retVal = 1;
+			{retVal = 1;}
 		return retVal;
 	}
 
@@ -227,11 +227,11 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 		 */
 		public boolean hasNext() {
 			if (idx == tabSize)
-				return false;
+				{return false;}
 			while(values[idx] == null || values[idx] == REMOVED) {
 				++idx;
 				if(idx == tabSize)
-					return false;
+					{return false;}
 			}
 			return true;
 		}
@@ -241,11 +241,11 @@ public class Long2ObjectHashMap<V> extends AbstractHashtable<Long, V> {
 		 */
 		public T next() {
 			if(idx == tabSize)
-				return null;
+				{return null;}
 			while(values[idx] == null || values[idx] == REMOVED) {
 				++idx;
 				if(idx == tabSize)
-					return null;
+					{return null;}
 			}
 			switch(returnType) {
 				case VALUES: return (T) values[idx++];

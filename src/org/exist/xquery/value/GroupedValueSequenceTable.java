@@ -76,29 +76,29 @@ public class GroupedValueSequenceTable extends
 	 * @throws XPathException
 	 */
 	public void add(Item item) throws XPathException {
-		Sequence specEvaluation[] = new Sequence[groupSpecs.length];
-		ValueSequence keySequence = new ValueSequence();
+		final Sequence specEvaluation[] = new Sequence[groupSpecs.length];
+		final ValueSequence keySequence = new ValueSequence();
 
 		for (int i = 0; i < groupSpecs.length; i++) {
 			// evaluates the values of the grouping keys
 			specEvaluation[i] = groupSpecs[i].getGroupExpression().eval(item.toSequence()); // TODO : too early evaluation !
 			
 			if (specEvaluation[i].isEmpty())
-				keySequence.add(AtomicValue.EMPTY_VALUE);
+				{keySequence.add(AtomicValue.EMPTY_VALUE);}
 			else if (specEvaluation[i].hasOne())
-				keySequence.add(specEvaluation[i].itemAt(0));
+				{keySequence.add(specEvaluation[i].itemAt(0));}
 			else
-				throw new XPathException(groupSpecs[i].getGroupExpression(), ErrorCodes.XPTY0004, "More that one key values", specEvaluation[i]);
+				{throw new XPathException(groupSpecs[i].getGroupExpression(), ErrorCodes.XPTY0004, "More that one key values", specEvaluation[i]);}
 		}
 
-		String hashKey = keySequence.getHashKey();
+		final String hashKey = keySequence.getHashKey();
 
 		if (this.containsKey(hashKey)) {
-			GroupedValueSequence currentGroup = super.get(hashKey);
+			final GroupedValueSequence currentGroup = super.get(hashKey);
 			currentGroup.add(item);
 		} else {
 			// this group doesn't exists, then creates this group
-			GroupedValueSequence newGroup = new GroupedValueSequence(
+			final GroupedValueSequence newGroup = new GroupedValueSequence(
 					groupSpecs, 1, keySequence, context);
 			newGroup.add(item);
 			super.put(hashKey, newGroup);
@@ -112,7 +112,7 @@ public class GroupedValueSequenceTable extends
 	 * @throws XPathException
 	 */
 	public void addAll(Sequence sequence) throws XPathException {
-		for (SequenceIterator i = sequence.iterate(); i.hasNext();) {
+		for (final SequenceIterator i = sequence.iterate(); i.hasNext();) {
 			this.add(i.nextItem());
 		}
 	}

@@ -215,9 +215,9 @@ public class Eval extends BasicFunction {
         
         if(isCalledAs("eval-async")) {
 
-            String uuid = UUIDGenerator.getUUID();
-            CallableEval asyncEval = new CallableEval(context, contextSequence, args);
-            Future<Sequence> f = asyncExecutorService.submit(asyncEval);
+            final String uuid = UUIDGenerator.getUUID();
+            final CallableEval asyncEval = new CallableEval(context, contextSequence, args);
+            final Future<Sequence> f = asyncExecutorService.submit(asyncEval);
             //context.addAsyncQueryReference(f); //TODO keep a reference, so threads can be interogated/cancelled - perhaps a WeakReference?
             return new StringValue(uuid);
         } else {
@@ -247,7 +247,7 @@ public class Eval extends BasicFunction {
             
             try {
 				db = BrokerPool.getInstance();
-			} catch (EXistException e) {
+			} catch (final EXistException e) {
                 throw new XPathException("Unable to get new broker: " + e.getMessage(), e);
 			}
             
@@ -256,7 +256,7 @@ public class Eval extends BasicFunction {
                 broker = db.get(subject); //get a new broker
 
                 return doEval(context, contextSequence, args);
-            } catch(EXistException ex) {
+            } catch(final EXistException ex) {
                 throw new XPathException("Unable to get new broker: " + ex.getMessage(), ex);
             } finally {
             	db.release(broker); //release the broker
@@ -284,12 +284,12 @@ public class Eval extends BasicFunction {
         }
 
         // get the query expression
-        Item expr = args[argCount++].itemAt(0);
+        final Item expr = args[argCount++].itemAt(0);
         Source querySource;
         if (Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
             querySource = loadQueryFromURI(expr);
         } else {
-            String queryStr = expr.getStringValue();
+            final String queryStr = expr.getStringValue();
             if("".equals(queryStr.trim())) {
               return new EmptySequence();
             }
@@ -311,9 +311,9 @@ public class Eval extends BasicFunction {
         // save some context properties
         evalContext.pushNamespaceContext();
 
-        LocalVariable mark = evalContext.markLocalVariables(false);
+        final LocalVariable mark = evalContext.markLocalVariables(false);
 
-        DocumentSet oldDocs = evalContext.getStaticallyKnownDocuments();
+        final DocumentSet oldDocs = evalContext.getStaticallyKnownDocuments();
         if(exprContext != null) {
             evalContext.setStaticallyKnownDocuments(exprContext.getDocumentSet());
         }
@@ -324,9 +324,9 @@ public class Eval extends BasicFunction {
 
         // fixme! - hook for debugger here /ljo
 
-        Sequence sequence = null;
+        final Sequence sequence = null;
 
-        XQuery xqueryService = evalContext.getBroker().getXQueryService();
+        final XQuery xqueryService = evalContext.getBroker().getXQueryService();
         final XQueryContext innerContext;
         if (contextInit != null) {
             // eval-with-context: initialize a new context
@@ -343,7 +343,7 @@ public class Eval extends BasicFunction {
         //set module load path
         if(Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
             String uri = null;
-            Object key = querySource.getKey();
+            final Object key = querySource.getKey();
             
             if(key instanceof XmldbURI) {
                 uri = XmldbURI.EMBEDDED_SERVER_URI.append(((XmldbURI)key).removeLastSegment()).toString();
@@ -361,11 +361,11 @@ public class Eval extends BasicFunction {
         //bind external vars?
         if(isCalledAs("eval") && getArgumentCount() == 3) {
             if(!args[2].isEmpty()) {
-                Sequence externalVars = args[2];
+                final Sequence externalVars = args[2];
                 for(int i = 0; i < externalVars.getItemCount(); i++) {
-                    Item varName = externalVars.itemAt(i);
+                    final Item varName = externalVars.itemAt(i);
                     if(varName.getType() == Type.QNAME) {
-                        Item varValue = externalVars.itemAt(++i);
+                        final Item varValue = externalVars.itemAt(++i);
                         innerContext.declareVariable(((QNameValue)varName).getQName(), varValue);
                     }
                 }
@@ -377,7 +377,7 @@ public class Eval extends BasicFunction {
         try {
 
             if(this.getArgumentCount() == 4) {
-                NodeValue contextItem = (NodeValue)args[3].itemAt(0);
+                final NodeValue contextItem = (NodeValue)args[3].itemAt(0);
                 if (contextItem != null) {
                     //TODO : sort this out
                     if (exprContext != null) {
@@ -398,10 +398,10 @@ public class Eval extends BasicFunction {
             } finally {
                 cleanup(evalContext, innerContext, oldDocs, mark, expr, sequence, result);
             }
-        } catch(XPathException e) {
+        } catch(final XPathException e) {
             try {
                 e.prependMessage("Error while evaluating expression: " + querySource.getContent() + ". ");
-            } catch (IOException e1) {
+            } catch (final IOException e1) {
             }
 
             e.setLocation(line, column);
@@ -430,7 +430,7 @@ public class Eval extends BasicFunction {
     private Sequence execute(DBBroker broker, XQuery xqueryService, Source querySource, XQueryContext innerContext, Sequence exprContext, boolean cache) throws XPathException {
 
         CompiledXQuery compiled = null;
-        XQueryPool pool = xqueryService.getXQueryPool();
+        final XQueryPool pool = xqueryService.getXQueryPool();
 
         try {
             compiled = cache ? pool.borrowCompiledXQuery(broker, querySource) : null;
@@ -460,9 +460,9 @@ public class Eval extends BasicFunction {
 
             return sequence;
 
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             throw new XPathException(this, ioe);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new XPathException(this, e);
 		} finally {
             if(compiled != null) {
@@ -482,7 +482,7 @@ public class Eval extends BasicFunction {
      * @throws IllegalArgumentException
      */
     private Source loadQueryFromURI(Item expr) throws XPathException, NullPointerException, IllegalArgumentException {
-        String location = expr.getStringValue();
+        final String location = expr.getStringValue();
         Source querySource = null;
         if (location.indexOf(':') < 0 || location.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             try {
@@ -492,7 +492,7 @@ public class Eval extends BasicFunction {
                 // not start with . or .. then the path of the module need to
                 // be added.
                 if(location.indexOf("/") <0 || location.startsWith(".")){
-                    XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath());
+                    final XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath());
                     locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
                 }
 
@@ -500,19 +500,19 @@ public class Eval extends BasicFunction {
                 try {
                     sourceDoc = context.getBroker().getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
                     if (sourceDoc == null)
-                        throw new XPathException(this, "source for module " + location + " not found in database");
+                        {throw new XPathException(this, "source for module " + location + " not found in database");}
                     if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                            !sourceDoc.getMetadata().getMimeType().equals("application/xquery"))
-                        throw new XPathException(this, "source for module " + location + " is not an XQuery or " +
-                        "declares a wrong mime-type");
+                            !"application/xquery".equals(sourceDoc.getMetadata().getMimeType()))
+                        {throw new XPathException(this, "source for module " + location + " is not an XQuery or " +
+                        "declares a wrong mime-type");}
                     querySource = new DBSource(context.getBroker(), (BinaryDocument) sourceDoc, true);
-                } catch (PermissionDeniedException e) {
+                } catch (final PermissionDeniedException e) {
                     throw new XPathException(this, "permission denied to read module source from " + location);
                 } finally {
                     if(sourceDoc != null)
-                        sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
+                        {sourceDoc.getUpdateLock().release(Lock.READ_LOCK);}
                 }
-            } catch(URISyntaxException e) {
+            } catch(final URISyntaxException e) {
                 throw new XPathException(this, e);
             }
         } else {
@@ -520,13 +520,13 @@ public class Eval extends BasicFunction {
             try {
                 //TODO: use URIs to ensure proper resolution of relative locations
                 querySource = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), location, true);
-            } catch (MalformedURLException e) {
+            } catch (final MalformedURLException e) {
                 throw new XPathException(this, "source location for query at " + location + " should be a valid URL: " +
                         e.getMessage());
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new XPathException(this, "source for query at " + location + " not found: " +
                         e.getMessage());
-            } catch (PermissionDeniedException e) {
+            } catch (final PermissionDeniedException e) {
             	throw new XPathException(this, "Permission denied to access query at " + location + " : " +
                         e.getMessage());
             }
@@ -544,15 +544,15 @@ public class Eval extends BasicFunction {
 	 */
 	private Sequence initContext(Node root, XQueryContext innerContext) throws XPathException {
 
-                NodeList cl = root.getChildNodes();
+                final NodeList cl = root.getChildNodes();
                 Sequence result = null;
                 for (int i = 0; i < cl.getLength(); i++) {
-			Node child = cl.item(i);
+			final Node child = cl.item(i);
 			//TODO : more check on attributes existence and on their values
 			if (child.getNodeType() == Node.ELEMENT_NODE &&	"variable".equals(child.getLocalName())) {
-				Element elem = (Element) child;
-                                String qname = elem.getAttribute("name");
-                                String source = elem.getAttribute("source");
+				final Element elem = (Element) child;
+                                final String qname = elem.getAttribute("name");
+                                final String source = elem.getAttribute("source");
                                 NodeValue value;
                                 if (source != null && source.length() > 0) {
                                     // load variable contents from URI
@@ -560,41 +560,41 @@ public class Eval extends BasicFunction {
                                 } else {
                                     value = (NodeValue) elem.getFirstChild();
                                     if (value instanceof ReferenceNode)
-                                        value = ((ReferenceNode) value).getReference();
+                                        {value = ((ReferenceNode) value).getReference();}
                                 }
-                                String type = elem.getAttribute("type");
+                                final String type = elem.getAttribute("type");
 				if (type != null && Type.subTypeOf(Type.getType(type), Type.ATOMIC)) {
 					innerContext.declareVariable(qname, value.atomize().convertTo(Type.getType(type)));
 				} else {
 					innerContext.declareVariable(qname, value);
 				}
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"output-size-limit".equals(child.getLocalName())) {
-				Element elem = (Element) child;
+				final Element elem = (Element) child;
 				//TODO : error check
 				innerContext.getWatchDog().setMaxNodes(Integer.valueOf(elem.getAttribute("value")).intValue());
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"current-dateTime".equals(child.getLocalName())) {
-				Element elem = (Element) child;
+				final Element elem = (Element) child;
 				//TODO : error check
-				DateTimeValue dtv = new DateTimeValue(elem.getAttribute("value"));
+				final DateTimeValue dtv = new DateTimeValue(elem.getAttribute("value"));
 	        	innerContext.setCalendar(dtv.calendar);
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"implicit-timezone".equals(child.getLocalName())) {
-				Element elem = (Element) child;
+				final Element elem = (Element) child;
 				//TODO : error check
-				Duration duration = TimeUtils.getInstance().newDuration(elem.getAttribute("value"));
+				final Duration duration = TimeUtils.getInstance().newDuration(elem.getAttribute("value"));
 	        	innerContext.setTimeZone(new SimpleTimeZone((int)duration.getTimeInMillis(new Date()), "XQuery context"));
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"unbind-namespace".equals(child.getLocalName())) {
-				Element elem = (Element) child;
+				final Element elem = (Element) child;
 				//TODO : error check
 				if (elem.getAttribute("uri") != null) {
 					innerContext.removeNamespace(elem.getAttribute("uri"));
 				}
 			} else if (child.getNodeType() == Node.ELEMENT_NODE &&	"staticallyKnownDocuments".equals(child.getLocalName())) {
-				Element elem = (Element) child;
+				final Element elem = (Element) child;
 				//TODO : iterate over the children
 				NodeValue value = (NodeValue) elem.getFirstChild();
 				if (value instanceof ReferenceNode)
-					value = ((ReferenceNode) value).getReference();
-				XmldbURI[] pathes = new XmldbURI[1];
+					{value = ((ReferenceNode) value).getReference();}
+				final XmldbURI[] pathes = new XmldbURI[1];
 				//TODO : aggregate !
 				//TODO : cleanly seperate the statically know docollection and documents
 				pathes[0] = XmldbURI.create(value.getStringValue());
@@ -607,8 +607,8 @@ public class Eval extends BasicFunction {
 							XmldbURI.create(elem.getAttribute("uri")));
 				}
 			} */ else if (child.getNodeType() == Node.ELEMENT_NODE &&	"default-context".equals(child.getLocalName())) {
-                        	Element elem = (Element) child;
-                                NodeValue nodevalue = (NodeValue) elem;
+                        	final Element elem = (Element) child;
+                                final NodeValue nodevalue = (NodeValue) elem;
                                 result = nodevalue.toSequence();
                         }
 		}
@@ -618,26 +618,26 @@ public class Eval extends BasicFunction {
 
     private NodeImpl loadVarFromURI(String uri) throws XPathException {
 		try {
-			URL url = new URL(uri);
-			InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+			final URL url = new URL(uri);
+			final InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
-            InputSource src = new InputSource(isr);
-            SAXParser parser = factory.newSAXParser();
-            XMLReader xr = parser.getXMLReader();
-            SAXAdapter adapter = new SAXAdapter(context);
+            final InputSource src = new InputSource(isr);
+            final SAXParser parser = factory.newSAXParser();
+            final XMLReader xr = parser.getXMLReader();
+            final SAXAdapter adapter = new SAXAdapter(context);
             xr.setContentHandler(adapter);
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
             isr.close();
             return (NodeImpl) adapter.getDocument();
-		} catch (MalformedURLException e) {
+		} catch (final MalformedURLException e) {
 			throw new XPathException(this, e);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new XPathException(this, e);
-		} catch (SAXException e) {
+		} catch (final SAXException e) {
             throw new XPathException(this, e);
-        } catch (ParserConfigurationException e) {
+        } catch (final ParserConfigurationException e) {
             throw new XPathException(this, e);
         }
     }

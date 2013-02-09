@@ -63,7 +63,7 @@ public class QuantifiedExpression extends BindingExpression {
      * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
      */
 	public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[], GroupSpec groupBy[]) throws XPathException { 
-		LocalVariable mark = context.markLocalVariables(false);
+		final LocalVariable mark = context.markLocalVariables(false);
 		try {
 			context.declareVariableBinding(new LocalVariable(QName.parse(context, varName, null)));
 			
@@ -82,41 +82,41 @@ public class QuantifiedExpression extends BindingExpression {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
             if (resultSequence != null)        
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);}
         }        
         
-		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
+		final LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
         
-		Sequence inSeq = inputSequence.eval(contextSequence, contextItem);
+		final Sequence inSeq = inputSequence.eval(contextSequence, contextItem);
         if (sequenceType != null) {
         	//Type.EMPTY is *not* a subtype of other types ; the tests below would fail without this prior cardinality check
         	if (!inSeq.isEmpty() && !Type.subTypeOf(inSeq.getItemType(), sequenceType.getPrimaryType()))
-				throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid type for variable $" + varName +
+				{throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid type for variable $" + varName +
 						". Expected " +
 						Type.getTypeName(sequenceType.getPrimaryType()) +
-						", got " +Type.getTypeName(inSeq.getItemType()), inSeq);
+						", got " +Type.getTypeName(inSeq.getItemType()), inSeq);}
         }	
 
 		boolean found = (mode == EVERY) ? true : false;
 		boolean canDecide = (mode == EVERY) ? true : false;
 
-		for (SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
+		for (final SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
 			canDecide = true;
 			
-			Item item = i.nextItem();			
+			final Item item = i.nextItem();			
 			// set variable value to current item
             var.setValue(item.toSequence());
             if (sequenceType == null) 
-                var.checkType(); //... because is makes some conversions
+                {var.checkType();} //... because is makes some conversions
 			
             Sequence satisfiesSeq = null;
             
             //Binds the variable : now in scope
-    		LocalVariable mark = context.markLocalVariables(false);
+    		final LocalVariable mark = context.markLocalVariables(false);
     		try {
     			context.declareVariableBinding(var);
     			//Evaluate the return clause for the current value of the variable
@@ -130,30 +130,30 @@ public class QuantifiedExpression extends BindingExpression {
         		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
         		if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
 	            	if (!Type.subTypeOf(item.toSequence().getItemType(), sequenceType.getPrimaryType()))
-	    				throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid type for variable $" + varName +
+	    				{throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid type for variable $" + varName +
 	    						". Expected " +
 	    						Type.getTypeName(sequenceType.getPrimaryType()) +
-	    						", got " +Type.getTypeName(contextItem.toSequence().getItemType()), inSeq);
+	    						", got " +Type.getTypeName(contextItem.toSequence().getItemType()), inSeq);}
             	} else if (!Type.subTypeOf(item.getType(), Type.NODE))
-    				throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid type for variable $" + varName +
+    				{throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid type for variable $" + varName +
     						". Expected " +
     						Type.getTypeName(Type.NODE) +
-    						" (or more specific), got " + Type.getTypeName(item.getType()), inSeq);
+    						" (or more specific), got " + Type.getTypeName(item.getType()), inSeq);}
     	    	//trigger the old behaviour
-        		else var.checkType();
+        		else {var.checkType();}
             }	
             
 			found = satisfiesSeq.effectiveBooleanValue();
 			if ((mode == SOME ) && found)
-				break;
+				{break;}
 			if ((mode == EVERY) && !found)
-				break;
+				{break;}
 		}
         
-		Sequence result = canDecide && found ? BooleanValue.TRUE : BooleanValue.FALSE;
+		final Sequence result = canDecide && found ? BooleanValue.TRUE : BooleanValue.FALSE;
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         return result;        
 	}
@@ -174,7 +174,7 @@ public class QuantifiedExpression extends BindingExpression {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append(mode == SOME ? "some" : "every");
     	result.append(" $").append(varName).append(" in");
     	result.append(" ");

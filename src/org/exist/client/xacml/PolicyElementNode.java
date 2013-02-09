@@ -20,10 +20,10 @@ public abstract class PolicyElementNode extends AbstractNodeContainer implements
 	{
 		super(parent);
 		if(policyElement == null)
-			throw new NullPointerException("Policy element cannot be null");
+			{throw new NullPointerException("Policy element cannot be null");}
 		id = policyElement.getId();
 		if(id == null)
-			throw new NullPointerException("Policy element ID cannot be null");
+			{throw new NullPointerException("Policy element ID cannot be null");}
 		description = policyElement.getDescription();
 		target = new TargetNode(this, policyElement.getTarget());
 		
@@ -77,7 +77,7 @@ public abstract class PolicyElementNode extends AbstractNodeContainer implements
 	void setId(URI id)
 	{
 		if(id == null)
-			throw new NullPointerException("Policy element ID cannot be null");
+			{throw new NullPointerException("Policy element ID cannot be null");}
 		this.id = id;
 		fireChanged();
 	}
@@ -110,18 +110,18 @@ public abstract class PolicyElementNode extends AbstractNodeContainer implements
 	public boolean isDescriptionModified()
 	{
 		if(description == null)
-			return originalDescription != null;
+			{return originalDescription != null;}
 		return !description.equals(originalDescription);
 	}
 	
 	public boolean isModified(boolean deep)
 	{
 		if(super.isModified(deep) || isIdModified() || isDescriptionModified())
-			return true;
+			{return true;}
 		if(deep)
 		{
 			if(target.isModified(deep))
-				return true;
+				{return true;}
 		}
 		return false;
 	}
@@ -130,7 +130,7 @@ public abstract class PolicyElementNode extends AbstractNodeContainer implements
 		description = originalDescription;
 		id = originalId;
 		if(deep)
-			target.revert(deep);
+			{target.revert(deep);}
 		super.revert(deep);
 	}
 	public void commit(boolean deep)
@@ -138,7 +138,7 @@ public abstract class PolicyElementNode extends AbstractNodeContainer implements
 		originalDescription = description;
 		originalId = id;
 		if(deep)
-			target.commit(deep);
+			{target.commit(deep);}
 		super.commit(deep);
 	}
 	

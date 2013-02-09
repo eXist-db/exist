@@ -85,13 +85,13 @@ public class FreeList {
                 node.next.previous = null;
                 header = node.next;
             } else
-                header = null;
+                {header = null;}
         } else {
             node.previous.next = node.next;
             if (node.next != null)
-                node.next.previous = node.previous;
+                {node.next.previous = node.previous;}
             else
-                last = node.previous;
+                {last = node.previous;}
         }
     }
 
@@ -104,7 +104,7 @@ public class FreeList {
         FreeSpace next = header;
         while(next != null) {
             if(next.page == pageNum)
-                return next;
+                {return next;}
             next = next.next;
         }
         return null;
@@ -124,7 +124,7 @@ public class FreeList {
         while(next != null) {
             if(next.free >= requiredSize) {
                 if(found == null || next.free < found.free)
-                    found = next;
+                    {found = next;}
             }
             next = next.next;
         }
@@ -133,7 +133,7 @@ public class FreeList {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         FreeSpace next = header;
         while(next != null) {
             buf.append("[").append(next.page).append(", ");
@@ -197,7 +197,7 @@ public class FreeList {
                 ByteConversion.intToByte(next.free, buf, offset);
                 offset += 4;
             } else
-                --skip;
+                {--skip;}
             next = next.next;
         }
         return offset;

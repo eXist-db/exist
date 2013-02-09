@@ -51,11 +51,11 @@ public class CompressedWhitespace implements CharSequence {
         }
         int ix = 0;
         runlength = 1;
-        int[] out = new int[outlength];
+        final int[] out = new int[outlength];
         for (int i=0; i<inlen; i++) {
             final char c = in.charAt(i);
             if (i == inlen-1 || c != in.charAt(i+1) || runlength == 63) {
-                int code =  ("\t\n\r ").indexOf(c);
+                final int code =  ("\t\n\r ").indexOf(c);
                 out[ix++] = (code<<6) | runlength;
                 runlength = 1;
             } else {
@@ -86,12 +86,12 @@ public class CompressedWhitespace implements CharSequence {
         }
         final long val = value;
         for (int s=56; s>=0; s-=8) {
-            byte b = (byte)((val>>>s) & 0xff);
+            final byte b = (byte)((val>>>s) & 0xff);
             if (b == 0) {
                 break;
             }
-            char c = WHITE_CHARS[b>>>6 & 0x3];
-            int len = (b & 0x3f);
+            final char c = WHITE_CHARS[b>>>6 & 0x3];
+            final int len = (b & 0x3f);
             for (int j=0; j<len; j++) {
                 buffer.append(c);
             }
@@ -105,7 +105,7 @@ public class CompressedWhitespace implements CharSequence {
 
     public int length() {
         int count = 0;
-        long val = value;
+        final long val = value;
         for (int s=56; s>=0; s-=8) {
             int c = (int)((val>>>s) & 0x3f);
             if (c == 0) {
@@ -135,7 +135,7 @@ public class CompressedWhitespace implements CharSequence {
         int count = 0;
         final long val = value;
         for (int s=56; s>=0; s-=8) {
-            byte b = (byte)((val>>>s) & 0xff);
+            final byte b = (byte)((val>>>s) & 0xff);
             if (b == 0) {
                 break;
             }
@@ -243,7 +243,7 @@ public class CompressedWhitespace implements CharSequence {
     }
 
     public static void main( String[] args ) {
-        CharSequence c = compress("\t\n\n\t\t\n      ");
+        final CharSequence c = compress("\t\n\n\t\t\n      ");
         System.err.println(c);
     }
 

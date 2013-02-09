@@ -117,7 +117,7 @@ public class CollectionConfiguration {
             this.docName = docName;
             this.srcCollectionURI = srcCollectionURI;
         }
-        Element root = doc.getDocumentElement();
+        final Element root = doc.getDocumentElement();
         if (root == null) {
             throwOrLog("Configuration document can not be parsed", checkOnly);
             return;
@@ -133,21 +133,21 @@ public class CollectionConfiguration {
                 "' in configuration document. Got '" + root.getNamespaceURI() + "'", checkOnly);
             return;
         }
-        NodeList childNodes = root.getChildNodes();
+        final NodeList childNodes = root.getChildNodes();
         Node node;
         for (int i = 0; i < childNodes.getLength(); i++) {
             node = childNodes.item(i);
             if (NAMESPACE.equals(node.getNamespaceURI())) {
                 if (TRIGGERS_ELEMENT.equals(node.getLocalName())) {
-                    NodeList triggers = node.getChildNodes();
+                    final NodeList triggers = node.getChildNodes();
                     for(int j = 0; j < triggers.getLength(); j++) {
                         node = triggers.item(j);
                         if(node.getNodeType() == Node.ELEMENT_NODE &&
                                 node.getLocalName().equals(TRIGGER_ELEMENT)) {
-                            List <TriggerProxy> triggerProxys = configureTrigger(
+                            final List <TriggerProxy> triggerProxys = configureTrigger(
                                     (Element)node, srcCollectionURI, checkOnly);
                             if(triggerProxys != null) {
-                                for(TriggerProxy triggerProxy : triggerProxys) {
+                                for(final TriggerProxy triggerProxy : triggerProxys) {
                                     if(triggerProxy instanceof DocumentTriggerProxy) {
                                         getDocumentTriggerProxies().add((DocumentTriggerProxy)triggerProxy);
                                     }
@@ -159,33 +159,33 @@ public class CollectionConfiguration {
                         }
                     }
                 } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
-                    Element elem = (Element) node;
+                    final Element elem = (Element) node;
                     try {
                         if (indexSpec == null)
-                            indexSpec = new IndexSpec(broker, elem);
+                            {indexSpec = new IndexSpec(broker, elem);}
                         else
-                            indexSpec.read(broker, elem);
-                    } catch (DatabaseConfigurationException e) {
+                            {indexSpec.read(broker, elem);}
+                    } catch (final DatabaseConfigurationException e) {
                         if (checkOnly)
-                            throw new CollectionConfigurationException(e.getMessage(), e);
+                            {throw new CollectionConfigurationException(e.getMessage(), e);}
                         else
-                            LOG.warn(e.getMessage(), e);
+                            {LOG.warn(e.getMessage(), e);}
                     }
                 } else if (PERMISSIONS_ELEMENT.equals(node.getLocalName())) {
-                    Element elem = (Element) node;
+                    final Element elem = (Element) node;
                     String permsOpt = elem.getAttribute(RESOURCE_ATTR);
                     if (permsOpt != null && permsOpt.length() > 0) {
                         LOG.debug("RESOURCE: " + permsOpt);
                         try {
                             defResPermissions = Integer.parseInt(permsOpt, 8);
-                        } catch (NumberFormatException e) {
+                        } catch (final NumberFormatException e) {
                             if (checkOnly)
-                                throw new CollectionConfigurationException(
+                                {throw new CollectionConfigurationException(
                                     "Illegal value for permissions in " +
-                                    "configuration document : " + e.getMessage(), e);
+                                    "configuration document : " + e.getMessage(), e);}
                             else
-                                LOG.warn("Ilegal value for permissions in " +
-                                    "configuration document : " + e.getMessage(), e);
+                                {LOG.warn("Ilegal value for permissions in " +
+                                    "configuration document : " + e.getMessage(), e);}
                         }
                     }
                     permsOpt = elem.getAttribute(COLLECTION_ATTR);
@@ -193,18 +193,18 @@ public class CollectionConfiguration {
                         LOG.debug("COLLECTION: " + permsOpt);
                         try {
                             defCollPermissions = Integer.parseInt(permsOpt, 8);
-                        } catch (NumberFormatException e) {
+                        } catch (final NumberFormatException e) {
                             if (checkOnly)
-                                throw new CollectionConfigurationException(
+                                {throw new CollectionConfigurationException(
                                     "Illegal value for permissions in configuration " +
-                                    "document : " + e.getMessage(), e);
+                                    "document : " + e.getMessage(), e);}
                             else
-                                LOG.warn("Ilegal value for permissions in configuration " +
-                                		"document : " + e.getMessage(), e);
+                                {LOG.warn("Ilegal value for permissions in configuration " +
+                                		"document : " + e.getMessage(), e);}
                         }
                     }
                 } else if (GROUP_ELEMENT.equals(node.getLocalName())) {
-                    Element elem = (Element) node;
+                    final Element elem = (Element) node;
                     String groupOpt = elem.getAttribute(RESOURCE_ATTR);
                     if (groupOpt != null && groupOpt.length() > 0) {
                         LOG.debug("RESOURCE: " + groupOpt);
@@ -213,10 +213,10 @@ public class CollectionConfiguration {
                         } else {
                             //? Seems inconsistent : what does "checkOnly" means then ?
                             if (checkOnly)
-                                throw new CollectionConfigurationException("Ilegal value " +
-                                    "for group in configuration document : " + groupOpt);
+                                {throw new CollectionConfigurationException("Ilegal value " +
+                                    "for group in configuration document : " + groupOpt);}
                             else
-                                LOG.warn("Ilegal value for group in configuration document : " + groupOpt);
+                                {LOG.warn("Ilegal value for group in configuration document : " + groupOpt);}
                         }
                     }
                     groupOpt = elem.getAttribute(COLLECTION_ATTR);
@@ -227,15 +227,15 @@ public class CollectionConfiguration {
                         } else {
                             //? Seems inconsistent : what does "checkOnly" means then ?
                             if (checkOnly)
-                                throw new CollectionConfigurationException("Ilegal value " +
-                                    "for group in configuration document : " + groupOpt);
+                                {throw new CollectionConfigurationException("Ilegal value " +
+                                    "for group in configuration document : " + groupOpt);}
                             else
-                                LOG.warn("Ilegal value for group in configuration document : " + groupOpt);
+                                {LOG.warn("Ilegal value for group in configuration document : " + groupOpt);}
                         }
                     }
                 } else if (VALIDATION_ELEMENT.equals(node.getLocalName())) {
-                    Element elem = (Element) node;
-                    String mode = elem.getAttribute(VALIDATION_MODE_ATTR);
+                    final Element elem = (Element) node;
+                    final String mode = elem.getAttribute(VALIDATION_MODE_ATTR);
                     if (mode==null) {
                         LOG.debug("Unable to determine validation mode in "+srcCollectionURI);
                         validationMode=XMLReaderObjectFactory.VALIDATION_UNKNOWN;
@@ -257,9 +257,9 @@ public class CollectionConfiguration {
 
     private void throwOrLog(String message, boolean throwExceptions) throws CollectionConfigurationException {
         if (throwExceptions)
-            throw new CollectionConfigurationException(message);
+            {throw new CollectionConfigurationException(message);}
         else
-            LOG.warn(message);
+            {LOG.warn(message);}
     }
 
     public XmldbURI getDocName() {
@@ -317,25 +317,25 @@ public class CollectionConfiguration {
 
         //TODO : rely on schema-driven validation -pb
 
-        String classname = triggerElement.getAttributes().getNamedItem(CLASS_ATTRIBUTE).getNodeValue();
+        final String classname = triggerElement.getAttributes().getNamedItem(CLASS_ATTRIBUTE).getNodeValue();
 
         try {
-            Class clazz = Class.forName(classname);
+            final Class clazz = Class.forName(classname);
             if(!Trigger.class.isAssignableFrom(clazz)) {
                 throwOrLog("Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'", testOnly);
                 return null;
             }
-            NodeList nlParameter = triggerElement.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
-            Map<String, List<? extends Object>> parameters = ParametersExtractor.extract(nlParameter);
-            List<TriggerProxy> triggerProxys = AbstractTriggerProxy.newInstance(clazz, collectionConfigurationURI, parameters);
+            final NodeList nlParameter = triggerElement.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
+            final Map<String, List<? extends Object>> parameters = ParametersExtractor.extract(nlParameter);
+            final List<TriggerProxy> triggerProxys = AbstractTriggerProxy.newInstance(clazz, collectionConfigurationURI, parameters);
             return triggerProxys;
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             if(testOnly) {
                 throw new CollectionConfigurationException(e.getMessage(), e);
             } else {
                 LOG.warn("Trigger class not found: " + e.getMessage(), e);
             }
-        } catch (TriggerException te) {
+        } catch (final TriggerException te) {
             if(testOnly) {
                 throw new CollectionConfigurationException(te.getMessage(), te);
             } else {
@@ -352,9 +352,9 @@ public class CollectionConfiguration {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         if (indexSpec != null)
-            result.append(indexSpec.toString()).append('\n');
+            {result.append(indexSpec.toString()).append('\n');}
         return result.toString();
     }
 

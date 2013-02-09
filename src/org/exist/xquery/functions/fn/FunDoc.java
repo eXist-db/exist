@@ -90,18 +90,18 @@ public class FunDoc extends Function {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());}
         }
         Sequence result;
-        Sequence arg = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence arg = getArgument(0).eval(contextSequence, contextItem);
         if (arg.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
-            String path = arg.itemAt(0).getStringValue();
+            final String path = arg.itemAt(0).getStringValue();
             // TODO: disabled cache for now as it may cause concurrency issues
             // better use compile-time inspection and maybe a pragma to mark those
             // sections in the query that can be safely cached.
@@ -118,17 +118,17 @@ public class FunDoc extends Function {
                 //TODO: we still need a final decision about this. Also check base-uri.
                 //if (result == Sequence.EMPTY_SEQUENCE)
                     //throw new XPathException(this, path + " is not an XML document");
-                DocumentSet docs = result.getDocumentSet();
+                final DocumentSet docs = result.getDocumentSet();
                 if (docs != null && DocumentSet.EMPTY_DOCUMENT_SET != docs) {
                     // only cache node sets (which have a non-empty document set)
                     registerUpdateListener();
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new XPathException(this, ErrorCodes.FODC0005, e.getMessage(), arg);
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 

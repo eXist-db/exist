@@ -75,32 +75,32 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }
         
 		String prefix;
 		if (args[0].isEmpty())
-			prefix = "";
+			{prefix = "";}
 		else
-			prefix = args[0].itemAt(0).getStringValue();
+			{prefix = args[0].itemAt(0).getStringValue();}
         
 		String namespace;
-		if (prefix.equals("xml")) {
+		if ("xml".equals(prefix)) {
 			namespace = Namespaces.XML_NS;
 		} else {
-			Map<String, String> prefixes = FunInScopePrefixes.collectPrefixes(context, (NodeValue) args[1].itemAt(0));
+			final Map<String, String> prefixes = FunInScopePrefixes.collectPrefixes(context, (NodeValue) args[1].itemAt(0));
 			
 			namespace = prefixes.get(prefix);
 		}
 
 		Sequence result;
 		if (namespace == null)
-            result = Sequence.EMPTY_SEQUENCE;            
+            {result = Sequence.EMPTY_SEQUENCE;}            
         else
-            result = new AnyURIValue(namespace);
+            {result = new AnyURIValue(namespace);}
             
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;  
         

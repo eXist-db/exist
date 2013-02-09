@@ -34,13 +34,13 @@ public class ProfilePragma extends Pragma {
     }
 
     public void after(XQueryContext context, Expression expression) throws XPathException {
-    	Profiler profiler = context.getProfiler();
+    	final Profiler profiler = context.getProfiler();
     	profiler.setEnabled(false);
     }
 
     public void before(XQueryContext context, Expression expression) throws XPathException {
-    	Profiler profiler = context.getProfiler();
-    	Option pragma = new Option(getQName(), getContents());
+    	final Profiler profiler = context.getProfiler();
+    	final Option pragma = new Option(getQName(), getContents());
     	profiler.configure(pragma);
     }
 }

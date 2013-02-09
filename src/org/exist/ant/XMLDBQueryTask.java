@@ -56,7 +56,7 @@ public class XMLDBQueryTask extends AbstractXMLDBTask
         }
 
         if( text != null ) {
-            PropertyHelper helper = PropertyHelper.getPropertyHelper( getProject() );
+            final PropertyHelper helper = PropertyHelper.getPropertyHelper( getProject() );
             query = helper.replaceProperties( null, text, null );
         }
 
@@ -69,10 +69,10 @@ public class XMLDBQueryTask extends AbstractXMLDBTask
         registerDatabase();
 
         try {
-            Collection collection = DatabaseManager.getCollection( uri, user, password );
+            final Collection collection = DatabaseManager.getCollection( uri, user, password );
 
             if( collection == null ) {
-                String msg = "Collection " + uri + " could not be found.";
+                final String msg = "Collection " + uri + " could not be found.";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -81,14 +81,14 @@ public class XMLDBQueryTask extends AbstractXMLDBTask
                 }
 
             } else {
-                XPathQueryService service = (XPathQueryService)collection.getService( "XPathQueryService", "1.0" );
-                ResourceSet       results = service.query( query );
+                final XPathQueryService service = (XPathQueryService)collection.getService( "XPathQueryService", "1.0" );
+                final ResourceSet       results = service.query( query );
                 log( "Found " + results.getSize() );
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught while executing query: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught while executing query: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

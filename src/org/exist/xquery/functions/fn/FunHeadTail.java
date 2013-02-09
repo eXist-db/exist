@@ -54,7 +54,7 @@ public class FunHeadTail extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		Sequence seq = args[0];
+		final Sequence seq = args[0];
 		Sequence tmp;
 		if (seq.isEmpty()) {
 			tmp = Sequence.EMPTY_SEQUENCE;

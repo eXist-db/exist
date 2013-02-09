@@ -133,9 +133,9 @@ public class RemoteCollection implements CollectionImpl {
         } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
-        if (type.equals("XMLResource")) {
+        if ("XMLResource".equals(type)) {
             return new RemoteXMLResource(this, -1, -1, newId, null);
-        } else if(type.equals("BinaryResource")) {
+        } else if("BinaryResource".equals(type)) {
             return new RemoteBinaryResource(this, newId);
         } else {
             throw new XMLDBException(ErrorCodes.UNKNOWN_RESOURCE_TYPE, "Unknown resource type: " + type);
@@ -146,7 +146,7 @@ public class RemoteCollection implements CollectionImpl {
     public Collection getChildCollection(final String name) throws XMLDBException {
         try {
             return getChildCollection(XmldbURI.xmldbUriFor(name));
-        } catch(URISyntaxException e) {
+        } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
     }
@@ -224,25 +224,25 @@ public class RemoteCollection implements CollectionImpl {
 
     @Override
     public Service getService(final String name, final String version) throws XMLDBException {
-        if(name.equals("XPathQueryService")) {
+        if("XPathQueryService".equals(name)) {
             return new RemoteXPathQueryService(this);
         }
-        if(name.equals("XQueryService")) {
+        if("XQueryService".equals(name)) {
             return new RemoteXPathQueryService(this);
         }
-        if(name.equals("CollectionManagementService") || name.equals("CollectionManager")) {
+        if("CollectionManagementService".equals(name) || "CollectionManager".equals(name)) {
             return new RemoteCollectionManagementService(this, rpcClient);
         }
-        if(name.equals("UserManagementService")) {
+        if("UserManagementService".equals(name)) {
             return new RemoteUserManagementService(this);
         }
-        if(name.equals("DatabaseInstanceManager")) {
+        if("DatabaseInstanceManager".equals(name)) {
             return new RemoteDatabaseInstanceManager(rpcClient);
         }
-        if(name.equals("IndexQueryService")) {
+        if("IndexQueryService".equals(name)) {
             return new RemoteIndexQueryService(rpcClient, this);
         }
-        if(name.equals("XUpdateQueryService")) {
+        if("XUpdateQueryService".equals(name)) {
             return new RemoteXUpdateQueryService(this);
         }
         throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
@@ -427,13 +427,13 @@ public class RemoteCollection implements CollectionImpl {
         final Permission perm;
         try {
             perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Unable to retrieve permissions for resource '" + name + "': " + pde.getMessage(), pde);
         }
-        String type = (String)hash.get("type");
+        final String type = (String)hash.get("type");
         long contentLen = 0;
         if (hash.containsKey("content-length-64bit")) {
-            Object o = hash.get("content-length-64bit");
+            final Object o = hash.get("content-length-64bit");
             if(o instanceof Long) {
                 contentLen = ((Long)o).longValue();
             } else {
@@ -442,7 +442,7 @@ public class RemoteCollection implements CollectionImpl {
         } else if (hash.containsKey("content-length")) {
             contentLen = ((Integer)hash.get("content-length")).intValue();
         }
-        if (type == null || type.equals("XMLResource")) {
+        if (type == null || "XMLResource".equals(type)) {
             final RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, docUri, null);
             r.setPermissions(perm);
             r.setContentLength(contentLen);
@@ -471,26 +471,26 @@ public class RemoteCollection implements CollectionImpl {
 
     @Override
     public void removeResource(final Resource res) throws XMLDBException {
-        List<String> params = new ArrayList<String>(1);
+        final List<String> params = new ArrayList<String>(1);
         try {
             params.add(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
-        } catch(URISyntaxException e) {
+        } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
         try {
             rpcClient.execute("remove", params);
-        } catch (XmlRpcException xre) {
+        } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
         }
     }
 
     @Override
     public Date getCreationTime() throws XMLDBException {
-        List<String> params = new ArrayList<String>(1);
+        final List<String> params = new ArrayList<String>(1);
         params.add(getPath());
         try {
             return (Date) rpcClient.execute("getCreationDate", params);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
         }
     }
@@ -522,20 +522,20 @@ public class RemoteCollection implements CollectionImpl {
             } else if(content instanceof EXistInputSource) {
                 fileLength = ((EXistInputSource)content).getByteStreamLength();
             }
-            if(res.getResourceType().equals("BinaryResource")) {
+            if("BinaryResource".equals(res.getResourceType())) {
                 ((RemoteBinaryResource)res).dateCreated = a;
                 ((RemoteBinaryResource)res).dateModified = b;
             } else {
                 ((RemoteXMLResource)res).dateCreated = a;
                 ((RemoteXMLResource)res).dateModified = b;
             }
-            if (!res.getResourceType().equals("BinaryResource") && fileLength!=-1 
+            if (!"BinaryResource".equals(res.getResourceType()) && fileLength!=-1 
                     && fileLength < MAX_CHUNK_LENGTH) {
                 store((RemoteXMLResource)res);
             } else {
                 uploadAndStore(res);
             }
-        } else if(res.getResourceType().equals("BinaryResource")) {
+        } else if("BinaryResource".equals(res.getResourceType())) {
             ((RemoteBinaryResource)res).dateCreated = a;
             ((RemoteBinaryResource)res).dateModified = b;
             store((RemoteBinaryResource)res);
@@ -555,7 +555,7 @@ public class RemoteCollection implements CollectionImpl {
         } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
-        params.add(new Integer(1));
+        params.add(Integer.valueOf(1));
         if (res.dateCreated != null) {
             params.add((Date)res.dateCreated );
             params.add((Date)res.dateModified );
@@ -608,12 +608,12 @@ public class RemoteCollection implements CollectionImpl {
             is = ((RemoteBinaryResource)res).getStreamContent();
             descString = ((RemoteBinaryResource)res).getStreamSymbolicPath();
         } else {
-            Object content=((RemoteXMLResource)res).getContent();
+            final Object content=((RemoteXMLResource)res).getContent();
             if(content instanceof File) {
-                File file = (File)content;
+                final File file = (File)content;
                 try {
                     is = new BufferedInputStream(new FileInputStream(file));
-                } catch (FileNotFoundException e) {
+                } catch (final FileNotFoundException e) {
                     throw new XMLDBException(
                         ErrorCodes.INVALID_RESOURCE,
                         "could not read resource from file " + file.getAbsolutePath(),
@@ -626,7 +626,7 @@ public class RemoteCollection implements CollectionImpl {
                 }
             }
         }
-        byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
+        final byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
         try {
             int len;
             String fileName = null;
@@ -639,7 +639,7 @@ public class RemoteCollection implements CollectionImpl {
                     params.add(fileName);
                 }
                 params.add(compressed);
-                params.add(new Integer(len));
+                params.add(Integer.valueOf(len));
                 fileName = (String) rpcClient.execute("uploadCompressed", params);
             }
             // Zero length stream? Let's get a fileName!
@@ -647,28 +647,28 @@ public class RemoteCollection implements CollectionImpl {
                 compressed=Compressor.compress(new byte[0],0);
                 params = new ArrayList<Object>(3);
                 params.add(compressed);
-                params.add(new Integer(0));
+                params.add(Integer.valueOf(0));
                 fileName = (String) rpcClient.execute("uploadCompressed", params);
             }
             params = new ArrayList<Object>(6);
-            List<Object> paramsEx = new ArrayList<Object>(7);
+            final List<Object> paramsEx = new ArrayList<Object>(7);
             params.add(fileName);
             paramsEx.add(fileName);
             try {
-                String resURI = getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString();
+                final String resURI = getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString();
                 params.add(resURI);
                 paramsEx.add(resURI);
-            } catch(URISyntaxException e) {
+            } catch(final URISyntaxException e) {
                 throw new XMLDBException(ErrorCodes.INVALID_URI, e);
             }
             params.add(Boolean.TRUE);
             paramsEx.add(Boolean.TRUE);
             if (res instanceof EXistResource) {
-                EXistResource rxres=(EXistResource)res;
+                final EXistResource rxres=(EXistResource)res;
                 params.add(rxres.getMimeType());
                 paramsEx.add(rxres.getMimeType());
                 // This one is only for the new style!!!!
-                paramsEx.add((res.getResourceType().equals("BinaryResource")) ?
+                paramsEx.add(("BinaryResource".equals(res.getResourceType())) ?
                     Boolean.FALSE : Boolean.TRUE);
                 if (rxres.getCreationTime() != null) {
                     params.add(rxres.getCreationTime());
@@ -679,21 +679,21 @@ public class RemoteCollection implements CollectionImpl {
             }
             try {
                 rpcClient.execute("parseLocalExt", paramsEx);
-            } catch(XmlRpcException e) {
+            } catch(final XmlRpcException e) {
                 // Identifying old versions
-                String excMsg = e.getMessage();
+                final String excMsg = e.getMessage();
                 if(excMsg.contains("No such handler") || excMsg.contains("No method matching")) {
                     rpcClient.execute("parseLocal", params);
                 } else {
                     throw e;
                 }
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new XMLDBException(
                 ErrorCodes.INVALID_RESOURCE,
                 "failed to read resource from " + descString,
                 e);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
         }
     }
@@ -708,12 +708,12 @@ public class RemoteCollection implements CollectionImpl {
 
     @Override
     public void setTriggersEnabled(boolean triggersEnabled) throws XMLDBException {
-        List<String> params = new ArrayList<String>(2);
+        final List<String> params = new ArrayList<String>(2);
         params.add(this.getPath());
         params.add(Boolean.toString(triggersEnabled));
         try {
             rpcClient.execute("setTriggersEnabled", params);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "networking error", e);
         }
     }

@@ -74,20 +74,20 @@ public class FunRemove extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }    		
         
         Sequence result;
         Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if (seq.isEmpty()) 
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {            
             //TODO : explain this Double conversion -pb
     		int pos = ((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
     		if (pos < 1 || pos > seq.getItemCount()) 
-                result= seq;
+                {result= seq;}
             else {
         		pos--;
         		if (seq instanceof NodeSet) {
@@ -97,14 +97,14 @@ public class FunRemove extends Function {
         		} else {
         			result = new ValueSequence();
         			for (int i = 0; i < seq.getItemCount(); i++) {
-        				if (i != pos) result.add(seq.itemAt(i));
+        				if (i != pos) {result.add(seq.itemAt(i));}
         			}        			
         		}
             }
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;         
 	}

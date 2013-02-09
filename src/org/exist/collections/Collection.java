@@ -1093,7 +1093,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 // we remove a collection.xconf configuration file: tell the configuration manager to
                 // reload the configuration.
                 useTriggers = false;
-                CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+                final CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
                 confMgr.invalidateAll(getURI());
             }
             
@@ -1127,7 +1127,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         
         try {
             getLock().acquire(Lock.READ_LOCK);
-            DocumentImpl doc = getDocument(broker, uri);
+            final DocumentImpl doc = getDocument(broker, uri);
             
             if(doc.isLockedForWrite()) {
                 throw new PermissionDeniedException("Document " + doc.getFileURI() + " is locked for write");
@@ -1171,7 +1171,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
             try {
                broker.removeBinaryResource(transaction, (BinaryDocument) doc);
-            } catch (IOException ex) {
+            } catch (final IOException ex) {
                throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
             }
             
@@ -1415,7 +1415,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if (getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI)
                 && docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
             broker.sync(Sync.MAJOR_SYNC);
-            CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
+            final CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
             if(manager != null) {
                 try {
                     manager.invalidateAll(getURI());
@@ -1612,7 +1612,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             checkPermissionsForAddDocument(broker, oldDoc);
             checkCollectionConflict(docUri);
             manageDocumentInformation(oldDoc, document);
-            Indexer indexer = new Indexer(broker, transaction);
+            final Indexer indexer = new Indexer(broker, transaction);
             
             final IndexInfo info = new IndexInfo(indexer, config);
             info.setCreating(oldDoc == null);

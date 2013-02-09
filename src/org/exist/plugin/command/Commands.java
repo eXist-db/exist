@@ -50,18 +50,18 @@ public class Commands {
 	private static void plugin(String name) {
 		try {
 			Class.forName(name);
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 		}
 	}
 	//*************************************************************************
 
 	public static void command(XmldbURI collection, String[] params) throws CommandException {
 		
-		CommandResolver runner = commands.get(params[0]);
+		final CommandResolver runner = commands.get(params[0]);
 		
-		if (runner == null) throw new CommandNotFoundException("Command '"+params[0]+"' not found.");
+		if (runner == null) {throw new CommandNotFoundException("Command '"+params[0]+"' not found.");}
 		
-    	String[] commandData = new String[params.length-1];
+    	final String[] commandData = new String[params.length-1];
     	System.arraycopy(params, 1, commandData, 0, params.length-1);
     	
     	runner.execute(collection, commandData);

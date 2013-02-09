@@ -64,7 +64,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
-        byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + nodeIdLen + 
+        final byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + nodeIdLen + 
             NodeId.LENGTH_NODE_ID_UNITS + cdata.UTF8Size());
         int pos = 0;
         data[pos] = (byte) (Signatures.Char << 0x5);
@@ -81,14 +81,14 @@ public class TextImpl extends CharacterDataImpl implements Text {
             DocumentImpl doc, boolean pooled) {
         TextImpl text;
         if (pooled)
-            text = (TextImpl) NodePool.getInstance().borrowNode(Node.TEXT_NODE);
+            {text = (TextImpl) NodePool.getInstance().borrowNode(Node.TEXT_NODE);}
         else
-            text = new TextImpl();
+            {text = new TextImpl();}
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;
-        int dlnLen = ByteConversion.byteToShort(data, pos);
+        final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         text.setNodeId(dln);
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
@@ -139,7 +139,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     public String toString(boolean top) {
         if (top) {
-            StringBuilder result = new StringBuilder();
+            final StringBuilder result = new StringBuilder();
             result.append("<exist:text ");
             result.append("xmlns:exist=\"" + Namespaces.EXIST_NS + "\" ");
             result.append("exist:id=\"");
@@ -196,11 +196,11 @@ public class TextImpl extends CharacterDataImpl implements Text {
     /** ? @see org.w3c.dom.Node#getBaseURI()
      */
     public String getBaseURI() {
-        Node parent = getParentNode();
+        final Node parent = getParentNode();
         if (parent != null)
-            return parent.getBaseURI();
+            {return parent.getBaseURI();}
         else
-            return null;
+            {return null;}
     }
 
     /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)

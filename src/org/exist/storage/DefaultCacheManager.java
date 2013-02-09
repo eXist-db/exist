@@ -124,10 +124,10 @@ public class DefaultCacheManager implements CacheManager
 
         totalMem        = cacheSize * 1024L * 1024L;
         
-        Boolean checkMaxCache = (Boolean)pool.getConfiguration().getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
+        final Boolean checkMaxCache = (Boolean)pool.getConfiguration().getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
         
         if( checkMaxCache == null || checkMaxCache.booleanValue() ) {
-			long max        = Runtime.getRuntime().maxMemory();
+			final long max        = Runtime.getRuntime().maxMemory();
 			long maxCache   = ( max >= ( 768 * 1024 * 1024 ) ) ? ( max / 2 ) : ( max / 3 );
 	
 			if( totalMem > maxCache ) {
@@ -146,7 +146,7 @@ public class DefaultCacheManager implements CacheManager
 
         this.totalPageCount = buffers;
         this.maxCacheSize   = (int)( totalPageCount * MAX_MEM_USE );
-        NumberFormat nf     = NumberFormat.getNumberInstance();
+        final NumberFormat nf     = NumberFormat.getNumberInstance();
         
         LOG.info( "Cache settings: " + nf.format( totalMem / 1024L ) + "k; totalPages: " + nf.format( totalPageCount ) + 
         	      "; maxCacheSize: " + nf.format( maxCacheSize ) + 
@@ -223,7 +223,7 @@ public class DefaultCacheManager implements CacheManager
                 }
 
                 if( LOG.isDebugEnabled() ) {
-                    NumberFormat nf = NumberFormat.getNumberInstance();
+                    final NumberFormat nf = NumberFormat.getNumberInstance();
                     LOG.debug( "Growing cache " + cache.getFileName() + " (a " + cache.getClass().getName() + ") from " + nf.format( cache.getBuffers() ) + " to " + nf.format( newCacheSize ) );
                 }
                 currentPageCount -= cache.getBuffers();
@@ -248,7 +248,7 @@ public class DefaultCacheManager implements CacheManager
     @Override
     public void checkCaches()
     {
-        int   minSize = (int)( totalPageCount * MIN_SHRINK_FACTOR );
+        final int   minSize = (int)( totalPageCount * MIN_SHRINK_FACTOR );
         Cache cache;
         int   load;
 
@@ -263,7 +263,7 @@ public class DefaultCacheManager implements CacheManager
                     if( ( cache.getBuffers() > minSize ) && ( load < shrinkThreshold ) ) {
 
                         if( LOG.isDebugEnabled() ) {
-                            NumberFormat nf = NumberFormat.getNumberInstance();
+                            final NumberFormat nf = NumberFormat.getNumberInstance();
                             LOG.debug( "Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + ") to " + nf.format( cache.getBuffers() ) );
                         }
                         currentPageCount -= cache.getBuffers();
@@ -282,7 +282,7 @@ public class DefaultCacheManager implements CacheManager
         if( lastRequest == null ) {
             return;
         }
-        int   minSize = (int)( totalPageCount * MIN_SHRINK_FACTOR );
+        final int   minSize = (int)( totalPageCount * MIN_SHRINK_FACTOR );
         Cache cache;
 
         for( int i = 0; i < caches.size(); i++ ) {
@@ -292,7 +292,7 @@ public class DefaultCacheManager implements CacheManager
                 int newSize = (int)( cache.getBuffers() * SHRINK_FACTOR );
 
                 if( LOG.isDebugEnabled() ) {
-                    NumberFormat nf = NumberFormat.getNumberInstance();
+                    final NumberFormat nf = NumberFormat.getNumberInstance();
                     LOG.debug( "Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + ") to " + nf.format( newSize ) );
                 }
                 currentPageCount -= cache.getBuffers();
@@ -356,12 +356,12 @@ public class DefaultCacheManager implements CacheManager
 
     private void registerMBean()
     {
-        Agent agent = AgentFactory.getInstance();
+        final Agent agent = AgentFactory.getInstance();
 
         try {
             agent.addMBean( instanceName, "org.exist.management." + instanceName + ":type=CacheManager", new org.exist.management.CacheManager( this ) );
         }
-        catch( DatabaseConfigurationException e ) {
+        catch( final DatabaseConfigurationException e ) {
             LOG.warn( "Exception while registering cache mbean.", e );
         }
     }
@@ -369,12 +369,12 @@ public class DefaultCacheManager implements CacheManager
 
     private void registerMBean( Cache cache )
     {
-        Agent agent = AgentFactory.getInstance();
+        final Agent agent = AgentFactory.getInstance();
 
         try {
             agent.addMBean( instanceName, "org.exist.management." + instanceName + ":type=CacheManager.Cache,name=" + cache.getFileName() + ",cache-type=" + cache.getType(), new org.exist.management.Cache( cache ) );
         }
-        catch( DatabaseConfigurationException e ) {
+        catch( final DatabaseConfigurationException e ) {
             LOG.warn( "Exception while registering cache mbean.", e );
         }
     }

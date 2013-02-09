@@ -65,19 +65,19 @@ public class GetQueryString extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
-		RequestModule myModule =
+		final RequestModule myModule =
 			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(this, "Variable $request is not bound to an Java object.");
+			{throw new XPathException(this, "Variable $request is not bound to an Java object.");}
 
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 
 		if (value.getObject() instanceof RequestWrapper)
 		{
-			String queryString = ((RequestWrapper) value.getObject()).getQueryString();
+			final String queryString = ((RequestWrapper) value.getObject()).getQueryString();
 			if(queryString != null)
 			{
 				return new StringValue(queryString);
@@ -88,6 +88,6 @@ public class GetQueryString extends BasicFunction {
 			}
 		}
 		else
-			throw new XPathException(this, "Variable $request is not bound to a Request object.");
+			{throw new XPathException(this, "Variable $request is not bound to a Request object.");}
 	}
 }

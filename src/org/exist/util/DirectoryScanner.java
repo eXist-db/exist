@@ -16,7 +16,7 @@ public class DirectoryScanner {
 				continue;
 			} else if(ch == '*' || ch == '?') {
 				if(p > 0)
-					return pattern.substring(0, p + 1);
+					{return pattern.substring(0, p + 1);}
 			}
 		}
 		return null;
@@ -32,21 +32,21 @@ public class DirectoryScanner {
 			pattern = baseDir + File.separator + pattern;
 		}
 		
-		File base = new File(baseDir);
+		final File base = new File(baseDir);
 		return scanDir(base, pattern.substring(baseDir.length()));
 	}
 	
 	public final static File[] scanDir(File baseDir, String pattern) {
         ///TODO : why this test ? File should make it ! -pb
 		pattern = pattern.replace('/', File.separatorChar).replace('\\',File.separatorChar);
-		ArrayList<File> list = new ArrayList<File>();
+		final ArrayList<File> list = new ArrayList<File>();
 		scanDir(list, baseDir, "", pattern);
-		File[] files = new File[list.size()];
+		final File[] files = new File[list.size()];
 		return (File[])list.toArray(files);
 	}
 	
 	private final static void scanDir(ArrayList<File> list, File dir, String vpath, String pattern) {
-		String files[] = dir.list();
+		final String files[] = dir.list();
 		if (files == null) {
 			return;
 		}
@@ -58,7 +58,7 @@ public class DirectoryScanner {
 			if(file.isDirectory() && matchStart(pattern, name)) {
 				scanDir(list, file, name + File.separator, pattern);
 			} else if(match(pattern, name))
-				list.add(file);
+				{list.add(file);}
 		}
 	}
 				

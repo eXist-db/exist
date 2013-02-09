@@ -83,7 +83,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         //lexicalValue = normalizeTime(getType(), lexicalValue);
 		try {
 			calendar = parse(lexicalValue);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
 		}
 	}
@@ -127,14 +127,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	public XMLGregorianCalendar getTrimmedCalendar() {
 		if (trimmedCalendar == null) {
 			trimmedCalendar = cloneXMLGregorianCalendar(calendar);
-			BigDecimal fract = trimmedCalendar.getFractionalSecond();
+			final BigDecimal fract = trimmedCalendar.getFractionalSecond();
 			if (fract != null) {
 				// TODO: replace following algorithm in JDK 1.5 with fract.stripTrailingZeros();
-				String s = fract.toString();
+				final String s = fract.toString();
 				int i = s.length();
 				while (i > 0 && s.charAt(i-1) == '0') i--;
-				if (i == 0) trimmedCalendar.setFractionalSecond(null);
-				else if (i != s.length()) trimmedCalendar.setFractionalSecond(new BigDecimal(s.substring(0, i)));
+				if (i == 0) {trimmedCalendar.setFractionalSecond(null);}
+				else if (i != s.length()) {trimmedCalendar.setFractionalSecond(new BigDecimal(s.substring(0, i)));}
 			}
 		}
 		return trimmedCalendar;
@@ -143,7 +143,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	protected XMLGregorianCalendar getCanonicalOrTrimmedCalendar() {
 		try {
 			return getCanonicalCalendar();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return getTrimmedCalendar();
 		}
 		
@@ -165,15 +165,15 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		//if (r.charAt(r.length()-1) == 'Z') r = r.substring(0, r.length()-1) + "+00:00";
 		
 		//Let's try these lexical transformations...		
-		boolean startsWithDashDash = r.startsWith("--");
+		final boolean startsWithDashDash = r.startsWith("--");
 		r = r.replaceAll("--", "");
 		if (startsWithDashDash)
-			r = "--" + r;
+			{r = "--" + r;}
 		
-		Matcher m = negativeDateStart.matcher(r);
+		final Matcher m = negativeDateStart.matcher(r);
 		if (m.matches()) {
-			int year = Integer.valueOf(m.group(1)).intValue();
-			DecimalFormat df = new DecimalFormat("0000");
+			final int year = Integer.valueOf(m.group(1)).intValue();
+			final DecimalFormat df = new DecimalFormat("0000");
 			r = "-" + df.format(year) + "-" + m.group(2);
 		}
 		
@@ -194,11 +194,11 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 			case HOUR: return calendar.getHour();
 			case MINUTE: return calendar.getMinute();
 			case SECOND: return calendar.getSecond();
-			case MILLISECOND: int mSec=calendar.getMillisecond();
+			case MILLISECOND: final int mSec=calendar.getMillisecond();
                                           if(mSec == DatatypeConstants.FIELD_UNDEFINED)
-                                              return 0;
+                                              {return 0;}
                                           else
-                                              return calendar.getMillisecond();
+                                              {return calendar.getMillisecond();}
 			default: throw new IllegalArgumentException("Invalid argument to method getPart");
 		}
 	}
@@ -206,49 +206,49 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	private static final Duration tzLowerBound = TimeUtils.getInstance().newDurationDayTime("-PT14H");
 	private static final Duration tzUpperBound = tzLowerBound.negate();
 	protected void validateTimezone(DayTimeDurationValue offset) throws XPathException {
-		Duration tz = offset.duration;
-		Number secs = tz.getField(DatatypeConstants.SECONDS);
+		final Duration tz = offset.duration;
+		final Number secs = tz.getField(DatatypeConstants.SECONDS);
 		if (secs != null && ((BigDecimal) secs).compareTo(BigDecimal.valueOf(0)) != 0)
-			throw new XPathException(ErrorCodes.FODT0003, "duration " + offset + " has fractional minutes so cannot be used as a timezone offset");
+			{throw new XPathException(ErrorCodes.FODT0003, "duration " + offset + " has fractional minutes so cannot be used as a timezone offset");}
 		if (! (
 				tz.equals(tzLowerBound) ||
 				tz.equals(tzUpperBound) ||
 				(tz.isLongerThan(tzLowerBound) && tz.isShorterThan(tzUpperBound))
 			))
-			throw new XPathException(ErrorCodes.FODT0003, "duration " + offset + " outside valid timezone offset range");
+			{throw new XPathException(ErrorCodes.FODT0003, "duration " + offset + " outside valid timezone offset range");}
 	}
 
 	public AbstractDateTimeValue adjustedToTimezone(DayTimeDurationValue offset) throws XPathException {
-		if (offset == null) offset = new DayTimeDurationValue(TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
+		if (offset == null) {offset = new DayTimeDurationValue(TimeUtils.getInstance().getLocalTimezoneOffsetMillis());}
 		validateTimezone(offset);
 		XMLGregorianCalendar xgc = (XMLGregorianCalendar) calendar.clone();
 		if (xgc.getTimezone() != DatatypeConstants.FIELD_UNDEFINED) {
-			if (getType() == Type.DATE) xgc.setTime(0,0,0);	// set the fields so we don't lose precision when shifting timezones
+			if (getType() == Type.DATE) {xgc.setTime(0,0,0);}	// set the fields so we don't lose precision when shifting timezones
 			xgc = xgc.normalize();
 			xgc.add(offset.duration);
 		}
 		try {
 			xgc.setTimezone((int) (offset.getValue()/60));
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			throw new XPathException(ErrorCodes.FORG0001, "illegal timezone offset " + offset, e);
 		}
 		return createSameKind(xgc);
 	}
 	
 	public AbstractDateTimeValue withoutTimezone() throws XPathException {
-		XMLGregorianCalendar xgc = (XMLGregorianCalendar) calendar.clone();
+		final XMLGregorianCalendar xgc = (XMLGregorianCalendar) calendar.clone();
 		xgc.setTimezone(DatatypeConstants.FIELD_UNDEFINED);
 		return createSameKind(xgc);
 	}
 	
 	public Sequence getTimezone() throws XPathException {
-		int tz = calendar.getTimezone();
-		if (tz == DatatypeConstants.FIELD_UNDEFINED) return Sequence.EMPTY_SEQUENCE;
+		final int tz = calendar.getTimezone();
+		if (tz == DatatypeConstants.FIELD_UNDEFINED) {return Sequence.EMPTY_SEQUENCE;}
 		return new DayTimeDurationValue(tz * 60000L);
 	}
 	
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
-		int cmp = compareTo(collator, other);
+		final int cmp = compareTo(collator, other);
 		switch (operator) {
 			case Constants.EQ: return cmp == 0;
 			case Constants.NEQ: return cmp != 0;
@@ -264,8 +264,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == getType()) {
 			// filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
-			int r =  getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
-			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between " + this + " and " + other);
+			final int r =  getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
+			if (r == DatatypeConstants.INDETERMINATE) {throw new RuntimeException("indeterminate order between " + this + " and " + other);}
 			return r;
 		}
 		throw new XPathException(
@@ -274,12 +274,12 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	}
 
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		AbstractDateTimeValue otherDate = other.getType() == getType() ? (AbstractDateTimeValue) other : (AbstractDateTimeValue) other.convertTo(getType());
+		final AbstractDateTimeValue otherDate = other.getType() == getType() ? (AbstractDateTimeValue) other : (AbstractDateTimeValue) other.convertTo(getType());
 		return getImplicitCalendar().compare(otherDate.getImplicitCalendar()) > 0 ? this : other;
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		AbstractDateTimeValue otherDate = other.getType() == getType() ? (AbstractDateTimeValue) other : (AbstractDateTimeValue) other.convertTo(getType());
+		final AbstractDateTimeValue otherDate = other.getType() == getType() ? (AbstractDateTimeValue) other : (AbstractDateTimeValue) other.convertTo(getType());
 		return getImplicitCalendar().compare(otherDate.getImplicitCalendar()) < 0 ? this : other;
 	}
 
@@ -305,10 +305,10 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	}
 
 	public int conversionPreference(Class<?> javaClass) {
-		if (javaClass.isAssignableFrom(DateValue.class)) return 0;
-		if (javaClass.isAssignableFrom(XMLGregorianCalendar.class)) return 1;
-		if (javaClass.isAssignableFrom(GregorianCalendar.class)) return 2;
-		if (javaClass == Date.class) return 3;
+		if (javaClass.isAssignableFrom(DateValue.class)) {return 0;}
+		if (javaClass.isAssignableFrom(XMLGregorianCalendar.class)) {return 1;}
+		if (javaClass.isAssignableFrom(GregorianCalendar.class)) {return 2;}
+		if (javaClass == Date.class) {return 3;}
 		return Integer.MAX_VALUE;
 	}
 
@@ -333,7 +333,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     public int compareTo(Object o)
     {
         if (o instanceof AbstractDateTimeValue) {
-			AbstractDateTimeValue dt = (AbstractDateTimeValue) o;
+			final AbstractDateTimeValue dt = (AbstractDateTimeValue) o;
     		return calendar.compare(dt.calendar);
 		}
 
@@ -342,13 +342,13 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         	try {
         		//TODO : find something that will consume less resources
         		return calendar.compare(TimeUtils.getInstance().newXMLGregorianCalendar(other.getStringValue()));
-        	} catch (XPathException e) {
+        	} catch (final XPathException e) {
         		System.out.println("Failed to get string value of '" + other + "'");
         		//Why not ?
         		return Constants.SUPERIOR;
         	}
         else
-            return getType() > other.getType() ? Constants.SUPERIOR : Constants.INFERIOR;
+            {return getType() > other.getType() ? Constants.SUPERIOR : Constants.INFERIOR;}
     }	
 
     /**
@@ -364,7 +364,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 			calendar.setYear(1);
 			hacked = true;
 		}
-		XMLGregorianCalendar result = (XMLGregorianCalendar)calendar.clone();
+		final XMLGregorianCalendar result = (XMLGregorianCalendar)calendar.clone();
 		if (hacked) {
 			//reset everything
 			calendar.setYear(0);
@@ -376,7 +376,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
     public boolean equals(Object obj) {
     	if (obj instanceof AbstractDateTimeValue) {
-    		AbstractDateTimeValue dt = (AbstractDateTimeValue) obj;
+    		final AbstractDateTimeValue dt = (AbstractDateTimeValue) obj;
 			return calendar.equals(dt.calendar);
 		}
     	
@@ -392,8 +392,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }
 
     public int getDayWithinYear() {
-        int j = getJulianDayNumber(calendar.getYear(), calendar.getMonth(), calendar.getDay());
-        int k = getJulianDayNumber(calendar.getYear(), 1, 1);
+        final int j = getJulianDayNumber(calendar.getYear(), calendar.getMonth(), calendar.getDay());
+        final int k = getJulianDayNumber(calendar.getYear(), 1, 1);
         return j - k + 1;
     }
 
@@ -409,7 +409,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     private XMLGregorianCalendar parse(String lexicalRepresentation) {
         // compute format string for this lexical representation.
         String format = null;
-        String lexRep = lexicalRepresentation;
+        final String lexRep = lexicalRepresentation;
         final int NOT_FOUND = -1;
         int lexRepLength = lexRep.length();
 
@@ -435,9 +435,9 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 // GMonth
                 // Fix 4971612: invalid SCCS macro substitution in data string
                 format = "--%M--%Z";
-                Parser p = new Parser(format, lexRep);
+                final Parser p = new Parser(format, lexRep);
                 try {
-                	XMLGregorianCalendar c = p.parse();
+                	final XMLGregorianCalendar c = p.parse();
                     // check for validity
                     if (!c.isValid()) {
                         throw new IllegalArgumentException(
@@ -447,7 +447,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                     }
                     return c;
                 }
-                catch(IllegalArgumentException e) {
+                catch(final IllegalArgumentException e) {
                     format = "--%M%z";
                 }
             } 
@@ -463,7 +463,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             // start at index 1 to skip potential negative sign for year.
 
 
-            int timezoneOffset = lexRep.indexOf(':');
+            final int timezoneOffset = lexRep.indexOf(':');
             if (timezoneOffset != NOT_FOUND) {
 
                 // found timezone, strip it off for distinguishing
@@ -492,8 +492,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 format = "%Y-%M-%D" + "%z";
             }
         }
-        Parser p = new Parser(format, lexRep);
-        XMLGregorianCalendar c = p.parse();
+        final Parser p = new Parser(format, lexRep);
+        final XMLGregorianCalendar c = p.parse();
 
         // check for validity
         if (!c.isValid()) {
@@ -545,7 +545,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         public XMLGregorianCalendar parse() throws IllegalArgumentException {
         	char vch;
         	while (fidx < flen) {
-                char fch = format.charAt(fidx++);
+                final char fch = format.charAt(fidx++);
 
                 if (fch != '%') { // not a meta character
                     skip(fch);
@@ -590,13 +590,13 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         } 
                         else if (vch == '+' || vch == '-') {
                             vidx++;
-                            int h = parseInt(2, 2);
+                            final int h = parseInt(2, 2);
                             skip(':');
-                            int m = parseInt(2, 2);
+                            final int m = parseInt(2, 2);
 
                             if (m >= 60 || m < 0)
                                 throw new IllegalArgumentException(
-                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ new Integer(m), "timezone minutes"})
+                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ Integer.valueOf(m), "timezone minutes"})
                                 );
                             
                             timezone = (h * 60 + m) * (vch == '+' ? 1 : -1);
@@ -611,13 +611,13 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                         } 
                         else if (vch == '+' || vch == '-') {
                             vidx++;
-                            int h = parseInt(2, 2);
+                            final int h = parseInt(2, 2);
                             skip(':');
-                            int m = parseInt(2, 2);
+                            final int m = parseInt(2, 2);
 
                             if (m >= 60 || m < 0)
                                 throw new IllegalArgumentException(
-                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ new Integer(m), "timezone minutes"})
+                                        DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{ Integer.valueOf(m), "timezone minutes"})
                                 );
                             
                             timezone = (h * 60 + m) * (vch == '+' ? 1 : -1);
@@ -641,7 +641,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             
            	if (hour == 24 && minute == 0 && second == 0) {
                 if (getType() == Type.TIME)
-                	hour = 0;
+                	{hour = 0;}
            	}
             
             return TimeUtils.getInstance().getFactory()
@@ -670,7 +670,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         
         private void parseYear()
             throws IllegalArgumentException {
-            int vstart = vidx;
+            final int vstart = vidx;
             int sign = 0;
             
             // skip leading negative, if it exists
@@ -697,7 +697,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         
         private int parseInt(int minDigits, int maxDigits)
             throws IllegalArgumentException {
-            int vstart = vidx;
+            final int vstart = vidx;
             while (isDigit(peek()) && (vidx - vstart) < maxDigits) {
                 vidx++;
             }
@@ -717,7 +717,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
         private BigDecimal parseBigDecimal()
             throws IllegalArgumentException {
-            int vstart = vidx;
+            final int vstart = vidx;
 
             if (peek() == '.') {
                 vidx++;
@@ -751,13 +751,13 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
      */
     public static int getJulianDayNumber(int year, int month, int day) {
         int z = year - (month < 3 ? 1 : 0);
-        short f = monthData[month - 1];
+        final short f = monthData[month - 1];
         if (z >= 0) {
             return day + f + 365 * z + z / 4 - z / 100 + z / 400 + 1721118;
         } else {
             // for negative years, add 12000 years and then subtract the days!
             z += 12000;
-            int j = day + f + 365 * z + z / 4 - z / 100 + z / 400 + 1721118;
+            final int j = day + f + 365 * z + z / 4 - z / 100 + z / 400 + 1721118;
             return j - (365 * 12000 + 12000 / 4 - 12000 / 100 + 12000 / 400);  // number of leap years in 12000 years
         }
     }

@@ -61,14 +61,14 @@ public class RetrieveBackup extends BasicFunction
 
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
-        String exportDir = args[0].getStringValue();
+        final String exportDir = args[0].getStringValue();
         File   dir       = new File( exportDir );
 
         if( !dir.isAbsolute() ) {
             dir = new File( (String)context.getBroker().getConfiguration().getProperty( BrokerPool.PROPERTY_DATA_DIR ), exportDir );
         }
-        String name       = args[1].getStringValue();
-        File   backupFile = new File( dir, name );
+        final String name       = args[1].getStringValue();
+        final File   backupFile = new File( dir, name );
 
         if( !backupFile.canRead() ) {
             return( Sequence.EMPTY_SEQUENCE );
@@ -79,22 +79,22 @@ public class RetrieveBackup extends BasicFunction
         }
 
         try {
-            ZipArchiveBackupDescriptor descriptor = new ZipArchiveBackupDescriptor( backupFile );
-            Properties                 properties = descriptor.getProperties();
+            final ZipArchiveBackupDescriptor descriptor = new ZipArchiveBackupDescriptor( backupFile );
+            final Properties                 properties = descriptor.getProperties();
 
             if( ( properties == null ) || ( properties.size() == 0 ) ) {
                 throw( new XPathException( this, "the file does not see to be a valid backup archive" ) );
             }
         }
-        catch( IOException e ) {
+        catch( final IOException e ) {
             throw( new XPathException( this, "the file does not see to be a valid backup archive" ) );
         }
 
         // directly stream the backup contents to the HTTP response
-        ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
+        final ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
 
         // response object is read from global variable $response
-        Variable       respVar  = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
+        final Variable       respVar  = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
 
         if( respVar == null ) {
             throw( new XPathException( this, "No response object found in the current XQuery context." ) );
@@ -103,19 +103,19 @@ public class RetrieveBackup extends BasicFunction
         if( respVar.getValue().getItemType() != Type.JAVA_OBJECT ) {
             throw( new XPathException( this, "Variable $response is not bound to an Java object." ) );
         }
-        JavaObjectValue respValue = (JavaObjectValue)respVar.getValue().itemAt( 0 );
+        final JavaObjectValue respValue = (JavaObjectValue)respVar.getValue().itemAt( 0 );
 
         if( !"org.exist.http.servlets.HttpResponseWrapper".equals( respValue.getObject().getClass().getName() ) ) {
             throw( new XPathException( this, signature.toString() + " can only be used within the EXistServlet or XQueryServlet" ) );
         }
-        ResponseWrapper response = (ResponseWrapper)respValue.getObject();
+        final ResponseWrapper response = (ResponseWrapper)respValue.getObject();
 
         response.setContentType( "application/zip" );
 
         try {
-            InputStream  is  = new FileInputStream( backupFile );
-            OutputStream os  = response.getOutputStream();
-            byte[]       buf = new byte[4096];
+            final InputStream  is  = new FileInputStream( backupFile );
+            final OutputStream os  = response.getOutputStream();
+            final byte[]       buf = new byte[4096];
             int          c;
 
             while( ( c = is.read( buf ) ) > -1 ) {
@@ -125,7 +125,7 @@ public class RetrieveBackup extends BasicFunction
             os.close();
             response.flushBuffer();
         }
-        catch( IOException e ) {
+        catch( final IOException e ) {
             throw( new XPathException( this, "An IO error occurred while reading the backup archive" ) );
         }
         return( Sequence.EMPTY_SEQUENCE );

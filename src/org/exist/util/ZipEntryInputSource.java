@@ -48,7 +48,7 @@ public final class ZipEntryInputSource
 		if(zipFile!=null && zipEntry!=null) {
 			try {
 				retval=zipFile.getInputStream(zipEntry);
-			} catch(IOException ioe) {
+			} catch(final IOException ioe) {
 				// No way to notify :-(
 			}
 		}

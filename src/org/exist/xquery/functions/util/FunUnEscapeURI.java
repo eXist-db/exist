@@ -72,7 +72,7 @@ public class FunUnEscapeURI extends BasicFunction {
 		{
 			return new StringValue(URLDecoder.decode(args[0].getStringValue(), args[1].getStringValue()));
 		}
-		catch(java.io.UnsupportedEncodingException e)
+		catch(final java.io.UnsupportedEncodingException e)
 		{
 			throw new XPathException(this, "Unsupported Encoding Scheme: " + e.getMessage(), e);
 		}

@@ -107,7 +107,7 @@ public class XMLDBDocument extends Function {
 	DocumentSet docs = null;
 	Sequence result = null;
 	// check if the loaded documents should remain locked
-        boolean lockOnLoad = context.lockDocumentsOnLoad();
+        final boolean lockOnLoad = context.lockDocumentsOnLoad();
         boolean cacheIsValid = false;
 	if (getArgumentCount() == 0) {
             // TODO: disabled cache for now as it may cause concurrency issues
@@ -120,7 +120,7 @@ public class XMLDBDocument extends Function {
 	    MutableDocumentSet mdocs = new DefaultDocumentSet();
             try {
                 context.getBroker().getAllXMLResources(mdocs);
-            } catch(PermissionDeniedException pde) {
+            } catch(final PermissionDeniedException pde) {
                 LOG.error(pde.getMessage(), pde);
                 throw new XPathException(this, pde);
             }
@@ -129,7 +129,7 @@ public class XMLDBDocument extends Function {
 	} else {
 	    List<String> args = getParameterValues(contextSequence, contextItem);
 	    if(cachedArgs != null)
-		cacheIsValid = compareArguments(cachedArgs, args);
+		{cacheIsValid = compareArguments(cachedArgs, args);}
 	    if(cacheIsValid) {
 		result = cached;
 		docs = cachedDocs;
@@ -137,7 +137,7 @@ public class XMLDBDocument extends Function {
                 MutableDocumentSet mdocs = new DefaultDocumentSet();
 		for(int i = 0; i < args.size(); i++) {
 		    try {
-			String next = (String)args.get(i);
+			final String next = (String)args.get(i);
 			XmldbURI nextUri = new AnyURIValue(next).toXmldbURI();
 			if(nextUri.getCollectionPath().length() == 0) {
 			    throw new XPathException(this, "Invalid argument to " + XMLDBModule.PREFIX + ":document() function: empty string is not allowed here.");
@@ -145,7 +145,7 @@ public class XMLDBDocument extends Function {
 			if(nextUri.numSegments()==1) {                     
 			    nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
 			}
-			DocumentImpl doc = context.getBroker().getResource(nextUri, Permission.READ);
+			final DocumentImpl doc = context.getBroker().getResource(nextUri, Permission.READ);
 			if(doc == null) { 
 			    if (context.isRaiseErrorOnFailedRetrieval()) {
 				throw new XPathException(this, ErrorCodes.FODC0002, "can not access '" + nextUri + "'");
@@ -153,12 +153,12 @@ public class XMLDBDocument extends Function {
 			}else {
 			    mdocs.add(doc);
 			}
-		    } catch (XPathException e) { //From AnyURIValue constructor
+		    } catch (final XPathException e) { //From AnyURIValue constructor
                         e.setLocation(line, column);
 			logger.error("From AnyURIValue constructor:", e);
 
 			throw e;
-		    } catch (PermissionDeniedException e) {
+		    } catch (final PermissionDeniedException e) {
 			logger.error("Permission denied", e);
 
 			throw new XPathException(this, "Permission denied: unable to load document " + (String) args.get(i));
@@ -171,12 +171,12 @@ public class XMLDBDocument extends Function {
 	try {
             if(!cacheIsValid)
                 // wait for pending updates
-                docs.lock(context.getBroker(), lockOnLoad, true);
+                {docs.lock(context.getBroker(), lockOnLoad, true);}
 	    // wait for pending updates
 	    if(result == null) {
 		result = new ExtArrayNodeSet(docs.getDocumentCount(), 1);
                 DocumentImpl doc;
-		for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+		for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
                     doc = i.next();
 		    result.add(new NodeProxy(doc)); //, -1, Node.DOCUMENT_NODE));
                     if(lockOnLoad) {
@@ -184,14 +184,14 @@ public class XMLDBDocument extends Function {
                     }
 		}
 	    }
-	} catch (LockException e) {
+	} catch (final LockException e) {
 	    logger.error("Could not acquire lock on document set", e);
 
             throw new XPathException(this, "Could not acquire lock on document set.");
         } finally {
             if(!(cacheIsValid || lockOnLoad))
                 // release all locks
-                docs.unlock(lockOnLoad);
+                {docs.unlock(lockOnLoad);}
 	}
 	cached = result;
 	cachedDocs = docs;
@@ -201,12 +201,12 @@ public class XMLDBDocument extends Function {
     }
 	
 	private List<String> getParameterValues(Sequence contextSequence, Item contextItem) throws XPathException {
-        List<String> args = new ArrayList<String>(getArgumentCount() + 10);
+        final List<String> args = new ArrayList<String>(getArgumentCount() + 10);
 	    for(int i = 0; i < getArgumentCount(); i++) {
-	        Sequence seq =
+	        final Sequence seq =
 				getArgument(i).eval(contextSequence, contextItem);
-			for (SequenceIterator j = seq.iterate(); j.hasNext();) {
-				Item next = j.nextItem();
+			for (final SequenceIterator j = seq.iterate(); j.hasNext();) {
+				final Item next = j.nextItem();
 				args.add(next.getStringValue());
 			}
 	    }
@@ -215,12 +215,12 @@ public class XMLDBDocument extends Function {
 
     private boolean compareArguments(List<String> args1, List<String> args2) {
         if(args1.size() != args2.size())
-            return false;
+            {return false;}
         for(int i = 0; i < args1.size(); i++) {
-            String arg1 = args1.get(i);
-            String arg2 = args2.get(i);
+            final String arg1 = args1.get(i);
+            final String arg2 = args2.get(i);
             if(!arg1.equals(arg2))
-                return false;
+                {return false;}
         }
         return true;
     }

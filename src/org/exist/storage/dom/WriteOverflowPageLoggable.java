@@ -78,8 +78,8 @@ public class WriteOverflowPageLoggable extends AbstractLoggable {
 	public void read(ByteBuffer in) {
 		pageNum = in.getInt();
 		nextPage = in.getInt();
-		int len = in.getShort();
-		byte[] data = new byte[len];
+		final int len = in.getShort();
+		final byte[] data = new byte[len];
 		in.get(data);
 		value = new Value(data);
 	}

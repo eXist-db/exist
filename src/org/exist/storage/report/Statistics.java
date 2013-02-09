@@ -24,18 +24,18 @@ public class Statistics {
      * @param indexStats
      */
     public static void generateIndexStatistics(Configuration conf, Map<String, IndexStats> indexStats) {
-        DOMFile dom = (DOMFile) conf.getProperty(DOMFile.CONFIG_KEY_FOR_FILE);
+        final DOMFile dom = (DOMFile) conf.getProperty(DOMFile.CONFIG_KEY_FOR_FILE);
         if(dom != null)
-            indexStats.put(DOMFile.FILE_NAME, new IndexStats(dom));
+            {indexStats.put(DOMFile.FILE_NAME, new IndexStats(dom));}
         BFile db = (BFile) conf.getProperty(CollectionStore.FILE_KEY_IN_CONFIG);
         if(db != null)
-            indexStats.put(CollectionStore.FILE_NAME, new IndexStats(db));	
+            {indexStats.put(CollectionStore.FILE_NAME, new IndexStats(db));}	
         db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
         if(db != null) 
-            indexStats.put(NativeValueIndex.FILE_NAME, new IndexStats(db));			
+            {indexStats.put(NativeValueIndex.FILE_NAME, new IndexStats(db));}			
         db = (BFile) conf.getProperty(NativeTextEngine.FILE_KEY_IN_CONFIG);
         if(db != null)
-            indexStats.put(NativeTextEngine.FILE_NAME, new IndexStats(db));
+            {indexStats.put(NativeTextEngine.FILE_NAME, new IndexStats(db));}
     }
 
 }

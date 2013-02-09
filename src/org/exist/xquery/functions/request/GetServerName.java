@@ -64,20 +64,20 @@ public class GetServerName extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		
-		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
+		final RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
 		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException(this, "No request object found in the current XQuery context.");
+			{throw new XPathException(this, "No request object found in the current XQuery context.");}
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(this, "Variable $request is not bound to an Java object.");
+			{throw new XPathException(this, "Variable $request is not bound to an Java object.");}
 
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper) {
 			return new StringValue(((RequestWrapper) value.getObject()).getServerName());
 		} else
-			throw new XPathException(this, "Variable $request is not bound to a Request object.");
+			{throw new XPathException(this, "Variable $request is not bound to a Request object.");}
 	}
 	
 }

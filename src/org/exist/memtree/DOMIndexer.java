@@ -79,7 +79,7 @@ public class DOMIndexer {
         this.transaction = transaction;
         this.doc         = doc;
         this.targetDoc   = targetDoc;
-        CollectionConfiguration config = targetDoc.getCollection().getConfiguration(broker);
+        final CollectionConfiguration config = targetDoc.getCollection().getConfiguration(broker);
         if (config != null) {
             this.indexSpec = config.getIndexConfiguration();
         }
@@ -101,12 +101,12 @@ public class DOMIndexer {
      */
     public void store() {
         //Create a wrapper element as root node
-        ElementImpl elem = new ElementImpl(ROOT_QNAME);
+        final ElementImpl elem = new ElementImpl(ROOT_QNAME);
         elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
         elem.setOwnerDocument(targetDoc);
         elem.setChildCount(doc.getChildCount());
         elem.addNamespaceMapping("exist", Namespaces.EXIST_NS);
-        NodePath path = new NodePath();
+        final NodePath path = new NodePath();
         path.addComponent(ROOT_QNAME);
         stack.push(elem);
         broker.storeNode(transaction, elem, path, indexSpec);
@@ -168,7 +168,7 @@ public class DOMIndexer {
         switch( doc.nodeKind[nodeNr] ) {
 
             case Node.ELEMENT_NODE: {
-                ElementImpl elem = (ElementImpl)NodePool.getInstance().borrowNode( Node.ELEMENT_NODE );
+                final ElementImpl elem = (ElementImpl)NodePool.getInstance().borrowNode( Node.ELEMENT_NODE );
                 if( stack.empty() ) {
                     elem.setNodeId( broker.getBrokerPool().getNodeFactory().createInstance() );
                     initElement( nodeNr, elem );
@@ -205,7 +205,7 @@ public class DOMIndexer {
 
             case Node.CDATA_SECTION_NODE: {
                 last = stack.peek();
-                org.exist.dom.CDATASectionImpl cdata = (org.exist.dom.CDATASectionImpl)NodePool.getInstance().borrowNode( Node.CDATA_SECTION_NODE );
+                final org.exist.dom.CDATASectionImpl cdata = (org.exist.dom.CDATASectionImpl)NodePool.getInstance().borrowNode( Node.CDATA_SECTION_NODE );
                 cdata.setData( doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr] );
                 cdata.setOwnerDocument( targetDoc );
                 last.appendChildInternal( prevNode, cdata );
@@ -231,7 +231,7 @@ public class DOMIndexer {
             }
 
             case Node.PROCESSING_INSTRUCTION_NODE: {
-                QName qn = doc.nodeName[nodeNr];
+                final QName qn = doc.nodeName[nodeNr];
                 pi.setTarget( qn.getLocalName() );
                 pi.setData( new String( doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr] ) );
                 pi.setOwnerDocument( targetDoc );
@@ -262,12 +262,12 @@ public class DOMIndexer {
      */
     private void initElement( int nodeNr, ElementImpl elem )
     {
-        short attribs = (short)doc.getAttributesCountFor( nodeNr );
+        final short attribs = (short)doc.getAttributesCountFor( nodeNr );
         elem.setOwnerDocument( targetDoc );
         elem.setAttributes( attribs );
         elem.setChildCount( doc.getChildCountFor( nodeNr ) + attribs );
         elem.setNodeName( doc.nodeName[nodeNr] );
-        Map<String, String> ns = getNamespaces( nodeNr );
+        final Map<String, String> ns = getNamespaces( nodeNr );
 
         if( ns != null ) {
             elem.setNamespaceMappings( ns );
@@ -282,10 +282,10 @@ public class DOMIndexer {
         if( ns < 0 ) {
             return( null );
         }
-        Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<String, String>();
 
         while( ( ns < doc.nextNamespace ) && ( doc.namespaceParent[ns] == nodeNr ) ) {
-            QName qn = doc.namespaceCode[ns];
+            final QName qn = doc.namespaceCode[ns];
 
             if( "xmlns".equals( qn.getLocalName() ) ) {
                 map.put( "", qn.getNamespaceURI() );
@@ -314,8 +314,8 @@ public class DOMIndexer {
         if( -1 < attr ) {
 
             while( ( attr < doc.nextAttr ) && ( doc.attrParent[attr] == nodeNr ) ) {
-                QName    qn     = doc.attrName[attr];
-                AttrImpl attrib = (AttrImpl)NodePool.getInstance().borrowNode( Node.ATTRIBUTE_NODE );
+                final QName    qn     = doc.attrName[attr];
+                final AttrImpl attrib = (AttrImpl)NodePool.getInstance().borrowNode( Node.ATTRIBUTE_NODE );
                 attrib.setNodeName( qn );
                 attrib.setValue( doc.attrValue[attr] );
                 attrib.setOwnerDocument( targetDoc );
@@ -337,7 +337,7 @@ public class DOMIndexer {
     private void endNode( int nodeNr, NodePath currentPath )
     {
         if( doc.nodeKind[nodeNr] == Node.ELEMENT_NODE ) {
-            ElementImpl last = stack.pop();
+            final ElementImpl last = stack.pop();
             broker.endElement( last, currentPath, null );
             currentPath.removeLastComponent();
             setPrevious( last );

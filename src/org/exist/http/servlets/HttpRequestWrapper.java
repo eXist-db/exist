@@ -163,7 +163,7 @@ public class HttpRequestWrapper implements RequestWrapper {
 
     private static void addParameter(Map<String, Object> map, String paramName, Object value) {
 
-        Object original = map.get(paramName);
+        final Object original = map.get(paramName);
 
         if (original != null) {
 
@@ -174,7 +174,7 @@ public class HttpRequestWrapper implements RequestWrapper {
 
             } else {
                 // Single value already detected, convert to List and add both items
-                ArrayList<Object> list = new ArrayList<Object>();
+                final ArrayList<Object> list = new ArrayList<Object>();
                 list.add(original);
                 list.add(value);
                 map.put(paramName, list);
@@ -191,26 +191,26 @@ public class HttpRequestWrapper implements RequestWrapper {
      */
     private void parseMultipartContent() {
         // Create a factory for disk-based file items
-        DiskFileItemFactory factory = new DiskFileItemFactory();
+        final DiskFileItemFactory factory = new DiskFileItemFactory();
 
         // Dizzzz: Wonder why this should be zero
         factory.setSizeThreshold(0);
 
         // Create a new file upload handler
-        ServletFileUpload upload = new ServletFileUpload(factory);
+        final ServletFileUpload upload = new ServletFileUpload(factory);
 
         try {
 
-            List items = upload.parseRequest(servletRequest);
+            final List items = upload.parseRequest(servletRequest);
 
             // Iterate over all mult-part formdata items and
             // add all data (field and files) to parmeters
-            for (Object i : items) {
-                FileItem item = (FileItem) i;
+            for (final Object i : items) {
+                final FileItem item = (FileItem) i;
                 addParameter(params, item.getFieldName(), item);
             }
 
-        } catch (FileUploadException e) {
+        } catch (final FileUploadException e) {
             LOG.error(e);
         }
 
@@ -220,17 +220,17 @@ public class HttpRequestWrapper implements RequestWrapper {
      * Parses the url-encoded parameters
      */
     private void parseParameters() {
-        Map map = servletRequest.getParameterMap();
-        for (Object one : map.keySet()) {
+        final Map map = servletRequest.getParameterMap();
+        for (final Object one : map.keySet()) {
 
             // Get key and corresponding values
-            String key = (String) one;
+            final String key = (String) one;
 
             // Get values belonging to the key
-            String[] values = (String[]) map.get(one);
+            final String[] values = (String[]) map.get(one);
 
             // Write keys and values
-            for (String value : values) {
+            for (final String value : values) {
                 addParameter(params, key, decode(value));
             }
         }
@@ -245,12 +245,12 @@ public class HttpRequestWrapper implements RequestWrapper {
      */
     private List<FileItem> getFileItem(Object obj) {
 
-    	List<FileItem> fileList = new LinkedList<FileItem>();
+    	final List<FileItem> fileList = new LinkedList<FileItem>();
         if (obj instanceof List) {
             // Cast
-            List list = (List) obj;
+            final List list = (List) obj;
             // Return first FileItem object if present
-            for(Object listObject : list) {
+            for(final Object listObject : list) {
                 if(listObject instanceof FileItem && !((FileItem) listObject).isFormField()){
                     fileList.add((FileItem) listObject);
                 }
@@ -285,10 +285,10 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
 
         try {
-            byte[] bytes = value.getBytes(containerEncoding);
+            final byte[] bytes = value.getBytes(containerEncoding);
             return new String(bytes, formEncoding);
 
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
             LOG.warn(e);
             return value;
         }
@@ -316,7 +316,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     @Override
     public long getContentLength() {
         long retval = servletRequest.getContentLength();
-        String lenstr = servletRequest.getHeader("Content-Length");
+        final String lenstr = servletRequest.getHeader("Content-Length");
         if (lenstr != null) {
             retval = Long.parseLong(lenstr);
         }
@@ -387,14 +387,14 @@ public class HttpRequestWrapper implements RequestWrapper {
 
         // If Parameter is a List, get first entry. The data is used later on
         if (o instanceof List) {
-            List lst = ((List) o);
+            final List lst = ((List) o);
             o = lst.get(0);
         }
 
         // If parameter is file item, convert to string
         if (o instanceof FileItem) {
 
-            FileItem fi = (FileItem) o;
+            final FileItem fi = (FileItem) o;
             if (formEncoding == null) {
                 return fi.getString();
 
@@ -402,7 +402,7 @@ public class HttpRequestWrapper implements RequestWrapper {
                 try {
                     return fi.getString(formEncoding);
 
-                } catch (UnsupportedEncodingException e) {
+                } catch (final UnsupportedEncodingException e) {
                     LOG.warn(e);
                     return null;
                 }
@@ -426,14 +426,14 @@ public class HttpRequestWrapper implements RequestWrapper {
             return null;
         }
 
-        Object o = params.get(name);
+        final Object o = params.get(name);
         if (o == null) {
             return null;
         }
 
-        List<FileItem> items = getFileItem(o);
-        List<File> files = new ArrayList<File>(items.size());
-        for (FileItem item : items) {
+        final List<FileItem> items = getFileItem(o);
+        final List<File> files = new ArrayList<File>(items.size());
+        for (final FileItem item : items) {
         	files.add(((DiskFileItem) item).getStoreLocation());
         }
         return files;
@@ -448,14 +448,14 @@ public class HttpRequestWrapper implements RequestWrapper {
             return null;
         }
 
-        Object o = params.get(name);
+        final Object o = params.get(name);
         if (o == null) {
             return null;
         }
 
-        List<FileItem> items = getFileItem(o);
-        List<String> files = new ArrayList<String>(items.size());
-        for (FileItem item : items) {
+        final List<FileItem> items = getFileItem(o);
+        final List<String> files = new ArrayList<String>(items.size());
+        for (final FileItem item : items) {
         	files.add(FilenameUtils.normalize(item.getName()));
         }
         return files;
@@ -476,7 +476,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     public String[] getParameterValues(String key) {
 
         // params already retrieved
-        Object obj = params.get(key);
+        final Object obj = params.get(key);
 
         // Fast return
         if (obj == null) {
@@ -490,7 +490,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         if (obj instanceof List) {
 
             // Cast to List
-            List list = (List) obj;
+            final List list = (List) obj;
 
             // Reserve the right aboumt of elements
             values = new String[list.size()];
@@ -499,18 +499,18 @@ public class HttpRequestWrapper implements RequestWrapper {
             int position = 0;
 
             // Iterate over list
-            for (Object object : list) {
+            for (final Object object : list) {
 
                 // Item is a FileItem
                 if (object instanceof FileItem) {
 
                     // Cast
-                    FileItem item = (FileItem) object;
+                    final FileItem item = (FileItem) object;
 
                     // Get string representation of FileItem
                     try {
                         values[position] = formEncoding == null ? item.getString() : item.getString(formEncoding);
-                    } catch (UnsupportedEncodingException e) {
+                    } catch (final UnsupportedEncodingException e) {
                         LOG.warn(e);
                         e.printStackTrace();
                     }
@@ -530,10 +530,10 @@ public class HttpRequestWrapper implements RequestWrapper {
 
             // Item is a FileItem
             if (obj instanceof FileItem) {
-                FileItem item = (FileItem) obj;
+                final FileItem item = (FileItem) obj;
                 try {
                     values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
-                } catch (UnsupportedEncodingException e) {
+                } catch (final UnsupportedEncodingException e) {
                     LOG.warn(e);
                     e.printStackTrace();
                 }
@@ -674,7 +674,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      */
     @Override
     public SessionWrapper getSession() {
-        HttpSession session = servletRequest.getSession();
+        final HttpSession session = servletRequest.getSession();
         if (session == null) {
             return null;
         } else {
@@ -687,7 +687,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      */
     @Override
     public SessionWrapper getSession(boolean arg0) {
-        HttpSession session = servletRequest.getSession(arg0);
+        final HttpSession session = servletRequest.getSession(arg0);
         if (session == null) {
             return null;
         } else {

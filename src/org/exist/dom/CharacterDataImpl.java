@@ -63,26 +63,26 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
 
     public void appendData( String arg ) throws DOMException {
         if(cdata == null)
-            cdata = new XMLString(arg.toCharArray());
+            {cdata = new XMLString(arg.toCharArray());}
         else
-            cdata.append(arg);
+            {cdata.append(arg);}
     }
 
     public void appendData( char[] data, int start, int howmany ) throws DOMException {
         if(cdata == null)
-            cdata = new XMLString(data, start, howmany);
+            {cdata = new XMLString(data, start, howmany);}
         else
-            cdata.append( data, start, howmany );
+            {cdata.append( data, start, howmany );}
     }
 
     public void deleteData( int offset, int count ) throws DOMException {
         if(cdata != null)
-            cdata.delete(offset, count);
+            {cdata.delete(offset, count);}
     }
 
     public String getData() throws DOMException {
         if(cdata == null)
-            return null;
+            {return null;}
         return cdata.toString();
     }
 
@@ -92,7 +92,7 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
 
     public String getLowerCaseData() throws DOMException {
         if(cdata == null)
-            return null;
+            {return null;}
         return cdata.toString().toLowerCase();
     }
 
@@ -107,22 +107,22 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
 
     public void insertData( int offset, String arg ) throws DOMException {
         if(cdata == null)
-            cdata = new XMLString(arg.toCharArray());
+            {cdata = new XMLString(arg.toCharArray());}
         else
-            cdata.insert(offset, arg);
+            {cdata.insert(offset, arg);}
     }
 
     public void replaceData( int offset, int count, String arg ) throws DOMException {
         if(cdata == null)
-            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
+            {throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");}
         cdata.replace(offset, count, arg);
     }
 
     public void setData( String data ) throws DOMException {
         if(cdata == null)
-            cdata = new XMLString(data.toCharArray());
+            {cdata = new XMLString(data.toCharArray());}
         else
-            cdata.setData(data.toCharArray(), 0, data.length());
+            {cdata.setData(data.toCharArray(), 0, data.length());}
     }
 
     public void setData( XMLString data ) throws DOMException {
@@ -131,21 +131,21 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
 
     public void setData( char[] data, int start, int howmany ) throws DOMException {
         if(cdata == null)
-            cdata = new XMLString(data, start, howmany);
+            {cdata = new XMLString(data, start, howmany);}
         else
-            cdata.setData(data, start, howmany);
+            {cdata.setData(data, start, howmany);}
     }
 
     public String substringData( int offset, int count ) throws DOMException {
         if(cdata == null)
-            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
+            {throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");}
         return cdata.substring(offset, count);
     }
 
     @Override
     public String toString() {
         if(cdata == null)
-            return "";
+            {return "";}
         return cdata.toString();
     }
 

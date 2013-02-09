@@ -70,7 +70,7 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	public TreeMutator(JTree tree)
 	{
 		if(tree == null)
-			throw new NullPointerException("Tree cannot be null");
+			{throw new NullPointerException("Tree cannot be null");}
 		popup = new JPopupMenu();
 		
 		this.tree = tree;
@@ -101,7 +101,7 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 		copyAction.setContextNode(null);
 		popup.removeAll();
 		if(popup.isVisible())
-			popup.setVisible(false);
+			{popup.setVisible(false);}
 	}
 
 	//MouseListener methods
@@ -128,28 +128,28 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	private void showPopup(MouseEvent event)
 	{	
 		if(!popup.isPopupTrigger(event))
-			return;
+			{return;}
 		reset();
-		Object source = event.getSource();
+		final Object source = event.getSource();
 		if(source != tree)
-			return;
+			{return;}
 		
-		Point p = event.getPoint();
-		int row = tree.getClosestRowForLocation(p.x, p.y);
+		final Point p = event.getPoint();
+		final int row = tree.getClosestRowForLocation(p.x, p.y);
 		if(row == -1)
 		{
 			showRootPopup(p);
 			return;
 		}
 		
-		Rectangle bounds = tree.getRowBounds(row);
+		final Rectangle bounds = tree.getRowBounds(row);
 		if(bounds.y > p.y || bounds.y + bounds.height <= p.y)
 		{
 			showRootPopup(p);
 			return;
 		}
 		
-		TreePath path = tree.getPathForRow(row);
+		final TreePath path = tree.getPathForRow(row);
 		if(path == null)
 		{
 			showRootPopup(p);
@@ -157,8 +157,8 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 		}
 		
 		
-		Object last = path.getLastPathComponent();
-		XACMLTreeNode node = (XACMLTreeNode)last;
+		final Object last = path.getLastPathComponent();
+		final XACMLTreeNode node = (XACMLTreeNode)last;
 		copyAction.setContextNode(node);
 		
 		if(!(last instanceof PolicyElementNode))
@@ -184,7 +184,7 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 			addPolicyItem();
 		}
 		else if(contextNode instanceof PolicyNode)
-			addRuleItem();
+			{addRuleItem();}
 		//else if(contextNode instanceof Rule)
 		//	do nothing in this case
 		
@@ -192,25 +192,25 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	}
 	private void addRemoveItem()
 	{
-		JMenuItem remove = new JMenuItem(REMOVE, KeyEvent.VK_R);
+		final JMenuItem remove = new JMenuItem(REMOVE, KeyEvent.VK_R);
 		remove.addActionListener(this);
 		popup.add(remove);
 	}
 	private void addRuleItem()
 	{
-		JMenuItem newRule = new JMenuItem(NEW_RULE, KeyEvent.VK_R);
+		final JMenuItem newRule = new JMenuItem(NEW_RULE, KeyEvent.VK_R);
 		newRule.addActionListener(this);
 		popup.add(newRule);
 	}
 	private void addPolicyItem()
 	{
-		JMenuItem newPolicy = new JMenuItem(NEW_POLICY, KeyEvent.VK_P);
+		final JMenuItem newPolicy = new JMenuItem(NEW_POLICY, KeyEvent.VK_P);
 		newPolicy.addActionListener(this);
 		popup.add(newPolicy);
 	}
 	private void addPolicySetItem()
 	{
-		JMenuItem newPolicySet = new JMenuItem(NEW_POLICY_SET, KeyEvent.VK_S);
+		final JMenuItem newPolicySet = new JMenuItem(NEW_POLICY_SET, KeyEvent.VK_S);
 		newPolicySet.addActionListener(this);
 		popup.add(newPolicySet);
 	}
@@ -226,10 +226,10 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	}
 	private RootNode getRootNode()
 	{
-		TreeModel model = tree.getModel();
+		final TreeModel model = tree.getModel();
 		if(!(model instanceof XACMLTreeModel))
-			return null;
-		XACMLTreeModel xmodel = (XACMLTreeModel)model;
+			{return null;}
+		final XACMLTreeModel xmodel = (XACMLTreeModel)model;
 		return (RootNode)xmodel.getRoot();
 	}
 	
@@ -237,8 +237,8 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	{
 		if(contextNode instanceof PolicyNode)
 		{
-			PolicyNode node = (PolicyNode)contextNode;
-			Rule rule = XACMLEditor.createDefaultRule(node);
+			final PolicyNode node = (PolicyNode)contextNode;
+			final Rule rule = XACMLEditor.createDefaultRule(node);
 			node.add(rule);
 		}
 	}
@@ -246,8 +246,8 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	{
 		if(contextNode instanceof PolicySetNode || contextNode instanceof RootNode)
 		{
-			PolicyElementContainer node =((PolicyElementContainer)contextNode);
-			PolicySet ps = XACMLEditor.createDefaultPolicySet(node);
+			final PolicyElementContainer node =((PolicyElementContainer)contextNode);
+			final PolicySet ps = XACMLEditor.createDefaultPolicySet(node);
 			node.add(ps);
 		}
 	}
@@ -255,33 +255,33 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	{
 		if(contextNode instanceof PolicySetNode || contextNode instanceof RootNode)
 		{
-			PolicyElementContainer node =((PolicyElementContainer)contextNode);
-			Policy p = XACMLEditor.createDefaultPolicy(node);
+			final PolicyElementContainer node =((PolicyElementContainer)contextNode);
+			final Policy p = XACMLEditor.createDefaultPolicy(node);
 			node.add(p);
 		}
 	}
 	private void remove()
 	{
 		if(contextNode == null)
-			return;
-		NodeContainer parent = contextNode.getParent();
+			{return;}
+		final NodeContainer parent = contextNode.getParent();
 		if(parent instanceof PolicyElementContainer && contextNode instanceof PolicyElementNode)
-			((PolicyElementContainer)parent).remove((PolicyElementNode)contextNode);
+			{((PolicyElementContainer)parent).remove((PolicyElementNode)contextNode);}
 	}
 
 	public void actionPerformed(ActionEvent event)
 	{
-		String actionCommand = event.getActionCommand();
+		final String actionCommand = event.getActionCommand();
 		if(actionCommand == null)
-			return;
+			{return;}
 		else if(actionCommand.equals(NEW_RULE))
-			newRule();
+			{newRule();}
 		else if(actionCommand.equals(NEW_POLICY))
-			newPolicy();
+			{newPolicy();}
 		else if(actionCommand.equals(NEW_POLICY_SET))
-			newPolicySet();
+			{newPolicySet();}
 		else if(actionCommand.equals(REMOVE))
-			remove();
+			{remove();}
 		tree.revalidate();
 		tree.repaint();
 	}
@@ -293,32 +293,32 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	{
 		//avoid collisions with JTree's builtin bindings
 		if(event.isShiftDown() || event.isControlDown() || !event.isAltDown())
-			return;
+			{return;}
 		
-		int keyCode = event.getKeyCode();
+		final int keyCode = event.getKeyCode();
 		int delta;
 		if(keyCode == KeyEvent.VK_UP)
-			delta = -1;
+			{delta = -1;}
 		else if(keyCode == KeyEvent.VK_DOWN)
-			delta = 1;
+			{delta = 1;}
 		else
-			return;
-		TreePath selected = tree.getSelectionPath();
+			{return;}
+		final TreePath selected = tree.getSelectionPath();
 		if(selected == null)
-			return;
-		XACMLTreeNode treeNode = (XACMLTreeNode)selected.getLastPathComponent();
+			{return;}
+		final XACMLTreeNode treeNode = (XACMLTreeNode)selected.getLastPathComponent();
 		if(!(treeNode instanceof PolicyElementNode))
-			return;
-		PolicyElementNode node = (PolicyElementNode)treeNode;
-		PolicyElementContainer parent = (PolicyElementContainer)node.getParent();
+			{return;}
+		final PolicyElementNode node = (PolicyElementNode)treeNode;
+		final PolicyElementContainer parent = (PolicyElementContainer)node.getParent();
 		int currentIndex = parent.indexOfChild(node);
 		if(currentIndex < 0)
-			return;
+			{return;}
 		currentIndex += delta;
 		if(currentIndex < 0 || currentIndex >= parent.getChildCount())
-			return;
+			{return;}
 		if(currentIndex == 0 && !(parent instanceof RootNode))
-			return;
+			{return;}
 		tree.clearSelection();
 		parent.remove(node);
 		parent.add(currentIndex, node);
@@ -340,14 +340,14 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	//	DragGestureListener method
 	public void dragGestureRecognized(DragGestureEvent event)
 	{
-		Point location = event.getDragOrigin();
-		TreePath path = tree.getPathForLocation(location.x, location.y);
+		final Point location = event.getDragOrigin();
+		final TreePath path = tree.getPathForLocation(location.x, location.y);
 		if(path == null)
-			return;
+			{return;}
 
-		int action = event.getDragAction();
-		XACMLTreeNode transferNode = (XACMLTreeNode)path.getLastPathComponent();
-		Cursor cursor = (action == DnDConstants.ACTION_MOVE) ? DragSource.DefaultMoveDrop : DragSource.DefaultCopyDrop;
+		final int action = event.getDragAction();
+		final XACMLTreeNode transferNode = (XACMLTreeNode)path.getLastPathComponent();
+		final Cursor cursor = (action == DnDConstants.ACTION_MOVE) ? DragSource.DefaultMoveDrop : DragSource.DefaultCopyDrop;
 		event.startDrag(cursor, new NodeTransferable(transferNode), this);
 	}
 	// DropTargetListener methods
@@ -363,11 +363,11 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 		//these exceptions should not happen:
 		//	the flavor is checked and the returned
 		//	data requires no IO
-		catch(IOException ioe)
+		catch(final IOException ioe)
 		{
 			success = false;
 		}
-		catch(UnsupportedFlavorException ufe)
+		catch(final UnsupportedFlavorException ufe)
 		{
 			success = false;
 		}
@@ -403,10 +403,10 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 
 	private void checkDrag(DropTargetDragEvent event)
 	{
-		XACMLTreeNode oldNode = currentDestinationNode;
-		int oldBias = destinationBias;
+		final XACMLTreeNode oldNode = currentDestinationNode;
+		final int oldBias = destinationBias;
 		
-		Point location = event.getLocation();
+		final Point location = event.getLocation();
 		updateCurrentDestination(location, event.getDropAction());
 		
 		if(currentDestinationNode == null)
@@ -420,14 +420,14 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 		scroller.autoscroll(tree, location);
 		
 		if(destinationBias != BIAS_CURRENT)
-			expander.stop();
+			{expander.stop();}
 		else if(oldNode != currentDestinationNode || destinationBias != oldBias)
-			expander.hover(currentDestinationNode);
+			{expander.hover(currentDestinationNode);}
 		
 		if(supportsDrop(event))
-			repaintDestination(oldNode, oldBias);
+			{repaintDestination(oldNode, oldBias);}
 		else
-			clearDestination();
+			{clearDestination();}
 	}
 
 	private boolean supportsDrop(DropTargetDragEvent event)
@@ -436,160 +436,160 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 		boolean supported;
 		updateCurrentDestination(event.getLocation(), action);
 		if(currentDestinationNode == null)
-			supported = false;
+			{supported = false;}
 		else if(event.isDataFlavorSupported(NodeTransferable.TARGET_FLAVOR))
 		{
 			if(action == DnDConstants.ACTION_COPY_OR_MOVE || action == DnDConstants.ACTION_MOVE)
-				action = DnDConstants.ACTION_COPY;
+				{action = DnDConstants.ACTION_COPY;}
 			supported = isTargetDropValid(action);
 		}
 		else if(event.isDataFlavorSupported(NodeTransferable.CONDITION_FLAVOR))
 		{
 			if(action == DnDConstants.ACTION_COPY_OR_MOVE || action == DnDConstants.ACTION_MOVE)
-				action = DnDConstants.ACTION_COPY;
+				{action = DnDConstants.ACTION_COPY;}
 			supported = isConditionDropValid(action);
 		}
 		else if(event.isDataFlavorSupported(NodeTransferable.RULE_FLAVOR))
-			supported = isRuleDropValid(action);
+			{supported = isRuleDropValid(action);}
 		else if(event.isDataFlavorSupported(NodeTransferable.ABSTRACT_POLICY_FLAVOR))
-			supported = isAbstractPolicyDropValid(action);
+			{supported = isAbstractPolicyDropValid(action);}
 		else
-			supported = false;
+			{supported = false;}
 		
 		if(supported)
-			event.acceptDrag(action);
+			{event.acceptDrag(action);}
 		else
-			event.rejectDrag();
+			{event.rejectDrag();}
 		return supported;
 	}
 	
 	private boolean isTargetDropValid(int action)
 	{
 		if(action == DnDConstants.ACTION_MOVE)
-			return false;
+			{return false;}
 		if(currentDestinationNode instanceof PolicyElementNode || currentDestinationNode instanceof TargetNode)
-			return destinationBias == TreeMutator.BIAS_CURRENT;
+			{return destinationBias == TreeMutator.BIAS_CURRENT;}
 		return false;
 	}
 	private boolean isConditionDropValid(int action)
 	{
 		if(action == DnDConstants.ACTION_MOVE)
-			return false;
+			{return false;}
 		if(currentDestinationNode instanceof ConditionNode)
-			return destinationBias == TreeMutator.BIAS_CURRENT;
+			{return destinationBias == TreeMutator.BIAS_CURRENT;}
 		if(currentDestinationNode instanceof RuleNode || currentDestinationNode instanceof ConditionNode)
-			return destinationBias == TreeMutator.BIAS_CURRENT;
+			{return destinationBias == TreeMutator.BIAS_CURRENT;}
 		return false;
 	}
 	private boolean isRuleDropValid(int action)
 	{
 		if(currentDestinationNode instanceof PolicyNode)
-			return destinationBias == TreeMutator.BIAS_CURRENT;
+			{return destinationBias == TreeMutator.BIAS_CURRENT;}
 		if(currentDestinationNode instanceof RuleNode)
-			return destinationBias == TreeMutator.BIAS_AFTER || destinationBias == TreeMutator.BIAS_BEFORE;
+			{return destinationBias == TreeMutator.BIAS_AFTER || destinationBias == TreeMutator.BIAS_BEFORE;}
 		if(currentDestinationNode instanceof TargetNode && currentDestinationNode.getParent() instanceof PolicyNode)
-			return destinationBias == TreeMutator.BIAS_AFTER; 
+			{return destinationBias == TreeMutator.BIAS_AFTER;} 
 		return false;
 	}
 	private boolean isAbstractPolicyDropValid(int action)
 	{
 		if(currentDestinationNode instanceof PolicySetNode || currentDestinationNode instanceof RootNode)
-			return true;
+			{return true;}
 		if(currentDestinationNode instanceof PolicyNode)
-			return destinationBias == TreeMutator.BIAS_AFTER || destinationBias == TreeMutator.BIAS_BEFORE;
+			{return destinationBias == TreeMutator.BIAS_AFTER || destinationBias == TreeMutator.BIAS_BEFORE;}
 		if(currentDestinationNode instanceof TargetNode && currentDestinationNode.getParent() instanceof PolicySetNode)
-			return destinationBias == TreeMutator.BIAS_AFTER;
+			{return destinationBias == TreeMutator.BIAS_AFTER;}
 		return false;
 	}
 	private boolean isPolicyElementDropValid(int action, PolicyElementNode srcNode)
 	{
 		if(srcNode instanceof RuleNode)
-			return isRuleDropValid(action);
+			{return isRuleDropValid(action);}
 		else if(srcNode instanceof AbstractPolicyNode)
-			return isAbstractPolicyDropValid(action);
+			{return isAbstractPolicyDropValid(action);}
 		else
-			return false;
+			{return false;}
 	}
 
 	private boolean handleDrop(DropTargetDropEvent event) throws IOException, UnsupportedFlavorException
 	{
-		Transferable data = event.getTransferable();
-		int action = event.getDropAction();
+		final Transferable data = event.getTransferable();
+		final int action = event.getDropAction();
 		
 		updateCurrentDestination(event.getLocation(), event.getDropAction());
 		if(currentDestinationNode == null)
-			return false;
+			{return false;}
 		
 		if(data.isDataFlavorSupported(NodeTransferable.TARGET_FLAVOR))
 		{
 			if(!isTargetDropValid(action))
-				return false;
+				{return false;}
 			TargetNode destTarget;
 			if(currentDestinationNode instanceof PolicyElementNode)
-				destTarget = ((PolicyElementNode)currentDestinationNode).getTarget();
+				{destTarget = ((PolicyElementNode)currentDestinationNode).getTarget();}
 			else if(currentDestinationNode instanceof TargetNode)
-				destTarget = (TargetNode)currentDestinationNode;
+				{destTarget = (TargetNode)currentDestinationNode;}
 			else
-				return false;
-			TargetNode source = (TargetNode)data.getTransferData(NodeTransferable.TARGET_FLAVOR);
+				{return false;}
+			final TargetNode source = (TargetNode)data.getTransferData(NodeTransferable.TARGET_FLAVOR);
 			destTarget.setTarget(source.getTarget());
 			return true;
 		}
 		if(data.isDataFlavorSupported(NodeTransferable.CONDITION_FLAVOR))
 		{
 			if(!isConditionDropValid(action))
-				return false;
+				{return false;}
 			ConditionNode destCondition;
 			if(currentDestinationNode instanceof RuleNode)
-				destCondition = ((RuleNode)currentDestinationNode).getCondition();
+				{destCondition = ((RuleNode)currentDestinationNode).getCondition();}
 			else if(currentDestinationNode instanceof ConditionNode)
-				destCondition = (ConditionNode)currentDestinationNode;
+				{destCondition = (ConditionNode)currentDestinationNode;}
 			else
-				return false;
-			ConditionNode source = (ConditionNode)data.getTransferData(NodeTransferable.CONDITION_FLAVOR);
+				{return false;}
+			final ConditionNode source = (ConditionNode)data.getTransferData(NodeTransferable.CONDITION_FLAVOR);
 			destCondition.setCondition(source.getCondition());
 			return true;
 		}
 		if(data.isDataFlavorSupported(NodeTransferable.POLICY_ELEMENT_FLAVOR))
 		{
-			PolicyElementNode srcNode = (PolicyElementNode)data.getTransferData(NodeTransferable.POLICY_ELEMENT_FLAVOR);
-			PolicyElementContainer oldParent = (PolicyElementContainer)srcNode.getParent();
+			final PolicyElementNode srcNode = (PolicyElementNode)data.getTransferData(NodeTransferable.POLICY_ELEMENT_FLAVOR);
+			final PolicyElementContainer oldParent = (PolicyElementContainer)srcNode.getParent();
 
 			if(!isPolicyElementDropValid(action, srcNode))
-				return false;
+				{return false;}
 			
 			
 			PolicyElementContainer newParent;
 			if(destinationBias == TreeMutator.BIAS_CURRENT)
-				newParent = (PolicyElementContainer)currentDestinationNode;
+				{newParent = (PolicyElementContainer)currentDestinationNode;}
 			else
-				newParent = (PolicyElementContainer)currentDestinationNode.getParent();
+				{newParent = (PolicyElementContainer)currentDestinationNode.getParent();}
 						
 			if(isDescendantOrSelf(srcNode, newParent))
-				return false;
+				{return false;}
 			
 			if(action == DnDConstants.ACTION_MOVE)
 			{
 				if(oldParent != null)
-					oldParent.remove(srcNode);
+					{oldParent.remove(srcNode);}
 			}
 			
 			int insertionIndex = newParent.indexOfChild(currentDestinationNode);
 			if(insertionIndex < 0)
-				insertionIndex = newParent.getChildCount();
+				{insertionIndex = newParent.getChildCount();}
 			else if(destinationBias == TreeMutator.BIAS_AFTER) 
-				insertionIndex++;
+				{insertionIndex++;}
 			
 			if(action == DnDConstants.ACTION_MOVE && oldParent == newParent)
-				newParent.add(insertionIndex, srcNode);
+				{newParent.add(insertionIndex, srcNode);}
 			else
 			{
 				PolicyTreeElement copy;
-				String currentId = srcNode.getId().toString();
+				final String currentId = srcNode.getId().toString();
 				if(newParent.containsId(currentId))
-					copy = srcNode.create(URI.create(XACMLEditor.createUniqueId(newParent, currentId)));
+					{copy = srcNode.create(URI.create(XACMLEditor.createUniqueId(newParent, currentId)));}
 				else
-					copy = srcNode.create();
+					{copy = srcNode.create();}
 				newParent.add(insertionIndex, copy);
 			}
 			return true;
@@ -599,15 +599,15 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 
 	private boolean isDescendantOrSelf(PolicyElementNode srcNode, PolicyElementContainer newParent)
 	{
-		TreePath srcPath = XACMLTreeModel.getPathToNode(srcNode);
-		TreePath newParentPath = XACMLTreeModel.getPathToNode(newParent);
+		final TreePath srcPath = XACMLTreeModel.getPathToNode(srcNode);
+		final TreePath newParentPath = XACMLTreeModel.getPathToNode(newParent);
 		if(srcPath == null || newParentPath == null)
-			return false;
+			{return false;}
 		return srcNode == newParent || srcPath.isDescendant(newParentPath);
 	}
 	private void updateCurrentDestination(Point location, int dropAction)
 	{
-		TreePath currentPath = tree.getClosestPathForLocation(location.x, location.y);
+		final TreePath currentPath = tree.getClosestPathForLocation(location.x, location.y);
 		if(currentPath == null)
 		{
 			currentDestinationNode = null;
@@ -616,20 +616,20 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 		}
 		currentDestinationNode = (XACMLTreeNode)currentPath.getLastPathComponent();
 		
-		int row = tree.getRowForPath(currentPath);
-		Rectangle bounds = tree.getRowBounds(row);
+		final int row = tree.getRowForPath(currentPath);
+		final Rectangle bounds = tree.getRowBounds(row);
 		if(bounds.y > location.y || location.y < BIAS_DELTA_Y)
-			destinationBias = BIAS_BEFORE;
+			{destinationBias = BIAS_BEFORE;}
 		else if(bounds.y + bounds.height <= location.y)
-			destinationBias = BIAS_AFTER;
+			{destinationBias = BIAS_AFTER;}
 		else
 		{
 			if(isDestinationDifferent(tree.getClosestPathForLocation(location.x, location.y - BIAS_DELTA_Y)))
-				destinationBias = BIAS_BEFORE;
+				{destinationBias = BIAS_BEFORE;}
 			else if(isDestinationDifferent(tree.getClosestPathForLocation(location.x, location.y + BIAS_DELTA_Y)))
-				destinationBias = BIAS_AFTER;
+				{destinationBias = BIAS_AFTER;}
 			else
-				destinationBias = BIAS_CURRENT;
+				{destinationBias = BIAS_CURRENT;}
 		}
 	}
 	private boolean isDestinationDifferent(TreePath path)
@@ -642,8 +642,8 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	}
 	private void clearDestination()
 	{
-		XACMLTreeNode oldNode = currentDestinationNode;
-		int oldBias = destinationBias;
+		final XACMLTreeNode oldNode = currentDestinationNode;
+		final int oldBias = destinationBias;
 		currentDestinationNode = null;
 		destinationBias = BIAS_NO_DESTINATION;
 		repaintDestination(oldNode, oldBias);
@@ -651,33 +651,33 @@ public class TreeMutator implements ActionListener, DragGestureListener, DragSou
 	private void repaintDestination(XACMLTreeNode oldNode, int oldBias)
 	{
 		if(oldNode != null && oldBias != BIAS_NO_DESTINATION)
-			handleRepaintDestination(oldNode, oldBias);
+			{handleRepaintDestination(oldNode, oldBias);}
 		if(currentDestinationNode != null && destinationBias != BIAS_NO_DESTINATION)
-			handleRepaintDestination(currentDestinationNode, destinationBias);
+			{handleRepaintDestination(currentDestinationNode, destinationBias);}
 	}
 	private void handleRepaintDestination(XACMLTreeNode node, int bias)
 	{
 		if(node == null || bias == BIAS_NO_DESTINATION)
-			return;
+			{return;}
 
-		int row = tree.getRowForPath(XACMLTreeModel.getPathToNode(node));
+		final int row = tree.getRowForPath(XACMLTreeModel.getPathToNode(node));
 		repaintRow(row);
 		if(bias == BIAS_AFTER)
 		{
 			if(row+1 < tree.getRowCount())
-				repaintRow(row+1);
+				{repaintRow(row+1);}
 		}
 		else if(bias == BIAS_BEFORE)
 		{
 			if(row > 0)
-				repaintRow(row - 1);
+				{repaintRow(row - 1);}
 		}
 	}
 	private void repaintRow(int row)
 	{
-		Rectangle rect = tree.getRowBounds(row);
+		final Rectangle rect = tree.getRowBounds(row);
 		if (rect != null)
-			tree.repaint(rect);
+			{tree.repaint(rect);}
 	}
 
 

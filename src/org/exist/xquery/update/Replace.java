@@ -72,16 +72,16 @@ public class Replace extends Modification {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
-		Sequence inSeq = select.eval(contextSequence);
+			{contextSequence = contextItem.toSequence();}
+		final Sequence inSeq = select.eval(contextSequence);
 		if (inSeq.isEmpty())
-			return Sequence.EMPTY_SEQUENCE;
+			{return Sequence.EMPTY_SEQUENCE;}
 				
 		//START trap Replace failure
         /* If we try and Replace a node at an invalid location,
@@ -95,8 +95,8 @@ public class Replace extends Modification {
         	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
-        	XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
+        	final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        	final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
         		prevUpdateErrors = new ValueSequence();
@@ -109,29 +109,29 @@ public class Replace extends Modification {
 			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
         	if(!inSeq.isEmpty())
-        		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
+        		{throw xpe;}	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Replace failure
 		
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.isEmpty())
-			throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+			{throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));}
 		context.pushInScopeNamespaces();
         contentSeq = deepCopy(contentSeq);
         
         //start a transaction
-        Txn transaction = getTransaction();
+        final Txn transaction = getTransaction();
         try {
-            StoredNode ql[] = selectAndLock(transaction, inSeq);
-            IndexListener listener = new IndexListener(ql);
-            NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+            final StoredNode ql[] = selectAndLock(transaction, inSeq);
+            final IndexListener listener = new IndexListener(ql);
+            final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             Item temp;
             TextImpl text;
             AttrImpl attribute;
             ElementImpl parent;
             for (int i = 0; i < ql.length; i++) {
-                StoredNode node = ql[i];
-                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                final StoredNode node = ql[i];
+                final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
@@ -140,15 +140,15 @@ public class Replace extends Modification {
                 //update the document
                 parent = (ElementImpl) node.getParentStoredNode();
                 if (parent == null)
-                    throw new XPathException(this, "The root element of a document can not be replaced with 'update replace'. " +
-                            "Please consider removing the document or use 'update value' to just replace the children of the root.");
+                    {throw new XPathException(this, "The root element of a document can not be replaced with 'update replace'. " +
+                            "Please consider removing the document or use 'update value' to just replace the children of the root.");}
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
                         temp = contentSeq.itemAt(0);
 						if (!Type.subTypeOf(temp.getType(), Type.NODE))
-							throw new XPathException(this,
+							{throw new XPathException(this,
 									Messages.getMessage(Error.UPDATE_REPLACE_ELEM_TYPE,
-											Type.getTypeName(temp.getType())));
+											Type.getTypeName(temp.getType())));}
                         parent.replaceChild(transaction, ((NodeValue)temp).getNode(), node);
                         break;
                     case Node.TEXT_NODE: 
@@ -157,7 +157,7 @@ public class Replace extends Modification {
                         parent.updateChild(transaction, node, text);
                         break;
                     case Node.ATTRIBUTE_NODE:
-                        AttrImpl attr = (AttrImpl) node;
+                        final AttrImpl attr = (AttrImpl) node;
                         attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue());
                         attribute.setOwnerDocument(doc);
                         parent.updateChild(transaction, node, attribute);
@@ -174,13 +174,13 @@ public class Replace extends Modification {
             finishTriggers(transaction);
             //commit the transaction
             commitTransaction(transaction);
-        } catch (LockException e) {
+        } catch (final LockException e) {
             throw new XPathException(this, e.getMessage(), e);
-		} catch (PermissionDeniedException e) {
+		} catch (final PermissionDeniedException e) {
             throw new XPathException(this, e.getMessage(), e);
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
             throw new XPathException(this, e.getMessage(), e);
-        } catch (TriggerException e) {
+        } catch (final TriggerException e) {
             throw new XPathException(this, e.getMessage(), e);
 		} finally {
             unlockDocuments();
@@ -188,7 +188,7 @@ public class Replace extends Modification {
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
         
         return Sequence.EMPTY_SEQUENCE;
 	}
@@ -206,7 +206,7 @@ public class Replace extends Modification {
 	}
 	
 	public String toString() {
-		StringBuilder result = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
 		result.append("update replace ");		
 		result.append(select.toString());
 		result.append(" with ");

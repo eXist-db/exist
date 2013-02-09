@@ -91,8 +91,8 @@ public class PathFilter implements Filter {
 
         boolean conditionMet = false;
 
-        String queryString = httpServletRequest.getQueryString();
-        String requestURI = httpServletRequest.getRequestURI();
+        final String queryString = httpServletRequest.getQueryString();
+        final String requestURI = httpServletRequest.getRequestURI();
 
         LOG.info("requestURI = [" + requestURI + "]");
         LOG.info("queryString = [" + queryString + "]");
@@ -136,12 +136,12 @@ public class PathFilter implements Filter {
 
     private String validName(ServletRequest servletRequest) {
         String name = servletRequest.getRemoteHost();
-        String address = servletRequest.getRemoteAddr();
+        final String address = servletRequest.getRemoteAddr();
 
         if (name.equalsIgnoreCase(address)) {
             try {
                 name = InetAddress.getByName(address).getCanonicalHostName();
-            } catch (UnknownHostException e) {
+            } catch (final UnknownHostException e) {
                 name = null;
             }
         }
@@ -150,15 +150,15 @@ public class PathFilter implements Filter {
 
     private boolean denyMatch(ServletRequest servletRequest) {
 
-        String name = validName(servletRequest);
-        String address = servletRequest.getRemoteAddr();
+        final String name = validName(servletRequest);
+        final String address = servletRequest.getRemoteAddr();
         return denys.contains(address) || denys.contains(name);
     }
 
     private boolean allowMatch(ServletRequest servletRequest) {
 
-        String name = validName(servletRequest);
-        String address = servletRequest.getRemoteAddr();
+        final String name = validName(servletRequest);
+        final String address = servletRequest.getRemoteAddr();
 
         return allows.contains(address) || allows.contains(name);
     }
@@ -176,7 +176,7 @@ public class PathFilter implements Filter {
 
     public void setFilterConfig(FilterConfig filterConfig) {
         this.filterConfig = filterConfig;
-        Enumeration initParams = filterConfig.getInitParameterNames();
+        final Enumeration initParams = filterConfig.getInitParameterNames();
 
         // no initial parameters, so invoke the next filter in the chain
         if (initParams != null) {
@@ -184,8 +184,8 @@ public class PathFilter implements Filter {
             denys.clear();
             filterNames.clear();
             while (initParams.hasMoreElements()) {
-                String name = (String) initParams.nextElement();
-                String value = filterConfig.getInitParameter(name);
+                final String name = (String) initParams.nextElement();
+                final String value = filterConfig.getInitParameter(name);
 
                 LOG.info("Parameter [" + name + "][" + value + "]");
 

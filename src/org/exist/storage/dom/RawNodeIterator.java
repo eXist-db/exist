@@ -76,19 +76,19 @@ public class RawNodeIterator {
      * @throws IOException
      */
     public void seek(NodeHandle node) throws IOException {
-        Lock lock = db.getLock();
+        final Lock lock = db.getLock();
         try {
             lock.acquire(Lock.READ_LOCK);
             RecordPos rec = null;
             if (StorageAddress.hasAddress(node.getInternalAddress()))
-                rec = db.findRecord(node.getInternalAddress());
+                {rec = db.findRecord(node.getInternalAddress());}
             if (rec == null) {
                 try {
-                    long address = db.findValue(broker, new NodeProxy(node));
+                    final long address = db.findValue(broker, new NodeProxy(node));
                     if (address == BTree.KEY_NOT_FOUND)
-                        throw new IOException("Node not found.");
+                        {throw new IOException("Node not found.");}
                     rec = db.findRecord(address);
-                } catch (BTreeException e) {
+                } catch (final BTreeException e) {
                     throw new IOException("Node not found: " + e.getMessage());
                 }
             }
@@ -96,7 +96,7 @@ public class RawNodeIterator {
             //Position the stream at the very beginning of the record
             offset = rec.offset - DOMFile.LENGTH_TID;
             page = rec.getPage();
-        } catch (LockException e) {
+        } catch (final LockException e) {
             throw new IOException("Exception while scanning document: " + e.getMessage());
         } finally {
             lock.release(Lock.READ_LOCK);
@@ -109,11 +109,11 @@ public class RawNodeIterator {
      */
     public Value next() {
         Value nextValue = null;
-        Lock lock = db.getLock();
+        final Lock lock = db.getLock();
         try {
             try {
                 lock.acquire(Lock.READ_LOCK);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 LOG.error("Failed to acquire read lock on " + db.getFile().getName());
                 //TODO : throw exception here ? -pb
                 return null;
@@ -121,7 +121,7 @@ public class RawNodeIterator {
             db.setOwnerObject(broker);
             long backLink = 0;
             do {
-                DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
+                final DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
                 //Next value larger than length of the current page?
                 if (offset >= pageHeader.getDataLength()) {
                     //Load next page in chain
@@ -168,7 +168,7 @@ public class RawNodeIterator {
                     try {
                         final byte[] odata = db.getOverflowValue(overflow);
                         nextValue = new Value(odata);
-                    } catch(Exception e) {
+                    } catch(final Exception e) {
                         LOG.error("Exception while loading overflow value: " + e.getMessage() +
                             "; originating page: " + page.page.getPageInfo());
                     }
@@ -177,7 +177,7 @@ public class RawNodeIterator {
                     try {
                         nextValue = new Value(page.data, offset, valueLength);
                         offset += valueLength;
-                    } catch(Exception e) {
+                    } catch(final Exception e) {
                         LOG.error("Error while deserializing node: " + e.getMessage(), e);
                         LOG.error("Reading from offset: " + offset + "; len = " + valueLength);
                         LOG.debug(db.debugPageContents(page));

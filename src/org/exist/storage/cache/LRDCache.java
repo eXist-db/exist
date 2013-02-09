@@ -57,7 +57,7 @@ public class LRDCache extends GClockCache {
 	 * @see org.exist.storage.cache.LFUCache#add(org.exist.storage.cache.Cacheable, int)
 	 */
 	public void add(Cacheable item, int initialRefCount) {
-		Cacheable old = map.get(item.getKey());
+		final Cacheable old = map.get(item.getKey());
 		if (old != null) {
 			old.incReferenceCount();
 			totalReferences++;
@@ -69,13 +69,13 @@ public class LRDCache extends GClockCache {
 				map.put(item.getKey(), item);
 				used++;
 			} else
-				removeOne(item);
+				{removeOne(item);}
 			totalReferences += initialRefCount;
 		}
 		if(totalReferences > maxReferences)
-			cleanup();
+			{cleanup();}
 		else if (totalReferences > nextCleanup)
-			ageReferences();
+			{ageReferences();}
 	}
 
 	/* (non-Javadoc)
@@ -103,7 +103,7 @@ public class LRDCache extends GClockCache {
 			}
 		}
 		if (bucket < 0)
-			bucket = 0;
+			{bucket = 0;}
 		old = items[bucket];
 		if (old != null) {
 			map.remove(old.getKey());
@@ -131,7 +131,7 @@ public class LRDCache extends GClockCache {
 	protected void ageReferences() {
 		Cacheable item;
 		int refCount;
-		int limit = ageingPeriod / 10;
+		final int limit = ageingPeriod / 10;
 		for(int i = 0; i < count; i++) {
 			item = items[i];
 			if(item != null) {
@@ -139,7 +139,7 @@ public class LRDCache extends GClockCache {
 				if(refCount > limit) {
 					item.setReferenceCount(refCount - limit);
 				} else
-					item.setReferenceCount(1);
+					{item.setReferenceCount(1);}
 			}
 		}
 		nextCleanup += ageingPeriod;

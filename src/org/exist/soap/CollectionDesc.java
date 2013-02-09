@@ -180,10 +180,10 @@ public class CollectionDesc  implements java.io.Serializable {
 
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
-        if (!(obj instanceof CollectionDesc)) return false;
-        CollectionDesc other = (CollectionDesc) obj;
-        if (obj == null) return false;
-        if (this == obj) return true;
+        if (!(obj instanceof CollectionDesc)) {return false;}
+        final CollectionDesc other = (CollectionDesc) obj;
+        if (obj == null) {return false;}
+        if (this == obj) {return true;}
         if (__equalsCalc != null) {
             return (__equalsCalc == obj);
         }
@@ -228,7 +228,7 @@ public class CollectionDesc  implements java.io.Serializable {
             _hashCode += getGroup().hashCode();
         }
         _hashCode += getPermissions();
-        _hashCode += new Long(getCreated()).hashCode();
+        _hashCode += Long.valueOf(getCreated()).hashCode();
         if (getCollections() != null) {
             _hashCode += getCollections().hashCode();
         }

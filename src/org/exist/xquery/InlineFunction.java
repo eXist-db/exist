@@ -53,11 +53,11 @@ public class InlineFunction extends AbstractExpression {
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         cachedContextInfo = new AnalyzeContextInfo(contextInfo);
 
-        AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
+        final AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
 		info.addFlag(SINGLE_STEP_EXECUTION);
 		
 		// local variable context is known within inline function:
-		List<Variable> closureVars = context.getLocalStack();
+		final List<Variable> closureVars = context.getLocalStack();
 		function.setClosureVariables(closureVars);
 		
 		function.analyze(info);
@@ -77,10 +77,10 @@ public class InlineFunction extends AbstractExpression {
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 			throws XPathException {
 		// local variable context is known within inline function
-		List<Variable> closureVars = context.getLocalStack();
+		final List<Variable> closureVars = context.getLocalStack();
 		function.setClosureVariables(closureVars);
 		
-		FunctionCall call = new FunctionCall(context, function);
+		final FunctionCall call = new FunctionCall(context, function);
 		call.setLocation(function.getLine(), function.getColumn());
 		function.setCaller(call);
 		function.analyze(cachedContextInfo);

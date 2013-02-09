@@ -126,16 +126,16 @@ public class FunGetDurationComponent extends BasicFunction {
 			context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES",
 					Dependency.getDependenciesName(this.getDependencies()));
 			if (contextSequence != null)
-				context.getProfiler().message(this, Profiler.START_SEQUENCES,
-						"CONTEXT SEQUENCE", contextSequence);
+				{context.getProfiler().message(this, Profiler.START_SEQUENCES,
+						"CONTEXT SEQUENCE", contextSequence);}
 		}
         
 		Sequence result;
 		if (args.length == 0 || args[0].isEmpty()) {
 			result = Sequence.EMPTY_SEQUENCE;
 		} else {
-			Sequence arg = args[0];
-			DurationValue duration = new DurationValue(((DurationValue) arg.itemAt(0)).getCanonicalDuration());
+			final Sequence arg = args[0];
+			final DurationValue duration = new DurationValue(((DurationValue) arg.itemAt(0)).getCanonicalDuration());
 			if (isCalledAs("days-from-duration")) {
             result = new IntegerValue(duration.getPart(DurationValue.DAY));
 			} else if (isCalledAs("hours-from-duration")) {
@@ -144,11 +144,11 @@ public class FunGetDurationComponent extends BasicFunction {
             result = new IntegerValue(duration.getPart(DurationValue.MINUTE));
 			} else if (isCalledAs("seconds-from-duration")) {
 				if (duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS) == null)
-					result = new DecimalValue(0);
+					{result = new DecimalValue(0);}
 				else
-					result = new DecimalValue((BigDecimal)duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS));
+					{result = new DecimalValue((BigDecimal)duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS));}
 				if (duration.getCanonicalDuration().getSign() < 0)
-					result = ((DecimalValue)result).negate();
+					{result = ((DecimalValue)result).negate();}
 			} else if (isCalledAs("months-from-duration")) {
             result = new IntegerValue(duration.getPart(DurationValue.MONTH));
 			} else if (isCalledAs("years-from-duration")) {
@@ -160,7 +160,7 @@ public class FunGetDurationComponent extends BasicFunction {
 		}
 		
 		if (context.getProfiler().isEnabled()) 
-			context.getProfiler().end(this, "", result);
+			{context.getProfiler().end(this, "", result);}
 		
 		return result;
 		

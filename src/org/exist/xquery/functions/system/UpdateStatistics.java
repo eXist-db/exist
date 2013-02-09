@@ -51,7 +51,7 @@ public class UpdateStatistics extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        IndexStatisticsWorker index = (IndexStatisticsWorker)
+        final IndexStatisticsWorker index = (IndexStatisticsWorker)
             context.getBroker().getIndexController().getWorkerByIndexId(IndexStatistics.ID);
         if (index != null) {
             index.updateIndex(context.getBroker());

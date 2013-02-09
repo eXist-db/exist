@@ -71,20 +71,20 @@ public class FunEscapeURI extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }
         
         Sequence result;
         if (args[0].isEmpty())
-            result = StringValue.EMPTY_STRING;
+            {result = StringValue.EMPTY_STRING;}
         else {
-            String uri = args[0].getStringValue();
-            boolean escapeReserved = args[1].effectiveBooleanValue();
+            final String uri = args[0].getStringValue();
+            final boolean escapeReserved = args[1].effectiveBooleanValue();
             return new StringValue(escape(uri, escapeReserved));
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;            
     }
@@ -98,9 +98,9 @@ public class FunEscapeURI extends BasicFunction {
      */
     public static String escape(CharSequence s, boolean escapeReserved) {
         //TODO : use dedidated URIUtils... -pb
-        StringBuilder sb = new StringBuilder(s.length());
+        final StringBuilder sb = new StringBuilder(s.length());
         for (int i=0; i<s.length(); i++) {
-            char c = s.charAt(i);
+            final char c = s.charAt(i);
             if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9')) {
                 sb.append(c);
             } else if (c<=0x20 || c>=0x7f) {
@@ -125,10 +125,10 @@ public class FunEscapeURI extends BasicFunction {
     private static final String hex = "0123456789ABCDEF";
 
     private static void escapeChar(char c, char c2, StringBuilder sb) {
-        byte[] array = new byte[4];
-        int used = UTF8.getUTF8Encoding(c, c2, array);
+        final byte[] array = new byte[4];
+        final int used = UTF8.getUTF8Encoding(c, c2, array);
         for (int b=0; b<used; b++) {
-            int v = (array[b]>=0 ? array[b] : 256 + array[b]);
+            final int v = (array[b]>=0 ? array[b] : 256 + array[b]);
             sb.append('%');
             sb.append(hex.charAt(v/16));
             sb.append(hex.charAt(v%16));

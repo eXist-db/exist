@@ -147,7 +147,7 @@ public class XIncludeFilter implements Receiver {
 	 */
 	public void characters(CharSequence seq) throws SAXException {
         if (!inFallback || error != null)
-            receiver.characters(seq);
+            {receiver.characters(seq);}
 	}
 	
 	/* (non-Javadoc)
@@ -155,7 +155,7 @@ public class XIncludeFilter implements Receiver {
 	 */
 	public void comment(char[] ch, int start, int length) throws SAXException {
         if (!inFallback || error != null)
-            receiver.comment(ch, start, length);
+            {receiver.comment(ch, start, length);}
 	}
 	
 	/**
@@ -177,12 +177,12 @@ public class XIncludeFilter implements Receiver {
             } else if (XI_INCLUDE.equals(qname.getLocalName()) && error != null) {
                 // found an error, but there was no fallback element.
                 // throw the exception now
-                Exception e = error;
+                final Exception e = error;
                 error = null;
                 throw new SAXException(e.getMessage(), e);
             }
         } else if (!inFallback || error != null)
-            receiver.endElement(qname);
+            {receiver.endElement(qname);}
     }
 	
 	public void endPrefixMapping(String prefix) throws SAXException {
@@ -195,7 +195,7 @@ public class XIncludeFilter implements Receiver {
 	 */
 	public void processingInstruction(String target, String data) throws SAXException {
         if (!inFallback || error != null)
-            receiver.processingInstruction(target, data);
+            {receiver.processingInstruction(target, data);}
 	}
 
     /**
@@ -203,7 +203,7 @@ public class XIncludeFilter implements Receiver {
      */
     public void cdataSection(char[] ch, int start, int len) throws SAXException {
         if (!inFallback || error != null)
-            receiver.cdataSection(ch, start, len);
+            {receiver.cdataSection(ch, start, len);}
     }
     
 	/**
@@ -218,7 +218,7 @@ public class XIncludeFilter implements Receiver {
 	 */
 	public void attribute(QName qname, String value) throws SAXException {
         if (!inFallback || error != null)
-            receiver.attribute(qname, value);
+            {receiver.attribute(qname, value);}
 	}
 	
 	/* (non-Javadoc)
@@ -228,12 +228,12 @@ public class XIncludeFilter implements Receiver {
 		if (qname.getNamespaceURI() != null && qname.getNamespaceURI().equals(XINCLUDE_NS)) {
 			if (qname.getLocalName().equals(XI_INCLUDE)) {
                 if (LOG.isDebugEnabled())
-                    LOG.debug("processing include ...");
+                    {LOG.debug("processing include ...");}
                 try {
                     processXInclude(attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB));
                 } catch (ResourceError resourceError) {
                     if (LOG.isDebugEnabled())
-                        LOG.debug(resourceError.getMessage(), resourceError);
+                        {LOG.debug(resourceError.getMessage(), resourceError);}
                     error = resourceError;
 				}
             } else if (qname.getLocalName().equals(XI_FALLBACK)) {
@@ -256,7 +256,7 @@ public class XIncludeFilter implements Receiver {
 
     protected void processXInclude(String href, String xpointer) throws SAXException, ResourceError {
         if(href == null)
-            throw new SAXException("No href attribute found in XInclude include element");
+            {throw new SAXException("No href attribute found in XInclude include element");}
         // save some settings
         DocumentImpl prevDoc = document;
         boolean createContainerElements = serializer.createContainerElements;
@@ -271,7 +271,7 @@ public class XIncludeFilter implements Receiver {
                    externalUri = stylesheetUri.getXmldbURI();
                }
                */
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             //could be an external URI!
         }
 
@@ -286,14 +286,14 @@ public class XIncludeFilter implements Receiver {
         boolean xqueryDoc = false;
         
         if (docUri != null) {
-            String fragment = docUri.getFragment();
+            final String fragment = docUri.getFragment();
             if (!(fragment == null || fragment.length() == 0))
-                throw new SAXException("Fragment identifiers must not be used in an xinclude href attribute. To specify an " +
-                        "xpointer, use the xpointer attribute.");
+                {throw new SAXException("Fragment identifiers must not be used in an xinclude href attribute. To specify an " +
+                        "xpointer, use the xpointer attribute.");}
 
             // extract possible parameters in the URI
             params = null;
-            String paramStr = docUri.getQuery();
+            final String paramStr = docUri.getQuery();
             if (paramStr != null) {
                 params = processParameters(paramStr);
                 // strip query part
@@ -305,13 +305,13 @@ public class XIncludeFilter implements Receiver {
 
             // Patch 1520454 start
             if (!docUri.isAbsolute() && document != null) {
-                String base = document.getCollection().getURI() + "/";
-                String child = "./" + docUri.toString();
+                final String base = document.getCollection().getURI() + "/";
+                final String child = "./" + docUri.toString();
 
-                URI baseUri = URI.create(base);
-                URI childUri = URI.create(child);
+                final URI baseUri = URI.create(base);
+                final URI childUri = URI.create(child);
 
-                URI uri = baseUri.resolve(childUri);
+                final URI uri = baseUri.resolve(childUri);
                 docUri = XmldbURI.create(uri);
             }
             // Patch 1520454 end
@@ -321,7 +321,7 @@ public class XIncludeFilter implements Receiver {
             try {
                 doc = serializer.broker.getResource(docUri, Permission.READ);
 
-            } catch (PermissionDeniedException e) {
+            } catch (final PermissionDeniedException e) {
                 LOG.warn("permission denied", e);
                 throw new ResourceError("Permission denied to read xincluded resource", e);
             }
@@ -335,23 +335,23 @@ public class XIncludeFilter implements Receiver {
         if (docUri == null || (doc == null && !docUri.isAbsolute())) {
             try {
                 URI externalUri = new URI(href);
-                String scheme = externalUri.getScheme();
+                final String scheme = externalUri.getScheme();
                 // If the URI has no scheme is specified,
                 // we have to check if it is a relative path, and if yes, try to
                 // interpret it relative to the moduleLoadPath property of the current
                 // XQuery context.
                 if (scheme == null && moduleLoadPath != null) {
-                    String path = externalUri.getSchemeSpecificPart();
+                    final String path = externalUri.getSchemeSpecificPart();
                     File f = new File(path);
                     if (!f.isAbsolute()) {
                         if (moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-                            XmldbURI parentUri = XmldbURI.create(moduleLoadPath);
+                            final XmldbURI parentUri = XmldbURI.create(moduleLoadPath);
                             docUri = parentUri.append(path);
                             try {
                                 doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
                                 if(doc != null && !doc.getPermissions().validate(serializer.broker.getSubject(), Permission.READ))
-                                    throw new ResourceError("Permission denied to read xincluded resource");
-                            } catch (PermissionDeniedException e) {
+                                    {throw new ResourceError("Permission denied to read xincluded resource");}
+                            } catch (final PermissionDeniedException e) {
                                 LOG.warn("permission denied", e);
                                 throw new ResourceError("Permission denied to read xincluded resource", e);
                             }
@@ -362,17 +362,17 @@ public class XIncludeFilter implements Receiver {
                     }
                 }
                 if (doc == null)
-                    memtreeDoc = parseExternal(externalUri);
-            } catch (IOException e) {
+                    {memtreeDoc = parseExternal(externalUri);}
+            } catch (final IOException e) {
                 throw new ResourceError("XInclude: failed to read document at URI: " + href +
                     ": " + e.getMessage(), e);
-            } catch (PermissionDeniedException e) {
+            } catch (final PermissionDeniedException e) {
                 throw new ResourceError("XInclude: failed to read document at URI: " + href +
                     ": " + e.getMessage(), e);
-            } catch (ParserConfigurationException e) {
+            } catch (final ParserConfigurationException e) {
                 throw new ResourceError("XInclude: failed to read document at URI: " + href +
                     ": " + e.getMessage(), e);
-            } catch (URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 throw new ResourceError("XInclude: failed to read document at URI: " + href +
                     ": " + e.getMessage(), e);
             }
@@ -384,32 +384,32 @@ public class XIncludeFilter implements Receiver {
                * a collection.
                */
         if (doc == null && memtreeDoc == null && xpointer == null)
-            throw new ResourceError("document " + docUri + " not found");
+            {throw new ResourceError("document " + docUri + " not found");}
 
         if (xpointer == null && !xqueryDoc) {
             // no xpointer found - just serialize the doc
             if (memtreeDoc == null)
-                serializer.serializeToReceiver(doc, false);
+                {serializer.serializeToReceiver(doc, false);}
             else
-                serializer.serializeToReceiver(memtreeDoc, false);
+                {serializer.serializeToReceiver(memtreeDoc, false);}
         } else {
             // process the xpointer or the stored XQuery
             try {
                 Source source;
                 if (xpointer == null)
-                    source = new DBSource(serializer.broker, (BinaryDocument) doc, true);
+                    {source = new DBSource(serializer.broker, (BinaryDocument) doc, true);}
                 else {
                     xpointer = checkNamespaces(xpointer);
                     source = new StringSource(xpointer);
                 }
-                XQuery xquery = serializer.broker.getXQueryService();
-                XQueryPool pool = xquery.getXQueryPool();
+                final XQuery xquery = serializer.broker.getXQueryService();
+                final XQueryPool pool = xquery.getXQueryPool();
                 XQueryContext context;
                 CompiledXQuery compiled = pool.borrowCompiledXQuery(serializer.broker, source);
                 if (compiled != null)
-                    context = compiled.getContext();
+                    {context = compiled.getContext();}
                 else
-                    context = xquery.newContext(AccessContext.XINCLUDE);
+                    {context = xquery.newContext(AccessContext.XINCLUDE);}
                 context.declareNamespaces(namespaces);
                 context.declareNamespace("xinclude", XINCLUDE_NS);
                 
@@ -417,13 +417,13 @@ public class XIncludeFilter implements Receiver {
                 if(serializer.httpContext != null)
                 {
                 	if(serializer.httpContext.getRequest() != null)
-                		context.declareVariable(RequestModule.PREFIX + ":request", serializer.httpContext.getRequest());
+                		{context.declareVariable(RequestModule.PREFIX + ":request", serializer.httpContext.getRequest());}
                 	
                 	if(serializer.httpContext.getResponse() != null)
-                		context.declareVariable(ResponseModule.PREFIX + ":response", serializer.httpContext.getResponse());
+                		{context.declareVariable(ResponseModule.PREFIX + ":response", serializer.httpContext.getResponse());}
                 	
                 	if(serializer.httpContext.getSession() != null)
-                		context.declareVariable(SessionModule.PREFIX + ":session", serializer.httpContext.getSession());
+                		{context.declareVariable(SessionModule.PREFIX + ":session", serializer.httpContext.getSession());}
                 }
                 
                 //TODO: change these to putting the XmldbURI in, but we need to warn users!
@@ -434,14 +434,14 @@ public class XIncludeFilter implements Receiver {
                 
                 if (xpointer != null) {
                     if(doc != null)
-                        context.setStaticallyKnownDocuments(new XmldbURI[] { doc.getURI() } );
+                        {context.setStaticallyKnownDocuments(new XmldbURI[] { doc.getURI() } );}
                     else if (docUri != null)
-                        context.setStaticallyKnownDocuments(new XmldbURI[] { docUri });
+                        {context.setStaticallyKnownDocuments(new XmldbURI[] { docUri });}
                 }
 
                 // pass parameters as variables
                 if (params != null) {
-                    for (Map.Entry<String, String> entry : params.entrySet()) {
+                    for (final Map.Entry<String, String> entry : params.entrySet()) {
                         context.declareVariable(entry.getKey(), entry.getValue());
                     }
                 }
@@ -449,22 +449,22 @@ public class XIncludeFilter implements Receiver {
                 if(compiled == null) {
                     try {
                         compiled = xquery.compile(context, source, xpointer != null);
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         throw new SAXException("I/O error while reading query for xinclude: " + e.getMessage(), e);
                     }
                 }
                 LOG.info("xpointer query: " + ExpressionDumper.dump((Expression) compiled));
                 Sequence contextSeq = null;
                 if (memtreeDoc != null)
-                    contextSeq = memtreeDoc;
-                Sequence seq = xquery.execute(compiled, contextSeq);
+                    {contextSeq = memtreeDoc;}
+                final Sequence seq = xquery.execute(compiled, contextSeq);
 
                 if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
                     if (LOG.isDebugEnabled())
-                        LOG.debug("xpointer found: " + seq.getItemCount());
+                        {LOG.debug("xpointer found: " + seq.getItemCount());}
 
                     NodeValue node;
-                    for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+                    for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
                         node = (NodeValue) i.nextItem();
                         serializer.serializeToReceiver(node, false);
                     }
@@ -476,10 +476,10 @@ public class XIncludeFilter implements Receiver {
                     }
                 }
 
-            } catch (XPathException e) {
+            } catch (final XPathException e) {
                 LOG.warn("xpointer error", e);
                 throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
-            } catch (PermissionDeniedException e) {
+            } catch (final PermissionDeniedException e) {
                 LOG.warn("xpointer error", e);
                 throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
 			}
@@ -490,10 +490,10 @@ public class XIncludeFilter implements Receiver {
     }
 
     private org.exist.memtree.DocumentImpl parseExternal(URI externalUri) throws IOException, ResourceError, PermissionDeniedException, ParserConfigurationException, SAXException {
-        URLConnection con = externalUri.toURL().openConnection();
+        final URLConnection con = externalUri.toURL().openConnection();
         if(con instanceof HttpURLConnection)
         {
-            HttpURLConnection httpConnection = (HttpURLConnection)con;
+            final HttpURLConnection httpConnection = (HttpURLConnection)con;
             if(httpConnection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND)
             {
                 // Special case: '404'
@@ -507,15 +507,15 @@ public class XIncludeFilter implements Receiver {
         }
 
         // we use eXist's in-memory DOM implementation
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
-        InputSource src = new InputSource(con.getInputStream());
-        SAXParser parser = factory.newSAXParser();
-        XMLReader reader = parser.getXMLReader();
-        SAXAdapter adapter = new SAXAdapter();
+        final InputSource src = new InputSource(con.getInputStream());
+        final SAXParser parser = factory.newSAXParser();
+        final XMLReader reader = parser.getXMLReader();
+        final SAXAdapter adapter = new SAXAdapter();
         reader.setContentHandler(adapter);
         reader.parse(src);
-        org.exist.memtree.DocumentImpl doc =
+        final org.exist.memtree.DocumentImpl doc =
                 (org.exist.memtree.DocumentImpl)adapter.getDocument();
         doc.setDocumentURI(externalUri.toString());
         return doc;
@@ -537,49 +537,49 @@ public class XIncludeFilter implements Receiver {
 		int p0;
 		while((p0 = xpointer.indexOf("xmlns(")) != Constants.STRING_NOT_FOUND) {
 			if(p0 < 0)
-				return xpointer;
-			int p1 = xpointer.indexOf(')', p0 + 6);
+				{return xpointer;}
+			final int p1 = xpointer.indexOf(')', p0 + 6);
 			if(p1 < 0)
-				throw new XPathException("expected ) for xmlns()");
-			String mapping = xpointer.substring(p0 + 6, p1);
+				{throw new XPathException("expected ) for xmlns()");}
+			final String mapping = xpointer.substring(p0 + 6, p1);
 			xpointer = xpointer.substring(0, p0) + xpointer.substring(p1 + 1);
-			StringTokenizer tok = new StringTokenizer(mapping, "= \t\n");
+			final StringTokenizer tok = new StringTokenizer(mapping, "= \t\n");
 			if(tok.countTokens() < 2)
-				throw new XPathException("expected prefix=namespace mapping in " + mapping);
-			String prefix = tok.nextToken();
-			String namespaceURI = tok.nextToken();
+				{throw new XPathException("expected prefix=namespace mapping in " + mapping);}
+			final String prefix = tok.nextToken();
+			final String namespaceURI = tok.nextToken();
 			namespaces.put(prefix, namespaceURI);
 		}
 		return xpointer;
 	}
     
     protected HashMap<String, String> processParameters(String args) {
-        HashMap<String, String> parameters = new HashMap<String, String>();
+        final HashMap<String, String> parameters = new HashMap<String, String>();
         String param;
         String value; 
         int start = 0;
         int end = 0;
-        int l = args.length();
+        final int l = args.length();
         while ((start < l) && (end < l)) {
             while ((end < l) && (args.charAt(end++) != '='))
                 ;
             if (end == l)
-                break;
+                {break;}
             param = args.substring(start, end - 1);
             start = end;
             while ((end < l) && (args.charAt(end++) != '&'))
                 ;
             if (end == l)
-                value = args.substring(start);
+                {value = args.substring(start);}
             else
-                value = args.substring(start, end - 1);
+                {value = args.substring(start, end - 1);}
             start = end;
             try {
                 param = URLDecoder.decode(param, "UTF-8");
                 value = URLDecoder.decode(value, "UTF-8");
                 LOG.debug("parameter: " + param + " = " + value);
                 parameters.put(param, value);
-            } catch (UnsupportedEncodingException e) {
+            } catch (final UnsupportedEncodingException e) {
                 LOG.warn(e.getMessage(), e);
             }
         }

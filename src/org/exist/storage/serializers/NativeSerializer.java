@@ -75,22 +75,22 @@ public class NativeSerializer extends Serializer {
     			return;
     	}
     	setDocument(p.getDocument());
-    	if (generateDocEvent) receiver.startDocument();
-        Iterator<StoredNode> domIter = broker.getNodeIterator(new StoredNode(p));
+    	if (generateDocEvent) {receiver.startDocument();}
+        final Iterator<StoredNode> domIter = broker.getNodeIterator(new StoredNode(p));
         serializeToReceiver(null, domIter, p.getDocument(), checkAttributes, p.getMatches(), new TreeSet<String>());
-        if (generateDocEvent) receiver.endDocument();
+        if (generateDocEvent) {receiver.endDocument();}
     }
     
     protected void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent) throws SAXException {
-    	long start = System.currentTimeMillis();
+    	final long start = System.currentTimeMillis();
     	
     	setDocument(doc);
-    	NodeList children = doc.getChildNodes();
+    	final NodeList children = doc.getChildNodes();
     	if (generateDocEvent) 
-    		receiver.startDocument();
+    		{receiver.startDocument();}
 		
     	if (doc.getDoctype() != null){
-			if (getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no").equals("yes")) {
+			if ("yes".equals(getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no"))) {
 				final StoredNode n = (StoredNode) doc.getDoctype();
 				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), true, null, new TreeSet<String>());
 			}
@@ -98,19 +98,19 @@ public class NativeSerializer extends Serializer {
     	
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
-    		StoredNode node = (StoredNode) children.item(i);
-    		Iterator<StoredNode> domIter = broker.getNodeIterator(node);
+    		final StoredNode node = (StoredNode) children.item(i);
+    		final Iterator<StoredNode> domIter = broker.getNodeIterator(node);
     		domIter.next();
-    		NodeProxy p = new NodeProxy(node);
+    		final NodeProxy p = new NodeProxy(node);
     		serializeToReceiver(node, domIter, (DocumentImpl)node.getOwnerDocument(), 
     				true, p.getMatches(), new TreeSet<String>());
     	}
 
-    	if (generateDocEvent) receiver.endDocument();
+    	if (generateDocEvent) {receiver.endDocument();}
 
     	if (LOG.isDebugEnabled())
-			LOG.debug("serializing document " + doc.getDocId() + " (" + doc.getURI() + ")"
-	    			+ " to SAX took " + (System.currentTimeMillis() - start) + " msec");
+			{LOG.debug("serializing document " + doc.getDocId() + " (" + doc.getURI() + ")"
+	    			+ " to SAX took " + (System.currentTimeMillis() - start) + " msec");}
 
     }
     
@@ -118,9 +118,9 @@ public class NativeSerializer extends Serializer {
     protected void serializeToReceiver(StoredNode node, Iterator<StoredNode> iter,
             DocumentImpl doc, boolean first, Match match, Set<String> namespaces) throws SAXException {
         if (node == null) 
-        	node = iter.next();
+        	{node = iter.next();}
         if (node == null) 
-        	return;
+        	{return;}
         // char ch[];
         String cdata;
         switch (node.getNodeType()) {
@@ -130,7 +130,7 @@ public class NativeSerializer extends Serializer {
 	        if (((ElementImpl) node).declaresNamespacePrefixes()) {
 	        	// declare namespaces used by this element
 	        	String prefix, uri;
-	        	for (Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
+	        	for (final Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
 	        		prefix = i.next();
 	        		if (prefix.length() == 0) {
 	        			defaultNS = ((ElementImpl) node).getNamespaceForPrefix(prefix);
@@ -143,10 +143,10 @@ public class NativeSerializer extends Serializer {
 	        		}
 	        	}
 	        }
-	        String ns = defaultNS == null ? node.getNamespaceURI() : defaultNS;
+	        final String ns = defaultNS == null ? node.getNamespaceURI() : defaultNS;
 	        if (ns.length() > 0 && (!namespaces.contains(ns)))
-	        	receiver.startPrefixMapping(node.getPrefix(), ns);
-        	AttrList attribs = new AttrList();
+	        	{receiver.startPrefixMapping(node.getPrefix(), ns);}
+        	final AttrList attribs = new AttrList();
         	if ((first && showId == EXIST_ID_ELEMENT) || showId == EXIST_ID_ALL) {
                 attribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
             /* 
@@ -182,7 +182,7 @@ public class NativeSerializer extends Serializer {
             	// String src = doc.getCollection().getName() + "/" + doc.getFileName();
                 attribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
             }
-            int children = node.getChildCount();
+            final int children = node.getChildCount();
             int count = 0;
             // int childLen;
             StoredNode child = null;
@@ -190,14 +190,14 @@ public class NativeSerializer extends Serializer {
                 child = (StoredNode) iter.next();
                 if (child!=null && child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
-                        cdata = processAttribute(((AttrImpl) child).getValue(), node.getNodeId(), match);
+                        {cdata = processAttribute(((AttrImpl) child).getValue(), node.getNodeId(), match);}
                     else
-                        cdata = ((AttrImpl) child).getValue();
+                        {cdata = ((AttrImpl) child).getValue();}
                     attribs.addAttribute(child.getQName(), cdata);
                     count++;
                     child.release();
                 } else
-                    break;
+                    {break;}
             }
             receiver.setCurrentNode(node);
             receiver.startElement(node.getQName(), attribs);
@@ -206,24 +206,24 @@ public class NativeSerializer extends Serializer {
                 if (++count < children) {
                     child = (StoredNode) iter.next();
                 } else
-                    break;
+                    {break;}
             }
             receiver.setCurrentNode(node);
             receiver.endElement(node.getQName());
             if (((ElementImpl) node).declaresNamespacePrefixes()) {
                 String prefix;
-                for (Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
+                for (final Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
                     prefix = i.next();
                     receiver.endPrefixMapping(prefix);
                 }
             }
             if (ns.length() > 0 && (!namespaces.contains(ns)))
-                receiver.endPrefixMapping(node.getPrefix());
+                {receiver.endPrefixMapping(node.getPrefix());}
             node.release();
             break;
         case Node.TEXT_NODE:
         	if (first && createContainerElements) {
-                AttrList tattribs = new AttrList();
+                final AttrList tattribs = new AttrList();
                 if (showId > 0) {
                     tattribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
                     tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
@@ -233,17 +233,17 @@ public class NativeSerializer extends Serializer {
             receiver.setCurrentNode(node);
             receiver.characters(((TextImpl) node).getXMLString());
             if (first && createContainerElements)
-                receiver.endElement(TEXT_ELEMENT);
+                {receiver.endElement(TEXT_ELEMENT);}
             node.release();
             break;
         case Node.ATTRIBUTE_NODE:
             if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) == TAG_ATTRIBUTE_MATCHES)
-                cdata = processAttribute(((AttrImpl) node).getValue(), node.getNodeId(), match);
+                {cdata = processAttribute(((AttrImpl) node).getValue(), node.getNodeId(), match);}
             else
-                cdata = ((AttrImpl) node).getValue();
+                {cdata = ((AttrImpl) node).getValue();}
         	if(first) {
                 if (createContainerElements) {               
-            		AttrList tattribs = new AttrList();
+            		final AttrList tattribs = new AttrList();
                     if (showId > 0) {
                         tattribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
                         tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
@@ -254,7 +254,7 @@ public class NativeSerializer extends Serializer {
                 }
                 else {
                 	if (this.outputProperties.getProperty("output-method") != null &&
-                			this.outputProperties.getProperty("output-method").equals("text")) {
+                			"text".equals(this.outputProperties.getProperty("output-method"))) {
                 		receiver.characters(node.getNodeValue());                	
                 	} else {
                 		LOG.warn("Error SENR0001: attribute '" + node.getQName() + "' has no parent element. " +
@@ -263,13 +263,13 @@ public class NativeSerializer extends Serializer {
                 	}
                 }
             } else
-        		receiver.attribute(node.getQName(), cdata);
+        		{receiver.attribute(node.getQName(), cdata);}
             node.release();
             break;
 		case Node.DOCUMENT_TYPE_NODE:
-			String systemId = ((DocumentTypeImpl) node).getSystemId();
-			String publicId =  ((DocumentTypeImpl) node).getPublicId();
-			String name = ((DocumentTypeImpl) node).getName();
+			final String systemId = ((DocumentTypeImpl) node).getSystemId();
+			final String publicId =  ((DocumentTypeImpl) node).getPublicId();
+			final String name = ((DocumentTypeImpl) node).getName();
 			receiver.documentType(name, publicId, systemId);
 			break;
         case Node.PROCESSING_INSTRUCTION_NODE:
@@ -279,16 +279,16 @@ public class NativeSerializer extends Serializer {
             node.release();
             break;
         case Node.COMMENT_NODE:
-            String comment = ((CommentImpl) node).getData();
+            final String comment = ((CommentImpl) node).getData();
             char data[] = new char[comment.length()];
             comment.getChars(0, data.length, data, 0);
             receiver.comment(data, 0, data.length);
             node.release();
             break;
         case Node.CDATA_SECTION_NODE:
-            String str = ((CDATASectionImpl)node).getData();
+            final String str = ((CDATASectionImpl)node).getData();
             if (first)
-                receiver.characters(str);
+                {receiver.characters(str);}
             else {
                 data = new char[str.length()];
                 str.getChars(0,str.length(), data, 0);   
@@ -300,7 +300,7 @@ public class NativeSerializer extends Serializer {
     }
 
     private final String processAttribute(String data, NodeId nodeId, Match match) {
-        if (match == null) return data;
+        if (match == null) {return data;}
         // prepare a regular expression to mark match-terms
         StringBuilder expr = null;
         Match next = match;
@@ -310,15 +310,15 @@ public class NativeSerializer extends Serializer {
                     expr = new StringBuilder();
                     expr.append("\\b(");
                 }
-                if (expr.length() > 5) expr.append('|');
+                if (expr.length() > 5) {expr.append('|');}
                 expr.append("");
             }
             next = next.getNextMatch();
         }
         if (expr != null) {
             expr.append(")\\b");
-            Pattern pattern = Pattern.compile(expr.toString(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            Matcher matcher = pattern.matcher(data);
+            final Pattern pattern = Pattern.compile(expr.toString(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            final Matcher matcher = pattern.matcher(data);
             return matcher.replaceAll("||$1||");
         }
         return data;

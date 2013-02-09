@@ -52,7 +52,7 @@ public class ExistPolicyModule extends PolicyFinderModule
 	public ExistPolicyModule(ExistPDP pdp)
 	{
 		if(pdp == null)
-			throw new NullPointerException("BrokerPool cannot be null");
+			{throw new NullPointerException("BrokerPool cannot be null");}
 		this.pdp = pdp;
 	}
 
@@ -68,17 +68,17 @@ public class ExistPolicyModule extends PolicyFinderModule
 
 	public PolicyFinderResult findPolicy(EvaluationCtx context)
 	{
-		BrokerPool pool = pdp.getBrokerPool();
+		final BrokerPool pool = pdp.getBrokerPool();
 		DBBroker broker = null;
 		try
 		{
 			broker = pool.get(pool.getSecurityManager().getSystemSubject());
 			return findPolicy(broker, context);
 		}
-                catch(PermissionDeniedException pde) {
+                catch(final PermissionDeniedException pde) {
                     	return XACMLUtil.errorResult("Error while finding policy: " + pde.getMessage(), pde);
                 }
-		catch(EXistException ee)
+		catch(final EXistException ee)
 		{
 			return XACMLUtil.errorResult("Error while finding policy: " + ee.getMessage(), ee);
 		}
@@ -89,9 +89,9 @@ public class ExistPolicyModule extends PolicyFinderModule
 	}
 	private PolicyFinderResult findPolicy(DBBroker broker, EvaluationCtx context) throws PermissionDeniedException
 	{
-		DocumentSet mainPolicyDocs = XACMLUtil.getPolicyDocuments(broker, false);
+		final DocumentSet mainPolicyDocs = XACMLUtil.getPolicyDocuments(broker, false);
 		if(mainPolicyDocs == null)
-			return new PolicyFinderResult();
+			{return new PolicyFinderResult();}
 
 		AbstractPolicy matchedPolicy = null;
 		AbstractPolicy policy;
@@ -99,44 +99,44 @@ public class ExistPolicyModule extends PolicyFinderModule
 		int result;
 		try
 		{
-			XACMLUtil util = pdp.getUtil();
-			for(Iterator<DocumentImpl> it = mainPolicyDocs.getDocumentIterator(); it.hasNext();)
+			final XACMLUtil util = pdp.getUtil();
+			for(final Iterator<DocumentImpl> it = mainPolicyDocs.getDocumentIterator(); it.hasNext();)
 			{
 				policy = util.getPolicyDocument(it.next());
 				match = policy.match(context);
 				result = match.getResult();
 				if(result == MatchResult.INDETERMINATE)
-					return new PolicyFinderResult(match.getStatus());
+					{return new PolicyFinderResult(match.getStatus());}
 				else if(result == MatchResult.MATCH)
 				{
 					if(matchedPolicy == null)
-						matchedPolicy = policy;
+						{matchedPolicy = policy;}
 					else
-						return XACMLUtil.errorResult("Matched multiple policies for reqest", null);
+						{return XACMLUtil.errorResult("Matched multiple policies for reqest", null);}
 				}
 			}
 		}
-		catch(ParsingException pe)
+		catch(final ParsingException pe)
 		{
 			return XACMLUtil.errorResult("Error retrieving policies: " + pe.getMessage(), pe);
 		}
 
 		if(matchedPolicy == null)
-			return new PolicyFinderResult();
+			{return new PolicyFinderResult();}
 		else
-			return new PolicyFinderResult(matchedPolicy);
+			{return new PolicyFinderResult(matchedPolicy);}
 	}
 	public PolicyFinderResult findPolicy(URI idReference, int type)
 	{
-		BrokerPool pool = pdp.getBrokerPool();
+		final BrokerPool pool = pdp.getBrokerPool();
 		DBBroker broker = null;
 		try
 		{
 			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			AbstractPolicy policy = pdp.getUtil().findPolicy(broker, idReference, type);
+			final AbstractPolicy policy = pdp.getUtil().findPolicy(broker, idReference, type);
 			return (policy == null) ? new PolicyFinderResult() : new PolicyFinderResult(policy);
 		}
-		catch(Exception e)
+		catch(final Exception e)
 		{
 			return XACMLUtil.errorResult("Error resolving id '" + idReference.toString() + "': " + e.getMessage(), e);
 		}

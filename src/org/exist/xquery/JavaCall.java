@@ -62,37 +62,37 @@ public class JavaCall extends Function {
 		this.qname = qname;
 		String namespaceURI = context.getURIForPrefix(qname.getPrefix());
 		if (!namespaceURI.startsWith("java:"))
-			throw new XPathException(this,
+			{throw new XPathException(this,
 				"Internal error: prefix "
 					+ qname.getPrefix()
 					+ " does not "
-					+ "resolve to a Java class");
+					+ "resolve to a Java class");}
 		namespaceURI = namespaceURI.substring("java:".length());
 
 		try {
 			LOG.debug("Trying to find class " + namespaceURI);
 			
 			myClass = Class.forName(namespaceURI);
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			throw new XPathException(this, "Class: " + namespaceURI + " not found", e);
 		}
 
 		name = qname.getLocalName();
 		// convert hyphens into camelCase
 		if (name.indexOf('-') > 0) {
-			StringBuilder buf = new StringBuilder();
+			final StringBuilder buf = new StringBuilder();
 			boolean afterHyphen = false;
 			char ch;
 			for (int i = 0; i < name.length(); i++) {
 				ch = name.charAt(i);
 				if (ch == '-')
-					afterHyphen = true;
+					{afterHyphen = true;}
 				else {
 					if (afterHyphen) {
 						buf.append(Character.toUpperCase(ch));
 						afterHyphen = false;
 					} else
-						buf.append(ch);
+						{buf.append(ch);}
 				}
 			}
 			name = buf.toString();
@@ -123,11 +123,11 @@ public class JavaCall extends Function {
 		    steps.add(arguments.get(i));
 
 		// search for candidate methods matching the given number of arguments
-		if (name.equals("new")) {
-			Constructor<?>[] constructors = myClass.getConstructors();
+		if ("new".equals(name)) {
+			final Constructor<?>[] constructors = myClass.getConstructors();
 			for (int i = 0; i < constructors.length; i++) {
 				if (Modifier.isPublic(constructors[i].getModifiers())) {
-					Class<?> paramTypes[] = constructors[i].getParameterTypes();
+					final Class<?> paramTypes[] = constructors[i].getParameterTypes();
 					if (paramTypes.length == argCount) {
 						LOG.debug("Found constructor " + constructors[i].toString());
 						candidateMethods.add(constructors[i]);
@@ -135,17 +135,17 @@ public class JavaCall extends Function {
 				}
 			}
 			if (candidateMethods.size() == 0) {
-				String message = "no constructor found with " + argCount + " arguments"; 
+				final String message = "no constructor found with " + argCount + " arguments"; 
 				throw new XPathException(this,
 					message,
 					new NoSuchMethodException(message));
 			}
 		} else {
-			Method[] methods = myClass.getMethods();
+			final Method[] methods = myClass.getMethods();
 			for (int i = 0; i < methods.length; i++) {
 				if (Modifier.isPublic(methods[i].getModifiers())
 					&& methods[i].getName().equals(name)) {
-					Class<?> paramTypes[] = methods[i].getParameterTypes();
+					final Class<?> paramTypes[] = methods[i].getParameterTypes();
 					if (Modifier.isStatic(methods[i].getModifiers())) {
 						if (paramTypes.length == argCount) {
 							LOG.debug("Found static method " + methods[i].toString());
@@ -160,7 +160,7 @@ public class JavaCall extends Function {
 				}
 			}
 			if (candidateMethods.size() == 0) {
-				String message = "no method matches " + name + " with " + argCount + " arguments"; 
+				final String message = "no method matches " + name + " with " + argCount + " arguments"; 
 				throw new XPathException(this,
 					message,
 					new NoSuchMethodException(message));
@@ -183,24 +183,24 @@ public class JavaCall extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
 		//check access to the method
 		try {
-			ExistPDP pdp = context.getPDP();
+			final ExistPDP pdp = context.getPDP();
 			if(pdp != null) {
-				RequestCtx request = pdp.getRequestHelper().createReflectionRequest(context, null, myClass.getName(), name);
+				final RequestCtx request = pdp.getRequestHelper().createReflectionRequest(context, null, myClass.getName(), name);
 				pdp.evaluate(request);
 			}
-		} catch (PermissionDeniedException pde) {
+		} catch (final PermissionDeniedException pde) {
 			throw new XPathException(this, "Access to method '" + name + "' in class '" + myClass.getName() + "' denied.", pde);
 		}
         
 		// get the actual arguments
-		Sequence args[] = getArguments(contextSequence, contextItem);
+		final Sequence args[] = getArguments(contextSequence, contextItem);
 
 		AccessibleObject bestMethod = candidateMethods.get(0);
 		int conversionPrefs[] = getConversionPreferences(bestMethod, args);
@@ -219,13 +219,13 @@ public class JavaCall extends Function {
 		Class<?> paramTypes[] = null;
 		boolean isStatic = true;
 		if (bestMethod instanceof Constructor<?>)
-			paramTypes = ((Constructor<?>) bestMethod).getParameterTypes();
+			{paramTypes = ((Constructor<?>) bestMethod).getParameterTypes();}
 		else {
 			paramTypes = ((Method) bestMethod).getParameterTypes();
 			isStatic = Modifier.isStatic(((Method) bestMethod).getModifiers());
 		}
 
-		Object[] params = new Object[isStatic ? args.length : args.length - 1];
+		final Object[] params = new Object[isStatic ? args.length : args.length - 1];
 		if (isStatic) {
 			for (int i = 0; i < args.length; i++) {
 				params[i] = args[i].toJavaObject(paramTypes[i]);
@@ -239,31 +239,31 @@ public class JavaCall extends Function {
         Sequence result;
 		if (bestMethod instanceof Constructor<?>) {
 			try {
-				Object object = ((Constructor<?>) bestMethod).newInstance(params);
+				final Object object = ((Constructor<?>) bestMethod).newInstance(params);
                 result = new JavaObjectValue(object);
-			} catch (IllegalArgumentException e) {
+			} catch (final IllegalArgumentException e) {
 				throw new XPathException(this,
 					"illegal argument to constructor "
 						+ bestMethod.toString()
 						+ ": "
 						+ e.getMessage(),
 					e);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				if (e instanceof XPathException)
-					throw (XPathException) e;
+					{throw (XPathException) e;}
 				else
-					throw new XPathException(this,
+					{throw new XPathException(this,
 						"exception while calling constructor "
 							+ bestMethod.toString()
 							+ ": "
 							+ e.getMessage(),
-						e);
+						e);}
 			}
 		} else {
 			try {
 				Object invocationResult;
 				if (isStatic)
-                    invocationResult = ((Method) bestMethod).invoke(null, params);
+                    {invocationResult = ((Method) bestMethod).invoke(null, params);}
 				else {
                     invocationResult =
 						((Method) bestMethod).invoke(
@@ -271,30 +271,30 @@ public class JavaCall extends Function {
 							params);
 				}
                 result = XPathUtil.javaObjectToXPath(invocationResult, getContext());
-			} catch (IllegalArgumentException e) {
+			} catch (final IllegalArgumentException e) {
 				throw new XPathException(this,
 					"illegal argument to method "
 						+ bestMethod.toString()
 						+ ": "
 						+ e.getMessage(),
 					e);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				if (e instanceof XPathException)
-					throw (XPathException) e;
+					{throw (XPathException) e;}
 				else
-					throw new XPathException(this,
+					{throw new XPathException(this,
 						"exception while calling method "
 							+ bestMethod.toString()
 							+ ": "
 							+ e.getMessage(),
-						e);
+						e);}
 			}
 		}
 
          if (context.getProfiler().isEnabled())           
-                context.getProfiler().end(this, "", result); 
+                {context.getProfiler().end(this, "", result);} 
         
-        if (result==null) result = Sequence.EMPTY_SEQUENCE; 
+        if (result==null) {result = Sequence.EMPTY_SEQUENCE;} 
          
         return result;
         
@@ -308,11 +308,11 @@ public class JavaCall extends Function {
 	}
 	
 	private int[] getConversionPreferences(AccessibleObject method, Sequence[] args) {
-		int prefs[] = new int[args.length];
+		final int prefs[] = new int[args.length];
 		Class<?> paramTypes[] = null;
 		boolean isStatic = true;
 		if (method instanceof Constructor<?>)
-			paramTypes = ((Constructor<?>) method).getParameterTypes();
+			{paramTypes = ((Constructor<?>) method).getParameterTypes();}
 		else {
 			paramTypes = ((Method) method).getParameterTypes();
 			isStatic = Modifier.isStatic(((Method) method).getModifiers());

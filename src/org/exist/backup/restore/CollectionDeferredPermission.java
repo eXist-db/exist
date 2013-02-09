@@ -48,14 +48,14 @@ class CollectionDeferredPermission extends AbstractDeferredPermission<Collection
             if(getTarget().getName().equals(XmldbURI.ROOT_COLLECTION)) {
                 service = (UserManagementService)getTarget().getService("UserManagementService", "1.0");
             } else {
-                Collection parent = getTarget().getParentCollection();
+                final Collection parent = getTarget().getParentCollection();
                 service = (UserManagementService)parent.getService("UserManagementService", "1.0");
             }
 
             service.setPermissions(getTarget(), getOwner(), getGroup(), getMode(), getAces()); //persist
-        } catch (XMLDBException xe) {
+        } catch (final XMLDBException xe) {
             String name = "unknown";
-            try { name = getTarget().getName(); } catch(XMLDBException x) { LOG.error(x.getMessage(), x); }
+            try { name = getTarget().getName(); } catch(final XMLDBException x) { LOG.error(x.getMessage(), x); }
             final String msg = "ERROR: Failed to set permissions on Collection '" + name + "'.";
             LOG.error(msg, xe);
             getListener().warn(msg);

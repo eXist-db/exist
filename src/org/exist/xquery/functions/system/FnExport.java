@@ -97,15 +97,15 @@ public class FnExport extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		if( !context.getSubject().hasDbaRole() )
-			throw( new XPathException( this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to kill a running xquery" ) );
+			{throw( new XPathException( this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to kill a running xquery" ) );}
 
-    	String dirOrFile = args[0].getStringValue();
+    	final String dirOrFile = args[0].getStringValue();
         boolean incremental  = false;
         if (args[1].hasOne())
-        	incremental = args[1].effectiveBooleanValue();
+        	{incremental = args[1].effectiveBooleanValue();}
         boolean zip = false;
         if (args[2].hasOne())
-        	zip = args[2].effectiveBooleanValue();
+        	{zip = args[2].effectiveBooleanValue();}
         
         MemTreeBuilder builder = null;
         if (NAME.equals( mySignature.getName() )) {
@@ -115,9 +115,9 @@ public class FnExport extends BasicFunction {
         }
         
         try {
-        	SystemExport export = new SystemExport(context.getBroker(), new Callback(builder), null, true);
+        	final SystemExport export = new SystemExport(context.getBroker(), new Callback(builder), null, true);
             export.export(dirOrFile, incremental, zip, null);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
         }
         if (builder == null) {

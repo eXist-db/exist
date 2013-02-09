@@ -41,7 +41,7 @@ public interface ACLPermission {
         }
 
         public static ACE_ACCESS_TYPE fromVal(int val) {
-            for(ACE_ACCESS_TYPE access_type : ACE_ACCESS_TYPE.values()) {
+            for(final ACE_ACCESS_TYPE access_type : ACE_ACCESS_TYPE.values()) {
                 if(access_type.getVal() == val) {
                     return access_type;
                 }
@@ -65,7 +65,7 @@ public interface ACLPermission {
         }
 
         public static ACE_TARGET fromVal(int val) {
-            for(ACE_TARGET target : ACE_TARGET.values()) {
+            for(final ACE_TARGET target : ACE_TARGET.values()) {
                 if(target.getVal() == val) {
                     return target;
                 }

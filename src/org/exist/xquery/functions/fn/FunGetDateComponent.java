@@ -222,16 +222,16 @@ public class FunGetDateComponent extends BasicFunction {
 			context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES",
 					Dependency.getDependenciesName(this.getDependencies()));
 			if (contextSequence != null)
-				context.getProfiler().message(this, Profiler.START_SEQUENCES,
-						"CONTEXT SEQUENCE", contextSequence);
+				{context.getProfiler().message(this, Profiler.START_SEQUENCES,
+						"CONTEXT SEQUENCE", contextSequence);}
 		}
         
 		Sequence result;
 		if (args.length == 0 || args[0].isEmpty()) {
 			result = Sequence.EMPTY_SEQUENCE;
 		} else {
-			Sequence arg = args[0];
-			AbstractDateTimeValue date = (AbstractDateTimeValue) arg.itemAt(0);
+			final Sequence arg = args[0];
+			final AbstractDateTimeValue date = (AbstractDateTimeValue) arg.itemAt(0);
 			if (isCalledAs("day-from-dateTime") || isCalledAs("day-from-date")) {
 				result = new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
 			} else if (isCalledAs("month-from-dateTime") || isCalledAs("month-from-date")) {
@@ -249,7 +249,7 @@ public class FunGetDateComponent extends BasicFunction {
 			} else if (isCalledAs("seconds-from-dateTime") || isCalledAs("seconds-from-time")) {
 				result = new IntegerValue(date.calendar.getSecond()).convertTo(Type.DECIMAL);
 				if (date.calendar.getFractionalSecond() != null)						
-					result = ((DecimalValue)result).plus(new DecimalValue(date.calendar.getFractionalSecond()));			
+					{result = ((DecimalValue)result).plus(new DecimalValue(date.calendar.getFractionalSecond()));}			
 			} else if (isCalledAs("timezone-from-dateTime") || isCalledAs("timezone-from-date") || isCalledAs("timezone-from-time")) {
 				result = date.getTimezone();
 			} else {
@@ -258,7 +258,7 @@ public class FunGetDateComponent extends BasicFunction {
 			}
 		}
 		
-		if (context.getProfiler().isEnabled()) context.getProfiler().end(this, "", result);
+		if (context.getProfiler().isEnabled()) {context.getProfiler().end(this, "", result);}
 		
 		return result;
 		

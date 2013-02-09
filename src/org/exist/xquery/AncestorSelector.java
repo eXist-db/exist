@@ -42,16 +42,16 @@ public class AncestorSelector implements NodeSelector {
         this.includeSelf = includeSelf;
         this.copyMatches = copyMatches;
         if (descendants instanceof ExtNodeSet)
-            this.descendants = descendants;
+            {this.descendants = descendants;}
         else
-            this.ancestors = descendants.getAncestors(contextId, includeSelf);
+            {this.ancestors = descendants.getAncestors(contextId, includeSelf);}
     }
 
     public NodeProxy match(DocumentImpl doc, NodeId nodeId) {
         if (descendants == null)
-            return ancestors.get(doc, nodeId);
+            {return ancestors.get(doc, nodeId);}
         else
-            return ((ExtNodeSet) descendants).hasDescendantsInSet(doc, nodeId,
-                includeSelf, contextId, copyMatches);
+            {return ((ExtNodeSet) descendants).hasDescendantsInSet(doc, nodeId,
+                includeSelf, contextId, copyMatches);}
     }
 }

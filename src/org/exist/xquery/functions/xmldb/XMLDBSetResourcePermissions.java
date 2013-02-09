@@ -83,12 +83,12 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
 		throws XPathException {
 
         try {
-            Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
+            final Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
             if (res != null) {
-                UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-                String user = args[2].getStringValue();
-                String group = args[3].getStringValue();
-                int mode = ((IntegerValue) args[4].convertTo(Type.INTEGER)).getInt();
+                final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+                final String user = args[2].getStringValue();
+                final String group = args[3].getStringValue();
+                final int mode = ((IntegerValue) args[4].convertTo(Type.INTEGER)).getInt();
 
                 if (null == user || 0 == user.length()) {
                     logger.error("Needs a valid user name, not: " + user);
@@ -102,8 +102,8 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
                 }
                 
                 // Must actually get a User object for the Permission...
-                Permission perms = PermissionFactory.getPermission(user, group, mode);
-                Account usr = ums.getAccount(user);
+                final Permission perms = PermissionFactory.getPermission(user, group, mode);
+                final Account usr = ums.getAccount(user);
                 if (usr == null) {
                     logger.error("Needs a valid user name, not: " + user);
                     
@@ -117,9 +117,9 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
 
                 throw new XPathException(this, "Unable to locate resource " + args[1].getStringValue());
             }
-        } catch (PermissionDeniedException pde) {
+        } catch (final PermissionDeniedException pde) {
             throw new XPathException(this, "Unable to change resource permissions: " + pde.getMessage(), pde);
-        } catch (XMLDBException xe) {
+        } catch (final XMLDBException xe) {
             throw new XPathException(this, "Unable to change resource permissions:" + xe.getMessage(), xe);
         }
 

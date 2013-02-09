@@ -56,11 +56,11 @@ public class NumberFormatter_sv extends NumberFormatter {
 	// For dates it should preferrably be a switch with:
 	//  return "";
         if (number > 10 && number < 20)
-            return ":e";
-        long mod = number % 10;
+            {return ":e";}
+        final long mod = number % 10;
         if (mod == 1 || mod == 2)
-            return ":a";
+            {return ":a";}
         else
-            return ":e";
+            {return ":e";}
     }
 }

@@ -92,34 +92,34 @@ public class QNameFunctions extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         } 
         
         Sequence result;
 		if (args[0].isEmpty())
-			result = Sequence.EMPTY_SEQUENCE;
+			{result = Sequence.EMPTY_SEQUENCE;}
         else {
-    		QNameValue value = (QNameValue) args[0].itemAt(0);
-    		QName qname = value.getQName();
+    		final QNameValue value = (QNameValue) args[0].itemAt(0);
+    		final QName qname = value.getQName();
     		if (isCalledAs("prefix-from-QName")) {
-    			String prefix = qname.getPrefix();
+    			final String prefix = qname.getPrefix();
     			if (prefix == null || prefix.length() == 0)
-                    result = Sequence.EMPTY_SEQUENCE;
+                    {result = Sequence.EMPTY_SEQUENCE;}
     			else
-                    result = new StringValue(prefix, Type.NCNAME);
+                    {result = new StringValue(prefix, Type.NCNAME);}
     		} else if (isCalledAs("local-name-from-QName"))
-                result = new StringValue(qname.getLocalName(), Type.NCNAME);
+                {result = new StringValue(qname.getLocalName(), Type.NCNAME);}
     		else {
                 // fn:namespace-uri-from-QName
     			String uri = qname.getNamespaceURI();
     			if (uri == null)
-    				uri = "";    			
+    				{uri = "";}    			
                 result = new AnyURIValue(uri);
     		}
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
+            {context.getProfiler().end(this, "", result);}        
         
         return result;          
 	}

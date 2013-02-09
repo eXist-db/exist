@@ -70,9 +70,9 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
         //prepare the database
         try {
             setPool(getOrCreateBrokerPool(config));
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
                 throw new ServletException("No database instance available");
-        } catch (DatabaseConfigurationException e) {
+        } catch (final DatabaseConfigurationException e) {
                 throw new ServletException("Unable to configure database instance: " + e.getMessage(), e);
         }
         
@@ -111,8 +111,8 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
                 throw new ServletException("Configuration file " + confFile + " not found or not readable");
             }
 
-            Configuration configuration = new Configuration(confFile, dbHome);
-            if(start != null && start.equals("true")) {
+            final Configuration configuration = new Configuration(confFile, dbHome);
+            if(start != null && "true".equals(start)) {
                 doDatabaseStartup(configuration);
             }
         }
@@ -131,24 +131,24 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
             if(!BrokerPool.isConfigured(BrokerPool.DEFAULT_INSTANCE_NAME)) {
                 BrokerPool.configure(1, 5, configuration);
             }
-        } catch(EXistException e) {
+        } catch(final EXistException e) {
             throw new ServletException(e.getMessage(), e);
-        } catch(DatabaseConfigurationException e) {
+        } catch(final DatabaseConfigurationException e) {
             throw new ServletException(e.getMessage(), e);
         }
         
         try {
             getLog().info("Registering XMLDB driver");
-            Class<?> clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) clazz.newInstance();
+            final Class<?> clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
+            final Database database = (Database) clazz.newInstance();
             DatabaseManager.registerDatabase(database);
-        } catch(ClassNotFoundException e) {
+        } catch(final ClassNotFoundException e) {
             getLog().info("ERROR", e);
-        } catch(InstantiationException e) {
+        } catch(final InstantiationException e) {
             getLog().info("ERROR", e);
-        } catch(IllegalAccessException e) {
+        } catch(final IllegalAccessException e) {
             getLog().info("ERROR", e);
-        } catch(XMLDBException e) {
+        } catch(final XMLDBException e) {
             getLog().info("ERROR", e);
         }
     }
@@ -157,7 +157,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
         String option = config.getInitParameter("use-default-user");
         boolean useDefaultUser = true;
         if(option != null) {
-            useDefaultUser = option.trim().equals("true");
+            useDefaultUser = "true".equals(option.trim());
         }
         if(useDefaultUser) {
             option = config.getInitParameter("user");
@@ -172,7 +172,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
                 if(getDefaultUsername() != null) {
                     try {
                         setDefaultUser(getPool().getSecurityManager().authenticate(getDefaultUsername(), getDefaultPassword()));
-                    } catch(AuthenticationException e) {
+                    } catch(final AuthenticationException e) {
                         setDefaultUser(null);
                     }
                 } else {
@@ -219,7 +219,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
         }
         
         Principal principal = AccountImpl.getUserFromServletRequest(request);
-        if (principal != null) return (Subject) principal;
+        if (principal != null) {return (Subject) principal;}
 
         // Try to validate the principal if passed from the Servlet engine
         principal = request.getUserPrincipal();
@@ -227,13 +227,13 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
         if (principal != null) {
 	        if ( XmldbPrincipal.class.isAssignableFrom( principal.getClass() ) ) {
 	
-	            String username = ((XmldbPrincipal) principal).getName();
-	            String password = ((XmldbPrincipal) principal).getPassword();
+	            final String username = ((XmldbPrincipal) principal).getName();
+	            final String password = ((XmldbPrincipal) principal).getPassword();
 	
 	            getLog().info("Validating Principle: " + username);
 	            try {
 	                return getPool().getSecurityManager().authenticate(username, password);
-	            } catch (AuthenticationException e) {
+	            } catch (final AuthenticationException e) {
 	                getLog().info(e.getMessage());
 	            }
 	        }
@@ -244,7 +244,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
         }
 
         // Secondly try basic authentication
-        String auth = request.getHeader("Authorization");
+        final String auth = request.getHeader("Authorization");
         if (auth == null && getDefaultUser() != null) {
             return getDefaultUser();
         }

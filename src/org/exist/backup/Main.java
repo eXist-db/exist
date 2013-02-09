@@ -104,10 +104,10 @@ public class Main
     public static void process( String[] args )
     {
         // read properties
-        Properties properties = new Properties();
+        final Properties properties = new Properties();
 
         try {
-            File        propFile = ConfigurationHelper.lookup( "backup.properties" );
+            final File        propFile = ConfigurationHelper.lookup( "backup.properties" );
             InputStream pin;
 
             if( propFile.canRead() ) {
@@ -127,10 +127,10 @@ public class Main
             }
 
         }
-        catch( IOException ioe ) {
+        catch( final IOException ioe ) {
         }
 
-        Preferences        preferences = Preferences.userNodeForPackage( Main.class );
+        final Preferences        preferences = Preferences.userNodeForPackage( Main.class );
 
         // parse command-line options
         final CLArgsParser optParser   = new CLArgsParser( args, OPTIONS );
@@ -149,7 +149,7 @@ public class Main
         boolean              guiMode       = false;
         boolean              quiet         = false;
 
-        for( CLOption option : opts ) {
+        for( final CLOption option : opts ) {
 
             switch( option.getId() ) {
 
@@ -217,7 +217,7 @@ public class Main
         Database database;
 
         try {
-            Class<?> cl = Class.forName( properties.getProperty( "driver", "org.exist.xmldb.DatabaseImpl" ) );
+            final Class<?> cl = Class.forName( properties.getProperty( "driver", "org.exist.xmldb.DatabaseImpl" ) );
             database = (Database)cl.newInstance();
             database.setProperty( "create-database", "true" );
 
@@ -226,19 +226,19 @@ public class Main
             }
             DatabaseManager.registerDatabase( database );
         }
-        catch( ClassNotFoundException e ) {
+        catch( final ClassNotFoundException e ) {
             reportError( e );
             return;
         }
-        catch( InstantiationException e ) {
+        catch( final InstantiationException e ) {
             reportError( e );
             return;
         }
-        catch( IllegalAccessException e ) {
+        catch( final IllegalAccessException e ) {
             reportError( e );
             return;
         }
-        catch( XMLDBException e ) {
+        catch( final XMLDBException e ) {
             reportError( e );
             return;
         }
@@ -249,7 +249,7 @@ public class Main
             if( optionBackup == null ) {
 
                 if( guiMode ) {
-                    CreateBackupDialog dialog = new CreateBackupDialog( properties.getProperty( "uri", "xmldb:exist://" ), properties.getProperty( "user", "admin" ), properties.getProperty( "password", "" ), new File( preferences.get( "directory.backup", System.getProperty( "user.dir" ) ) ) );
+                    final CreateBackupDialog dialog = new CreateBackupDialog( properties.getProperty( "uri", "xmldb:exist://" ), properties.getProperty( "user", "admin" ), properties.getProperty( "password", "" ), new File( preferences.get( "directory.backup", System.getProperty( "user.dir" ) ) ) );
 
                     if( JOptionPane.showOptionDialog( null, dialog, "Create Backup", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null ) == JOptionPane.YES_OPTION ) {
                         optionBackup = dialog.getCollection();
@@ -263,10 +263,10 @@ public class Main
             if( optionBackup != null ) {
 
                 try {
-                    Backup backup = new Backup( properties.getProperty( "user", "admin" ), properties.getProperty( "password", "" ), properties.getProperty( "backup-dir", "backup" ), XmldbURI.xmldbUriFor( properties.getProperty( "uri", "xmldb:exist://" ) + optionBackup ), properties );
+                    final Backup backup = new Backup( properties.getProperty( "user", "admin" ), properties.getProperty( "password", "" ), properties.getProperty( "backup-dir", "backup" ), XmldbURI.xmldbUriFor( properties.getProperty( "uri", "xmldb:exist://" ) + optionBackup ), properties );
                     backup.backup( guiMode, null );
                 }
-                catch( Exception e ) {
+                catch( final Exception e ) {
                     reportError( e );
                 }
             }
@@ -275,12 +275,12 @@ public class Main
         if( doRestore ) {
 
             if( ( optionRestore == null ) && guiMode ) {
-                JFileChooser chooser = new JFileChooser();
+                final JFileChooser chooser = new JFileChooser();
                 chooser.setMultiSelectionEnabled( false );
                 chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
 
                 if( chooser.showDialog( null, "Select backup file for restore" ) == JFileChooser.APPROVE_OPTION ) {
-                    File f = chooser.getSelectedFile();
+                    final File f = chooser.getSelectedFile();
                     optionRestore = f.getAbsolutePath();
                 }
             }
@@ -298,7 +298,7 @@ public class Main
                         restoreWithoutGui(username, optionPass, optionDbaPass, f, uri);
                     }
                 }
-                catch( Exception e ) {
+                catch( final Exception e ) {
                     reportError( e );
                 }
             }
@@ -310,10 +310,10 @@ public class Main
                 uri += XmldbURI.ROOT_COLLECTION;
             }
             
-            Collection root = DatabaseManager.getCollection(uri, properties.getProperty( "user", "admin" ), ( optionDbaPass == null ) ? optionPass : optionDbaPass );
+            final Collection root = DatabaseManager.getCollection(uri, properties.getProperty( "user", "admin" ), ( optionDbaPass == null ) ? optionPass : optionDbaPass );
             shutdown( root );
         }
-        catch( Exception e ) {
+        catch( final Exception e ) {
             reportError( e );
         }
         System.exit( 0 );
@@ -326,17 +326,17 @@ public class Main
 
         try {
             restore.restore(listener, username, password, dbaPassword, f, uri);
-        } catch(FileNotFoundException fnfe) {
+        } catch(final FileNotFoundException fnfe) {
             listener.error(fnfe.getMessage());
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             listener.error(ioe.getMessage());
-        } catch(SAXException saxe) {
+        } catch(final SAXException saxe) {
             listener.error(saxe.getMessage());
-        } catch(XMLDBException xmldbe) {
+        } catch(final XMLDBException xmldbe) {
             listener.error(xmldbe.getMessage());
-        } catch(ParserConfigurationException pce) {
+        } catch(final ParserConfigurationException pce) {
             listener.error(pce.getMessage());
-        } catch(URISyntaxException use) {
+        } catch(final URISyntaxException use) {
             listener.error(use.getMessage());
         }
         
@@ -361,7 +361,7 @@ public class Main
                     
                     listener.hideDialog();
 
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     ClientFrame.showErrorMessage(e.getMessage(), null); //$NON-NLS-1$
                 } finally {
                     if(listener.hasProblems()) {
@@ -379,11 +379,11 @@ public class Main
         while(!future.isDone() && !future.isCancelled()) {
             try {
                 future.get(100, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ie) {
+            } catch (final InterruptedException ie) {
 
-            } catch (ExecutionException ee) {
+            } catch (final ExecutionException ee) {
                 break;
-            } catch (TimeoutException te) {
+            } catch (final TimeoutException te) {
 
             }
         }
@@ -413,7 +413,7 @@ public class Main
     private static void shutdown( Collection root )
     {
         try {
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager)root.getService( "DatabaseInstanceManager", "1.0" );
+            final DatabaseInstanceManager mgr = (DatabaseInstanceManager)root.getService( "DatabaseInstanceManager", "1.0" );
 
             if( mgr == null ) {
                 System.err.println( "service is not available" );
@@ -422,7 +422,7 @@ public class Main
                 mgr.shutdown();
             }
         }
-        catch( XMLDBException e ) {
+        catch( final XMLDBException e ) {
             System.err.println( "database shutdown failed: " );
             e.printStackTrace();
         }
@@ -434,7 +434,7 @@ public class Main
         try {
             process( args );
         }
-        catch( Throwable e ) {
+        catch( final Throwable e ) {
             e.printStackTrace();
             System.exit(1);
         }

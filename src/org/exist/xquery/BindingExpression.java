@@ -169,18 +169,18 @@ public abstract class BindingExpression extends AbstractExpression implements Re
                 contextSequence.isPersistentSet() &&
                 //We might not be sure of the return type at this level
 				Type.subTypeOf(whereExpr.returnsType(), Type.ITEM)) {
-			Sequence seq = whereExpr.eval(contextSequence);
+			final Sequence seq = whereExpr.eval(contextSequence);
 			//But *now*, we are ;-)
 			if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE)) {
-				NodeSet nodes = seq.toNodeSet(); 
+				final NodeSet nodes = seq.toNodeSet(); 
 				// if the where expression returns a node set, check the context
 				// node of each node in the set           
-				NodeSet contextSet = contextSequence.toNodeSet();
-				boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;            
-				NodeSet result = new ExtArrayNodeSet();
+				final NodeSet contextSet = contextSequence.toNodeSet();
+				final boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;            
+				final NodeSet result = new ExtArrayNodeSet();
 				DocumentImpl lastDoc = null;
 
-				for (NodeProxy current : nodes) {
+				for (final NodeProxy current : nodes) {
 					int sizeHint = Constants.NO_SIZE_HINT;
 					if(lastDoc == null || current.getDocument() != lastDoc) {
 						lastDoc = current.getDocument();
@@ -195,7 +195,7 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 					while (context != null) {
 	                    //TODO : Is this the context we want ? Not sure... would have prefered the LetExpr.
 						if (context.getContextId() == whereExpr.getContextId()) {
-							NodeProxy contextNode = context.getNode();                    
+							final NodeProxy contextNode = context.getNode();                    
 							if(contextIsVirtual || contextSet.contains(contextNode)) {
 	                            contextNode.addMatches(current);
 								result.add(contextNode, sizeHint);
@@ -209,18 +209,18 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 		}
 		
 		if (contextSequence == null) {
-			Sequence innerSeq = whereExpr.eval(null);
+			final Sequence innerSeq = whereExpr.eval(null);
 			return innerSeq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} else {
 			// general where clause: just check the effective boolean value
-			ValueSequence result = new ValueSequence();
+			final ValueSequence result = new ValueSequence();
 			int p = 0;			
-			for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-				Item item = i.nextItem();
+			for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
+				final Item item = i.nextItem();
 				context.setContextSequencePosition(p, contextSequence);
-                Sequence innerSeq = whereExpr.eval(contextSequence, item);                
+                final Sequence innerSeq = whereExpr.eval(contextSequence, item);                
 				if (innerSeq.effectiveBooleanValue())
-					result.add(item);                    
+					{result.add(item);}                    
 			}
 			return result;
 		}
@@ -235,14 +235,14 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 	 */
 	protected boolean checkOrderSpecs(Sequence in) {
 		if (orderSpecs == null)
-			return false;
+			{return false;}
 		if (!Type.subTypeOf(in.getItemType(), Type.NODE))
-			return false;
+			{return false;}
 		for (int i = 0; i < orderSpecs.length; i++) {
-			Expression expr = orderSpecs[i].getSortExpression();
+			final Expression expr = orderSpecs[i].getSortExpression();
 			if(!Type.subTypeOf(expr.returnsType(), Type.NODE) ||
 					Dependency.dependsOn(expr, Dependency.CONTEXT_ITEM ))
-				return false;
+				{return false;}
 		}
 		return true;
 	}
@@ -260,7 +260,7 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 	public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
 		inputSequence.resetState(postOptimization);
-		if(whereExpr != null) whereExpr.resetState(postOptimization);
+		if(whereExpr != null) {whereExpr.resetState(postOptimization);}
 		returnExpr.resetState(postOptimization);
 		if(orderSpecs != null) {
 		    for(int i = 0; i < orderSpecs.length; i++) {
@@ -275,10 +275,10 @@ public abstract class BindingExpression extends AbstractExpression implements Re
             ((VirtualNodeSet)seq).setSelfIsContext();
 		} else {
 			Item next;
-			for (SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
+			for (final SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
 				next = i.nextItem(); 
 				if (next instanceof NodeProxy)
-					 ((NodeProxy) next).addContextNode(contextId, (NodeProxy) next);
+					 {((NodeProxy) next).addContextNode(contextId, (NodeProxy) next);}
 			}
 		}
 	}
@@ -294,7 +294,7 @@ public abstract class BindingExpression extends AbstractExpression implements Re
             listener = new ExprUpdateListener(sequence);
             context.registerUpdateListener(listener);
         } else
-            listener.setSequence(sequence);
+            {listener.setSequence(sequence);}
     }
 
     private class ExprUpdateListener implements UpdateListener {
@@ -332,11 +332,11 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 	@Override
 	public void replace(Expression oldExpr, Expression newExpr) {
 		if (inputSequence == oldExpr)
-			inputSequence = newExpr;
+			{inputSequence = newExpr;}
 		else if (whereExpr == oldExpr)
-			whereExpr = newExpr;
+			{whereExpr = newExpr;}
 		else if (returnExpr == oldExpr)
-			returnExpr = newExpr;
+			{returnExpr = newExpr;}
 	}
 	
 	@Override

@@ -62,14 +62,14 @@ public class RootNode extends Step {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         // get statically known documents from the context
         DocumentSet ds = context.getStaticallyKnownDocuments();
-        if (ds == null || ds.getDocumentCount() == 0) return Sequence.EMPTY_SEQUENCE;
+        if (ds == null || ds.getDocumentCount() == 0) {return Sequence.EMPTY_SEQUENCE;}
         
 //        // if the expression occurs in a nested context, we might have cached the
 //        // document set
@@ -83,28 +83,28 @@ public class RootNode extends Step {
         try {
             // wait for pending updates
             if (!context.inProtectedMode())
-                ds.lock(context.getBroker(), false, true);
+                {ds.lock(context.getBroker(), false, true);}
 	        DocumentImpl doc;
-	        for (Iterator<DocumentImpl> i = ds.getDocumentIterator(); i.hasNext();) {
+	        for (final Iterator<DocumentImpl> i = ds.getDocumentIterator(); i.hasNext();) {
 	            doc = i.next();
                 if (context.inProtectedMode() && !context.getProtectedDocs().containsKey(doc.getDocId()))
-                    continue;
+                    {continue;}
                 if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
 	            	result.add(new NodeProxy(doc));
 	            }
             }
 	        cached = result;
 	        cachedDocs = ds;
-        } catch (LockException e) {
+        } catch (final LockException e) {
             throw new XPathException(this, "Failed to acquire lock on the context document set");
         } finally {
             // release all locks
             if (!context.inProtectedMode())
-                ds.unlock(false);
+                {ds.unlock(false);}
         }
         result.updateNoSort();
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         registerUpdateListener();
         

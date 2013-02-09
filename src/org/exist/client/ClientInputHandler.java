@@ -112,8 +112,8 @@ public class ClientInputHandler extends DefaultInputHandler {
 			/*
 			 * Keys pressed with the command key shouldn't generate text.
 			 */
-			int modifiers = evt.getModifiers();
-			char c = evt.getKeyChar();
+			final int modifiers = evt.getModifiers();
+			final char c = evt.getKeyChar();
 
 			/*
 			 * Default input handler filters out events with the ALT (option)
@@ -135,28 +135,28 @@ public class ClientInputHandler extends DefaultInputHandler {
 
 	public static class select_all implements ActionListener {
 		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.selectAll();
 		}
 	}
 
 	public static class clip_copy implements ActionListener {
 		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.copy();
 		}
 	}
 
 	public static class clip_paste implements ActionListener {
 		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.paste();
 		}
 	}
 
 	public static class clip_cut implements ActionListener {
 		public void actionPerformed(ActionEvent evt) {
-			JEditTextArea textArea = getTextArea(evt);
+			final JEditTextArea textArea = getTextArea(evt);
 			textArea.cut();
 		}
 	}

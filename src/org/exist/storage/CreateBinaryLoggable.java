@@ -48,8 +48,8 @@ public class CreateBinaryLoggable extends AbstractLoggable {
     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
     */
    public void write(ByteBuffer out) {
-      String originalPath = original.getAbsolutePath();
-      byte [] data = originalPath.getBytes();
+      final String originalPath = original.getAbsolutePath();
+      final byte [] data = originalPath.getBytes();
       out.putInt(data.length);
       out.put(data);
     }
@@ -58,8 +58,8 @@ public class CreateBinaryLoggable extends AbstractLoggable {
      * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
      */
     public void read(ByteBuffer in) {
-       int size = in.getInt();
-       byte [] data = new byte[size];
+       final int size = in.getInt();
+       final byte [] data = new byte[size];
        in.get(data);
        original = new File(new String(data));
     }

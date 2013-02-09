@@ -76,8 +76,8 @@ public class Hash extends BasicFunction {
     	
         boolean base64 = false;
 
-        String message = args[0].itemAt(0).getStringValue();
-        String algorithm = args[1].itemAt(0).getStringValue();
+        final String message = args[0].itemAt(0).getStringValue();
+        final String algorithm = args[1].itemAt(0).getStringValue();
 
         if (args.length > 2) {
             base64 = args[2].effectiveBooleanValue();
@@ -87,7 +87,7 @@ public class Hash extends BasicFunction {
         try {
             md = MessageDigester.calculate(message, algorithm, base64);
 
-        } catch (IllegalArgumentException ex) {
+        } catch (final IllegalArgumentException ex) {
             throw new XPathException(ex.getMessage());
         }
 

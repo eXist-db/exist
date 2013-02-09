@@ -67,9 +67,9 @@ public class URLSource extends AbstractSource {
 	private long getLastModification() {
 		try {
 			if(connection == null)
-				connection = url.openConnection();
+				{connection = url.openConnection();}
 			return connection.getLastModified();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOG.warn("URL could not be opened: " + e.getMessage(), e);
 			return 0;
 		}
@@ -86,11 +86,11 @@ public class URLSource extends AbstractSource {
 	 * @see org.exist.source.Source#isValid()
 	 */
 	public int isValid(DBBroker broker) {
-		long modified = getLastModification();
+		final long modified = getLastModification();
 		if(modified == 0 && modified > lastModified)
-			return INVALID;
+			{return INVALID;}
 		else
-			return VALID;
+			{return VALID;}
 	}
 
 	/* (non-Javadoc)
@@ -108,14 +108,14 @@ public class URLSource extends AbstractSource {
 			if(connection == null) {
 				connection = url.openConnection();
                 if (connection instanceof HttpURLConnection)
-                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+                    {responseCode = ((HttpURLConnection) connection).getResponseCode();}
             }
             Reader reader = null;
             if (responseCode != HttpURLConnection.HTTP_NOT_FOUND)
-			    reader = new InputStreamReader(connection.getInputStream(), "UTF-8");
+			    {reader = new InputStreamReader(connection.getInputStream(), "UTF-8");}
 			connection = null;
 			return reader;
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOG.warn("URL could not be opened: " + e.getMessage(), e);
 			throw e;
 		}
@@ -126,19 +126,19 @@ public class URLSource extends AbstractSource {
             if(connection == null) {
                 connection = url.openConnection();
                 if (connection instanceof HttpURLConnection)
-                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+                    {responseCode = ((HttpURLConnection) connection).getResponseCode();}
             }
             InputStream is = null;
             if (responseCode != HttpURLConnection.HTTP_NOT_FOUND)
-                is = connection.getInputStream();
+                {is = connection.getInputStream();}
             connection = null;
             return is;
             
-        } catch (ConnectException e){
+        } catch (final ConnectException e){
             LOG.warn("Unable to connect to URL: " + e.getMessage());
             throw e;
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.warn("URL could not be opened: " + e.getMessage(), e);
             throw e;
         }
@@ -152,12 +152,12 @@ public class URLSource extends AbstractSource {
 			if(connection == null) {
 				connection = url.openConnection();
                 if (connection instanceof HttpURLConnection)
-                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+                    {responseCode = ((HttpURLConnection) connection).getResponseCode();}
             }
-			String content = connection.getContent().toString();
+			final String content = connection.getContent().toString();
 			connection = null;
 			return content;
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOG.warn("URL could not be opened: " + e.getMessage(), e);
 			return null;
 		}
@@ -169,7 +169,7 @@ public class URLSource extends AbstractSource {
 
 	public String toString() {
 		if (url == null)
-			return "[not set]";
+			{return "[not set]";}
 		return url.toString();
 	}
 
@@ -180,7 +180,7 @@ public class URLSource extends AbstractSource {
 
     @Override
     public QName isModule() throws IOException {
-        InputStream is = getInputStream();
+        final InputStream is = getInputStream();
         try {
             return getModuleDecl(is);
         } finally {

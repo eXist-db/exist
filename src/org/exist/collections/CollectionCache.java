@@ -58,7 +58,7 @@ public class CollectionCache extends LRUCache {
 
     public void add(Collection collection, int initialRefCount) {
         super.add(collection, initialRefCount);
-        String name = collection.getURI().getRawCollectionPath();
+        final String name = collection.getURI().getRawCollectionPath();
         names.put(name, collection.getKey());
     }
 
@@ -67,7 +67,7 @@ public class CollectionCache extends LRUCache {
     }
 
     public Collection get(XmldbURI name) {
-        long key = names.get(name.getRawCollectionPath());
+        final long key = names.get(name.getRawCollectionPath());
         if (key < 0) {
             return null;
         }
@@ -81,10 +81,10 @@ public class CollectionCache extends LRUCache {
         boolean removed = false;
         SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
         do {
-            Cacheable cached = next.getValue();
+            final Cacheable cached = next.getValue();
             if(cached.getKey() != item.getKey()) {
-                Collection old = (Collection) cached;
-                Lock lock = old.getLock();
+                final Collection old = (Collection) cached;
+                final Lock lock = old.getLock();
                 if (lock.attempt(Lock.READ_LOCK)) {
                     try {
                         if (cached.allowUnload()) {
@@ -116,7 +116,7 @@ public class CollectionCache extends LRUCache {
         super.remove(item);
         names.remove(col.getURI().getRawCollectionPath());
         if(pool.getConfigurationManager() != null) // might be null during db initialization
-           pool.getConfigurationManager().invalidate(col.getURI());
+           {pool.getConfigurationManager().invalidate(col.getURI());}
     }
 
     /**
@@ -128,8 +128,8 @@ public class CollectionCache extends LRUCache {
      */
     public int getRealSize() {
         int size = 0;
-        for (Iterator<Long> i = names.valueIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) get(i.next());
+        for (final Iterator<Long> i = names.valueIterator(); i.hasNext(); ) {
+            final Collection collection = (Collection) get(i.next());
             if (collection != null) {
                 size += collection.getMemorySize();
             }

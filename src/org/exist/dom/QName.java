@@ -59,9 +59,9 @@ public class QName implements Comparable<QName> {
     public QName(String localName, String namespaceURI, String prefix) {
         localName_ = localName;
         if(namespaceURI == null)
-            namespaceURI_ = "";
+            {namespaceURI_ = "";}
         else
-            namespaceURI_ = namespaceURI;
+            {namespaceURI_ = namespaceURI;}
         prefix_ = prefix;
     }
 
@@ -120,7 +120,7 @@ public class QName implements Comparable<QName> {
 
     public String getStringValue() {
         if (prefix_ != null && prefix_.length() > 0)
-            return prefix_ + ':' + localName_;
+            {return prefix_ + ':' + localName_;}
         return localName_;
     }
 
@@ -158,11 +158,11 @@ public class QName implements Comparable<QName> {
         }
         int c;
         if (namespaceURI_ == null)
-            c = other.namespaceURI_ == null ? Constants.EQUAL : Constants.INFERIOR;
+            {c = other.namespaceURI_ == null ? Constants.EQUAL : Constants.INFERIOR;}
         else if (other.namespaceURI_ == null)
-            c = Constants.SUPERIOR;
+            {c = Constants.SUPERIOR;}
         else
-            c = namespaceURI_.compareTo(other.namespaceURI_);
+            {c = namespaceURI_.compareTo(other.namespaceURI_);}
         return c == Constants.EQUAL ? localName_.compareTo(other.localName_) : c;
     }
 
@@ -202,13 +202,13 @@ public class QName implements Comparable<QName> {
     public boolean equalsSimple(QName other) {
         int c;
         if (namespaceURI_ == null)
-            c = other.namespaceURI_ == null ? Constants.EQUAL : Constants.INFERIOR;
+            {c = other.namespaceURI_ == null ? Constants.EQUAL : Constants.INFERIOR;}
         else if (other.namespaceURI_ == null)
-            c = Constants.SUPERIOR;
+            {c = Constants.SUPERIOR;}
         else
-            c = namespaceURI_.compareTo(other.namespaceURI_);
+            {c = namespaceURI_.compareTo(other.namespaceURI_);}
         if (c == Constants.EQUAL)
-            return localName_.equals(other.localName_);
+            {return localName_.equals(other.localName_);}
         return false;
     }
 
@@ -236,11 +236,11 @@ public class QName implements Comparable<QName> {
      * @exception IllegalArgumentException if the qname starts with a leading :
      */
     public static String extractPrefix(String qname) throws IllegalArgumentException {
-        int p = qname.indexOf(':');
+        final int p = qname.indexOf(':');
         if (p == Constants.STRING_NOT_FOUND)
-            return null;
+            {return null;}
         if (p == 0)
-            throw new IllegalArgumentException("Illegal QName: starts with a :"); //TODO: change to XPathException? -shabanovd
+            {throw new IllegalArgumentException("Illegal QName: starts with a :");} //TODO: change to XPathException? -shabanovd
         // fixme! Should we not use isQName() here? /ljo
         if (Character.isDigit(qname.substring(0,1).charAt(0))) {
             throw new IllegalArgumentException("Illegal QName: starts with a digit"); //TODO: change to XPathException? -shabanovd
@@ -256,13 +256,13 @@ public class QName implements Comparable<QName> {
      */
     public static String extractLocalName(String qname) 
             throws IllegalArgumentException {
-        int p = qname.indexOf(':');
+        final int p = qname.indexOf(':');
         if (p == Constants.STRING_NOT_FOUND)
-            return qname;
+            {return qname;}
         if (p == 0)
-            throw new IllegalArgumentException("Illegal QName: starts with a :"); //TODO: change to XPathException? -shabanovd
+            {throw new IllegalArgumentException("Illegal QName: starts with a :");} //TODO: change to XPathException? -shabanovd
         if (p == qname.length())
-            throw new IllegalArgumentException("Illegal QName: ends with a :"); //TODO: change to XPathException? -shabanovd
+            {throw new IllegalArgumentException("Illegal QName: ends with a :");} //TODO: change to XPathException? -shabanovd
         if (!isQName(qname)) {
             throw new IllegalArgumentException("Illegal QName: not a valid local name."); //TODO: change to XPathException? -shabanovd
         }
@@ -281,12 +281,12 @@ public class QName implements Comparable<QName> {
      */
     public static QName parse(Context context, String qname, String defaultNS)
             throws XPathException {
-        String prefix = extractPrefix(qname);
+        final String prefix = extractPrefix(qname);
         String namespaceURI;
         if (prefix != null) {
             namespaceURI = context.getURIForPrefix(prefix);
             if (namespaceURI == null)
-                throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + prefix);
+                {throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + prefix);}
         } else {
             namespaceURI = defaultNS;
         }
@@ -312,22 +312,22 @@ public class QName implements Comparable<QName> {
 
     public final void isValid() throws XPathException {
     	if (localName_ != null && !XMLChar.isValidNCName(localName_))
-    		throw new XPathException(ErrorCodes.XPTY0004, "Not valid localname '"+localName_+"' for qname '"+this+"'.");
+    		{throw new XPathException(ErrorCodes.XPTY0004, "Not valid localname '"+localName_+"' for qname '"+this+"'.");}
         
         if (prefix_ != null && !XMLChar.isValidNCName(prefix_))
-    		throw new XPathException(ErrorCodes.XPTY0004, "Not valid prefix '"+prefix_+"' for qname '"+this+"'.");
+    		{throw new XPathException(ErrorCodes.XPTY0004, "Not valid prefix '"+prefix_+"' for qname '"+this+"'.");}
     }
 
     public final static boolean isQName(String name) {
-        int colon = name.indexOf(':');
+        final int colon = name.indexOf(':');
         if (colon == Constants.STRING_NOT_FOUND)
-            return XMLChar.isValidNCName(name);
+            {return XMLChar.isValidNCName(name);}
         if (colon == 0 || colon == name.length() - 1)
-            return false;
+            {return false;}
         if (!XMLChar.isValidNCName(name.substring(0, colon)))
-            return false;
+            {return false;}
         if (!XMLChar.isValidNCName(name.substring(colon + 1)))
-            return false;
+            {return false;}
         return true;
     }
 

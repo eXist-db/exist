@@ -25,9 +25,9 @@ public class NodeCopyAction extends AbstractAction implements ClipboardOwner
 	{
 		super("Copy as XML");
 		if(tree == null)
-			throw new NullPointerException("Tree cannot be null");
+			{throw new NullPointerException("Tree cannot be null");}
 		
-		putValue(MNEMONIC_KEY, new Integer(KeyEvent.VK_C));
+		putValue(MNEMONIC_KEY, Integer.valueOf(KeyEvent.VK_C));
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl C"));
 		this.tree = tree;
 	}
@@ -43,22 +43,22 @@ public class NodeCopyAction extends AbstractAction implements ClipboardOwner
 	}
 	public void actionPerformed(ActionEvent event)
 	{
-		Object source = event.getSource();
+		final Object source = event.getSource();
 		XACMLTreeNode node;
 		if(source == tree)
 		{
-			TreePath path = tree.getSelectionPath();
+			final TreePath path = tree.getSelectionPath();
 			if(path == null)
-				return;
+				{return;}
 			 node = (XACMLTreeNode)path.getLastPathComponent();
 		}
 		else
-			node = contextNode;
+			{node = contextNode;}
 		if(node == null)
-			return;
-		Transferable data = new NodeTransferable(node);
-		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		Clipboard clipboard = toolkit.getSystemClipboard();
+			{return;}
+		final Transferable data = new NodeTransferable(node);
+		final Toolkit toolkit = Toolkit.getDefaultToolkit();
+		final Clipboard clipboard = toolkit.getSystemClipboard();
 		clipboard.setContents(data, this);
 		contextNode = null;
 	}

@@ -83,7 +83,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return null;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         }
     }
@@ -108,7 +108,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return null;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         }
     }
@@ -157,7 +157,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Resource '" + resource.getId() + "'", e);
         }
     }
@@ -180,7 +180,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Collection '" + childUri.toString() + "'", e);
         }
     }
@@ -197,14 +197,14 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return modifyCollection(broker, childUri, new DatabaseItemModifier<org.exist.collections.Collection, Void>() {
                         @Override
                         public Void modify(org.exist.collections.Collection collection) throws PermissionDeniedException, LockException {
-                            Permission permission = collection.getPermissions();
+                            final Permission permission = collection.getPermissions();
                             permission.setOwner(owner);
                             permission.setGroup(group);
                             permission.setMode(mode);
                             if(permission instanceof ACLPermission) {
-                                ACLPermission aclPermission = (ACLPermission)permission;
+                                final ACLPermission aclPermission = (ACLPermission)permission;
                                 aclPermission.clear();
-                                for(ACEAider ace : aces) {
+                                for(final ACEAider ace : aces) {
                                     aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
                                 }
                             }
@@ -213,7 +213,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Collection '" + childUri.toString() + "'", e);
         }
     }
@@ -228,14 +228,14 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return modifyResource(broker, resource, new DatabaseItemModifier<DocumentImpl, Void>() {
                         @Override
                         public Void modify(DocumentImpl document) throws PermissionDeniedException, LockException {
-                            Permission permission = document.getPermissions();
+                            final Permission permission = document.getPermissions();
                             permission.setOwner(owner);
                             permission.setGroup(group);
                             permission.setMode(mode);
                             if(permission instanceof ACLPermission) {
-                                ACLPermission aclPermission = (ACLPermission)permission;
+                                final ACLPermission aclPermission = (ACLPermission)permission;
                                 aclPermission.clear();
-                                for(ACEAider ace : aces) {
+                                for(final ACEAider ace : aces) {
                                     aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
                                 }
                             }
@@ -244,7 +244,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Resource '" + resource.getId() + "'", e);
         }
     }
@@ -268,7 +268,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Collection '" + collUri.toString() + "'", e);
         }
     }
@@ -288,7 +288,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Resource '" + resource.getId() + "'", e);
         }
     }
@@ -310,7 +310,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Collection '" + collUri.toString() + "'", e);
         }
     }
@@ -330,7 +330,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Resource '" + resource.getId() + "'", e);
         }
     }
@@ -346,7 +346,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return modifyCollection(broker, collUri, new DatabaseItemModifier<org.exist.collections.Collection, Void>() {
                         @Override
                         public Void modify(org.exist.collections.Collection collection) throws PermissionDeniedException, SyntaxException, LockException {
-                            Permission permission = collection.getPermissions();
+                            final Permission permission = collection.getPermissions();
                             permission.setOwner(u);
                             permission.setGroup(group);
                             return null;
@@ -354,7 +354,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Collection '" + collUri.toString() + "'", e);
         }
     }
@@ -375,7 +375,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
              });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to modify permission on Resource '" + resource.getId() + "'", e);
         }	
 
@@ -393,13 +393,13 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return readResource(broker, res, new DatabaseItemReader<DocumentImpl, String>(){
                         @Override
                         public String read(DocumentImpl document) {
-                            Account lockOwner = document.getUserLock();
+                            final Account lockOwner = document.getUserLock();
                             return lockOwner == null ? null : lockOwner.getName();
                         }
                     });
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -420,12 +420,12 @@ public class LocalUserManagementService implements EXistUserManagementService {
                                 throw new PermissionDeniedException("User is not allowed to lock resource " + resourceId);
                             }
 
-                            SecurityManager manager = broker.getBrokerPool().getSecurityManager();
+                            final SecurityManager manager = broker.getBrokerPool().getSecurityManager();
                             if(!(user.equals(u) || manager.hasAdminPrivileges(user))) {
                                 throw new PermissionDeniedException("User " + user.getName() + " is not allowed to lock resource '" + resourceId + "' for user " + u.getName());
                             }
 
-                            Account lockOwner = document.getUserLock();
+                            final Account lockOwner = document.getUserLock();
 
                             if(lockOwner != null) {
                                 if(lockOwner.equals(u)) {
@@ -442,7 +442,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Unable to lock resource '" + resourceId + "': " + e.getMessage(), e);
         }
     }
@@ -464,9 +464,9 @@ public class LocalUserManagementService implements EXistUserManagementService {
                             }
 			
                             
-                            Account lockOwner = document.getUserLock();
+                            final Account lockOwner = document.getUserLock();
 			
-                            SecurityManager manager = broker.getBrokerPool().getSecurityManager();
+                            final SecurityManager manager = broker.getBrokerPool().getSecurityManager();
                             if(lockOwner != null && !(lockOwner.equals(user) || manager.hasAdminPrivileges(user))) {
                                 throw new PermissionDeniedException("Resource '" + resourceId + "' is already locked by user " + lockOwner.getName());
                             }
@@ -478,7 +478,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Unable to unlock resource '" + resourceId + "': " + e.getMessage(), e);
         }    
     }
@@ -503,7 +503,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return null;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
         }    
     }
@@ -520,7 +520,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return null;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
         }
     }
@@ -537,7 +537,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return null;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
         }
     }
@@ -560,7 +560,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -580,11 +580,11 @@ public class LocalUserManagementService implements EXistUserManagementService {
                                     return new Permission[0];
                             }
                             
-                            Permission perms[] = new Permission[collection.getDocumentCount(broker)];                            
-                            Iterator<DocumentImpl> itDocument = collection.iterator(broker);
+                            final Permission perms[] = new Permission[collection.getDocumentCount(broker)];                            
+                            final Iterator<DocumentImpl> itDocument = collection.iterator(broker);
                             int i = 0;
                             while(itDocument.hasNext()) {
-                                DocumentImpl document = itDocument.next();
+                                final DocumentImpl document = itDocument.next();
                                 perms[i++] = document.getPermissions();
                             }
 
@@ -593,7 +593,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }   
     }
@@ -613,11 +613,11 @@ public class LocalUserManagementService implements EXistUserManagementService {
 				return new Permission[0];
                             }
                             
-                            Permission perms[] = new Permission[collection.getChildCollectionCount(broker)];
-                            Iterator<XmldbURI> itChildCollectionUri = collection.collectionIterator(broker);
+                            final Permission perms[] = new Permission[collection.getChildCollectionCount(broker)];
+                            final Iterator<XmldbURI> itChildCollectionUri = collection.collectionIterator(broker);
                             int i = 0;
                             while(itChildCollectionUri.hasNext()) {
-                                XmldbURI childCollectionUri = collectionUri.append(itChildCollectionUri.next());
+                                final XmldbURI childCollectionUri = collectionUri.append(itChildCollectionUri.next());
                                 Permission childPermission = readCollection(broker, childCollectionUri, new DatabaseItemReader<org.exist.collections.Collection, Permission>(){
                                     @Override
                                     public Permission read(org.exist.collections.Collection childCollection) {
@@ -632,7 +632,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     });
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }   	
     }
@@ -645,11 +645,11 @@ public class LocalUserManagementService implements EXistUserManagementService {
 
                 @Override
                 public Account withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
                     return sm.getAccount(name);
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -661,12 +661,12 @@ public class LocalUserManagementService implements EXistUserManagementService {
 
                 @Override
                 public Account[] withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-                    java.util.Collection<Account> users = sm.getUsers();
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final java.util.Collection<Account> users = sm.getUsers();
                     return users.toArray(new Account[users.size()]);
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -678,11 +678,11 @@ public class LocalUserManagementService implements EXistUserManagementService {
 
                 @Override
                 public Group withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
                     return sm.getGroup(name);
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -694,17 +694,17 @@ public class LocalUserManagementService implements EXistUserManagementService {
 
                 @Override
                 public String[] withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-                    java.util.Collection<Group> groups = sm.getGroups();
-                    String[] groupNames = new String[groups.size()];
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final java.util.Collection<Group> groups = sm.getGroups();
+                    final String[] groupNames = new String[groups.size()];
                     int i = 0;
-                    for (Group group : groups) {
+                    for (final Group group : groups) {
                         groupNames[i++] = group.getName();
                     }
                     return groupNames;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -716,16 +716,16 @@ public class LocalUserManagementService implements EXistUserManagementService {
 
                 @Override
                 public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
                     if(!sm.hasAdminPrivileges(user))
-                    	throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not allowed to remove users");
+                    	{throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not allowed to remove users");}
 	        
                     sm.deleteAccount(u);
                     
                     return null;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -736,14 +736,14 @@ public class LocalUserManagementService implements EXistUserManagementService {
             executeWithBroker(new BrokerOperation<Void>(){
                 @Override
                 public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 	        
                     sm.deleteGroup(group.getName());
                     
                     return null;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -762,14 +762,14 @@ public class LocalUserManagementService implements EXistUserManagementService {
 
                 @Override
                 public Void withBroker(DBBroker broker) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-                    SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                    final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 	        
                     sm.updateAccount(u);
                     
                     return null;
                 }
             });
-        } catch(Exception e) {
+        } catch(final Exception e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -898,13 +898,13 @@ public class LocalUserManagementService implements EXistUserManagementService {
 
     @Override
     public void addUser(User user) throws XMLDBException {
-        Account account = new UserAider(user.getName());
+        final Account account = new UserAider(user.getName());
         addAccount(account);
     }
 
     @Override
     public void updateUser(User user) throws XMLDBException {
-        Account account = new UserAider(user.getName());
+        final Account account = new UserAider(user.getName());
         account.setPassword(user.getPassword());
         //TODO: groups
         updateAccount(account);
@@ -928,7 +928,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
 
     @Override
     public void lockResource(Resource res, User u) throws XMLDBException {
-        Account account = new UserAider(u.getName());
+        final Account account = new UserAider(u.getName());
         lockResource(res, account);
     }
         
@@ -946,7 +946,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
     }
 
     private <R> R executeWithBroker(BrokerOperation<R> brokerOperation) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-    	Subject preserveSubject = pool.getSubject();
+    	final Subject preserveSubject = pool.getSubject();
 		DBBroker broker = null;
 		try {
 		    broker = pool.get(user);
@@ -955,10 +955,10 @@ public class LocalUserManagementService implements EXistUserManagementService {
 		    
 		} finally {
 		    if(broker != null) 
-		        pool.release(broker);
+		        {pool.release(broker);}
 		    
 		    if(preserveSubject != null)
-		    	pool.setSubject(preserveSubject);
+		    	{pool.setSubject(preserveSubject);}
 		}
     }
     
@@ -996,37 +996,37 @@ public class LocalUserManagementService implements EXistUserManagementService {
     }
     
     private <R> R modifyResource(DBBroker broker, Resource resource, DatabaseItemModifier<DocumentImpl, R> modifier) throws XMLDBException, LockException, PermissionDeniedException, EXistException, SyntaxException {
-        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         
         DocumentImpl document = null;
         try {
             document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
-            SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+            final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
             if(!document.getPermissions().validate(user, Permission.WRITE) && !sm.hasAdminPrivileges(user)) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "you are not the owner of this resource; owner = " + document.getPermissions().getOwner());
             }
             
-            R result = modifier.modify(document);
+            final R result = modifier.modify(document);
             
             broker.storeXMLResource(transaction, document);
             transact.commit(transaction);
             
             return result;
             
-        } catch(EXistException ee) {
+        } catch(final EXistException ee) {
             transact.abort(transaction);
             throw ee;
-        } catch(XMLDBException xmldbe) {
+        } catch(final XMLDBException xmldbe) {
             transact.abort(transaction);
             throw xmldbe;
-        } catch(LockException le) {
+        } catch(final LockException le) {
             transact.abort(transaction);
             throw le;
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             transact.abort(transaction);
             throw pde;
-        } catch(SyntaxException se) {
+        } catch(final SyntaxException se) {
             transact.abort(transaction);
             throw se;
         } finally {
@@ -1037,8 +1037,8 @@ public class LocalUserManagementService implements EXistUserManagementService {
     }
     
     private <R> R modifyCollection(DBBroker broker, XmldbURI collectionURI, DatabaseItemModifier<org.exist.collections.Collection, R> modifier) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
-        TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         
         org.exist.collections.Collection coll = null;
         
@@ -1048,7 +1048,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collectionURI.toString() + " not found");
             }
             
-            R result = modifier.modify(coll);
+            final R result = modifier.modify(coll);
             
             broker.saveCollection(transaction, coll);
             transact.commit(transaction);
@@ -1056,25 +1056,25 @@ public class LocalUserManagementService implements EXistUserManagementService {
             
             return result;
             
-        } catch(EXistException ee) {
+        } catch(final EXistException ee) {
             transact.abort(transaction);
             throw ee;
-        } catch(XMLDBException xmldbe) {
+        } catch(final XMLDBException xmldbe) {
             transact.abort(transaction);
             throw xmldbe;
-        } catch(LockException le) {
+        } catch(final LockException le) {
             transact.abort(transaction);
             throw le;
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             transact.abort(transaction);
             throw pde;
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             transact.abort(transaction);
             throw ioe;
-        } catch(TriggerException te) {
+        } catch(final TriggerException te) {
             transact.abort(transaction);
             throw te;
-        } catch(SyntaxException se) {
+        } catch(final SyntaxException se) {
             transact.abort(transaction);
             throw se;
         } finally {

@@ -74,25 +74,25 @@ public class Database implements DatabaseMBean {
     
     @Override
     public TabularData getActiveBrokersMap() {
-        OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING };
+        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.INTEGER, SimpleType.STRING, SimpleType.STRING };
         try {
-            CompositeType infoType = new CompositeType("brokerInfo", "Provides information on a broker instance.",
+            final CompositeType infoType = new CompositeType("brokerInfo", "Provides information on a broker instance.",
                     itemNames, itemDescriptions, itemTypes);
-            TabularType tabularType = new TabularType("activeBrokers", "Lists all threads currently using a broker instance", infoType, indexNames);
-            TabularDataSupport data = new TabularDataSupport(tabularType);
-            for (Map.Entry<Thread, DBBroker> entry : pool.getActiveBrokers().entrySet()) {
-                Thread thread = entry.getKey();
-                DBBroker broker = entry.getValue();
-                String trace = printStackTrace(thread);
+            final TabularType tabularType = new TabularType("activeBrokers", "Lists all threads currently using a broker instance", infoType, indexNames);
+            final TabularDataSupport data = new TabularDataSupport(tabularType);
+            for (final Map.Entry<Thread, DBBroker> entry : pool.getActiveBrokers().entrySet()) {
+                final Thread thread = entry.getKey();
+                final DBBroker broker = entry.getValue();
+                final String trace = printStackTrace(thread);
                 String watchdogTrace = null;
                 if (pool.getWatchdog() != null) {
                 	watchdogTrace = pool.getWatchdog().get(broker);
                 }
-                Object[] itemValues = { thread.getName(), broker.getReferenceCount(), trace, watchdogTrace };
+                final Object[] itemValues = { thread.getName(), broker.getReferenceCount(), trace, watchdogTrace };
                 data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
             }
             return data;
-        } catch (OpenDataException e) {
+        } catch (final OpenDataException e) {
             e.printStackTrace();
             return null;
         }
@@ -124,9 +124,9 @@ public class Database implements DatabaseMBean {
     }
     
     public String printStackTrace(Thread thread) {
-    	StackTraceElement[] stack = thread.getStackTrace();
-    	StringWriter writer = new StringWriter();
-    	int showItems = stack.length > 20 ? 20 : stack.length;
+    	final StackTraceElement[] stack = thread.getStackTrace();
+    	final StringWriter writer = new StringWriter();
+    	final int showItems = stack.length > 20 ? 20 : stack.length;
 		for (int i = 0; i < showItems; i++) {
 			writer.append(stack[i].toString()).append('\n');
 		}

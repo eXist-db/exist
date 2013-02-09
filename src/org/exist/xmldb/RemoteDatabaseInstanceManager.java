@@ -31,12 +31,12 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 	 * @see org.exist.xmldb.DatabaseInstanceManager#shutdown()
 	 */
 	public void shutdown(long delay) throws XMLDBException {
-        List<Object> params = new ArrayList<Object>(1);
+        final List<Object> params = new ArrayList<Object>(1);
 		if(delay > 0)
-			params.add(new Long(delay).toString());
+			params.add(Long.valueOf(delay).toString());
 		try {
 			client.execute("shutdown", params);
-		} catch(XmlRpcException e) {
+		} catch(final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
 				"shutdown failed",
 				e);
@@ -46,7 +46,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
     public boolean enterServiceMode() throws XMLDBException {
 		try {
 			client.execute("enterServiceMode", new ArrayList<Object>(1));
-		} catch(XmlRpcException e) {
+		} catch(final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"Failed to switch db to service mode: " + e.getMessage(), e);
 		}
@@ -57,7 +57,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
     public void exitServiceMode() throws XMLDBException {
         try {
 			client.execute("exitServiceMode", new ArrayList<Object>(1));
-		} catch(XmlRpcException e) {
+		} catch(final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"Failed to switch db to service mode: " + e.getMessage(), e);
 		}
@@ -110,14 +110,14 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
 	public boolean isXACMLEnabled() throws XMLDBException {
 
-        List<Object> params = new ArrayList<Object>(1);
+        final List<Object> params = new ArrayList<Object>(1);
 		try {
-			Object result = client.execute("isXACMLEnabled", params);
+			final Object result = client.execute("isXACMLEnabled", params);
 			if(result instanceof Boolean)
-				return ((Boolean)result).booleanValue();
+				{return ((Boolean)result).booleanValue();}
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"Invalid return type for remote invocation of 'isXACMLEnabled'");
-		} catch(XmlRpcException e) {
+		} catch(final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, 
 				"Error determining if XACML is enabled: " + e.getMessage(),
 				e);

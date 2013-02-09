@@ -752,7 +752,7 @@ public class XMLCharacterData {
      */
 
     public static IntRangeSet getCategory(byte mask) {
-        IntRangeSet irs = new IntRangeSet();
+        final IntRangeSet irs = new IntRangeSet();
         for (int i=0; i<65536; i++) {
             if ((data[i]&mask) != 0) {
                 irs.add(i);
@@ -783,4 +783,3 @@ public class XMLCharacterData {
 // Portions created by __ are Copyright (C) __. All Rights Reserved.
 //
 // Contributor(s): 	None
-//

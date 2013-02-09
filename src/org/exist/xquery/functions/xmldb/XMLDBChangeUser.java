@@ -103,7 +103,7 @@ public class XMLDBChangeUser extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) 
 	throws XPathException {
 
-	String userName = args[0].getStringValue();
+	final String userName = args[0].getStringValue();
 	Collection collection = null;
 		
 	try {

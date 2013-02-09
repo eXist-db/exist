@@ -89,16 +89,16 @@ public class FunNot extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
            
 		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
 		
         Sequence result;
-        Expression arg = getArgument(0);		
+        final Expression arg = getArgument(0);		
 		// case 1: if the argument expression returns a node set,
 		// subtract the set from the context node set and return
 		// the remaining set
@@ -117,18 +117,18 @@ public class FunNot extends Function {
     			result = contextSequence.toNodeSet().copy();
 
     			if (inPredicate) {
-    				for (SequenceIterator i = result.iterate(); i.hasNext();) {
-    					NodeProxy item = (NodeProxy) i.nextItem();
+    				for (final SequenceIterator i = result.iterate(); i.hasNext();) {
+    					final NodeProxy item = (NodeProxy) i.nextItem();
 //    					item.addContextNode(getExpressionId(), item);
     					if (contextId != Expression.NO_CONTEXT_ID)
-                            item.addContextNode(contextId, item);
+                            {item.addContextNode(contextId, item);}
     					else
-    						item.addContextNode(getExpressionId(), item);
+    						{item.addContextNode(getExpressionId(), item);}
     				}
     			}
 
     			// evaluate argument expression
-    			Sequence argSeq = arg.eval(result);
+    			final Sequence argSeq = arg.eval(result);
     			NodeSet argSet;
     			if (contextId != Expression.NO_CONTEXT_ID) {
 	    			argSet = argSeq.toNodeSet().getContextNodes(contextId);
@@ -144,7 +144,7 @@ public class FunNot extends Function {
 		}
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;           
 	}
@@ -156,7 +156,7 @@ public class FunNot extends Function {
 	 * @throws XPathException
 	 */
 	private Sequence evalBoolean(Sequence contextSequence, Item contextItem, Expression arg) throws XPathException {
-        Sequence seq = arg.eval(contextSequence, contextItem);
+        final Sequence seq = arg.eval(contextSequence, contextItem);
 		return seq.effectiveBooleanValue() ? BooleanValue.FALSE : BooleanValue.TRUE;
 	}
 }

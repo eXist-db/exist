@@ -28,7 +28,7 @@ public class DOMDB {
       ElementImpl textE = (ElementImpl)DOM.findChild(parent,namespaceName,localName);
       if (textE==null) {
          textE = (ElementImpl)parent.getOwnerDocument().createElementNS(namespaceName,localName);
-         NodeListImpl nl = new NodeListImpl(1);
+         final NodeListImpl nl = new NodeListImpl(1);
          nl.add(textE);
          if (firstChild) {
             parent.insertAfter(txn,nl,parent.getFirstChild());
@@ -42,13 +42,13 @@ public class DOMDB {
    }
    
    public static void appendChild(Txn txn,ElementImpl parent,Node child) {
-      NodeListImpl nl = new NodeListImpl(1);
+      final NodeListImpl nl = new NodeListImpl(1);
       nl.add(child);
       parent.appendChildren(txn,nl,-1);
    }
    
    public static Node insertBefore(Txn txn,ElementImpl parent,Node child,Node refChild) {
-      NodeListImpl nl = new NodeListImpl(1);
+      final NodeListImpl nl = new NodeListImpl(1);
       nl.add(child);
       parent.insertBefore(txn,nl,refChild);
       return child;
@@ -62,7 +62,7 @@ public class DOMDB {
    public static void removeChildren(Txn txn,ElementImpl parent) {
       Node current = parent.getFirstChild();
       while (current!=null) {
-         Node toRemove = current;
+         final Node toRemove = current;
          current = current.getNextSibling();
          parent.removeChild(txn,toRemove);
       }

@@ -77,13 +77,13 @@ public final class Signatures {
      */
     public final static byte getSizeType( int length ) {
         if (length > Short.MAX_VALUE)
-            return intContent;
+            {return intContent;}
         else if (length > Byte.MAX_VALUE)
-            return shortContent;
+            {return shortContent;}
         else if (length > 0)
-            return byteContent;
+            {return byteContent;}
         else
-            return noContent;
+            {return noContent;}
     }
 
 
@@ -93,7 +93,7 @@ public final class Signatures {
      *  as defined in {@link Node}.
      */
     public final static short getType(byte signature) {
-        byte type = (byte)((signature & 0xE0) >> 0x5);
+        final byte type = (byte)((signature & 0xE0) >> 0x5);
         switch (type) {
             case Char:
                 return Node.TEXT_NODE;

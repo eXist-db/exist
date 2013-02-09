@@ -103,7 +103,7 @@ public class Compile extends BasicFunction {
 			throws XPathException {
 		
 		// get the query expression
-		String expr = args[0].getStringValue();
+		final String expr = args[0].getStringValue();
 		if ("".equals(expr.trim())) {
 		  return new EmptySequence();
 		}
@@ -115,16 +115,16 @@ public class Compile extends BasicFunction {
 		ErrorCodes.ErrorCode code = null;
 		int line = -1, column = -1;
 		
-		XQueryContext pContext = 
+		final XQueryContext pContext = 
 			new XQueryContext(context.getBroker().getBrokerPool(), AccessContext.VALIDATION_INTERNAL);
 		
 		if (getArgumentCount() == 2 && args[1].hasOne()) {
 			pContext.setModuleLoadPath(args[1].getStringValue());
 		}
-		XQueryLexer lexer = new XQueryLexer(pContext, new StringReader(expr));
-		XQueryParser parser = new XQueryParser(lexer);
+		final XQueryLexer lexer = new XQueryLexer(pContext, new StringReader(expr));
+		final XQueryParser parser = new XQueryParser(lexer);
 		// shares the context of the outer expression
-		XQueryTreeParser astParser = new XQueryTreeParser(pContext);
+		final XQueryTreeParser astParser = new XQueryTreeParser(pContext);
 		try {
 		    parser.xpath();
 			if(parser.foundErrors()) {
@@ -132,24 +132,24 @@ public class Compile extends BasicFunction {
 				throw new XPathException(this, "error found while executing expression: " +
 					parser.getErrorMessage());
 			}
-			AST ast = parser.getAST();
+			final AST ast = parser.getAST();
 			
-			PathExpr path = new PathExpr(pContext);
+			final PathExpr path = new PathExpr(pContext);
 			astParser.xpath(ast, path);
 			if(astParser.foundErrors()) {
 				throw astParser.getLastException();
 			}
 			path.analyze(new AnalyzeContextInfo());
-		} catch (RecognitionException e) {			
+		} catch (final RecognitionException e) {			
 			error = e.toString();
-		} catch (TokenStreamException e) {
+		} catch (final TokenStreamException e) {
 			error = e.toString();
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			line = e.getLine();
 			column = e.getColumn();
 			code = e.getCode();
 			error = e.getDetailMessage();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			error = e.getMessage();
 		} finally {
 			context.popNamespaceContext();
@@ -164,7 +164,7 @@ public class Compile extends BasicFunction {
 
 	private Sequence response(XQueryContext pContext, String error, ErrorCode code, int line, int column) {
 		context.pushDocumentContext();
-		MemTreeBuilder builder = context.getDocumentBuilder();
+		final MemTreeBuilder builder = context.getDocumentBuilder();
 		
 		builder.startElement(QNAME_INFO, null);
 		builder.addAttribute(QNAME_RESULT_ATTR, error == null ? "pass" : "fail");
@@ -172,7 +172,7 @@ public class Compile extends BasicFunction {
 		if (error != null) {
 			builder.startElement(ERROR_INFO, null);
 			if (code != null)
-				builder.addAttribute(QNAME_ERRCODE_ATTR, code.toString());
+				{builder.addAttribute(QNAME_ERRCODE_ATTR, code.toString());}
 			if (line > -1) {
 				builder.addAttribute(QNAME_LINE_ATTR, Integer.toString(line));
 				builder.addAttribute(QNAME_COLUMN_ATTR, Integer.toString(column));

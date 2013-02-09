@@ -334,6 +334,6 @@ public class ProxyNode<E extends NodeAtExist> implements NodeAtExist, Proxy<E> {
 		if (object instanceof NodeAtExist) {
 			this.node = (E) object;
 		} else
-			throw new IllegalArgumentException("Only NodeAtExist allowed");
+			{throw new IllegalArgumentException("Only NodeAtExist allowed");}
 	}
 }

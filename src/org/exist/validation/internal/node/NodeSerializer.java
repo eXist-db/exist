@@ -47,10 +47,10 @@ public class NodeSerializer {
         Properties outputProperties, OutputStream os) throws IOException {
         
         LOG.debug("Serializing started.");
-        SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+        final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         try {
-            String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-            Writer writer = new OutputStreamWriter(os, encoding);
+            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+            final Writer writer = new OutputStreamWriter(os, encoding);
             sax.setOutput(writer, outputProperties);
 
             serializer.reset();
@@ -69,8 +69,8 @@ public class NodeSerializer {
             sax.endDocument();
             writer.close();
             
-        } catch(Exception e) {
-            String txt = "A problem occurred while serializing the node set";
+        } catch(final Exception e) {
+            final String txt = "A problem occurred while serializing the node set";
             LOG.debug(txt+".", e);
             throw new IOException(txt+": " + e.getMessage(), e);
         

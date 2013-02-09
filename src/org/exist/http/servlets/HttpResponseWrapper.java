@@ -64,7 +64,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
      */
 	public void addCookie(final String name, final String value, final int maxAge)
 	{
-		Cookie cookie = new Cookie(name, encode(value));
+		final Cookie cookie = new Cookie(name, encode(value));
 		cookie.setMaxAge(maxAge);
 		response.addCookie(cookie);
 	}
@@ -79,7 +79,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
      */
 	public void addCookie(final String name, final String value, final int maxAge, boolean secure)
 	{
-		Cookie cookie = new Cookie(name, encode(value));
+		final Cookie cookie = new Cookie(name, encode(value));
 		cookie.setMaxAge(maxAge);
 		cookie.setSecure( secure );
 		response.addCookie(cookie);
@@ -97,13 +97,13 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 */
 	public void addCookie(final String name, final String value, final int maxAge, boolean secure, final String domain, final String path)
 	{
-		Cookie cookie = new Cookie(name, encode(value));
+		final Cookie cookie = new Cookie(name, encode(value));
 		cookie.setMaxAge(maxAge);
 		cookie.setSecure( secure );
 		if(domain!=null)
-			cookie.setDomain(domain);
+			{cookie.setDomain(domain);}
 		if(path!=null)
-			cookie.setPath(path);
+			{cookie.setPath(path);}
 		response.addCookie(cookie);
 	}
 	
@@ -196,16 +196,16 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 * @param arg1
 	 */
 	public void setDateHeader(String name, long arg1) {
-		dateHeaders.put(name, new Long(arg1) );
+		dateHeaders.put(name, Long.valueOf(arg1) );
 		response.setDateHeader(name, arg1);
 	}
 	/** @return the value of Date Header corresponding to given name,
 	 * 0 if none has been set. */
 	public long getDateHeader(String name) {
 		long ret = 0;
-		Long val = dateHeaders.get(name);
+		final Long val = dateHeaders.get(name);
 		if ( val != null )
-			ret = val.longValue();
+			{ret = val.longValue();}
 		return ret;
 	}
 	
@@ -247,7 +247,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	private String encode(String value){
 		try {
 			return new String(value.getBytes(), "ISO-8859-1");
-		} catch (UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			return value;
 		}
 	}

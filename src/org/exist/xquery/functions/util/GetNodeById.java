@@ -76,13 +76,13 @@ public class GetNodeById extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
-        String id = args[1].itemAt(0).getStringValue();
-        NodeId nodeId = context.getBroker().getBrokerPool().getNodeFactory().createFromString(id);
-        NodeValue docNode = (NodeValue) args[0].itemAt(0);
+        final String id = args[1].itemAt(0).getStringValue();
+        final NodeId nodeId = context.getBroker().getBrokerPool().getNodeFactory().createFromString(id);
+        final NodeValue docNode = (NodeValue) args[0].itemAt(0);
         if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
             return ((NodeImpl) docNode).getDocument().getNodeById(nodeId);
         } else {
-            DocumentImpl doc = ((NodeProxy)docNode).getDocument();
+            final DocumentImpl doc = ((NodeProxy)docNode).getDocument();
             return new NodeProxy(doc, nodeId);
         }
 	}

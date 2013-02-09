@@ -52,7 +52,7 @@ public abstract class AbstractStreamListener implements StreamListener {
     @Override
     public void startElement(Txn transaction, ElementImpl element, NodePath path) {
         if (next != null)
-            next.startElement(transaction, element, path);
+            {next.startElement(transaction, element, path);}
     }
 
     @Override

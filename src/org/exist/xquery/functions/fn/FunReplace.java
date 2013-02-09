@@ -116,21 +116,21 @@ public class FunReplace extends FunMatches {
         arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));    
         if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-            arg = new Atomize(context, arg);
+            {arg = new Atomize(context, arg);}
         steps.add(arg);
         
         arg = arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature)); 
         if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-            arg = new Atomize(context, arg);
+            {arg = new Atomize(context, arg);}
         steps.add(arg);
         
         arg = arguments.get(2);
         arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature)); 
         if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-            arg = new Atomize(context, arg);
+            {arg = new Atomize(context, arg);}
         steps.add(arg);
         
         if (arguments.size() == 4) {
@@ -138,7 +138,7 @@ public class FunReplace extends FunMatches {
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "4", mySignature)); 
             if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-                arg = new Atomize(context, arg);
+                {arg = new Atomize(context, arg);}
             steps.add(arg);            
         }
 	}
@@ -151,23 +151,23 @@ public class FunReplace extends FunMatches {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
         Sequence result;
-		Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
+		final Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
 		if (stringArg.isEmpty())
-            result = StringValue.EMPTY_STRING;
+            {result = StringValue.EMPTY_STRING;}
         else {        
-    		String string = stringArg.getStringValue();
-    		Sequence patternSeq = getArgument(1).eval(contextSequence, contextItem);
-                String pattern =
+    		final String string = stringArg.getStringValue();
+    		final Sequence patternSeq = getArgument(1).eval(contextSequence, contextItem);
+                final String pattern =
     			translateRegexp(patternSeq.getStringValue());
             
-                Sequence replaceSeq = getArgument(2).eval(contextSequence, contextItem);
-                String replace =
+                final Sequence replaceSeq = getArgument(2).eval(contextSequence, contextItem);
+                final String replace =
     			replaceSeq.getStringValue();
             //An error is raised [err:FORX0004] if the value of $replacement contains a "$" character that is not immediately followed by a digit 0-9 and not immediately preceded by a "\".
             //An error is raised [err:FORX0004] if the value of $replacement contains a "\" character that is not part of a "\\" pair, unless it is immediately followed by a "$" character.            
@@ -187,10 +187,10 @@ public class FunReplace extends FunMatches {
             	if (replace.charAt(i) == '\\') {
             		try {
             			if (!(replace.charAt(i + 1) == '\\' || replace.charAt(i + 1) == '$'))
-            				throw new XPathException(this, ErrorCodes.FORX0004, "The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.", replaceSeq);
+            				{throw new XPathException(this, ErrorCodes.FORX0004, "The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.", replaceSeq);}
             			i++;
             		//Handle index exceptions
-            		} catch (Exception e){
+            		} catch (final Exception e){
             			throw new XPathException(this, ErrorCodes.FORX0004, "The value of $replacement contains a '\\' character that is not part of a '\\\\' pair, unless it is immediately followed by a '$' character.", replaceSeq);
             		}
             	}
@@ -199,7 +199,7 @@ public class FunReplace extends FunMatches {
 
             int flags = 0;
     		if (getSignature().getArgumentCount() == 4)
-    			flags =	parseFlags(getArgument(3).eval(contextSequence, contextItem).getStringValue());
+    			{flags =	parseFlags(getArgument(3).eval(contextSequence, contextItem).getStringValue());}
     		try {
     			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
     				pat = Pattern.compile(pattern, flags);
@@ -207,20 +207,20 @@ public class FunReplace extends FunMatches {
                 } else {
                     matcher.reset(string);
                 }
-                String r = matcher.replaceAll(replace);
+                final String r = matcher.replaceAll(replace);
     			result = new StringValue(r);
-    		} catch (PatternSyntaxException e) {
+    		} catch (final PatternSyntaxException e) {
     			throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), patternSeq, e);
-    		} catch (IndexOutOfBoundsException e) {
+    		} catch (final IndexOutOfBoundsException e) {
     		    throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage(), patternSeq, e);
        		//Some JVMs seem to raise this one
-    		} catch (IllegalArgumentException e) {
+    		} catch (final IllegalArgumentException e) {
     			throw new XPathException(this, ErrorCodes.FORX0004, "Invalid replace expression: " + e.getMessage(), replaceSeq, e);
             }
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;   
         

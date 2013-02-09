@@ -50,29 +50,29 @@ public class ModuleCall extends URLRewrite {
         super(config, uri);
         String funcName = config.getAttribute("function");
         if (funcName == null || funcName.length() == 0)
-            throw new ServletException("<exist:call> requires an attribute 'function'.");
+            {throw new ServletException("<exist:call> requires an attribute 'function'.");}
         int arity = 0;
-        int p = funcName.indexOf('/');
+        final int p = funcName.indexOf('/');
         if (p > -1) {
-            String arityStr = funcName.substring(p + 1);
+            final String arityStr = funcName.substring(p + 1);
             try {
                 arity = Integer.parseInt(arityStr);
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 throw new ServletException("<exist:call>: could not parse parameter count in function attribute: " + arityStr);
             }
             funcName = funcName.substring(0, p);
         }
         try {
-            QName fqn = QName.parse(context, funcName);
-            Module module = context.getModule(fqn.getNamespaceURI());
+            final QName fqn = QName.parse(context, funcName);
+            final Module module = context.getModule(fqn.getNamespaceURI());
             UserDefinedFunction func = null;
             if (module != null)
-                func = ((ExternalModule)module).getFunction(fqn, arity, context);
+                {func = ((ExternalModule)module).getFunction(fqn, arity, context);}
             else
-                func = context.resolveFunction(fqn, arity);
+                {func = context.resolveFunction(fqn, arity);}
             call = new FunctionCall(context, func);
             call.setArguments(new ArrayList<Expression>());
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             e.printStackTrace();
         }
     }
@@ -81,11 +81,11 @@ public class ModuleCall extends URLRewrite {
     public void doRewrite(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            Sequence result = call.eval(null);
+            final Sequence result = call.eval(null);
             LOG.debug("Found: " + result.getItemCount());
             request.setAttribute(XQueryURLRewrite.RQ_ATTR_RESULT, result);
             
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             throw new ServletException("Called function threw exception: " + e.getMessage(), e);
         }
     }

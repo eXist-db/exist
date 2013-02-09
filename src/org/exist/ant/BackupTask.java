@@ -55,13 +55,13 @@ public class BackupTask extends AbstractXMLDBTask
         log( "Backup directory: " + dir );
 
         try {
-            Backup backup = new Backup( user, password, dir, XmldbURI.create( uri ) );
+            final Backup backup = new Backup( user, password, dir, XmldbURI.create( uri ) );
             backup.backup( false, null );
 
         }
-        catch( Exception e ) {
+        catch( final Exception e ) {
             e.printStackTrace();
-            String msg = "Exception during backup: " + e.getMessage();
+            final String msg = "Exception during backup: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

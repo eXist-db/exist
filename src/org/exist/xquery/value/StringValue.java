@@ -63,11 +63,11 @@ public class StringValue extends AtomicValue {
 	public StringValue(String string, int type, boolean expand) throws XPathException {
 		this.type = type;
         if (expand)
-		    string = StringValue.expand(string); //Should we have character entities
+		    {string = StringValue.expand(string);} //Should we have character entities
 		if(type == Type.STRING)
-			this.value = string;
+			{this.value = string;}
 		else if(type == Type.NORMALIZED_STRING)
-			this.value = normalizeWhitespace(string); 
+			{this.value = normalizeWhitespace(string);} 
 		else {
 			this.value = collapseWhitespace(string);
 			checkType();
@@ -94,26 +94,26 @@ public class StringValue extends AtomicValue {
 			case Type.TOKEN:
 				return;
 			case Type.LANGUAGE:
-				Matcher matcher = langPattern.matcher(value);				
+				final Matcher matcher = langPattern.matcher(value);				
 				if (!matcher.matches())
-					throw new XPathException(
+					{throw new XPathException(
 						"Type error: string "
 						+ value
-						+ " is not valid for type xs:language");
+						+ " is not valid for type xs:language");}
 				return;
 			case Type.NAME:
 				if(!QName.isQName(value))
-					throw new XPathException("Type error: string " + value + " is not a valid xs:Name");
+					{throw new XPathException("Type error: string " + value + " is not a valid xs:Name");}
 				return;
 			case Type.NCNAME:
 			case Type.ID:
 			case Type.IDREF:
 			case Type.ENTITY:
 				if(!XMLChar.isValidNCName(value))
-					throw new XPathException("Type error: string " + value + " is not a valid " + Type.getTypeName(type));
+					{throw new XPathException("Type error: string " + value + " is not a valid " + Type.getTypeName(type));}
 			case Type.NMTOKEN:
 				if(!XMLChar.isValidNmtoken(value))
-					throw new XPathException("Type error: string " + value + " is not a valid xs:NMTOKEN");
+					{throw new XPathException("Type error: string " + value + " is not a valid xs:NMTOKEN");}
 		}
 	}
 	
@@ -136,13 +136,13 @@ public class StringValue extends AtomicValue {
 	 */
 	public String getStringValue(boolean bmpCheck) {
         if (bmpCheck) {
-            StringBuilder buf = new StringBuilder(value.length());
+            final StringBuilder buf = new StringBuilder(value.length());
             char ch;
             for (int i = 0; i < value.length(); i++) {
                 ch = value.charAt(i);
                 if (XMLChar.isSurrogate(ch)) {
                     // Compose supplemental from high and low surrogate
-                    int suppChar = XMLChar.supplemental(ch, value.charAt(++i));
+                    final int suppChar = XMLChar.supplemental(ch, value.charAt(++i));
                         buf.append("&#");
                         buf.append(Integer.toString(suppChar));
                         buf.append(";");
@@ -184,14 +184,14 @@ public class StringValue extends AtomicValue {
 			case Type.ANY_URI :
 				return new AnyURIValue(value);
 			case Type.BOOLEAN :
-                String trimmed = trimWhitespace(value);
-				if (trimmed.equals("0") || trimmed.equals("false"))
-					return BooleanValue.FALSE;
-				else if (trimmed.equals("1") || trimmed.equals("true"))
-					return BooleanValue.TRUE;
+                final String trimmed = trimWhitespace(value);
+				if ("0".equals(trimmed) || "false".equals(trimmed))
+					{return BooleanValue.FALSE;}
+				else if ("1".equals(trimmed) || "true".equals(trimmed))
+					{return BooleanValue.TRUE;}
 				else
-					throw new XPathException(
-						"cannot convert string '" + value + "' to boolean");
+					{throw new XPathException(
+						"cannot convert string '" + value + "' to boolean");}
 			case Type.FLOAT :
 				return new FloatValue(value); 
 			case Type.DOUBLE :
@@ -251,17 +251,17 @@ public class StringValue extends AtomicValue {
 	}
 
 	public int conversionPreference(Class<?> javaClass) {
-		if(javaClass.isAssignableFrom(StringValue.class)) return 0;
-		if(javaClass == String.class || javaClass == CharSequence.class) return 1;
-		if(javaClass == Character.class || javaClass == char.class) return 2;
-		if(javaClass == Double.class || javaClass == double.class) return 10;
-		if(javaClass == Float.class || javaClass == float.class) return 11;
-		if(javaClass == Long.class || javaClass == long.class) return 12;
-		if(javaClass == Integer.class || javaClass == int.class) return 13;
-		if(javaClass == Short.class || javaClass == short.class) return 14;
-		if(javaClass == Byte.class || javaClass == byte.class) return 15;
-		if(javaClass == Boolean.class || javaClass == boolean.class) return 16;
-		if(javaClass == Object.class) return 20;
+		if(javaClass.isAssignableFrom(StringValue.class)) {return 0;}
+		if(javaClass == String.class || javaClass == CharSequence.class) {return 1;}
+		if(javaClass == Character.class || javaClass == char.class) {return 2;}
+		if(javaClass == Double.class || javaClass == double.class) {return 10;}
+		if(javaClass == Float.class || javaClass == float.class) {return 11;}
+		if(javaClass == Long.class || javaClass == long.class) {return 12;}
+		if(javaClass == Integer.class || javaClass == int.class) {return 13;}
+		if(javaClass == Short.class || javaClass == short.class) {return 14;}
+		if(javaClass == Byte.class || javaClass == byte.class) {return 15;}
+		if(javaClass == Boolean.class || javaClass == boolean.class) {return 16;}
+		if(javaClass == Object.class) {return 20;}
 		
 		return Integer.MAX_VALUE;
 	}
@@ -274,10 +274,10 @@ public class StringValue extends AtomicValue {
 			return (T)value;
                 } else if(target == double.class || target == Double.class) {
 			final DoubleValue v = (DoubleValue)convertTo(Type.DOUBLE);
-			return (T)new Double(v.getValue());
+			return (T)Double.valueOf(v.getValue());
 		} else if(target == float.class || target == Float.class) {
 			final FloatValue v = (FloatValue)convertTo(Type.FLOAT);
-			return (T)new Float(v.value);
+			return (T)Float.valueOf(v.value);
 		} else if(target == long.class || target == Long.class) {
 			final IntegerValue v = (IntegerValue)convertTo(Type.LONG);
 			return (T)Long.valueOf(v.getInt());
@@ -308,14 +308,14 @@ public class StringValue extends AtomicValue {
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (other.isEmpty())
-			return false;
+			{return false;}
 		//A value of type xs:anyURI (or any type derived by restriction from xs:anyURI) 
 		//can be promoted to the type xs:string. 
 		//The result of this promotion is created by casting the original value to the type xs:string.
 		if (Type.subTypeOf(other.getType(), Type.ANY_URI)) 
-			other = other.convertTo(Type.STRING);
+			{other = other.convertTo(Type.STRING);}
 		if (Type.subTypeOf(other.getType(), Type.STRING)) {
-			int cmp = Collations.compare(collator, value, other.getStringValue());
+			final int cmp = Collations.compare(collator, value, other.getStringValue());
 			switch (operator) {
 				case Constants.EQ :
 					return cmp == 0;
@@ -345,9 +345,9 @@ public class StringValue extends AtomicValue {
 		if (Type.subTypeOf(other.getType(),Type.NUMBER)) {
 			//No possible comparisons
 			if (((NumericValue)other).isNaN())
-				return Constants.INFERIOR;
+				{return Constants.INFERIOR;}
 			if (((NumericValue)other).isInfinite())
-				return Constants.INFERIOR;
+				{return Constants.INFERIOR;}
 		}			
 		return Collations.compare(collator, value, other.getStringValue());
 	}
@@ -394,8 +394,8 @@ public class StringValue extends AtomicValue {
 
 	public final static String normalizeWhitespace(CharSequence seq) {
         if (seq == null)
-            return "";
-        StringBuilder copy = new StringBuilder(seq.length());
+            {return "";}
+        final StringBuilder copy = new StringBuilder(seq.length());
 		char ch;
 		for (int i = 0; i < seq.length(); i++) {
 			ch = seq.charAt(i);
@@ -420,29 +420,29 @@ public class StringValue extends AtomicValue {
 	 */
 	public static String collapseWhitespace(CharSequence in) {
         if (in == null)
-            return "";
+            {return "";}
         if (in.length() == 0) {
 			return in.toString();
 		}
 		int i = 0;
 		// this method is performance critical, so first test if we need to collapse at all
 		for (; i < in.length(); i++) {
-		    char c = in.charAt(i);
+		    final char c = in.charAt(i);
 		    if(XMLChar.isSpace(c)) {
 		        if(i + 1 < in.length() && XMLChar.isSpace(in.charAt(i + 1)))
-		            break;
+		            {break;}
 		    }
 		}
 		if(i == in.length())
 		    // no whitespace to collapse, just return
-		    return in.toString();
+		    {return in.toString();}
 		
 		// start to collapse whitespace
-		StringBuilder sb = new StringBuilder(in.length());
+		final StringBuilder sb = new StringBuilder(in.length());
 		sb.append(in.subSequence(0, i + 1).toString());
 		boolean inWhitespace = true;
 		for (; i < in.length(); i++) {
-			char c = in.charAt(i);
+			final char c = in.charAt(i);
 			if(XMLChar.isSpace(c)) {
 				if (inWhitespace) {
 					// remove the whitespace
@@ -483,8 +483,8 @@ public class StringValue extends AtomicValue {
 	
 	public final static String expand(CharSequence seq) throws XPathException {
         if (seq == null)
-            return "";
-        StringBuilder buf = new StringBuilder(seq.length());
+            {return "";}
+        final StringBuilder buf = new StringBuilder(seq.length());
 	    StringBuilder entityRef = null;
 	    char ch;
 	    for (int i = 0; i < seq.length(); i++) {
@@ -492,9 +492,9 @@ public class StringValue extends AtomicValue {
 	        switch (ch) {
 	            case '&' :
 	                if (entityRef == null)
-	                    entityRef = new StringBuilder();
+	                    {entityRef = new StringBuilder();}
 	                else
-	                    entityRef.setLength(0);
+	                    {entityRef.setLength(0);}
 	                if ((i+1)==seq.length()) {
 	                    throw new XPathException(ErrorCodes.XPST0003, "Ampersands (&) must be escaped.");
 	                }
@@ -563,7 +563,7 @@ public class StringValue extends AtomicValue {
 	                        }
 	                    }
 	                    if (found) {
-                            int charref = expandEntity(entityRef.toString());
+                            final int charref = expandEntity(entityRef.toString());
                             if (XMLChar.isSupplemental(charref)) {
                                 buf.append(XMLChar.highSurrogate(charref));
                                 buf.append(XMLChar.lowSurrogate(charref));
@@ -600,20 +600,20 @@ public class StringValue extends AtomicValue {
      * @exception XPathException if an error occurs
      */
     private final static int expandEntity(String buf) throws XPathException {
-		if (buf.equals("amp"))
-			return '&';
-		else if (buf.equals("lt"))
-			return '<';
-		else if (buf.equals("gt"))
-			return '>';
-		else if (buf.equals("quot"))
-			return '"';
-		else if (buf.equals("apos"))
-			return '\'';
+		if ("amp".equals(buf))
+			{return '&';}
+		else if ("lt".equals(buf))
+			{return '<';}
+		else if ("gt".equals(buf))
+			{return '>';}
+		else if ("quot".equals(buf))
+			{return '"';}
+		else if ("apos".equals(buf))
+			{return '\'';}
 		else if (buf.length() > 1 && buf.charAt(0) == '#') {
             return expandCharRef(buf.substring(1));
 		} else
-			throw new XPathException("Unknown entity reference: " + buf);
+			{throw new XPathException("Unknown entity reference: " + buf);}
 	}
 
 	/**
@@ -636,7 +636,7 @@ public class StringValue extends AtomicValue {
                       throw new XPathException(ErrorCodes.XQST0090, "Character number zero (0) is not allowed.");
                    }
                    return charNumber;
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			throw new XPathException("Unknown character reference: " + buf);
 		}
 	}
@@ -646,32 +646,32 @@ public class StringValue extends AtomicValue {
 	 */
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
-			return Collations.compare(collator, value, ((StringValue) other).value) > 0 ? this : other;
+			{return Collations.compare(collator, value, ((StringValue) other).value) > 0 ? this : other;}
 		else
-			return Collations.compare(collator, value, ((StringValue) other.convertTo(getType())).value) > 0
+			{return Collations.compare(collator, value, ((StringValue) other.convertTo(getType())).value) > 0
 				? this
-				: other;
+				: other;}
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.STRING))
-			return Collations.compare(collator, value, ((StringValue) other).value) < 0 ? this : other;
+			{return Collations.compare(collator, value, ((StringValue) other).value) < 0 ? this : other;}
 		else
-			return Collations.compare(collator, value, ((StringValue) other.convertTo(getType())).value) < 0
+			{return Collations.compare(collator, value, ((StringValue) other.convertTo(getType())).value) < 0
 				? this
-				: other;
+				: other;}
 	}
 
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(Object o) {
-        AtomicValue other = (AtomicValue)o;
+        final AtomicValue other = (AtomicValue)o;
 //        if(Type.subTypeOf(other.getType(), Type.STRING))
         if (getType() == other.getType())
-            return value.compareTo(((StringValue)other).value);
+            {return value.compareTo(((StringValue)other).value);}
         else
-            return getType() > other.getType() ? 1 : -1;
+            {return getType() > other.getType() ? 1 : -1;}
     }
     
     /** Serialize for the persistant storage 
@@ -693,9 +693,9 @@ public class StringValue extends AtomicValue {
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
-            return true;
+            {return true;}
         if (obj == null)
-            return false;
+            {return false;}
         return value.equals(obj.toString());
     }
 }

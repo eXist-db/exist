@@ -17,9 +17,9 @@ import java.util.Iterator;
 public class IndexUtils {
 
     public static void scanNode(DBBroker broker, Txn transaction, StoredNode node, StreamListener listener) {
-        Iterator<StoredNode> iterator = broker.getNodeIterator(node);
+        final Iterator<StoredNode> iterator = broker.getNodeIterator(node);
         iterator.next();
-        NodePath path = node.getPath();
+        final NodePath path = node.getPath();
         scanNode(transaction, iterator, node, listener, path);
     }
 
@@ -31,14 +31,14 @@ public class IndexUtils {
                 listener.startElement(transaction, (ElementImpl) node, currentPath);
             }
             if (node.hasChildNodes()) {
-                int childCount = node.getChildCount();
+                final int childCount = node.getChildCount();
                 for (int i = 0; i < childCount; i++) {
-                    StoredNode child = iterator.next();
+                    final StoredNode child = iterator.next();
                     if (child.getNodeType() == Node.ELEMENT_NODE)
-                        currentPath.addComponent(child.getQName());
+                        {currentPath.addComponent(child.getQName());}
                     scanNode(transaction, iterator, child, listener, currentPath);
                     if (child.getNodeType() == Node.ELEMENT_NODE)
-                        currentPath.removeLastComponent();
+                        {currentPath.removeLastComponent();}
                 }
             }
             if (listener != null) {

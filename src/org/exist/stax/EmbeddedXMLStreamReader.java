@@ -115,7 +115,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         while (hasNext()) {
             next();
             if (!filter.accept(this))
-                break;
+                {break;}
         }
     }
 
@@ -148,7 +148,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     private void initNode() {
         final short type = Signatures.getType(current.data()[current.start()]);    // TODO: remove potential NPE
         if (state == START_DOCUMENT && type != Node.ELEMENT_NODE)
-            beforeRoot = true;
+            {beforeRoot = true;}
         switch (type) {
             case Node.ELEMENT_NODE :
                 state = START_ELEMENT;
@@ -177,7 +177,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 
     public int getChildCount() {
         if (state == START_ELEMENT)
-            return elementStack.peek().getChildCount();
+            {return elementStack.peek().getChildCount();}
         return 0;
     }
     
@@ -199,7 +199,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
             final int count = getAttributeCount();
             attributes = new AttrList();
             for (int i = 0; i < count; i++) {
-                Value v = iterator.next();
+                final Value v = iterator.next();
                 AttrImpl.addToList(broker, v.data(), v.start(), v.getLength(), attributes);
                 parent.incrementChild();
             }
@@ -209,19 +209,19 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     private void readNodeId() {
         int offset = current.start() + StoredNode.LENGTH_SIGNATURE_LENGTH;
         if (state == START_ELEMENT || state == END_ELEMENT)
-        	offset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
-        int dlnLen = ByteConversion.byteToShort(current.data(), offset);
+        	{offset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;}
+        final int dlnLen = ByteConversion.byteToShort(current.data(), offset);
         offset += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId = broker.getBrokerPool().getNodeFactory().createFromData(dlnLen, current.data(), offset);
     }
     
     public int next() throws XMLStreamException {
         if (state != END_ELEMENT)
-            previous = current;
+            {previous = current;}
         if (state == START_ELEMENT && !reportAttribs)
-            skipAttributes();
+            {skipAttributes();}
         if (!elementStack.isEmpty()) {
-            ElementEvent parent = elementStack.peek();
+            final ElementEvent parent = elementStack.peek();
             if (parent.getChildCount() == parent.getCurrentChild()) {
                 elementStack.pop();
                 state = END_ELEMENT;
@@ -232,8 +232,8 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
                 parent.incrementChild();
             }
         } else if (state != START_DOCUMENT && !beforeRoot)
-            throw new NoSuchElementException();
-        boolean first = state == START_DOCUMENT;
+            {throw new NoSuchElementException();}
+        final boolean first = state == START_DOCUMENT;
         current = iterator.next();
         initNode();
         if (first && origin != null) {
@@ -252,7 +252,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 		  DocumentImpl documentBackup = document;
 		  try {
 			  iterator.seek(origin);
-		  } catch (IOException e) {
+		  } catch (final IOException e) {
 			  throw new XMLStreamException(e);
 		  }
 		  // Seeking the iterator might've reused this reader, so reset all fields.
@@ -288,7 +288,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
                 "parser must be on START_ELEMENT to read next text");
         }
         int eventType = next();
-        StringBuffer content = new StringBuffer();
+        final StringBuffer content = new StringBuffer();
         while(eventType != END_ELEMENT ) {
             if(eventType == CHARACTERS
                 || eventType == CDATA
@@ -315,7 +315,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     public Object getProperty(String string) throws IllegalArgumentException {
         if (string.equals(PROPERTY_NODE_ID)) {
             if (nodeId == null)
-                readNodeId();
+                {readNodeId();}
             return nodeId;
         }
         return null;
@@ -352,88 +352,88 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     public String getAttributeValue(String namespaceURI, String localName) {
         readAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
-            org.exist.dom.QName qn = attributes.getQName(i);
+            final org.exist.dom.QName qn = attributes.getQName(i);
             if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalName().equals(localName))
-                return attributes.getValue(i);
+                {return attributes.getValue(i);}
         }
         return null;
     }
 
     public int getAttributeCount() {
-        int offset = current.start() + StoredNode.LENGTH_SIGNATURE_LENGTH + ElementImpl.LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + nodeId.size();
+        final int offset = current.start() + StoredNode.LENGTH_SIGNATURE_LENGTH + ElementImpl.LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + nodeId.size();
         return ByteConversion.byteToShort(current.data(), offset);
     }
 
     public QName getAttributeName(int i) {
         if (state != START_ELEMENT)
-            throw new IllegalStateException("Cursor is not at an element");
+            {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
         if (i > attributes.getLength())
-            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+            {throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());}
         return attributes.getQName(i).toJavaQName();
     }
 
     public org.exist.dom.QName getAttributeQName(int i) {
         if (state != START_ELEMENT)
-            throw new IllegalStateException("Cursor is not at an element");
+            {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
         if (i > attributes.getLength())
-            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+            {throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());}
         return attributes.getQName(i);
     }
 
     public String getAttributeNamespace(int i) {
         if (state != START_ELEMENT)
-            throw new IllegalStateException("Cursor is not at an element");
+            {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
         if (i > attributes.getLength())
-            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+            {throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());}
         return attributes.getQName(i).getNamespaceURI();
     }
 
     public String getAttributeLocalName(int i) {
         if (state != START_ELEMENT)
-            throw new IllegalStateException("Cursor is not at an element");
+            {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
         if (i > attributes.getLength())
-            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+            {throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());}
         return attributes.getQName(i).getLocalName();
     }
 
     public String getAttributePrefix(int i) {
         if (state != START_ELEMENT)
-            throw new IllegalStateException("Cursor is not at an element");
+            {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
         if (i > attributes.getLength())
-            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+            {throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());}
         return attributes.getQName(i).getPrefix();
     }
 
     public String getAttributeType(int i) {
         if (state != START_ELEMENT)
-            throw new IllegalStateException("Cursor is not at an element");
+            {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
         if (i > attributes.getLength())
-            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+            {throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());}
         final int type = attributes.getType(i);
         return AttrImpl.getAttributeType(type);
     }
 
     public String getAttributeValue(int i) {
         if (state != START_ELEMENT)
-            throw new IllegalStateException("Cursor is not at an element");
+            {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
         if (i > attributes.getLength())
-            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+            {throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());}
         return attributes.getValue(i);
     }
 
     public NodeId getAttributeId(int i) {
         if (state != START_ELEMENT)
-            throw new IllegalStateException("Cursor is not at an element");
+            {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
         if (i > attributes.getLength())
-            throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());
+            {throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());}
         return attributes.getNodeId(i);
     }
 
@@ -449,16 +449,16 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     public String getNamespacePrefix(int i) {
         readNamespaceDecls();
         if (i < 0 || i > namespaces.size())
-            return null;
-        String[] decl = namespaces.get(i);
+            {return null;}
+        final String[] decl = namespaces.get(i);
         return decl[0];
     }
 
     public String getNamespaceURI(int i) {
         readNamespaceDecls();
         if (i < 0 || i > namespaces.size())
-            return null;
-        String[] decl = namespaces.get(i);
+            {return null;}
+        final String[] decl = namespaces.get(i);
         return decl[1];
     }
 
@@ -485,8 +485,8 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     }
 
     public char[] getTextCharacters() {
-        String s = getText();
-        char[] dst = new char[s.length()];
+        final String s = getText();
+        final char[] dst = new char[s.length()];
         s.getChars(0, dst.length, dst, 0);
         return dst;
     }
@@ -502,7 +502,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     public int getTextLength() {
         if (state == CHARACTERS || state == COMMENT || state == CDATA) {
             if (text.length() == 0)
-                return CharacterDataImpl.getStringLength(nodeId, current);
+                {return CharacterDataImpl.getStringLength(nodeId, current);}
             return text.length();
         }
         return 0;
@@ -526,10 +526,10 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 
     public QName getName() {
         if (qname != null)
-            return qname;
+            {return qname;}
         if (state == START_ELEMENT || state == END_ELEMENT) {
             if (nodeId == null)
-                readNodeId();
+                {readNodeId();}
             qname = ElementImpl.readQName(current, document, nodeId).toJavaQName();
         }
         return qname;
@@ -538,7 +538,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     public org.exist.dom.QName getQName() {
         if (state == START_ELEMENT || state == END_ELEMENT) {
             if (nodeId == null)
-                readNodeId();
+                {readNodeId();}
             return ElementImpl.readQName(current, document, nodeId);
         }
         return null;
@@ -550,10 +550,10 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
      */
     private void readNamespaceDecls() {
         if (nsRead)
-            return;
+            {return;}
         if (state == START_ELEMENT || state == END_ELEMENT) {
             if (nodeId == null)
-                readNodeId();
+                {readNodeId();}
             ElementImpl.readNamespaceDecls(namespaces, current, document, nodeId);
         }
         nsRead = true;
@@ -582,7 +582,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
      * @return the node at the current position.
      */
     public StoredNode getNode() {
-        StoredNode node = StoredNode.deserialize(current.data(), current.start(), current.getLength(), document);
+        final StoredNode node = StoredNode.deserialize(current.data(), current.start(), current.getLength(), document);
         node.setOwnerDocument(document);
         node.setInternalAddress(current.getAddress());
         return node;
@@ -596,7 +596,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
      * @return the last node in document sequence before the current node
      */
     public StoredNode getPreviousNode() {
-        StoredNode node = StoredNode.deserialize(previous.data(), previous.start(), previous.getLength(), document);
+        final StoredNode node = StoredNode.deserialize(previous.data(), previous.start(), previous.getLength(), document);
         node.setOwnerDocument(document);
         node.setInternalAddress(previous.getAddress());
         return node;
@@ -641,8 +641,8 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     private void readPI() {
         if (qname == null) {
             if (state != PROCESSING_INSTRUCTION)
-                throw new IllegalStateException("Cursor is not at a processing instruction");
-            ProcessingInstruction pi = (ProcessingInstruction)
+                {throw new IllegalStateException("Cursor is not at a processing instruction");}
+            final ProcessingInstruction pi = (ProcessingInstruction)
                     StoredNode.deserialize(current.data(), current.start(), current.getLength(), document);
             qname = new QName("", pi.getTarget(), "");
             text.append(pi.getData());

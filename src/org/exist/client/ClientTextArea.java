@@ -60,12 +60,12 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		
 		this.addCaretListener(new CaretListener());
 		
-		SyntaxDocument doc = new SyntaxDocument();
-		doc.putProperty(PlainDocument.tabSizeAttribute, new Integer(4));
+		final SyntaxDocument doc = new SyntaxDocument();
+		doc.putProperty(PlainDocument.tabSizeAttribute, Integer.valueOf(4));
 		setDocument(doc);
 		setElectricScroll(2);
 		
-		ClientInputHandler inputHandler = new ClientInputHandler();
+		final ClientInputHandler inputHandler = new ClientInputHandler();
 		inputHandler.addDefaultKeyBindings();
 		setInputHandler(inputHandler);
 		
@@ -74,10 +74,10 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		popup.add(new JMenuItem(COPY)).addActionListener(ClientInputHandler.CLIP_COPY);
 		popup.add(new JMenuItem(PASTE)).addActionListener(ClientInputHandler.CLIP_PASTE);
 		
-		if(mode.equals("XML"))
-			setTokenMarker(new XMLTokenMarker());
-		TextAreaPainter painter = getPainter();
-		SyntaxStyle[] styles = painter.getStyles();
+		if("XML".equals(mode))
+			{setTokenMarker(new XMLTokenMarker());}
+		final TextAreaPainter painter = getPainter();
+		final SyntaxStyle[] styles = painter.getStyles();
 		styles[Token.KEYWORD1] = new SyntaxStyle(new Color(0, 102, 153), false, true);
 		styles[Token.KEYWORD2] = new SyntaxStyle(new Color(0, 153, 102), false, true);
 		styles[Token.KEYWORD3] = new SyntaxStyle(new Color(0, 153, 255), false, true);
@@ -106,7 +106,7 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		{
 			if(txtPositionOutput != null)
 			{
-				ClientTextArea txt = (ClientTextArea)e.getSource();
+				final ClientTextArea txt = (ClientTextArea)e.getSource();
 				txtPositionOutput.setText("Line: " + (txt.getCaretLine()+1) + " Column:" + ((txt.getCaretPosition() - txt.getLineStartOffset(txt.getCaretLine()))+1));
 			}
 		}

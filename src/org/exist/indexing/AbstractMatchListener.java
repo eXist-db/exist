@@ -42,7 +42,7 @@ public class AbstractMatchListener implements MatchListener {
     public void setCurrentNode(StoredNode node) {
         this.currentNode = node;
         if (nextListener != null)
-            getNextInChain().setCurrentNode(node);
+            {getNextInChain().setCurrentNode(node);}
     }
 
     protected StoredNode getCurrentNode() {
@@ -57,62 +57,62 @@ public class AbstractMatchListener implements MatchListener {
 
     @Override
     public void startDocument() throws SAXException {
-        if (nextListener != null) nextListener.startDocument();
+        if (nextListener != null) {nextListener.startDocument();}
     }
 
     @Override
     public void endDocument() throws SAXException {
-        if (nextListener != null) nextListener.endDocument();
+        if (nextListener != null) {nextListener.endDocument();}
     }
 
     @Override
     public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
-        if (nextListener != null) nextListener.startPrefixMapping(prefix, namespaceURI);
+        if (nextListener != null) {nextListener.startPrefixMapping(prefix, namespaceURI);}
     }
 
     @Override
     public void endPrefixMapping(String prefix) throws SAXException {
-        if (nextListener != null) nextListener.endPrefixMapping(prefix);
+        if (nextListener != null) {nextListener.endPrefixMapping(prefix);}
     }
 
     @Override
     public void startElement(QName qname, AttrList attribs) throws SAXException {
-        if (nextListener != null) nextListener.startElement(qname, attribs);
+        if (nextListener != null) {nextListener.startElement(qname, attribs);}
     }
 
     @Override
     public void endElement(QName qname) throws SAXException {
-        if (nextListener != null) nextListener.endElement(qname);
+        if (nextListener != null) {nextListener.endElement(qname);}
     }
 
     @Override
     public void characters(CharSequence seq) throws SAXException {
-        if (nextListener != null) nextListener.characters(seq);
+        if (nextListener != null) {nextListener.characters(seq);}
     }
 
     @Override
     public void attribute(QName qname, String value) throws SAXException {
-        if (nextListener != null) nextListener.attribute(qname, value);
+        if (nextListener != null) {nextListener.attribute(qname, value);}
     }
 
     @Override
     public void comment(char[] ch, int start, int length) throws SAXException {
-        if (nextListener != null) nextListener.comment(ch, start, length);
+        if (nextListener != null) {nextListener.comment(ch, start, length);}
     }
 
     @Override
     public void cdataSection(char[] ch, int start, int len) throws SAXException {
-        if (nextListener != null) nextListener.cdataSection(ch, start, len);
+        if (nextListener != null) {nextListener.cdataSection(ch, start, len);}
     }
 
     @Override
     public void processingInstruction(String target, String data) throws SAXException {
-        if (nextListener != null) nextListener.processingInstruction(target, data);
+        if (nextListener != null) {nextListener.processingInstruction(target, data);}
     }
 
     @Override
     public void documentType(String name, String publicId, String systemId) throws SAXException {
-        if (nextListener != null) nextListener.documentType(name, publicId, systemId);
+        if (nextListener != null) {nextListener.documentType(name, publicId, systemId);}
     }
 
     @Override

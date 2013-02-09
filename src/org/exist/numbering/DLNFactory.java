@@ -41,17 +41,17 @@ public class DLNFactory implements NodeIdFactory {
     }
     
     public NodeId createFromStream(VariableByteInput is) throws IOException {
-        short bitCnt = is.readShort();
+        final short bitCnt = is.readShort();
         return bitCnt == 0 ? NodeId.END_OF_DOCUMENT : new DLN(bitCnt, is);
     }
 
     public NodeId createFromStream(NodeId previous, VariableByteInput is) throws IOException {
         //if (previous == null)
         //  return createFromStream(is);
-        byte prefix = is.readByte();
+        final byte prefix = is.readByte();
         if (prefix == 0)
-            return createFromStream(is);
-        short bitCnt = is.readShort();
+            {return createFromStream(is);}
+        final short bitCnt = is.readShort();
         return bitCnt == 0 ? NodeId.END_OF_DOCUMENT : new DLN(prefix, (DLN) previous, bitCnt, is);
     }
 

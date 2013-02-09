@@ -110,7 +110,7 @@ public class GroupAider implements Group {
     
     @Override
     public boolean isManager(Account account) {
-        for(Account manager : managers) {
+        for(final Account manager : managers) {
             if(manager.getName().equals(account.getName())) {
                 return true;
             }
@@ -127,7 +127,7 @@ public class GroupAider implements Group {
 
     @Override
     public void addManagers(List<Account> managers) throws PermissionDeniedException {
-    	for (Account manager : managers) {
+    	for (final Account manager : managers) {
     		addManager(manager);
     	}
     }
@@ -139,7 +139,7 @@ public class GroupAider implements Group {
 
     @Override
     public void removeManager(Account account) throws PermissionDeniedException {
-        for(Account manager : managers) {
+        for(final Account manager : managers) {
             if(manager.getName().equals(account.getName())) {
                 managers.remove(manager);
                 break;

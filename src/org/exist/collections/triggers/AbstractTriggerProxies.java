@@ -44,7 +44,7 @@ public abstract class AbstractTriggerProxies<T extends Trigger, P extends Abstra
         
         final List<T> triggers = new ArrayList<T>(proxies.size());
         
-        for(P proxy : proxies) {
+        for(final P proxy : proxies) {
             triggers.add(proxy.newInstance(broker));
         }
         

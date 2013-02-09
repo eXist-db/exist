@@ -70,17 +70,17 @@ public class FunEnvironment extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         if (!context.getSubject().hasDbaRole()) {
-            String txt = "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.";
+            final String txt = "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.";
             logger.error(txt);
             return Sequence.EMPTY_SEQUENCE;
         }
 
         if (isCalledAs("available-environment-variables")) {
 
-            Sequence result = new ValueSequence();
+            final Sequence result = new ValueSequence();
 
-            Map<String, String> env = context.getEnvironmentVariables();
-            for (String key : env.keySet()) {
+            final Map<String, String> env = context.getEnvironmentVariables();
+            for (final String key : env.keySet()) {
                 result.add(new StringValue(key));
             }
 
@@ -92,9 +92,9 @@ public class FunEnvironment extends BasicFunction {
                 return Sequence.EMPTY_SEQUENCE;
             }
 
-            String parameter = args[0].itemAt(0).getStringValue();
+            final String parameter = args[0].itemAt(0).getStringValue();
 
-            String value = context.getEnvironmentVariables().get(parameter);
+            final String value = context.getEnvironmentVariables().get(parameter);
             if (value == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }

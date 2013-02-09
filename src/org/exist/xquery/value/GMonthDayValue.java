@@ -42,8 +42,8 @@ public class GMonthDayValue extends AbstractDateTimeValue {
     public GMonthDayValue(String timeValue) throws XPathException {
         super(timeValue);
         try {
-            if (calendar.getXMLSchemaType() != DatatypeConstants.GMONTHDAY) throw new IllegalStateException();
-        } catch (IllegalStateException e) {
+            if (calendar.getXMLSchemaType() != DatatypeConstants.GMONTHDAY) {throw new IllegalStateException();}
+        } catch (final IllegalStateException e) {
             throw new XPathException("xs:time instance must not have year, month or day fields set");
         }
     }

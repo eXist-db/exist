@@ -48,7 +48,7 @@ public class ConfigurationHelper {
     	// If eXist was already configured, then return 
     	// the existHome of this instance.
     	try {
-    		BrokerPool broker = BrokerPool.getInstance();
+    		final BrokerPool broker = BrokerPool.getInstance();
     		if(broker != null) {
     			existHome = broker.getConfiguration().getExistHome();
 			if(existHome!=null) {
@@ -56,7 +56,7 @@ public class ConfigurationHelper {
     				return existHome;
 			}
     		}
-    	} catch(Throwable e) {
+    	} catch(final Throwable e) {
             // Catch all potential problems
             LOG.debug("Could not retrieve instance of brokerpool: " + e.getMessage());
     	}
@@ -86,7 +86,7 @@ public class ConfigurationHelper {
         }
         
         // try classpath
-        URL configUrl = ConfigurationHelper.class.getClassLoader().getResource(config);
+        final URL configUrl = ConfigurationHelper.class.getClassLoader().getResource(config);
         if (configUrl != null) {
             existHome = new File(configUrl.getPath()).getParentFile();
             LOG.debug("Got eXist home from classpath: " + existHome);
@@ -125,12 +125,12 @@ public class ConfigurationHelper {
      */
     public static File lookup(String path, String parent) {
         // resolvePath is used for things like ~user/folder
-        File f = new File(decodeUserHome(path));
-        if (f.isAbsolute()) return f;
+        final File f = new File(decodeUserHome(path));
+        if (f.isAbsolute()) {return f;}
         if (parent == null) {
             File home = getExistHome();
             if (home == null)
-                home = new File(System.getProperty("user.dir"));
+                {home = new File(System.getProperty("user.dir"));}
             parent = home.getPath();
         }
         return new File(parent, path);

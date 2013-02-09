@@ -107,7 +107,7 @@ public abstract class Modification extends AbstractExpression
 		super.resetState(postOptimization);
 		select.resetState(postOptimization);
 		if (value != null)
-			value.resetState(postOptimization);
+			{value.resetState(postOptimization);}
 	}
 
 	/* (non-Javadoc)
@@ -118,7 +118,7 @@ public abstract class Modification extends AbstractExpression
 		contextInfo.addFlag(IN_UPDATE);
 		select.analyze(contextInfo);
 		if (value != null)
-			value.analyze(contextInfo);
+			{value.analyze(contextInfo);}
 	}
 	
 	/**
@@ -133,7 +133,7 @@ public abstract class Modification extends AbstractExpression
 	 */
 	protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException, PermissionDeniedException,
 		XPathException, TriggerException {
-	    Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
+	    final Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
 	    try {
 	        globalLock.acquire(Lock.READ_LOCK);
 	       
@@ -144,20 +144,20 @@ public abstract class Modification extends AbstractExpression
 	        // during the modification
 	        lockedDocuments.lock(context.getBroker(), true, false);
 	        
-		    StoredNode ql[] = new StoredNode[nodes.getItemCount()];
+		    final StoredNode ql[] = new StoredNode[nodes.getItemCount()];
 			for (int i = 0; i < ql.length; i++) {
-                Item item = nodes.itemAt(i);
+                final Item item = nodes.itemAt(i);
                 if (!Type.subTypeOf(item.getType(), Type.NODE))
-                    throw new XPathException(this, "XQuery update expressions can only be applied to nodes. Got: " +
-                        item.getStringValue());
-                NodeValue nv = (NodeValue)item;
+                    {throw new XPathException(this, "XQuery update expressions can only be applied to nodes. Got: " +
+                        item.getStringValue());}
+                final NodeValue nv = (NodeValue)item;
                 if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-                    throw new XPathException(this, "XQuery update expressions can not be applied to in-memory nodes.");
-                Node n = nv.getNode();
+                    {throw new XPathException(this, "XQuery update expressions can not be applied to in-memory nodes.");}
+                final Node n = nv.getNode();
                 if (n.getNodeType() == Node.DOCUMENT_NODE)
-                    throw new XPathException(this, "Updating the document object is not allowed.");
+                    {throw new XPathException(this, "Updating the document object is not allowed.");}
 				ql[i] = (StoredNode) n;
-				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
+				final DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
 				//prepare Trigger
 				prepareTrigger(transaction, doc);
 			}
@@ -169,18 +169,18 @@ public abstract class Modification extends AbstractExpression
 	
 	protected Sequence deepCopy(Sequence inSeq) throws XPathException {
 		context.pushDocumentContext();
-		MemTreeBuilder builder = context.getDocumentBuilder();
-		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-		Serializer serializer = context.getBroker().getSerializer();
+		final MemTreeBuilder builder = context.getDocumentBuilder();
+		final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+		final Serializer serializer = context.getBroker().getSerializer();
 		serializer.setReceiver(receiver);
 		
 		try {
-			Sequence out = new ValueSequence();
-			for (SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
+			final Sequence out = new ValueSequence();
+			for (final SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
 				Item item = i.nextItem();
 				if (item.getType() == Type.DOCUMENT) {
 					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-						StoredNode root = (StoredNode) ((NodeProxy)item).getDocument().getDocumentElement();
+						final StoredNode root = (StoredNode) ((NodeProxy)item).getDocument().getDocumentElement();
 						item = new NodeProxy(root.getDocument(), root.getNodeId(), root.getInternalAddress());
 					} else {
 						item = (Item)((NodeValue) item).getOwnerDocument().getDocumentElement();
@@ -188,13 +188,13 @@ public abstract class Modification extends AbstractExpression
 				}
 				if (Type.subTypeOf(item.getType(), Type.NODE)) {
 					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-						int last = builder.getDocument().getLastNode();
-						NodeProxy p = (NodeProxy) item;
+						final int last = builder.getDocument().getLastNode();
+						final NodeProxy p = (NodeProxy) item;
 						serializer.toReceiver(p, false, false);
                         if (p.getNodeType() == Node.ATTRIBUTE_NODE)
-                            item = builder.getDocument().getLastAttr();
+                            {item = builder.getDocument().getLastAttr();}
                         else
-                            item = builder.getDocument().getNode(last + 1);
+                            {item = builder.getDocument().getNode(last + 1);}
 					} else {
 						((org.exist.memtree.NodeImpl)item).deepCopy();
 					}
@@ -202,9 +202,9 @@ public abstract class Modification extends AbstractExpression
 				out.add(item);
 			}
 			return out;
-        } catch(SAXException e) {
+        } catch(final SAXException e) {
             throw new XPathException(this, e.getMessage(), e);
-		} catch (DOMException e) {
+		} catch (final DOMException e) {
 		    throw new XPathException(this, e.getMessage(), e);
 		} finally {
 			context.popDocumentContext();
@@ -212,10 +212,10 @@ public abstract class Modification extends AbstractExpression
 	}
 
     protected void finishTriggers(Txn transaction) throws TriggerException {
-        Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
+        final Iterator<DocumentImpl> iterator = modifiedDocuments.getDocumentIterator();
 		
         while(iterator.hasNext()) {
-        	DocumentImpl doc = iterator.next();
+        	final DocumentImpl doc = iterator.next();
             context.addModifiedDoc(doc);
 			finishTrigger(transaction, doc);
 		}
@@ -229,7 +229,7 @@ public abstract class Modification extends AbstractExpression
 	protected void unlockDocuments()
 	{
 	    if(lockedDocuments == null)
-	        return;
+	        {return;}
 	    
 		modifiedDocuments.clear();
 	    
@@ -240,9 +240,9 @@ public abstract class Modification extends AbstractExpression
 
     public static void checkFragmentation(XQueryContext context, DocumentSet docs) throws EXistException {
         int fragmentationLimit = -1;
-        Object property = context.getBroker().getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+        final Object property = context.getBroker().getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
         if (property != null)
-            fragmentationLimit = ((Integer)property).intValue();
+            {fragmentationLimit = ((Integer)property).intValue();}
         checkFragmentation(context, docs, fragmentationLimit);
     }
 
@@ -255,26 +255,26 @@ public abstract class Modification extends AbstractExpression
 	 * @param docs
 	 */
 	public static void checkFragmentation(XQueryContext context, DocumentSet docs, int splitCount) throws EXistException {
-        DBBroker broker = context.getBroker();
-        TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+        final DBBroker broker = context.getBroker();
+        final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
         
         //if there is no batch update transaction, start a new individual transaction
-        Txn transaction = txnMgr.beginTransaction();
+        final Txn transaction = txnMgr.beginTransaction();
         try {
-            for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
-                DocumentImpl next = i.next();
+            for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+                final DocumentImpl next = i.next();
                 if(next.getMetadata().getSplitCount() > splitCount)
-                    try {
+                    {try {
                         next.getUpdateLock().acquire(Lock.WRITE_LOCK);
                         broker.defragXMLResource(transaction, next);
                     } finally {
                         next.getUpdateLock().release(Lock.WRITE_LOCK);
-                    }
+                    }}
                 broker.checkXMLResourceConsistency(next);
             }
             
             txnMgr.commit(transaction);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             txnMgr.abort(transaction);
         }
     }
@@ -289,7 +289,7 @@ public abstract class Modification extends AbstractExpression
 	 */
 	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
 
-            DocumentTriggersVisitor triggersVisitor = doc.getCollection().getConfiguration(context.getBroker()).getDocumentTriggerProxies().instantiateVisitor(context.getBroker());
+            final DocumentTriggersVisitor triggersVisitor = doc.getCollection().getConfiguration(context.getBroker()).getDocumentTriggerProxies().instantiateVisitor(context.getBroker());
             
             //prepare the trigger
             triggersVisitor.beforeUpdateDocument(context.getBroker(), transaction, doc);
@@ -305,7 +305,7 @@ public abstract class Modification extends AbstractExpression
 	 */
 	private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
             //finish the trigger
-            DocumentTriggersVisitor triggersVisitor = triggers.get(doc.getDocId());
+            final DocumentTriggersVisitor triggersVisitor = triggers.get(doc.getDocId());
             if(triggersVisitor != null) {
                 triggersVisitor.afterUpdateDocument(context.getBroker(), transaction, doc);
             }
@@ -318,8 +318,8 @@ public abstract class Modification extends AbstractExpression
 	 */
 	public Txn getTransaction()
 	{
-            TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
-            Txn transaction = txnMgr.beginTransaction();
+            final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+            final Txn transaction = txnMgr.beginTransaction();
 
             return transaction;
 	}
@@ -331,7 +331,7 @@ public abstract class Modification extends AbstractExpression
 	 */
 	public void commitTransaction(Txn transaction) throws TransactionException
 	{	
-            TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+            final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
             txnMgr.commit(transaction);
 	}
 	
@@ -347,7 +347,7 @@ public abstract class Modification extends AbstractExpression
 		 * @see org.exist.dom.NodeIndexListener#nodeChanged(org.exist.dom.NodeImpl)
 		 */
 		public void nodeChanged(StoredNode node) {
-			long address = node.getInternalAddress();
+			final long address = node.getInternalAddress();
 			for (int i = 0; i < nodes.length; i++) {
 				if (StorageAddress.equals(nodes[i].getInternalAddress(), address)) {
 					nodes[i] = node;

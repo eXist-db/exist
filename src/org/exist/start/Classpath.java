@@ -35,17 +35,17 @@ public class Classpath implements Iterable<File> {
     {
         if ((component != null)&&(component.length()>0)) {
             try {
-                File f = new File(component);
+                final File f = new File(component);
                 if (f.exists())
                 {
-                    File key = f.getCanonicalFile();
+                    final File key = f.getCanonicalFile();
                     if (!_elements.contains(key))
                     {
                         _elements.add(key);
                         return true;
                     }
                 }
-            } catch (IOException e) {}
+            } catch (final IOException e) {}
         }
         return false;
     }
@@ -55,13 +55,13 @@ public class Classpath implements Iterable<File> {
         if (component != null) {
             try {
                 if (component.exists()) {
-                    File key = component.getCanonicalFile();
+                    final File key = component.getCanonicalFile();
                     if (!_elements.contains(key)) {
                         _elements.add(key);
                         return true;
                     }
                 }
-            } catch (IOException e) {}
+            } catch (final IOException e) {}
         }
         return false;
     }
@@ -70,7 +70,7 @@ public class Classpath implements Iterable<File> {
     {
         if (s != null)
         {
-            StringTokenizer t = new StringTokenizer(s, File.pathSeparator);
+            final StringTokenizer t = new StringTokenizer(s, File.pathSeparator);
             while (t.hasMoreTokens())
             {
                 addComponent(t.nextToken());
@@ -80,8 +80,8 @@ public class Classpath implements Iterable<File> {
     
     public String toString()
     {
-        StringBuilder cp = new StringBuilder(1024);
-        int cnt = _elements.size();
+        final StringBuilder cp = new StringBuilder(1024);
+        final int cnt = _elements.size();
         if (cnt >= 1) {
             cp.append( ((File)(_elements.elementAt(0))).getPath() );
         }
@@ -93,16 +93,16 @@ public class Classpath implements Iterable<File> {
     }
 
     public EXistClassLoader getClassLoader(ClassLoader parent) {
-        int cnt = _elements.size();
-        URL[] urls = new URL[cnt];
+        final int cnt = _elements.size();
+        final URL[] urls = new URL[cnt];
         for (int i=0; i < cnt; i++) {
             try {
                 urls[i] = _elements.elementAt(i).toURI().toURL();
-            } catch (MalformedURLException e) {}
+            } catch (final MalformedURLException e) {}
         }
         
         if (parent == null)
-        	parent = Thread.currentThread().getContextClassLoader();
+        	{parent = Thread.currentThread().getContextClassLoader();}
         if (parent == null) {
             parent = Classpath.class.getClassLoader();
         }

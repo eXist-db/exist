@@ -124,10 +124,10 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
 	
 	protected Entry insert(long key, V value) {
 		if (value == null)
-			throw new IllegalArgumentException("Illegal value: null");
+			{throw new IllegalArgumentException("Illegal value: null");}
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		// look for an empty bucket
 		if (values[idx] == null) {
 			keys[idx] = key;
@@ -165,14 +165,14 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
 	public V get(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (values[idx] == null)
-			return null; // key does not exist
+			{return null;} // key does not exist
 		
 		Entry<V> next = values[idx];
         while (next != null) {
             if (next.key == key)
-                return next.value;
+                {return next.value;}
             next = next.nextDup;
         }
         return null;
@@ -191,18 +191,18 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
      * @param key
      */
 	public V remove(long key) {
-		Entry<V> entry = removeFromHashtable(key);
+		final Entry<V> entry = removeFromHashtable(key);
 		if(entry != null) {
 			removeEntry(entry);
 			return entry.value;
 		} else
-			return null;
+			{return null;}
 	}
 	
 	private Entry<V> removeFromHashtable(long key) {
 		int idx = hash(key) % tabSize;
 		if(idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (values[idx] == null) {
 			return null; // key does not exist
 		}
@@ -213,11 +213,11 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
                 if (next.prevDup == null) {
                     values[idx] = next.nextDup;
                     if (values[idx] != null)
-                        values[idx].prevDup = null;
+                        {values[idx].prevDup = null;}
                 } else {
                     next.prevDup.nextDup = next.nextDup;
                     if (next.nextDup != null)
-                        next.nextDup.prevDup = next.prevDup;
+                        {next.nextDup.prevDup = next.prevDup;}
                 }
                 --items;
                 return next;
@@ -232,7 +232,7 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
 	 */
 	public Entry<V> removeFirst() {
 		if(first == null)
-			return null;
+			{return null;}
 		final Entry<V> head = first;
 		removeFromHashtable(first.key);
 		removeEntry(first);
@@ -256,9 +256,9 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
 		} else {
 			entry.prev.next = entry.next;
 			if(entry.next == null)
-				last = entry.prev;
+				{last = entry.prev;}
 			else
-				entry.next.prev = entry.prev;
+				{entry.next.prev = entry.prev;}
 		}
 		entry.prev = null;
 		entry.next = null;
@@ -316,8 +316,8 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
 		 */
 		public T next() {
 			if(current == null)
-				return null;
-			Entry next = current;
+				{return null;}
+			final Entry next = current;
 			current = current.next;
 			switch(returnType) {
 				case KEYS: return (T) Long.valueOf(next.key);

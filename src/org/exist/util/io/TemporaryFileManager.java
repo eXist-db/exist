@@ -134,7 +134,7 @@ public class TemporaryFileManager {
         try {
             FileUtils.deleteDirectory(folder);
             LOG.debug("Deleted temporary folder: " + folder.getAbsolutePath());
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             LOG.warn("Unable to delete temporary folder: " + folder.getAbsolutePath(), ioe);
         }
     }

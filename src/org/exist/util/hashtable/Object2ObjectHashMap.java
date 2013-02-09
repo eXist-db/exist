@@ -61,9 +61,9 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 	public void put(K key, V value) {
 		try {
 			insert(key, value);
-		} catch (HashtableOverflowException e) {
-			K[] copyKeys = keys;
-			V[] copyValues = values;
+		} catch (final HashtableOverflowException e) {
+			final K[] copyKeys = keys;
+			final V[] copyValues = values;
 			// enlarge the table with a prime value
 			tabSize = (int) nextPrime(tabSize + tabSize / 2);
 			keys = (K[]) new Object[tabSize];
@@ -72,7 +72,7 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 
 			for (int k = 0; k < copyValues.length; k++) {
 				if (copyKeys[k] != null && copyKeys[k] != REMOVED)
-					put(copyKeys[k], copyValues[k]);
+					{put(copyKeys[k], copyValues[k]);}
 			}
 			put(key, value);
 		}
@@ -81,13 +81,13 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 	public V get(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (keys[idx] == null)
-			return null; // key does not exist
+			{return null;} // key does not exist
 		else if (keys[idx].equals(key)) {
 			return values[idx];
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
@@ -102,13 +102,13 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 	public int getIndex(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (keys[idx] == null)
-			return -1; // key does not exist
+			{return -1;} // key does not exist
 		else if (keys[idx].equals(key)) {
 			return idx;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
@@ -123,17 +123,17 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 	public V remove(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (keys[idx] == null) {
 			return null; // key does not exist
 		} else if (keys[idx].equals(key)) {
 			keys[idx] = (K) REMOVED;
 			--items;
-			V oldVal = values[idx];
+			final V oldVal = values[idx];
 			values[idx] = null;
 			return oldVal;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
@@ -141,7 +141,7 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 			} else if (keys[idx].equals(key)) {
 				keys[idx] = (K) REMOVED;
 				--items;
-				V oldVal = values[idx];
+				final V oldVal = values[idx];
 				values[idx] = null;
 				return oldVal;
 			}
@@ -151,10 +151,10 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 	
 	protected void insert(K key, V value) throws HashtableOverflowException {
 		if (key == null)
-			throw new IllegalArgumentException("Illegal value: null");
+			{throw new IllegalArgumentException("Illegal value: null");}
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		int bucket = -1;
 		// look for an empty bucket
 		if (keys[idx] == null) {
@@ -171,7 +171,7 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 			values[idx] = value;
 			return;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		int rehashCnt = 1;
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
@@ -207,7 +207,7 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 	protected int rehash(int iVal) {
 		int retVal = (iVal + iVal / 2) % tabSize;
 		if (retVal == 0)
-			retVal = 1;
+			{retVal = 1;}
 		return retVal;
 	}
 
@@ -242,11 +242,11 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 		 */
 		public boolean hasNext() {
 			if (idx == tabSize)
-				return false;
+				{return false;}
 			while (keys[idx] == null || keys[idx] == REMOVED) {
 				++idx;
 				if (idx == tabSize)
-					return false;
+					{return false;}
 			}
 			return true;
 		}
@@ -256,11 +256,11 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 		 */
 		public T next() {
 			if (idx == tabSize)
-				return null;
+				{return null;}
 			while (keys[idx] == null || keys[idx] == REMOVED) {
 				++idx;
 				if (idx == tabSize)
-					return null;
+					{return null;}
 			}
 			switch(returnType) {
 				case KEYS: return (T) keys[idx++];

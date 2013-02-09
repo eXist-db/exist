@@ -58,7 +58,7 @@ public abstract class UserTask extends AbstractXMLDBTask
             base = DatabaseManager.getCollection( uri, user, password );
 
             if( base == null ) {
-                String msg = "Collection " + uri + " could not be found.";
+                final String msg = "Collection " + uri + " could not be found.";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -70,8 +70,8 @@ public abstract class UserTask extends AbstractXMLDBTask
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

@@ -86,10 +86,10 @@ public class XMLDBCreateGroup extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
 
-		String groupName = args[0].getStringValue();
+		final String groupName = args[0].getStringValue();
 
-		if (context.getSubject().getName().equals("guest") || groupName.equals("dba")) {
-			XPathException xPathException = 
+		if ("guest".equals(context.getSubject().getName()) || "dba".equals(groupName)) {
+			final XPathException xPathException = 
 				new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName()
 					+ "' must be an authenticated account to call this function.");
 			logger.error("Invalid user", xPathException);
@@ -100,12 +100,12 @@ public class XMLDBCreateGroup extends BasicFunction {
 
 		Group group = new GroupAider(groupName);
 
-		DBBroker broker = context.getBroker();
-		Subject currentUser = broker.getSubject();
+		final DBBroker broker = context.getBroker();
+		final Subject currentUser = broker.getSubject();
 
 		try {
 
-			SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+			final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 
 			// add the current user as a group manager
 			group.addManager(currentUser);
@@ -113,10 +113,10 @@ public class XMLDBCreateGroup extends BasicFunction {
 			if (args.length == 2) {
 				// add the additional group managers, this also makes sure they
 				// all exist first!
-				for (SequenceIterator i = args[1].iterate(); i.hasNext();) {
-					String groupManager = i.nextItem().getStringValue();
+				for (final SequenceIterator i = args[1].iterate(); i.hasNext();) {
+					final String groupManager = i.nextItem().getStringValue();
 
-					Account groupManagerAccount = sm.getAccount(groupManager);
+					final Account groupManagerAccount = sm.getAccount(groupManager);
 					if (groupManagerAccount == null) {
 						logger.error("Could not find the user: " + groupManager);
 						// throw exception is better -shabanovd
@@ -134,13 +134,13 @@ public class XMLDBCreateGroup extends BasicFunction {
             //they do not show up as group members automatically - this is a design problem because group
             //membership is managed on the user and not the group, this needs to be fixed!
             //see XMLDBAddUserToGroup and XMLDBRemoveUserFromGroup also
-            Subject currentSubject = context.getBroker().getSubject();
+            final Subject currentSubject = context.getBroker().getSubject();
             try {
                 //escalate
                 context.getBroker().setSubject(sm.getSystemSubject());
 
                 //perform action
-                for(Account manager : group.getManagers()) {
+                for(final Account manager : group.getManagers()) {
                     manager.addGroup(group);
                     sm.updateAccount(manager);
                 }
@@ -151,11 +151,11 @@ public class XMLDBCreateGroup extends BasicFunction {
 
 			return BooleanValue.TRUE;
 
-		} catch (PermissionDeniedException pde) {
+		} catch (final PermissionDeniedException pde) {
 			throw new XPathException(this, 
 					"Permission denied, calling account '" + context.getSubject().getName()
 					+ "' do not authorize to call this function.");
-		} catch (EXistException exe) {
+		} catch (final EXistException exe) {
 			logger.error("Failed to create group: " + group, exe);
 		}
 

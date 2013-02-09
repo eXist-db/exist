@@ -92,13 +92,13 @@ public class TwoParamFunctions extends BasicFunction {
        
         Sequence result;
         double calcValue=0;
-        String functionName = getSignature().getName().getLocalName();
+        final String functionName = getSignature().getName().getLocalName();
         
-        Sequence seqA = args[0].convertTo(Type.DOUBLE);
-        NumericValue valueA = (NumericValue)seqA.itemAt(0).convertTo(Type.DOUBLE);
+        final Sequence seqA = args[0].convertTo(Type.DOUBLE);
+        final NumericValue valueA = (NumericValue)seqA.itemAt(0).convertTo(Type.DOUBLE);
         
-        Sequence seqB = args[1].convertTo(Type.DOUBLE);
-        NumericValue valueB = (NumericValue)seqB.itemAt(0).convertTo(Type.DOUBLE);
+        final Sequence seqB = args[1].convertTo(Type.DOUBLE);
+        final NumericValue valueB = (NumericValue)seqB.itemAt(0).convertTo(Type.DOUBLE);
         
         if("atan2".equals(functionName)) {
             calcValue = Math.atan2(valueA.getDouble(), valueB.getDouble());
