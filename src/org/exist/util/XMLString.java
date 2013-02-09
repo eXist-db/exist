@@ -92,7 +92,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 	
 	public final XMLString append(char ch) {
 		if(value_.length < length_ + 2)
-			ensureCapacity(length_ + 1);
+			{ensureCapacity(length_ + 1);}
 		value_[length_++] = ch;
 		return this;
 	}
@@ -105,12 +105,12 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 	
 	public final XMLString normalize(int mode) {
 		if(length_ == 0)
-			return this;
+			{return this;}
 		if ((mode & SUPPRESS_LEADING_WS) != 0) {
 			while (length_ > 0 && isWhiteSpace(value_[start_])) {
 				--length_;
 				if(length_ > 0)
-					++start_;
+					{++start_;}
 			}
 		}
 		if ((mode & SUPPRESS_TRAILING_WS) != 0) {
@@ -123,7 +123,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 
 	public final boolean isWhitespaceOnly() {
 		if(length_ == 0)
-			return true;
+			{return true;}
 		int i = 0;
 		while(i < length_ && isWhiteSpace(value_[start_ + i]))
 			i++;
@@ -132,7 +132,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 	
 	public final String toString() {
 		if (value_ == null)
-			return "null";
+			{return "null";}
 		return new String(value_, start_, length_);
 	}
 
@@ -146,7 +146,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
     
 	public final String substring(int start, int count) {
 		if (start < 0 || count < 0 || start >= length_ || start + count > length_)
-			throw new StringIndexOutOfBoundsException();
+			{throw new StringIndexOutOfBoundsException();}
 		return new String(value_, start_ + start, count);
 	}
 
@@ -167,7 +167,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 
 	public final XMLString replace(int offset, int count, String data) {
 		if (offset < 0 || count < 0 || offset >= length_ || offset + count > length_)
-			throw new StringIndexOutOfBoundsException();
+			{throw new StringIndexOutOfBoundsException();}
 		System.arraycopy(data.toCharArray(), 0, value_, start_ + offset, count);
 		return this;
 	}
@@ -191,11 +191,11 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 	private void ensureCapacity(int capacity) {
 		if (value_ == null)
 			//value_ = new char[capacity];
-			value_ = CharArrayPool.getCharArray(capacity);
+			{value_ = CharArrayPool.getCharArray(capacity);}
 		else if (value_.length - start_ < capacity) {
 			int newCapacity = (length_ + 1) * 2;
 			if (newCapacity < capacity)
-				newCapacity = capacity;
+				{newCapacity = capacity;}
 			char[] temp = CharArrayPool.getCharArray(newCapacity);
 			System.arraycopy(value_, start_, temp, 0, length_);
 			CharArrayPool.releaseCharArray(value_);
@@ -249,16 +249,16 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 	public final int compareTo(CharSequence cs) {
         for (int i = 0; i < length_ && i < cs.length(); i++) {
             if (value_[start_ + i] < cs.charAt(i))
-                return Constants.INFERIOR;
+                {return Constants.INFERIOR;}
             else if (value_[start_ + i] > cs.charAt(i))
-                return Constants.SUPERIOR;
+                {return Constants.SUPERIOR;}
         }
         if (length_ < cs.length())
-            return Constants.INFERIOR;
+            {return Constants.INFERIOR;}
         else if (length_ > cs.length())
-            return Constants.SUPERIOR;
+            {return Constants.SUPERIOR;}
         else
-            return Constants.EQUAL;
+            {return Constants.EQUAL;}
     }
 
     /*
@@ -269,27 +269,27 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 	        return true;
 	    }
 	    if (anObject instanceof XMLString) {
-	        XMLString anotherString = (XMLString) anObject;
+	        final XMLString anotherString = (XMLString) anObject;
 	        if (length_ == anotherString.length_) {
                 int n = length_;
-	            char v1[] = value_;
-	            char v2[] = anotherString.value_;
+	            final char v1[] = value_;
+	            final char v2[] = anotherString.value_;
 	            int i = start_;
 	            int j = anotherString.start_;
 	            
 	            while (n-- != 0) {
 	                if (v1[i++] != v2[j++])
-	                    return false;
+	                    {return false;}
 	            }
 	            return true;
 	        }
 	    } else {
-	        String anotherString = anObject.toString();
+	        final String anotherString = anObject.toString();
             if (length_ == anotherString.length()) {
                 int j = start_;
                 for (int i = 0; i < length_; i++) {
                     if (value_[j++] != anotherString.charAt(i))
-                        return false;
+                        {return false;}
                 }
                 return true;
             }

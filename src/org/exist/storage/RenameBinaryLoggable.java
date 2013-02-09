@@ -49,11 +49,11 @@ public class RenameBinaryLoggable extends AbstractLoggable {
     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
     */
    public void write(ByteBuffer out) {
-      String originalPath = original.getAbsolutePath();
+      final String originalPath = original.getAbsolutePath();
       byte [] data = originalPath.getBytes();
       out.putInt(data.length);
       out.put(data);
-      String backupPath = backup.getAbsolutePath();
+      final String backupPath = backup.getAbsolutePath();
       data = backupPath.getBytes();
       out.putInt(data.length);
       out.put(data);

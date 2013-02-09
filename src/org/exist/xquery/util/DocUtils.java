@@ -66,10 +66,10 @@ public class DocUtils {
 	
 	public static boolean isDocumentAvailable(XQueryContext context, String path) throws XPathException {
 		try {
-			Sequence seq = getDocumentByPath(context, path);
+			final Sequence seq = getDocumentByPath(context, path);
 			return (seq != null && seq.effectiveBooleanValue());
 		}
-		catch (PermissionDeniedException e) {
+		catch (final PermissionDeniedException e) {
 			return false;
 		}
 		
@@ -84,10 +84,10 @@ public class DocUtils {
             XMLReader reader = null;
 			/* URL */
             try {
-                Source source = SourceFactory.getSource(context.getBroker(), "", path, false);
-                InputStream istream = source.getInputStream();
+                final Source source = SourceFactory.getSource(context.getBroker(), "", path, false);
+                final InputStream istream = source.getInputStream();
                 if (source instanceof URLSource) {
-                    int responseCode = ((URLSource) source).getResponseCode();
+                    final int responseCode = ((URLSource) source).getResponseCode();
                     if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
                         // Special case: '404'
                         return Sequence.EMPTY_SEQUENCE;
@@ -101,27 +101,27 @@ public class DocUtils {
                 // we use eXist's in-memory DOM implementation
                 reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
                 //TODO : we should be able to cope with context.getBaseURI()
-                InputSource src = new InputSource(istream);
-                SAXAdapter adapter = new SAXAdapter();
+                final InputSource src = new InputSource(istream);
+                final SAXAdapter adapter = new SAXAdapter();
                 reader.setContentHandler(adapter);
                 reader.parse(src);
-                Document doc = adapter.getDocument();
+                final Document doc = adapter.getDocument();
                 memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
                 memtreeDoc.setContext(context);
                 memtreeDoc.setDocumentURI(path);
                 document = memtreeDoc;
 
-            } catch(ConnectException e) {
+            } catch(final ConnectException e) {
                 // prevent long stacktraces
                 throw new XPathException(e.getMessage()+ " ("+path+")");
 
-            } catch(MalformedURLException e) {
+            } catch(final MalformedURLException e) {
                 throw new XPathException(e.getMessage(), e);
 
-            } catch(SAXException e) {
+            } catch(final SAXException e) {
                 throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
             }
-            catch(IOException e) {
+            catch(final IOException e) {
                 // Special case: FileNotFoundException
                 if(e instanceof FileNotFoundException)
                 {
@@ -133,7 +133,7 @@ public class DocUtils {
                 }
             } finally {
                 if (reader != null)
-                    context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);
+                    {context.getBroker().getBrokerPool().getParserPool().returnXMLReader(reader);}
             }
 		}
 		else
@@ -142,14 +142,14 @@ public class DocUtils {
 
 			// check if the loaded documents should remain locked
 			boolean lockOnLoad = context.lockDocumentsOnLoad();
-            int lockType = lockOnLoad ? Lock.WRITE_LOCK : Lock.READ_LOCK;
+            final int lockType = lockOnLoad ? Lock.WRITE_LOCK : Lock.READ_LOCK;
 			DocumentImpl doc = null;
 			try
 			{
 				XmldbURI pathUri = XmldbURI.xmldbUriFor(path, false);
 				
-				XmldbURI baseURI = context.getBaseURI().toXmldbURI();
-				if (!(baseURI.equals("") || baseURI.equals("/db"))) {
+				final XmldbURI baseURI = context.getBaseURI().toXmldbURI();
+				if (!("".equals(baseURI) || "/db".equals(baseURI))) {
 					// relative collection Path: add the current base URI
 					pathUri = baseURI.resolveCollectionPath(pathUri);
 				}
@@ -157,7 +157,7 @@ public class DocUtils {
 				// relative collection Path: add the current module call URI
 				try {
 					pathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath()).resolveCollectionPath(pathUri);
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					//workaround: ignore Windows issue
 				}
 
@@ -184,11 +184,11 @@ public class DocUtils {
 					document = new NodeProxy(doc);
 				}
 			}
-			catch(PermissionDeniedException e)
+			catch(final PermissionDeniedException e)
 			{
 				throw e;
 			}
-			catch(URISyntaxException e)
+			catch(final URISyntaxException e)
 			{
 				throw new XPathException(e);
 			}
@@ -196,7 +196,7 @@ public class DocUtils {
 			{
 				// release all locks unless lockOnLoad is true
 				if(!lockOnLoad && doc != null)
-					doc.getUpdateLock().release(lockType);
+					{doc.getUpdateLock().release(lockType);}
 			}
 		}	 	  
 		return document;
@@ -216,20 +216,20 @@ public class DocUtils {
 	 */
 	public static org.exist.memtree.DocumentImpl parse(BrokerPool pool, XQueryContext context, InputStream istream) throws XPathException {
 		// we use eXist's in-memory DOM implementation
-        XMLReader reader = pool.getParserPool().borrowXMLReader();
-        InputSource src = new InputSource(istream);
-        SAXAdapter adapter = new SAXAdapter(context);
+        final XMLReader reader = pool.getParserPool().borrowXMLReader();
+        final InputSource src = new InputSource(istream);
+        final SAXAdapter adapter = new SAXAdapter(context);
         reader.setContentHandler(adapter);
         try {
 			reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
 			reader.parse(src);
-		} catch (SAXNotRecognizedException e) {
+		} catch (final SAXNotRecognizedException e) {
 			throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
-		} catch (SAXNotSupportedException e) {
+		} catch (final SAXNotSupportedException e) {
 			throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
-		} catch (SAXException e) {
+		} catch (final SAXException e) {
 			throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
 		}
         return (org.exist.memtree.DocumentImpl) adapter.getDocument();

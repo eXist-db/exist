@@ -45,12 +45,12 @@ public class ForceIndexUse extends Pragma {
         	}
         	public void visitBuiltinFunction(Function expression) {
                 if (expression instanceof IndexUseReporter)
-                	bailout = !((IndexUseReporter)expression).hasUsedIndex();
+                	{bailout = !((IndexUseReporter)expression).hasUsedIndex();}
             }
     	});
     	
     	if (bailout)
-    		throw new XPathException(expression, "XQDYxxxx: Can not use index on expression '" + expression + "'");
+    		{throw new XPathException(expression, "XQDYxxxx: Can not use index on expression '" + expression + "'");}
         	
     	/*
     	if (expression instanceof PathExpr) {

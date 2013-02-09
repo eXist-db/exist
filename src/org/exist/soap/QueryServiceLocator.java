@@ -44,7 +44,7 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
         try {
             endpoint = new java.net.URL(Query_address);
         }
-        catch (java.net.MalformedURLException e) {
+        catch (final java.net.MalformedURLException e) {
             throw new javax.xml.rpc.ServiceException(e);
         }
         return getQuery(endpoint);
@@ -52,11 +52,11 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
 
     public org.exist.soap.Query getQuery(java.net.URL portAddress) throws javax.xml.rpc.ServiceException {
         try {
-            org.exist.soap.QuerySoapBindingStub _stub = new org.exist.soap.QuerySoapBindingStub(portAddress, this);
+            final org.exist.soap.QuerySoapBindingStub _stub = new org.exist.soap.QuerySoapBindingStub(portAddress, this);
             _stub.setPortName(getQueryWSDDServiceName());
             return _stub;
         }
-        catch (org.apache.axis.AxisFault e) {
+        catch (final org.apache.axis.AxisFault e) {
             return null;
         }
     }
@@ -73,12 +73,12 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
     public java.rmi.Remote getPort(Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
         try {
             if (org.exist.soap.Query.class.isAssignableFrom(serviceEndpointInterface)) {
-                org.exist.soap.QuerySoapBindingStub _stub = new org.exist.soap.QuerySoapBindingStub(new java.net.URL(Query_address), this);
+                final org.exist.soap.QuerySoapBindingStub _stub = new org.exist.soap.QuerySoapBindingStub(new java.net.URL(Query_address), this);
                 _stub.setPortName(getQueryWSDDServiceName());
                 return _stub;
             }
         }
-        catch (java.lang.Throwable t) {
+        catch (final java.lang.Throwable t) {
             throw new javax.xml.rpc.ServiceException(t);
         }
         throw new javax.xml.rpc.ServiceException("There is no stub implementation for the interface:  " + (serviceEndpointInterface == null ? "null" : serviceEndpointInterface.getName()));
@@ -93,12 +93,12 @@ public class QueryServiceLocator extends org.apache.axis.client.Service implemen
         if (portName == null) {
             return getPort(serviceEndpointInterface);
         }
-        java.lang.String inputPortName = portName.getLocalPart();
+        final java.lang.String inputPortName = portName.getLocalPart();
         if ("Query".equals(inputPortName)) {
             return getQuery();
         }
         else  {
-            java.rmi.Remote _stub = getPort(serviceEndpointInterface);
+            final java.rmi.Remote _stub = getPort(serviceEndpointInterface);
             ((org.apache.axis.client.Stub) _stub).setPortName(portName);
             return _stub;
         }

@@ -59,13 +59,13 @@ public class Wait extends BasicFunction
     @Override
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
-		long interval = ((IntegerValue)args[0].itemAt(0)).getLong();
+		final long interval = ((IntegerValue)args[0].itemAt(0)).getLong();
 		
      	if( interval > 0 ) {
 			try {
 				Thread.sleep( interval );
 			}
-			catch( InterruptedException e ) {
+			catch( final InterruptedException e ) {
 			}
 		}
 

@@ -37,7 +37,7 @@ public class NamePool {
     }
     
     public QName getSharedName(QName name) {
-        QName sharedName = (QName)pool.putIfAbsent(name, name);
+        final QName sharedName = (QName)pool.putIfAbsent(name, name);
         if (sharedName == null) {
             // The name was not in the pool, return the name just added.
             return name;

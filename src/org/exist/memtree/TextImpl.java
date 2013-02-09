@@ -209,7 +209,7 @@ public class TextImpl extends NodeImpl implements Text
 
     public String toString()
     {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append( "in-memory#" );
         result.append( "text {" );
         result.append( getData() );

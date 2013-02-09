@@ -23,9 +23,9 @@ public class PolicyNode extends AbstractPolicyNode
 	{
 		super(parent, documentName, policy);
 		
-		List<Rule> children = policy.getChildren();
+		final List<Rule> children = policy.getChildren();
 		rules = new ArrayList<RuleNode>(children.size());
-		for(Rule rule : children)
+		for(final Rule rule : children)
 			rules.add(new RuleNode(this, rule));
 		originalRules = new ArrayList<RuleNode>(rules);
 	}
@@ -44,12 +44,12 @@ public class PolicyNode extends AbstractPolicyNode
 	}
 	public Policy createPolicy(URI id)
 	{
-		Target target = getTarget().getTarget();
-		RuleCombiningAlgorithm algorithm = (RuleCombiningAlgorithm)getCombiningAlgorithm();
-		List<Rule> rawRules = new ArrayList<Rule>(rules.size());
-		for(RuleNode rule : rules)
+		final Target target = getTarget().getTarget();
+		final RuleCombiningAlgorithm algorithm = (RuleCombiningAlgorithm)getCombiningAlgorithm();
+		final List<Rule> rawRules = new ArrayList<Rule>(rules.size());
+		for(final RuleNode rule : rules)
 			rawRules.add(rule.createRule());
-		URI useId = (id == null) ? getId() : id;
+		final URI useId = (id == null) ? getId() : id;
 		return new Policy(useId, algorithm, getDescription(), target, rawRules);
 	}
 
@@ -60,11 +60,11 @@ public class PolicyNode extends AbstractPolicyNode
 	public void add(int index, PolicyTreeElement element)
 	{
 		if(element == null)
-			return;
+			{return;}
 		if(element instanceof Rule)
-			add(index, new RuleNode(this, (Rule)element));
+			{add(index, new RuleNode(this, (Rule)element));}
 		else
-			throw new IllegalArgumentException("Policies can only contain rules.");
+			{throw new IllegalArgumentException("Policies can only contain rules.");}
 	}
 	public void add(PolicyElementNode node)
 	{
@@ -73,27 +73,27 @@ public class PolicyNode extends AbstractPolicyNode
 	public void add(int index, PolicyElementNode node)
 	{
 		if(node == null)
-			return;
+			{return;}
 		if(node instanceof RuleNode)
 		{
 			if(index < 0)
-				index = rules.size()+1;
+				{index = rules.size()+1;}
 			if(index == 0)
-				throw new IllegalArgumentException("Cannot insert Rule before Target");
+				{throw new IllegalArgumentException("Cannot insert Rule before Target");}
 			rules.add(index-1, (RuleNode)node);
 			setModified(true);
 			nodeAdded(node, index);
 		}
 		else
-			throw new IllegalArgumentException("PolicyNodes can only contain RuleNodes.");
+			{throw new IllegalArgumentException("PolicyNodes can only contain RuleNodes.");}
 	}
 	public void remove(PolicyElementNode node)
 	{
 		if(node == null)
-			return;
-		int index = rules.indexOf(node);
+			{return;}
+		final int index = rules.indexOf(node);
 		if(index < 0)
-			return;
+			{return;}
 		rules.remove(index);
 		setModified(true);
 		nodeRemoved(node, index+1);
@@ -101,10 +101,10 @@ public class PolicyNode extends AbstractPolicyNode
 
 	public boolean containsId(String id)
 	{
-		for(RuleNode rule : rules)
+		for(final RuleNode rule : rules)
 		{
 			if(rule.getId().toString().equals(id))
-				return true;
+				{return true;}
 		}
 		return false;
 	}
@@ -121,20 +121,20 @@ public class PolicyNode extends AbstractPolicyNode
 	public int indexOfChild(Object child)
 	{
 		if(child == getTarget())
-			return 0;
-		int ret = rules.indexOf(child);
+			{return 0;}
+		final int ret = rules.indexOf(child);
 		return (ret >= 0) ? ret + 1 : -1;
 	}
 	public boolean isModified(boolean deep)
 	{
 		if(super.isModified(deep))
-			return true;
+			{return true;}
 		if(deep)
 		{
-			for(RuleNode rule : rules)
+			for(final RuleNode rule : rules)
 			{
 				if(rule.isModified(true))
-					return true;
+					{return true;}
 			}
 		}
 		return false;
@@ -144,7 +144,7 @@ public class PolicyNode extends AbstractPolicyNode
 		rules = new ArrayList<RuleNode>(originalRules);
 		if(deep)
 		{
-			for(RuleNode rule : rules)
+			for(final RuleNode rule : rules)
 				rule.revert(true);
 		}
 		super.revert(deep);
@@ -154,7 +154,7 @@ public class PolicyNode extends AbstractPolicyNode
 		originalRules = new ArrayList<RuleNode>(rules);
 		if(deep)
 		{
-			for(RuleNode rule : rules)
+			for(final RuleNode rule : rules)
 				rule.commit(true);
 		}
 		super.commit(deep);

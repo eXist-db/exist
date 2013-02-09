@@ -151,13 +151,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
         this.pending[IDX_QNAME] = new TreeMap<Object, List<NodeId>>();
         //use inheritance if necessary !
         //TODO : read from configuration (key ?)
-        double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
-        double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
-        double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
+        final double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
+        final double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
+        final double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
         BFile nativeFile = (BFile)config.getProperty(getConfigKeyForFile());
         if (nativeFile == null) {
             //use inheritance
-            File file = new File(dataDir + File.separatorChar + getFileName());
+            final File file = new File(dataDir + File.separatorChar + getFileName());
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, file,
                 broker.getBrokerPool().getCacheManager(), cacheGrowth,
@@ -166,7 +166,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
         dbValues = nativeFile;
         //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
-        Boolean caseOpt = (Boolean)config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
+        final Boolean caseOpt = (Boolean)config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
         if (caseOpt != null) {
             caseSensitive = caseOpt.booleanValue();
         }
@@ -315,13 +315,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public StoredNode getReindexRoot( StoredNode node, NodePath nodePath )
     {
         doc = node.getDocument();
-        NodePath   path        = new NodePath( nodePath );
+        final NodePath   path        = new NodePath( nodePath );
         StoredNode root        = null;
         StoredNode currentNode = ( ( ( node.getNodeType() == Node.ELEMENT_NODE ) || ( node.getNodeType() == Node.ATTRIBUTE_NODE ) ) ? node : node.getParentStoredNode() );
 
         while( currentNode != null ) {
-            GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
-            QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, currentNode.getQName() );
+            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
+            final QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, currentNode.getQName() );
 
             if( ( rSpec != null ) || ( qSpec != null ) ) {
                 root = currentNode;
@@ -342,7 +342,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if( node == null ) {
             return;
         }
-        StreamListener listener = new ValueIndexStreamListener();
+        final StreamListener listener = new ValueIndexStreamListener();
         IndexUtils.scanNode( broker, null, node, listener );
     }
 
@@ -370,11 +370,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
             lock.acquire( Lock.WRITE_LOCK );
             dbValues.flush();
         }
-        catch( LockException e ) {
+        catch( final LockException e ) {
             LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
             //TODO : throw an exception ? -pb
         }
-        catch( DBException e ) {
+        catch( final DBException e ) {
             LOG.error( e.getMessage(), e );
             //TODO : throw an exception ? -pb
         }
@@ -390,7 +390,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public void flush()
     {
         //TODO : return if doc == null? -pb
-        int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
+        final int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
 
         if( keyCount == 0 ) {
             return;
@@ -400,12 +400,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         for( byte section = 0; section <= IDX_QNAME; section++ ) {
 
-            for( Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet()) {
-                Object key = entry.getKey();
+            for( final Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet()) {
+                final Object key = entry.getKey();
 
                 //TODO : NativeElementIndex uses ArrayLists -pb
-                List<NodeId> gids = entry.getValue();
-                int gidsCount = gids.size();
+                final List<NodeId> gids = entry.getValue();
+                final int gidsCount = gids.size();
 
                 //Don't forget this one
                 FastQSort.sort( gids, 0, gidsCount - 1 );
@@ -414,7 +414,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 os.writeInt( gidsCount );
 
                 //Mark position
-                int nodeIDsLength = os.position();
+                final int nodeIDsLength = os.position();
 
                 //Dummy value : actual one will be written below
                 os.writeFixedInt( 0 );
@@ -422,12 +422,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 //Compute the GID list
                 NodeId previous = null;
 
-                for( NodeId nodeId : gids ) {
+                for( final NodeId nodeId : gids ) {
                     try {
                         previous = nodeId.write( previous, os );
 //                        nodeId.write(os);
                     }
-                    catch( IOException e ) {
+                    catch( final IOException e ) {
                         LOG.warn( "IO error while writing range index: " + e.getMessage(), e );
                         //TODO : throw exception?
                     }
@@ -443,7 +443,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     if( section == IDX_GENERIC ) {
                         v = new SimpleValue( collectionId, ( Indexable )key );
                     } else {
-                        QNameKey qnk = ( QNameKey )key;
+                        final QNameKey qnk = ( QNameKey )key;
                         v = new QNameValue( collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols() );
                     }
 
@@ -452,18 +452,18 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         //TODO : throw exception ?
                     }
                 }
-                catch( EXistException e ) {
+                catch( final EXistException e ) {
                     LOG.error( e.getMessage(), e );
                 }
-                catch( LockException e ) {
+                catch( final LockException e ) {
                     LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
                     //TODO : return ?
                 }
-                catch( IOException e ) {
+                catch( final IOException e ) {
                     LOG.error( e.getMessage(), e );
                     //TODO : return ?
                 }
-                catch( ReadOnlyException e ) {
+                catch( final ReadOnlyException e ) {
                     LOG.warn( e.getMessage(), e );
 
                     //Return without clearing the pending entries
@@ -485,7 +485,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public void remove()
     {
         //TODO : return if doc == null? -pb
-        int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
+        final int keyCount = pending[IDX_GENERIC].size() + pending[IDX_QNAME].size();
 
         if( keyCount == 0 ) {
             return;
@@ -495,10 +495,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         for( byte section = 0; section <= IDX_QNAME; section++ ) {
 
-            for( Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet() ) {
-                Object    key           = entry.getKey();
-                List<NodeId> storedGIDList = entry.getValue();
-                List<NodeId> newGIDList    = new ArrayList<NodeId>();
+            for( final Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet() ) {
+                final Object    key           = entry.getKey();
+                final List<NodeId> storedGIDList = entry.getValue();
+                final List<NodeId> newGIDList    = new ArrayList<NodeId>();
                 os.clear();
 
                 try {
@@ -510,21 +510,21 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     if( section == IDX_GENERIC ) {
                         searchKey = new SimpleValue( collectionId, ( Indexable )key );
                     } else {
-                        QNameKey qnk = ( QNameKey )key;
+                        final QNameKey qnk = ( QNameKey )key;
                         searchKey = new QNameValue( collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols() );
                     }
-                    Value value = dbValues.get( searchKey );
+                    final Value value = dbValues.get( searchKey );
 
                     //Does the value already has data in the index ?
                     if( value != null ) {
 
                         //Add its data to the new list
-                        VariableByteArrayInput is = new VariableByteArrayInput( value.getData() );
+                        final VariableByteArrayInput is = new VariableByteArrayInput( value.getData() );
 
                         while( is.available() > 0 ) {
-                            int storedDocId = is.readInt();
-                            int gidsCount   = is.readInt();
-                            int size        = is.readFixedInt();
+                            final int storedDocId = is.readInt();
+                            final int gidsCount   = is.readInt();
+                            final int size        = is.readFixedInt();
 
                             if( storedDocId != this.doc.getDocId() ) {
 
@@ -555,7 +555,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
                         //append the data from the new list
                         if( newGIDList.size() > 0 ) {
-                            int gidsCount = newGIDList.size();
+                            final int gidsCount = newGIDList.size();
 
                             //Don't forget this one
                             FastQSort.sort( newGIDList, 0, gidsCount - 1 );
@@ -563,17 +563,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             os.writeInt( gidsCount );
 
                             //Mark position
-                            int nodeIDsLength = os.position();
+                            final int nodeIDsLength = os.position();
 
                             //Dummy value : actual one will be written below
                             os.writeFixedInt( 0 );
                             NodeId previous = null;
 
-                            for( NodeId nodeId : newGIDList ) {
+                            for( final NodeId nodeId : newGIDList ) {
                                 try {
                                     previous = nodeId.write( previous, os );
                                 }
-                                catch( IOException e ) {
+                                catch( final IOException e ) {
                                     LOG.warn( "IO error while writing range index: " + e.getMessage(), e );
                                     //TODO : throw exception ?
                                 }
@@ -597,17 +597,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         }
                     }
                 }
-                catch( EXistException e ) {
+                catch( final EXistException e ) {
                     LOG.error( e.getMessage(), e );
                 }
-                catch( LockException e ) {
+                catch( final LockException e ) {
                     LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
                     //TODO : return ?
                 }
-                catch( ReadOnlyException e ) {
+                catch( final ReadOnlyException e ) {
                     LOG.warn( "Read-only error on '" + dbValues.getFile().getName() + "'", e );
                 }
-                catch( IOException e ) {
+                catch( final IOException e ) {
                     LOG.error( e.getMessage(), e );
                 }
                 finally {
@@ -651,13 +651,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
             ref = new QNameValue( collection.getId() );
             dbValues.removeAll( null, new IndexQuery( IndexQuery.TRUNC_RIGHT, ref ) );
         }
-        catch( LockException e ) {
+        catch( final LockException e ) {
             LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
         }
-        catch( BTreeException e ) {
+        catch( final BTreeException e ) {
             LOG.error( e.getMessage(), e );
         }
-        catch( IOException e ) {
+        catch( final IOException e ) {
             LOG.error( e.getMessage(), e );
         }
         finally {
@@ -680,8 +680,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
             for( int section = 0; section <= IDX_QNAME; section++ ) {
 
-                for( Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet() ) {
-                    Object    key   = entry.getKey();
+                for( final Map.Entry<Object, List<NodeId>> entry : pending[section].entrySet() ) {
+                    final Object    key   = entry.getKey();
 
                     //Compute a key for the indexed value in the collection
                     Value     v;
@@ -689,22 +689,22 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     if( section == IDX_GENERIC ) {
                         v = new SimpleValue( collectionId, ( Indexable )key );
                     } else {
-                        QNameKey qnk = ( QNameKey )key;
+                        final QNameKey qnk = ( QNameKey )key;
                         v = new QNameValue( collectionId, qnk.qname, qnk.value, broker.getBrokerPool().getSymbols() );
                     }
-                    Value value = dbValues.get( v );
+                    final Value value = dbValues.get( v );
 
                     if( value == null ) {
                         continue;
                     }
-                    VariableByteArrayInput is      = new VariableByteArrayInput( value.getData() );
+                    final VariableByteArrayInput is      = new VariableByteArrayInput( value.getData() );
                     boolean                changed = false;
                     os.clear();
 
                     while( is.available() > 0 ) {
-                        int storedDocId = is.readInt();
-                        int gidsCount   = is.readInt();
-                        int size        = is.readFixedInt();
+                        final int storedDocId = is.readInt();
+                        final int gidsCount   = is.readInt();
+                        final int size        = is.readFixedInt();
 
                         if( storedDocId != document.getDocId() ) {
 
@@ -745,13 +745,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 pending[section].clear();
             }
         }
-        catch( LockException e ) {
+        catch( final LockException e ) {
             LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
         }
-        catch( IOException e ) {
+        catch( final IOException e ) {
             LOG.error( e.getMessage(), e );
         }
-        catch( EXistException e ) {
+        catch( final EXistException e ) {
             LOG.warn( "Exception while removing range index: " + e.getMessage(), e );
         }
         finally {
@@ -778,11 +778,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if( qname == null ) {
             findAll( watchDog, relation, docs, contextSet, axis, null, value, result, collator );
         } else {
-            List<QName> qnames = new LinkedList<QName>();
+            final List<QName> qnames = new LinkedList<QName>();
             qnames.add( qname );
             findAll( watchDog, relation, docs, contextSet, axis, qnames, value, result, collator );
             if (mixedIndex)
-                findAll(watchDog, relation, docs, contextSet, axis, null, value, result);
+                {findAll(watchDog, relation, docs, contextSet, axis, null, value, result);}
         }
         return( result );
     }
@@ -830,7 +830,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final SearchCallback cb   = new SearchCallback( docs, contextSet, result, axis == NodeSet.ANCESTOR );
         final Lock           lock = dbValues.getLock();
 
-        for( Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
+        for( final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = iter.next().getId();
             final int idxOp        = checkRelationOp( relation );
             Value     searchKey;
@@ -852,16 +852,16 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         dbValues.query( query, prefixKey, cb );
                     }
                 }
-                catch( EXistException e ) {
+                catch( final EXistException e ) {
                     LOG.error( e.getMessage(), e );
                 }
-                catch( LockException e ) {
+                catch( final LockException e ) {
                     LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
                 }
-                catch( IOException e ) {
+                catch( final IOException e ) {
                     LOG.error( e.getMessage(), e );
                 }
-                catch( BTreeException e ) {
+                catch( final BTreeException e ) {
                     LOG.error( e.getMessage(), e );
                 }
                 finally {
@@ -870,7 +870,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             } else {
 
                 for( int i = 0; i < qnames.size(); i++ ) {
-                    QName qname = ( QName )qnames.get( i );
+                    final QName qname = ( QName )qnames.get( i );
 
                     try {
                         lock.acquire( Lock.READ_LOCK );
@@ -887,16 +887,16 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             dbValues.query( query, prefixKey, cb );
                         }
                     }
-                    catch( EXistException e ) {
+                    catch( final EXistException e ) {
                         LOG.error( e.getMessage(), e );
                     }
-                    catch( LockException e ) {
+                    catch( final LockException e ) {
                         LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
                     }
-                    catch( IOException e ) {
+                    catch( final IOException e ) {
                         LOG.error( e.getMessage(), e );
                     }
-                    catch( BTreeException e ) {
+                    catch( final BTreeException e ) {
                         LOG.error( e.getMessage(), e );
                     }
                     finally {
@@ -934,7 +934,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if( qname == null ) {
             matchAll( watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation );
         } else {
-            List<QName> qnames = new LinkedList<QName>();
+            final List<QName> qnames = new LinkedList<QName>();
             qnames.add( qname );
             matchAll( watchDog, docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, collator, truncation );
         }
@@ -991,7 +991,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         StringValue startTerm = null;
 
         if( type == DBBroker.MATCH_REGEXP && expr.startsWith( "^" ) && ( caseSensitiveQuery == caseSensitive ) ) {
-            StringBuilder term = new StringBuilder();
+            final StringBuilder term = new StringBuilder();
 
             for( int j = 1; j < expr.length(); j++ ) {
 
@@ -1050,7 +1050,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final MatcherCallback cb   = new MatcherCallback( docs, contextSet, result, matcher, axis == NodeSet.ANCESTOR );
         final Lock            lock = dbValues.getLock();
 
-        for( Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
+        for( final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext(); ) {
             final int collectionId = iter.next().getId();
             Value     searchKey;
 
@@ -1072,13 +1072,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     final IndexQuery query = new IndexQuery( IndexQuery.TRUNC_RIGHT, searchKey );
                     dbValues.query( query, cb );
                 }
-                catch( LockException e ) {
+                catch( final LockException e ) {
                     LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
                 }
-                catch( IOException e ) {
+                catch( final IOException e ) {
                     LOG.error( e.getMessage(), e );
                 }
-                catch( BTreeException e ) {
+                catch( final BTreeException e ) {
                     LOG.error( e.getMessage(), e );
                 }
                 finally {
@@ -1087,7 +1087,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             } else {
 
                 for( int i = 0; i < qnames.size(); i++ ) {
-                    QName qname = ( QName )qnames.get( i );
+                    final QName qname = ( QName )qnames.get( i );
 
                     try {
                         lock.acquire( Lock.READ_LOCK );
@@ -1101,13 +1101,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         final IndexQuery query = new IndexQuery( IndexQuery.TRUNC_RIGHT, searchKey );
                         dbValues.query( query, cb );
                     }
-                    catch( LockException e ) {
+                    catch( final LockException e ) {
                         LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
                     }
-                    catch( IOException e ) {
+                    catch( final IOException e ) {
                         LOG.error( e.getMessage(), e );
                     }
-                    catch( BTreeException e ) {
+                    catch( final BTreeException e ) {
                         LOG.error( e.getMessage(), e );
                     }
                     finally {
@@ -1127,7 +1127,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final IndexScanCallback cb         = new IndexScanCallback( docs, contextSet, type, false );
         final Lock              lock       = dbValues.getLock();
 
-        for( Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+        for( final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
 
             try {
                 lock.acquire( Lock.READ_LOCK );
@@ -1137,7 +1137,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 //Compute a key for the start value in the collection
                 if( stringType ) {
                     final Value startKey = new SimpleValue( collectionId, start );
-                    IndexQuery  query    = new IndexQuery( IndexQuery.TRUNC_RIGHT, startKey );
+                    final IndexQuery  query    = new IndexQuery( IndexQuery.TRUNC_RIGHT, startKey );
                     dbValues.query( query, cb );
                 } else {
                     final Value      startKey  = new SimpleValue( collectionId, start );
@@ -1146,27 +1146,27 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     dbValues.query( query, prefixKey, cb );
                 }
             }
-            catch( EXistException e ) {
+            catch( final EXistException e ) {
                 LOG.error( e.getMessage(), e );
             }
-            catch( LockException e ) {
+            catch( final LockException e ) {
                 LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
             }
-            catch( IOException e ) {
+            catch( final IOException e ) {
                 LOG.error( e.getMessage(), e );
             }
-            catch( BTreeException e ) {
+            catch( final BTreeException e ) {
                 LOG.error( e.getMessage(), e );
             }
-            catch( TerminatedException e ) {
+            catch( final TerminatedException e ) {
                 LOG.warn( e.getMessage(), e );
             }
             finally {
                 lock.release( Lock.READ_LOCK );
             }
         }
-        Map<AtomicValue, ValueOccurrences> map = cb.map;
-        ValueOccurrences[] result = new ValueOccurrences[map.size()];
+        final Map<AtomicValue, ValueOccurrences> map = cb.map;
+        final ValueOccurrences[] result = new ValueOccurrences[map.size()];
         return( ( ValueOccurrences[] )map.values().toArray( result ) );
     }
 
@@ -1187,7 +1187,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public ValueOccurrences[] scanIndexKeys( DocumentSet docs, NodeSet contextSet, QName[] qnames, Indexable start )
     {
         if( qnames == null ) {
-            List<QName> qnlist = getDefinedIndexes( docs );
+            final List<QName> qnlist = getDefinedIndexes( docs );
             qnames = new QName[qnlist.size()];
             qnames = ( QName[] )qnlist.toArray( qnames );
         }
@@ -1198,7 +1198,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         for( int j = 0; j < qnames.length; j++ ) {
 
-            for( Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            for( final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
 
                 try {
                     lock.acquire( Lock.READ_LOCK );
@@ -1207,7 +1207,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     //Compute a key for the start value in the collection
                     if( stringType ) {
                         final Value startKey = new QNameValue( collectionId, qnames[j], start, broker.getBrokerPool().getSymbols() );
-                        IndexQuery  query    = new IndexQuery( IndexQuery.TRUNC_RIGHT, startKey );
+                        final IndexQuery  query    = new IndexQuery( IndexQuery.TRUNC_RIGHT, startKey );
                         dbValues.query( query, cb );
                     } else {
                         final Value      startKey  = new QNameValue( collectionId, qnames[j], start, broker.getBrokerPool().getSymbols() );
@@ -1216,19 +1216,19 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         dbValues.query( query, prefixKey, cb );
                     }
                 }
-                catch( EXistException e ) {
+                catch( final EXistException e ) {
                     LOG.error( e.getMessage(), e );
                 }
-                catch( LockException e ) {
+                catch( final LockException e ) {
                     LOG.warn( "Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e );
                 }
-                catch( IOException e ) {
+                catch( final IOException e ) {
                     LOG.error( e.getMessage(), e );
                 }
-                catch( BTreeException e ) {
+                catch( final BTreeException e ) {
                     LOG.error( e.getMessage(), e );
                 }
-                catch( TerminatedException e ) {
+                catch( final TerminatedException e ) {
                     LOG.warn( e.getMessage(), e );
                 }
                 finally {
@@ -1236,19 +1236,19 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
             }
         }
-        Map<AtomicValue, ValueOccurrences> map = cb.map;
-        ValueOccurrences[] result = new ValueOccurrences[map.size()];
+        final Map<AtomicValue, ValueOccurrences> map = cb.map;
+        final ValueOccurrences[] result = new ValueOccurrences[map.size()];
         return( ( ValueOccurrences[] )map.values().toArray( result ) );
     }
 
 
     protected List<QName> getDefinedIndexes( DocumentSet docs )
     {
-        List<QName> qnames = new ArrayList<QName>();
+        final List<QName> qnames = new ArrayList<QName>();
 
-        for( Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = ( Collection )i.next();
-            IndexSpec  idxConf    = collection.getIndexConfiguration( broker );
+        for( final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            final Collection collection = ( Collection )i.next();
+            final IndexSpec  idxConf    = collection.getIndexConfiguration( broker );
 
             if( idxConf != null ) {
                 qnames.addAll( idxConf.getIndexedQNames() );
@@ -1316,7 +1316,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
                 atomic = new StringValue( value, xpathType, false );
             }
-            catch( XPathException e ) {
+            catch( final XPathException e ) {
                 return( null );
             }
         } else {
@@ -1324,7 +1324,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
                 atomic = new StringValue( value ).convertTo( xpathType );
             }
-            catch( XPathException e ) {
+            catch( final XPathException e ) {
                 LOG.warn( "Node value '" + value + "' cannot be converted to " + Type.getTypeName( xpathType ) );
                 return( null );
             }
@@ -1539,7 +1539,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
                 is = dbValues.getAsStream( pointer );
             }
-            catch( IOException e ) {
+            catch( final IOException e ) {
                 LOG.error( e.getMessage(), e );
                 return( true );
             }
@@ -1547,10 +1547,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
 
                 while( is.available() > 0 ) {
-                    int          storedDocId    = is.readInt();
-                    int          gidsCount      = is.readInt();
-                    int          size           = is.readFixedInt();
-                    DocumentImpl storedDocument = docs.getDoc( storedDocId );
+                    final int          storedDocId    = is.readInt();
+                    final int          gidsCount      = is.readInt();
+                    final int          size           = is.readFixedInt();
+                    final DocumentImpl storedDocument = docs.getDoc( storedDocId );
 
                     //Exit if the document is not concerned
                     if( storedDocument == null ) {
@@ -1572,11 +1572,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         // matching node is a descendant of one of the nodes
                         // in the context set.
                         if( contextSet != null ) {
-                            int sizeHint = contextSet.getSizeHint( storedDocument );
+                            final int sizeHint = contextSet.getSizeHint( storedDocument );
 
                             if( returnAncestor ) {
 //                                NodeProxy parentNode = contextSet.parentWithChild( storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL );
-                            	NodeProxy parentNode = contextSet.get(storedNode);
+                            	final NodeProxy parentNode = contextSet.get(storedNode);
                                 if( parentNode != null ) {
                                     result.add( parentNode, sizeHint );
                                 }
@@ -1591,7 +1591,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     }
                 }
             }
-            catch( IOException e ) {
+            catch( final IOException e ) {
                 LOG.error( e.getMessage(), e );
             }
             return( false );
@@ -1668,7 +1668,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     return( false );
                 }
             }
-            catch( EXistException e ) {
+            catch( final EXistException e ) {
                 LOG.error( e.getMessage(), e );
                 return( true );
             }
@@ -1677,7 +1677,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
                 is = dbValues.getAsStream( pointer );
             }
-            catch( IOException e ) {
+            catch( final IOException e ) {
                 LOG.error( e.getMessage(), e );
                 return( true );
             }
@@ -1688,10 +1688,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
                 while( is.available() > 0 ) {
                     boolean      docAdded       = false;
-                    int          storedDocId    = is.readInt();
-                    int          gidsCount      = is.readInt();
-                    int          size           = is.readFixedInt();
-                    DocumentImpl storedDocument = docs.getDoc( storedDocId );
+                    final int          storedDocId    = is.readInt();
+                    final int          gidsCount      = is.readInt();
+                    final int          size           = is.readFixedInt();
+                    final DocumentImpl storedDocument = docs.getDoc( storedDocId );
 
                     //Exit if the document is not concerned
                     if( storedDocument == null ) {
@@ -1741,7 +1741,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     }
                 }
             }
-            catch( IOException e ) {
+            catch( final IOException e ) {
                 LOG.error( e.getMessage(), e );
             }
             return( true );
@@ -1768,7 +1768,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public int compareTo( QNameKey other )
         {
-            int cmp = qname.compareTo( other.qname );
+            final int cmp = qname.compareTo( other.qname );
 
             if( cmp == 0 ) {
                 return( value.compareTo( other.value ) );
@@ -1909,15 +1909,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public void startElement( Txn transaction, ElementImpl element, NodePath path )
         {
-            GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
-            QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, element.getQName() );
+            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
+            final QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, element.getQName() );
 
             if( ( rSpec != null ) || ( qSpec != null ) ) {
 
                 if( contentStack == null ) {
                     contentStack = new Stack<XMLString>();
                 }
-                XMLString contentBuf = new XMLString();
+                final XMLString contentBuf = new XMLString();
                 contentStack.push( contentBuf );
             }
             super.startElement( transaction, element, path );
@@ -1926,8 +1926,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public void attribute( Txn transaction, AttrImpl attrib, NodePath path )
         {
-            GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
-            QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, attrib.getQName() );
+            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
+            final QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, attrib.getQName() );
 
             if( rSpec != null ) {
                 storeAttribute( attrib, path, NativeValueIndex.WITHOUT_PATH, rSpec, false );
@@ -1950,7 +1950,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
 
                 case AttrImpl.IDREFS: {
-                    StringTokenizer tokenizer = new StringTokenizer( attrib.getValue(), " " );
+                    final StringTokenizer tokenizer = new StringTokenizer( attrib.getValue(), " " );
                     while( tokenizer.hasMoreTokens() ) {
                         storeAttribute( attrib, tokenizer.nextToken(), path, NativeValueIndex.WITHOUT_PATH, Type.IDREF, NativeValueIndex.IDX_GENERIC, false );
                     }
@@ -1966,11 +1966,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         public void endElement( Txn transaction, ElementImpl element, NodePath path )
         {
-            GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
-            QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, element.getQName() );
+            final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
+            final QNameRangeIndexSpec   qSpec = doc.getCollection().getIndexByQNameConfiguration( broker, element.getQName() );
 
             if( ( rSpec != null ) || ( qSpec != null ) ) {
-                XMLString content = ( XMLString )contentStack.pop();
+                final XMLString content = ( XMLString )contentStack.pop();
 
                 if( rSpec != null ) {
                     storeElement( element, content.toString(), RangeIndexSpec.indexTypeToXPath( rSpec.getIndexType() ), NativeValueIndex.IDX_GENERIC, false );
@@ -1989,7 +1989,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             if( ( contentStack != null ) && !contentStack.isEmpty() ) {
 
                 for( int i = 0; i < contentStack.size(); i++ ) {
-                    XMLString next = ( XMLString )contentStack.get( i );
+                    final XMLString next = ( XMLString )contentStack.get( i );
                     next.append( text.getXMLString() );
                 }
             }

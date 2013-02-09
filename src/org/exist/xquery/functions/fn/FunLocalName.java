@@ -86,40 +86,40 @@ public class FunLocalName extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         if(contextItem != null)
-            contextSequence = contextItem.toSequence();
+            {contextSequence = contextItem.toSequence();}
                 
         Item item = null;
         // check if the node is passed as an argument or should be taken from
         // the context sequence
         if(getArgumentCount() > 0) {
-            Sequence seq = getArgument(0).eval(contextSequence);
+            final Sequence seq = getArgument(0).eval(contextSequence);
             if (!seq.isEmpty())
-                item = seq.itemAt(0);
+                {item = seq.itemAt(0);}
         } else { 
         	if (contextSequence == null || contextSequence.isEmpty())
-        		throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+        		{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
             item = contextSequence.itemAt(0);
         }
         
         Sequence result;
         if (item == null)
-            result = StringValue.EMPTY_STRING;
+            {result = StringValue.EMPTY_STRING;}
         else {
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-            	throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");          
+            	{throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");}          
             //TODO : how to improve performance ?
-            Node n = ((NodeValue)item).getNode();
+            final Node n = ((NodeValue)item).getNode();
             result = new StringValue(n.getLocalName());
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;          
     }

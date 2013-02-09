@@ -114,7 +114,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
                 return( "#document" );
             case Type.ELEMENT:
             case Type.PROCESSING_INSTRUCTION:
-                QName qn = document.nodeName[nodeNumber];
+                final QName qn = document.nodeName[nodeNumber];
                 //TODO : check !
                 return( qn.getStringValue() );
             case Type.ATTRIBUTE:
@@ -137,7 +137,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
             case Node.ATTRIBUTE_NODE:
             case Node.ELEMENT_NODE:
             case Node.PROCESSING_INSTRUCTION_NODE:
-                QName qn = document.nodeName[nodeNumber];
+                final QName qn = document.nodeName[nodeNumber];
                 return( qn );
             case Node.DOCUMENT_NODE:
                 return( QName.EMPTY_QNAME );
@@ -239,7 +239,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         if( !( obj instanceof NodeImpl ) ) {
             return( false );
         }
-        NodeImpl o = (NodeImpl)obj;
+        final NodeImpl o = (NodeImpl)obj;
         return( ( document == o.document ) && ( nodeNumber == o.nodeNumber ) && 
                 ( getNodeType() == o.getNodeType() ) );
     }
@@ -251,7 +251,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         if( other.getImplementationType() != NodeValue.IN_MEMORY_NODE ) {
             return( false );
         }
-        NodeImpl o = (NodeImpl)other;
+        final NodeImpl o = (NodeImpl)other;
         return( ( document == o.document ) && ( nodeNumber == o.nodeNumber ) && 
                 ( getNodeType() == o.getNodeType() ) );
     }
@@ -280,7 +280,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         if( !( other instanceof NodeImpl ) ) {
             return( Constants.INFERIOR );
         }
-        NodeImpl n = (NodeImpl)other;
+        final NodeImpl n = (NodeImpl)other;
         if( n.document == document ) {
             if( ( nodeNumber == n.nodeNumber ) && ( getNodeType() == n.getNodeType() ) ) {
                 return( Constants.EQUAL );
@@ -328,7 +328,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         if( nodeNumber == 0 ) {
             return( null );
         }
-        int parent   = document.getParentNodeFor( nodeNumber );
+        final int parent   = document.getParentNodeFor( nodeNumber );
         int nextNode = document.getFirstChildFor( parent );
         while( ( nextNode >= parent ) && ( nextNode < nodeNumber ) ) {
             int following = document.next[nextNode];
@@ -344,7 +344,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
      * @see org.w3c.dom.Node#getNextSibling()
      */
     public Node getNextSibling() {
-        int nextNr = document.next[nodeNumber];
+        final int nextNr = document.next[nodeNumber];
         return( ( nextNr < nodeNumber ) ? null : document.getNode( nextNr ) );
     }
 
@@ -498,7 +498,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
      * @see org.exist.xquery.value.Item#getStringValue()
      */
     public String getStringValue() {
-        int level       = document.treeLevel[nodeNumber];
+        final int level       = document.treeLevel[nodeNumber];
         int next        = nodeNumber + 1;
         int startOffset = 0;
         int len         = -1;
@@ -524,7 +524,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
     }
 
     private String getStringValueSlow() {
-        int           level = document.treeLevel[nodeNumber];
+        final int           level = document.treeLevel[nodeNumber];
         StringBuilder buf   = null;
         int           next  = nodeNumber + 1;
 
@@ -663,7 +663,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
      * @see org.exist.xquery.value.Sequence#toNodeSet()
      */
     public NodeSet toNodeSet() throws XPathException {
-        ValueSequence seq = new ValueSequence();
+        final ValueSequence seq = new ValueSequence();
         seq.add( this );
         return( seq.toNodeSet() );
     }
@@ -677,7 +677,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
      */
     public void toSAX( DBBroker broker, ContentHandler handler, Properties properties )
         throws SAXException {
-        Serializer serializer = broker.getSerializer();
+        final Serializer serializer = broker.getSerializer();
         serializer.reset();
         serializer.setProperty( Serializer.GENERATE_DOC_EVENTS, "false" );
 
@@ -830,14 +830,14 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
             return;
         }
         if( includeSelf ) {
-            NodeImpl n = document.getNode( nodeNumber );
+            final NodeImpl n = document.getNode( nodeNumber );
             if( test.matches( n ) ) {
                 result.add( n );
             }
         }
         int nextNode = document.getParentNodeFor( nodeNumber );
         while( nextNode > 0 ) {
-            NodeImpl n = document.getNode( nextNode );
+            final NodeImpl n = document.getNode( nextNode );
             if( test.matches( n ) ) {
                 result.add( n );
             }
@@ -847,10 +847,10 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
 
     public void selectPrecedingSiblings( NodeTest test, Sequence result )
             throws XPathException {
-        int parent   = document.getParentNodeFor( nodeNumber );
+        final int parent   = document.getParentNodeFor( nodeNumber );
         int nextNode = document.getFirstChildFor( parent );
         while( ( nextNode >= parent ) && ( nextNode < nodeNumber ) ) {
-            NodeImpl n = document.getNode( nextNode );
+            final NodeImpl n = document.getNode( nextNode );
             if( test.matches( n ) ) {
                 result.add( n );
             }
@@ -860,11 +860,11 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
 
     public void selectPreceding( NodeTest test, Sequence result, int position ) 
             throws XPathException {
-        NodeId myNodeId = getNodeId();
+        final NodeId myNodeId = getNodeId();
         int    count    = 0;
 
         for( int i = nodeNumber - 1; i > 0; i-- ) {
-            NodeImpl n = document.getNode( i );
+            final NodeImpl n = document.getNode( i );
             if( !myNodeId.isDescendantOf( n.getNodeId() ) && test.matches( n ) ) {
                 if( ( position < 0 ) || ( ++count == position ) ) {
                     result.add( n );
@@ -878,7 +878,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
 
     public void selectFollowingSiblings( NodeTest test, Sequence result ) 
             throws XPathException {
-        int parent = document.getParentNodeFor( nodeNumber );
+        final int parent = document.getParentNodeFor( nodeNumber );
         if( parent == 0 ) {
             // parent is the document node
             if( getNodeType() == Node.ELEMENT_NODE ) {
@@ -897,7 +897,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         } else {
             int nextNode = document.getFirstChildFor( parent );
             while( nextNode > parent ) {
-                NodeImpl n = document.getNode( nextNode );
+                final NodeImpl n = document.getNode( nextNode );
                 if( ( nextNode > nodeNumber ) && test.matches( n ) ) {
                     result.add( n );
                 }
@@ -908,7 +908,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
 
     public void selectFollowing( NodeTest test, Sequence result, int position )
             throws XPathException {
-        int parent = document.getParentNodeFor( nodeNumber );
+        final int parent = document.getParentNodeFor( nodeNumber );
         if( parent == 0 ) {
             // parent is the document node
             if( getNodeType() == Node.ELEMENT_NODE ) {
@@ -925,11 +925,11 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
                 next = (NodeImpl)next.getNextSibling();
             }
         } else {
-            NodeId myNodeId = getNodeId();
+            final NodeId myNodeId = getNodeId();
             int    count    = 0;
             int    nextNode = nodeNumber + 1;
             while( nextNode < document.size ) {
-                NodeImpl n = document.getNode( nextNode );
+                final NodeImpl n = document.getNode( nextNode );
                 if( !n.getNodeId().isDescendantOf( myNodeId ) && test.matches( n ) ) {
                     if( ( position < 0 ) || ( ++count == position ) ) {
                         result.add( n );
@@ -970,14 +970,14 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
             return( false );
         }
         if( includeSelf ) {
-            NodeImpl n = document.getNode( nodeNumber );
+            final NodeImpl n = document.getNode( nodeNumber );
             if( test.matches( n ) ) {
                 return( true );
             }
         }
         int nextNode = document.getParentNodeFor( nodeNumber );
         while( nextNode > 0 ) {
-            NodeImpl n = document.getNode( nextNode );
+            final NodeImpl n = document.getNode( nextNode );
             if( test.matches( n ) ) {
                 return( true );
             }
@@ -987,10 +987,10 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
     }
 
     public boolean matchPrecedingSiblings( NodeTest test ) {
-        int parent   = document.getParentNodeFor( nodeNumber );
+        final int parent   = document.getParentNodeFor( nodeNumber );
         int nextNode = document.getFirstChildFor( parent );
         while( ( nextNode >= parent ) && ( nextNode < nodeNumber ) ) {
-            NodeImpl n = document.getNode( nextNode );
+            final NodeImpl n = document.getNode( nextNode );
             if( test.matches( n ) ) {
                 return( true );
             }
@@ -1001,10 +1001,10 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
 
     public boolean matchPreceding( NodeTest test, int position ) 
             throws EXistException {
-        NodeId myNodeId = getNodeId();
+        final NodeId myNodeId = getNodeId();
         int    count    = 0;
         for( int i = nodeNumber - 1; i > 0; i-- ) {
-            NodeImpl n = document.getNode( i );
+            final NodeImpl n = document.getNode( i );
             if( !myNodeId.isDescendantOf( n.getNodeId() ) && test.matches( n ) ) {
                 if( ( position < 0 ) || ( ++count == position ) ) {
                     return( true );
@@ -1018,7 +1018,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
     }
 
     public boolean matchFollowingSiblings( NodeTest test ) {
-        int parent = document.getParentNodeFor( nodeNumber );
+        final int parent = document.getParentNodeFor( nodeNumber );
         if( parent == 0 ) {
             // parent is the document node
             if( getNodeType() == Node.ELEMENT_NODE ) {
@@ -1037,7 +1037,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         } else {
             int nextNode = document.getFirstChildFor( parent );
             while( nextNode > parent ) {
-                NodeImpl n = document.getNode( nextNode );
+                final NodeImpl n = document.getNode( nextNode );
                 if( ( nextNode > nodeNumber ) && test.matches( n ) ) {
                     return( true );
                 }
@@ -1049,7 +1049,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
 
     public boolean matchFollowing( NodeTest test, int position ) 
             throws XPathException, EXistException {
-        int parent = document.getParentNodeFor( nodeNumber );
+        final int parent = document.getParentNodeFor( nodeNumber );
         if( parent == 0 ) {
             // parent is the document node
             if( getNodeType() == Node.ELEMENT_NODE ) {
@@ -1068,11 +1068,11 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
                 next = (NodeImpl)next.getNextSibling();
             }
         } else {
-            NodeId myNodeId = getNodeId();
+            final NodeId myNodeId = getNodeId();
             int    count    = 0;
             int    nextNode = nodeNumber + 1;
             while( nextNode < document.size ) {
-                NodeImpl n = document.getNode( nextNode );
+                final NodeImpl n = document.getNode( nextNode );
                 if( !n.getNodeId().isDescendantOf( myNodeId ) && test.matches( n ) ) {
                     if( ( position < 0 ) || ( ++count == position ) ) {
                         return( true );
@@ -1259,7 +1259,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
          * @see org.exist.xquery.value.SequenceIterator#nextItem()
          */
         public Item nextItem() {
-            NodeImpl next = node;
+            final NodeImpl next = node;
             node = null;
             return( next );
         }

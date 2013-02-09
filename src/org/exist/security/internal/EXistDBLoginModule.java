@@ -113,10 +113,10 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 
 		// prompt for a user name and password
 		if (callbackHandler == null)
-			throw new LoginException("Error: no CallbackHandler available "
-					+ "to garner authentication information from the user");
+			{throw new LoginException("Error: no CallbackHandler available "
+					+ "to garner authentication information from the user");}
 
-		Callback[] callbacks = new Callback[2];
+		final Callback[] callbacks = new Callback[2];
 		callbacks[0] = new NameCallback("user name: ");
 		callbacks[1] = new PasswordCallback("password: ", false);
 
@@ -136,9 +136,9 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 			System.arraycopy(tmpPassword, 0, password, 0, tmpPassword.length);
 			((PasswordCallback) callbacks[1]).clearPassword();
 
-		} catch (java.io.IOException ioe) {
+		} catch (final java.io.IOException ioe) {
 			throw new LoginException(ioe.toString());
-		} catch (UnsupportedCallbackException uce) {
+		} catch (final UnsupportedCallbackException uce) {
 			throw new LoginException("Error: " + uce.getCallback().toString()
 					+ " not available to garner authentication information"
 					+ " from the user");
@@ -151,11 +151,11 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 		
 		try {
 			userPrincipal = BrokerPool.getInstance().getSecurityManager().authenticate(username, password);
-		} catch (AuthenticationException e) {
+		} catch (final AuthenticationException e) {
 			if (debug)
-				System.out.println("\t\t[eXistLoginModule] authentication failed");
+				{System.out.println("\t\t[eXistLoginModule] authentication failed");}
 			throw new FailedLoginException(e.getMessage());
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
 			throw new FailedLoginException(e.getMessage());
 		}
 		
@@ -193,7 +193,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 			// to the Subject
 
 			if (!subject.getPrincipals().contains(userPrincipal))
-				subject.getPrincipals().add(userPrincipal);
+				{subject.getPrincipals().add(userPrincipal);}
 
 			if (debug) {
 				System.out.println("\t\t[eXistLoginModule] added User to Subject");

@@ -94,19 +94,19 @@ public abstract class DOMTransaction {
      * @return an <code>Object</code> value
      */
     public Object run() {
-        Lock lock = file.getLock();
+        final Lock lock = file.getLock();
         try {
             // try to acquire a lock on the file
             try {
                 lock.acquire( mode );
-            } catch( LockException e ) {
+            } catch( final LockException e ) {
                 System.out.println("Failed to acquire read lock on " + file.getFile().getName());
                 return null;
             }
             file.setOwnerObject(ownerObject);
             file.setCurrentDocument(document);
             return start();
-        } catch(ReadOnlyException e) {
+        } catch(final ReadOnlyException e) {
             LOG.error(e.getMessage(), e);
         } finally {
             lock.release(mode);

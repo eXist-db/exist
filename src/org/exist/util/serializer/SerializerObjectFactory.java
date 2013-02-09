@@ -38,23 +38,23 @@ public class SerializerObjectFactory extends BaseKeyedPoolableObjectFactory {
 
     public Object makeObject(Object key) throws Exception {
         if (key == SAXSerializer.class)
-            return new SAXSerializer();
+            {return new SAXSerializer();}
         else if (key == DOMStreamer.class)
-            return new ExtendedDOMStreamer();
+            {return new ExtendedDOMStreamer();}
         return null;
     }
 
     public void activateObject(Object key, Object obj) throws Exception {
         if (key == SAXSerializer.class)
-            ((SAXSerializer)obj).reset();
+            {((SAXSerializer)obj).reset();}
         else if (key == DOMStreamer.class)
-            ((DOMStreamer)obj).reset();
+            {((DOMStreamer)obj).reset();}
     }
 
     public void passivateObject(Object key, Object obj) throws Exception {
         if (key == SAXSerializer.class)
-            ((SAXSerializer)obj).reset();
+            {((SAXSerializer)obj).reset();}
         else if (key == DOMStreamer.class)
-            ((DOMStreamer)obj).reset();
+            {((DOMStreamer)obj).reset();}
     }
 }

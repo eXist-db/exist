@@ -82,7 +82,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
             registerDatabase();
 
             try {
-                Collection base = DatabaseManager.getCollection( uri, user, password );
+                final Collection base = DatabaseManager.getCollection( uri, user, password );
 
                 if( base == null ) {
                     throw( new BuildException( "Collection " + uri + " could not be found." ) );
@@ -92,10 +92,10 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
 
                     // extraction of a single resource
                     log( "Extracting resource: " + resource + " to " + destFile.getAbsolutePath(), Project.MSG_INFO );
-                    Resource res = base.getResource( resource );
+                    final Resource res = base.getResource( resource );
 
                     if( res == null ) {
-                        String msg = "Resource " + resource + " not found.";
+                        final String msg = "Resource " + resource + " not found.";
 
                         if( failonerror ) {
                             throw( new BuildException( msg ) );
@@ -117,8 +117,8 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
                 }
 
             }
-            catch( XMLDBException e ) {
-                String msg = "XMLDB exception caught while executing query: " + e.getMessage();
+            catch( final XMLDBException e ) {
+                final String msg = "XMLDB exception caught while executing query: " + e.getMessage();
 
                 if( failonerror ) {
                     throw( new BuildException( msg, e ) );
@@ -127,8 +127,8 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
                 }
 
             }
-            catch( IOException e ) {
-                String msg = "XMLDB exception caught while writing destination file: " + e.getMessage();
+            catch( final IOException e ) {
+                final String msg = "XMLDB exception caught while writing destination file: " + e.getMessage();
 
                 if( failonerror ) {
                     throw( new BuildException( msg, e ) );
@@ -152,7 +152,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
     private void extractResources( Collection base, String path ) throws XMLDBException, IOException
     {
         Resource res       = null;
-        String[] resources = base.listResources();
+        final String[] resources = base.listResources();
 
         if( resources != null ) {
             File dir = destDir;
@@ -163,7 +163,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
                 dir = new File( destDir, path );
             }
 
-            for( String resource : resources ) {
+            for( final String resource : resources ) {
                 res = base.getResource( resource );
                 log( "Extracting resource: " + res.getId(), Project.MSG_DEBUG );
 
@@ -191,7 +191,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
      */
     private void extractSubCollections( Collection base, String path ) throws XMLDBException, IOException
     {
-        String[] childCols = base.listChildCollections();
+        final String[] childCols = base.listChildCollections();
 
         if( childCols != null ) {
             Collection col = null;
@@ -260,7 +260,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
     private void writeXMLResource( XMLResource res, File dest ) throws IOException, XMLDBException
     {
         if( createdirectories == true ) {
-            File parentDir = new File( dest.getParent() );
+            final File parentDir = new File( dest.getParent() );
 
             if( !parentDir.exists() ) {
                 parentDir.mkdirs();
@@ -268,9 +268,9 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
         }
 
         if( ( dest != null ) || ( overwrite == true ) ) {
-            Properties outputProperties = new Properties();
+            final Properties outputProperties = new Properties();
             outputProperties.setProperty( OutputKeys.INDENT, "yes" );
-            SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+            final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
 
             Writer        writer     = null;
 
@@ -280,7 +280,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
                 if( !fname.endsWith( "." + type ) ) {
                     fname += "." + type;
                 }
-                File file = new File( dest, fname );
+                final File file = new File( dest, fname );
                 writer = new OutputStreamWriter( new FileOutputStream( file ), encoding );
 
             } else {
@@ -295,7 +295,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
             writer.close();
 
         } else {
-            String msg = "Destination xml file " + ( ( dest != null ) ? ( dest.getAbsolutePath() + " " ) : "" ) + "exists. Use " + "overwrite property to overwrite this file.";
+            final String msg = "Destination xml file " + ( ( dest != null ) ? ( dest.getAbsolutePath() + " " ) : "" ) + "exists. Use " + "overwrite property to overwrite this file.";
 
             if( failonerror ) {
                 throw( new BuildException( msg ) );
@@ -320,7 +320,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
     private void writeBinaryResource( Resource res, File dest ) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException
     {
         if( createdirectories == true ) {
-            File parentDir = new File( dest.getParent() );
+            final File parentDir = new File( dest.getParent() );
 
             if( !parentDir.exists() ) {
                 parentDir.mkdirs();
@@ -347,7 +347,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
 
 
         } else {
-            String msg = "Dest binary file " + ( ( dest != null ) ? ( dest.getAbsolutePath() + " " ) : "" ) + "exists. Use " + "overwrite property to overwrite file.";
+            final String msg = "Dest binary file " + ( ( dest != null ) ? ( dest.getAbsolutePath() + " " ) : "" ) + "exists. Use " + "overwrite property to overwrite file.";
 
             if( failonerror ) {
                 throw( new BuildException( msg ) );

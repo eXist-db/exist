@@ -50,13 +50,13 @@ public class ReferenceNode extends NodeImpl {
     }
 
     public NodeProxy getReference() {
-        int p = document.alpha[nodeNumber];
+        final int p = document.alpha[nodeNumber];
         return( document.references[p] );
     }
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append( "reference[ " );
         result.append( getReference().getNode().toString() );
         result.append( " ]" );

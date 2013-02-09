@@ -64,7 +64,7 @@ public class FunctionReference extends AtomicValue {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	functionCall.analyze(contextInfo);
         if (functionCall.getContext().optimizationsEnabled()) {
-            Optimizer optimizer = new Optimizer( functionCall.getContext() );
+            final Optimizer optimizer = new Optimizer( functionCall.getContext() );
             functionCall.accept(optimizer);
             if (optimizer.hasOptimized()) {
                 functionCall.resetState(true);
@@ -120,7 +120,7 @@ public class FunctionReference extends AtomicValue {
      */
     public AtomicValue convertTo(int requiredType) throws XPathException {
         if (requiredType == Type.FUNCTION_REFERENCE)
-            return this;
+            {return this;}
         throw new XPathException("cannot convert function reference to " + Type.getTypeName(requiredType));
     }
     

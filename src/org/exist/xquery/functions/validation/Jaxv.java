@@ -158,7 +158,7 @@ public class Jaxv extends BasicFunction  {
         }
 
 
-        ValidationReport report = new ValidationReport();
+        final ValidationReport report = new ValidationReport();
         StreamSource instance = null;
         StreamSource grammars[] =null;
         String schemaLang = XMLConstants.W3C_XML_SCHEMA_NS_URI;
@@ -173,8 +173,8 @@ public class Jaxv extends BasicFunction  {
             grammars = Shared.getStreamSource(args[1], context);
            
             // Check input
-            for (StreamSource grammar : grammars) {
-                String grammarUrl = grammar.getSystemId();
+            for (final StreamSource grammar : grammars) {
+                final String grammarUrl = grammar.getSystemId();
                 if (grammarUrl != null && !grammarUrl.endsWith(".xsd") && !grammarUrl.endsWith(".rng")) {
                     throw new XPathException("Only XML schemas (.xsd) and RELAXNG grammars (.rng) are supported"
                             + ", depending on the used XML parser.");
@@ -191,29 +191,29 @@ public class Jaxv extends BasicFunction  {
             try {
                 factory = SchemaFactory.newInstance(schemaLang);
                 
-            } catch (IllegalArgumentException ex) {
-                String msg = "Schema language '" + schemaLang + "' is not supported. " + ex.getMessage();
+            } catch (final IllegalArgumentException ex) {
+                final String msg = "Schema language '" + schemaLang + "' is not supported. " + ex.getMessage();
                 LOG.error(msg);
                 throw new XPathException(msg);
             }
             
             
             // Create grammar
-            Schema schema = factory.newSchema(grammars);
+            final Schema schema = factory.newSchema(grammars);
 
             // Setup validator
-            Validator validator = schema.newValidator();
+            final Validator validator = schema.newValidator();
             validator.setErrorHandler(report);
 
             // Perform validation
             validator.validate(instance);
 
 
-        } catch (MalformedURLException ex) {
+        } catch (final MalformedURLException ex) {
             LOG.error(ex.getMessage());
             report.setException(ex);
 
-        } catch (Throwable ex) {
+        } catch (final Throwable ex) {
             LOG.error(ex);
             report.setException(ex);
 
@@ -226,13 +226,13 @@ public class Jaxv extends BasicFunction  {
 
         // Create response
         if (isCalledAs("jaxv")) {
-            Sequence result = new ValueSequence();
+            final Sequence result = new ValueSequence();
             result.add(new BooleanValue(report.isValid()));
             return result;
 
         } else /* isCalledAs("jaxv-report") */ {
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            NodeImpl result = Shared.writeReport(report, builder);
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final NodeImpl result = Shared.writeReport(report, builder);
             return result;
         } 
     }

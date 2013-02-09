@@ -78,13 +78,13 @@ public class DatabaseResources {
         List<String> result = new ArrayList<String>();
         
         try {
-            SequenceIterator i = sequence.iterate();         
+            final SequenceIterator i = sequence.iterate();         
             while(i.hasNext()){
-                String path =  i.nextItem().getStringValue();
+                final String path =  i.nextItem().getStringValue();
                 result.add(path);
             }
             
-        } catch (XPathException ex) {
+        } catch (final XPathException ex) {
             logger.error("xQuery issue.", ex);
             result=null;
         }
@@ -102,7 +102,7 @@ public class DatabaseResources {
         String result = null;
         
         try {
-            SequenceIterator i = sequence.iterate();
+            final SequenceIterator i = sequence.iterate();
             if(i.hasNext()){
                 result= i.nextItem().getStringValue();
                 
@@ -112,7 +112,7 @@ public class DatabaseResources {
                 logger.debug("No query result.");
             }
             
-        } catch (XPathException ex) {
+        } catch (final XPathException ex) {
             logger.error("xQuery issue ", ex);
         }
         
@@ -122,10 +122,10 @@ public class DatabaseResources {
     
     public Sequence executeQuery(String queryPath, Map<String,String> params, Subject user){
         
-        String namespace = params.get(TARGETNAMESPACE);
-        String publicId = params.get(PUBLICID);
-        String catalogPath = params.get(CATALOG);
-        String collection = params.get(COLLECTION);
+        final String namespace = params.get(TARGETNAMESPACE);
+        final String publicId = params.get(PUBLICID);
+        final String catalogPath = params.get(CATALOG);
+        final String collection = params.get(COLLECTION);
         
         if(logger.isDebugEnabled()) {
             logger.debug("collection=" + collection + " namespace=" + namespace
@@ -138,8 +138,8 @@ public class DatabaseResources {
             broker = brokerPool.get(user);
             
             CompiledXQuery compiled =null;
-            XQuery xquery = broker.getXQueryService();
-            XQueryContext context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
+            final XQuery xquery = broker.getXQueryService();
+            final XQueryContext context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
             
             if(collection!=null){
                 context.declareVariable(COLLECTION, collection);
@@ -161,7 +161,7 @@ public class DatabaseResources {
             
             result = xquery.execute(compiled, null);
             
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             logger.error("Problem executing xquery", ex);
             result= null;
             
@@ -194,11 +194,11 @@ public class DatabaseResources {
             logger.debug("Find schema with namespace '"+targetNamespace+"' in '"+collection+"'.");
         }
         
-        Map<String,String> params = new HashMap<String,String>();
+        final Map<String,String> params = new HashMap<String,String>();
         params.put(COLLECTION, collection);
         params.put(TARGETNAMESPACE, targetNamespace);
         
-        Sequence result = executeQuery(FIND_XSD, params, user );
+        final Sequence result = executeQuery(FIND_XSD, params, user );
         
         return getFirstResult(result);
     }
@@ -209,11 +209,11 @@ public class DatabaseResources {
             logger.debug("Find DTD with public '"+publicId+"' in '"+collection+"'.");
         }
         
-        Map<String,String> params = new HashMap<String,String>();
+        final Map<String,String> params = new HashMap<String,String>();
         params.put(COLLECTION, collection);
         params.put(PUBLICID, publicId);
         
-        Sequence result = executeQuery(FIND_CATALOGS_WITH_DTD, params, user );
+        final Sequence result = executeQuery(FIND_CATALOGS_WITH_DTD, params, user );
         
         return getFirstResult(result);
     }

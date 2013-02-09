@@ -143,15 +143,15 @@ public class AtomServlet extends AbstractExistHttpServlet {
 		modules = new HashMap<String, AtomModule>();
 		noAuth = new HashMap<String, Boolean>();
 
-		String configFileOpt = config.getInitParameter("config-file");
-		File dbHome = pool.getConfiguration().getExistHome();
+		final String configFileOpt = config.getInitParameter("config-file");
+		final File dbHome = pool.getConfiguration().getExistHome();
 
 		File atomConf;
 		if (configFileOpt == null)
-			atomConf = new File(dbHome, "atom-services.xml");
+			{atomConf = new File(dbHome, "atom-services.xml");}
 		else
-			atomConf = new File(config.getServletContext().getRealPath(
-					configFileOpt));
+			{atomConf = new File(config.getServletContext().getRealPath(
+					configFileOpt));}
 
 		config.getServletContext().log(
 				"Checking for atom configuration in "
@@ -159,15 +159,15 @@ public class AtomServlet extends AbstractExistHttpServlet {
 
 		if (atomConf.exists()) {
 			config.getServletContext().log("Loading configuration " + atomConf.getAbsolutePath());
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			final DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			docFactory.setNamespaceAware(true);
 			DocumentBuilder docBuilder = null;
 			Document confDoc = null;
 			InputStream is = null;
 			try {
 				is = new FileInputStream(atomConf);
-				InputSource src = new InputSource(new InputStreamReader(is, formEncoding));
-				URI docBaseURI = atomConf.toURI();
+				final InputSource src = new InputSource(new InputStreamReader(is, formEncoding));
+				final URI docBaseURI = atomConf.toURI();
 				src.setSystemId(docBaseURI.toString());
 				docBuilder = docFactory.newDocumentBuilder();
 
@@ -175,10 +175,10 @@ public class AtomServlet extends AbstractExistHttpServlet {
 				confDoc.getDocumentElement();
 
 				// Add all the modules
-				NodeList moduleConfList = confDoc.getElementsByTagNameNS(CONF_NS, "module");
+				final NodeList moduleConfList = confDoc.getElementsByTagNameNS(CONF_NS, "module");
 				for (int i = 0; i < moduleConfList.getLength(); i++) {
-					Element moduleConf = (Element) moduleConfList.item(i);
-					String name = moduleConf.getAttribute("name");
+					final Element moduleConf = (Element) moduleConfList.item(i);
+					final String name = moduleConf.getAttribute("name");
 					if (modules.get(name) != null) {
 						throw new ServletException("Module '" + name
 								+ "' is configured more than once ( child # "
@@ -189,15 +189,15 @@ public class AtomServlet extends AbstractExistHttpServlet {
 						noAuth.put(name, Boolean.TRUE);
 					}
 
-					String className = moduleConf.getAttribute("class");
+					final String className = moduleConf.getAttribute("class");
 					if (className != null && className.length() > 0) {
 						try {
-							Class<?> moduleClass = Class.forName(className);
-							AtomModule amodule = (AtomModule) moduleClass.newInstance();
+							final Class<?> moduleClass = Class.forName(className);
+							final AtomModule amodule = (AtomModule) moduleClass.newInstance();
 							modules.put(name, amodule);
 							amodule.init(new ModuleContext(config, name, atomConf.getParent()));
 
-						} catch (Exception ex) {
+						} catch (final Exception ex) {
 							throw new ServletException(
 									"Cannot instantiate class " + className
 											+ " for module '" + name
@@ -207,19 +207,19 @@ public class AtomServlet extends AbstractExistHttpServlet {
 
 					} else {
 						// no class means query
-						Query query = new Query();
+						final Query query = new Query();
 						modules.put(name, query);
 
-						String allowQueryPost = moduleConf.getAttribute("query-by-post");
+						final String allowQueryPost = moduleConf.getAttribute("query-by-post");
 						if ("true".equals(allowQueryPost)) {
 							query.setQueryByPost(true);
 						}
 
-						NodeList methodList = moduleConf.getElementsByTagNameNS(CONF_NS, "method");
+						final NodeList methodList = moduleConf.getElementsByTagNameNS(CONF_NS, "method");
 
 						for (int m = 0; m < methodList.getLength(); m++) {
-							Element methodConf = (Element) methodList.item(m);
-							String type = methodConf.getAttribute("type");
+							final Element methodConf = (Element) methodList.item(m);
+							final String type = methodConf.getAttribute("type");
 							if (type == null) {
 								getLog().warn(
 										"No type specified for method in module "
@@ -230,8 +230,8 @@ public class AtomServlet extends AbstractExistHttpServlet {
 							// What I want but can't have because of JDK 1.4
 							// URI baseURI =
 							// URI.create(methodConf.getBaseURI());
-							URI baseURI = docBaseURI;
-							String queryRef = methodConf.getAttribute("query");
+							final URI baseURI = docBaseURI;
+							final String queryRef = methodConf.getAttribute("query");
 							if (queryRef == null) {
 								getLog().warn(
 										"No query specified for method " + type
@@ -239,8 +239,8 @@ public class AtomServlet extends AbstractExistHttpServlet {
 								continue;
 							}
 
-							boolean fromClasspath = "true".equals(methodConf.getAttribute("from-classpath"));
-							Query.MethodConfiguration mconf = query
+							final boolean fromClasspath = "true".equals(methodConf.getAttribute("from-classpath"));
+							final Query.MethodConfiguration mconf = query
 									.getMethodConfiguration(type);
 							if (mconf == null) {
 								getLog().warn(
@@ -249,7 +249,7 @@ public class AtomServlet extends AbstractExistHttpServlet {
 								continue;
 							}
 
-							String responseContentType = methodConf.getAttribute("content-type");
+							final String responseContentType = methodConf.getAttribute("content-type");
 							if (responseContentType != null
 									&& responseContentType.trim().length() != 0) {
 								mconf.setContentType(responseContentType);
@@ -287,55 +287,55 @@ public class AtomServlet extends AbstractExistHttpServlet {
 					}
 				}
 
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				getLog().warn(e);
 				throw new ServletException(e.getMessage());
-			} catch (SAXException e) {
+			} catch (final SAXException e) {
 				getLog().warn(e);
 				throw new ServletException(e.getMessage());
-			} catch (ParserConfigurationException e) {
+			} catch (final ParserConfigurationException e) {
 				getLog().warn(e);
 				throw new ServletException(e.getMessage());
-			} catch (EXistException e) {
+			} catch (final EXistException e) {
 				getLog().warn(e);
 				throw new ServletException(e.getMessage());
 			} finally {
 				if (is != null) {
 					try {
 						is.close();
-					} catch (IOException ex) {
+					} catch (final IOException ex) {
 					}
 				}
 			}
 
 		} else {
 			try {
-				AtomProtocol protocol = new AtomProtocol();
+				final AtomProtocol protocol = new AtomProtocol();
 				modules.put("edit", protocol);
 				protocol.init(new ModuleContext(config, "edit", dbHome.getAbsolutePath()));
 
-				AtomFeeds feeds = new AtomFeeds();
+				final AtomFeeds feeds = new AtomFeeds();
 				modules.put("content", feeds);
 				feeds.init(new ModuleContext(config, "content", dbHome.getAbsolutePath()));
 
-				Query query = new Query();
+				final Query query = new Query();
 				query.setQueryByPost(true);
 				modules.put("query", query);
 				query.init(new ModuleContext(config, "query", dbHome.getAbsolutePath()));
 
-				Query topics = new Query();
+				final Query topics = new Query();
 				modules.put("topic", topics);
 				topics.getMethodConfiguration("GET").setQuerySource(
 						topics.getClass().getResource("topic.xq"));
 				topics.init(new ModuleContext(config, "topic", dbHome.getAbsolutePath()));
 
-				Query introspect = new Query();
+				final Query introspect = new Query();
 				modules.put("introspect", introspect);
 				introspect.getMethodConfiguration("GET").setQuerySource(
 						introspect.getClass().getResource("introspect.xq"));
 				introspect.init(new ModuleContext(config, "introspect", dbHome.getAbsolutePath()));
 
-			} catch (EXistException ex) {
+			} catch (final EXistException ex) {
 				throw new ServletException("Exception during module init(): "
 						+ ex.getMessage(), ex);
 			}
@@ -358,17 +358,17 @@ public class AtomServlet extends AbstractExistHttpServlet {
 				return;
 			}
 
-			int firstSlash = path.indexOf('/', 1);
+			final int firstSlash = path.indexOf('/', 1);
 			if (firstSlash < 0 && path.length() == 1) {
 				response.sendError(400, "Module not specified.");
 				return;
 			}
 
-			String moduleName = firstSlash < 0 ? path.substring(1) : path
+			final String moduleName = firstSlash < 0 ? path.substring(1) : path
 					.substring(1, firstSlash);
 			path = firstSlash < 0 ? "" : path.substring(firstSlash);
 
-			AtomModule module = modules.get(moduleName);
+			final AtomModule module = modules.get(moduleName);
 			if (module == null) {
 				response.sendError(400, "Module " + moduleName + " not found.");
 				return;
@@ -391,25 +391,25 @@ public class AtomServlet extends AbstractExistHttpServlet {
 				module.process(broker, new HttpRequestMessage(request, path,
 						'/' + moduleName), new HttpResponseMessage(response));
 
-			} catch (NotFoundException ex) {
+			} catch (final NotFoundException ex) {
 				getLog().info(
 						"Resource " + path + " not found by " + moduleName, ex);
 				response.sendError(HttpServletResponse.SC_NOT_FOUND,
 						ex.getMessage());
 
-			} catch (PermissionDeniedException ex) {
+			} catch (final PermissionDeniedException ex) {
 				getLog().info(
 						"Permission denied to " + path + " by " + moduleName
 								+ " for " + user.getName(), ex);
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
 						ex.getMessage());
 
-			} catch (BadRequestException ex) {
+			} catch (final BadRequestException ex) {
 				getLog().info("Bad request throw from module " + moduleName, ex);
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 						ex.getMessage());
 
-			} catch (EXistException ex) {
+			} catch (final EXistException ex) {
 				getLog().fatal(
 						"Exception getting broker from pool for user "
 								+ user.getName(), ex);
@@ -417,7 +417,7 @@ public class AtomServlet extends AbstractExistHttpServlet {
 						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 						"Service is not available.");
 
-			} catch (Throwable e) {
+			} catch (final Throwable e) {
 				getLog().error(e.getMessage(), e);
 				throw new ServletException("An error occurred: "
 						+ e.getMessage(), e);
@@ -426,13 +426,13 @@ public class AtomServlet extends AbstractExistHttpServlet {
 				pool.release(broker);
 			}
 
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			getLog().fatal("I/O exception on request.", ex);
 			try {
 				response.sendError(
 						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 						"Service is not available.");
-			} catch (IOException finalEx) {
+			} catch (final IOException finalEx) {
 				getLog().fatal("Cannot return 500 on exception.", ex);
 			}
 		}

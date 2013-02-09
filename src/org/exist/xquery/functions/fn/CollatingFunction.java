@@ -54,7 +54,7 @@ public abstract class CollatingFunction extends Function {
     protected Collator getCollator(Sequence contextSequence, Item contextItem,
             int arg) throws XPathException {
         if (getSignature().getArgumentCount() == arg) {
-            String collationURI = getArgument(arg - 1).eval(contextSequence,
+            final String collationURI = getArgument(arg - 1).eval(contextSequence,
                 contextItem).getStringValue();
             return context.getCollator(collationURI);
         } else {

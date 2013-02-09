@@ -61,7 +61,7 @@ public class CastExpression extends AbstractExpression {
     public void setExpression(Expression expr) {
         this.expression = expr;
         if(!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
-            expression = new Atomize(context, expression);
+            {expression = new Atomize(context, expression);}
     }
 
 	/* (non-Javadoc)
@@ -82,9 +82,9 @@ public class CastExpression extends AbstractExpression {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 		//Should be handled by the parser
         if (requiredType == Type.ATOMIC || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
@@ -97,24 +97,24 @@ public class CastExpression extends AbstractExpression {
         }
 
         Sequence result;
-		Sequence seq = expression.eval(contextSequence, contextItem);
+		final Sequence seq = expression.eval(contextSequence, contextItem);
 		if (seq.isEmpty()) {
 			if ((cardinality & Cardinality.ZERO) == 0)
-				throw new XPathException(this, "Type error: empty sequence is not allowed here");
+				{throw new XPathException(this, "Type error: empty sequence is not allowed here");}
 			else
-                result = Sequence.EMPTY_SEQUENCE;
+                {result = Sequence.EMPTY_SEQUENCE;}
 		} else {        
-            Item item = seq.itemAt(0);
+            final Item item = seq.itemAt(0);
 
             if (seq.hasMany() && Type.subTypeOf(requiredType, Type.ATOMIC))
-				throw new XPathException(this, 
+				{throw new XPathException(this, 
 				        ErrorCodes.XPTY0004, 
-				        "cardinality error: sequence with more than one item is not allowed here");
+				        "cardinality error: sequence with more than one item is not allowed here");}
             try {
                 // casting to QName needs special treatment
                 if(requiredType == Type.QNAME) {
                     if (item.getType() == Type.QNAME)
-                        result = item.toSequence();
+                        {result = item.toSequence();}
                     
                     else if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
                         result = new QNameValue(context, item.getStringValue());
@@ -125,16 +125,16 @@ public class CastExpression extends AbstractExpression {
                             "Cannot cast " + Type.getTypeName(item.getType()) + " to xs:QName");
                     }
                 } else
-                    result = item.convertTo(requiredType);
+                    {result = item.convertTo(requiredType);}
     		
-            } catch(XPathException e) {
+            } catch(final XPathException e) {
                 e.setLocation(e.getLine(), e.getColumn());
                 throw e;
             }
         }
 
         if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", result);   
+            {context.getProfiler().end(this, "", result);}   
      
         return result;         
 	}
@@ -149,7 +149,7 @@ public class CastExpression extends AbstractExpression {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append(expression.toString());
     	result.append(" cast as ");
     	result.append(Type.getTypeName(requiredType));
@@ -196,9 +196,9 @@ public class CastExpression extends AbstractExpression {
 	}
 
     public Function toFunction() throws XPathException {
-        QName qname = QName.parse(context, Type.getTypeName(CastExpression.this.requiredType));
-        FunctionSignature signature = new FunctionSignature(qname);
-        SequenceType argType = new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE);
+        final QName qname = QName.parse(context, Type.getTypeName(CastExpression.this.requiredType));
+        final FunctionSignature signature = new FunctionSignature(qname);
+        final SequenceType argType = new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE);
         signature.setArgumentTypes(new SequenceType[] { argType });
         signature.setReturnType(new SequenceType(CastExpression.this.requiredType, CastExpression.this.cardinality));
         return new FunctionWrapper(context, signature);
@@ -208,7 +208,7 @@ public class CastExpression extends AbstractExpression {
 
         protected FunctionWrapper(XQueryContext context, FunctionSignature signature) throws XPathException {
             super(context, signature);
-            List<Expression> args = new ArrayList<Expression>(1);
+            final List<Expression> args = new ArrayList<Expression>(1);
             args.add(new Function.Placeholder(context));
             super.setArguments(args);
         }

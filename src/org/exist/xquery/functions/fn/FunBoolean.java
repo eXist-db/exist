@@ -69,17 +69,17 @@ public class FunBoolean extends Function {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence arg = getArgument(0).eval(contextSequence, contextItem);
-        Sequence result =  arg.effectiveBooleanValue() ? 
+        final Sequence arg = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence result =  arg.effectiveBooleanValue() ? 
                 BooleanValue.TRUE : BooleanValue.FALSE;
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

@@ -88,10 +88,10 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 	throws XPathException {
 
 		try {
-			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
+			final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+			final Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
 			if (res != null) {
-				String lockUser = ums.hasUserLock(res);
+				final String lockUser = ums.hasUserLock(res);
 				if (lockUser != null && isCalledAs("clear-lock")) {
 					ums.unlockResource(res);
 				}
@@ -100,7 +100,7 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
                 logger.error("Unable to locate resource " + args[1].getStringValue());
 			    throw new XPathException(this, "Unable to locate resource " + args[1].getStringValue());
 			}
-		} catch (XMLDBException e) {
+		} catch (final XMLDBException e) {
             logger.error("Failed to retrieve user lock");
 			throw new XPathException(this, "Failed to retrieve user lock", e);
 		}

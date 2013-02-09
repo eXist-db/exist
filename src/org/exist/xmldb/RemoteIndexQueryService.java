@@ -57,7 +57,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
     public void reindexCollection(String collectionPath) throws XMLDBException {
     	try{
     		reindexCollection(XmldbURI.xmldbUriFor(collectionPath));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
@@ -66,12 +66,12 @@ public class RemoteIndexQueryService implements IndexQueryService {
          */
    public void reindexCollection(XmldbURI collectionPath) throws XMLDBException {
        if (parent != null)
-    	   collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
-            List<Object> params = new ArrayList<Object>(1);
+    	   {collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);}
+            final List<Object> params = new ArrayList<Object>(1);
 		params.add(collectionPath.toString());
 		try {
 			rpcClient.execute("reindexCollection", params);
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(
 					ErrorCodes.UNKNOWN_ERROR,
 					"xmlrpc error while doing reindexCollection: ", e);
@@ -83,21 +83,21 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	 */
 	public Occurrences[] getIndexedElements(boolean inclusive) throws XMLDBException {
 		try {
-            List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(1);
 			params.add(parent.getPath());
 			params.add(Boolean.valueOf(inclusive));
-			Object[] result = (Object[]) rpcClient.execute("getIndexedElements", params);
-			Occurrences occurrences[] = new Occurrences[result.length];
+			final Object[] result = (Object[]) rpcClient.execute("getIndexedElements", params);
+			final Occurrences occurrences[] = new Occurrences[result.length];
 			Object[] row;
 			for (int i = 0; i < occurrences.length; i++) {
 				row = (Object[]) result[i];
-				QName qname = new QName((String)row[0], (String)row[1],
+				final QName qname = new QName((String)row[0], (String)row[1],
 						(String)row[2]);
 				occurrences[i] = new Occurrences(qname);
 				occurrences[i].addOccurrences(((Integer) row[3]).intValue());
 			}
 			return occurrences;
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(
 				ErrorCodes.UNKNOWN_ERROR,
 				"xmlrpc error while retrieving indexed elements",
@@ -111,13 +111,13 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	public Occurrences[] scanIndexTerms(String start, String end, boolean inclusive)
 		throws XMLDBException {
 		try {
-            List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(1);
 			params.add(parent.getPath());
 			params.add(start);
 			params.add(end);
 			params.add(Boolean.valueOf(inclusive));
-			Object[] result = (Object[]) rpcClient.execute("scanIndexTerms", params);
-			Occurrences occurrences[] = new Occurrences[result.length];
+			final Object[] result = (Object[]) rpcClient.execute("scanIndexTerms", params);
+			final Occurrences occurrences[] = new Occurrences[result.length];
 			Object[] row;
 			for (int i = 0; i < occurrences.length; i++) {
 				row = (Object[]) result[i];
@@ -125,7 +125,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 				occurrences[i].addOccurrences(((Integer) row[1]).intValue());
 			}
 			return occurrences;
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(
 				ErrorCodes.UNKNOWN_ERROR,
 				"xmlrpc error while retrieving indexed elements",
@@ -138,12 +138,12 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	 */
 	public Occurrences[] scanIndexTerms(String xpath, String start, String end) throws XMLDBException {
 		try {
-            List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(1);
 			params.add(xpath);
 			params.add(start);
 			params.add(end);
-			Object[] result = (Object[]) rpcClient.execute("scanIndexTerms", params);
-			Occurrences occurrences[] = new Occurrences[result.length];
+			final Object[] result = (Object[]) rpcClient.execute("scanIndexTerms", params);
+			final Occurrences occurrences[] = new Occurrences[result.length];
 			Object[] row;
 			for (int i = 0; i < occurrences.length; i++) {
 				row = (Object[]) result[i];
@@ -151,7 +151,7 @@ public class RemoteIndexQueryService implements IndexQueryService {
 				occurrences[i].addOccurrences(((Integer) row[1]).intValue());
 			}
 			return occurrences;
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(
 				ErrorCodes.UNKNOWN_ERROR,
 				"xmlrpc error while retrieving indexed elements",
@@ -198,13 +198,13 @@ public class RemoteIndexQueryService implements IndexQueryService {
 	 * @see org.exist.xmldb.IndexQueryService#configureCollection(java.lang.String)
 	 */
 	public void configureCollection(String configData) throws XMLDBException {
-	    String path = parent.getPath();
-        List<Object> params = new ArrayList<Object>(1);
+	    final String path = parent.getPath();
+        final List<Object> params = new ArrayList<Object>(1);
 		params.add(path);
 		params.add(configData);
 		try {
 			rpcClient.execute("configureCollection", params);
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(
 					ErrorCodes.UNKNOWN_ERROR,
 					"xmlrpc error while doing reindexCollection: ", e);

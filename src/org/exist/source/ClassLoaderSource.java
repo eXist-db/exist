@@ -41,13 +41,13 @@ public class ClassLoaderSource extends URLSource {
      */
     public ClassLoaderSource(String source) throws IOException {
         if(source.startsWith(PROTOCOL))
-            source = source.substring(PROTOCOL.length());
+            {source = source.substring(PROTOCOL.length());}
         if(source.startsWith("/"))
-            source = source.substring(1);
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        URL url = cl.getResource(source);
+            {source = source.substring(1);}
+        final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        final URL url = cl.getResource(source);
 		if(url == null)
-            throw new IOException("Source not found: " + source);
+            {throw new IOException("Source not found: " + source);}
         setURL(url);
     }
 }

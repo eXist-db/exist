@@ -74,24 +74,24 @@ public class FunStringPad extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }          
         
         Sequence result;
-		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+		final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {        
-    		String str = seq.getStringValue();
-    		int count = ((IntegerValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER)).getInt();
+    		final String str = seq.getStringValue();
+    		final int count = ((IntegerValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER)).getInt();
     		if(count < 0)
-    			throw new XPathException(this, "Invalid string-pad count");
+    			{throw new XPathException(this, "Invalid string-pad count");}
             if(count == 0)
-                result = StringValue.EMPTY_STRING;
+                {result = StringValue.EMPTY_STRING;}
             else {
-        		StringBuilder buf = new StringBuilder(str.length() * count);
+        		final StringBuilder buf = new StringBuilder(str.length() * count);
         		for(int i = 0; i < count; i++)
         			buf.append(str);
                 result = new StringValue(buf.toString());
@@ -99,7 +99,7 @@ public class FunStringPad extends Function {
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;                        
             

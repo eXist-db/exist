@@ -86,8 +86,8 @@ public class FunAnalyzeString extends BasicFunction {
         if (!args[0].isEmpty()) {
             input = args[0].itemAt(0).getStringValue();
         }
-        if (!input.equals("")) {
-            String pattern = args[1].itemAt(0).getStringValue();
+        if (!"".equals(input)) {
+            final String pattern = args[1].itemAt(0).getStringValue();
             String flags = null;
             if(args.length == 3) {
                 flags = args[2].itemAt(0).getStringValue();
@@ -102,7 +102,7 @@ public class FunAnalyzeString extends BasicFunction {
     private void analyzeString(final MemTreeBuilder builder, final String input, final String pattern, final String flags) throws XPathException {
         final Pattern ptn;
         if (flags != null) {
-            int iFlags = parseStringFlags(flags);
+            final int iFlags = parseStringFlags(flags);
             ptn = Pattern.compile(pattern, iFlags);
         } else {
             ptn = Pattern.compile(pattern);

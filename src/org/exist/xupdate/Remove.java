@@ -66,14 +66,14 @@ public class Remove extends Modification {
 	public long process(Txn transaction) throws PermissionDeniedException,
 			LockException, EXistException, XPathException, TriggerException {
 		try {
-			StoredNode[] ql = selectAndLock(transaction);
-			IndexListener listener = new IndexListener(ql);
-			NotificationService notifier = broker.getBrokerPool()
+			final StoredNode[] ql = selectAndLock(transaction);
+			final IndexListener listener = new IndexListener(ql);
+			final NotificationService notifier = broker.getBrokerPool()
 					.getNotificationService();
 			NodeImpl parent;
 			for (int i = 0; i < ql.length; i++) {
-				StoredNode node = ql[i];
-                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+				final StoredNode node = ql[i];
+                final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 				if (!doc.getPermissions().validate(broker.getSubject(),
 						Permission.WRITE)) {
             				throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
@@ -85,7 +85,7 @@ public class Remove extends Modification {
 							"you cannot remove the document element. Use update "
 									+ "instead");
 				} else
-					parent.removeChild(transaction, node);
+					{parent.removeChild(transaction, node);}
 				doc.getMetadata().clearIndexListener();
 				doc.getMetadata().setLastModified(System.currentTimeMillis());
 				modifiedDocuments.add(doc);

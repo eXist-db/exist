@@ -20,12 +20,12 @@ public class ByteArrayPool {
     }
 
     public static byte[] getByteArray(int size) {
-        byte[][] pool = pools_.get();
+        final byte[][] pool = pools_.get();
         if(size < MAX) {
             for(int i = pool.length; i-- > 0; ) {
                 if(pool[i] != null && pool[i].length == size) {
                     //System.out.println("found byte[" + size + "]");
-                    byte[] b = pool[i];
+                    final byte[] b = pool[i];
                     pool[i] = null;
                     return b;
                 }
@@ -36,9 +36,9 @@ public class ByteArrayPool {
 
     public static void releaseByteArray(final byte[] b) {
         if(b == null || b.length > MAX)
-            return;
+            {return;}
         //System.out.println("releasing byte[" + b.length + "]");
-        byte[][] pool = pools_.get();
+        final byte[][] pool = pools_.get();
         for(int i = pool.length; i-- > 0;) {
             if(pool[i] == null) {
                 pool[i] = b;
@@ -47,7 +47,7 @@ public class ByteArrayPool {
         }
         int s = slot_++;
         if (s < 0)
-            s = -s;
+            {s = -s;}
         pool[s % pool.length] = b;
     }
 

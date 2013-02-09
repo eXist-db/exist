@@ -105,7 +105,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         super.configure(broker, parent, parameters);
 
         //get the separator
-        List<String> separators = (List<String>)parameters.get("separator");
+        final List<String> separators = (List<String>)parameters.get("separator");
         if(separators == null || separators.size() != 1) {
             throw new TriggerException("A separator parameter must be provided to the CSVExtractingTrigger configuration");
         } else {
@@ -113,9 +113,9 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         }
 
         //get the extractions
-        List<Map<String, List>> paths = (List<Map<String, List>>)parameters.get("path");
-        for(Map<String, List> path : paths){
-            List<String> xpaths = path.get("xpath");
+        final List<Map<String, List>> paths = (List<Map<String, List>>)parameters.get("path");
+        for(final Map<String, List> path : paths){
+            final List<String> xpaths = path.get("xpath");
             if(xpaths != null && xpaths.size() == 1) {
                 String xpath = xpaths.get(0);
 
@@ -135,15 +135,15 @@ public class CSVExtractingTrigger extends FilteringTrigger {
                 if(extraction == null) {
                     extraction = new Extraction();
                     if(attrPredicate != null) {
-                        String attrNameValueMatch[] = attrPredicate.split(" eq ");
+                        final String attrNameValueMatch[] = attrPredicate.split(" eq ");
                         extraction.setMatchAttribute(attrNameValueMatch[0], attrNameValueMatch[1]);
                     }
                 }
 
-                List<Properties> extracts = path.get("extract");
+                final List<Properties> extracts = path.get("extract");
                 if(extracts != null) {
-                    for(Properties extract : extracts) {
-                        ExtractEntry extractEntry = new ExtractEntry(Integer.parseInt(extract.getProperty("index")), extract.getProperty("element-name"));
+                    for(final Properties extract : extracts) {
+                        final ExtractEntry extractEntry = new ExtractEntry(Integer.parseInt(extract.getProperty("index")), extract.getProperty("element-name"));
                         extraction.getExtractEntries().add(extractEntry);
                     }
                 }
@@ -165,7 +165,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         super.startElement(namespaceURI, localName, qname, attributes);
         currentNodePath.add(namespaceURI, localName);
 
-        Extraction extraction = extractions.get(currentNodePath.toLocalPath());
+        final Extraction extraction = extractions.get(currentNodePath.toLocalPath());
         if(extraction != null)
         {
             //do we have to match an attribute predicate from the xpath in the trigger config?
@@ -210,19 +210,19 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     private void extractCSVValuesToElements() throws SAXException {
 
         //split the csv values
-        String seperatedValues[] = charactersBuf.toString().split(getEscapedSeparatorForRegExp());
+        final String seperatedValues[] = charactersBuf.toString().split(getEscapedSeparatorForRegExp());
 
         //get the extractions for the current path
-        Extraction extraction = extractions.get(currentNodePath.toLocalPath());
-        for(ExtractEntry extractEntry : extraction.getExtractEntries()) {
+        final Extraction extraction = extractions.get(currentNodePath.toLocalPath());
+        for(final ExtractEntry extractEntry : extraction.getExtractEntries()) {
 
             //extract the value by index
-            int index = extractEntry.getIndex();
+            final int index = extractEntry.getIndex();
             if(index < seperatedValues.length) {
-                char seperatedValue[] = seperatedValues[index].toCharArray();
+                final char seperatedValue[] = seperatedValues[index].toCharArray();
 
                 //create a new element for the extracted value
-                String localName = extractEntry.getElementName();
+                final String localName = extractEntry.getElementName();
                 
                 super.startElement(XMLConstants.NULL_NS_URI, localName, localName, new EmptyAttributes());
                 
@@ -236,7 +236,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     private String getEscapedSeparatorForRegExp() {
         if(separator.length() == 1) {
             //escape the separator character if it is a java regexp character
-            if(separator.equals("|") || separator.equals(",") || separator.equals("$") || separator.equals("^")) {
+            if("|".equals(separator) || ",".equals(separator) || "$".equals(separator) || "^".equals(separator)) {
                 return "\\" + separator;
             }
         }
@@ -269,7 +269,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
 
         //TODO replace with qname path once we understand how to pass in qnames in the xpath parameter to the trigger
         public String toLocalPath() {
-            StringBuilder localPath = new StringBuilder();
+            final StringBuilder localPath = new StringBuilder();
             localPath.append("/");
             for(int i = 0; i < pathSegments.size(); i++) {
                 localPath.append(pathSegments.get(i).getLocalPart());

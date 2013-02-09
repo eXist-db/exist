@@ -80,32 +80,32 @@ public class XMLDBDeleteUser extends BasicFunction {
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
 		
-        String user = args[0].getStringValue();
+        final String user = args[0].getStringValue();
         
-        Subject contextUser = context.getSubject();
+        final Subject contextUser = context.getSubject();
 		if (contextUser.hasDbaRole()) {
 			if (contextUser.getName().equals(user)) {
-				XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must not be deleting itself");
+				final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must not be deleting itself");
 				logger.error("Invalid user", xPathException);
 				throw xPathException;
 			} else {
 		        Collection collection = null;
 				try {
 		            collection = new LocalCollection(contextUser, context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
-					UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-		            Account userObj = ums.getAccount(user);
+					final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+		            final Account userObj = ums.getAccount(user);
 		            if (null != userObj)
-		                ums.removeAccount(userObj);
-				} catch (XMLDBException xe) {
+		                {ums.removeAccount(userObj);}
+				} catch (final XMLDBException xe) {
 					throw new XPathException(this, "Failed to remove user " + user, xe);
 		        } finally {
 		            if (null != collection)
-		                try { collection.close(); } catch (XMLDBException e) { /* ignore */ }
+		                try { collection.close(); } catch (final XMLDBException e) { /* ignore */ }
 				}
 			}
         	
         } else {
-			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to delete a user");
+			final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to delete a user");
 			logger.error("Invalid user", xPathException);
 			throw xPathException;
         }

@@ -80,7 +80,7 @@ public class NoParamFunctions extends BasicFunction {
         
         
         Sequence result;
-        String functionName = getSignature().getName().getLocalName();
+        final String functionName = getSignature().getName().getLocalName();
         if("pi".equals(functionName)) {
             result=new DoubleValue(Math.PI);
             

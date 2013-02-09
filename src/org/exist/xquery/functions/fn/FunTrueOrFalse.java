@@ -76,17 +76,17 @@ public class FunTrueOrFalse extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }
         
         Sequence result;
         if (isCalledAs("true"))
-            result = BooleanValue.TRUE;
+            {result = BooleanValue.TRUE;}
 		else 
-            result = BooleanValue.FALSE;        
+            {result = BooleanValue.FALSE;}        
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
+            {context.getProfiler().end(this, "", result);}        
         
         return result;          
 	}

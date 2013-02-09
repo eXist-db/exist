@@ -94,15 +94,15 @@ public class FunEquals extends CollatingFunction {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         } 
         Sequence result;
-        String s1 = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-        String s2 = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+        final String s1 = getArgument(0).eval(contextSequence, contextItem).getStringValue();
+        final String s2 = getArgument(1).eval(contextSequence, contextItem).getStringValue();
         if (s1.length() == 0 || s2.length() == 0 ) {
             if (s1.length() == 0 && s2.length() == 0 ) {
                 result = BooleanValue.TRUE;
@@ -123,7 +123,7 @@ public class FunEquals extends CollatingFunction {
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

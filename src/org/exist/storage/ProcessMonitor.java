@@ -83,7 +83,7 @@ public class ProcessMonitor {
 
     //TODO: addInfo = XmldbURI ? -shabanovd
     public void startJob(String action, Object addInfo, Monitor monitor) {
-        JobInfo info = new JobInfo(action, monitor);
+        final JobInfo info = new JobInfo(action, monitor);
         info.setAddInfo(addInfo);
         synchronized (this) {
             processes.put(info.getThread(), info);
@@ -97,9 +97,9 @@ public class ProcessMonitor {
 
     public JobInfo[] runningJobs() {
         synchronized (this) {
-            JobInfo jobs[] = new JobInfo[processes.size()];
+            final JobInfo jobs[] = new JobInfo[processes.size()];
             int j = 0;
-            for (Iterator<JobInfo> i = processes.values().iterator(); i.hasNext(); j++) {
+            for (final Iterator<JobInfo> i = processes.values().iterator(); i.hasNext(); j++) {
                 //BUG: addInfo = XmldbURI ? -shabanovd
                 jobs[j] = i.next();
             }
@@ -108,14 +108,14 @@ public class ProcessMonitor {
     }
 
     public void stopRunningJobs() {
-        long waitStart = System.currentTimeMillis();
+        final long waitStart = System.currentTimeMillis();
         synchronized (this) {
             if (maxShutdownWait > -1) {
                 while (processes.size() > 0) {
                     try {
                         //Wait until they become inactive...
                         this.wait(1000);
-                    } catch (InterruptedException e) {
+                    } catch (final InterruptedException e) {
                     }
                     //...or force the shutdown
                     if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait){
@@ -123,7 +123,7 @@ public class ProcessMonitor {
                     }
                 }
             }
-            for (JobInfo job : processes.values()) {
+            for (final JobInfo job : processes.values()) {
                 job.stop();
             }
         }
@@ -140,7 +140,7 @@ public class ProcessMonitor {
             runningQueries.remove(watchdog);
         }
 
-        String sourceKey = watchdog.getContext().getXacmlSource().getKey();
+        final String sourceKey = watchdog.getContext().getXacmlSource().getKey();
         synchronized(queryHistories) {
             QueryHistory qh = queryHistories.get(sourceKey);
             if(qh == null) {
@@ -218,14 +218,14 @@ public class ProcessMonitor {
     }
 
     public QueryHistory[] getRecentQueryHistory() {
-        QueryHistory result[] = new QueryHistory[queryHistories.size()];
+        final QueryHistory result[] = new QueryHistory[queryHistories.size()];
         return (QueryHistory[])queryHistories.values().toArray(result);
     }
 
 	
 	public void killAll(long waitTime) {
         // directly called from BrokerPool itself. no need to synchronize.
-		for(XQueryWatchDog watchdog : runningQueries) {
+		for(final XQueryWatchDog watchdog : runningQueries) {
 			LOG.debug("Killing query: " + 
 			        ExpressionDumper.dump(watchdog.getContext().getRootExpression()));
 			watchdog.kill(waitTime);
@@ -235,9 +235,9 @@ public class ProcessMonitor {
 	public XQueryWatchDog[] getRunningXQueries()
 	{
         synchronized (runningQueries) {
-            XQueryWatchDog watchdogs[] = new XQueryWatchDog[runningQueries.size()];
+            final XQueryWatchDog watchdogs[] = new XQueryWatchDog[runningQueries.size()];
             int j = 0;
-            for (Iterator<XQueryWatchDog> i = runningQueries.iterator(); i.hasNext(); j++) {
+            for (final Iterator<XQueryWatchDog> i = runningQueries.iterator(); i.hasNext(); j++) {
                 watchdogs[j] = i.next();
             }
             return watchdogs;

@@ -57,8 +57,8 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 	public void add(K key) {
 		try {
 			insert(key);
-		} catch (HashtableOverflowException e) {
-			K[] copyKeys = keys;
+		} catch (final HashtableOverflowException e) {
+			final K[] copyKeys = keys;
 			// enlarge the table with a prime value
 			tabSize = (int) nextPrime(tabSize + tabSize / 2);
 			keys = (K[]) new Object[tabSize];
@@ -66,7 +66,7 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 
 			for (int k = 0; k < copyKeys.length; k++) {
 				if (copyKeys[k] != null && copyKeys[k] != REMOVED)
-					add(copyKeys[k]);
+					{add(copyKeys[k]);}
 			}
 			add(key);
 		}
@@ -74,10 +74,10 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 	
 	protected void insert(K key) throws HashtableOverflowException {
 		if (key == null)
-			throw new IllegalArgumentException("Illegal value: null");
+			{throw new IllegalArgumentException("Illegal value: null");}
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		int bucket = -1;
 		// look for an empty bucket
 		if (keys[idx] == null) {
@@ -92,7 +92,7 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 			// duplicate value
 			return;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		int rehashCnt = 1;
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
@@ -125,13 +125,13 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 	public boolean contains(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (keys[idx] == null)
-			return false; // key does not exist
+			{return false;} // key does not exist
 		else if (keys[idx].equals(key)) {
 			return true;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
@@ -146,7 +146,7 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 	public K remove(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
-			idx *= -1;
+			{idx *= -1;}
 		if (keys[idx] == null) {
 			return null; // key does not exist
 		} else if (keys[idx].equals(key)) {
@@ -155,7 +155,7 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 			--items;
 			return key;
 		}
-		int rehashVal = rehash(idx);
+		final int rehashVal = rehash(idx);
 		for (int i = 0; i < tabSize; i++) {
 			idx = (idx + rehashVal) % tabSize;
 			if (keys[idx] == null) {
@@ -173,7 +173,7 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 	protected int rehash(int iVal) {
 		int retVal = (iVal + iVal / 2) % tabSize;
 		if (retVal == 0)
-			retVal = 1;
+			{retVal = 1;}
 		return retVal;
 	}
 
@@ -182,10 +182,10 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 	}
 
     public List<K> keys() {
-        ArrayList<K> list = new ArrayList<K>(items);
+        final ArrayList<K> list = new ArrayList<K>(items);
         for (int i = 0; i < tabSize; i++) {
             if (keys[i] != null && keys[i] != REMOVED)
-                list.add(keys[i]);
+                {list.add(keys[i]);}
         }
         return Collections.unmodifiableList(list);
     }
@@ -220,11 +220,11 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 		 */
 		public boolean hasNext() {
 			if (idx == tabSize)
-				return false;
+				{return false;}
 			while (keys[idx] == null || keys[idx] == REMOVED) {
 				++idx;
 				if (idx == tabSize)
-					return false;
+					{return false;}
 			}
 			return true;
 		}
@@ -234,11 +234,11 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 		 */
 		public K next() {
 			if (idx == tabSize)
-				return null;
+				{return null;}
 			while (keys[idx] == null || keys[idx] == REMOVED) {
 				++idx;
 				if (idx == tabSize)
-					return null;
+					{return null;}
 			}
 			return keys[idx++];
 		}
@@ -265,11 +265,11 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 		 */
 		public boolean hasNext() {
 			if (idx == tabSize)
-				return false;
+				{return false;}
 			while (mKeys[idx] == null || mKeys[idx] == REMOVED) {
 				++idx;
 				if (idx == tabSize)
-					return false;
+					{return false;}
 			}
 			return true;
 		}
@@ -279,11 +279,11 @@ public class ObjectHashSet<K> extends AbstractHashSet<K> {
 		 */
 		public K next() {
 			if (idx == tabSize)
-				return null;
+				{return null;}
 			while (mKeys[idx] == null || mKeys[idx] == REMOVED) {
 				++idx;
 				if (idx == tabSize)
-					return null;
+					{return null;}
 			}
 			return mKeys[idx++];
 		}

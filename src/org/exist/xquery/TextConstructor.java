@@ -55,18 +55,18 @@ public class TextConstructor extends NodeConstructor {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (isWhitespaceOnly && context.stripWhitespace())
-            return Sequence.EMPTY_SEQUENCE;
+            {return Sequence.EMPTY_SEQUENCE;}
         if (newDocumentContext)
-            context.pushDocumentContext();
+            {context.pushDocumentContext();}
         try {
-            MemTreeBuilder builder = context.getDocumentBuilder();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
             context.proceed(this, builder);
-            int nodeNr = builder.characters(text);
-            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            final int nodeNr = builder.characters(text);
+            final NodeImpl node = builder.getDocument().getNode(nodeNr);
             return node;
         } finally {
             if (newDocumentContext)
-                context.popDocumentContext();
+                {context.popDocumentContext();}
         }
     }
 
@@ -82,7 +82,7 @@ public class TextConstructor extends NodeConstructor {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("text {");
         result.append(text.toString());
         result.append("}");

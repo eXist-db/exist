@@ -69,11 +69,11 @@ public class XMLDBGetUsers extends BasicFunction {
      */
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        String groupName = args[0].getStringValue();
+        final String groupName = args[0].getStringValue();
 
         //TODO replace with SecurityManager.getUsers(groupName)
-        SecurityManager manager = context.getBroker().getBrokerPool().getSecurityManager();
-        List<Account> users = manager.getGroupMembers(groupName);
+        final SecurityManager manager = context.getBroker().getBrokerPool().getSecurityManager();
+        final List<Account> users = manager.getGroupMembers(groupName);
         Collections.sort(users, new Comparator<Account>(){
             @Override
             public int compare(Account t, Account t1) {
@@ -81,8 +81,8 @@ public class XMLDBGetUsers extends BasicFunction {
             }
         });
 
-        ValueSequence userNames = new ValueSequence(users.size());
-        for(Account user : users) {
+        final ValueSequence userNames = new ValueSequence(users.size());
+        for(final Account user : users) {
             if(user.hasGroup(groupName)) {
                 userNames.add(new StringValue(user.getName()));
             }

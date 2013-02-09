@@ -77,25 +77,25 @@ public class XMLDBAddUserToGroup extends BasicFunction {
     @Override
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
 
-        if(context.getSubject().getName().equals("guest")) {
-            XPathException xPathException = 
+        if("guest".equals(context.getSubject().getName())) {
+            final XPathException xPathException = 
             	new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName() + "' must be an authenticated account to call this function.");
             logger.error("Invalid user", xPathException);
             throw xPathException;
         }
 
-        String userName = args[0].getStringValue();
-        String groupName = args[1].getStringValue();
+        final String userName = args[0].getStringValue();
+        final String groupName = args[1].getStringValue();
 
         logger.info("Attempting to add user '" + userName + "' to group '" + groupName + "'");
 
         try {
 
-            SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
+            final SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
 
-            Group group = sm.getGroup(groupName);
+            final Group group = sm.getGroup(groupName);
 
-            Account account = sm.getAccount(userName);
+            final Account account = sm.getAccount(userName);
             if(account != null) {
                 account.addGroup(group);
                 
@@ -109,7 +109,7 @@ public class XMLDBAddUserToGroup extends BasicFunction {
                  * Consider Unix /etc/groups design!
                  * See XMLDBCreateGroup and XMLDRemoveUserFromGroup
                  */
-                Subject currentSubject = context.getBroker().getSubject();
+                final Subject currentSubject = context.getBroker().getSubject();
                 try {
                     //escalate
                     context.getBroker().setSubject(sm.getSystemSubject());
@@ -125,9 +125,9 @@ public class XMLDBAddUserToGroup extends BasicFunction {
             } else {
                 logger.warn("Could not find account for username '" + userName + "' in call to xmldb:add-user-to-group");
             }
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
         	throw new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName() + "' don not authorize to call this function.", pde);
-        } catch(EXistException exe) {
+        } catch(final EXistException exe) {
             logger.error("Failed to add user '" + userName + "' to group '" + groupName + "'", exe);
         }
 

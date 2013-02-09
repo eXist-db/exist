@@ -37,9 +37,9 @@ public class ExpressionDumper {
     
     public static String dump(Expression expr) {
         if (expr == null)
-            return "";
-        StringWriter writer = new StringWriter();
-        ExpressionDumper dumper = new ExpressionDumper(writer);
+            {return "";}
+        final StringWriter writer = new StringWriter();
+        final ExpressionDumper dumper = new ExpressionDumper(writer);
         expr.dump(dumper);
         return writer.toString();
     }
@@ -63,9 +63,9 @@ public class ExpressionDumper {
     
     public ExpressionDumper(Writer writer, int indentAmount, int verbosity) {
         if(writer instanceof PrintWriter)
-            this.out = (PrintWriter)writer;
+            {this.out = (PrintWriter)writer;}
         else
-            this.out = new PrintWriter(writer);
+            {this.out = new PrintWriter(writer);}
         this.indentAmount = indentAmount;
         this.spaces = "";
         for(int i = 0; i < indentAmount; i++) 
@@ -115,7 +115,7 @@ public class ExpressionDumper {
     
     public ExpressionDumper endIndent() {
         if(indent > 0)
-            --indent;
+            {--indent;}
         return this;
     }
     

@@ -111,11 +111,11 @@ public class RestoreHandler extends DefaultHandler {
             return;
         }
 
-        if(localName.equals("collection") || localName.equals("resource")) {
+        if("collection".equals(localName) || "resource".equals(localName)) {
             
             final DeferredPermission df;
             
-            if(localName.equals("collection")) {
+            if("collection".equals(localName)) {
                 df = restoreCollectionEntry(atts);
             } else {
                 df = restoreResourceEntry(atts);
@@ -123,11 +123,11 @@ public class RestoreHandler extends DefaultHandler {
             
             deferredPermissions.push(df);
             
-        } else if(localName.equals("subcollection")) {
+        } else if("subcollection".equals(localName)) {
             restoreSubCollectionEntry(atts);
-        } else if(localName.equals("deleted" )) {
+        } else if("deleted".equals(localName)) {
             restoreDeletedEntry(atts);
-        } else if(localName.equals("ace")) {
+        } else if("ace".equals(localName)) {
             addACEToDeferredPermissions(atts);
         }
     }
@@ -135,7 +135,7 @@ public class RestoreHandler extends DefaultHandler {
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
 
-        if(namespaceURI.equals(Namespaces.EXIST_NS) && (localName.equals("collection") || localName.equals("resource"))) {
+        if(namespaceURI.equals(Namespaces.EXIST_NS) && ("collection".equals(localName) || "resource".equals(localName))) {
             setDeferredPermissions();
         }
 
@@ -143,7 +143,7 @@ public class RestoreHandler extends DefaultHandler {
     }
 
     private String getAttr(final Attributes atts, final String name, final String fallback) {
-        String value = atts.getValue(name);
+        final String value = atts.getValue(name);
         if(value == null) {
             return fallback;
         }
@@ -228,7 +228,7 @@ public class RestoreHandler extends DefaultHandler {
         //exclude /db/system collection and sub-collections, as these have already been restored
         try {
             final String currentCollectionName = currentCollection.getName();
-            if((currentCollectionName.equals("/db") && name.equals("system")) || (currentCollectionName.equals("/db/system") && name.equals("security"))) {
+            if(("/db".equals(currentCollectionName) && "system".equals(name)) || ("/db/system".equals(currentCollectionName) && "security".equals(name))) {
                 return;
             }
         } catch(final XMLDBException xe) {
@@ -267,7 +267,7 @@ public class RestoreHandler extends DefaultHandler {
         final String skip = atts.getValue( "skip" );
 
         //dont process entries which should be skipped
-        if(skip != null && !skip.equals("no")) {
+        if(skip != null && !"no".equals(skip)) {
             return new SkippedEntryDeferredPermission();
         }
         
@@ -335,7 +335,7 @@ public class RestoreHandler extends DefaultHandler {
 
         final EXistInputSource is = descriptor.getInputSource(filename);
         if(is == null) {
-            String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
+            final String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
             listener.warn(msg);
             return new SkippedEntryDeferredPermission();
         }
@@ -356,7 +356,7 @@ public class RestoreHandler extends DefaultHandler {
             if(is.getByteStreamLength() > 0) {
                 res.setContent(is);
             } else {
-                if(type.equals("BinaryResource")) {
+                if("BinaryResource".equals(type)) {
                     res.setContent("");
                 } else {
                     res = null;
@@ -389,7 +389,7 @@ public class RestoreHandler extends DefaultHandler {
                 currentCollection.storeResource(res, date_created, date_modified);
 
                 if((publicid != null) || (systemid != null)) {
-                    DocumentType doctype = new DocumentTypeImpl(namedoctype, publicid, systemid);
+                    final DocumentType doctype = new DocumentTypeImpl(namedoctype, publicid, systemid);
 
                     try {
                         ((EXistResource) res).setDocType(doctype);
@@ -423,21 +423,21 @@ public class RestoreHandler extends DefaultHandler {
         final String name = atts.getValue("name");
         final String type = atts.getValue("type");
 
-        if(type.equals("collection")) {
+        if("collection".equals(type)) {
 
             try {
                 final Collection child = currentCollection.getChildCollection(name);
 
                 if(child != null) {
                     currentCollection.setTriggersEnabled(false);
-                    CollectionManagementService cmgt = (CollectionManagementService)currentCollection.getService("CollectionManagementService", "1.0");
+                    final CollectionManagementService cmgt = (CollectionManagementService)currentCollection.getService("CollectionManagementService", "1.0");
                     cmgt.removeCollection(name);
                     currentCollection.setTriggersEnabled(true);
                 }
             } catch(final XMLDBException e) {
                 listener.warn("Failed to remove deleted collection: " + name + ": " + e.getMessage());
             }
-        } else if(type.equals("resource")) {
+        } else if("resource".equals(type)) {
 
             try {
                 final Resource resource = currentCollection.getResource(name);
@@ -506,11 +506,11 @@ public class RestoreHandler extends DefaultHandler {
         
         for(final XmldbURI segment : segments) {
             p = p.append(segment);
-            XmldbURI xmldbURI = dbUri.resolveCollectionPath(p);
+            final XmldbURI xmldbURI = dbUri.resolveCollectionPath(p);
             CollectionImpl c = (CollectionImpl)DatabaseManager.getCollection(xmldbURI.toString(), dbUsername, dbPassword);
             if(c == null) {
             	current.setTriggersEnabled(false);
-                CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl)current.getService("CollectionManagementService", "1.0");
+                final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl)current.getService("CollectionManagementService", "1.0");
                 c = (CollectionImpl)mgtService.createCollection(segment, created);
                 current.setTriggersEnabled(true);
             }

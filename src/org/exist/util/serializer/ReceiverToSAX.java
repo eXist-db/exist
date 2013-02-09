@@ -104,7 +104,7 @@ public class ReceiverToSAX implements Receiver {
 	 * @see org.exist.util.serializer.Receiver#startElement(org.exist.dom.QName, org.exist.util.serializer.AttrList)
 	 */
 	public void startElement(QName qname, AttrList attribs) throws SAXException {
-		AttributesImpl a = new AttributesImpl();
+		final AttributesImpl a = new AttributesImpl();
 		if(attribs != null) {
 			QName attrQName;
 			for(int i = 0; i < attribs.getLength(); i++) {
@@ -127,7 +127,7 @@ public class ReceiverToSAX implements Receiver {
 	 * @see org.exist.util.serializer.Receiver#characters(java.lang.CharSequence)
 	 */
 	public void characters(CharSequence seq) throws SAXException {
-		int len = seq.length();
+		final int len = seq.length();
 		if(len < charBuf.length) {
 			for (int i = 0; i < len; i++)
 				charBuf[i] = seq.charAt(i);
@@ -149,7 +149,7 @@ public class ReceiverToSAX implements Receiver {
 	 */
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		if(lexicalHandler != null)
-			lexicalHandler.comment(ch, start, length);
+			{lexicalHandler.comment(ch, start, length);}
 	}
 
 	/* (non-Javadoc)
@@ -165,10 +165,10 @@ public class ReceiverToSAX implements Receiver {
      */
     public void cdataSection(char[] ch, int start, int len) throws SAXException {
         if(lexicalHandler != null)
-            lexicalHandler.startCDATA();
+            {lexicalHandler.startCDATA();}
         contentHandler.characters(ch, start, len);
         if(lexicalHandler != null)
-            lexicalHandler.endCDATA();
+            {lexicalHandler.endCDATA();}
     }
 
 	public void documentType(String name, String publicId, String systemId) 

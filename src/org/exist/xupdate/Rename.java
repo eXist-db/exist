@@ -68,18 +68,18 @@ public class Rename extends Modification {
      */
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException, TriggerException {
-        NodeList children = content;
-        if (children.getLength() == 0) return 0;
+        final NodeList children = content;
+        if (children.getLength() == 0) {return 0;}
         int modificationCount = 0;
         try {
-            StoredNode[] ql = selectAndLock(transaction);
+            final StoredNode[] ql = selectAndLock(transaction);
             NodeImpl parent;
-            IndexListener listener = new IndexListener(ql);
-            NotificationService notifier = broker.getBrokerPool().getNotificationService();
-            String newName = children.item(0).getNodeValue();
+            final IndexListener listener = new IndexListener(ql);
+            final NotificationService notifier = broker.getBrokerPool().getNotificationService();
+            final String newName = children.item(0).getNodeValue();
             for (int i = 0; i < ql.length; i++) {
-                StoredNode node = ql[i];
-                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                final StoredNode node = ql[i];
+                final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
@@ -87,13 +87,13 @@ public class Rename extends Modification {
                 parent = (NodeImpl) node.getParentNode();
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
-                        ElementImpl newElem = new ElementImpl((ElementImpl) node);
+                        final ElementImpl newElem = new ElementImpl((ElementImpl) node);
                         newElem.setNodeName(new QName(newName, "", null));
                         parent.updateChild(transaction, node, newElem);
                         modificationCount++;
                         break;
                     case Node.ATTRIBUTE_NODE:
-                        AttrImpl newAttr = new AttrImpl((AttrImpl) node);
+                        final AttrImpl newAttr = new AttrImpl((AttrImpl) node);
                         newAttr.setNodeName(new QName(newName, "", null));
                         parent.updateChild(transaction, node, newAttr);
                         modificationCount++;

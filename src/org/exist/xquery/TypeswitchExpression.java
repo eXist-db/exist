@@ -81,17 +81,17 @@ public class TypeswitchExpression extends AbstractExpression {
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
         if (contextItem != null)
-            contextSequence = contextItem.toSequence();
-        Sequence opSeq = operand.eval(contextSequence);
+            {contextSequence = contextItem.toSequence();}
+        final Sequence opSeq = operand.eval(contextSequence);
         Sequence result = null;
         
-        LocalVariable mark = context.markLocalVariables(false);
+        final LocalVariable mark = context.markLocalVariables(false);
         try {
         	for (int i = 0; i < cases.size(); i++) {
-        		Case next = (Case) cases.get(i);
+        		final Case next = (Case) cases.get(i);
         		if (checkType(next.type, opSeq)) {
         			if (next.variable != null) {
-        				LocalVariable var = new LocalVariable(next.variable);
+        				final LocalVariable var = new LocalVariable(next.variable);
         				var.setSequenceType(next.type);
         				var.setValue(opSeq);
         				var.setContextDocs(operand.getContextDocSet());
@@ -106,7 +106,7 @@ public class TypeswitchExpression extends AbstractExpression {
         	
         	if (result == null) {
         		if (defaultClause.variable != null) {
-        			LocalVariable var = new LocalVariable(defaultClause.variable);
+        			final LocalVariable var = new LocalVariable(defaultClause.variable);
         			var.setValue(opSeq);
         			var.setContextDocs(operand.getContextDocSet());
         			context.declareVariableBinding(var);
@@ -122,16 +122,16 @@ public class TypeswitchExpression extends AbstractExpression {
     }
 
     private boolean checkType(SequenceType type, Sequence seq) throws XPathException {
-        int requiredCardinality = type.getCardinality();
+        final int requiredCardinality = type.getCardinality();
         int actualCardinality;
-        if (seq.isEmpty()) actualCardinality = Cardinality.EMPTY;
-        else if (seq.hasMany()) actualCardinality = Cardinality.MANY;
-        else actualCardinality = Cardinality.ONE;
+        if (seq.isEmpty()) {actualCardinality = Cardinality.EMPTY;}
+        else if (seq.hasMany()) {actualCardinality = Cardinality.MANY;}
+        else {actualCardinality = Cardinality.ONE;}
         
         if (!Cardinality.checkCardinality(requiredCardinality, actualCardinality))
-            return false;
-        for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-            Item next = i.nextItem();
+            {return false;}
+        for(final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+            final Item next = i.nextItem();
             if(!type.checkType(next)) {
                 return false;
             }
@@ -155,14 +155,14 @@ public class TypeswitchExpression extends AbstractExpression {
         contextInfo.setParent(this);
         operand.analyze(contextInfo);
         
-        LocalVariable mark0 = context.markLocalVariables(false);
+        final LocalVariable mark0 = context.markLocalVariables(false);
         
         try {
-        	for (Case next : cases) {
-        		LocalVariable mark1 = context.markLocalVariables(false);
+        	for (final Case next : cases) {
+        		final LocalVariable mark1 = context.markLocalVariables(false);
         		try {
         			if (next.variable != null) {
-        				LocalVariable var = new LocalVariable(next.variable);
+        				final LocalVariable var = new LocalVariable(next.variable);
         				var.setSequenceType(next.type);
         				context.declareVariableBinding(var);
         			}
@@ -172,7 +172,7 @@ public class TypeswitchExpression extends AbstractExpression {
         		}
         	}
         	if (defaultClause.variable != null) {
-        		LocalVariable var = new LocalVariable(defaultClause.variable);
+        		final LocalVariable var = new LocalVariable(defaultClause.variable);
         		context.declareVariableBinding(var);
         	}
         	defaultClause.returnClause.analyze(contextInfo);
@@ -184,7 +184,7 @@ public class TypeswitchExpression extends AbstractExpression {
     @Override
     public void accept(ExpressionVisitor visitor) {
         operand.accept(visitor);
-        for (Case next : cases) {
+        for (final Case next : cases) {
             next.returnClause.accept(visitor);
         }
     }
@@ -200,7 +200,7 @@ public class TypeswitchExpression extends AbstractExpression {
         dumper.display(')');
         dumper.startIndent();
         for (int i = 0; i < cases.size(); i++) {
-            Case caseClause = (Case) cases.get(i);
+            final Case caseClause = (Case) cases.get(i);
             dumper.display("case ");
             dumper.display(caseClause.type);
             if (caseClause.variable != null) {
@@ -227,7 +227,7 @@ public class TypeswitchExpression extends AbstractExpression {
         operand.resetState(postOptimization);
         defaultClause.returnClause.resetState(postOptimization);
         for (int i = 0; i < cases.size(); i++) {
-            Case caseClause = (Case) cases.get(i);
+            final Case caseClause = (Case) cases.get(i);
             caseClause.returnClause.resetState(postOptimization);
         }
     }

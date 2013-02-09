@@ -97,18 +97,18 @@ public class ElementValue extends Value {
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("Collection id : " + ByteConversion.byteToInt(data, OFFSET_COLLECTION_ID));
         if (len > OFFSET_COLLECTION_ID) {
             buf.append(" Type : " + type[data[OFFSET_TYPE]]);
             if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_LOCAL_NAME)
-                buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
+                {buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));}
             else if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + 
                     SymbolTable.LENGTH_LOCAL_NAME + SymbolTable.LENGTH_NS_URI) {
                 buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
                 buf.append(" NSSymbol id : " + ByteConversion.byteToShort(data, OFFSET_NSSYMBOL));
             } else 
-                buf.append("Invalid data length !!!");
+                {buf.append("Invalid data length !!!");}
         }
         return buf.toString();
     }

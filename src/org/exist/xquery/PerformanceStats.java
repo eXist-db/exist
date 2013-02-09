@@ -76,7 +76,7 @@ public class PerformanceStats {
 
         public boolean equals(Object obj) {
         	if (obj != null && obj instanceof IndexStats) {
-                IndexStats other = (IndexStats) obj;
+                final IndexStats other = (IndexStats) obj;
                 return other.indexType.equals(indexType) && other.source.equals(source) &&
                     other.line == line && other.column == column && other.mode == mode;
 			}
@@ -93,7 +93,7 @@ public class PerformanceStats {
         QueryStats(String source) {
             this.source = source;
             if (this.source == null)
-                this.source = "";
+                {this.source = "";}
         }
 
         public void recordCall(long elapsed) {
@@ -128,7 +128,7 @@ public class PerformanceStats {
 
         public boolean equals(Object obj) {
         	if (obj != null && obj instanceof FunctionStats) {
-                FunctionStats ostats = (FunctionStats) obj;
+                final FunctionStats ostats = (FunctionStats) obj;
                 return qname.equalsSimple(ostats.qname) &&
                         source.equals(ostats.source);
 			}
@@ -139,8 +139,8 @@ public class PerformanceStats {
     private static class CompareByTime implements Comparator<FunctionStats> {
 
         public int compare(FunctionStats o1, FunctionStats o2) {
-            long t1 = o1.executionTime;
-            long t2 = o2.executionTime;
+            final long t1 = o1.executionTime;
+            final long t2 = o2.executionTime;
             return t1 == t2 ? 0 : (t1 > t2 ? 1 : -1);
         }
     }
@@ -156,9 +156,9 @@ public class PerformanceStats {
     public PerformanceStats(Database db) {
         this.db = db;
         if (db != null) {
-            String config = (String) db.getConfiguration().getProperty(PerformanceStats.CONFIG_PROPERTY_TRACE);
+            final String config = (String) db.getConfiguration().getProperty(PerformanceStats.CONFIG_PROPERTY_TRACE);
             if (config != null)
-                enabled = config.equals("functions") || config.equals("yes");
+                enabled = config.equals("functions") || "yes".equals(config);
         }
     }
 
@@ -175,7 +175,7 @@ public class PerformanceStats {
 
     public void recordQuery(String source, long elapsed) {
         if (source == null)
-            return;
+            {return;}
         QueryStats stats = queries.get(source);
         if (stats == null) {
             stats = new QueryStats(source);
@@ -187,8 +187,8 @@ public class PerformanceStats {
     }
 
     public void recordFunctionCall(QName qname, String source, long elapsed) {
-        FunctionStats newStats = new FunctionStats(source, qname);
-        FunctionStats stats = functions.get(newStats);
+        final FunctionStats newStats = new FunctionStats(source, qname);
+        final FunctionStats stats = functions.get(newStats);
         if (stats == null) {
             newStats.executionTime = elapsed;
             functions.put(newStats, newStats);
@@ -198,8 +198,8 @@ public class PerformanceStats {
     }
 
     public void recordIndexUse(Expression expression, String indexName, String source, int mode, long elapsed) {
-        IndexStats newStats = new IndexStats(indexName, source, expression.getLine(), expression.getColumn(), mode);
-        IndexStats stats = indexStats.get(newStats);
+        final IndexStats newStats = new IndexStats(indexName, source, expression.getLine(), expression.getColumn(), mode);
+        final IndexStats stats = indexStats.get(newStats);
         if (stats == null) {
             newStats.executionTime = elapsed;
             indexStats.put(newStats, newStats);
@@ -209,8 +209,8 @@ public class PerformanceStats {
     }
     
     public synchronized void merge(PerformanceStats otherStats) {
-        for (QueryStats other: otherStats.queries.values()) {
-            QueryStats mine = queries.get(other.source);
+        for (final QueryStats other: otherStats.queries.values()) {
+            final QueryStats mine = queries.get(other.source);
             if (mine == null) {
                 queries.put(other.source, other);
             } else {
@@ -218,8 +218,8 @@ public class PerformanceStats {
                 mine.executionTime += other.executionTime;
             }
         }
-        for (FunctionStats other: otherStats.functions.values()) {
-            FunctionStats mine = functions.get(other);
+        for (final FunctionStats other: otherStats.functions.values()) {
+            final FunctionStats mine = functions.get(other);
             if (mine == null) {
                 functions.put(other, other);
             } else {
@@ -227,8 +227,8 @@ public class PerformanceStats {
                 mine.executionTime += other.executionTime;
             }
         }
-        for (IndexStats other: otherStats.indexStats.values()) {
-           IndexStats mine = indexStats.get(other);
+        for (final IndexStats other: otherStats.indexStats.values()) {
+           final IndexStats mine = indexStats.get(other);
            if (mine == null) {
                indexStats.put(other, other);
            } else {
@@ -248,9 +248,9 @@ public class PerformanceStats {
     }
     
     public synchronized String toString() {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        FunctionStats[] stats = sort();
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+        final FunctionStats[] stats = sort();
         for (int i = 0; i < stats.length; i++) {
             pw.format("\n%30s %8.3f %8d", stats[i].qname, stats[i].executionTime / 1000.0, stats[i].callCount);
         }
@@ -259,7 +259,7 @@ public class PerformanceStats {
     }
 
     private FunctionStats[] sort() {
-        FunctionStats stats[] = new FunctionStats[functions.size()];
+        final FunctionStats stats[] = new FunctionStats[functions.size()];
         int j = 0;
         for (FunctionStats next: functions.values() ) {
             stats[j] = next;
@@ -270,9 +270,9 @@ public class PerformanceStats {
     }
 
     public synchronized void toXML(MemTreeBuilder builder) {
-        AttributesImpl attrs = new AttributesImpl();
+        final AttributesImpl attrs = new AttributesImpl();
         builder.startElement(new QName("calls", XML_NAMESPACE, XML_PREFIX), null);
-        for (QueryStats stats : queries.values()) {
+        for (final QueryStats stats : queries.values()) {
             attrs.clear();
             attrs.addAttribute("", "source", "source", "CDATA", stats.source);
             attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
@@ -280,17 +280,17 @@ public class PerformanceStats {
             builder.startElement(new QName("query", XML_NAMESPACE, XML_PREFIX), attrs);
             builder.endElement();
         }
-        for (FunctionStats stats: functions.values()) {
+        for (final FunctionStats stats: functions.values()) {
             attrs.clear();
             attrs.addAttribute("", "name", "name", "CDATA", stats.qname.getStringValue());
             attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
             attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.callCount));
             if (stats.source != null)
-                attrs.addAttribute("", "source", "source", "CDATA", stats.source);
+                {attrs.addAttribute("", "source", "source", "CDATA", stats.source);}
             builder.startElement(new QName("function", XML_NAMESPACE, XML_PREFIX), attrs);
             builder.endElement();
         }
-        for (IndexStats stats: indexStats.values()) {
+        for (final IndexStats stats: indexStats.values()) {
             attrs.clear();
             attrs.addAttribute("", "type", "type", "CDATA", stats.indexType);
             attrs.addAttribute("", "source", "source", "CDATA", stats.source + " [" + stats.line + ":" +

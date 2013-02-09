@@ -45,7 +45,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
 
     public byte readByte() throws IOException {
         final int i = read();
-        if (i < 0) throw new EOFException();
+        if (i < 0) {throw new EOFException();}
         return (byte) i;
     }
 
@@ -87,13 +87,13 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
     }
 
     public String readUTF() throws IOException, EOFException {
-        int len = readInt();
-        byte data[] = new byte[len];
+        final int len = readInt();
+        final byte data[] = new byte[len];
         read(data);
         String s;
         try {
             s = new String(data, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
         	LOG.warn(e);
             s = new String(data);
         }
@@ -139,7 +139,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
                     b[off + i] = (byte) c;
                 }
             }
-        } catch (IOException ee) {
+        } catch (final IOException ee) {
             //Nothing to do
         }
         return i;

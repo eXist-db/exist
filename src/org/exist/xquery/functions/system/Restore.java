@@ -67,23 +67,23 @@ public class Restore extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        String dirOrFile = args[0].getStringValue();
+        final String dirOrFile = args[0].getStringValue();
         String adminPass = null;
         if (args[1].hasOne())
-                adminPass = args[1].getStringValue();
+                {adminPass = args[1].getStringValue();}
         String adminPassAfter = null;
         if (args[2].hasOne())
-                adminPassAfter = args[2].getStringValue();
+                {adminPassAfter = args[2].getStringValue();}
 
-        MemTreeBuilder builder = context.getDocumentBuilder();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
         builder.startDocument();
         builder.startElement(RESTORE_ELEMENT, null);
         
         try {
-            org.exist.backup.Restore restore = new org.exist.backup.Restore();
-            RestoreListener listener = new XMLRestoreListener(builder);
+            final org.exist.backup.Restore restore = new org.exist.backup.Restore();
+            final RestoreListener listener = new XMLRestoreListener(builder);
             restore.restore(listener, org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, new File(dirOrFile), XmldbURI.EMBEDDED_SERVER_URI.toString());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
         }
         

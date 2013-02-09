@@ -46,9 +46,9 @@ public class LauncherWrapper {
     private final static String OS = System.getProperty("os.name").toLowerCase();
 
     public final static void main(String[] args) {
-        boolean spawn = SystemTray.isSupported();
+        final boolean spawn = SystemTray.isSupported();
 
-        LauncherWrapper wrapper = new LauncherWrapper(LAUNCHER);
+        final LauncherWrapper wrapper = new LauncherWrapper(LAUNCHER);
         wrapper.launch();
     }
 
@@ -64,16 +64,16 @@ public class LauncherWrapper {
     }
 
     public void launch(boolean spawn) {
-        String home = System.getProperty("exist.home", ".");
-        Project project = new Project();
+        final String home = System.getProperty("exist.home", ".");
+        final Project project = new Project();
         project.setBasedir(home);
-        DefaultLogger logger = new DefaultLogger();
+        final DefaultLogger logger = new DefaultLogger();
         logger.setOutputPrintStream(System.out);
         logger.setErrorPrintStream(System.err);
         logger.setMessageOutputLevel(Project.MSG_DEBUG);
         project.addBuildListener(logger);
 
-        Java java = new Java();
+        final Java java = new Java();
         java.setFork(true);
         java.setSpawn(spawn);
         //java.setClassname(org.exist.start.Main.class.getName());
@@ -82,12 +82,12 @@ public class LauncherWrapper {
         //Path path = java.createClasspath();
         //path.setPath("start.jar");
 
-        Commandline.Argument jvmArgs = java.createJvmarg();
-        String javaOpts = getJavaOpts(home);
+        final Commandline.Argument jvmArgs = java.createJvmarg();
+        final String javaOpts = getJavaOpts(home);
         jvmArgs.setLine(javaOpts);
         System.out.println("Java opts: " + javaOpts);
 
-        Commandline.Argument args = java.createArg();
+        final Commandline.Argument args = java.createArg();
         args.setLine(command);
 
         java.init();
@@ -95,11 +95,11 @@ public class LauncherWrapper {
     }
 
     protected String getJavaOpts(String home) {
-        StringBuilder opts = new StringBuilder();
+        final StringBuilder opts = new StringBuilder();
 
         opts.append(getVMOpts());
 
-        if (command.equals(LAUNCHER) && OS.equals("mac os x")) {
+        if (command.equals(LAUNCHER) && "mac os x".equals(OS)) {
             opts.append(" -Dapple.awt.UIElement=true");
         }
         opts.append(" -Dexist.home=");
@@ -112,10 +112,10 @@ public class LauncherWrapper {
     }
 
     protected String getVMOpts() {
-        StringBuilder opts = new StringBuilder();
+        final StringBuilder opts = new StringBuilder();
         InputStream is = null;
-        Properties vmProperties = new Properties();
-        File propFile = ConfigurationHelper.lookup("vm.properties");
+        final Properties vmProperties = new Properties();
+        final File propFile = ConfigurationHelper.lookup("vm.properties");
         try {
             if (propFile.canRead()) {
                 is = new FileInputStream(propFile);
@@ -127,15 +127,15 @@ public class LauncherWrapper {
                 vmProperties.load(is);
                 is.close();
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.err.println("vm.properties not found");
         }
-        for (Map.Entry<Object, Object> entry : vmProperties.entrySet())  {
-            String key = entry.getKey().toString();
-            if (key.equals("vmoptions")) {
+        for (final Map.Entry<Object, Object> entry : vmProperties.entrySet())  {
+            final String key = entry.getKey().toString();
+            if ("vmoptions".equals(key)) {
                 opts.append(' ').append(entry.getValue());
             } else if (key.startsWith("vmoptions.")) {
-                String os = key.substring("vmoptions.".length()).toLowerCase();
+                final String os = key.substring("vmoptions.".length()).toLowerCase();
                 if (OS.contains(os)) {
                     opts.append(' ').append(entry.getValue());
                 }

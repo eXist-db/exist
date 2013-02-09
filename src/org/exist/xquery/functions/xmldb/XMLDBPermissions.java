@@ -80,9 +80,9 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		try {
-			Permission perm = getPermissions(collection, args);
+			final Permission perm = getPermissions(collection, args);
 			return new IntegerValue(perm.getMode(), Type.INT);
-        } catch (XMLDBException xe) {
+        } catch (final XMLDBException xe) {
             logger.error("Unable to retrieve resource permissions");
             throw new XPathException(this, "Unable to retrieve resource permissions", xe);
         }
@@ -97,10 +97,10 @@ public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 	 */
 	protected Permission getPermissions(Collection collection, Sequence[] args)
         throws XMLDBException, XPathException {
-		UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+		final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 		Permission perm;
 		if(getSignature().getArgumentCount() == 2) {
-		    Resource res = collection.getResource(args[1].getStringValue());
+		    final Resource res = collection.getResource(args[1].getStringValue());
 		    if (res != null) {
 		        perm = ums.getPermissions(res);
 		    } else {

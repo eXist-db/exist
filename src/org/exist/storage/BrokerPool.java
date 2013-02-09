@@ -257,12 +257,12 @@ public class BrokerPool extends Observable implements Database {
                             Runtime.getRuntime().addShutdownHook(shutdownHook);
                             LOG.debug("shutdown hook registered");
                             
-                        } catch(IllegalArgumentException e) {
+                        } catch(final IllegalArgumentException e) {
                             LOG.warn("shutdown hook already registered");
                         }
                     }
                 }
-            } catch (Throwable ex){
+            } catch (final Throwable ex){
                 // Catch all possible issues and report.
                 LOG.error("Unable to initialize database instance '" + instanceName
                         + "': "+ex.getMessage(), ex);
@@ -272,7 +272,7 @@ public class BrokerPool extends Observable implements Database {
         //TODO : throw an exception here rather than silently ignore an *explicit* parameter ?
         // WM: maybe throw an exception. Users can check if a db is already configured.
         } else
-            LOG.warn("database instance '" + instanceName + "' is already configured");
+            {LOG.warn("database instance '" + instanceName + "' is already configured");}
     }
 
     /** Returns whether or not the default database instance is configured.
@@ -290,10 +290,10 @@ public class BrokerPool extends Observable implements Database {
     //TODO : in the future, we should implement a Configurable interface	
     public final static boolean isConfigured(String id) {
         //Check if there is a database instance in the pool with the same id
-        BrokerPool instance = instances.get(id);
+        final BrokerPool instance = instances.get(id);
         //No : it *can't* be configured
         if (instance == null)
-            return false;
+            {return false;}
         //Yes : it *may* be configured
         return instance.isInstanceConfigured();
     }
@@ -313,15 +313,15 @@ public class BrokerPool extends Observable implements Database {
      */
     public final static BrokerPool getInstance(String instanceName) throws EXistException {
         //Check if there is a database instance in the pool with the same id
-        BrokerPool instance = instances.get(instanceName);
+        final BrokerPool instance = instances.get(instanceName);
         if (instance != null)
             //TODO : call isConfigured(id) and throw an EXistException if relevant ?
-            return instance;
+            {return instance;}
         
-        Throwable exception = instancesInitializtionException.get(instanceName);
+        final Throwable exception = instancesInitializtionException.get(instanceName);
         if (exception != null) {
         	if (exception instanceof EXistException)
-        		throw (EXistException)exception;
+        		{throw (EXistException)exception;}
         	throw new EXistException(exception);
         }
         	
@@ -353,7 +353,7 @@ public class BrokerPool extends Observable implements Database {
      * @throws EXistException If the database instance is not available (not created, stopped or not configured)
      */
     public final static void stop(String id) throws EXistException {		
-        BrokerPool instance = getInstance(id);
+        final BrokerPool instance = getInstance(id);
         instance.shutdown();
     }
 
@@ -363,24 +363,24 @@ public class BrokerPool extends Observable implements Database {
      */
     public final static void stopAll(boolean killed) {
         //Create a temporary vector
-        Vector<BrokerPool> tmpInstances = new Vector<BrokerPool>();
-        for (BrokerPool instance : instances.values()) {
+        final Vector<BrokerPool> tmpInstances = new Vector<BrokerPool>();
+        for (final BrokerPool instance : instances.values()) {
             //and feed it with the living database instances
             tmpInstances.add(instance);
         }
 
         //Iterate over the living database instances
-        for (BrokerPool instance : tmpInstances) {
+        for (final BrokerPool instance : tmpInstances) {
             if (instance.conf != null)
                 //Shut them down
-                instance.shutdown(killed);
+                {instance.shutdown(killed);}
         }
         //Clear the living instances container : they are all sentenced to death...
         instances.clear();
     }
 
     public final static void systemInfo() {
-    	for (BrokerPool instance : instances.values()) {
+    	for (final BrokerPool instance : instances.values()) {
     		instance.printSystemInfo();
     	}
     }
@@ -614,10 +614,10 @@ public class BrokerPool extends Observable implements Database {
             Integer anInteger;
 		Long aLong;
 		Boolean aBoolean;
-		NumberFormat nf = NumberFormat.getNumberInstance();
+		final NumberFormat nf = NumberFormat.getNumberInstance();
 
         if (statusObserver != null)
-            addObserver(statusObserver);
+            {addObserver(statusObserver);}
 
         this.classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -642,10 +642,10 @@ public class BrokerPool extends Observable implements Database {
 		 */		
 		anInteger = (Integer) conf.getProperty(PROPERTY_MIN_CONNECTIONS);
 		if (anInteger != null)
-			this.minBrokers = anInteger.intValue();		
+			{this.minBrokers = anInteger.intValue();}		
 		anInteger = (Integer) conf.getProperty(PROPERTY_MAX_CONNECTIONS); 
 		if (anInteger != null)
-			this.maxBrokers = anInteger.intValue();		
+			{this.maxBrokers = anInteger.intValue();}		
 		//TODO : sanity check : minBrokers shall be lesser than or equal to maxBrokers
 		//TODO : sanity check : minBrokers shall be positive
 		LOG.info("database instance '" + instanceName + "' will have between " + nf.format(this.minBrokers) + " and " + nf.format(this.maxBrokers) + " brokers");
@@ -653,7 +653,7 @@ public class BrokerPool extends Observable implements Database {
 		//TODO : use the periodicity of a SystemTask (see below)
 		aLong = (Long) conf.getProperty(PROPERTY_SYNC_PERIOD);
 		if (aLong != null)
-			/*this.*/majorSyncPeriod = aLong.longValue();
+			/*this.*/{majorSyncPeriod = aLong.longValue();}
 		//TODO : sanity check : the synch period should be reasonable
 		LOG.info("database instance '" + instanceName + "' will be synchronized every " + nf.format(/*this.*/majorSyncPeriod) + " ms");
 
@@ -672,7 +672,7 @@ public class BrokerPool extends Observable implements Database {
 
 		pageSize = conf.getInteger(PROPERTY_PAGE_SIZE);
 		if (pageSize < 0)
-			pageSize = DEFAULT_PAGE_SIZE;
+			{pageSize = DEFAULT_PAGE_SIZE;}
 
 /* TODO: start -adam- remove OLD SystemTask initialization */
 		
@@ -722,15 +722,15 @@ public class BrokerPool extends Observable implements Database {
 		//TODO : in the future, we should implement an Initializable interface
 		try {
 			initialize();
-		} catch (Throwable e) {
+		} catch (final Throwable e) {
 			if (!instances.containsKey(instanceName))
-				instancesInitializtionException.put(instanceName, e);
+				{instancesInitializtionException.put(instanceName, e);}
 			
 			if (e instanceof EXistException)
-				throw (EXistException) e;
+				{throw (EXistException) e;}
 
 			if (e instanceof DatabaseConfigurationException)
-				throw (DatabaseConfigurationException) e;
+				{throw (DatabaseConfigurationException) e;}
 			
 			throw new EXistException(e);
 		}
@@ -740,28 +740,28 @@ public class BrokerPool extends Observable implements Database {
         if (majorSyncPeriod > 0) {
         	//TODO : why not automatically register Sync in system tasks ?
 //            scheduler.createPeriodicJob(2500, new Sync(), 2500);
-            SyncTask syncTask = new SyncTask();
+            final SyncTask syncTask = new SyncTask();
             syncTask.configure(conf, null);
             scheduler.createPeriodicJob(2500, new SystemTaskJobImpl(SyncTask.getJobName(), syncTask), 2500);
         }
         
-        if (System.getProperty("trace.brokers", "no").equals("yes"))
-        	watchdog = new BrokerWatchdog();
+        if ("yes".equals(System.getProperty("trace.brokers", "no")))
+        	{watchdog = new BrokerWatchdog();}
 	}
 	
 	//TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
     protected boolean canReadDataDir(Configuration conf) throws EXistException {
         String dataDir = (String) conf.getProperty(PROPERTY_DATA_DIR);
         if (dataDir == null) 
-        	dataDir = "data"; //TODO : DEFAULT_DATA_DIR
+        	{dataDir = "data";} //TODO : DEFAULT_DATA_DIR
 
-        File dir = new File(dataDir);        
+        final File dir = new File(dataDir);        
         if (!dir.exists()) {
             try {
             	//TODO : shall we force the creation ? use a parameter to decide ? 
             	LOG.info("Data directory '" + dir.getAbsolutePath() + "' does not exist. Creating one ...");
                 dir.mkdirs();                
-            } catch (SecurityException e) {            	
+            } catch (final SecurityException e) {            	
                 LOG.info("Cannot create data directory '" + dir.getAbsolutePath() + "'. Switching to read-only mode.");                
                 return false;
             }
@@ -784,7 +784,7 @@ public class BrokerPool extends Observable implements Database {
                 throw new EXistException("The database directory seems to be locked by another " +
                         "database instance. Found a valid lock file: " + dataLock.getFile());
             }
-        } catch (ReadOnlyException e) {
+        } catch (final ReadOnlyException e) {
             LOG.info(e.getMessage() + ". Switching to read-only mode!!!");
             return false;
         }
@@ -832,8 +832,8 @@ public class BrokerPool extends Observable implements Database {
 
         // compute how much memory should be reserved for caches to grow
         final Runtime rt = Runtime.getRuntime();
-        long maxMem = rt.maxMemory();
-        long minFree = maxMem / 5;
+        final long maxMem = rt.maxMemory();
+        final long minFree = maxMem / 5;
         reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
         LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
         
@@ -844,7 +844,7 @@ public class BrokerPool extends Observable implements Database {
         transactionManager = new TransactionManager(this, new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR)), isTransactional());		
         try {
             transactionManager.initialize();
-        } catch (ReadOnlyException e) {
+        } catch (final ReadOnlyException e) {
             LOG.warn(e.getMessage() + ". Switching to read-only mode!!!");
             isReadOnly = true;
         }
@@ -883,15 +883,15 @@ public class BrokerPool extends Observable implements Database {
                                 //TODO : use a root collection final member
                                 broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
                                 transactionManager.commit(txn);
-                            } catch (IOException e) {
+                            } catch (final IOException e) {
                                 transactionManager.abort(txn);
-                            } catch (PermissionDeniedException e) {
+                            } catch (final PermissionDeniedException e) {
                                 transactionManager.abort(txn);
-                            } catch (TriggerException e) {
+                            } catch (final TriggerException e) {
                                 transactionManager.abort(txn);
                             }
                         }
-                    } catch(PermissionDeniedException pde) {
+                    } catch(final PermissionDeniedException pde) {
                         LOG.fatal(pde.getMessage(), pde);
                     }
                 }
@@ -901,7 +901,7 @@ public class BrokerPool extends Observable implements Database {
             if(!exportOnly) {
                 try {
                     initialiseSystemCollections(broker);
-                } catch(PermissionDeniedException pde) {
+                } catch(final PermissionDeniedException pde) {
                     LOG.error(pde.getMessage(), pde);
                     throw new EXistException(pde.getMessage(), pde);
                 }
@@ -940,7 +940,7 @@ public class BrokerPool extends Observable implements Database {
                 if(!exportOnly) {
                 	try {
                     	broker.repair();
-	                } catch (PermissionDeniedException e) {
+	                } catch (final PermissionDeniedException e) {
 	                    LOG.warn("Error during recovery: " + e.getMessage(), e);
 	                }
                 }
@@ -962,7 +962,7 @@ public class BrokerPool extends Observable implements Database {
             if(!exportOnly) {
             	try {
                 	initialiseTriggersForCollections(broker, XmldbURI.SYSTEM_COLLECTION_URI);
-	            } catch(PermissionDeniedException pde) {
+	            } catch(final PermissionDeniedException pde) {
 	                //XXX: do not catch exception!
 	                LOG.error(pde.getMessage(), pde);
 	            }
@@ -971,7 +971,7 @@ public class BrokerPool extends Observable implements Database {
             // remove temporary docs
             try {
                 broker.cleanUpTempResources(true);
-            } catch(PermissionDeniedException pde) {
+            } catch(final PermissionDeniedException pde) {
                 LOG.error(pde.getMessage(), pde);
             }
 
@@ -983,7 +983,7 @@ public class BrokerPool extends Observable implements Database {
             try {
                 // initialize expath repository so startup triggers can access it
                 expathRepo = ExistRepository.getRepository(this.conf);
-            } catch (PackageException e) {
+            } catch (final PackageException e) {
                 LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - this is not fatal, but " +
                     "the package manager may not work.");
             }
@@ -1067,13 +1067,13 @@ public class BrokerPool extends Observable implements Database {
                 final Class<StartupTrigger> clazz = (Class<StartupTrigger>)Class.forName(startupTriggerConfig.getClazz());
                 final StartupTrigger startupTrigger = clazz.newInstance();
                 startupTrigger.execute(sysBroker, startupTriggerConfig.getParams());
-            } catch(ClassNotFoundException cnfe) {
+            } catch(final ClassNotFoundException cnfe) {
                 LOG.error("Could not find StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + cnfe.getMessage(), cnfe);
-            } catch(InstantiationException ie) {
+            } catch(final InstantiationException ie) {
                 LOG.error("Could not instantiate StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + ie.getMessage(), ie);
-            } catch(IllegalAccessException iae) {
+            } catch(final IllegalAccessException iae) {
                 LOG.error("Could not access StartupTrigger class: " + startupTriggerConfig + ". SKIPPING! " + iae.getMessage(), iae);
-            } catch(RuntimeException re) {
+            } catch(final RuntimeException re) {
                 LOG.warn("StarupTrigger through RuntimException: " + re.getMessage() + ". IGNORING!", re);
             }
         }
@@ -1092,20 +1092,20 @@ public class BrokerPool extends Observable implements Database {
     private void initialiseSystemCollection(DBBroker sysBroker, XmldbURI sysCollectionUri, int permissions) throws EXistException, PermissionDeniedException {
         Collection collection = sysBroker.getCollection(sysCollectionUri);
         if (collection == null) {
-            TransactionManager transact = getTransactionManager();
-            Txn txn = transact.beginTransaction();
+            final TransactionManager transact = getTransactionManager();
+            final Txn txn = transact.beginTransaction();
             try {
                 collection = sysBroker.getOrCreateCollection(txn, sysCollectionUri);
                 if (collection == null)
-                    throw new IOException("Could not create system collection: " + sysCollectionUri);
+                    {throw new IOException("Could not create system collection: " + sysCollectionUri);}
                 collection.setPermissions(permissions);
                 sysBroker.saveCollection(txn, collection);
 
                 transact.commit(txn);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 transact.abort(txn);
                 e.printStackTrace();
-                String msg = "Initialisation of system collections failed: " + e.getMessage();
+                final String msg = "Initialisation of system collections failed: " + e.getMessage();
                 LOG.error(msg, e);
                 throw new EXistException(msg, e);
             }
@@ -1126,15 +1126,15 @@ public class BrokerPool extends Observable implements Database {
     }
 
     private void initialiseTriggersForCollections(DBBroker broker, XmldbURI uri) throws EXistException, PermissionDeniedException {
-    	Collection collection = broker.getCollection(uri);
+    	final Collection collection = broker.getCollection(uri);
 
         //initialize configurations watcher trigger
         if(collection != null) {
-            CollectionConfigurationManager manager = getConfigurationManager();
-            CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
+            final CollectionConfigurationManager manager = getConfigurationManager();
+            final CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
             
-            Class c = ConfigurationDocumentTrigger.class;
-            DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy((Class<DocumentTrigger>)c, collection.getURI());
+            final Class c = ConfigurationDocumentTrigger.class;
+            final DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy((Class<DocumentTrigger>)c, collection.getURI());
             collConf.getDocumentTriggerProxies().add(triggerProxy);  
         }
     }
@@ -1430,7 +1430,7 @@ public class BrokerPool extends Observable implements Database {
      */
     protected DBBroker createBroker() throws EXistException {
     	//TODO : in the future, don't pass the whole configuration, just the part relevant to brokers
-		DBBroker broker = BrokerFactory.getInstance(this, this.getConfiguration());
+		final DBBroker broker = BrokerFactory.getInstance(this, this.getConfiguration());
 		inactiveBrokers.push(broker);
 		brokersCount++;
 		broker.setId(broker.getClass().getName() + '_' + instanceName + "_" + brokersCount);
@@ -1443,7 +1443,7 @@ public class BrokerPool extends Observable implements Database {
     public boolean setSubject(Subject subject) {
 		//synchronized(this) {
 			//Try to get an active broker
-			DBBroker broker = activeBrokers.get(Thread.currentThread());
+			final DBBroker broker = activeBrokers.get(Thread.currentThread());
 			if(broker != null) {
 				broker.setSubject(subject);
 				return true;
@@ -1470,7 +1470,7 @@ public class BrokerPool extends Observable implements Database {
     public Subject getSubject() {
 		//synchronized(this) {
 			//Try to get an active broker
-			DBBroker broker = activeBrokers.get(Thread.currentThread());
+			final DBBroker broker = activeBrokers.get(Thread.currentThread());
 			if(broker != null) {
 				return broker.getSubject();
 			}
@@ -1482,7 +1482,7 @@ public class BrokerPool extends Observable implements Database {
 	public DBBroker getActiveBroker() { //throws EXistException {
 		//synchronized(this) {
 			//Try to get an active broker
-			DBBroker broker = activeBrokers.get(Thread.currentThread());
+			final DBBroker broker = activeBrokers.get(Thread.currentThread());
 			if (broker == null) {
 				final StringBuilder sb = new StringBuilder();
 				sb.append("Broker was not obtained for thread '");
@@ -1491,7 +1491,7 @@ public class BrokerPool extends Observable implements Database {
 				activeBrokers.readOperation(new LongOperation<Thread, DBBroker>() {
 					@Override
 					public void execute(Map<Thread, DBBroker> map) {
-						for (Entry<Thread, DBBroker> entry : map.entrySet()) {
+						for (final Entry<Thread, DBBroker> entry : map.entrySet()) {
 							
 //							if (entry.getKey().equals(Thread.currentThread()))
 //								return entry.getValue();
@@ -1510,11 +1510,11 @@ public class BrokerPool extends Observable implements Database {
 	}
 
     public DBBroker authenticate(String username, Object credentials) throws AuthenticationException {
-    	Subject subject = getSecurityManager().authenticate(username, credentials);
+    	final Subject subject = getSecurityManager().authenticate(username, credentials);
     	
     	try {
 			return get(subject);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e);
 		}
     }
@@ -1545,7 +1545,7 @@ public class BrokerPool extends Observable implements Database {
 			//increase its number of uses
 			broker.incReferenceCount();
             if (user != null)
-                broker.setSubject(user);
+                {broker.setSubject(user);}
             return broker;
 			//TODO : share the code with what is below (including notifyAll) ?
             // WM: notifyAll is not necessary if we don't have to wait for a broker.
@@ -1557,7 +1557,7 @@ public class BrokerPool extends Observable implements Database {
             try {
                 LOG.debug("Db instance is in service mode. Waiting for db to become available again ...");
                 wait();
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
             }
         }
 
@@ -1567,14 +1567,14 @@ public class BrokerPool extends Observable implements Database {
 				//There are no available brokers. If allowed... 
 				if (brokersCount < maxBrokers)
 					//... create one
-					createBroker();
+					{createBroker();}
 				else
 					//... or wait until there is one available
 					while (inactiveBrokers.isEmpty()) {
 						LOG.debug("waiting for a broker to become available");
 						try {
 							this.wait();
-						} catch (InterruptedException e) {
+						} catch (final InterruptedException e) {
 						}
 					}
 			}
@@ -1583,13 +1583,13 @@ public class BrokerPool extends Observable implements Database {
 			activeBrokers.put(Thread.currentThread(), broker);
 			
 			if (watchdog != null)
-				watchdog.add(broker);
+				{watchdog.add(broker);}
 			
 			broker.incReferenceCount();
             if (user != null)
-                broker.setSubject(user);
+                {broker.setSubject(user);}
             else
-                broker.setSubject(securityManager.getGuestSubject());
+                {broker.setSubject(securityManager.getGuestSubject());}
             //Inform the other threads that we have a new-comer
             // TODO: do they really need to be informed here???????
             this.notifyAll();
@@ -1609,7 +1609,7 @@ public class BrokerPool extends Observable implements Database {
 
         // might be null as release() is often called within a finally block
 		if (broker == null)
-			return;
+			{return;}
 		
 		//first check that the broker is active ! If not, return immediately.
 		broker.decReferenceCount();
@@ -1634,9 +1634,9 @@ public class BrokerPool extends Observable implements Database {
 				activeBrokers.writeOperation(new LongOperation<Thread, DBBroker>() {
 					@Override
 					public void execute(Map<Thread, DBBroker> map) {
-						for (Object t : map.keySet()) {
+						for (final Object t : map.keySet()) {
 							if (map.get(t)==broker) {
-								EXistException ex = new EXistException();
+								final EXistException ex = new EXistException();
 								LOG.error("release() has been called from '"+Thread.currentThread()+"', but occupied at '"+t+"'.", ex);
 								
 								map.remove(t);
@@ -1646,11 +1646,11 @@ public class BrokerPool extends Observable implements Database {
 					}
 				});
 			}
-			Subject lastUser = broker.getSubject();
+			final Subject lastUser = broker.getSubject();
 			broker.setSubject(securityManager.getGuestSubject());
 			inactiveBrokers.push(broker);
 			if (watchdog != null)
-				watchdog.remove(broker);
+				{watchdog.remove(broker);}
 			
 			//If the database is now idle, do some useful stuff
 			if(activeBrokers.size() == 0) {
@@ -1672,7 +1672,7 @@ public class BrokerPool extends Observable implements Database {
 
     public DBBroker enterServiceMode(Subject user) throws PermissionDeniedException {
         if (!user.hasDbaRole())
-            throw new PermissionDeniedException("Only users of group dba can switch the db to service mode");
+            {throw new PermissionDeniedException("Only users of group dba can switch the db to service mode");}
         
         serviceModeUser = user;
         synchronized (this) {
@@ -1680,14 +1680,14 @@ public class BrokerPool extends Observable implements Database {
                 while(!inServiceMode) {
                     try {
                         wait();
-                    } catch (InterruptedException e) {
+                    } catch (final InterruptedException e) {
                     }
                 }
             }
         }
         
         inServiceMode = true;
-        DBBroker broker = inactiveBrokers.peek();
+        final DBBroker broker = inactiveBrokers.peek();
         checkpoint = true;
         sync(broker, Sync.MAJOR_SYNC);
         checkpoint = false;
@@ -1697,7 +1697,7 @@ public class BrokerPool extends Observable implements Database {
 
     public void exitServiceMode(Subject user) throws PermissionDeniedException {
         if (!user.equals(serviceModeUser))
-            throw new PermissionDeniedException("The db has been locked by a different user");
+            {throw new PermissionDeniedException("The db has been locked by a different user");}
         serviceModeUser = null;
         inServiceMode = false;
         synchronized (this) {
@@ -1707,7 +1707,7 @@ public class BrokerPool extends Observable implements Database {
 
     public void reportStatus(String message) {
         if (statusReporter != null)
-            statusReporter.setStatus(message);
+            {statusReporter.setStatus(message);}
     }
 	public long getMajorSyncPeriod()
 	{
@@ -1732,25 +1732,25 @@ public class BrokerPool extends Observable implements Database {
 	//TODO : make it protected ?
 	public void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
-		Subject user = broker.getSubject();
+		final Subject user = broker.getSubject();
 		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setSubject(securityManager.getSystemSubject());
         if (syncEvent == Sync.MAJOR_SYNC) {
         	LOG.debug("Major sync");
             try {
                 if (!FORCE_CORRUPTION)
-                    transactionManager.checkpoint(checkpoint);
-            } catch (TransactionException e) {
+                    {transactionManager.checkpoint(checkpoint);}
+            } catch (final TransactionException e) {
                 LOG.warn(e.getMessage(), e);
             }
             cacheManager.checkCaches();
             
             if (pluginManager != null)
-            	pluginManager.sync(broker);
+            	{pluginManager.sync(broker);}
             
             lastMajorSync = System.currentTimeMillis();
             if (LOG.isDebugEnabled())
-            	notificationService.debug();
+            	{notificationService.debug();}
         } else {
             cacheManager.checkDistribution();
 //            LOG.debug("Minor sync");
@@ -1772,7 +1772,7 @@ public class BrokerPool extends Observable implements Database {
 	public void triggerSync(int syncEvent) {
 		//TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)
         if (status == SHUTDOWN)
-            return;
+            {return;}
         LOG.debug("Triggering sync: " + syncEvent);
         synchronized (this) {
 			//Are there available brokers ?
@@ -1788,7 +1788,7 @@ public class BrokerPool extends Observable implements Database {
                 // No other brokers are running at this time, so there's no risk.
 				//TODO : use get() then release the broker ?
                 // No, might lead to a deadlock.
-				DBBroker broker = inactiveBrokers.pop();
+				final DBBroker broker = inactiveBrokers.pop();
 				//Do the synchonization job
 				sync(broker, syncEvent);
                 inactiveBrokers.push(broker);
@@ -1832,7 +1832,7 @@ public class BrokerPool extends Observable implements Database {
 	public void shutdown(boolean killed) {
         if (status == SHUTDOWN)
             // we are already shut down
-            return;
+            {return;}
 
         LOG.info("Database is shutting down ...");
 
@@ -1841,7 +1841,7 @@ public class BrokerPool extends Observable implements Database {
         statusReporter.start();
 
         processMonitor.stopRunningJobs();
-        java.util.concurrent.locks.Lock lock = transactionManager.getLock();
+        final java.util.concurrent.locks.Lock lock = transactionManager.getLock();
         try {
             // wait for currently running system tasks before we shutdown
             // they will have a lock on the transactionManager
@@ -1869,7 +1869,7 @@ public class BrokerPool extends Observable implements Database {
                     {
                         wait(250);
                     }
-                    catch(InterruptedException e) {}
+                    catch(final InterruptedException e) {}
                 }
 
                 //Notify all running XQueries that we are shutting down
@@ -1882,9 +1882,9 @@ public class BrokerPool extends Observable implements Database {
                 //xmlReaderPool.close();
 
                 if (isTransactional())
-                    transactionManager.getJournal().flushToLog(true, true);
+                    {transactionManager.getJournal().flushToLog(true, true);}
 
-                long waitStart = System.currentTimeMillis();
+                final long waitStart = System.currentTimeMillis();
                 //Are there active brokers ?
                 if (activeBrokers.size() > 0) {
                 	printSystemInfo();
@@ -1893,7 +1893,7 @@ public class BrokerPool extends Observable implements Database {
                         try {
                             //Wait until they become inactive...
                             this.wait(1000);
-                        } catch (InterruptedException e) {
+                        } catch (final InterruptedException e) {
                             //Nothing to do
                         }
 
@@ -1909,14 +1909,14 @@ public class BrokerPool extends Observable implements Database {
             	if (pluginManager != null)
 					try {
 						pluginManager.stop(null);
-					} catch (EXistException e) {
+					} catch (final EXistException e) {
 	                    LOG.warn("Error during plugin manager shutdown: " + e.getMessage(), e);
 					}
                 
                 // closing down external indexes
                 try {
                     indexManager.shutdown();
-                } catch (DBException e) {
+                } catch (final DBException e) {
                     LOG.warn("Error during index shutdown: " + e.getMessage(), e);
                 }
 
@@ -1926,7 +1926,7 @@ public class BrokerPool extends Observable implements Database {
                 if (inactiveBrokers.isEmpty())
                     try {
                         broker = createBroker();
-                    } catch (EXistException e) {
+                    } catch (final EXistException e) {
                         LOG.warn("could not create instance for shutdown. Giving up.");
                     }
                 else
@@ -1934,7 +1934,7 @@ public class BrokerPool extends Observable implements Database {
                     //TODO : use get() then release the broker ?
                     // WM: deadlock risk if not all brokers returned properly.
                 	//TODO: always createBroker? -dmitriy
-                    broker = inactiveBrokers.peek();
+                    {broker = inactiveBrokers.peek();}
 
                 //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
                 // WM: yes, the database files are shared, so only one broker is needed to close them for all
@@ -1958,7 +1958,7 @@ public class BrokerPool extends Observable implements Database {
 
                 if (!isReadOnly)
                     // release the lock on the data directory
-                    dataLock.release();
+                    {dataLock.release();}
 
                 LOG.info("shutdown complete !");
 
@@ -1969,12 +1969,12 @@ public class BrokerPool extends Observable implements Database {
                     LOG.debug("removing shutdown hook");
                     try {
                         Runtime.getRuntime().removeShutdownHook(shutdownHook);
-                    } catch (IllegalStateException e) {
+                    } catch (final IllegalStateException e) {
 						//ignore IllegalStateException("Shutdown in progress");
 					}
                 }
                 if (shutdownListener != null)
-                    shutdownListener.shutdown(instanceName, instances.size());
+                    {shutdownListener.shutdown(instanceName, instances.size());}
 
                 statusReporter.terminate();
             }
@@ -2006,7 +2006,7 @@ public class BrokerPool extends Observable implements Database {
 	//TODO : move this elsewhere
     public void triggerCheckpoint() {
         if (syncRequired)
-            return;
+            {return;}
         synchronized (this) {
             syncEvent = Sync.MAJOR_SYNC;
             syncRequired = true;
@@ -2019,7 +2019,7 @@ public class BrokerPool extends Observable implements Database {
     public Debuggee getDebuggee() {
     	synchronized (this) {
     		if (debuggee == null)
-    			debuggee = DebuggeeFactory.getInstance(); 
+    			{debuggee = DebuggeeFactory.getInstance();} 
     	}
     	
     	return debuggee;
@@ -2030,17 +2030,17 @@ public class BrokerPool extends Observable implements Database {
     }
     
     public void printSystemInfo() {
-    	StringWriter sout = new StringWriter();
-        PrintWriter writer = new PrintWriter(sout);
+    	final StringWriter sout = new StringWriter();
+        final PrintWriter writer = new PrintWriter(sout);
         
         writer.println("SYSTEM INFO");
     	writer.format("Database instance: %s\n", getId());
     	writer.println("-------------------------------------------------------------------");
     	if (watchdog != null)
-    		watchdog.dump(writer);
+    		{watchdog.dump(writer);}
     	DeadlockDetection.debug(writer);
     	
-    	String s = sout.toString();
+    	final String s = sout.toString();
     	LOG.info(s);
     	System.err.println(s);
     }
@@ -2072,7 +2072,7 @@ public class BrokerPool extends Observable implements Database {
                 synchronized (this) {
                     try {
                         wait(300);
-                    } catch (InterruptedException e) {
+                    } catch (final InterruptedException e) {
                         // nothing to do
                     }
                 }

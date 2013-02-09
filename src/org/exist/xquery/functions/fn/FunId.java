@@ -104,9 +104,9 @@ public class FunId extends Function {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
         if (getArgumentCount() < 1) {
@@ -114,22 +114,22 @@ public class FunId extends Function {
 			throw new XPathException(this, ErrorCodes.XPST0017, "function id requires one argument");
         }
         if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
 
         Sequence result;
         boolean processInMem = false;
-        Expression arg = getArgument(0);
-		Sequence idval = arg.eval(contextSequence);
+        final Expression arg = getArgument(0);
+		final Sequence idval = arg.eval(contextSequence);
 		
 		if(idval.isEmpty() || (getArgumentCount() == 1 && contextSequence != null && contextSequence.isEmpty()))
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
     		String nextId;
     		DocumentSet docs = null;
             if (getArgumentCount() == 2) {
                 // second argument should be a node, whose owner document will be
                 // searched for the id
-                Sequence nodes = getArgument(1).eval(contextSequence);
+                final Sequence nodes = getArgument(1).eval(contextSequence);
                 if (nodes.isEmpty()) {
                     logger.error(ErrorCodes.XPDY0002 + " No node or context item for fn:id");
                     throw new XPathException(this, ErrorCodes.XPDY0002, "XPDY0002: no node or context item for fn:id", nodes);
@@ -143,7 +143,7 @@ public class FunId extends Function {
                 	//TODO : how to enforce this ?
                 	//If $node, or the context item if the second argument is omitted, 
                 	//is a node in a tree whose root is not a document node [err:FODC0001] is raised                    processInMem = true;
-                    processInMem = true;
+                    {processInMem = true;}
                 else {
                     MutableDocumentSet ndocs = new DefaultDocumentSet();
                     ndocs.add(((NodeProxy)node).getDocument());
@@ -158,38 +158,38 @@ public class FunId extends Function {
     			throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node", contextSequence);
     		} else {
     			if (contextSequence.isPersistentSet())
-                    docs = contextSequence.toNodeSet().getDocumentSet();
+                    {docs = contextSequence.toNodeSet().getDocumentSet();}
                 else
-                    processInMem = true;
+                    {processInMem = true;}
             }
 
             if (processInMem)
-                result = new ValueSequence();
+                {result = new ValueSequence();}
             else
-                result = new ExtArrayNodeSet();
+                {result = new ExtArrayNodeSet();}
 
-            for(SequenceIterator i = idval.iterate(); i.hasNext(); ) {
+            for(final SequenceIterator i = idval.iterate(); i.hasNext(); ) {
     			nextId = i.nextItem().getStringValue();
                 if (nextId.length() == 0)
-                    continue;
+                    {continue;}
     			if(nextId.indexOf(" ") != Constants.STRING_NOT_FOUND) {
     				// parse idrefs
-    				StringTokenizer tok = new StringTokenizer(nextId, " ");
+    				final StringTokenizer tok = new StringTokenizer(nextId, " ");
     				while(tok.hasMoreTokens()) {
     					nextId = tok.nextToken();
     					if(XMLChar.isValidNCName(nextId)) {
                             if (processInMem)
-                                getId(result, contextSequence, nextId);
+                                {getId(result, contextSequence, nextId);}
                             else
-                                getId((NodeSet)result, docs, nextId);
+                                {getId((NodeSet)result, docs, nextId);}
                         }
     				}
     			} else {
     				if(XMLChar.isValidNCName(nextId)) {
                         if (processInMem)
-                            getId(result, contextSequence, nextId);
+                            {getId(result, contextSequence, nextId);}
                         else
-                            getId((NodeSet)result, docs, nextId);
+                            {getId((NodeSet)result, docs, nextId);}
                     }
     			}
     		}
@@ -198,30 +198,30 @@ public class FunId extends Function {
 		result.removeDuplicates();
 
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
 
         return result;
 
 	}
 
 	private void getId(NodeSet result, DocumentSet docs, String id) throws XPathException {
-		NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Constants.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
+		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Constants.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
 		NodeProxy p;
-		for (NodeProxy n : attribs) {
+		for (final NodeProxy n : attribs) {
 			p = new NodeProxy(n.getDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
 			result.add(p);
 		}
 	}
 
     private void getId(Sequence result, Sequence seq, String id) throws XPathException {
-        Set<DocumentImpl> visitedDocs = new TreeSet<DocumentImpl>();
-        for (SequenceIterator i = seq.iterate(); i.hasNext();) {
-            NodeImpl v = (NodeImpl) i.nextItem();
-            DocumentImpl doc = v.getDocument();
+        final Set<DocumentImpl> visitedDocs = new TreeSet<DocumentImpl>();
+        for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
+            final NodeImpl v = (NodeImpl) i.nextItem();
+            final DocumentImpl doc = v.getDocument();
             if (!visitedDocs.contains(doc)) {
-                NodeImpl elem = doc.selectById(id);
+                final NodeImpl elem = doc.selectById(id);
                 if (elem != null)
-                    result.add(elem);
+                    {result.add(elem);}
                 visitedDocs.add(doc);
             }
         }

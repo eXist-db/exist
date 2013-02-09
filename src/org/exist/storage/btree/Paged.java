@@ -163,7 +163,7 @@ public abstract class Paged {
     public boolean close() throws DBException {
         try {
             raf.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new DBException("an error occurred while closing database file: " + e.getMessage());
         }
         return true;
@@ -173,7 +173,7 @@ public abstract class Paged {
         try {
             fileHeader.write();
             return true;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             throw new DBException(0, "Error creating " + file.getName());
         }
@@ -210,7 +210,7 @@ public abstract class Paged {
                 fileHeader.write();
                 flushed = true;
             }
-        } catch (IOException ioe) {
+        } catch (final IOException ioe) {
             LOG.warn("report me");
             //TODO : this exception is *silently* ignored ?
         }
@@ -226,7 +226,7 @@ public abstract class Paged {
      */
     public void backupToStream(OutputStream os) throws IOException {
         raf.seek(0);
-        byte[] buf = new byte[4096];
+        final byte[] buf = new byte[4096];
         int len;
         while ((len = raf.read(buf)) > 0) {
             os.write(buf, 0, len);
@@ -259,7 +259,7 @@ public abstract class Paged {
     public void closeAndRemove() {
         try {
             raf.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             //TODO : forward the exception ? -pb
             LOG.error("Failed to close data file: " + file.getAbsolutePath());
         }
@@ -291,7 +291,7 @@ public abstract class Paged {
                 page.read();
                 fileHeader.firstFreePage = page.header.nextPage;
                 if (fileHeader.firstFreePage == Page.NO_PAGE)
-                    fileHeader.setLastFreePage(Page.NO_PAGE);
+                    {fileHeader.setLastFreePage(Page.NO_PAGE);}
             } else {
                 // Grow the file
                 pageNum = fileHeader.totalCount;
@@ -337,19 +337,19 @@ public abstract class Paged {
             if (exists()) {
                 fileHeader.read();
                 if(fileHeader.getVersion() != expectedVersion)
-                    throw new DBException("Database file " +
+                    {throw new DBException("Database file " +
                         getFile().getName() + " has a storage format incompatible with this " +
                         "version of eXist. You need to upgrade your database by creating a backup," +
                         "cleaning your data directory and restoring the data. In some cases," +
                         "a reindex may be sufficient. " +
                         "Please follow the instructions for the version you installed." + 
                         "File version is: " + expectedVersion +
-                        "; db expects version " + fileHeader.getVersion());
+                        "; db expects version " + fileHeader.getVersion());}
                 return true;
             } else {
                 return false;
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             throw new DBException(0, "Error opening " + file.getName() + ": " + e.getMessage());
         }
@@ -386,12 +386,12 @@ public abstract class Paged {
             if ((!file.exists()) || file.canWrite()) {
                 try {
                     raf = new RandomAccessFile(file, "rw");
-                    FileChannel channel = raf.getChannel();   
-                    FileLock lock = channel.tryLock();
+                    final FileChannel channel = raf.getChannel();   
+                    final FileLock lock = channel.tryLock();
                     if (lock == null)
-                        readOnly = true;
+                        {readOnly = true;}
                 //TODO : who will release the lock ? -pb
-                } catch (NonWritableChannelException e) {
+                } catch (final NonWritableChannelException e) {
                     //No way : switch to read-only mode
                     readOnly = true;
                     raf = new RandomAccessFile(file, "r");
@@ -401,7 +401,7 @@ public abstract class Paged {
                 readOnly = true;
                 raf = new RandomAccessFile(file, "r");
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.warn("An exception occured while opening database file " +
                 file.getAbsolutePath() + ": " + e.getMessage(), e);
         }
@@ -424,7 +424,7 @@ public abstract class Paged {
                     fileHeader.setFirstFreePage(page.pageNum);
                     page.header.setNextPage(Page.NO_PAGE);
                 } else {
-                    long firstFreePage = fileHeader.firstFreePage;
+                    final long firstFreePage = fileHeader.firstFreePage;
                     fileHeader.setFirstFreePage(page.pageNum);
                     page.header.setNextPage(firstFreePage);
                 }
@@ -478,17 +478,17 @@ public abstract class Paged {
      *@throws  IOException  if an Exception occurs
      */
     protected final void writeValue(Page page, Value value) throws IOException {
-        byte[] data = value.getData();
+        final byte[] data = value.getData();
         writeValue(page, data);
     }
 
     protected final void writeValue(Page page, byte[] data) throws IOException {
-        PageHeader pageHeader = page.getPageHeader();
+        final PageHeader pageHeader = page.getPageHeader();
         pageHeader.dataLen = fileHeader.workSize;
         if (data.length != pageHeader.dataLen) {
             //TODO : where to get this 64 from ?
             if (pageHeader.dataLen != getPageSize() - 64)
-                LOG.warn("ouch: " + fileHeader.workSize + " != " + data.length);
+                {LOG.warn("ouch: " + fileHeader.workSize + " != " + data.length);}
             pageHeader.dataLen = data.length;
         }
         page.write(data);
@@ -560,7 +560,7 @@ public abstract class Paged {
 
         public FileHeader(boolean read) throws IOException {
             if (read)
-                read();
+                {read();}
         }
 
         private void calculateWorkSize() {
@@ -860,7 +860,7 @@ public abstract class Paged {
         public Page(long pageNum) throws IOException {
             this();
             if(pageNum == Page.NO_PAGE)
-                throw new IOException("Illegal page num: " + pageNum);
+                {throw new IOException("Illegal page num: " + pageNum);}
             setPageNum(pageNum);
         }
 
@@ -928,7 +928,7 @@ public abstract class Paged {
                 final byte[] workData = new byte[header.dataLen];
                 raf.read(workData);
                 return workData;
-            } catch(Exception e) {
+            } catch(final Exception e) {
                 LOG.warn("error while reading page: " + getPageInfo(), e);
                 throw new IOException(e.getMessage());
             }
@@ -954,14 +954,14 @@ public abstract class Paged {
             header.dirty = false;
             if (data != null) {
                 if (data.length > fileHeader.workSize)
-                    throw new IOException("page: " + getPageInfo() +
-                    ": data length too large: " + data.length);
+                    {throw new IOException("page: " + getPageInfo() +
+                    ": data length too large: " + data.length);}
                 else {
                     System.arraycopy(data, 0, tempPageData, fileHeader.pageHeaderSize, data.length);
                 }
             }
             if (raf.getFilePointer() != offset)
-                raf.seek(offset);
+                {raf.seek(offset);}
             raf.write(tempPageData);
         }
 
@@ -977,17 +977,17 @@ public abstract class Paged {
          */
         public int compareTo(Page other) {
             if (pageNum == other.pageNum)
-                return Constants.EQUAL;
+                {return Constants.EQUAL;}
             else if(pageNum > other.pageNum)
-                return Constants.SUPERIOR;
+                {return Constants.SUPERIOR;}
             else
-                return Constants.INFERIOR;
+                {return Constants.INFERIOR;}
         }
 
         public void dumpPage() throws IOException {
             if (raf.getFilePointer() != offset)
-                raf.seek(offset);
-            byte[] data = new byte[fileHeader.pageSize];
+                {raf.seek(offset);}
+            final byte[] data = new byte[fileHeader.pageSize];
             raf.read(data);
             LOG.debug("Contents of page " + pageNum + ": " + hexDump(data));
         }
@@ -1137,7 +1137,7 @@ public abstract class Paged {
         "8", "9", "a", "b", "c", "d", "e", "f"};
 
     public static String hexDump(byte[] data) {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("\r\n");
         int columns = 0;
         for (int i = 0; i < data.length; i++, columns++) {
@@ -1157,8 +1157,8 @@ public abstract class Paged {
         if ( n < 0 ) {
             n = 256 + n;
         }
-        int d1 = n / 16;
-        int d2 = n % 16;
+        final int d1 = n / 16;
+        final int d2 = n % 16;
         buf.append( hex[d1] );
         buf.append( hex[d2] );
     }

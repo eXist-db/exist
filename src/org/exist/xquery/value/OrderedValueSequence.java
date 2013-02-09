@@ -57,7 +57,7 @@ public class OrderedValueSequence extends AbstractSequence {
 	public OrderedValueSequence(OrderSpec orderSpecs[], int size) {
 		this.orderSpecs = orderSpecs;
         if (size == 0)
-            size = 1;
+            {size = 1;}
 		this.items = new Entry[size];
 	}
 
@@ -95,9 +95,9 @@ public class OrderedValueSequence extends AbstractSequence {
 	 */
 	public void add(Item item) throws XPathException {
 		if (hasOne)
-			hasOne = false;
+			{hasOne = false;}
 		if (isEmpty)
-			hasOne = true;
+			{hasOne = true;}
         isEmpty = false;
 		if(count == 0 && items.length == 1) {
 			items = new Entry[2];
@@ -116,12 +116,12 @@ public class OrderedValueSequence extends AbstractSequence {
 	 */
 	public void addAll(Sequence other) throws XPathException {
 		if(other.hasOne())
-			add(other.itemAt(0));		
+			{add(other.itemAt(0));}		
 		else if(!other.isEmpty()) {
-			for(SequenceIterator i = other.iterate(); i.hasNext(); ) { 
-				Item next = i.nextItem();
+			for(final SequenceIterator i = other.iterate(); i.hasNext(); ) { 
+				final Item next = i.nextItem();
 				if(next != null)
-					add(next);
+					{add(next);}
 			}
 		} 
 	}
@@ -135,18 +135,18 @@ public class OrderedValueSequence extends AbstractSequence {
 	 */
 	public Item itemAt(int pos) {
 		if(items != null && pos > -1 && pos < count)
-			return items[pos].item;
+			{return items[pos].item;}
 		else
-			return null;
+			{return null;}
 	}
 
 	private void checkItemType(int type) {
         if (itemType == type)
-            return;
+            {return;}
         else if (itemType == Type.ANY_TYPE)
-            itemType = type;
+            {itemType = type;}
         else
-            itemType = Type.getCommonSuperType(type, itemType);
+            {itemType = Type.getCommonSuperType(type, itemType);}
     }
     
     /* (non-Javadoc)
@@ -162,12 +162,12 @@ public class OrderedValueSequence extends AbstractSequence {
 	public NodeSet toNodeSet() throws XPathException {
 		//return early
 		if (isEmpty())
-			return NodeSet.EMPTY_SET;
+			{return NodeSet.EMPTY_SET;}
         // for this method to work, all items have to be nodes
 		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
 			//Was ExtArrayNodeset() which orders the nodes in document order
 			//The order seems to change between different invocations !!!
-			NodeSet set = new AVLTreeNodeSet();
+			final NodeSet set = new AVLTreeNodeSet();
 			//We can't make it from an ExtArrayNodeSet (probably because it is sorted ?)
 			//NodeSet set = new ArraySet(100);
 			for (int i = 0; i < items.length; i++) {
@@ -178,7 +178,7 @@ public class OrderedValueSequence extends AbstractSequence {
 					if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
 
 	                    // found an in-memory document
-	                    org.exist.memtree.DocumentImpl doc = ((NodeImpl)v).getDocument();
+	                    final org.exist.memtree.DocumentImpl doc = ((NodeImpl)v).getDocument();
                         if (doc==null) {
                             continue;
                         }
@@ -186,8 +186,8 @@ public class OrderedValueSequence extends AbstractSequence {
                         // returns a map of all root node ids mapped to the corresponding
                         // persistent node. We scan the current sequence and replace all
                         // in-memory nodes with their new persistent node objects.
-                        DocumentImpl expandedDoc = doc.expandRefs(null);
-                        org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
+                        final DocumentImpl expandedDoc = doc.expandRefs(null);
+                        final org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
                         if (newDoc != null) {
                             NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
                             for (int j = i; j < count; j++) {
@@ -198,11 +198,11 @@ public class OrderedValueSequence extends AbstractSequence {
                                         node = expandedDoc.getNode(node.getNodeNumber());
                                         NodeId nodeId = node.getNodeId();
                                         if (nodeId == null)
-                                            throw new XPathException("Internal error: nodeId == null");
+                                            {throw new XPathException("Internal error: nodeId == null");}
                                         if (node.getNodeType() == Node.DOCUMENT_NODE)
-                                            nodeId = rootId;
+                                            {nodeId = rootId;}
                                         else
-                                            nodeId = rootId.append(nodeId);
+                                            {nodeId = rootId.append(nodeId);}
                                         NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
                                         if (p != null) {
                                             // replace the node by the NodeProxy
@@ -220,8 +220,8 @@ public class OrderedValueSequence extends AbstractSequence {
 			}			
 			return set;
 		} else
-			throw new XPathException("Type error: the sequence cannot be converted into" +
-				" a node set. Item type is " + Type.getTypeName(itemType));
+			{throw new XPathException("Type error: the sequence cannot be converted into" +
+				" a node set. Item type is " + Type.getTypeName(itemType));}
 	}
 
     /* (non-Javadoc)
@@ -229,13 +229,13 @@ public class OrderedValueSequence extends AbstractSequence {
     */
     public boolean isPersistentSet() {
         if(count == 0)
-            return true;
+            {return true;}
         if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
             NodeValue v;
             for (int i = 0; i < count; i++) {
                 v = (NodeValue)items[i].item;
                 if(v.getImplementationType() != NodeValue.PERSISTENT_NODE)
-                    return false;
+                    {return false;}
             }
             return true;
         }
@@ -244,7 +244,7 @@ public class OrderedValueSequence extends AbstractSequence {
 
     public MemoryNodeSet toMemNodeSet() throws XPathException {
         if(count == 0)
-            return MemoryNodeSet.EMPTY;
+            {return MemoryNodeSet.EMPTY;}
         if(itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
             throw new XPathException("Type error: the sequence cannot be converted into" +
 				" a node set. Item type is " + Type.getTypeName(itemType));
@@ -253,13 +253,13 @@ public class OrderedValueSequence extends AbstractSequence {
         for (int i = 0; i < count; i++) {
             v = (NodeValue)items[i].item;
             if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                return null;
+                {return null;}
         }
         return new ValueSequence(this);
     }
 
     public String toString() {
-    	StringBuilder builder = new StringBuilder();
+    	final StringBuilder builder = new StringBuilder();
     	for (int i = 0; i < count; i++) {
     		builder.append(items[i].toString());
     	}
@@ -305,14 +305,14 @@ public class OrderedValueSequence extends AbstractSequence {
 			this.pos = position;
 			values = new AtomicValue[orderSpecs.length];
 			for(int i = 0; i < orderSpecs.length; i++) {
-				Sequence seq = orderSpecs[i].getSortExpression().eval(null);
+				final Sequence seq = orderSpecs[i].getSortExpression().eval(null);
 				values[i] = AtomicValue.EMPTY_VALUE;
 				if(seq.hasOne()) {
 					values[i] = seq.itemAt(0).atomize();
 				} else if(seq.hasMany())
-					throw new XPathException("expected a single value for order expression " +
+					{throw new XPathException("expected a single value for order expression " +
 						ExpressionDumper.dump(orderSpecs[i].getSortExpression()) + 
-						" ; found: " + seq.getItemCount());
+						" ; found: " + seq.getItemCount());}
 			}
 		}
 
@@ -326,54 +326,54 @@ public class OrderedValueSequence extends AbstractSequence {
 				try {
 					a = values[i];
 					b = other.values[i];
-                    boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOf(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
-                    boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOf(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
+                    final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOf(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
+                    final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOf(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
                     if (aIsEmpty) {
                         if (bIsEmpty)
                             // both values are empty
-                            return Constants.EQUAL;
+                            {return Constants.EQUAL;}
                         else if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = Constants.INFERIOR;
+							{cmp = Constants.INFERIOR;}
                         else
-                            cmp = Constants.SUPERIOR;
+                            {cmp = Constants.SUPERIOR;}
                     } else if (bIsEmpty) {
                         // we don't need to check for equality since we know a is not empty
                         if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = Constants.SUPERIOR;
+							{cmp = Constants.SUPERIOR;}
 						else
-							cmp = Constants.INFERIOR;
+							{cmp = Constants.INFERIOR;}
                     } else if (a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
 						if((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = Constants.INFERIOR;
+							{cmp = Constants.INFERIOR;}
 						else
-							cmp = Constants.SUPERIOR;
+							{cmp = Constants.SUPERIOR;}
 					} else if (b == AtomicValue.EMPTY_VALUE && a != AtomicValue.EMPTY_VALUE) {
 						if((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = Constants.SUPERIOR;
+							{cmp = Constants.SUPERIOR;}
 						else
-							cmp = Constants.INFERIOR;
+							{cmp = Constants.INFERIOR;}
 					} else
-						cmp = a.compareTo(orderSpecs[i].getCollator(), b);
+						{cmp = a.compareTo(orderSpecs[i].getCollator(), b);}
 					if((orderSpecs[i].getModifiers() & OrderSpec.DESCENDING_ORDER) != 0)
-						cmp = cmp * -1;
+						{cmp = cmp * -1;}
 					if(cmp != Constants.EQUAL)
-						break;
-				} catch (XPathException e) {
+						{break;}
+				} catch (final XPathException e) {
 				}
 			}
 			// if the sort keys are equal, we need to order by the original position in the result sequence
 			if (cmp == Constants.EQUAL)
-				cmp = (pos > other.pos ? Constants.SUPERIOR : (pos == other.pos ? Constants.EQUAL : Constants.INFERIOR));
+				{cmp = (pos > other.pos ? Constants.SUPERIOR : (pos == other.pos ? Constants.EQUAL : Constants.INFERIOR));}
 			return cmp;
 		}
 		
 		public String toString() {
-			StringBuilder builder = new StringBuilder();
+			final StringBuilder builder = new StringBuilder();
 			builder.append(item);
     		builder.append(" [");
     		for (int i = 0; i < values.length; i++) {
     			if (i > 0)
-    				builder.append(", ");
+    				{builder.append(", ");}
     			builder.append(values[i].toString());
     		}
     		builder.append("]");

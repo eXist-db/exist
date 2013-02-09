@@ -66,12 +66,12 @@ public class XMLDBGetMimeType extends BasicFunction {
 	public Sequence eval(Sequence args[], Sequence contextSequence)
         throws XPathException {
 
-		String path = new AnyURIValue(args[0].itemAt(0).getStringValue()).toString();
+		final String path = new AnyURIValue(args[0].itemAt(0).getStringValue()).toString();
 		
 		if(path.matches("^[a-z]+://.*")) {
 			//external
-			MimeTable mimeTable = MimeTable.getInstance();
-			MimeType mimeType = mimeTable.getContentTypeFor(path);
+			final MimeTable mimeTable = MimeTable.getInstance();
+			final MimeType mimeType = mimeTable.getContentTypeFor(path);
 			if(mimeType != null) {
 				return new StringValue(mimeType.getName());
             }
@@ -88,7 +88,7 @@ public class XMLDBGetMimeType extends BasicFunction {
 				if(doc != null) {
 					return new StringValue(((DocumentImpl)doc).getMetadata().getMimeType());
 				}
-			} catch(Exception e) {
+			} catch(final Exception e) {
                 logger.error(e.getMessage());
 				throw new XPathException(this, e);
 			} finally {

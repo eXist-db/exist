@@ -45,7 +45,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	DayTimeDurationValue(Duration duration) throws XPathException {
 		super(duration);
 		if (duration.isSet(DatatypeConstants.YEARS) || duration.isSet(DatatypeConstants.MONTHS))
-			throw new XPathException(ErrorCodes.XPTY0004, "the value '" + duration + "' is not an xdt:dayTimeDuration since it specifies year or month values");
+			{throw new XPathException(ErrorCodes.XPTY0004, "the value '" + duration + "' is not an xdt:dayTimeDuration since it specifies year or month values");}
 	}
 
 	public DayTimeDurationValue(long millis) throws XPathException {
@@ -59,7 +59,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	private static Duration createDurationDayTime(String str) throws XPathException {
 		try {
 			return TimeUtils.getInstance().newDurationDayTime(str);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(Type.DAY_TIME_DURATION) +
 					" from \"" + str + "\"");            
 		}
@@ -77,7 +77,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		double value = duration.getDays();
 		value = value * 24 + duration.getHours();
 		value = value * 60 + duration.getMinutes();
-		Number n = duration.getField(DatatypeConstants.SECONDS);
+		final Number n = duration.getField(DatatypeConstants.SECONDS);
 		value = value * 60 + (n == null ? 0 : n.doubleValue());
 		return value * duration.getSign();
 	}
@@ -91,17 +91,17 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	}
 	
 	public String getStringValue() {
-		Duration canonicalDuration = getCanonicalDuration();
+		final Duration canonicalDuration = getCanonicalDuration();
 		
-		int d = canonicalDuration.getDays();
-		int h = canonicalDuration.getHours();
-		int m = canonicalDuration.getMinutes();
+		final int d = canonicalDuration.getDays();
+		final int h = canonicalDuration.getHours();
+		final int m = canonicalDuration.getMinutes();
 		Number s = canonicalDuration.getField(DatatypeConstants.SECONDS);
         if (s == null)
-        	s = Integer.valueOf(0);
+        	{s = Integer.valueOf(0);}
 	
 		//Copied from Saxon 8.6.1		
-        FastStringBuffer sb = new FastStringBuffer(32);
+        final FastStringBuffer sb = new FastStringBuffer(32);
         if (canonicalDuration.getSign() < 0) {
             sb.append('-');
         }
@@ -162,7 +162,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 			case Type.DAY_TIME_DURATION:
 				return new DayTimeDurationValue(getCanonicalDuration());
 			case Type.STRING: {
-				DayTimeDurationValue dtdv = new DayTimeDurationValue(getCanonicalDuration());
+				final DayTimeDurationValue dtdv = new DayTimeDurationValue(getCanonicalDuration());
 				return new StringValue(dtdv.getStringValue());
 			}
 			case Type.DURATION:
@@ -180,7 +180,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 			//case Type.DECIMAL:
 				//return new DecimalValue(monthsValueSigned().doubleValue());	
 			case Type.UNTYPED_ATOMIC : {
-				DayTimeDurationValue dtdv = new DayTimeDurationValue(getCanonicalDuration());
+				final DayTimeDurationValue dtdv = new DayTimeDurationValue(getCanonicalDuration());
 				return new UntypedAtomicValue(dtdv.getStringValue());
 			}
 			default:
@@ -217,19 +217,19 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 				throw new XPathException(ErrorCodes.FODT0002, "Multiplication by infinity overflow");		
 			}		
 		}		
-		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
-		boolean isFactorNegative = factor.signum() < 0;
-		DayTimeDurationValue product = new DayTimeDurationValue(duration.multiply(factor.abs()));
+		final BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
+		final boolean isFactorNegative = factor.signum() < 0;
+		final DayTimeDurationValue product = new DayTimeDurationValue(duration.multiply(factor.abs()));
 		if (isFactorNegative)
-			return new DayTimeDurationValue(product.negate().getCanonicalDuration());
+			{return new DayTimeDurationValue(product.negate().getCanonicalDuration());}
 		return new DayTimeDurationValue(product.getCanonicalDuration());
 		
 	}
 
 	public ComputableValue div(ComputableValue other) throws XPathException {		
 		if (other.getType() == Type.DAY_TIME_DURATION) {		
-			DecimalValue a = new DecimalValue(secondsValueSigned());
-			DecimalValue b = new DecimalValue(((DayTimeDurationValue)other).secondsValueSigned());
+			final DecimalValue a = new DecimalValue(secondsValueSigned());
+			final DecimalValue b = new DecimalValue(((DayTimeDurationValue)other).secondsValueSigned());
 			return new DecimalValue(a.value.divide(b.value, 20, BigDecimal.ROUND_HALF_UP));
 		}		
 		if (other instanceof NumericValue) {
@@ -245,12 +245,12 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 				throw new XPathException(ErrorCodes.FODT0002, "Division by zero");
 			}
 		}
-		BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:dayTimeDuration or numeric type; got: ");
-		boolean isDivisorNegative = divisor.signum() < 0;
-		BigDecimal secondsValueSigned = secondsValueSigned();
-		DayTimeDurationValue quotient = fromDecimalSeconds(secondsValueSigned.divide(divisor.abs(), Math.max(Math.max(3, secondsValueSigned.scale()), divisor.scale()), BigDecimal.ROUND_HALF_UP));
+		final BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:dayTimeDuration or numeric type; got: ");
+		final boolean isDivisorNegative = divisor.signum() < 0;
+		final BigDecimal secondsValueSigned = secondsValueSigned();
+		final DayTimeDurationValue quotient = fromDecimalSeconds(secondsValueSigned.divide(divisor.abs(), Math.max(Math.max(3, secondsValueSigned.scale()), divisor.scale()), BigDecimal.ROUND_HALF_UP));
 		if (isDivisorNegative)
-			return new DayTimeDurationValue(quotient.negate().getCanonicalDuration());
+			{return new DayTimeDurationValue(quotient.negate().getCanonicalDuration());}
 		return new DayTimeDurationValue(quotient.getCanonicalDuration());		
 	}
 

@@ -52,7 +52,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
      */
     public String getTarget()
     {
-        QName qn = document.nodeName[nodeNumber];
+        final QName qn = document.nodeName[nodeNumber];
         return( ( qn != null ) ? qn.getLocalName() : null );
     }
 
@@ -158,7 +158,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
 
     public String toString()
     {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append( "in-memory#" );
         result.append( "processing-instruction {" );
         result.append( getTarget() );

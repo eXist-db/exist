@@ -39,7 +39,7 @@ public class LockOwner {
     public LockOwner(Thread owner) {
         this.owner = owner;
         if (DEBUG)
-            this.stack = new Throwable().fillInStackTrace();
+            {this.stack = new Throwable().fillInStackTrace();}
     }
 
     public final Thread getOwner() {

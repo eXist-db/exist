@@ -100,7 +100,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
         	if (base.startsWith("file:")) {
         		sep = File.separator;
         	}
-            int pos = base.lastIndexOf(sep);
+            final int pos = base.lastIndexOf(sep);
             if(pos!=-1){
                 base=base.substring(0, pos);
                 href=base + sep + href;
@@ -117,18 +117,18 @@ public class ExistResolver implements EntityResolver2, URIResolver {
 
         LOG.debug("Resolving "+path);
 
-        InputSource inputsource = new InputSource();
+        final InputSource inputsource = new InputSource();
 
         if (path != null &&
                 (path.startsWith(LOCALURI) || path.startsWith(SHORTLOCALURI))) {
 
-            XmldbURL url = new XmldbURL(path);
-            EmbeddedInputStream eis = new EmbeddedInputStream(bPool, url);
+            final XmldbURL url = new XmldbURL(path);
+            final EmbeddedInputStream eis = new EmbeddedInputStream(bPool, url);
             inputsource.setByteStream(eis);
             inputsource.setSystemId(path);
 
         } else {
-            InputStream is = new URL(path).openStream();
+            final InputStream is = new URL(path).openStream();
             inputsource.setByteStream(is);
             inputsource.setSystemId(path);
         }
@@ -139,23 +139,23 @@ public class ExistResolver implements EntityResolver2, URIResolver {
 
         LOG.debug("Resolving "+path);
         
-        StreamSource streamsource = new StreamSource();
+        final StreamSource streamsource = new StreamSource();
 
         try {
             if (path != null &&
                     (path.startsWith(LOCALURI) || path.startsWith(SHORTLOCALURI))) {
 
-                XmldbURL url = new XmldbURL(path);
-                EmbeddedInputStream eis = new EmbeddedInputStream(bPool, url);
+                final XmldbURL url = new XmldbURL(path);
+                final EmbeddedInputStream eis = new EmbeddedInputStream(bPool, url);
                 streamsource.setInputStream(eis);
                 streamsource.setSystemId(path);
 
             } else {
-                InputStream is = new URL(path).openStream();
+                final InputStream is = new URL(path).openStream();
                 streamsource.setInputStream(is);
                 streamsource.setSystemId(path);
             }
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             throw new TransformerException(ex);
         }
         return streamsource;

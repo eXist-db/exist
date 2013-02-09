@@ -49,13 +49,13 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 
     public BackupDescriptor getChildBackupDescriptor( String describedItem )
     {
-        File             child = new File( new File( descriptor.getParentFile(), describedItem ), BackupDescriptor.COLLECTION_DESCRIPTOR );
+        final File             child = new File( new File( descriptor.getParentFile(), describedItem ), BackupDescriptor.COLLECTION_DESCRIPTOR );
         BackupDescriptor bd    = null;
 
         try {
             bd = new FileSystemBackupDescriptor( child );
         }
-        catch( FileNotFoundException fnfe ) {
+        catch( final FileNotFoundException fnfe ) {
             // DoNothing(R)
         }
         return( bd );
@@ -64,15 +64,15 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 
     public BackupDescriptor getBackupDescriptor( String describedItem )
     {
-        String           topDir = descriptor.getParentFile().getParentFile().getAbsolutePath();
-        String           subDir = topDir + describedItem;
-        String           desc   = subDir + '/' + BackupDescriptor.COLLECTION_DESCRIPTOR;
+        final String           topDir = descriptor.getParentFile().getParentFile().getAbsolutePath();
+        final String           subDir = topDir + describedItem;
+        final String           desc   = subDir + '/' + BackupDescriptor.COLLECTION_DESCRIPTOR;
         BackupDescriptor bd     = null;
 
         try {
             bd = new FileSystemBackupDescriptor( new File( desc ) );
         }
-        catch( FileNotFoundException fnfe ) {
+        catch( final FileNotFoundException fnfe ) {
             // DoNothing(R)
         }
         return( bd );
@@ -87,7 +87,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 
     public EXistInputSource getInputSource( String describedItem )
     {
-        File             child = new File( descriptor.getParentFile(), describedItem );
+        final File             child = new File( descriptor.getParentFile(), describedItem );
         EXistInputSource is    = null;
 
         if( child.isFile() && child.canRead() ) {
@@ -122,11 +122,11 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
         if( dir != null ) {
         	dir = dir.getParentFile();
         	if (dir != null) {
-	        	File propFile = new File( dir, BACKUP_PROPERTIES );
+	        	final File propFile = new File( dir, BACKUP_PROPERTIES );
 	
 	        	try {
-	        		InputStream is         = new BufferedInputStream( new FileInputStream( propFile ) );
-	        		Properties  properties = new Properties();
+	        		final InputStream is         = new BufferedInputStream( new FileInputStream( propFile ) );
+	        		final Properties  properties = new Properties();
 	
 	        		try {
 	        			properties.load( is );
@@ -136,7 +136,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 	        		}
 	        		return( properties );
 	        	}
-	        	catch( FileNotFoundException e ) {
+	        	catch( final FileNotFoundException e ) {
 	        		// do nothing, return null
 	        	}
         	}
@@ -157,9 +157,9 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor
 
     @Override
     public File getRepoBackup() throws IOException {
-        File archive = new File(descriptor.getParentFile().getParentFile(), RepoBackup.REPO_ARCHIVE);
+        final File archive = new File(descriptor.getParentFile().getParentFile(), RepoBackup.REPO_ARCHIVE);
         if (archive.exists())
-            return archive;
+            {return archive;}
         return null;
     }
 }

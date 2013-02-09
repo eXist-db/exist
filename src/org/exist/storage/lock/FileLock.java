@@ -113,7 +113,7 @@ public class FileLock {
             
             try {
                 read();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 message("Failed to read lock file", null);
                 e.printStackTrace();
             }
@@ -129,7 +129,7 @@ public class FileLock {
                     try {
                         message("Waiting a short time for the lock to be released...", null);
                         wait(HEARTBEAT + 100);
-                    } catch (InterruptedException e) {
+                    } catch (final InterruptedException e) {
                         //Nothing to do
                     }
                 }
@@ -140,7 +140,7 @@ public class FileLock {
                         channel.close();
                     }
                     channel = null;
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     //Nothing to do
                 }
             }
@@ -151,19 +151,19 @@ public class FileLock {
                 return false;
             }
             
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new ReadOnlyException(message("Could not create lock file", e));
         }
         
         try {
             save();
             
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new ReadOnlyException(message("Caught exception while trying to write lock file", e));
         }
         
         //Schedule the heart-beat for the file lock
-        Properties params = new Properties();
+        final Properties params = new Properties();
         params.put(FileLock.class.getName(), this);
         pool.getScheduler().createPeriodicJob(HEARTBEAT,
                 new FileLockHeartBeat(lockFile.getAbsolutePath()), -1, params);
@@ -182,7 +182,7 @@ public class FileLock {
             }
             channel = null;
             
-        } catch (Exception e) {
+        } catch (final Exception e) {
             message("Failed to close lock file", e);
         }
         
@@ -220,7 +220,7 @@ public class FileLock {
      * @return true if there's an active heartbeat
      */
     private boolean checkHeartbeat() {
-        long now = System.currentTimeMillis();
+        final long now = System.currentTimeMillis();
         if (lastHeartbeat < 0 || now - lastHeartbeat > HEARTBEAT) {
             message("Found a stale lockfile. Trying to remove it: ", null);
             release();
@@ -231,7 +231,7 @@ public class FileLock {
     }
 
     private void open() throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
+        final RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
         channel = raf.getChannel();
     }
 
@@ -251,7 +251,7 @@ public class FileLock {
             channel.force(true);
             lastHeartbeat = now;
             
-        } catch(NullPointerException npe) {
+        } catch(final NullPointerException npe) {
             if(pool.isShuttingDown()) {
                 LOG.info("No need to save FileLock, database is shutting down");
             } else {
@@ -272,7 +272,7 @@ public class FileLock {
             throw new IOException(message("Could not read file lock.", null));
         }
         
-        byte[] magic = new byte[8];
+        final byte[] magic = new byte[8];
         buf.get(magic);
         if (!Arrays.equals(magic, MAGIC)) {
             throw new IOException(message("Bad signature in lock file. It does not seem to be an eXist lock file", null));
@@ -281,12 +281,12 @@ public class FileLock {
         lastHeartbeat = buf.getLong();
         buf.clear();
         
-        DateFormat df = DateFormat.getDateInstance();
+        final DateFormat df = DateFormat.getDateInstance();
         message("File lock last access timestamp: " + df.format(getLastHeartbeat()), null);
     }
 
     protected String message(String message, Exception e) {
-        StringBuilder str = new StringBuilder(message);
+        final StringBuilder str = new StringBuilder(message);
         str.append(' ').append(lockFile.getAbsolutePath());
         if (e != null) {
             str.append(": ").append(e.getMessage());

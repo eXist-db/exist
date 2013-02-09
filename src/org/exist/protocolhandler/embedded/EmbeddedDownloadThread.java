@@ -74,7 +74,7 @@ public class EmbeddedDownloadThread extends Thread {
         logger.debug("Thread started." );
         IOException exception=null;
         try {
-            EmbeddedDownload ed = new EmbeddedDownload();
+            final EmbeddedDownload ed = new EmbeddedDownload();
             ed.setBrokerPool(brokerPool);
             ed.stream(xmldbURL, bos);
             
@@ -85,7 +85,7 @@ public class EmbeddedDownloadThread extends Thread {
         } finally {
             try { // NEEDED!
                 bos.close();
-            } catch (IOException ex) {
+            } catch (final IOException ex) {
                 logger.debug(ex);
             }
             logger.debug("Thread stopped." );

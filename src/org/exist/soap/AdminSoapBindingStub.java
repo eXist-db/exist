@@ -439,17 +439,17 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         ((org.apache.axis.client.Service)super.service).setTypeMappingVersion("1.2");
             java.lang.Class cls;
             javax.xml.namespace.QName qName;
-            javax.xml.namespace.QName qName2;
-            java.lang.Class beansf = org.apache.axis.encoding.ser.BeanSerializerFactory.class;
-            java.lang.Class beandf = org.apache.axis.encoding.ser.BeanDeserializerFactory.class;
-            java.lang.Class enumsf = org.apache.axis.encoding.ser.EnumSerializerFactory.class;
-            java.lang.Class enumdf = org.apache.axis.encoding.ser.EnumDeserializerFactory.class;
-            java.lang.Class arraysf = org.apache.axis.encoding.ser.ArraySerializerFactory.class;
-            java.lang.Class arraydf = org.apache.axis.encoding.ser.ArrayDeserializerFactory.class;
-            java.lang.Class simplesf = org.apache.axis.encoding.ser.SimpleSerializerFactory.class;
-            java.lang.Class simpledf = org.apache.axis.encoding.ser.SimpleDeserializerFactory.class;
-            java.lang.Class simplelistsf = org.apache.axis.encoding.ser.SimpleListSerializerFactory.class;
-            java.lang.Class simplelistdf = org.apache.axis.encoding.ser.SimpleListDeserializerFactory.class;
+            final javax.xml.namespace.QName qName2;
+            final java.lang.Class beansf = org.apache.axis.encoding.ser.BeanSerializerFactory.class;
+            final java.lang.Class beandf = org.apache.axis.encoding.ser.BeanDeserializerFactory.class;
+            final java.lang.Class enumsf = org.apache.axis.encoding.ser.EnumSerializerFactory.class;
+            final java.lang.Class enumdf = org.apache.axis.encoding.ser.EnumDeserializerFactory.class;
+            final java.lang.Class arraysf = org.apache.axis.encoding.ser.ArraySerializerFactory.class;
+            final java.lang.Class arraydf = org.apache.axis.encoding.ser.ArrayDeserializerFactory.class;
+            final java.lang.Class simplesf = org.apache.axis.encoding.ser.SimpleSerializerFactory.class;
+            final java.lang.Class simpledf = org.apache.axis.encoding.ser.SimpleDeserializerFactory.class;
+            final java.lang.Class simplelistsf = org.apache.axis.encoding.ser.SimpleListSerializerFactory.class;
+            final java.lang.Class simplelistdf = org.apache.axis.encoding.ser.SimpleListDeserializerFactory.class;
             qName = new javax.xml.namespace.QName("urn:exist", "CollectionDesc");
             cachedSerQNames.add(qName);
             cls = org.exist.soap.CollectionDesc.class;
@@ -538,7 +538,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
     protected org.apache.axis.client.Call createCall() throws java.rmi.RemoteException {
         try {
-            org.apache.axis.client.Call _call = super._createCall();
+            final org.apache.axis.client.Call _call = super._createCall();
             if (super.maintainSessionSet) {
                 _call.setMaintainSession(super.maintainSession);
             }
@@ -557,9 +557,9 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             if (super.cachedPortName != null) {
                 _call.setPortName(super.cachedPortName);
             }
-            java.util.Enumeration keys = super.cachedProperties.keys();
+            final java.util.Enumeration keys = super.cachedProperties.keys();
             while (keys.hasMoreElements()) {
-                java.lang.String key = (java.lang.String) keys.nextElement();
+                final java.lang.String key = (java.lang.String) keys.nextElement();
                 _call.setProperty(key, super.cachedProperties.get(key));
             }
             // All the type mapping information is registered
@@ -572,21 +572,21 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
                     // must set encoding style before registering serializers
                     _call.setEncodingStyle(null);
                     for (int i = 0; i < cachedSerFactories.size(); ++i) {
-                        java.lang.Class cls = (java.lang.Class) cachedSerClasses.get(i);
-                        javax.xml.namespace.QName qName =
+                        final java.lang.Class cls = (java.lang.Class) cachedSerClasses.get(i);
+                        final javax.xml.namespace.QName qName =
                                 (javax.xml.namespace.QName) cachedSerQNames.get(i);
-                        java.lang.Object x = cachedSerFactories.get(i);
+                        final java.lang.Object x = cachedSerFactories.get(i);
                         if (x instanceof Class) {
-                            java.lang.Class sf = (java.lang.Class)
+                            final java.lang.Class sf = (java.lang.Class)
                                  cachedSerFactories.get(i);
-                            java.lang.Class df = (java.lang.Class)
+                            final java.lang.Class df = (java.lang.Class)
                                  cachedDeserFactories.get(i);
                             _call.registerTypeMapping(cls, qName, sf, df, false);
                         }
                         else if (x instanceof javax.xml.rpc.encoding.SerializerFactory) {
-                            org.apache.axis.encoding.SerializerFactory sf = (org.apache.axis.encoding.SerializerFactory)
+                            final org.apache.axis.encoding.SerializerFactory sf = (org.apache.axis.encoding.SerializerFactory)
                                  cachedSerFactories.get(i);
-                            org.apache.axis.encoding.DeserializerFactory df = (org.apache.axis.encoding.DeserializerFactory)
+                            final org.apache.axis.encoding.DeserializerFactory df = (org.apache.axis.encoding.DeserializerFactory)
                                  cachedDeserFactories.get(i);
                             _call.registerTypeMapping(cls, qName, sf, df, false);
                         }
@@ -595,7 +595,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             }
             return _call;
         }
-        catch (java.lang.Throwable _t) {
+        catch (final java.lang.Throwable _t) {
             throw new org.apache.axis.AxisFault("Failure trying to get the Call object", _t);
         }
     }
@@ -604,7 +604,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[0]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
@@ -616,13 +616,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, data, encoding, path, new java.lang.Boolean(replace)});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, data, encoding, path, new java.lang.Boolean(replace)});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -631,7 +631,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[1]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
@@ -643,7 +643,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {userId, password});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {userId, password});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -652,11 +652,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (java.lang.String) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -665,7 +665,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[2]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
@@ -677,13 +677,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -692,7 +692,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[3]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
@@ -704,7 +704,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -713,11 +713,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return ((java.lang.Boolean) _resp).booleanValue();
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return ((java.lang.Boolean) org.apache.axis.utils.JavaUtils.convert(_resp, boolean.class)).booleanValue();
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -726,7 +726,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[4]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
@@ -738,7 +738,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -747,11 +747,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return ((java.lang.Boolean) _resp).booleanValue();
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return ((java.lang.Boolean) org.apache.axis.utils.JavaUtils.convert(_resp, boolean.class)).booleanValue();
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -760,7 +760,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[5]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
@@ -772,7 +772,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -781,11 +781,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return ((java.lang.Boolean) _resp).booleanValue();
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return ((java.lang.Boolean) org.apache.axis.utils.JavaUtils.convert(_resp, boolean.class)).booleanValue();
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -794,7 +794,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[6]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
@@ -806,7 +806,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionName, xupdate});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionName, xupdate});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -815,11 +815,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return ((java.lang.Integer) _resp).intValue();
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return ((java.lang.Integer) org.apache.axis.utils.JavaUtils.convert(_resp, int.class)).intValue();
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -828,7 +828,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[7]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("");
@@ -840,7 +840,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, documentName, xupdate});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, documentName, xupdate});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -849,11 +849,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return ((java.lang.Integer) _resp).intValue();
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return ((java.lang.Integer) org.apache.axis.utils.JavaUtils.convert(_resp, int.class)).intValue();
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -862,7 +862,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[8]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/getBinaryResource");
@@ -874,7 +874,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -883,11 +883,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (byte[]) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (byte[]) org.apache.axis.utils.JavaUtils.convert(_resp, byte[].class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -896,7 +896,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[9]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/getCollectionDesc");
@@ -908,7 +908,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionName});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionName});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -917,11 +917,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (org.exist.soap.CollectionDesc) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (org.exist.soap.CollectionDesc) org.apache.axis.utils.JavaUtils.convert(_resp, org.exist.soap.CollectionDesc.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -930,7 +930,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[10]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/setPermissions");
@@ -942,13 +942,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, resource, owner, ownerGroup, new java.lang.Integer(permissions)});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, resource, owner, ownerGroup, new java.lang.Integer(permissions)});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -957,7 +957,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[11]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/copyResource");
@@ -969,13 +969,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, docPath, destinationPath, newName});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, docPath, destinationPath, newName});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -984,7 +984,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[12]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/copyCollection");
@@ -996,13 +996,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionPath, destinationPath, newName});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionPath, destinationPath, newName});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1011,7 +1011,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[13]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/setUser");
@@ -1023,13 +1023,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name, password, groups, home});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name, password, groups, home});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1038,7 +1038,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[14]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/getUser");
@@ -1050,7 +1050,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, user});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, user});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1059,11 +1059,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (org.exist.soap.UserDesc) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (org.exist.soap.UserDesc) org.apache.axis.utils.JavaUtils.convert(_resp, org.exist.soap.UserDesc.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1072,7 +1072,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[15]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/removeUser");
@@ -1084,13 +1084,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1099,7 +1099,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[16]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/getUsers");
@@ -1111,7 +1111,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1120,11 +1120,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (org.exist.soap.UserDescs) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (org.exist.soap.UserDescs) org.apache.axis.utils.JavaUtils.convert(_resp, org.exist.soap.UserDescs.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1133,7 +1133,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[17]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/getGroups");
@@ -1145,7 +1145,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1154,11 +1154,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (org.exist.soap.Strings) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (org.exist.soap.Strings) org.apache.axis.utils.JavaUtils.convert(_resp, org.exist.soap.Strings.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1167,7 +1167,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[18]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/moveCollection");
@@ -1179,13 +1179,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionPath, destinationPath, newName});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionPath, destinationPath, newName});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1194,7 +1194,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[19]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/moveResource");
@@ -1206,13 +1206,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, docPath, destinationPath, newName});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, docPath, destinationPath, newName});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1221,7 +1221,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[20]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/lockResource");
@@ -1233,13 +1233,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path, userName});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path, userName});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1248,7 +1248,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[21]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/unlockResource");
@@ -1260,13 +1260,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1275,7 +1275,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[22]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/hasUserLock");
@@ -1287,7 +1287,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, path});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1296,11 +1296,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (java.lang.String) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (java.lang.String) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1309,7 +1309,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[23]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/getPermissions");
@@ -1321,7 +1321,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, resource});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, resource});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1330,11 +1330,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (org.exist.soap.Permissions) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (org.exist.soap.Permissions) org.apache.axis.utils.JavaUtils.convert(_resp, org.exist.soap.Permissions.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1343,7 +1343,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[24]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/listCollectionPermissions");
@@ -1355,7 +1355,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1364,11 +1364,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (org.exist.soap.EntityPermissionsList) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (org.exist.soap.EntityPermissionsList) org.apache.axis.utils.JavaUtils.convert(_resp, org.exist.soap.EntityPermissionsList.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1377,7 +1377,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[25]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/listDocumentPermissions");
@@ -1389,7 +1389,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, name});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1398,11 +1398,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (org.exist.soap.EntityPermissionsList) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (org.exist.soap.EntityPermissionsList) org.apache.axis.utils.JavaUtils.convert(_resp, org.exist.soap.EntityPermissionsList.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1411,7 +1411,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[26]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/getIndexedElements");
@@ -1423,7 +1423,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionName, new java.lang.Boolean(inclusive)});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, collectionName, new java.lang.Boolean(inclusive)});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -1432,11 +1432,11 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
             extractAttachments(_call);
             try {
                 return (org.exist.soap.IndexedElements) _resp;
-            } catch (java.lang.Exception _exception) {
+            } catch (final java.lang.Exception _exception) {
                 return (org.exist.soap.IndexedElements) org.apache.axis.utils.JavaUtils.convert(_resp, org.exist.soap.IndexedElements.class);
             }
         }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }
@@ -1445,7 +1445,7 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
-        org.apache.axis.client.Call _call = createCall();
+        final org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[27]);
         _call.setUseSOAPAction(true);
         _call.setSOAPActionURI("urn:exist/storeBinary");
@@ -1457,13 +1457,13 @@ public class AdminSoapBindingStub extends org.apache.axis.client.Stub implements
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, data, path, mimeType, new java.lang.Boolean(replace)});
+ try {        final java.lang.Object _resp = _call.invoke(new java.lang.Object[] {sessionId, data, path, mimeType, new java.lang.Boolean(replace)});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
         }
         extractAttachments(_call);
-  } catch (org.apache.axis.AxisFault axisFaultException) {
+  } catch (final org.apache.axis.AxisFault axisFaultException) {
   throw axisFaultException;
 }
     }

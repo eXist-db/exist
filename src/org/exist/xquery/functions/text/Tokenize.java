@@ -63,10 +63,10 @@ public class Tokenize extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		if(args[0].isEmpty())
-			return Sequence.EMPTY_SEQUENCE;
+			{return Sequence.EMPTY_SEQUENCE;}
 		
-		ValueSequence result = new ValueSequence();
-		SimpleTokenizer tokenizer = new SimpleTokenizer();
+		final ValueSequence result = new ValueSequence();
+		final SimpleTokenizer tokenizer = new SimpleTokenizer();
 		tokenizer.setText(args[0].getStringValue());
 		TextToken token = tokenizer.nextToken(false);
 		while(token != null && token.getType() != TextToken.EOF) {

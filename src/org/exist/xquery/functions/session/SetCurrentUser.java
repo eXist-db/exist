@@ -74,30 +74,30 @@ public class SetCurrentUser extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
 		
-		RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
+		final RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
 		
 		// request object is read from global variable $session
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException(this, "No request object found in the current XQuery context.");
+			{throw new XPathException(this, "No request object found in the current XQuery context.");}
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(this, "Variable $request is not bound to an Java object.");
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+			{throw new XPathException(this, "Variable $request is not bound to an Java object.");}
+		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		if(value.getObject() instanceof RequestWrapper)
 		{
-			RequestWrapper request = (RequestWrapper)value.getObject();
+			final RequestWrapper request = (RequestWrapper)value.getObject();
 		
 			//get the username and password parameters
-			String userName = args[0].getStringValue();
-			String passwd = args[1].getStringValue();
+			final String userName = args[0].getStringValue();
+			final String passwd = args[1].getStringValue();
 			
 			//try and validate the user and password
-			SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
+			final SecurityManager security = context.getBroker().getBrokerPool().getSecurityManager();
 			Subject user;
 			try {
 				user = security.authenticate(userName, passwd);
-			} catch (AuthenticationException e) {
+			} catch (final AuthenticationException e) {
 				logger.warn("Could not validate user " + userName + " ["+ e.getMessage() + "]");
 				return BooleanValue.FALSE;
 			}
@@ -107,7 +107,7 @@ public class SetCurrentUser extends BasicFunction {
 
 			//validated user, store in session
 			context.getBroker().setUser(user);
-			SessionWrapper session = request.getSession(true);
+			final SessionWrapper session = request.getSession(true);
 			session.setAttribute("user", userName);
 			session.setAttribute("password", new StringValue(passwd));
 			return BooleanValue.TRUE;

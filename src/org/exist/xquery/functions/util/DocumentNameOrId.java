@@ -122,14 +122,14 @@ public class DocumentNameOrId extends BasicFunction {
         try {
         
             if(Type.subTypeOf(args[0].getItemType(), Type.NODE)) {
-                NodeValue node = (NodeValue) args[0].itemAt(0);
+                final NodeValue node = (NodeValue) args[0].itemAt(0);
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                    NodeProxy proxy = (NodeProxy) node;
+                    final NodeProxy proxy = (NodeProxy) node;
                     doc = proxy.getDocument();
                     doc.getUpdateLock().acquire(Lock.READ_LOCK);
                 }
             } else if(Type.subTypeOf(args[0].getItemType(), Type.STRING)) {
-                String path = args[0].getStringValue();
+                final String path = args[0].getStringValue();
                 doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
             }
 
@@ -152,33 +152,33 @@ public class DocumentNameOrId extends BasicFunction {
             } else {
                 if(fnName.equals(QN_GET_RESOURCE_BY_ABSOLUTE_ID)) {
                     
-                    IntegerValue absoluteIdParam = (IntegerValue)args[0].itemAt(0);
+                    final IntegerValue absoluteIdParam = (IntegerValue)args[0].itemAt(0);
                     BigInteger absoluteId = (BigInteger)absoluteIdParam.toJavaObject(BigInteger.class);
                     
-                    byte resourceType = absoluteId.testBit(0) ? DocumentImpl.BINARY_FILE : DocumentImpl.XML_FILE;
+                    final byte resourceType = absoluteId.testBit(0) ? DocumentImpl.BINARY_FILE : DocumentImpl.XML_FILE;
                     absoluteId = absoluteId.shiftRight(1);
-                    int documentId = absoluteId.and(BigInteger.valueOf(0xFFFFFFFF)).intValue();
+                    final int documentId = absoluteId.and(BigInteger.valueOf(0xFFFFFFFF)).intValue();
                     absoluteId = absoluteId.shiftRight(32);
-                    int collectionId = absoluteId.and(BigInteger.valueOf(0xFFFFFFFF)).intValue();
+                    final int collectionId = absoluteId.and(BigInteger.valueOf(0xFFFFFFFF)).intValue();
                     
                     doc = context.getBroker().getResourceById(collectionId, resourceType, documentId);
                     if(doc instanceof BinaryDocument) {
-                        BinaryDocument bin = (BinaryDocument) doc;
-                        InputStream is = context.getBroker().getBinaryResource(bin);
-                        Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
+                        final BinaryDocument bin = (BinaryDocument) doc;
+                        final InputStream is = context.getBroker().getBinaryResource(bin);
+                        final Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
                         return b64doc;
                     } else {
                         return new NodeProxy(doc);
                     }                    
                 }
             }
-        } catch (LockException le) {
+        } catch (final LockException le) {
             throw new XPathException(this, "Unable to lock resource", le);
-        } catch (IOException ioe) {
+        } catch (final IOException ioe) {
             throw new XPathException(this, "Unable to read binary resource", ioe);
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw new XPathException(this, "Invalid resource uri: " + args[0].getStringValue(), e);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new XPathException(this, args[0].getStringValue() + ": permission denied to read resource");
         } finally {
             if(doc != null) { 

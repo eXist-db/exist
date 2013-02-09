@@ -90,32 +90,32 @@ public class XQueryPool extends Object2ObjectHashMap {
 		super(27);
 		lastTimeOutCheck = System.currentTimeMillis();
 
-		Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
-		Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
-		Long t = (Long) conf.getProperty(PROPERTY_TIMEOUT);
-		Long tci = (Long) conf.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
-		NumberFormat nf = NumberFormat.getNumberInstance();
+		final Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
+		final Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
+		final Long t = (Long) conf.getProperty(PROPERTY_TIMEOUT);
+		final Long tci = (Long) conf.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
+		final NumberFormat nf = NumberFormat.getNumberInstance();
 
 		if (maxPoolSz != null)
-			maxPoolSize = maxPoolSz.intValue();
+			{maxPoolSize = maxPoolSz.intValue();}
 		else
-			maxPoolSize = MAX_POOL_SIZE;
+			{maxPoolSize = MAX_POOL_SIZE;}
 
 		if (maxStSz != null)
-			maxStackSize = maxStSz.intValue();
+			{maxStackSize = maxStSz.intValue();}
 		else
-			maxStackSize = MAX_STACK_SIZE;
+			{maxStackSize = MAX_STACK_SIZE;}
 
 		if (t != null)
-			timeout = t.longValue();
+			{timeout = t.longValue();}
 		else
-			timeout = TIMEOUT;
+			{timeout = TIMEOUT;}
 
 		// TODO : check that it is inferior to t
 		if (tci != null)
-			timeoutCheckInterval = tci.longValue();
+			{timeoutCheckInterval = tci.longValue();}
 		else
-			timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;
+			{timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;}
 
 		LOG.info("QueryPool: " +
 			"size = " + nf.format(maxPoolSize) + "; " +
@@ -130,10 +130,10 @@ public class XQueryPool extends Object2ObjectHashMap {
 	}
 
 	private void returnModules(XQueryContext context, ExternalModule self) {
-		for (Iterator<Module> it = context.getRootModules(); it.hasNext();) {
-			Module module = (Module) it.next();
+		for (final Iterator<Module> it = context.getRootModules(); it.hasNext();) {
+			final Module module = (Module) it.next();
 			if (module != self && !module.isInternalModule()) {
-				ExternalModule extModule = (ExternalModule) module;
+				final ExternalModule extModule = (ExternalModule) module;
 				// ((ModuleContext)extModule.getContext()).setParentContext(null);
 				// Don't return recursively, since all modules are listed in the
 				// top-level context
@@ -144,7 +144,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 
 	private synchronized void returnObject(Source source, Object o) {
 		if (size() >= maxPoolSize)
-			timeoutCheck();
+			{timeoutCheck();}
 		if (size() < maxPoolSize) {
 			Stack stack = (Stack) get(source);
 			if (stack == null) {
@@ -157,7 +157,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 					if (stack.get(i) == o)
 						// query already in pool. may happen for modules.
 						// don't add it a second time.
-						return;
+						{return;}
 				}
 				stack.push(o);
 			}
@@ -165,27 +165,27 @@ public class XQueryPool extends Object2ObjectHashMap {
 	}
 
 	private synchronized Object borrowObject(DBBroker broker, Source source) {
-		int idx = getIndex(source);
+		final int idx = getIndex(source);
 		if (idx < 0) {
 			return null;
 		}
-		Source key = (Source) keys[idx];
+		final Source key = (Source) keys[idx];
 		int validity = key.isValid(broker);
 		if (validity == Source.UNKNOWN)
-			validity = key.isValid(source);
+			{validity = key.isValid(source);}
 		if (validity == Source.INVALID || validity == Source.UNKNOWN) {
 			keys[idx] = REMOVED;
 			values[idx] = null;
 			LOG.debug(source.getKey() + " is invalid");
 			return null;
 		}
-		Stack stack = (Stack) values[idx];
+		final Stack stack = (Stack) values[idx];
 		if (stack == null || stack.isEmpty())
-			return null;
+			{return null;}
 		// now check if the compiled expression is valid
 		// it might become invalid if an imported module has changed.
-		CompiledXQuery query = (CompiledXQuery) stack.pop();
-		XQueryContext context = query.getContext();
+		final CompiledXQuery query = (CompiledXQuery) stack.pop();
+		final XQueryContext context = query.getContext();
 		//context.setBroker(broker);
 		if (!query.isValid()) {
 			// the compiled query is no longer valid: one of the imported
@@ -193,20 +193,20 @@ public class XQueryPool extends Object2ObjectHashMap {
 			remove(key);
 			return null;
 		} else
-			return query;
+			{return query;}
 	}
 
 	public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) throws PermissionDeniedException {
-		CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
+		final CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
 		if (query == null)
-			return null;
+			{return null;}
 		
 		//check execution permission
 		source.validate(broker.getSubject(), Permission.EXECUTE);
 		
 		// now check if the compiled expression is valid
 		// it might become invalid if an imported module has changed.
-		XQueryContext context = query.getContext();
+		final XQueryContext context = query.getContext();
 		//context.setBroker(broker);
 		return query;
 		// if (!borrowModules(broker, context)) {
@@ -233,15 +233,15 @@ public class XQueryPool extends Object2ObjectHashMap {
 	}
 
 	private synchronized boolean borrowModules(DBBroker broker, XQueryContext context) {
-		Map<String, Module> borrowedModules = new TreeMap<String, Module>();
-		for (Iterator<Module> it = context.getAllModules(); it.hasNext();) {
-			Module module = it.next();
+		final Map<String, Module> borrowedModules = new TreeMap<String, Module>();
+		for (final Iterator<Module> it = context.getAllModules(); it.hasNext();) {
+			final Module module = it.next();
 			if (module == null || !module.isInternalModule()) {
-				ExternalModule extModule = (ExternalModule) module;
-				ExternalModule borrowedModule = borrowModule(broker, extModule.getSource(), context);
+				final ExternalModule extModule = (ExternalModule) module;
+				final ExternalModule borrowedModule = borrowModule(broker, extModule.getSource(), context);
 				if (borrowedModule == null) {
-					for (Iterator<Module> it2 = borrowedModules.values().iterator(); it2.hasNext();) {
-						ExternalModule moduleToReturn = (ExternalModule) it2.next();
+					for (final Iterator<Module> it2 = borrowedModules.values().iterator(); it2.hasNext();) {
+						final ExternalModule moduleToReturn = (ExternalModule) it2.next();
 						returnObject(moduleToReturn.getSource(), moduleToReturn);
 					}
 					return false;
@@ -249,10 +249,10 @@ public class XQueryPool extends Object2ObjectHashMap {
 				borrowedModules.put(extModule.getNamespaceURI(), borrowedModule);
 			}
 		}
-		for (Iterator it = borrowedModules.entrySet().iterator(); it.hasNext();) {
-			Map.Entry entry = (Map.Entry) it.next();
-			String moduleNamespace = (String) entry.getKey();
-			ExternalModule module = (ExternalModule) entry.getValue();
+		for (final Iterator it = borrowedModules.entrySet().iterator(); it.hasNext();) {
+			final Map.Entry entry = (Map.Entry) it.next();
+			final String moduleNamespace = (String) entry.getKey();
+			final ExternalModule module = (ExternalModule) entry.getValue();
 			// Modules that don't appear in the root context will be set in
 			// context.allModules by
 			// calling setModule below on the module that does import them
@@ -260,16 +260,16 @@ public class XQueryPool extends Object2ObjectHashMap {
 			if (context.getModule(moduleNamespace) != null) {
 				context.setModule(moduleNamespace, module);
 			}
-			List<String> importedModuleNamespaceUris = new ArrayList<String>();
-			for (Iterator<Module> it2 = module.getContext().getModules(); it2.hasNext();) {
-				Module nestedModule = it2.next();
+			final List<String> importedModuleNamespaceUris = new ArrayList<String>();
+			for (final Iterator<Module> it2 = module.getContext().getModules(); it2.hasNext();) {
+				final Module nestedModule = it2.next();
 				if (!nestedModule.isInternalModule()) {
 					importedModuleNamespaceUris.add(nestedModule.getNamespaceURI());
 				}
 			}
-			for (Iterator<String> it2 = importedModuleNamespaceUris.iterator(); it2.hasNext();) {
-				String namespaceUri = (String) it2.next();
-				Module imported = (Module) borrowedModules.get(namespaceUri);
+			for (final Iterator<String> it2 = importedModuleNamespaceUris.iterator(); it2.hasNext();) {
+				final String namespaceUri = (String) it2.next();
+				final Module imported = (Module) borrowedModules.get(namespaceUri);
 				module.getContext().setModule(namespaceUri, imported);
 			}
 		}
@@ -277,10 +277,10 @@ public class XQueryPool extends Object2ObjectHashMap {
 	}
 
 	public synchronized ExternalModule borrowModule(DBBroker broker, Source source, XQueryContext rootContext) {
-		ExternalModule module = (ExternalModule) borrowObject(broker, source);
+		final ExternalModule module = (ExternalModule) borrowObject(broker, source);
 		if (module == null)
-			return null;
-		XQueryContext context = module.getContext();
+			{return null;}
+		final XQueryContext context = module.getContext();
 		//context.setBroker(broker);
 		if (!module.moduleIsValid(broker)) {
 			LOG.debug("Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded");
@@ -294,7 +294,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 			((ModuleContext) module.getContext()).updateModuleRefs(rootContext);
 			try {
 				module.analyzeGlobalVars();
-			} catch (XPathException e) {
+			} catch (final XPathException e) {
 				LOG.warn(e.getMessage(), e);
 			}
 			return module;
@@ -302,8 +302,8 @@ public class XQueryPool extends Object2ObjectHashMap {
 	}
 
     public synchronized void clear() {
-        for (Iterator i = iterator(); i.hasNext();) {
-            Source next = (Source) i.next();
+        for (final Iterator i = iterator(); i.hasNext();) {
+            final Source next = (Source) i.next();
             remove(next);
         }
     }
@@ -312,13 +312,13 @@ public class XQueryPool extends Object2ObjectHashMap {
 		final long currentTime = System.currentTimeMillis();
 
 		if (timeoutCheckInterval < 0L)
-			return;
+			{return;}
 
 		if (currentTime - lastTimeOutCheck < timeoutCheckInterval)
-			return;
+			{return;}
 
-		for (Iterator i = iterator(); i.hasNext();) {
-			Source next = (Source) i.next();
+		for (final Iterator i = iterator(); i.hasNext();) {
+			final Source next = (Source) i.next();
 			if (currentTime - next.getCacheTimestamp() > timeout) {
 				remove(next);
 			}

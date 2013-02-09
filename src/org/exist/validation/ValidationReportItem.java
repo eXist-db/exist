@@ -99,7 +99,7 @@ public class ValidationReportItem {
     
     public String toString(){
         
-        String reportType=getTypeText();
+        final String reportType=getTypeText();
         
         return (reportType
                 + " (" + lineNumber +","+ columnNumber + ") : " + message);

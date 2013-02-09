@@ -76,23 +76,23 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
     @Override
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
 
-        if(context.getSubject().getName().equals("guest")) {
-            XPathException xPathException = 
+        if("guest".equals(context.getSubject().getName())) {
+            final XPathException xPathException = 
             	new XPathException(this, "Permission denied, calling account '" + context.getSubject().getName() + "' must be an authenticated user to call this function.");
             logger.error("Invalid account", xPathException);
             throw xPathException;
         }
 
-        String userName = args[0].getStringValue();
-        String groupName = args[1].getStringValue();
+        final String userName = args[0].getStringValue();
+        final String groupName = args[1].getStringValue();
 
         logger.info("Attempting to remove user '" + userName + "' from group '" + groupName + "'");
 
         try {
 
-            SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
+            final SecurityManager sm = context.getBroker().getBrokerPool().getSecurityManager();
 
-            Account account = sm.getAccount(userName);
+            final Account account = sm.getAccount(userName);
 
             account.remGroup(groupName);
 
@@ -102,7 +102,7 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
             //in the real world we should not be able to do either. The modelling of group
             //membership as a concern of user data is wrong! Should follow Unix approach.
             //see XMLDBAddUserToGroup also
-            Subject currentSubject = context.getBroker().getSubject();
+            final Subject currentSubject = context.getBroker().getSubject();
             try {
                 //escalate
                 context.getBroker().setSubject(sm.getSystemSubject());
@@ -116,11 +116,11 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
 
             return BooleanValue.TRUE;
 
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
 			throw new XPathException(this, 
 					"Permission denied, calling account '" + context.getSubject().getName()
 					+ "' do not authorize to call this function.");
-        } catch(EXistException exe) {
+        } catch(final EXistException exe) {
             logger.error("Failed to remove user '" + userName + "' from group '" + groupName + "'", exe);
         } finally {
        }

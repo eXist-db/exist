@@ -63,7 +63,7 @@ public abstract class Step extends AbstractExpression {
     }
 
     public void insertPredicate(Expression previous, Expression predicate) {
-        int idx = predicates.indexOf(previous);
+        final int idx = predicates.indexOf(previous);
         if (idx < 0) {
             LOG.warn("Old predicate not found: " + ExpressionDumper.dump(previous) + "; in: " + ExpressionDumper.dump(this));
             return;
@@ -85,26 +85,26 @@ public abstract class Step extends AbstractExpression {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         if (test != null && test.getName() != null &&
                 test.getName().getPrefix() != null &&
-                !test.getName().getPrefix().equals("") && context.inScopePrefixes !=  null &&
+                !"".equals(test.getName().getPrefix()) && context.inScopePrefixes !=  null &&
                 context.getURIForPrefix(test.getName().getPrefix()) == null)
-            throw new XPathException(this, ErrorCodes.XPST0081, "undeclared prefix '"
-                + test.getName().getPrefix() + "'");
+            {throw new XPathException(this, ErrorCodes.XPST0081, "undeclared prefix '"
+                + test.getName().getPrefix() + "'");}
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         this.contextId = contextInfo.getContextId();
         if (predicates.size() > 0) {
-            AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
+            final AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
             newContext.setStaticType(this.axis == Constants.SELF_AXIS ? contextInfo.getStaticType() : Type.NODE);
             newContext.setParent(this);
             newContext.setContextStep(this);
-            for (Predicate pred : predicates) {
+            for (final Predicate pred : predicates) {
                 pred.analyze(newContext);
             }
             if (predicates.size() == 1 && (newContext.getFlags() & POSITIONAL_PREDICATE) != 0)
-                hasPositionalPredicate = true;
+                {hasPositionalPredicate = true;}
         }
         // if we are on the self axis, remember the static return type given in the context
         if (this.axis == Constants.SELF_AXIS)
-            staticReturnType = contextInfo.getStaticType();
+            {staticReturnType = contextInfo.getStaticType();}
     }
 
     public abstract Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException;
@@ -137,30 +137,30 @@ public abstract class Step extends AbstractExpression {
      */
     public void dump(ExpressionDumper dumper) {
         if (axis != Constants.UNKNOWN_AXIS)
-            dumper.display( Constants.AXISSPECIFIERS[axis] );
+            {dumper.display( Constants.AXISSPECIFIERS[axis] );}
         dumper.display( "::" );
         if ( test != null )
             //TODO : toString() or... dump ?
-            dumper.display( test.toString() );
+            {dumper.display( test.toString() );}
         else
-            dumper.display( "node()" );
+            {dumper.display( "node()" );}
         if ( predicates.size() > 0 )
-            for (Predicate pred : predicates) {
+            for (final Predicate pred : predicates) {
                 pred.dump(dumper);
             }
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         if (axis != Constants.UNKNOWN_AXIS)
-            result.append( Constants.AXISSPECIFIERS[axis] );
+            {result.append( Constants.AXISSPECIFIERS[axis] );}
         result.append( "::" );
         if (test != null )
-            result.append( test.toString() );
+            {result.append( test.toString() );}
         else
-            result.append( "node()" );
+            {result.append( "node()" );}
         if (predicates.size() > 0 )
-            for (Predicate pred : predicates) {
+            for (final Predicate pred : predicates) {
                 result.append(pred.toString());
             }
         return result.toString();
@@ -172,7 +172,7 @@ public abstract class Step extends AbstractExpression {
             //Type.ITEM by default : this may change *after* evaluation
             return staticReturnType;
         } else
-            return Type.NODE;
+            {return Type.NODE;}
     }
 
     public int getCardinality() {
@@ -196,7 +196,7 @@ public abstract class Step extends AbstractExpression {
      */
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
-        for (Predicate pred : predicates) {
+        for (final Predicate pred : predicates) {
             pred.resetState(postOptimization);
         }
     }

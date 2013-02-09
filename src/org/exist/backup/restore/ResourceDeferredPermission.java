@@ -44,12 +44,12 @@ class ResourceDeferredPermission extends AbstractDeferredPermission<Resource> {
     @Override
     public void apply() {
         try {
-            UserManagementService service = (UserManagementService)getTarget().getParentCollection().getService("UserManagementService", "1.0");
-            Permission permissions = service.getPermissions(getTarget());
+            final UserManagementService service = (UserManagementService)getTarget().getParentCollection().getService("UserManagementService", "1.0");
+            final Permission permissions = service.getPermissions(getTarget());
             service.setPermissions(getTarget(), getOwner(), getGroup(), getMode(), getAces()); //persist
-        } catch(XMLDBException xe) {
+        } catch(final XMLDBException xe) {
             String name = "unknown";
-            try { name = getTarget().getId(); } catch(XMLDBException x) { LOG.error(x.getMessage(), x); }
+            try { name = getTarget().getId(); } catch(final XMLDBException x) { LOG.error(x.getMessage(), x); }
             final String msg = "ERROR: Failed to set permissions on Document '" + name + "'.";
             LOG.error(msg, xe);
             getListener().warn(msg);

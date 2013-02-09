@@ -111,20 +111,20 @@ public class RemoteUserManagementService implements EXistUserManagementService {
     @Override
     public void setPermissions(Resource res, Permission perm) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
-        String path = ((RemoteCollection)res.getParentCollection()).getPath() + "/" + res.getId();
+        final String path = ((RemoteCollection)res.getParentCollection()).getPath() + "/" + res.getId();
         try {
-            List<Object> params = new ArrayList<Object>(5);
+            final List<Object> params = new ArrayList<Object>(5);
             params.add(path);
             params.add(perm.getOwner().getName());
             params.add(perm.getGroup().getName());
-            params.add(new Integer(perm.getMode()));
+            params.add(Integer.valueOf(perm.getMode()));
             if(perm instanceof ACLPermission) {
                 params.add(getACEs(perm));
             }
 
             parent.getClient().execute("setPermissions", params);
             
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -134,60 +134,60 @@ public class RemoteUserManagementService implements EXistUserManagementService {
      */
     @Override
     public void setPermissions(Collection child, Permission perm) throws XMLDBException {
-        String path = ((RemoteCollection)child).getPath();
+        final String path = ((RemoteCollection)child).getPath();
         try {
-            List<Object> params = new ArrayList<Object>(5);
+            final List<Object> params = new ArrayList<Object>(5);
             params.add(path);
             params.add(perm.getOwner().getName());
             params.add(perm.getGroup().getName());
-            params.add(new Integer(perm.getMode()));
+            params.add(Integer.valueOf(perm.getMode()));
             if(perm instanceof ACLPermission) {
                 params.add(getACEs(perm));
             }
 
             parent.getClient().execute("setPermissions", params);
 
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
 
     @Override
     public void setPermissions(Collection child, String owner, String group, int mode, List<ACEAider> aces) throws XMLDBException {
-        String path = ((RemoteCollection)child).getPath();
+        final String path = ((RemoteCollection)child).getPath();
         try {
-            List<Object> params = new ArrayList<Object>(5);
+            final List<Object> params = new ArrayList<Object>(5);
             params.add(path);
             params.add(owner);
             params.add(group);
-            params.add(new Integer(mode));
+            params.add(Integer.valueOf(mode));
             if(aces != null) {
                 params.add(aces);
             }
 
             parent.getClient().execute("setPermissions", params);
 
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
     
     @Override
     public void setPermissions(Resource res, String owner, String group, int mode, List<ACEAider> aces) throws XMLDBException {
-        String path = ((RemoteCollection)res.getParentCollection()).getPath() + "/" + res.getId();
+        final String path = ((RemoteCollection)res.getParentCollection()).getPath() + "/" + res.getId();
         try {
-            List<Object> params = new ArrayList<Object>(5);
+            final List<Object> params = new ArrayList<Object>(5);
             params.add(path);
             params.add(owner);
             params.add(group);
-            params.add(new Integer(mode));
+            params.add(Integer.valueOf(mode));
             if(aces != null) {
                 params.add(aces);
             }
 
             parent.getClient().execute("setPermissions", params);
 
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -203,13 +203,13 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 	 */
 	public void chmod(Resource res, String mode) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+		final String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
-            List<Object> params = new ArrayList<Object>(2);
+            final List<Object> params = new ArrayList<Object>(2);
 			params.add(path);
 			params.add(mode);
 			parent.getClient().execute("setPermissions", params);
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
@@ -219,13 +219,13 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 	 */
 	public void chmod(Resource res, int mode) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+		final String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
-            List<Object> params = new ArrayList<Object>(2);
+            final List<Object> params = new ArrayList<Object>(2);
 			params.add(path);
-			params.add(new Integer(mode));
+			params.add(Integer.valueOf(mode));
 			parent.getClient().execute("setPermissions", params);
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
@@ -239,12 +239,12 @@ public class RemoteUserManagementService implements EXistUserManagementService {
     @Override
     public void chmod(String mode) throws XMLDBException {
         try {
-            List<Object> params = new ArrayList<Object>(2);
+            final List<Object> params = new ArrayList<Object>(2);
             params.add(parent.getPath());
             params.add(mode);
             
             parent.getClient().execute("setPermissions", params);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -255,12 +255,12 @@ public class RemoteUserManagementService implements EXistUserManagementService {
     @Override
     public void chmod(int mode) throws XMLDBException {
         try {
-            List<Object> params = new ArrayList<Object>(2);
+            final List<Object> params = new ArrayList<Object>(2);
             params.add(parent.getPath());
-            params.add(new Integer(mode));
+            params.add(Integer.valueOf(mode));
 
             parent.getClient().execute("setPermissions", params);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -270,13 +270,13 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 	 */
 	public void lockResource(Resource res, Account u) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+		final String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
-            List<Object> params = new ArrayList<Object>(2);
+            final List<Object> params = new ArrayList<Object>(2);
 			params.add(path);
 			params.add(u.getName());
 			parent.getClient().execute("lockResource", params);
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
@@ -286,13 +286,13 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 	 */
 	public String hasUserLock(Resource res) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+		final String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
-            List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(1);
 			params.add(path);
-			String userName = (String)parent.getClient().execute("hasUserLock", params);
+			final String userName = (String)parent.getClient().execute("hasUserLock", params);
 			return userName != null && userName.length() > 0 ? userName : null;
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
@@ -302,12 +302,12 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 	 */
 	public void unlockResource(Resource res) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
-		String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+		final String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
 		try {
-            List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(1);
 			params.add(path);
 			parent.getClient().execute("unlockResource", params);
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
@@ -322,13 +322,13 @@ public class RemoteUserManagementService implements EXistUserManagementService {
     @Override
     public void chown(Account u, String group) throws XMLDBException {
         try {
-            List<Object> params = new ArrayList<Object>(4);
+            final List<Object> params = new ArrayList<Object>(4);
             params.add(parent.getPath());
             params.add(u.getName());
             params.add(group);
 
             parent.getClient().execute("setPermissions", params);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -344,15 +344,15 @@ public class RemoteUserManagementService implements EXistUserManagementService {
     @Override
     public void chown(Resource res, Account u, String group) throws XMLDBException {
         //TODO : use dedicated function in XmldbURI
-        String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+        final String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
         try {
-            List<Object> params = new ArrayList<Object>(4);
+            final List<Object> params = new ArrayList<Object>(4);
             params.add(path);
             params.add(u.getName());
             params.add(group);
 
             parent.getClient().execute("setPermissions", params);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -378,13 +378,13 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 
             if(creationTime == null) {
             
-                List<Object> params = new ArrayList<Object>(2);
+                final List<Object> params = new ArrayList<Object>(2);
                 params.add(((RemoteCollection) cParent).getPath());
                 params.add(name);
 
                 creationTime = ((Long)parent.getClient().execute("getSubCollectionCreationTime", params)).longValue();
             }   
-        } catch(XmlRpcException e) {
+        } catch(final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
 
@@ -403,11 +403,11 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 
             if(perm == null) {
             
-                List<Object> params = new ArrayList<Object>(2);
+                final List<Object> params = new ArrayList<Object>(2);
                 params.add(((RemoteCollection) cParent).getPath());
                 params.add(name);
 
-                HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getSubCollectionPermissions", params);
+                final HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getSubCollectionPermissions", params);
 
                 final String owner = (String)result.get("owner");
                 final String group = (String)result.get("group");
@@ -415,13 +415,13 @@ public class RemoteUserManagementService implements EXistUserManagementService {
                 final Object[] acl = (Object[])result.get("acl");
                 List aces = null;
                 if (acl != null)
-                	aces = Arrays.asList(acl);
+                	{aces = Arrays.asList(acl);}
 
                 perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
             }   
-        } catch(XmlRpcException e) {
+        } catch(final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
         }
 
@@ -440,11 +440,11 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 
             if(perm == null) {
             
-                List<Object> params = new ArrayList<Object>(2);
+                final List<Object> params = new ArrayList<Object>(2);
                 params.add(((RemoteCollection) cParent).getPath());
                 params.add(name);
 
-                HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getSubResourcePermissions", params);
+                final HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getSubResourcePermissions", params);
 
                 final String owner = (String)result.get("owner");
                 final String group = (String)result.get("group");
@@ -452,13 +452,13 @@ public class RemoteUserManagementService implements EXistUserManagementService {
                 final Object[] acl = (Object[])result.get("acl");
                 List aces = null;
                 if (acl != null)
-                	aces = Arrays.asList(acl);
+                	{aces = Arrays.asList(acl);}
 
                 perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
             }   
-        } catch(XmlRpcException e) {
+        } catch(final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
         }
 
@@ -498,9 +498,9 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 
             return getPermission(owner, group, mode, (List<ACEAider>)aces);
 
-        } catch(XmlRpcException e) {
+        } catch(final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
         }
     }
@@ -536,12 +536,12 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 
         if(perm == null) {
             //TODO : use dedicated function in XmldbURI
-            String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+            final String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
             try {
-                List<Object> params = new ArrayList<Object>(1);
+                final List<Object> params = new ArrayList<Object>(1);
                 params.add(path);
 
-                HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
+                final HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("getPermissions", params);
 
                 final String owner = (String)result.get("owner");
                 final String group = (String)result.get("group");
@@ -549,13 +549,13 @@ public class RemoteUserManagementService implements EXistUserManagementService {
                 final Object[] acl = (Object[])result.get("acl");
                 List aces = null;
                 if (acl != null)
-                	aces = Arrays.asList(acl);
+                	{aces = Arrays.asList(acl);}
 
                 perm = getPermission(owner, group, mode, (List<ACEAider>)aces);
                 
-            } catch (XmlRpcException e) {
+            } catch (final XmlRpcException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-            } catch(PermissionDeniedException pde) {
+            } catch(final PermissionDeniedException pde) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
             }
         }
@@ -566,11 +566,11 @@ public class RemoteUserManagementService implements EXistUserManagementService {
     @Override
     public Permission[] listResourcePermissions() throws XMLDBException {
         try {
-            List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(1);
             params.add(parent.getPath());
-            HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("listDocumentPermissions", params);
-            Permission perm[] = new Permission[result.size()];
-            String[] resources = parent.listResources();
+            final HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("listDocumentPermissions", params);
+            final Permission perm[] = new Permission[result.size()];
+            final String[] resources = parent.listResources();
             Object[] t;
             for(int i = 0; i < resources.length; i++) {
                 t = (Object[]) result.get(resources[i]);
@@ -585,9 +585,9 @@ public class RemoteUserManagementService implements EXistUserManagementService {
                 perm[i] = getPermission(owner, group, mode, (List<ACEAider>)aces);
             }
             return perm;
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
         }
     }
@@ -595,11 +595,11 @@ public class RemoteUserManagementService implements EXistUserManagementService {
     @Override
     public Permission[] listCollectionPermissions() throws XMLDBException {
         try {
-            List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(1);
             params.add(parent.getPath());
-            HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("listCollectionPermissions", params);
-            Permission perm[] = new Permission[result.size()];
-            String collections[] = parent.listChildCollections();
+            final HashMap<?,?> result = (HashMap<?,?>) parent.getClient().execute("listCollectionPermissions", params);
+            final Permission perm[] = new Permission[result.size()];
+            final String collections[] = parent.listChildCollections();
             Object[] t;
             for (int i = 0; i < collections.length; i++) {
                 t = (Object[]) result.get(collections[i]);
@@ -615,9 +615,9 @@ public class RemoteUserManagementService implements EXistUserManagementService {
                 perm[i] = getPermission(owner, group, mode, (List<ACEAider>)aces);
             }
             return perm;
-        } catch(XmlRpcException e) {
+        } catch(final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
         }
     }
@@ -691,7 +691,7 @@ public class RemoteUserManagementService implements EXistUserManagementService {
             
             return u;
                         
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             return null;
         }
     }
@@ -714,12 +714,12 @@ public class RemoteUserManagementService implements EXistUserManagementService {
                 int uid = -1;
                 try {
                     uid = (Integer)tab.get("uid");
-                } catch (java.lang.NumberFormatException e) {
+                } catch (final java.lang.NumberFormatException e) {
                     
                 }
 					
                 u[i] = new UserAider(uid, (String) tab.get("realmId"), (String) tab.get("name"));
-                Object[] groups = (Object[]) tab.get("groups");
+                final Object[] groups = (Object[]) tab.get("groups");
                 for (int j = 0; j < groups.length; j++) {
                     u[i].addGroup((String) groups[j]);
                 }
@@ -795,20 +795,20 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 	 */
 	public void removeAccount(Account u) throws XMLDBException {
 		try {
-            List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(1);
 			params.add(u.getName());
 			parent.getClient().execute("removeAccount", params);
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
 
 	public void removeGroup(Group role) throws XMLDBException {
 		try {
-            List<Object> params = new ArrayList<Object>(1);
+            final List<Object> params = new ArrayList<Object>(1);
 			params.add(role.getName());
 			parent.getClient().execute("removeGroup", params);
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
@@ -961,7 +961,7 @@ public class RemoteUserManagementService implements EXistUserManagementService {
                 final String[] gl = user.getGroups();
                 params.add(gl);
                 parent.getClient().execute("updateAccount", params);
-            } catch (XmlRpcException e) {
+            } catch (final XmlRpcException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
             }
         }
@@ -972,11 +972,11 @@ public class RemoteUserManagementService implements EXistUserManagementService {
     @Override
     public void removeGroupMember(final String group, final String account) throws XMLDBException {
         try {
-            List<Object> params = new ArrayList<Object>(3);
+            final List<Object> params = new ArrayList<Object>(3);
             params.add(group);
             params.add(account);
             parent.getClient().execute("removeGroupMember", params);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
     }
@@ -986,24 +986,24 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 	 */
 	public String[] getGroups() throws XMLDBException {
 		try {
-			Object[] v = (Object[]) parent.getClient().execute("getGroups", new ArrayList<Object>());
-			String[] groups = new String[v.length];
+			final Object[] v = (Object[]) parent.getClient().execute("getGroups", new ArrayList<Object>());
+			final String[] groups = new String[v.length];
             System.arraycopy(v, 0, groups, 0, v.length);
 			return groups;
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
 
 	@Override
 	public void addUser(User user) throws XMLDBException {
-		Account account = new UserAider(user.getName());
+		final Account account = new UserAider(user.getName());
 		addAccount(account);
 	}
 
 	@Override
 	public void updateUser(User user) throws XMLDBException {
-		Account account = new UserAider(user.getName());
+		final Account account = new UserAider(user.getName());
 		account.setPassword(user.getPassword());
 		//TODO: groups
 		updateAccount(account);
@@ -1028,7 +1028,7 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 
 	@Override
 	public void lockResource(Resource res, User u) throws XMLDBException {
-		Account account = new UserAider(u.getName());
+		final Account account = new UserAider(u.getName());
 		lockResource(res, account);
 	}
 }

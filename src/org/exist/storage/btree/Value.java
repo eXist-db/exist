@@ -95,7 +95,7 @@ public class Value implements Comparable<Object> {
     public Value(String data) {
         try {
             this.data = data.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException uee) {
+        } catch (final UnsupportedEncodingException uee) {
             LOG.warn(uee);
             this.data = data.getBytes();
         }
@@ -121,7 +121,7 @@ public class Value implements Comparable<Object> {
             System.arraycopy(data, pos, b, 0, len);
             return b;
         } else
-            return data;
+            {return data;}
     }
 
     public final byte[] data() {
@@ -155,11 +155,11 @@ public class Value implements Comparable<Object> {
 
     public boolean equals(Object obj) {
         if (this == obj)
-            return true;
+            {return true;}
         if (obj instanceof Value)
-            return equals((Value) obj);
+            {return equals((Value) obj);}
         else
-            return equals(new Value(obj.toString()));
+            {return equals(new Value(obj.toString()));}
     }
 
     public final int compareTo(Value value) {
@@ -174,16 +174,16 @@ public class Value implements Comparable<Object> {
             }
         }
         if (len == value.len)
-            return 0;
+            {return 0;}
         else
-            return len > value.len ? stop + 1 : - (stop + 1);
+            {return len > value.len ? stop + 1 : - (stop + 1);}
     }
 
     public final int compareTo(Object obj) {
         if (obj instanceof Value)
-            return compareTo((Value) obj);
+            {return compareTo((Value) obj);}
         else
-            return compareTo(new Value(obj.toString()));
+            {return compareTo(new Value(obj.toString()));}
     }
 
     public final int comparePrefix(Value value) {
@@ -201,9 +201,9 @@ public class Value implements Comparable<Object> {
 
     public final int comparePrefix(Value prefix, Value keyPrefix) {
         if (keyPrefix.getLength() >= prefix.getLength()) {
-            int cmp = keyPrefix.comparePrefix(prefix);
+            final int cmp = keyPrefix.comparePrefix(prefix);
             if (cmp != 0 || keyPrefix.getLength() == prefix.getLength())
-                return cmp;
+                {return cmp;}
             for (int i = prefix.getLength(); i < keyPrefix.getLength(); i++) {
                 final byte b1 = data[pos + i];
                 final byte b2 = keyPrefix.data[keyPrefix.pos + i];
@@ -221,25 +221,25 @@ public class Value implements Comparable<Object> {
 
     public final boolean startsWith(Value value) {
         if (len < value.len)
-            return false;
-        byte[] vdata = value.data;
-        int vpos = value.pos;
+            {return false;}
+        final byte[] vdata = value.data;
+        final int vpos = value.pos;
         for (int i = 0; i < value.len; i++) {
             if (data[i + pos] != vdata[i + vpos])
-                return false;
+                {return false;}
         }
         return true;
     }
 
     public final boolean endsWith(Value value) {
         if (len < value.len)
-            return false;
-        byte[] vdata = value.data;
-        int vpos = value.pos;
-        int d = len - value.len;
+            {return false;}
+        final byte[] vdata = value.data;
+        final int vpos = value.pos;
+        final int d = len - value.len;
         for (int i = 0; i < value.len; ++i) {
             if (data[d + i + pos] != vdata[i + vpos])
-                return false;
+                {return false;}
         }
         return true;
     }
@@ -255,31 +255,31 @@ public class Value implements Comparable<Object> {
         final int l = Math.min(len, other.len);
         int i = 0;
         for ( ; i < l; i++) {
-            byte b = data[pos + i];
+            final byte b = data[pos + i];
             if (b != other.data[other.pos + i])
-                break;
+                {break;}
         }
         return i;
     }
 
     public int checkPrefix(Value prefix) {
-        int l = Math.min(prefix.len, len);
+        final int l = Math.min(prefix.len, len);
         for (int i = 0; i < l; i++) {
             if (prefix.data[prefix.pos + i] != data[pos + i])
-                return i;
+                {return i;}
         }
         return l;
     }
 
     public Value getSeparator(Value other) {
-        int offset = commonPrefix(other) + 1;
-        byte[] data = new byte[Math.abs(offset)];
+        final int offset = commonPrefix(other) + 1;
+        final byte[] data = new byte[Math.abs(offset)];
         System.arraycopy(other.getData(), 0, data, 0, data.length);
         return new Value(data);
     }
 
     public String dump() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         for (int i = 0; i < len; i++) {
             buf.append(Integer.toHexString(data[pos + i]));
         }

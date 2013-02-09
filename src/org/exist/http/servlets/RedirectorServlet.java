@@ -124,31 +124,31 @@ public class RedirectorServlet extends HttpServlet {
 
         query = config.getInitParameter("xquery");
         if (query == null)
-            throw new ServletException("RedirectorServlet requires a parameter 'xquery'.");
+            {throw new ServletException("RedirectorServlet requires a parameter 'xquery'.");}
         user = config.getInitParameter("user");
         if(user == null)
-            user = DEFAULT_USER;
+            {user = DEFAULT_USER;}
         password = config.getInitParameter("password");
         if(password == null)
-            password = DEFAULT_PASS;
-        String confCollectionURI = config.getInitParameter("uri");
+            {password = DEFAULT_PASS;}
+        final String confCollectionURI = config.getInitParameter("uri");
         if(confCollectionURI == null) {
             collectionURI = DEFAULT_URI;
         } else {
             try {
                 collectionURI = XmldbURI.xmldbUriFor(confCollectionURI);
-            } catch (URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 throw new ServletException("Invalid XmldbURI for parameter 'uri': "+e.getMessage(),e);
             }
         }
 
         try {
-            Class<?> driver = Class.forName(DRIVER);
-            Database database = (Database)driver.newInstance();
+            final Class<?> driver = Class.forName(DRIVER);
+            final Database database = (Database)driver.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
-        } catch(Exception e) {
-            String errorMessage="Failed to initialize database driver";
+        } catch(final Exception e) {
+            final String errorMessage="Failed to initialize database driver";
             LOG.error(errorMessage,e);
             throw new ServletException(errorMessage+": " + e.getMessage(), e);
         }
@@ -158,25 +158,25 @@ public class RedirectorServlet extends HttpServlet {
         if (request.getCharacterEncoding() == null)
             try {
                 request.setCharacterEncoding("UTF-8");
-            } catch (IllegalStateException e) {
+            } catch (final IllegalStateException e) {
             }
         // Try to find the XQuery
-        String qpath = getServletContext().getRealPath(query);
-        File f = new File(qpath);
+        final String qpath = getServletContext().getRealPath(query);
+        final File f = new File(qpath);
         if (!(f.canRead() && f.isFile()))
-            throw new ServletException("Cannot read XQuery source from " + f.getAbsolutePath());
-        FileSource source = new FileSource(f, "UTF-8", true);
+            {throw new ServletException("Cannot read XQuery source from " + f.getAbsolutePath());}
+        final FileSource source = new FileSource(f, "UTF-8", true);
 
         try {
             // Prepare and execute the XQuery
-            Collection collection = DatabaseManager.getCollection(collectionURI.toString(), user, password);
-            XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+            final Collection collection = DatabaseManager.getCollection(collectionURI.toString(), user, password);
+            final XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
             if(!((CollectionImpl)collection).isRemoteCollection()) {
                 service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, "UTF-8", "UTF-8"));
                 service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
                 service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(request.getSession( false )));
             }
-            ResourceSet result = service.execute(source);
+            final ResourceSet result = service.execute(source);
 
             String redirectTo = null;
             String servletName = null;
@@ -184,10 +184,10 @@ public class RedirectorServlet extends HttpServlet {
             RequestWrapper modifiedRequest = null;
             // parse the query result element
             if (result.getSize() == 1) {
-                XMLResource resource = (XMLResource) result.getResource(0);
+                final XMLResource resource = (XMLResource) result.getResource(0);
                 Node node = resource.getContentAsDOM();
                 if (node.getNodeType() == Node.DOCUMENT_NODE)
-                    node = ((Document) node).getDocumentElement();
+                    {node = ((Document) node).getDocumentElement();}
                 if (node.getNodeType() != Node.ELEMENT_NODE) {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                             "Redirect XQuery should return an XML element. Received: " + resource.getContent());
@@ -201,11 +201,11 @@ public class RedirectorServlet extends HttpServlet {
                     return;
                 }
                 if (elem.hasAttribute("path"))
-                    path = elem.getAttribute("path");
+                    {path = elem.getAttribute("path");}
                 else if (elem.hasAttribute("servlet-name"))
-                    servletName = elem.getAttribute("servlet-name");
+                    {servletName = elem.getAttribute("servlet-name");}
                 else if (elem.hasAttribute("redirect"))
-                    redirectTo = elem.getAttribute("redirect");
+                    {redirectTo = elem.getAttribute("redirect");}
                 else {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                         "Element <exist:dispatch> should either provide an attribute 'path' or 'servlet-name'. Received: " +
@@ -221,7 +221,7 @@ public class RedirectorServlet extends HttpServlet {
                             elem = (Element) node;
                             if ("add-parameter".equals(elem.getLocalName())) {
                                 if (modifiedRequest == null)
-                                    modifiedRequest = new RequestWrapper(request);
+                                    {modifiedRequest = new RequestWrapper(request);}
                                 modifiedRequest.addParameter(elem.getAttribute("name"), elem.getAttribute("value"));
                             }
                         }
@@ -239,12 +239,12 @@ public class RedirectorServlet extends HttpServlet {
             // Get a RequestDispatcher, either from the servlet context or the request
             RequestDispatcher dispatcher;
             if (servletName != null && servletName.length() > 0)
-                dispatcher = getServletContext().getNamedDispatcher(servletName);
+                {dispatcher = getServletContext().getNamedDispatcher(servletName);}
             else {
                 LOG.debug("Dispatching to " + path);
                 dispatcher = getServletContext().getRequestDispatcher(path);
                 if (dispatcher == null)
-                    dispatcher = request.getRequestDispatcher(path);
+                    {dispatcher = request.getRequestDispatcher(path);}
             }
             if (dispatcher == null) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -253,14 +253,14 @@ public class RedirectorServlet extends HttpServlet {
             }
 
             if (modifiedRequest != null)
-                request = modifiedRequest;
+                {request = modifiedRequest;}
             // store the original request URI to org.exist.forward.request-uri
             request.setAttribute("org.exist.forward.request-uri", request.getRequestURI());
             request.setAttribute("org.exist.forward.servlet-path", request.getServletPath());
 
             // finally, execute the forward
             dispatcher.forward(request, response);
-        } catch (XMLDBException e) {
+        } catch (final XMLDBException e) {
             throw new ServletException("An error occurred while initializing RedirectorServlet: " + e.getMessage(), e);
         }
     }
@@ -272,9 +272,9 @@ public class RedirectorServlet extends HttpServlet {
         private RequestWrapper(HttpServletRequest request) {
             super(request);
             // copy parameters
-            for (Enumeration e = request.getParameterNames(); e.hasMoreElements(); ) {
-                String key = (String) e.nextElement();
-                String[] value = request.getParameterValues(key);
+            for (final Enumeration e = request.getParameterNames(); e.hasMoreElements(); ) {
+                final String key = (String) e.nextElement();
+                final String[] value = request.getParameterValues(key);
                 addedParams.put(key, value);
             }
         }
@@ -285,9 +285,9 @@ public class RedirectorServlet extends HttpServlet {
 
         //XXX: something wrong here, the value can be String[], see line 278
         public String getParameter(String name) {
-            String[] value = addedParams.get(name);
+            final String[] value = addedParams.get(name);
             if (value != null && value.length > 0)
-                return value[0];
+                {return value[0];}
             return null;
         }
 
@@ -297,20 +297,20 @@ public class RedirectorServlet extends HttpServlet {
         }
 
         public Enumeration getParameterNames() {
-            Vector<String> v = new Vector<String>();
-            for (String key : addedParams.keySet()) {
+            final Vector<String> v = new Vector<String>();
+            for (final String key : addedParams.keySet()) {
                 v.addElement(key);
             }
             return v.elements();
         }
 
         public String[] getParameterValues(String s) {
-            Object value = addedParams.get(s);
+            final Object value = addedParams.get(s);
             if (value != null) {
                 if (value instanceof String[])
-                    return (String[]) value;
+                    {return (String[]) value;}
                 else
-                    return new String[] { value.toString() };
+                    {return new String[] { value.toString() };}
             }
             return null;
         }

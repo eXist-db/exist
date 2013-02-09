@@ -98,9 +98,9 @@ public class VariableImpl implements Variable {
 	
     public int getType() {
         if(type != null)
-            return type.getPrimaryType();
+            {return type.getPrimaryType();}
         else
-            return Type.ITEM;
+            {return Type.ITEM;}
     }
     
     public void setSequenceType(SequenceType type) throws XPathException {
@@ -109,30 +109,30 @@ public class VariableImpl implements Variable {
     	if (getValue() != null) {
             if (getSequenceType() != null) {
                 int actualCardinality;
-                if (getValue().isEmpty()) actualCardinality = Cardinality.EMPTY;
-                else if (getValue().hasMany()) actualCardinality = Cardinality.MANY;
-                else actualCardinality = Cardinality.ONE;                	
+                if (getValue().isEmpty()) {actualCardinality = Cardinality.EMPTY;}
+                else if (getValue().hasMany()) {actualCardinality = Cardinality.MANY;}
+                else {actualCardinality = Cardinality.ONE;}                	
             	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
         		if (!Cardinality.checkCardinality(getSequenceType().getCardinality(), actualCardinality))
-    				throw new XPathException("XPTY0004: Invalid cardinality for variable $" + getQName() +
+    				{throw new XPathException("XPTY0004: Invalid cardinality for variable $" + getQName() +
     						". Expected " +
     						Cardinality.getDescription(getSequenceType().getCardinality()) +
-    						", got " + Cardinality.getDescription(actualCardinality));
+    						", got " + Cardinality.getDescription(actualCardinality));}
         		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
         		if (!Type.subTypeOf(getSequenceType().getPrimaryType(), Type.NODE)) {
             		if (!getValue().isEmpty() && !Type.subTypeOf(getValue().getItemType(), getSequenceType().getPrimaryType()))
-        				throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
+        				{throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
         						". Expected " +
         						Type.getTypeName(getSequenceType().getPrimaryType()) +
-        						", got " +Type.getTypeName(getValue().getItemType()));
+        						", got " +Type.getTypeName(getValue().getItemType()));}
         		//Here is an attempt to process the nodes correctly
         		} else {
         			//Same as above : we probably may factorize 
             		if (!getValue().isEmpty() && !Type.subTypeOf(getValue().getItemType(), getSequenceType().getPrimaryType()))
-        				throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
+        				{throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
         						". Expected " +
         						Type.getTypeName(getSequenceType().getPrimaryType()) +
-        						", got " +Type.getTypeName(getValue().getItemType()));
+        						", got " +Type.getTypeName(getValue().getItemType()));}
         			
         		}
             }
@@ -162,20 +162,20 @@ public class VariableImpl implements Variable {
 
     public void destroy(XQueryContext context, Sequence contextSequence) {
         if (value != null)
-            value.destroy(context, contextSequence);
+            {value.destroy(context, contextSequence);}
     }
 
 	public String toString() {
-		StringBuilder result = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
 		result.append("$" + qname.getStringValue());
 		result.append(" as ");
 		result.append(Type.getTypeName(getType()));		
 		result.append(Cardinality.toString(getCardinality()));
 		result.append(" ");	
 		if (value == null) 
-			result.append("[not set]");
+			{result.append("[not set]");}
 		else
-			result.append(":= ").append(value.toString());
+			{result.append(":= ").append(value.toString());}
 		return result.toString();
 	}
 	
@@ -186,9 +186,9 @@ public class VariableImpl implements Variable {
 //			return Dependency.CONTEXT_SET + Dependency.LOCAL_VARS;
 		
 		if(context.getCurrentStackSize() > positionInStack)
-			return Dependency.CONTEXT_SET + Dependency.CONTEXT_VARS;
+			{return Dependency.CONTEXT_SET + Dependency.CONTEXT_VARS;}
 		else
-			return Dependency.CONTEXT_SET + Dependency.LOCAL_VARS;
+			{return Dependency.CONTEXT_SET + Dependency.LOCAL_VARS;}
 	}
 	
 	public int getCardinality() {
@@ -209,36 +209,36 @@ public class VariableImpl implements Variable {
     
     public void checkType() throws XPathException {
         if (type == null)
-            return;
+            {return;}
         type.checkCardinality(value);
         
         if (value.isEmpty())
-            return;
+            {return;}
         
-        int requiredType = type.getPrimaryType();
+        final int requiredType = type.getPrimaryType();
         if(Type.subTypeOf(requiredType, Type.ATOMIC)) {
         	if(!Type.subTypeOf(value.getItemType(), Type.ATOMIC))
-                value = Atomize.atomize(value);
+                {value = Atomize.atomize(value);}
         	
         	//TODO : we should recheck the dependencies of this method
         	//and remove that conversion !        	
         	
             if(requiredType != Type.ATOMIC)
-                value = convert(value);
+                {value = convert(value);}
         }
         if(!type.checkType(value))
-        	throw new XPathException( Messages.getMessage( Error.VAR_TYPE_MISMATCH, 
+        	{throw new XPathException( Messages.getMessage( Error.VAR_TYPE_MISMATCH, 
         		    toString(),
         		    type.toString(),
         		    new SequenceType(value.getItemType(), value.getCardinality()).toString()
         		)
-        	);
+        	);}
     }
     
     private Sequence convert(Sequence seq) throws XPathException {
-        ValueSequence result = new ValueSequence();
+        final ValueSequence result = new ValueSequence();
         Item item;
-        for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+        for(final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
             item = i.nextItem();
             result.add(item.convertTo(type.getPrimaryType()));
         }

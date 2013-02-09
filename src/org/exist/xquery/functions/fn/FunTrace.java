@@ -82,7 +82,7 @@ public class FunTrace extends BasicFunction {
             label="";
         }
         
-        Serializer serializer= context.getBroker().getSerializer();
+        final Serializer serializer= context.getBroker().getSerializer();
         
         Sequence result ;
         
@@ -95,10 +95,10 @@ public class FunTrace extends BasicFunction {
             
             int position = 0;
 
-            for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
+            for (final SequenceIterator i = args[0].iterate(); i.hasNext();) {
 
                 // Get item
-                Item next = i.nextItem();
+                final Item next = i.nextItem();
 
                 // Only write if debug mode
                 if (true) {
@@ -106,15 +106,15 @@ public class FunTrace extends BasicFunction {
                     String value = null;
                     position++;
 
-                    int type = next.getType();
+                    final int type = next.getType();
                     
                     // Serialize an element type
                     if (Type.ELEMENT == type) {
-                        Writer sw = new StringWriter();
+                        final Writer sw = new StringWriter();
                         try {
                             serializer.serialize((NodeValue) next, sw);
 
-                        } catch (SAXException ex) {
+                        } catch (final SAXException ex) {
                             LOG.error(ex.getMessage());
                         }
                         value = sw.toString();

@@ -107,7 +107,7 @@ public class AnyUriResolver implements XMLEntityResolver {
         
         InputStream is = null;
         if(resourcePath.startsWith("xmldb:")){
-            XmldbURL xmldbURL = new XmldbURL(resourcePath);
+            final XmldbURL xmldbURL = new XmldbURL(resourcePath);
             if(xmldbURL.isEmbedded()){
                 is = new EmbeddedInputStream( xmldbURL );
                 
@@ -119,7 +119,7 @@ public class AnyUriResolver implements XMLEntityResolver {
             is = new URL(resourcePath).openStream();
         }
         
-        XMLInputSource xis = new XMLInputSource(xri.getPublicId(), resourcePath,
+        final XMLInputSource xis = new XMLInputSource(xri.getPublicId(), resourcePath,
             baseSystemId, is, "UTF-8");
         
         if(LOG.isDebugEnabled()) {
@@ -131,7 +131,7 @@ public class AnyUriResolver implements XMLEntityResolver {
     }
     
     private String getXriDetails(XMLResourceIdentifier xrid){
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
         sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
         sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");
@@ -141,7 +141,7 @@ public class AnyUriResolver implements XMLEntityResolver {
     }
 
     private String getXisDetails(XMLInputSource xis){
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("PublicId='").append(xis.getPublicId()).append("' ");
         sb.append("SystemId='").append(xis.getSystemId()).append("' ");
         sb.append("BaseSystemId='").append(xis.getBaseSystemId()).append("' ");

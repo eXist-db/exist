@@ -33,7 +33,7 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
 
     public void visitPathExpr(PathExpr expression) {
         for (int i = 0; i < expression.getLength(); i++) {
-            Expression next = expression.getExpression(i);
+            final Expression next = expression.getExpression(i);
             next.accept(this);
         }
     }
@@ -44,24 +44,24 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
 
     public void visitBuiltinFunction(Function function) {
         for (int i = 0; i < function.getArgumentCount(); i++) {
-            Expression arg = function.getArgument(i);
+            final Expression arg = function.getArgument(i);
             arg.accept(this);
         }
     }
 
     public void visitForExpression(ForExpr forExpr) {
         forExpr.getInputSequence().accept(this);
-        Expression where = forExpr.getWhereExpression();
+        final Expression where = forExpr.getWhereExpression();
         if (where != null)
-            where.accept(this);
+            {where.accept(this);}
         forExpr.getReturnExpression().accept(this);
     }
 
     public void visitLetExpression(LetExpr letExpr) {
         letExpr.getInputSequence().accept(this);
-        Expression where = letExpr.getWhereExpression();
+        final Expression where = letExpr.getWhereExpression();
         if (where != null)
-            where.accept(this);
+            {where.accept(this);}
         letExpr.getReturnExpression().accept(this);
     }
 
@@ -72,8 +72,8 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     }
 
     public void visitLocationStep(LocationStep locationStep) {
-        List<Predicate> predicates = locationStep.getPredicates();
-        for (Predicate pred : predicates) {
+        final List<Predicate> predicates = locationStep.getPredicates();
+        for (final Predicate pred : predicates) {
 			pred.accept(this);
         }
     }
@@ -89,7 +89,7 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     public void visitElementConstructor(ElementConstructor constructor) {
         constructor.getNameExpr().accept(this);
         if (constructor.getContent() != null)
-            constructor.getContent().accept(this);
+            {constructor.getContent().accept(this);}
     }
 
     public void visitTextConstructor(DynamicTextConstructor constructor) {
@@ -97,17 +97,17 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     }
 
     public void visitAttribConstructor(AttributeConstructor constructor) {
-        for (Iterator<Object> i = constructor.contentIterator(); i.hasNext(); ) {
-            Object next = i.next();
+        for (final Iterator<Object> i = constructor.contentIterator(); i.hasNext(); ) {
+            final Object next = i.next();
             if (next instanceof Expression)
-                ((Expression)next).accept(this);
+                {((Expression)next).accept(this);}
         }
     }
 
     public void visitAttribConstructor(DynamicAttributeConstructor constructor) {
         constructor.getNameExpr().accept(this);
         if (constructor.getContentExpr() != null)
-            constructor.getContentExpr().accept(this);
+            {constructor.getContentExpr().accept(this);}
     }
 
     public void visitUnionExpr(Union union) {

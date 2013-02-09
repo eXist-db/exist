@@ -37,7 +37,7 @@ public class XACMLTreeModel implements NodeChangeListener, TreeModel
 	public XACMLTreeModel(RootNode root)
 	{
 		if(root == null)
-			throw new NullPointerException("Root node cannot be null");
+			{throw new NullPointerException("Root node cannot be null");}
 		this.root = root;
 		root.addNodeChangeListener(this);
 	}
@@ -49,7 +49,7 @@ public class XACMLTreeModel implements NodeChangeListener, TreeModel
 	public int getChildCount(Object parent)
 	{
 		if(parent instanceof NodeContainer)
-			return ((NodeContainer)parent).getChildCount();
+			{return ((NodeContainer)parent).getChildCount();}
 		return 0;
 	}
 
@@ -61,14 +61,14 @@ public class XACMLTreeModel implements NodeChangeListener, TreeModel
 	public Object getChild(Object parent, int index)
 	{
 		if(parent instanceof NodeContainer)
-			return ((NodeContainer)parent).getChild(index);
+			{return ((NodeContainer)parent).getChild(index);}
 		return null;
 	}
 
 	public int getIndexOfChild(Object parent, Object child)
 	{
 		if(parent instanceof NodeContainer)
-			return ((NodeContainer)parent).indexOfChild(child);
+			{return ((NodeContainer)parent).indexOfChild(child);}
 		return -1;
 	}
 
@@ -81,13 +81,13 @@ public class XACMLTreeModel implements NodeChangeListener, TreeModel
 	public void addTreeModelListener(TreeModelListener listener)
 	{
 		if(listener != null)
-			listeners.add(listener);
+			{listeners.add(listener);}
 	}
 
 	public void removeTreeModelListener(TreeModelListener listener)
 	{
 		if(listener != null)
-			listeners.remove(listener);
+			{listeners.remove(listener);}
 	}
 	public boolean hasUnsavedChanges()
 	{
@@ -103,36 +103,36 @@ public class XACMLTreeModel implements NodeChangeListener, TreeModel
 	}
 	public void nodeChanged(XACMLTreeNode node)
 	{
-		TreePath path = getPathToNode(node);
-		TreeModelEvent event = new TreeModelEvent(this, path);
-		for(TreeModelListener listener : listeners)
+		final TreePath path = getPathToNode(node);
+		final TreeModelEvent event = new TreeModelEvent(this, path);
+		for(final TreeModelListener listener : listeners)
 			listener.treeNodesChanged(event);
 	}
 	public void nodeAdded(XACMLTreeNode node, int newIndex)
 	{
-		TreeModelEvent event = getEvent(node, newIndex);
-		for(TreeModelListener listener : listeners)
+		final TreeModelEvent event = getEvent(node, newIndex);
+		for(final TreeModelListener listener : listeners)
 			listener.treeNodesInserted(event);
 	}
 	public void nodeRemoved(XACMLTreeNode removedNode, int oldChildIndex)
 	{
-		TreeModelEvent event = getEvent(removedNode, oldChildIndex);
-		for(TreeModelListener listener : listeners)
+		final TreeModelEvent event = getEvent(removedNode, oldChildIndex);
+		for(final TreeModelListener listener : listeners)
 			listener.treeNodesRemoved(event);
 	}
 	private TreeModelEvent getEvent(XACMLTreeNode node, int index)
 	{
-		TreePath path = getPathToNode(node.getParent());
-		int[] childIndices = { index };
-		Object[] child = { node };
-		TreeModelEvent event = new TreeModelEvent(this, path, childIndices, child);
+		final TreePath path = getPathToNode(node.getParent());
+		final int[] childIndices = { index };
+		final Object[] child = { node };
+		final TreeModelEvent event = new TreeModelEvent(this, path, childIndices, child);
 		return event;
 	}
 	public static TreePath getPathToNode(XACMLTreeNode node)
 	{
-		NodeContainer parent = node.getParent();
+		final NodeContainer parent = node.getParent();
 		if(parent == null)
-			return new TreePath(node);
+			{return new TreePath(node);}
 		return getPathToNode(parent).pathByAddingChild(node);
 	}
 }

@@ -50,6 +50,6 @@ public abstract class CharacterSet {
 		} else if (encoding.equalsIgnoreCase("KOI8-R")) {
 			return KOI8RCharSet.getInstance();
 		} else
-			return ASCIICharSet.getInstance();
+			{return ASCIICharSet.getInstance();}
 	}
 }

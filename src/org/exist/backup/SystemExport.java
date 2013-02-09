@@ -149,7 +149,7 @@ public class SystemExport
         File backupFile = null;
 
         try {
-            BackupDirectory  directory  = new BackupDirectory( targetDir );
+            final BackupDirectory  directory  = new BackupDirectory( targetDir );
             BackupDescriptor prevBackup = null;
 
             if( incremental ) {
@@ -157,17 +157,17 @@ public class SystemExport
                 LOG.info( "Creating incremental backup. Prev backup: " + ( ( prevBackup == null ) ? "none" : prevBackup.getSymbolicPath() ) );
             }
 
-            Properties properties = new Properties();
+            final Properties properties = new Properties();
             int        seqNr      = 1;
 
             if( incremental ) {
                 properties.setProperty( BackupDescriptor.PREVIOUS_PROP_NAME, ( prevBackup == null ) ? "" : prevBackup.getName() );
 
                 if( prevBackup != null ) {
-                    Properties prevProp = prevBackup.getProperties();
+                    final Properties prevProp = prevBackup.getProperties();
 
                     if( prevProp != null ) {
-                        String seqNrStr = prevProp.getProperty( BackupDescriptor.NUMBER_IN_SEQUENCE_PROP_NAME, "1" );
+                        final String seqNrStr = prevProp.getProperty( BackupDescriptor.NUMBER_IN_SEQUENCE_PROP_NAME, "1" );
 
                         try {
                             seqNr = Integer.parseInt( seqNrStr );
@@ -180,7 +180,7 @@ public class SystemExport
                                 ++seqNr;
                             }
                         }
-                        catch( NumberFormatException e ) {
+                        catch( final NumberFormatException e ) {
                             LOG.warn( "Bad sequence number in backup descriptor: " + prevBackup.getName() );
                         }
                     }
@@ -192,7 +192,7 @@ public class SystemExport
             try {
                 properties.setProperty( BackupDescriptor.DATE_PROP_NAME, new DateTimeValue( new Date() ).getStringValue() );
             }
-            catch( XPathException e ) {
+            catch( final XPathException e ) {
             }
 
             backupFile = directory.createBackup( incremental && ( prevBackup != null ), zip );
@@ -211,8 +211,8 @@ public class SystemExport
 //
 //            FileUtils.forceDelete(repoBackup);
 
-            Date date = ( prevBackup == null ) ? null : prevBackup.getDate();
-            CollectionCallback cb   = new CollectionCallback( output, date, prevBackup, errorList, true );
+            final Date date = ( prevBackup == null ) ? null : prevBackup.getDate();
+            final CollectionCallback cb   = new CollectionCallback( output, date, prevBackup, errorList, true );
             broker.getCollectionsFailsafe( cb );
 
             exportOrphans( output, cb.getDocs(), errorList );
@@ -220,11 +220,11 @@ public class SystemExport
             output.close();
             return( backupFile );
         }
-        catch( IOException e ) {
+        catch( final IOException e ) {
             reportError( "A write error occurred while exporting data: '" + e.getMessage() + "'. Aborting export.", e );
             return( null );
         }
-        catch( TerminatedException e ) {
+        catch( final TerminatedException e ) {
 
             if( backupFile != null ) {
                 backupFile.delete();
@@ -250,7 +250,7 @@ public class SystemExport
             return( false );
         }
 
-        for( org.exist.backup.ErrorReport report : errorList ) {
+        for( final org.exist.backup.ErrorReport report : errorList ) {
 
             if( ( report.getErrcode() == org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED ) && ( ( (ErrorReport.ResourceError)report ).getDocumentId() == doc.getDocId() ) ) {
                 return( true );
@@ -267,7 +267,7 @@ public class SystemExport
             return( false );
         }
 
-        for( ErrorReport report : errorList ) {
+        for( final ErrorReport report : errorList ) {
 
             if( ( report.getErrcode() == org.exist.backup.ErrorReport.CHILD_COLLECTION ) && ( ( (ErrorReport.CollectionError)report ).getCollectionId() == collection.getId() ) ) {
                 return( true );
@@ -283,7 +283,7 @@ public class SystemExport
             return( false );
         }
 
-        for( org.exist.backup.ErrorReport report : errorList ) {
+        for( final org.exist.backup.ErrorReport report : errorList ) {
 
             if( ( report.getErrcode() == org.exist.backup.ErrorReport.CHILD_COLLECTION ) && ( (org.exist.backup.ErrorReport.CollectionError)report ).getCollectionURI().equalsInternal( uri ) ) {
                 return( true );
@@ -305,15 +305,15 @@ public class SystemExport
         output.newCollection( "/db/__lost_and_found__" );
 
         try {
-            Writer        contents   = output.newContents();
+            final Writer        contents   = output.newContents();
 
             // serializer writes to __contents__.xml
-            SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+            final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
             serializer.setOutput( contents, contentsOutputProps );
 
             serializer.startDocument();
             serializer.startPrefixMapping( "", Namespaces.EXIST_NS );
-            AttributesImpl attr = new AttributesImpl();
+            final AttributesImpl attr = new AttributesImpl();
             attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", "/db/__lost_and_found__" );
             attr.addAttribute( Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf( currVersion ) );
             attr.addAttribute( Namespaces.EXIST_NS, "owner", "owner", "CDATA", org.exist.security.SecurityManager.DBA_USER );
@@ -321,7 +321,7 @@ public class SystemExport
             attr.addAttribute( Namespaces.EXIST_NS, "mode", "mode", "CDATA", "0771" );
             serializer.startElement( Namespaces.EXIST_NS, "collection", "collection", attr );
 
-            DocumentCallback docCb = new DocumentCallback( output, serializer, null, null, docs, true );
+            final DocumentCallback docCb = new DocumentCallback( output, serializer, null, null, docs, true );
             broker.getResourcesFailsafe( docCb, directAccess );
 
             serializer.endElement( Namespaces.EXIST_NS, "collection", "collection" );
@@ -329,7 +329,7 @@ public class SystemExport
             serializer.endDocument();
             output.closeContents();
         }
-        catch( Exception e ) {
+        catch( final Exception e ) {
             e.printStackTrace();
 
             if( callback != null ) {
@@ -371,25 +371,25 @@ public class SystemExport
 //        }
 
         try {
-            Writer        contents   = output.newContents();
+            final Writer        contents   = output.newContents();
 
             // serializer writes to __contents__.xml
-            SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+            final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
             serializer.setOutput( contents, contentsOutputProps );
 
             final Permission perm = current.getPermissions();
             
             serializer.startDocument();
             serializer.startPrefixMapping( "", Namespaces.EXIST_NS );
-            XmldbURI       uri  = current.getURI();
-            AttributesImpl attr = new AttributesImpl();
+            final XmldbURI       uri  = current.getURI();
+            final AttributesImpl attr = new AttributesImpl();
             attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", uri.toString() );
             attr.addAttribute( Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf( currVersion ) );
             Backup.writeUnixStylePermissionAttributes(attr, perm);
             try {
                 attr.addAttribute( Namespaces.EXIST_NS, "created", "created", "CDATA", new DateTimeValue( new Date( current.getCreationTime() ) ).getStringValue() );
             }
-            catch( XPathException e ) {
+            catch( final XPathException e ) {
                 e.printStackTrace();
             }
             
@@ -403,11 +403,11 @@ public class SystemExport
             
             bh.backup(current, serializer);
 
-            int docsCount = current.getDocumentCountNoLock(broker);
+            final int docsCount = current.getDocumentCountNoLock(broker);
             int count     = 0;
 
-            for( Iterator<DocumentImpl> i = current.iteratorNoLock( broker ); i.hasNext(); count++ ) {
-                DocumentImpl doc = i.next();
+            for( final Iterator<DocumentImpl> i = current.iteratorNoLock( broker ); i.hasNext(); count++ ) {
+                final DocumentImpl doc = i.next();
 
                 if( isDamaged( doc, errorList ) ) {
                     reportError( "Skipping damaged document " + doc.getFileURI(), null );
@@ -421,8 +421,8 @@ public class SystemExport
                 docs.add( doc, false );
             }
 
-            for( Iterator<XmldbURI> i = current.collectionIteratorNoLock(broker); i.hasNext(); ) {
-                XmldbURI childUri = i.next();
+            for( final Iterator<XmldbURI> i = current.collectionIteratorNoLock(broker); i.hasNext(); ) {
+                final XmldbURI childUri = i.next();
 
                 if( childUri.equalsInternal( TEMP_COLLECTION ) ) {
                     continue;
@@ -444,12 +444,12 @@ public class SystemExport
                 // Check which collections and resources have been deleted since
                 // the
                 // last backup
-                CheckDeletedHandler check = new CheckDeletedHandler( current, serializer );
+                final CheckDeletedHandler check = new CheckDeletedHandler( current, serializer );
 
                 try {
                     prevBackup.parse( check );
                 }
-                catch( Exception e ) {
+                catch( final Exception e ) {
                     LOG.error( "Caught exception while trying to parse previous backup descriptor: " + prevBackup.getSymbolicPath(), e );
                 }
             }
@@ -478,27 +478,27 @@ public class SystemExport
         if( ( monitor != null ) && !monitor.proceed() ) {
             throw( new TerminatedException( "system export terminated by db" ) );
         }
-        boolean needsBackup = ( prevBackup == null ) || ( date.getTime() < doc.getMetadata().getLastModified() );
+        final boolean needsBackup = ( prevBackup == null ) || ( date.getTime() < doc.getMetadata().getLastModified() );
 
         if( needsBackup ) {
-            OutputStream os = output.newEntry( Backup.encode( URIUtils.urlDecodeUtf8( doc.getFileURI() ) ) );
+            final OutputStream os = output.newEntry( Backup.encode( URIUtils.urlDecodeUtf8( doc.getFileURI() ) ) );
 
             try {
 
                 if( doc.getResourceType() == DocumentImpl.BINARY_FILE ) {
                     broker.readBinaryResource( (BinaryDocument)doc, os );
                 } else {
-                    BufferedWriter writer            = new BufferedWriter( new OutputStreamWriter( os, "UTF-8" ) );
+                    final BufferedWriter writer            = new BufferedWriter( new OutputStreamWriter( os, "UTF-8" ) );
 
                     // write resource to contentSerializer
-                    SAXSerializer  contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+                    final SAXSerializer  contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
                     contentSerializer.setOutput( writer, defaultOutputProperties );
                     writeXML( doc, contentSerializer );
                     SerializerPool.getInstance().returnObject( contentSerializer );
                     writer.flush();
                 }
             }
-            catch( Exception e ) {
+            catch( final Exception e ) {
                 reportError( "A write error occurred while exporting document: '" + doc.getFileURI() + "'. Continuing with next document.", e );
                 return;
             }
@@ -507,10 +507,10 @@ public class SystemExport
             }
         }
         
-        Permission perms = doc.getPermissions();
+        final Permission perms = doc.getPermissions();
 
         // store permissions
-        AttributesImpl attr = new AttributesImpl();
+        final AttributesImpl attr = new AttributesImpl();
         attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", ( doc.getResourceType() == DocumentImpl.BINARY_FILE ) ? "BinaryResource" : "XMLResource" );
         attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", doc.getFileURI().toString() );
         attr.addAttribute( Namespaces.EXIST_NS, "skip", "skip", "CDATA", ( needsBackup ? "no" : "yes" ) );
@@ -524,7 +524,7 @@ public class SystemExport
         try {
             metadata = doc.getMetadata();
         }
-        catch( Exception e ) {
+        catch( final Exception e ) {
             // LOG.warn(e.getMessage(), e);
         }
 
@@ -543,7 +543,7 @@ public class SystemExport
             attr.addAttribute( Namespaces.EXIST_NS, "created", "created", "CDATA", created );
             attr.addAttribute( Namespaces.EXIST_NS, "modified", "modified", "CDATA", modified );
         }
-        catch( XPathException e ) {
+        catch( final XPathException e ) {
             LOG.warn( e.getMessage(), e );
         }
 
@@ -596,19 +596,19 @@ public class SystemExport
             EmbeddedXMLStreamReader   reader;
             char[]                    ch;
             int                       nsdecls;
-            NamespaceSupport          nsSupport = new NamespaceSupport();
-            NodeList                  children  = doc.getChildNodes();
+            final NamespaceSupport          nsSupport = new NamespaceSupport();
+            final NodeList                  children  = doc.getChildNodes();
             
 			final DocumentType docType = doc.getDoctype();
             if (docType != null)
-    			receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId());
+    			{receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId());}
 
             for( int i = 0; i < children.getLength(); i++ ) {
-                StoredNode child = (StoredNode)children.item( i );
+                final StoredNode child = (StoredNode)children.item( i );
                 reader = broker.getXMLStreamReader( child, false );
 
                 while( reader.hasNext() ) {
-                    int status = reader.next();
+                    final int status = reader.next();
 
                     switch( status ) {
 
@@ -623,7 +623,7 @@ public class SystemExport
                                 receiver.startPrefixMapping( reader.getNamespacePrefix( ni ), reader.getNamespaceURI( ni ) );
                             }
 
-                            AttrList attribs = new AttrList();
+                            final AttrList attribs = new AttrList();
                             for( int j = 0; j < reader.getAttributeCount(); j++ ) {
                                 final QName qn = new QName( reader.getAttributeLocalName( j ), reader.getAttributeNamespace( j ), reader.getAttributePrefix( j ) );
                                 attribs.addAttribute( qn, reader.getAttributeValue( j ) );
@@ -671,13 +671,13 @@ public class SystemExport
                 nsSupport.reset();
             }
         }
-        catch( IOException e ) {
+        catch( final IOException e ) {
             e.printStackTrace();
         }
-        catch( XMLStreamException e ) {
+        catch( final XMLStreamException e ) {
             e.printStackTrace();
         }
-        catch( SAXException e ) {
+        catch( final SAXException e ) {
             e.printStackTrace();
         }
     }
@@ -685,7 +685,7 @@ public class SystemExport
 
     public static File getUniqueFile( String base, String extension, String dir )
     {
-        String filename = base + '-' + DataBackup.creationDateFormat.format( Calendar.getInstance().getTime() );
+        final String filename = base + '-' + DataBackup.creationDateFormat.format( Calendar.getInstance().getTime() );
         File   file     = new File( dir, filename + extension );
         int    version  = 0;
 
@@ -702,7 +702,7 @@ public class SystemExport
             AccountImpl.getSecurityProperties().enableCheckPasswords(false);
 
             try {
-                CollectionCallback cb = new CollectionCallback( null, null, null, null, false );
+                final CollectionCallback cb = new CollectionCallback( null, null, null, null, false );
                 broker.getCollectionsFailsafe( cb );
                 collectionCount = cb.collectionCount;
             }
@@ -753,7 +753,7 @@ public class SystemExport
                 collectionCount++;
 
                 if( exportCollection ) {
-                    CollectionStore store = (CollectionStore)( (NativeBroker)broker ).getStorage( NativeBroker.COLLECTIONS_DBX_ID );
+                    final CollectionStore store = (CollectionStore)( (NativeBroker)broker ).getStorage( NativeBroker.COLLECTIONS_DBX_ID );
                     uri = UTF8.decode( value.data(), value.start() + CollectionStore.CollectionKey.OFFSET_VALUE, value.getLength() - CollectionStore.CollectionKey.OFFSET_VALUE ).toString();
 
                     if( CollectionStore.NEXT_COLLECTION_ID_KEY.equals( uri ) || CollectionStore.NEXT_DOC_ID_KEY.equals( uri ) || CollectionStore.FREE_COLLECTION_ID_KEY.equals( uri ) || CollectionStore.FREE_DOC_ID_KEY.equals( uri ) ) {
@@ -763,8 +763,8 @@ public class SystemExport
                     if( callback != null ) {
                         callback.startCollection( uri );
                     }
-                    Collection        collection = new Collection(broker, XmldbURI.createInternal( uri ) );
-                    VariableByteInput istream    = store.getAsStream( pointer );
+                    final Collection        collection = new Collection(broker, XmldbURI.createInternal( uri ) );
+                    final VariableByteInput istream    = store.getAsStream( pointer );
                     collection.read( broker, istream );
                     BackupDescriptor bd = null;
 
@@ -780,13 +780,13 @@ public class SystemExport
                     export( bh, collection, writer, date, bd, errors, docs );
                 }
             }
-            catch( TerminatedException e ) {
+            catch( final TerminatedException e ) {
                 reportError( "Terminating system export upon request", e );
 
                 // rethrow
                 throw( e );
             }
-            catch( Exception e ) {
+            catch( final Exception e ) {
                 reportError( "Caught exception while scanning collections: " + uri, e );
             }
             return( true );
@@ -824,14 +824,14 @@ public class SystemExport
 
         public boolean indexInfo( Value key, long pointer ) throws TerminatedException
         {
-            CollectionStore store = (CollectionStore)( (NativeBroker)broker ).getStorage( NativeBroker.COLLECTIONS_DBX_ID );
-            int             docId = CollectionStore.DocumentKey.getDocumentId( key );
+            final CollectionStore store = (CollectionStore)( (NativeBroker)broker ).getStorage( NativeBroker.COLLECTIONS_DBX_ID );
+            final int             docId = CollectionStore.DocumentKey.getDocumentId( key );
 
             if( !exportedDocs.contains( docId ) ) {
 
                 try {
-                    byte              type    = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
-                    VariableByteInput istream = store.getAsStream( pointer );
+                    final byte              type    = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
+                    final VariableByteInput istream = store.getAsStream( pointer );
                     DocumentImpl      doc     = null;
 
                     if( type == DocumentImpl.BINARY_FILE ) {
@@ -845,7 +845,7 @@ public class SystemExport
                     if( writtenDocs != null ) {
                         int    count   = 1;
                         String fileURI = doc.getFileURI().toString();
-                        String origURI = fileURI;
+                        final String origURI = fileURI;
 
                         while( writtenDocs.contains( fileURI ) ) {
                             fileURI = origURI + "." + count++;
@@ -855,7 +855,7 @@ public class SystemExport
                     }
                     exportDocument( bh, output, date, prevBackup, serializer, 0, 0, doc );
                 }
-                catch( Exception e ) {
+                catch( final Exception e ) {
                     reportError( "Caught an exception while scanning documents: " + e.getMessage(), e );
                 }
             }
@@ -881,7 +881,7 @@ public class SystemExport
             if( uri.equals( Namespaces.EXIST_NS ) ) {
 
                 try {
-                    if( localName.equals( "subcollection" ) ) {
+                    if( "subcollection".equals(localName) ) {
                         String name = attributes.getValue( "filename" );
 
                         if( name == null ) {
@@ -889,24 +889,24 @@ public class SystemExport
                         }
 
                         if( !collection.hasChildCollection(broker, XmldbURI.create( name ) ) ) {
-                            AttributesImpl attr = new AttributesImpl();
+                            final AttributesImpl attr = new AttributesImpl();
                             attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
                             attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", "collection" );
                             serializer.startElement( Namespaces.EXIST_NS, "deleted", "deleted", attr );
                             serializer.endElement( Namespaces.EXIST_NS, "deleted", "deleted" );
                         }
-                    } else if( localName.equals( "resource" ) ) {
-                        String name = attributes.getValue( "name" );
+                    } else if( "resource".equals(localName) ) {
+                        final String name = attributes.getValue( "name" );
 
                         if( !collection.hasDocument(broker, XmldbURI.create( name ) ) ) {
-                            AttributesImpl attr = new AttributesImpl();
+                            final AttributesImpl attr = new AttributesImpl();
                             attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", name );
                             attr.addAttribute( Namespaces.EXIST_NS, "type", "type", "CDATA", "resource" );
                             serializer.startElement( Namespaces.EXIST_NS, "deleted", "deleted", attr );
                             serializer.endElement( Namespaces.EXIST_NS, "deleted", "deleted" );
                         }
                     }
-                } catch(PermissionDeniedException pde) {
+                } catch(final PermissionDeniedException pde) {
                     throw new SAXException("Unable to process :" + qName + ": " + pde.getMessage(), pde);
                 }
             }

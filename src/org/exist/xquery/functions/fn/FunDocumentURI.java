@@ -78,21 +78,21 @@ public class FunDocumentURI extends Function {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
         Sequence result = Sequence.EMPTY_SEQUENCE;
         if (!seq.isEmpty()) {
-            NodeValue value = (NodeValue) seq.itemAt(0);
+            final NodeValue value = (NodeValue) seq.itemAt(0);
             if (value.getImplementationType() == NodeValue.PERSISTENT_NODE) { 
-                NodeProxy node = (NodeProxy) value;
+                final NodeProxy node = (NodeProxy) value;
                 //Returns the empty sequence if the node is not a document node. 
                 if (node.isDocument()) {
-                    XmldbURI path = node.getDocument().getURI(); 
+                    final XmldbURI path = node.getDocument().getURI(); 
                     result = new AnyURIValue(path);
                 }
             } else {
@@ -103,7 +103,7 @@ public class FunDocumentURI extends Function {
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

@@ -31,7 +31,7 @@ public class SingleKeyMapType extends AbstractMapType {
     @Override
     public Sequence get(AtomicValue key) {
         if (comparator.compare(this.key, key) == Constants.EQUAL)
-            return this.value;
+            {return this.value;}
         return null;
     }
 
@@ -49,7 +49,7 @@ public class SingleKeyMapType extends AbstractMapType {
     public AbstractMapType remove(AtomicValue key) {
         try {
             return new MapType(context);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             return null;
         }
     }

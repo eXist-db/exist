@@ -60,10 +60,10 @@ public class ContextItem {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append(node);
         if (nextDirect != null)
-            buf.append("/" + nextDirect);
+            {buf.append("/" + nextDirect);}
         return buf.toString();
     }
 }

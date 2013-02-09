@@ -101,25 +101,25 @@ public class CollectionConfigurationManager {
     public void addConfiguration(Txn transaction, DBBroker broker, Collection collection, String config) throws CollectionConfigurationException {
         try {
     		//TODO : use XmldbURI.resolve() !
-			XmldbURI path = CONFIG_COLLECTION_URI.append(collection.getURI());
+			final XmldbURI path = CONFIG_COLLECTION_URI.append(collection.getURI());
 			
-			Collection confCol = broker.getOrCreateCollection(transaction, path);
+			final Collection confCol = broker.getOrCreateCollection(transaction, path);
 			if(confCol == null)
-				throw new CollectionConfigurationException("Failed to create config collection: " + path);
+				{throw new CollectionConfigurationException("Failed to create config collection: " + path);}
 
 			XmldbURI configurationDocumentName = null;
             //Replaces the current configuration file if there is one
-            CollectionConfiguration conf = getConfiguration(broker, collection);
+            final CollectionConfiguration conf = getConfiguration(broker, collection);
             if (conf != null) {
                 configurationDocumentName = conf.getDocName();
                 if (configurationDocumentName != null) 
-                    LOG.warn("Replacing current configuration file '" + configurationDocumentName + "'");
+                    {LOG.warn("Replacing current configuration file '" + configurationDocumentName + "'");}
             }
             if (configurationDocumentName == null)
-                configurationDocumentName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI;
+                {configurationDocumentName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI;}
             
             broker.saveCollection(transaction, confCol);
-			IndexInfo info = confCol.validateXMLResource(transaction, broker, configurationDocumentName, config);
+			final IndexInfo info = confCol.validateXMLResource(transaction, broker, configurationDocumentName, config);
 			//TODO : unlock the collection here ?
 			confCol.store(transaction, broker, info, config, false);
 			//broker.sync(Sync.MAJOR_SYNC);
@@ -128,9 +128,9 @@ public class CollectionConfigurationManager {
                 configurations.remove(new CollectionURI(path.getRawCollectionPath()));
                 loadConfiguration(broker, confCol);
             }
-        } catch (CollectionConfigurationException e) {
+        } catch (final CollectionConfigurationException e) {
         	throw e;
-        } catch (Exception e) {
+        } catch (final Exception e) {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		}
     }
@@ -146,19 +146,19 @@ public class CollectionConfigurationManager {
      */
     public void testConfiguration(DBBroker broker, String config) throws CollectionConfigurationException {
         try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
-            InputSource src = new InputSource(new StringReader(config));
-            SAXParser parser = factory.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            SAXAdapter adapter = new SAXAdapter();
+            final InputSource src = new InputSource(new StringReader(config));
+            final SAXParser parser = factory.newSAXParser();
+            final XMLReader reader = parser.getXMLReader();
+            final SAXAdapter adapter = new SAXAdapter();
             reader.setContentHandler(adapter);
             reader.parse(src);
 
-            Document doc = adapter.getDocument();
-            CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
+            final Document doc = adapter.getDocument();
+            final CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
             conf.read(broker, doc, true, null, null);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new CollectionConfigurationException(e);
         }
     }
@@ -175,7 +175,7 @@ public class CollectionConfigurationManager {
      */
     protected CollectionConfiguration getConfiguration(DBBroker broker, Collection collection) throws CollectionConfigurationException {
         
-    	CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
+    	final CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
         path.append(collection.getURI().getRawCollectionPath());
 
     	/*
@@ -191,7 +191,7 @@ public class CollectionConfigurationManager {
             while(!path.equals(COLLECTION_CONFIG_PATH)) {
                 conf = configurations.get(path);
                 if (conf != null)
-                    return conf;
+                    {return conf;}
                 path.removeLastSegment();
             }
         }
@@ -200,40 +200,40 @@ public class CollectionConfigurationManager {
     }
 
     protected void loadAllConfigurations(DBBroker broker) throws CollectionConfigurationException, PermissionDeniedException, LockException {
-        Collection root = broker.getCollection(CONFIG_COLLECTION_URI);
+        final Collection root = broker.getCollection(CONFIG_COLLECTION_URI);
         loadAllConfigurations(broker, root);
     }
 
     protected void loadAllConfigurations(DBBroker broker, Collection configCollection) throws CollectionConfigurationException, PermissionDeniedException, LockException {
         if (configCollection == null)
-            return;
+            {return;}
         loadConfiguration(broker, configCollection);
-        XmldbURI path = configCollection.getURI();
-        for(Iterator<XmldbURI> i = configCollection.collectionIterator(broker); i.hasNext(); ) {
-            XmldbURI childName = i.next();
-            Collection child = broker.getCollection(path.appendInternal(childName));
+        final XmldbURI path = configCollection.getURI();
+        for(final Iterator<XmldbURI> i = configCollection.collectionIterator(broker); i.hasNext(); ) {
+            final XmldbURI childName = i.next();
+            final Collection child = broker.getCollection(path.appendInternal(childName));
             if (child == null)
-                LOG.error("Collection is registered but could not be loaded: " + childName);
+                {LOG.error("Collection is registered but could not be loaded: " + childName);}
             loadAllConfigurations(broker, child);
         }
     }
 
     protected void loadConfiguration(DBBroker broker, Collection configCollection) throws CollectionConfigurationException, PermissionDeniedException, LockException {
         if (configCollection != null && configCollection.getDocumentCount(broker) > 0) {
-            for(Iterator<DocumentImpl> i = configCollection.iterator(broker); i.hasNext(); ) {
-                DocumentImpl confDoc = i.next();
+            for(final Iterator<DocumentImpl> i = configCollection.iterator(broker); i.hasNext(); ) {
+                final DocumentImpl confDoc = i.next();
                 if(confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
                     if (LOG.isTraceEnabled())
-                        LOG.trace("Reading collection configuration from '" + confDoc.getURI() + "'");
-                    CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
+                        {LOG.trace("Reading collection configuration from '" + confDoc.getURI() + "'");}
+                    final CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
 
                     // TODO DWES Temporary workaround for bug 
                     // [ 1807744 ] Invalid collection.xconf causes a non startable database
                     // http://sourceforge.net/tracker/index.php?func=detail&aid=1807744&group_id=17691&atid=117691
                     try {
                         conf.read(broker, confDoc, false, configCollection.getURI(), confDoc.getFileURI());
-                    } catch (CollectionConfigurationException e) {
-                        String message = "Failed to read configuration document " + confDoc.getFileURI() + " in "
+                    } catch (final CollectionConfigurationException e) {
+                        final String message = "Failed to read configuration document " + confDoc.getFileURI() + " in "
                                 + configCollection.getURI() + ". "
                                 + e.getMessage();
                         LOG.error(message);
@@ -252,7 +252,7 @@ public class CollectionConfigurationManager {
     }
     
     public CollectionConfiguration getOrCreateCollectionConfiguration(DBBroker broker, Collection collection) {
-        CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
+        final CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
         path.append(collection.getURI().getRawCollectionPath());
 
         CollectionConfiguration conf;
@@ -276,7 +276,7 @@ public class CollectionConfigurationManager {
     public void invalidateAll(XmldbURI collectionPath) {
         //TODO : use XmldbURI.resolve !
         if (!collectionPath.startsWith(CONFIG_COLLECTION_URI))
-    		return;
+    		{return;}
         
         synchronized (latch) {
             LOG.debug("Invalidating collection " + collectionPath);
@@ -313,7 +313,7 @@ public class CollectionConfigurationManager {
 	 * @throws EXistException
 	 */
     private void checkCreateCollection(DBBroker broker, XmldbURI uri) throws EXistException {
-        TransactionManager transact = pool.getTransactionManager();
+        final TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
     	try {
     		Collection collection = broker.getCollection(uri);
@@ -324,7 +324,7 @@ public class CollectionConfigurationManager {
     			broker.saveCollection(txn, collection);    			
                 transact.commit(txn);
     		}    		
-    	} catch (Exception e) {
+    	} catch (final Exception e) {
     		transact.abort(txn);
     		throw new EXistException("Failed to initialize '" + uri + "' : " + e.getMessage());
 		}
@@ -335,7 +335,7 @@ public class CollectionConfigurationManager {
      * @throws EXistException
      */
     public void checkRootCollectionConfig(DBBroker broker) throws EXistException, PermissionDeniedException {
-    	String configuration = 
+    	final String configuration = 
 			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
 	    	"    <index>" +
 	    	
@@ -348,8 +348,8 @@ public class CollectionConfigurationManager {
 	    	"    </index>" +
 	    	"</collection>";
     	
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         try {    
             Collection collection = null;
         	try {
@@ -358,7 +358,7 @@ public class CollectionConfigurationManager {
 	                transact.abort(transaction);
 	                throw new EXistException("collection " + XmldbURI.ROOT_COLLECTION_URI + " not found!");
 	            }
-	            CollectionConfiguration conf = getConfiguration(broker, collection);
+	            final CollectionConfiguration conf = getConfiguration(broker, collection);
 	            if (conf != null) {
 	            	//We already have a configuration document : do not erase it
 	                if (conf.getDocName() != null) { 
@@ -368,13 +368,13 @@ public class CollectionConfigurationManager {
 	            }
             } finally {
             	if (collection != null)
-            		collection.release(Lock.READ_LOCK);
+            		{collection.release(Lock.READ_LOCK);}
             }
             //Configure the root collection
             addConfiguration(transaction, broker, collection, configuration);
             transact.commit(transaction);
             LOG.info("Configured '" + collection.getURI() + "'");  
-        } catch (CollectionConfigurationException e) {
+        } catch (final CollectionConfigurationException e) {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
         } 

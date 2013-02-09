@@ -45,10 +45,10 @@ public class AutoCompletion extends PlainDocument {
         comboBox.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
-                if (e.getPropertyName().equals("editor")){
+                if ("editor".equals(e.getPropertyName())){
                     configureEditor((ComboBoxEditor) e.getNewValue());
                 }
-                if (e.getPropertyName().equals("model")){
+                if ("model".equals(e.getPropertyName())){
                     model = (ComboBoxModel) e.getNewValue();
                 }
             }
@@ -90,7 +90,7 @@ public class AutoCompletion extends PlainDocument {
         };
         configureEditor(comboBox.getEditor());
         // Handle initially selected object
-        Object selected = comboBox.getSelectedItem();
+        final Object selected = comboBox.getSelectedItem();
         if (selected!=null){
             setText(selected.toString());
         }
@@ -171,7 +171,7 @@ public class AutoCompletion extends PlainDocument {
             // remove all text and insert the completed string
             super.remove(0, getLength());
             super.insertString(0, text, null);
-        } catch (BadLocationException e) {
+        } catch (final BadLocationException e) {
             throw new RuntimeException(e.toString());
         }
     }
@@ -188,14 +188,14 @@ public class AutoCompletion extends PlainDocument {
     }
     
     private Object lookupItem(String pattern) {
-        Object selectedItem = model.getSelectedItem();
+        final Object selectedItem = model.getSelectedItem();
         // only search for a different item if the currently selected does not match
         if (selectedItem != null && startsWithIgnoreCase(selectedItem.toString(), pattern)) {
             return selectedItem;
         } else {
             // iterate over all items
             for (int i=0, n=model.getSize(); i < n; i++) {
-                Object currentItem = model.getElementAt(i);
+                final Object currentItem = model.getElementAt(i);
                 // current item starts with the pattern?
                 if (currentItem != null && startsWithIgnoreCase(currentItem.toString(), pattern)) {
                     return currentItem;

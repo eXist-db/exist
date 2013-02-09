@@ -88,13 +88,13 @@ public class XMLDBDefragment extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         // Get nodes
-        NodeSet nodes = args[0].toNodeSet();
-        DocumentSet docs = nodes.getDocumentSet();
+        final NodeSet nodes = args[0].toNodeSet();
+        final DocumentSet docs = nodes.getDocumentSet();
 
         try {
             if (args.length > 1) {
                 // Use supplied parameter
-                int splitCount = ((IntegerValue)args[1].itemAt(0)).getInt();
+                final int splitCount = ((IntegerValue)args[1].itemAt(0)).getInt();
                 Modification.checkFragmentation(context, docs, splitCount);
 
             } else {
@@ -102,7 +102,7 @@ public class XMLDBDefragment extends BasicFunction {
                 Modification.checkFragmentation(context, docs);
             }
             
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             logger.error("An error occurred while defragmenting documents: " + e.getMessage());
             throw new XPathException(this, "An error occurred while defragmenting documents: " + e.getMessage(), e);
         }

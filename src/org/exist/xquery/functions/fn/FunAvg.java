@@ -81,23 +81,23 @@ public class FunAvg extends Function {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());}
         }
         Sequence result;
-        Sequence inner = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence inner = getArgument(0).eval(contextSequence, contextItem);
         if (inner.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
-            SequenceIterator iter = inner.iterate();
+            final SequenceIterator iter = inner.iterate();
             Item item = iter.nextItem();
             AtomicValue value = item.atomize();
             //Any values of type xdt:untypedAtomic are cast to xs:double
             if (value.getType() == Type.UNTYPED_ATOMIC) 
-                value = value.convertTo(Type.DOUBLE);
+                {value = value.convertTo(Type.DOUBLE);}
             if (!(value instanceof ComputableValue)) {
                 throw new XPathException(this, ErrorCodes.FORG0006,
                     Type.getTypeName(value.getType()) + "(" + value + ") " +
@@ -110,7 +110,7 @@ public class FunAvg extends Function {
                 value = item.atomize();
                 //Any value of type xdt:untypedAtomic are cast to xs:double
                 if (value.getType() == Type.UNTYPED_ATOMIC) 
-                    value = value.convertTo(Type.DOUBLE);
+                    {value = value.convertTo(Type.DOUBLE);}
                 if (!(value instanceof ComputableValue)) {
                     throw new XPathException(this, ErrorCodes.FORG0006, "" +
                         Type.getTypeName(value.getType()) + "(" + value +
@@ -118,7 +118,7 @@ public class FunAvg extends Function {
                 }
                 if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
                     if (((NumericValue)value).isInfinite())
-                        gotInfinity = true;
+                        {gotInfinity = true;}
                     if (((NumericValue)value).isNaN()) {
                         sum = DoubleValue.NaN;
                         break;
@@ -128,7 +128,7 @@ public class FunAvg extends Function {
                     sum = (ComputableValue) sum.promote(value);
                     //Aggregate next values	
                     sum = sum.plus((ComputableValue) value);
-                } catch(XPathException e) {
+                } catch(final XPathException e) {
                     throw new XPathException(this, ErrorCodes.FORG0006, e.getMessage());
                 }
             }
@@ -143,7 +143,7 @@ public class FunAvg extends Function {
             }
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

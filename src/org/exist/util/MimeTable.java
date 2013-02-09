@@ -126,8 +126,8 @@ public class MimeTable {
     
     //TODO: deprecate?
     public MimeType getContentTypeFor(String fileName) {
-        String ext = getExtension(fileName);
-        MimeType mt = (ext == null) ? defaultMime : extensions.get(ext);
+        final String ext = getExtension(fileName);
+        final MimeType mt = (ext == null) ? defaultMime : extensions.get(ext);
         return (mt == null) ? defaultMime : mt;
     }
     
@@ -144,16 +144,16 @@ public class MimeTable {
     }
     
     public List<String> getAllExtensions(String mimeType) {
-    	List<String> extns = new ArrayList<String>();
+    	final List<String> extns = new ArrayList<String>();
     	
-    	for(String extKey : extensions.keySet()) {
-            MimeType mt = extensions.get(extKey);
+    	for(final String extKey : extensions.keySet()) {
+            final MimeType mt = extensions.get(extKey);
             if(mt.getName().equals(mimeType)) {
                 extns.add(extKey);
             }
     	}
     	
-    	String preferred = preferredExtension.get(mimeType);
+    	final String preferred = preferredExtension.get(mimeType);
     	if(preferred != null && !extns.contains(preferred)) {
             extns.add(0, preferred);
     	}
@@ -170,11 +170,11 @@ public class MimeTable {
     }
     
     public boolean isXMLContent(String fileName) {
-        String ext = getExtension(fileName);
+        final String ext = getExtension(fileName);
         if(ext == null) {
             return false;
         }
-        MimeType type = extensions.get(ext);
+        final MimeType type = extensions.get(ext);
         if(type == null) {
             return false;
         }
@@ -189,15 +189,15 @@ public class MimeTable {
      * @return TRUE if mimetype is for text content else FALSE
      */
     public boolean isTextContent(String mimeType) {
-    	MimeType mime = getContentType(mimeType);
+    	final MimeType mime = getContentType(mimeType);
     	return mimeType.startsWith("text/") || mimeType.endsWith("xquery") ||
     		mime.isXMLType();
     }
     
     private String getExtension(String fileName) {
-        File f = new File(fileName);
+        final File f = new File(fileName);
         fileName = f.getName();
-        int p = fileName.lastIndexOf('.');
+        final int p = fileName.lastIndexOf('.');
         if(p < 0 || p + 1 == fileName.length()) {
             return null;
         }
@@ -214,28 +214,28 @@ public class MimeTable {
         try {
         	loadMimeTypes(stream);
         	this.src=src;
-        } catch (ParserConfigurationException e) {
+        } catch (final ParserConfigurationException e) {
             System.err.println(LOAD_FAILED_ERR);
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             System.err.println(LOAD_FAILED_ERR);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.err.println(LOAD_FAILED_ERR);
         }
     	
         if (!loaded) {
-            ClassLoader cl = MimeTable.class.getClassLoader();
-            InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
+            final ClassLoader cl = MimeTable.class.getClassLoader();
+            final InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
             if (is == null) {
                 System.err.println(LOAD_FAILED_ERR);
             }
             try {
                 loadMimeTypes(is);
                 this.src="resource://"+MIME_TYPES_XML_DEFAULT;
-            } catch (ParserConfigurationException e) {
+            } catch (final ParserConfigurationException e) {
                 System.err.println(LOAD_FAILED_ERR);
-            } catch (SAXException e) {
+            } catch (final SAXException e) {
                 System.err.println(LOAD_FAILED_ERR);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.err.println(LOAD_FAILED_ERR);
             }
         }
@@ -249,30 +249,30 @@ public class MimeTable {
                 loadMimeTypes(new FileInputStream(f));
                 loaded = true;
                 this.src=f.toURI().toString();
-            } catch (FileNotFoundException e) {
+            } catch (final FileNotFoundException e) {
                 System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
-            } catch (ParserConfigurationException e) {
+            } catch (final ParserConfigurationException e) {
                 System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
-            } catch (SAXException e) {
+            } catch (final SAXException e) {
                 System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.err.println(FILE_LOAD_FAILED_ERR + f.getAbsolutePath());
             }
         }
         if (!loaded) {
-            ClassLoader cl = MimeTable.class.getClassLoader();
-            InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
+            final ClassLoader cl = MimeTable.class.getClassLoader();
+            final InputStream is = cl.getResourceAsStream(MIME_TYPES_XML_DEFAULT);
             if (is == null) {
                 System.err.println(LOAD_FAILED_ERR);
             }
             try {
                 loadMimeTypes(is);
                 this.src="resource://"+MIME_TYPES_XML_DEFAULT;
-            } catch (ParserConfigurationException e) {
+            } catch (final ParserConfigurationException e) {
                 System.err.println(LOAD_FAILED_ERR);
-            } catch (SAXException e) {
+            } catch (final SAXException e) {
                 System.err.println(LOAD_FAILED_ERR);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.err.println(LOAD_FAILED_ERR);
             }
         }
@@ -285,12 +285,12 @@ public class MimeTable {
      * @throws IOException 
      */
     private void loadMimeTypes(InputStream stream) throws ParserConfigurationException, SAXException, IOException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setNamespaceAware(true);
         factory.setValidating(false);
-		InputSource src = new InputSource(stream);
-        SAXParser parser = factory.newSAXParser();
-        XMLReader reader = parser.getXMLReader();
+		final InputSource src = new InputSource(stream);
+        final SAXParser parser = factory.newSAXParser();
+        final XMLReader reader = parser.getXMLReader();
         reader.setContentHandler(new MimeTableHandler());
         reader.parse(src);
     }
@@ -315,8 +315,8 @@ public class MimeTable {
 
             if (MIME_TYPES.equals(qName)) {
                 // Check for a default mime type settings
-                String defaultMimeAttr = attributes.getValue("default-mime-type");
-                String defaultTypeAttr = attributes.getValue("default-resource-type");
+                final String defaultMimeAttr = attributes.getValue("default-mime-type");
+                final String defaultTypeAttr = attributes.getValue("default-resource-type");
 
                 // Resource type default is XML
                 int type = MimeType.XML;
@@ -349,15 +349,15 @@ public class MimeTable {
             }
 
             if (MIME_TYPE.equals(qName)) {
-                String name = attributes.getValue("name");
+                final String name = attributes.getValue("name");
                 if (name == null || name.length() == 0) {
                     System.err.println("No name specified for mime-type");
                     return;
                 }
                 int type = MimeType.BINARY;
-                String typeAttr = attributes.getValue("type");
+                final String typeAttr = attributes.getValue("type");
                 if (typeAttr != null && "xml".equals(typeAttr))
-                    type = MimeType.XML;
+                    {type = MimeType.XML;}
                 mime = new MimeType(name, type);
                 mimeTypes.put(name, mime);
             }
@@ -374,13 +374,13 @@ public class MimeTable {
                 mime = null;
             } else if (DESCRIPTION.equals(qName)) {
                 if (mime != null) {
-                    String description = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+                    final String description = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
                     mime.setDescription(description);
                 }
             } else if (EXTENSIONS.equals(qName)) {
                 if (mime != null) {
-                    String extList = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
-                    StringTokenizer tok = new StringTokenizer(extList, ", ");
+                    final String extList = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+                    final StringTokenizer tok = new StringTokenizer(extList, ", ");
                     String preferred = null;
                     while (tok.hasMoreTokens()) {
                         String ext = tok.nextToken().toLowerCase();
@@ -407,8 +407,8 @@ public class MimeTable {
     }
     
     public static void main(String[] args) {
-        MimeTable table = MimeTable.getInstance();
-        MimeType type = table.getContentTypeFor("samples/xquery/fibo.svg");
+        final MimeTable table = MimeTable.getInstance();
+        final MimeType type = table.getContentTypeFor("samples/xquery/fibo.svg");
         if (type == null) {
             System.out.println("Not found!");
         } else {

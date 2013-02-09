@@ -66,9 +66,9 @@ public class BackupDialog extends JDialog
 
     private void setupComponents()
     {
-        GridBagLayout grid = new GridBagLayout();
+        final GridBagLayout grid = new GridBagLayout();
         getContentPane().setLayout( grid );
-        GridBagConstraints c = new GridBagConstraints();
+        final GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets( 5, 5, 5, 5 );
 
         JLabel label = new JLabel( "Collection:" );

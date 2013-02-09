@@ -74,14 +74,14 @@ public abstract class DeferredFunctionCall implements Sequence {
     }
 
     public void clearContext(int contextId) throws XPathException {
-        if (sequence != null) sequence.clearContext(contextId);
+        if (sequence != null) {sequence.clearContext(contextId);}
     }
 
     public int conversionPreference(Class<?> javaClass) {
         if (sequence != null) 
-            return sequence.conversionPreference(javaClass);
+            {return sequence.conversionPreference(javaClass);}
         else
-            return Integer.MAX_VALUE;
+            {return Integer.MAX_VALUE;}
     }
 
     public AtomicValue convertTo(int requiredType) throws XPathException {

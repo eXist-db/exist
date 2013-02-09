@@ -67,23 +67,23 @@ public class GetCookieNames extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+		final RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
+		final Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue() == null || var.getValue().getItemType() != Type.JAVA_OBJECT) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
-		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
+		final JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		if (value.getObject() instanceof RequestWrapper)
 		{
-			Cookie[] cookies = ((RequestWrapper)value.getObject()).getCookies();
+			final Cookie[] cookies = ((RequestWrapper)value.getObject()).getCookies();
 			if(cookies != null)
 			{
 				if(cookies.length != 0)
 				{
-					ValueSequence names = new ValueSequence();
+					final ValueSequence names = new ValueSequence();
 				
 					for(int c = 0; c < cookies.length; c++)
 					{
@@ -96,6 +96,6 @@ public class GetCookieNames extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		else
-			throw new XPathException(this, "Variable $request is not bound to a Request object.");
+			{throw new XPathException(this, "Variable $request is not bound to a Request object.");}
 	}
 }

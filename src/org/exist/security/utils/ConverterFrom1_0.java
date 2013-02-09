@@ -61,7 +61,7 @@ public class ConverterFrom1_0 {
 	public static void convert(SecurityManager sm, Document acl) throws PermissionDeniedException, EXistException {
 		Element docElement = null;
 		if (acl != null)
-			docElement = acl.getDocumentElement();
+			{docElement = acl.getDocumentElement();}
 		if (docElement == null) {
 		} else {
 			//Realm realm = sm.getRealm(RealmImpl.ID);
@@ -69,16 +69,16 @@ public class ConverterFrom1_0 {
 //			int nextGroupId = -1;
 //			int nextUserId = -1;
 
-			Element root = acl.getDocumentElement();
-			Attr version = root.getAttributeNode("version");
+			final Element root = acl.getDocumentElement();
+			final Attr version = root.getAttributeNode("version");
 			int major = 0;
 			int minor = 0;
 			if (version != null) {
-				String[] numbers = version.getValue().split("\\.");
+				final String[] numbers = version.getValue().split("\\.");
 				major = Integer.parseInt(numbers[0]);
 				minor = Integer.parseInt(numbers[1]);
 			}
-			NodeList nl = root.getChildNodes();
+			final NodeList nl = root.getChildNodes();
 			Node node;
 			Element next;
 			Account account;
@@ -87,9 +87,9 @@ public class ConverterFrom1_0 {
 			Group group;
 			for (int i = 0; i < nl.getLength(); i++) {
 				if (nl.item(i).getNodeType() != Node.ELEMENT_NODE)
-					continue;
+					{continue;}
 				next = (Element) nl.item(i);
-				if (next.getTagName().equals("users")) {
+				if ("users".equals(next.getTagName())) {
 //					lastId = next.getAttribute("last-id");
 //					try {
 //						nextUserId = Integer.parseInt(lastId);
@@ -98,7 +98,7 @@ public class ConverterFrom1_0 {
 					ul = next.getChildNodes();
 					for (int j = 0; j < ul.getLength(); j++) {
 						node = ul.item(j);
-						if (node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals("user")) {
+						if (node.getNodeType() == Node.ELEMENT_NODE && "user".equals(node.getLocalName())) {
 							account = createAccount(major, minor, (Element) node);
 							
 							if (sm.hasAccount(account.getName())) {
@@ -108,7 +108,7 @@ public class ConverterFrom1_0 {
 							}
 						}
 					}
-				} else if (next.getTagName().equals("groups")) {
+				} else if ("groups".equals(next.getTagName())) {
 //					lastId = next.getAttribute("last-id");
 //					try {
 //						nextGroupId = Integer.parseInt(lastId);
@@ -117,7 +117,7 @@ public class ConverterFrom1_0 {
 					ul = next.getChildNodes();
 					for (int j = 0; j < ul.getLength(); j++) {
 						node = ul.item(j);
-						if (node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals("group")) {
+						if (node.getNodeType() == Node.ELEMENT_NODE && "group".equals(node.getLocalName())) {
 							group = createGroup((Element) node);
 
 							if (sm.hasGroup(group.getName())) {
@@ -152,9 +152,9 @@ public class ConverterFrom1_0 {
 		int id = -1;
 		XmldbURI home = null;
 		
-		String name = node.getAttribute(NAME);
+		final String name = node.getAttribute(NAME);
 		if (name == null ) //|| name.length() == 0
-			throw new ConfigurationException("account needs a name");
+			{throw new ConfigurationException("account needs a name");}
 		
 		Attr attr;
 		if (majorVersion == 0) {
@@ -167,29 +167,29 @@ public class ConverterFrom1_0 {
 			attr = node.getAttributeNode(DIGEST_PASS);
 			digestPassword = attr == null ? null : attr.getValue();
 		}
-		Attr userId = node.getAttributeNode(USER_ID);
+		final Attr userId = node.getAttributeNode(USER_ID);
 		if (userId == null)
-			throw new ConfigurationException("attribute id is missing");
+			{throw new ConfigurationException("attribute id is missing");}
 		try {
 			id = Integer.parseInt(userId.getValue());
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			throw new ConfigurationException("illegal user id: " + userId + " for account " + name);
 		}
-		Attr homeAttr = node.getAttributeNode(HOME);
+		final Attr homeAttr = node.getAttributeNode(HOME);
 		home = homeAttr == null ? null : XmldbURI.create(homeAttr.getValue());
 		
 		//TODO: workaround for 'null' admin's password. It should be removed after 6 months (@ 10 July 2010)
-		if (id == 1 && password == null) password = "";
+		if (id == 1 && password == null) {password = "";}
 		
-		Account new_account = new UserAider(RealmImpl.ID, name);
+		final Account new_account = new UserAider(RealmImpl.ID, name);
 		new_account.setPassword(password);
 		
-		NodeList gl = node.getChildNodes();
+		final NodeList gl = node.getChildNodes();
 		Node group;
 		for (int i = 0; i < gl.getLength(); i++) {
 			group = gl.item(i);
 			if (group.getNodeType() == Node.ELEMENT_NODE && group.getLocalName().equals(GROUP))
-				new_account.addGroup(group.getFirstChild().getNodeValue());
+				{new_account.addGroup(group.getFirstChild().getNodeValue());}
 		}
 		
 		return new_account;

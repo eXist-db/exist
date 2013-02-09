@@ -50,14 +50,14 @@ public class Except extends CombiningExpression {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());}
         }
         Sequence lval = left.eval(contextSequence, contextItem);
-        Sequence rval = right.eval(contextSequence, contextItem);
+        final Sequence rval = right.eval(contextSequence, contextItem);
         lval.removeDuplicates();
         rval.removeDuplicates();
         Sequence result;
@@ -65,28 +65,28 @@ public class Except extends CombiningExpression {
             result = Sequence.EMPTY_SEQUENCE;
         } else if (rval.isEmpty()) {
             if (!Type.subTypeOf(lval.getItemType(), Type.NODE))
-                throw new XPathException(this, ErrorCodes.XPTY0004, "Operand is not a node sequence");
+                {throw new XPathException(this, ErrorCodes.XPTY0004, "Operand is not a node sequence");}
             result = lval;
         } else {
             if (!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-                throw new XPathException(this, ErrorCodes.XPTY0004, "Operand is not a node sequence");
+                {throw new XPathException(this, ErrorCodes.XPTY0004, "Operand is not a node sequence");}
             if (lval.isPersistentSet() && rval.isPersistentSet())
-                result = lval.toNodeSet().except(rval.toNodeSet());
+                {result = lval.toNodeSet().except(rval.toNodeSet());}
             else { 
                 result = new ValueSequence();
-                Set<Item> set = new TreeSet<Item>();
-                for (SequenceIterator i = rval.unorderedIterator(); i.hasNext(); )
+                final Set<Item> set = new TreeSet<Item>();
+                for (final SequenceIterator i = rval.unorderedIterator(); i.hasNext(); )
                     set.add(i.nextItem());
-                for (SequenceIterator i = lval.unorderedIterator(); i.hasNext(); ) {
-                    Item next = i.nextItem();
+                for (final SequenceIterator i = lval.unorderedIterator(); i.hasNext(); ) {
+                    final Item next = i.nextItem();
                     if (!set.contains(next))
-                        result.add(next);
+                        {result.add(next);}
                 }
                 result.removeDuplicates();
             }
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 
@@ -100,7 +100,7 @@ public class Except extends CombiningExpression {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append(left.toString());
         result.append(" except ");
         result.append(right.toString());

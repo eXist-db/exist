@@ -66,7 +66,7 @@ public class DecimalValue extends NumericValue {
 						" from \"" + str + "\"");            
 			}
 			value = stripTrailingZeros(new BigDecimal(str));
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
 					" from \"" + getStringValue() + "\"");					
 		}
@@ -109,9 +109,9 @@ public class DecimalValue extends NumericValue {
         if (scale == 0) {
             return value.toString();
         } else if (scale < 0) {
-            String s = value.abs().unscaledValue().toString();
+            final String s = value.abs().unscaledValue().toString();
 
-            FastStringBuffer sb = new FastStringBuffer(s.length() + (-scale) + 2);
+            final FastStringBuffer sb = new FastStringBuffer(s.length() + (-scale) + 2);
             if (value.signum() < 0) {
                 sb.append('-');
             }
@@ -124,12 +124,12 @@ public class DecimalValue extends NumericValue {
             }
             return sb.toString();
         } else {
-            String s = value.abs().unscaledValue().toString();
-            if (s.equals("0")) {
+            final String s = value.abs().unscaledValue().toString();
+            if ("0".equals(s)) {
                 return s;
             }
-            int len = s.length();
-            FastStringBuffer sb = new FastStringBuffer(len+1);
+            final int len = s.length();
+            final FastStringBuffer sb = new FastStringBuffer(len+1);
             if (value.signum() < 0) {
                 sb.append('-');
             }
@@ -261,21 +261,21 @@ public class DecimalValue extends NumericValue {
 	 */
 	public NumericValue round(IntegerValue precision) throws XPathException {
 		if (value.signum() == 0)
-			return this;
+			{return this;}
 		
 		int pre;
 		if (precision == null)
-			pre = 0;
+			{pre = 0;}
 		else 
-			pre = precision.getInt();
+			{pre = precision.getInt();}
 		
 		if ( pre >= 0 ) 
-			return new DecimalValue(value.setScale(pre, BigDecimal.ROUND_HALF_EVEN));
+			{return new DecimalValue(value.setScale(pre, BigDecimal.ROUND_HALF_EVEN));}
 		else 
-			return new DecimalValue(
+			{return new DecimalValue(
 						value.movePointRight(pre).
 						setScale(0, BigDecimal.ROUND_HALF_EVEN).
-						movePointLeft(pre));
+						movePointLeft(pre));}
 	}
 
 	
@@ -339,11 +339,11 @@ public class DecimalValue extends NumericValue {
 	            	return ((ComputableValue)n).div(other);
 				}
 				if (((DecimalValue)other).isZero())
-					throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+					{throw new XPathException(ErrorCodes.FOAR0001, "division by zero");}
 
 				//Copied from Saxon 8.6.1	
-		        int scale = Math.max(DIVIDE_PRECISION, Math.max(value.scale(), ((DecimalValue)other).value.scale()));
-				BigDecimal result = value.divide(((DecimalValue)other).value, scale, BigDecimal.ROUND_HALF_DOWN);
+		        final int scale = Math.max(DIVIDE_PRECISION, Math.max(value.scale(), ((DecimalValue)other).value.scale()));
+				final BigDecimal result = value.divide(((DecimalValue)other).value, scale, BigDecimal.ROUND_HALF_DOWN);
 				return new DecimalValue(result);
 				//End of copy				
 		}		
@@ -351,10 +351,10 @@ public class DecimalValue extends NumericValue {
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
 		if (other.isZero())
-			throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+			{throw new XPathException(ErrorCodes.FOAR0001, "division by zero");}
 
-		DecimalValue dv = (DecimalValue)other.convertTo(Type.DECIMAL);
-        BigInteger quot = value.divide(dv.value, 0, BigDecimal.ROUND_DOWN).toBigInteger();
+		final DecimalValue dv = (DecimalValue)other.convertTo(Type.DECIMAL);
+        final BigInteger quot = value.divide(dv.value, 0, BigDecimal.ROUND_DOWN).toBigInteger();
         return new IntegerValue(quot);
 	}
 
@@ -364,13 +364,13 @@ public class DecimalValue extends NumericValue {
 	public NumericValue mod(NumericValue other) throws XPathException {
 		if (other.getType() == Type.DECIMAL) {
 			if (other.isZero())
-				throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+				{throw new XPathException(ErrorCodes.FOAR0001, "division by zero");}
 
-			BigDecimal quotient = value.divide(((DecimalValue)other).value, 0, BigDecimal.ROUND_DOWN);
-            BigDecimal remainder = value.subtract(quotient.setScale(0, BigDecimal.ROUND_DOWN).multiply(((DecimalValue) other).value));
+			final BigDecimal quotient = value.divide(((DecimalValue)other).value, 0, BigDecimal.ROUND_DOWN);
+            final BigDecimal remainder = value.subtract(quotient.setScale(0, BigDecimal.ROUND_DOWN).multiply(((DecimalValue) other).value));
             return new DecimalValue(remainder);
 		} else
-			return ((NumericValue) convertTo(other.getType())).mod(other);
+			{return ((NumericValue) convertTo(other.getType())).mod(other);}
 	}
 
 	/* (non-Javadoc)
@@ -387,8 +387,8 @@ public class DecimalValue extends NumericValue {
 		if (other.getType() == Type.DECIMAL) {
 			return new DecimalValue(value.max(((DecimalValue) other).value));
 		} else
-			return new DecimalValue(
-				value.max(((DecimalValue) other.convertTo(Type.DECIMAL)).value));
+			{return new DecimalValue(
+				value.max(((DecimalValue) other.convertTo(Type.DECIMAL)).value));}
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
@@ -414,7 +414,7 @@ public class DecimalValue extends NumericValue {
 				}
 			}			
 			if(Type.subTypeOf(other.getType(), Type.DECIMAL)) {
-				DecimalValue otherValue = (DecimalValue)other.convertTo(Type.DECIMAL);
+				final DecimalValue otherValue = (DecimalValue)other.convertTo(Type.DECIMAL);
 				switch(operator) {
 					case Constants.EQ:
 						return compareTo(otherValue) == Constants.EQUAL;
@@ -444,13 +444,13 @@ public class DecimalValue extends NumericValue {
         	DecimalValue otherAsDecimal = null;
         	try {
         		otherAsDecimal = (DecimalValue)other.convertTo(Type.DECIMAL);        		
-        	} catch (XPathException e) {
+        	} catch (final XPathException e) {
         		//TODO : is this relevant ?
         		return Constants.INFERIOR;
         	}
         	return value.compareTo(otherAsDecimal.value);
         } else
-            return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
+            {return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;}
     }
 
     @Override
@@ -463,27 +463,27 @@ public class DecimalValue extends NumericValue {
     */
 	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(DecimalValue.class))
-			return 0;
+			{return 0;}
 		if (javaClass == BigDecimal.class)
-			return 1;
+			{return 1;}
 		if (javaClass == Long.class || javaClass == long.class)
-			return 4;
+			{return 4;}
 		if (javaClass == Integer.class || javaClass == int.class)
-			return 5;
+			{return 5;}
 		if (javaClass == Short.class || javaClass == short.class)
-			return 6;
+			{return 6;}
 		if (javaClass == Byte.class || javaClass == byte.class)
-			return 7;
+			{return 7;}
 		if (javaClass == Double.class || javaClass == double.class)
-			return 2;
+			{return 2;}
 		if (javaClass == Float.class || javaClass == float.class)
-			return 3;
+			{return 3;}
 		if (javaClass == String.class)
-			return 8;
+			{return 8;}
 		if (javaClass == Boolean.class || javaClass == boolean.class)
-			return 9;
+			{return 9;}
 		if (javaClass == Object.class)
-			return 20;
+			{return 20;}
 
 		return Integer.MAX_VALUE;
 	}
@@ -498,9 +498,9 @@ public class DecimalValue extends NumericValue {
                 } else if(target == BigDecimal.class) {
 			return (T)value;
                 } else if(target == Double.class || target == double.class) {
-			return (T)new Double(value.doubleValue());
+			return (T)Double.valueOf(value.doubleValue());
                 } else if(target == Float.class || target == float.class) {
-			return (T)new Float(value.floatValue());
+			return (T)Float.valueOf(value.floatValue());
                 } else if(target == Long.class || target == long.class) {
 			return (T)Long.valueOf( ((IntegerValue) convertTo(Type.LONG)).getValue() );
 		} else if(target == Integer.class || target == int.class) {
@@ -513,9 +513,9 @@ public class DecimalValue extends NumericValue {
 			final IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
 			return (T)Byte.valueOf((byte) v.getValue());
 		} else if(target == String.class)
-			return (T)getStringValue();
+			{return (T)getStringValue();}
 		else if(target == Boolean.class)
-			return (T)Boolean.valueOf(effectiveBooleanValue());
+			{return (T)Boolean.valueOf(effectiveBooleanValue());}
 
 		throw new XPathException(
 			"cannot convert value of type "
@@ -538,18 +538,18 @@ public class DecimalValue extends NumericValue {
 
 	        try {
 	            if (stripTrailingZerosMethod == null) {
-	                Class<?>[] argTypes = {};
+	                final Class<?>[] argTypes = {};
 	                stripTrailingZerosMethod = BigDecimal.class.getMethod("stripTrailingZeros", argTypes);
 	            }
-	            Object result = stripTrailingZerosMethod.invoke(value, EMPTY_OBJECT_ARRAY);
+	            final Object result = stripTrailingZerosMethod.invoke(value, EMPTY_OBJECT_ARRAY);
 	            return (BigDecimal)result;
-	        } catch (NoSuchMethodException e) {
+	        } catch (final NoSuchMethodException e) {
 	            stripTrailingZerosMethodUnavailable = true;
 	            return stripTrailingZerosFallback(value);
-	        } catch (IllegalAccessException e) {
+	        } catch (final IllegalAccessException e) {
 	            stripTrailingZerosMethodUnavailable = true;
 	            return stripTrailingZerosFallback(value);
-	        } catch (InvocationTargetException e) {
+	        } catch (final InvocationTargetException e) {
 	            stripTrailingZerosMethodUnavailable = true;
 	            return stripTrailingZerosFallback(value);
 	        }
@@ -565,7 +565,7 @@ public class DecimalValue extends NumericValue {
 	        if (scale > 0) {
 	            BigInteger i = value.unscaledValue();
 	            while (true) {
-	                BigInteger[] dr = i.divideAndRemainder(BIG_INTEGER_TEN);
+	                final BigInteger[] dr = i.divideAndRemainder(BIG_INTEGER_TEN);
 	                if (dr[1].equals(BigInteger.ZERO)) {
 	                    i = dr[0];
 	                    scale--;

@@ -47,7 +47,7 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
         super.configure(broker, parent, parameters);
         System.out.println("parameters:");
 
-        for(Entry<String, List<?>> entry : parameters.entrySet()) {
+        for(final Entry<String, List<?>> entry : parameters.entrySet()) {
             System.out.print(entry.getKey() + " = " + entry.getValue());
         }
     }
@@ -63,15 +63,15 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
             System.out.println("replacing document " + ((DocumentImpl)existingDocument).getFileURI());
         }
         System.out.println("collection contents:");
-        DefaultDocumentSet docs = new DefaultDocumentSet();
+        final DefaultDocumentSet docs = new DefaultDocumentSet();
         
         try {
             getCollection().getDocuments(broker, docs);
-        } catch (PermissionDeniedException pde) {
+        } catch (final PermissionDeniedException pde) {
             throw new TriggerException(pde.getMessage(), pde);
         }
         
-        for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+        for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
             System.out.println("\t" + i.next().getFileURI());
         }
     }

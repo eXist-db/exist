@@ -63,12 +63,12 @@ public class Messages {
     public static String formatMessage(String messageId, Object[] args) {
         for (int i = 0; i < args.length; i++) {
             if (args[i] != null)
-                args[i] = args[i].toString();
+                {args[i] = args[i].toString();}
             else
-                args[i] = "";
+                {args[i] = "";}
         }
-        ResourceBundle bundle = getBundle(Locale.getDefault());
-        String message = bundle.getString(messageId);
+        final ResourceBundle bundle = getBundle(Locale.getDefault());
+        final String message = bundle.getString(messageId);
 
         return MessageFormat.format(message, args);
     }
@@ -76,7 +76,7 @@ public class Messages {
     private static ResourceBundle getBundle(Locale locale) {
         try {
             return ResourceBundle.getBundle(BASE_NAME, locale);
-        } catch (MissingResourceException e) {
+        } catch (final MissingResourceException e) {
             return ResourceBundle.getBundle(BASE_NAME);
         }
     }

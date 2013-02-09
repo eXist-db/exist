@@ -52,7 +52,7 @@ public class XmlrpcUploadThread extends Thread {
         logger.debug("Thread started." );
         Exception exception=null;
         try {
-            XmlrpcUpload uploader = new XmlrpcUpload();
+            final XmlrpcUpload uploader = new XmlrpcUpload();
             uploader.stream(xmldbURL, bis);
             
         } catch (IOException ex) {

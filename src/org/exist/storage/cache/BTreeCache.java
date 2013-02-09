@@ -50,7 +50,7 @@ public class BTreeCache extends LRUCache {
         boolean mustRemoveInner = false;
         SequencedLongHashMap.Entry<Cacheable> next = map.getFirstEntry();
         do {
-            BTreeCacheable cached = (BTreeCacheable)next.getValue();
+            final BTreeCacheable cached = (BTreeCacheable)next.getValue();
             if(cached.allowUnload() && cached.getKey() != item.getKey() &&
                     (mustRemoveInner || !cached.isInnerPage())) {
                 cached.sync(true);

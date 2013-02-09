@@ -30,7 +30,7 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
 
     static {
         org.apache.axis.description.OperationDesc _oper;
-        org.apache.axis.description.FaultDesc _fault;
+        final org.apache.axis.description.FaultDesc _fault;
         org.apache.axis.description.ParameterDesc [] _params;
         _params = new org.apache.axis.description.ParameterDesc [] {
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
@@ -189,25 +189,25 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
     }
     public java.lang.String getResource(java.lang.String sessionId, java.lang.String path, boolean indent, boolean xinclude) throws java.rmi.RemoteException
     {
-        java.lang.String ret = impl.getResource(sessionId, path, indent, xinclude);
+        final java.lang.String ret = impl.getResource(sessionId, path, indent, xinclude);
         return ret;
     }
 
     public org.exist.soap.QueryResponse query(java.lang.String sessionId, java.lang.String xpath) throws java.rmi.RemoteException
     {
-        org.exist.soap.QueryResponse ret = impl.query(sessionId, xpath);
+        final org.exist.soap.QueryResponse ret = impl.query(sessionId, xpath);
         return ret;
     }
 
     public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException
     {
-        java.lang.String ret = impl.connect(userId, password);
+        final java.lang.String ret = impl.connect(userId, password);
         return ret;
     }
 
     public java.lang.String[] retrieve(java.lang.String sessionId, int start, int howmany, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException
     {
-        java.lang.String[] ret = impl.retrieve(sessionId, start, howmany, indent, xinclude, highlight);
+        final java.lang.String[] ret = impl.retrieve(sessionId, start, howmany, indent, xinclude, highlight);
         return ret;
     }
 
@@ -218,31 +218,31 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
 
     public byte[] getResourceData(java.lang.String sessionId, java.lang.String path, boolean indent, boolean xinclude, boolean processXSLPI) throws java.rmi.RemoteException
     {
-        byte[] ret = impl.getResourceData(sessionId, path, indent, xinclude, processXSLPI);
+        final byte[] ret = impl.getResourceData(sessionId, path, indent, xinclude, processXSLPI);
         return ret;
     }
 
     public org.exist.soap.QueryResponse xquery(java.lang.String sessionId, byte[] xquery) throws java.rmi.RemoteException
     {
-        org.exist.soap.QueryResponse ret = impl.xquery(sessionId, xquery);
+        final org.exist.soap.QueryResponse ret = impl.xquery(sessionId, xquery);
         return ret;
     }
 
     public org.exist.soap.Base64BinaryArray retrieveData(java.lang.String sessionId, int start, int howmany, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException
     {
-        org.exist.soap.Base64BinaryArray ret = impl.retrieveData(sessionId, start, howmany, indent, xinclude, highlight);
+        final org.exist.soap.Base64BinaryArray ret = impl.retrieveData(sessionId, start, howmany, indent, xinclude, highlight);
         return ret;
     }
 
     public java.lang.String[] retrieveByDocument(java.lang.String sessionId, int start, int howmany, java.lang.String path, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException
     {
-        java.lang.String[] ret = impl.retrieveByDocument(sessionId, start, howmany, path, indent, xinclude, highlight);
+        final java.lang.String[] ret = impl.retrieveByDocument(sessionId, start, howmany, path, indent, xinclude, highlight);
         return ret;
     }
 
     public org.exist.soap.Collection listCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException
     {
-        org.exist.soap.Collection ret = impl.listCollection(sessionId, path);
+        final org.exist.soap.Collection ret = impl.listCollection(sessionId, path);
         return ret;
     }
 

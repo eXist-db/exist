@@ -39,7 +39,7 @@ public class Utils {
 
     public static Collection createCollection(DBBroker broker, Txn txn, XmldbURI uri) throws PermissionDeniedException, IOException, LockException, TriggerException {
 
-        Collection collection = broker.getOrCreateCollection(txn, uri);
+        final Collection collection = broker.getOrCreateCollection(txn, uri);
 
         if(collection == null) {
             throw new IOException("Collection " + uri + " cannot be created.");

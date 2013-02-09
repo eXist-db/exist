@@ -81,13 +81,13 @@ public class CatchFunction extends Function {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 
         // Get exception classes
-        Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
 
         Sequence result = null;
         // Try to evaluate try-code
         try {
             context.pushDocumentContext();
-            LocalVariable mark = context.markLocalVariables(false);
+            final LocalVariable mark = context.markLocalVariables(false);
 
             try {
                 // Actually execute try-code
@@ -99,7 +99,7 @@ public class CatchFunction extends Function {
             }
 
         // Handle exception
-        } catch (Exception expException) {
+        } catch (final Exception expException) {
 
             logger.debug("Caught exception in util:catch: " + expException.getMessage());
             if (!(expException instanceof XPathException)) {
@@ -110,27 +110,27 @@ public class CatchFunction extends Function {
             context.getWatchDog().reset();
 
             // Iterate over all exception parameters
-            for (SequenceIterator i = exceptionClasses.iterate(); i.hasNext();) {
-                Item currentItem = i.nextItem();
+            for (final SequenceIterator i = exceptionClasses.iterate(); i.hasNext();) {
+                final Item currentItem = i.nextItem();
                 try {
                     // Get value of execption argument
-                    String exClassName = currentItem.getStringValue();
+                    final String exClassName = currentItem.getStringValue();
                     Class<?> exClass = null;
 
                     // Get exception class, if available
-                    if (!exClassName.equals("*")) {
+                    if (!"*".equals(exClassName)) {
                         exClass = Class.forName(currentItem.getStringValue());
                     }
 
                     // If value is '*' or if class actually matches
-                    if (exClassName.equals("*") 
+                    if ("*".equals(exClassName) 
                             || exClass.getName().equals(expException.getClass().getName())
                             || exClass.isInstance(expException)) {
 
                         logger.debug("Calling exception handler to process " + expException.getClass().getName());
 
                         // Make exception name and message available to query
-                        UtilModule myModule =
+                        final UtilModule myModule =
                                 (UtilModule) context.getModule(UtilModule.NAMESPACE_URI);
                         myModule.declareVariable(UtilModule.EXCEPTION_QNAME, 
                                                  new StringValue(expException.getClass().getName()));
@@ -141,7 +141,7 @@ public class CatchFunction extends Function {
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
 
-                } catch (Exception e2) {
+                } catch (final Exception e2) {
                     if (e2 instanceof XPathException) {
                         throw (XPathException) e2;
 

@@ -143,7 +143,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void startDocument() throws SAXException {
         try {
             receiver.startDocument();
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -155,7 +155,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void endDocument() throws SAXException {
         try {
             receiver.endDocument();
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -218,7 +218,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             if(attribs != null) {
                 for (int i = 0; i < attribs.getLength(); i++) {
                     attrName = attribs.getQName(i);
-                    if (attrName.equals("xmlns")) {
+                    if ("xmlns".equals(attrName)) {
                         if (nsSupport.getURI("") == null) {
                             uri = attribs.getValue(i);
                             if (enforceXHTML && !XHTML_NS.equals(uri)) {
@@ -228,14 +228,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
                             nsSupport.declarePrefix("", uri);
                         }
                     } else if (attrName.startsWith("xmlns:")) {
-                        String prefix = attrName.substring(6);
+                        final String prefix = attrName.substring(6);
                         if (nsSupport.getURI(prefix) == null) {
                             uri = attribs.getValue(i);
                             namespaceDecls.put(prefix, uri);
                             nsSupport.declarePrefix(prefix, uri);
                         }
                     } else if ((p = attrName.indexOf(':')) > 0) {
-                        String prefix = attrName.substring(0, p);
+                        final String prefix = attrName.substring(0, p);
                         uri = attribs.getURI(i);
                         if (nsSupport.getURI(prefix) == null) {
                             namespaceDecls.put(prefix, uri);
@@ -245,14 +245,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
                 }
             }
             for (final Map.Entry<String, String> nsEntry : optionalNamespaceDecls.entrySet()) {
-                String prefix = nsEntry.getKey();
+                final String prefix = nsEntry.getKey();
                 uri = nsEntry.getValue(); 
                 receiver.namespace(prefix, uri);
                 nsSupport.declarePrefix(prefix, uri); //nsSupport.declarePrefix(prefix, namespaceURI);
             }
             // output all namespace declarations
             for (final Map.Entry<String, String> nsEntry : namespaceDecls.entrySet()) {
-                String prefix = nsEntry.getKey();
+                final String prefix = nsEntry.getKey();
                 uri = nsEntry.getValue(); 
                 if(!optionalNamespaceDecls.containsKey(prefix)) {
                     receiver.namespace(prefix, uri);
@@ -270,7 +270,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
                     receiver.attribute(attribs.getQName(i), attribs.getValue(i));
                 }
             }
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -306,7 +306,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             if(attribs != null) {
                 for (int i = 0; i < attribs.getLength(); i++) {
                     attrQName = attribs.getQName(i);
-                    if (attrQName.getLocalName().equals("xmlns")) {
+                    if ("xmlns".equals(attrQName.getLocalName())) {
                         if (nsSupport.getURI("") == null) {
                             uri = attribs.getValue(i);
                             if (enforceXHTML && !XHTML_NS.equals(uri)) {
@@ -317,7 +317,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
                         }
                     } else if (attrQName.getPrefix() != null && attrQName.getPrefix().length() > 0) {
                         prefix = attrQName.getPrefix();
-                        if(prefix.equals("xmlns:")) {
+                        if("xmlns:".equals(prefix)) {
                             if (nsSupport.getURI(prefix) == null) {
                                 uri = attribs.getValue(i);
                                 prefix = attrQName.getLocalName();
@@ -344,7 +344,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             // output all namespace declarations
             for (final Map.Entry<String, String> nsEntry : namespaceDecls.entrySet()) {
                 optPrefix = nsEntry.getKey();
-                if (optPrefix.equals("xmlns")) {
+                if ("xmlns".equals(optPrefix)) {
                     continue;
                 }
                 uri = nsEntry.getValue(); 
@@ -366,7 +366,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
                     }
                 }
             }
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -380,7 +380,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             nsSupport.popContext();
             receiver.endElement(namespaceURI, localName, qname);
             receiver.setDefaultNamespace(nsSupport.getURI(""));
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -408,7 +408,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             }
             receiver.endElement(qname);
             receiver.setDefaultNamespace(nsSupport.getURI(""));
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -419,13 +419,13 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     @Override
     public void attribute(final QName qname, final String value) throws SAXException {
         // ignore namespace declaration attributes
-        if((qname.getPrefix() != null && qname.getPrefix().equals("xmlns")) || qname.getLocalName().equals("xmlns")) {
+        if((qname.getPrefix() != null && "xmlns".equals(qname.getPrefix())) || "xmlns".equals(qname.getLocalName())) {
             return;
         }
         
         try {
             receiver.attribute(qname, value);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -437,7 +437,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void characters(final char[] ch, final int start, final int len) throws SAXException {
         try {
             receiver.characters(ch, start, len);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -446,7 +446,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void characters(final CharSequence seq) throws SAXException {
         try {
             receiver.characters(seq);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -458,7 +458,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void ignorableWhitespace(final char[] ch, final int start, final int len) throws SAXException {
         try {
             receiver.characters(ch, start, len);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -470,7 +470,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void processingInstruction(final String target, final String data) throws SAXException {
         try {
             receiver.processingInstruction(target, data);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -479,7 +479,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void cdataSection(final char[] ch, final int start, final int len) throws SAXException {
         try {
             receiver.cdataSection(ch, start, len);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -512,7 +512,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void documentType(final String name, final String publicId, final String systemId) throws SAXException {
         try {
             receiver.documentType(name, publicId, systemId);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
@@ -561,7 +561,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     public void comment(final char[] ch, final int start, final int len) throws SAXException {
         try {
             receiver.comment(new XMLString(ch, start, len));
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
     }

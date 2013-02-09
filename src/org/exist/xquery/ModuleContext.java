@@ -99,15 +99,15 @@ public class ModuleContext extends XQueryContext {
                      parentContext.getModuleLoadPath().startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
 		            // use XmldbURI resolution - unfortunately these are not interpretable as URIs 
 		            // because the scheme xmldb:exist: is not a valid URI scheme
-                    XmldbURI locationUri = XmldbURI.xmldbUriFor(FileUtils.dirname(location));
-                    if (parentContext.getModuleLoadPath().equals ("."))
-                        setModuleLoadPath(locationUri.toString());
+                    final XmldbURI locationUri = XmldbURI.xmldbUriFor(FileUtils.dirname(location));
+                    if (".".equals(parentContext.getModuleLoadPath()))
+                        {setModuleLoadPath(locationUri.toString());}
                     else {
                     	try {
-	                        XmldbURI parentLoadUri = XmldbURI.xmldbUriFor(parentContext.getModuleLoadPath());
-	                        XmldbURI moduleLoadUri = parentLoadUri.resolveCollectionPath(locationUri);
+	                        final XmldbURI parentLoadUri = XmldbURI.xmldbUriFor(parentContext.getModuleLoadPath());
+	                        final XmldbURI moduleLoadUri = parentLoadUri.resolveCollectionPath(locationUri);
 	                        setModuleLoadPath(moduleLoadUri.toString());
-                    	} catch (URISyntaxException e) {
+                    	} catch (final URISyntaxException e) {
                             setModuleLoadPath(locationUri.toString());
 						}
                     }
@@ -115,8 +115,8 @@ public class ModuleContext extends XQueryContext {
                     String dir = FileUtils.dirname(location);
                     if (dir.matches("^[a-z]+:.*")) {
                         moduleLoadPath = dir;
-                    } else if (parentContext.moduleLoadPath.equals(".")) {
-		                if (! dir.equals(".")) {
+                    } else if (".".equals(parentContext.moduleLoadPath)) {
+		                if (! ".".equals(dir)) {
 		                    if (dir.startsWith("/")) {
 		                        setModuleLoadPath("." + dir);
                                     } else {
@@ -131,7 +131,7 @@ public class ModuleContext extends XQueryContext {
                                 }
 		            }
 		        }
-		    } catch (URISyntaxException e) {
+		    } catch (final URISyntaxException e) {
                 e.printStackTrace();
             }
         }
@@ -169,13 +169,13 @@ public class ModuleContext extends XQueryContext {
         
         //workaround for shared context issue, remove after fix
         try {
-        	Variable var = from.getRootContext().resolveVariable(ResponseModule.PREFIX + ":response");
+        	final Variable var = from.getRootContext().resolveVariable(ResponseModule.PREFIX + ":response");
         	if (var != null)
-        		declareVariable(
+        		{declareVariable(
 					ResponseModule.PREFIX + ":response", 
 					var.getValue()
-				);
-		} catch (Exception e) {
+				);}
+		} catch (final Exception e) {
 			//ignore if not set
 		}
 
@@ -186,11 +186,11 @@ public class ModuleContext extends XQueryContext {
     }
 
     public XQueryContext copyContext() {
-        ModuleContext ctx = new ModuleContext(parentContext, modulePrefix, moduleNamespace, location);
+        final ModuleContext ctx = new ModuleContext(parentContext, modulePrefix, moduleNamespace, location);
         copyFields(ctx);
         try {
             ctx.declareNamespace(modulePrefix, moduleNamespace);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             e.printStackTrace();
         }
         return ctx;
@@ -217,7 +217,7 @@ public class ModuleContext extends XQueryContext {
 		// since that breaks lexical scoping.  However, it seems that some eXist modules rely on
 		// this so let's leave it for now.  (pkaminsk2)
 		if(module == null)
-			module = parentContext.getModule(namespaceURI);
+			{module = parentContext.getModule(namespaceURI);}
 		return module;
 	}
 	
@@ -245,13 +245,13 @@ public class ModuleContext extends XQueryContext {
     public Module loadBuiltInModule(String namespaceURI, String moduleClass) {
         Module module = getModule(namespaceURI);
         if (module == null)
-            module = initBuiltInModule(namespaceURI, moduleClass);
+            {module = initBuiltInModule(namespaceURI, moduleClass);}
         if (module != null) {
             try {
-            	String defaultPrefix = module.getDefaultPrefix();
+            	final String defaultPrefix = module.getDefaultPrefix();
             	if (!"".equals(defaultPrefix))
-            		declareNamespace(defaultPrefix, module.getNamespaceURI());
-            } catch (XPathException e) {
+            		{declareNamespace(defaultPrefix, module.getNamespaceURI());}
+            } catch (final XPathException e) {
                 LOG.warn("error while loading builtin module class " + moduleClass, e);
             }
         }
@@ -264,10 +264,10 @@ public class ModuleContext extends XQueryContext {
             if (module.isInternalModule()) {
                 Module updated = rootContext.getModule(module.getNamespaceURI());
                 if (updated == null)
-                    updated = module;
+                    {updated = module;}
                 newModules.put(module.getNamespaceURI(), updated);
             } else
-                newModules.put(module.getNamespaceURI(), module);
+                {newModules.put(module.getNamespaceURI(), module);}
         }
         modules = newModules;
     }
@@ -283,7 +283,7 @@ public class ModuleContext extends XQueryContext {
         String dependantModule;
         try {
             dependantModule = XmldbURI.create(getParentContext().getModuleLoadPath(), false).append(location).toString();
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             dependantModule = location;
         }
         
@@ -417,7 +417,7 @@ public class ModuleContext extends XQueryContext {
 
         // check if the variable is declared global
         if (var == null)
-            var = globalVariables.get(qname);
+            {var = globalVariables.get(qname);}
         //if (var == null)
         //	throw new XPathException("variable $" + qname + " is not bound");
         return var;
@@ -464,11 +464,11 @@ public class ModuleContext extends XQueryContext {
     public String getURIForPrefix(String prefix) {
         String uri = getInScopeNamespace(prefix);
         if (uri != null)
-            return uri;
+            {return uri;}
         //TODO : test NS inheritance
         uri = getInheritedNamespace(prefix);
         if (uri != null)
-            return uri;
+            {return uri;}
         // Check global declarations
         return staticNamespaces.get(prefix);
     }
@@ -483,11 +483,11 @@ public class ModuleContext extends XQueryContext {
     public String getPrefixForURI(String uri) {
         String prefix = getInScopePrefix(uri);
 		if (prefix != null)
-			return prefix;
+			{return prefix;}
 		//TODO : test the NS inheritance
         prefix = getInheritedPrefix(uri);
 		if (prefix != null)
-			return prefix;
+			{return prefix;}
 		return staticPrefixes.get(uri);
     }
 

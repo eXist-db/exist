@@ -138,15 +138,15 @@ public class OneParamFunctions extends BasicFunction {
         }
         
         Sequence result;
-        Sequence seq = args[0].convertTo(Type.DOUBLE);
-        NumericValue value = (NumericValue)seq.itemAt(0).convertTo(Type.DOUBLE);
+        final Sequence seq = args[0].convertTo(Type.DOUBLE);
+        final NumericValue value = (NumericValue)seq.itemAt(0).convertTo(Type.DOUBLE);
 
         if(seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
             
         } else {          
             double calcValue=0;
-            String functionName = getSignature().getName().getLocalName();
+            final String functionName = getSignature().getName().getLocalName();
             if("acos".equals(functionName)) {
                 calcValue=Math.acos(value.getDouble());
                 

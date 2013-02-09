@@ -40,9 +40,9 @@ public class Union extends CombiningExpression {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		Sequence lval = left.eval(contextSequence, contextItem);		
@@ -55,15 +55,15 @@ public class Union extends CombiningExpression {
             result = Sequence.EMPTY_SEQUENCE;
         } else if(rval.isEmpty()) {
             if(!Type.subTypeOf(lval.getItemType(), Type.NODE))
-                throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");
+                {throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");}
             result = lval;
         } else if(lval.isEmpty()) {
             if(!Type.subTypeOf(rval.getItemType(), Type.NODE))
-                throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");
+                {throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");}
             result = rval;            
         } else {
             if(!(Type.subTypeOf(lval.getItemType(), Type.NODE) && Type.subTypeOf(rval.getItemType(), Type.NODE)))
-                throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");            
+                {throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");}            
             if (lval.isPersistentSet() && rval.isPersistentSet()) {        
                 result = lval.toNodeSet().union(rval.toNodeSet());
             } else {
@@ -77,7 +77,7 @@ public class Union extends CombiningExpression {
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         return result;           
 	}
@@ -92,7 +92,7 @@ public class Union extends CombiningExpression {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append(left.toString());
     	result.append(" union ");
     	result.append(right.toString());

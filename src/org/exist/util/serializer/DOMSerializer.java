@@ -75,20 +75,20 @@ public class DOMSerializer {
 
     public void setOutput(Writer writer, Properties properties) {
         if (properties == null)
-            outputProperties = defaultProperties;
+            {outputProperties = defaultProperties;}
         else
-            outputProperties = properties;
+            {outputProperties = properties;}
         
-        String method = outputProperties.getProperty("method", "xml");
+        final String method = outputProperties.getProperty("method", "xml");
 
         if ("xhtml".equalsIgnoreCase(method))
-            receiver = writers[XHTML_WRITER];
+            {receiver = writers[XHTML_WRITER];}
         else if("text".equalsIgnoreCase(method))
-            receiver = writers[TEXT_WRITER];
+            {receiver = writers[TEXT_WRITER];}
         else if ("json".equalsIgnoreCase(method))
-        	receiver = writers[JSON_WRITER];
+        	{receiver = writers[JSON_WRITER];}
         else
-            receiver = writers[XML_WRITER];
+            {receiver = writers[XML_WRITER];}
         
         receiver.setWriter(writer);
         receiver.setOutputProperties(outputProperties);
@@ -107,14 +107,14 @@ public class DOMSerializer {
 
     public void serialize(Node node) throws TransformerException {
     	receiver.startDocument();
-        Node top = node;
+        final Node top = node;
         while (node != null) {
             startNode(node);
             Node nextNode = node.getNodeType() == NodeImpl.REFERENCE_NODE ? null : node.getFirstChild();
             while (nextNode == null) {
                 endNode(node);
                 if (top != null && top.equals(node))
-                    break;
+                    {break;}
                 nextNode = node.getNextSibling();
                 if (nextNode == null) {
                     node = node.getParentNode();
@@ -142,22 +142,22 @@ public class DOMSerializer {
             String uri = node.getNamespaceURI();
             String prefix = node.getPrefix();
             if (uri == null)
-                uri = "";
+                {uri = "";}
             if (prefix == null)
-                prefix = "";
+                {prefix = "";}
             if (nsSupport.getURI(prefix) == null) {
                 namespaceDecls.put(prefix, uri);
                 nsSupport.declarePrefix(prefix, uri);
             }
             // check attributes for required namespace declarations
-            NamedNodeMap attrs = node.getAttributes();
+            final NamedNodeMap attrs = node.getAttributes();
             Attr nextAttr;
             String attrName;
             for (int i = 0; i < attrs.getLength(); i++) {
                 nextAttr = (Attr) attrs.item(i);
                 attrName = nextAttr.getName();
-                if (attrName.equals("xmlns")) {
-                    String oldURI = nsSupport.getURI("");
+                if ("xmlns".equals(attrName)) {
+                    final String oldURI = nsSupport.getURI("");
                     uri = nextAttr.getValue();
                     if (oldURI == null || (!oldURI.equals(uri))) {
                         namespaceDecls.put("", uri);
@@ -183,7 +183,7 @@ public class DOMSerializer {
                 }
             }
             // output all namespace declarations
-            for (Map.Entry<String, String> nsEntry : namespaceDecls.entrySet()) {
+            for (final Map.Entry<String, String> nsEntry : namespaceDecls.entrySet()) {
                 receiver.namespace( nsEntry.getKey(), nsEntry.getValue());
             }
             // output attributes
@@ -192,7 +192,7 @@ public class DOMSerializer {
                 nextAttr = (Attr) attrs.item(i);
                 name = nextAttr.getName();
                 if(name.startsWith("xmlns"))
-                    continue;
+                    {continue;}
                 receiver.attribute(nextAttr.getName(), nextAttr.getValue());
             }
             break;
@@ -218,7 +218,7 @@ public class DOMSerializer {
 
     protected void endNode(Node node) throws TransformerException {
         if (node == null)
-            return;
+            {return;}
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             nsSupport.popContext();
             receiver.endElement(node.getNamespaceURI(), node.getLocalName(), node.getNodeName());

@@ -110,7 +110,7 @@ public class LogFunction extends BasicFunction
 		}
 		
 		// add line of the log statement
-		StringBuilder buf = new StringBuilder();
+		final StringBuilder buf = new StringBuilder();
                 buf.append("(");
                 
 		buf.append("Line: ");
@@ -125,14 +125,14 @@ public class LogFunction extends BasicFunction
 		buf.append(") ");
 		
 		while(i.hasNext()) {
-			Item next = i.nextItem();
+			final Item next = i.nextItem();
 			if( Type.subTypeOf( next.getType(), Type.NODE ) ) {
-				Serializer serializer = context.getBroker().getSerializer();
+				final Serializer serializer = context.getBroker().getSerializer();
 				serializer.reset();
 				try {
 					buf.append( serializer.serialize( (NodeValue)next ) );
 				} 
-				catch( SAXException e ) {
+				catch( final SAXException e ) {
 					throw( new XPathException(this, "An exception occurred while serializing node to log: " + e.getMessage(), e ) );
 				}
 			} else {
@@ -141,7 +141,7 @@ public class LogFunction extends BasicFunction
 		}
 		
 		if( isCalledAs( "log" ) ) {
-			String priority = args[0].getStringValue();			
+			final String priority = args[0].getStringValue();			
 			if( priority.equalsIgnoreCase( "error" ) ) {
 				logger.error( buf );
 			} else if( priority.equalsIgnoreCase( "warn" ) ) {
@@ -158,8 +158,8 @@ public class LogFunction extends BasicFunction
 		} else if( isCalledAs( "log-system-err" ) ) {
 			System.err.println( buf );				
 		} else if (isCalledAs("log-app")) {
-			String priority = args[0].getStringValue();		
-			String logname  = args[1].getStringValue();	
+			final String priority = args[0].getStringValue();		
+			final String logname  = args[1].getStringValue();	
 			Logger logger   = LOG;
 			
 			if( logname != null && logname.length() > 0 ) {

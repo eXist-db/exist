@@ -82,41 +82,41 @@ public class JMXServlet extends HttpServlet {
 			throws ServletException, IOException {
 		Element root = null;
 		
-		String operation = req.getParameter("operation");
+		final String operation = req.getParameter("operation");
 		if (operation != null && "ping".equals(operation)) {
 			long timeout = 5000;
-			String timeoutParam = req.getParameter("t");
+			final String timeoutParam = req.getParameter("t");
 			if (timeoutParam != null) {
 				try {
 					timeout = Long.parseLong(timeoutParam);
-				} catch (NumberFormatException e) {
+				} catch (final NumberFormatException e) {
 					throw new ServletException("timeout parameter needs to be a number. Got: " + timeoutParam);
 				}
 			}
-			long responseTime = client.ping("exist", timeout);
+			final long responseTime = client.ping("exist", timeout);
 			if (responseTime == JMXtoXML.PING_TIMEOUT)
-				root = client.generateXMLReport("no response on ping after " + timeout + "ms", 
-						new String[] { "sanity", "locking", "processes", "instances", "memory" });
+				{root = client.generateXMLReport("no response on ping after " + timeout + "ms", 
+						new String[] { "sanity", "locking", "processes", "instances", "memory" });}
 			else
-				root = client.generateXMLReport(null, new String[] { "sanity" });
+				{root = client.generateXMLReport(null, new String[] { "sanity" });}
 		} else {
 			String[] categories = req.getParameterValues("c");
 			if (categories == null)
-				categories = new String[] { "all" };
+				{categories = new String[] { "all" };}
 			root = client.generateXMLReport(null, categories);
 		}
 		
 		resp.setContentType("application/xml");
 		
-		Object useAttribute = req.getAttribute("jmx.attribute");
+		final Object useAttribute = req.getAttribute("jmx.attribute");
 		if (useAttribute != null)
-			req.setAttribute(useAttribute.toString(), root);
+			{req.setAttribute(useAttribute.toString(), root);}
 		else {
-			Writer writer = new OutputStreamWriter(resp.getOutputStream(), "UTF-8");
-			DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
+			final Writer writer = new OutputStreamWriter(resp.getOutputStream(), "UTF-8");
+			final DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
 			try {
 				streamer.serialize(root);
-			} catch (TransformerException e) {
+			} catch (final TransformerException e) {
 				throw new ServletException("Error while serializing result: " + e.getMessage(), e);
 			}
 			writer.flush();

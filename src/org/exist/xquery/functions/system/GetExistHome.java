@@ -59,7 +59,7 @@ public class GetExistHome extends BasicFunction {
          * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
          */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-    	StringValue stringValue = new StringValue( context.getBroker().getConfiguration().getExistHome().getAbsolutePath() );
+    	final StringValue stringValue = new StringValue( context.getBroker().getConfiguration().getExistHome().getAbsolutePath() );
 		return stringValue;
     }
 }

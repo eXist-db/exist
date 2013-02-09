@@ -91,7 +91,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 	@Override
 	public void start(DBBroker broker) throws EXistException {
-        TransactionManager transaction = db.getTransactionManager();
+        final TransactionManager transaction = db.getTransactionManager();
         Txn txn = null;
 
         try {
@@ -99,7 +99,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 			if (collection == null) {
 				txn = transaction.beginTransaction();
 				collection = broker.getOrCreateCollection(txn, COLLETION_URI);
-				if (collection == null) return;
+				if (collection == null) {return;}
 					//if db corrupted it can lead to unrunnable issue
 					//throw new ConfigurationException("Collection '/db/system/plugins' can't be created.");
 				
@@ -108,13 +108,13 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 				transaction.commit(txn);
 			} 
-        } catch (Exception e) {
+        } catch (final Exception e) {
 			transaction.abort(txn);
 			e.printStackTrace();
 			LOG.debug("loading configuration failed: " + e.getMessage());
 		}
 
-        Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
+        final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
 		configuration = Configurator.configure(this, _config_);
 		
 		//load plugins by META-INF/services/
@@ -123,19 +123,19 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 //			File pluginsFolder = new File(libFolder, "plugins");
 //			placesToSearch.put(pluginsFolder.getAbsolutePath(), pluginsFolder);
 			
-			for (Class<? extends Plug> plugin : listServices(Plug.class)) {
+			for (final Class<? extends Plug> plugin : listServices(Plug.class)) {
 				//System.out.println("found plugin "+plugin);
 				
 				try {
-					Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
-					Plug plgn = ctor.newInstance(this);
+					final Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
+					final Plug plgn = ctor.newInstance(this);
 					
 					jacks.put(plugin.getName(), plgn);
-				} catch (Throwable e) {
+				} catch (final Throwable e) {
 					e.printStackTrace();
 				}
 			}
-		} catch (Throwable e) {
+		} catch (final Throwable e) {
 			e.printStackTrace();
 		}
 		//UNDERSTAND: call save?
@@ -146,7 +146,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 //			//LOG?
 //		}
 		
-		for (Plug jack : jacks.values()) {
+		for (final Plug jack : jacks.values()) {
 			if (jack instanceof LifeCycle) {
 				((LifeCycle) jack).start(broker);
 			}
@@ -155,10 +155,10 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 	
 	@Override
 	public void sync(DBBroker broker) {
-		for (Plug plugin : jacks.values()) {
+		for (final Plug plugin : jacks.values()) {
 			try {
 				plugin.sync(broker);
-			} catch (Throwable e) {
+			} catch (final Throwable e) {
 				LOG.error(e);
 			}
 		}
@@ -166,10 +166,10 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 	@Override
 	public void stop(DBBroker broker) throws EXistException {
-		for (Plug plugin : jacks.values()) {
+		for (final Plug plugin : jacks.values()) {
 			try {
 				plugin.stop(broker);
-			} catch (Throwable e) {
+			} catch (final Throwable e) {
 				LOG.error(e);
 			}
 		}
@@ -183,20 +183,20 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 	public void addPlugin(String className) {
 		//check if already run
 		if (jacks.containsKey(className))
-			return;
+			{return;}
 		
 		try {
-			Class<? extends Plug> plugin = (Class<? extends Plug>) Class.forName(className);
+			final Class<? extends Plug> plugin = (Class<? extends Plug>) Class.forName(className);
 			
-			Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
-			Plug plgn = ctor.newInstance(this);
+			final Constructor<? extends Plug> ctor = plugin.getConstructor(PluginsManager.class);
+			final Plug plgn = ctor.newInstance(this);
 			
 			jacks.put(plugin.getName(), plgn);
 
 			runPlugins.add(className);
 			
 			//TODO: if (jack instanceof Startable) { ((Startable) jack).startUp(broker); }
-		} catch (Throwable e) {
+		} catch (final Throwable e) {
 //			e.printStackTrace();
 		}
 	}
@@ -209,26 +209,26 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 	 * Generate list of service implementations 
 	 */
 	private <S> Iterable<Class<? extends S>> listServices(Class<S> ifc) throws Exception {
-		ClassLoader ldr = Thread.currentThread().getContextClassLoader();
-		Enumeration<URL> e = ldr.getResources("META-INF/services/" + ifc.getName());
-		Set<Class<? extends S>> services = new HashSet<Class<? extends S>>();
+		final ClassLoader ldr = Thread.currentThread().getContextClassLoader();
+		final Enumeration<URL> e = ldr.getResources("META-INF/services/" + ifc.getName());
+		final Set<Class<? extends S>> services = new HashSet<Class<? extends S>>();
 		while (e.hasMoreElements()) {
-			URL url = e.nextElement();
-			InputStream is = url.openStream();
+			final URL url = e.nextElement();
+			final InputStream is = url.openStream();
 			try {
-				BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+				final BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 				while (true) {
 					String line = r.readLine();
 					if (line == null)
-						break;
-					int comment = line.indexOf('#');
+						{break;}
+					final int comment = line.indexOf('#');
 					if (comment >= 0)
-						line = line.substring(0, comment);
-					String name = line.trim();
+						{line = line.substring(0, comment);}
+					final String name = line.trim();
 					if (name.length() == 0)
-						continue;
-					Class<?> clz = Class.forName(name, true, ldr);
-					Class<? extends S> impl = clz.asSubclass(ifc);
+						{continue;}
+					final Class<?> clz = Class.forName(name, true, ldr);
+					final Class<? extends S> impl = clz.asSubclass(ifc);
 					services.add(impl);
 				}
 			} finally {
@@ -262,11 +262,11 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void backup(Collection colection, AttributesImpl attrs) {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					try {
 						((BackupHandler) plugin).backup(colection, attrs);
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						LOG.error(e.getMessage(), e);
 					}
 				}
@@ -275,11 +275,11 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void backup(Collection colection, SAXSerializer serializer) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					try {
 						((BackupHandler) plugin).backup(colection, serializer);
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						LOG.error(e.getMessage(), e);
 					}
 				}
@@ -288,11 +288,11 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void backup(DocumentAtExist document, AttributesImpl attrs) {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					try {
 						((BackupHandler) plugin).backup(document, attrs);
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						LOG.error(e.getMessage(), e);
 					}
 				}
@@ -301,11 +301,11 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					try {
 						((BackupHandler) plugin).backup(document, serializer);
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						LOG.error(e.getMessage(), e);
 					}
 				}
@@ -324,7 +324,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void setDocumentLocator(Locator locator) {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).setDocumentLocator(locator);
 				}
@@ -333,7 +333,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void startDocument() throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startDocument();
 				}
@@ -342,7 +342,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void endDocument() throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endDocument();
 				}
@@ -351,7 +351,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void startPrefixMapping(String prefix, String uri) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startPrefixMapping(prefix, uri);
 				}
@@ -360,7 +360,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void endPrefixMapping(String prefix) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endPrefixMapping(prefix);
 				}
@@ -369,7 +369,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startElement(uri, localName, qName, atts);
 				}
@@ -378,7 +378,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endElement(uri, localName, qName);
 				}
@@ -387,7 +387,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).characters(ch, start, length);
 				}
@@ -396,7 +396,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).ignorableWhitespace(ch, start, length);
 				}
@@ -405,7 +405,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void processingInstruction(String target, String data) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).processingInstruction(target, data);
 				}
@@ -414,7 +414,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void skippedEntity(String name) throws SAXException {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).skippedEntity(name);
 				}
@@ -423,7 +423,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void startCollectionRestore(Collection colection, Attributes atts) {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startCollectionRestore(colection, atts);
 				}
@@ -432,7 +432,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void endCollectionRestore(Collection colection) {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endCollectionRestore(colection);
 				}
@@ -441,7 +441,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void startDocumentRestore(DocumentAtExist document, Attributes atts) {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startDocumentRestore(document, atts);
 				}
@@ -450,7 +450,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 
 		@Override
 		public void endDocumentRestore(DocumentAtExist document) {
-			for (Plug plugin : jacks.values()) {
+			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endDocumentRestore(document);
 				}

@@ -113,17 +113,17 @@ public class QNameIndexLookup extends Function {
     	
         if (contextSequence == null || contextSequence.isEmpty()) {
             // if the context sequence is empty, we create a default context 
-            RootNode rootNode = new RootNode(context);
+            final RootNode rootNode = new RootNode(context);
             contextSequence = rootNode.eval(null, null);
         }
-        Sequence[] args = getArguments(null, null);
+        final Sequence[] args = getArguments(null, null);
         
-        Item item = args[0].itemAt(0);
+        final Item item = args[0].itemAt(0);
         QNameValue qval;
         try {
             // attempt to convert the first argument to a QName
             qval = (QNameValue) item.convertTo(Type.QNAME);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             // wrong type: generate a diagnostic error
             throw new XPathException(this,
                     Messages.formatMessage(Error.FUNC_PARAM_TYPE, 
@@ -131,19 +131,19 @@ public class QNameIndexLookup extends Function {
                             Type.getTypeName(Type.QNAME), Type.getTypeName(item.getType()) }
                     ));
         }
-        QName qname = qval.getQName();
+        final QName qname = qval.getQName();
         
-        AtomicValue comparisonCriterium = args[1].itemAt(0).atomize();
+        final AtomicValue comparisonCriterium = args[1].itemAt(0).atomize();
         
         Sequence result = Sequence.EMPTY_SEQUENCE;
 
         if (comparisonCriterium instanceof Indexable) {
-            NativeValueIndex valueIndex = context.getBroker().getValueIndex();
+            final NativeValueIndex valueIndex = context.getBroker().getValueIndex();
             result =
                 valueIndex.find(context.getWatchDog(), Constants.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
             qname, comparisonCriterium);
         } else {
-            String message = "The comparison criterium must be an Indexable: " +
+            final String message = "The comparison criterium must be an Indexable: " +
             	"boolean, numeric, string; instead your criterium has type " +
             	Type.getTypeName(comparisonCriterium.getType());
         	throw new XPathException(this, message);

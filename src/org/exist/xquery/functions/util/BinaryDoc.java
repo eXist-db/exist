@@ -86,13 +86,13 @@ public class BinaryDoc extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
     	
-        Sequence defaultReturn = (isCalledAs("binary-doc") ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE);
+        final Sequence defaultReturn = (isCalledAs("binary-doc") ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE);
 
         if (args[0].isEmpty()) {
             return defaultReturn;
         }
 
-        String path = args[0].getStringValue();
+        final String path = args[0].getStringValue();
         DocumentImpl doc = null;
         try {
             doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
@@ -106,8 +106,8 @@ public class BinaryDoc extends BasicFunction {
             }
             else if(isCalledAs("binary-doc"))
             {
-                BinaryDocument bin = (BinaryDocument) doc;
-                InputStream is = context.getBroker().getBinaryResource(bin);
+                final BinaryDocument bin = (BinaryDocument) doc;
+                final InputStream is = context.getBroker().getBinaryResource(bin);
 
                 /*
                 long binaryLength = context.getBroker().getBinaryResourceSize(bin);
@@ -115,7 +115,7 @@ public class BinaryDoc extends BasicFunction {
                 byte[] data = new byte[(binaryLength > (long)Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)binaryLength];
                 is.read(data);
                 is.close(); */
-                Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
+                final Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
                 b64doc.setUrl(path);
                 return b64doc;
             }
@@ -123,18 +123,18 @@ public class BinaryDoc extends BasicFunction {
             {
                 return BooleanValue.TRUE;
             }
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
         	logger.error("Invalid resource URI", e);
             throw new XPathException(this, "Invalid resource uri",e);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
         	logger.info(path + ": permission denied to read resource", e);
             throw new XPathException(this, path + ": permission denied to read resource");
-        } catch (IOException e) {
+        } catch (final IOException e) {
         	logger.error(path + ": I/O error while reading resource", e);
             throw new XPathException(this, path + ": I/O error while reading resource",e);
         } finally {
             if (doc != null)
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                {doc.getUpdateLock().release(Lock.READ_LOCK);}
         }
     }
 }

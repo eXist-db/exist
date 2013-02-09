@@ -91,15 +91,15 @@ public class XMLDBPermissionsToString extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         if(isCalledAs("permissions-to-string")) {
-            int mode = ((IntegerValue)args[0].itemAt(0)).getInt();
-            Permission perm = PermissionFactory.getPermission(mode);
+            final int mode = ((IntegerValue)args[0].itemAt(0)).getInt();
+            final Permission perm = PermissionFactory.getPermission(mode);
             return new StringValue(perm.toString());
         } else {
-            String permissionsString = args[0].itemAt(0).getStringValue();
+            final String permissionsString = args[0].itemAt(0).getStringValue();
             try {
-                Permission perm = UnixStylePermissionAider.fromString(permissionsString);
+                final Permission perm = UnixStylePermissionAider.fromString(permissionsString);
                 return new IntegerValue(perm.getMode());
-            } catch(SyntaxException se) {
+            } catch(final SyntaxException se) {
                 throw new XPathException(this, se);
             }
         }

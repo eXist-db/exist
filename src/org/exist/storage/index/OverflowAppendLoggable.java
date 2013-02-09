@@ -80,7 +80,7 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
         super.read(in);
         pageNum = in.getInt();
         chunkSize = in.getInt();
-        byte b[] = new byte[chunkSize];
+        final byte b[] = new byte[chunkSize];
         in.get(b);
         data = new FixedByteArray(b);
     }

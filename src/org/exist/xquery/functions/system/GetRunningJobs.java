@@ -63,17 +63,17 @@ public class GetRunningJobs extends BasicFunction {
             throw( new XPathException( this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to get the list of running xqueries" ) );
         }
 
-        MemTreeBuilder builder = context.getDocumentBuilder();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
 
         builder.startDocument();
         builder.startElement( new QName( "jobs", NAMESPACE_URI, PREFIX ), null );
 
-        BrokerPool brokerPool = context.getBroker().getBrokerPool();
-		ProcessMonitor monitor = brokerPool.getProcessMonitor();
-        ProcessMonitor.JobInfo[] jobs = monitor.runningJobs();
+        final BrokerPool brokerPool = context.getBroker().getBrokerPool();
+		final ProcessMonitor monitor = brokerPool.getProcessMonitor();
+        final ProcessMonitor.JobInfo[] jobs = monitor.runningJobs();
         for (int i = 0; i < jobs.length; i++) {
-            Thread process = jobs[i].getThread();
-			Date startDate = new Date(jobs[i].getStartTime());
+            final Thread process = jobs[i].getThread();
+			final Date startDate = new Date(jobs[i].getStartTime());
             builder.startElement( new QName( "job", NAMESPACE_URI, PREFIX ), null);
             builder.addAttribute( new QName("id", null, null), process.getName());
             builder.addAttribute( new QName("action", null, null), jobs[i].getAction());

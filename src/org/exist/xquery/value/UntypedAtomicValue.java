@@ -79,15 +79,15 @@ public class UntypedAtomicValue extends AtomicValue {
         case Type.ANY_URI :
             return new AnyURIValue(value);
         case Type.BOOLEAN :
-            String trimmed = StringValue.trimWhitespace(value);
-            if (trimmed.equals("0") || trimmed.equals("false"))
-                return BooleanValue.FALSE;
-            else if (trimmed.equals("1") || trimmed.equals("true"))
-                return BooleanValue.TRUE;
+            final String trimmed = StringValue.trimWhitespace(value);
+            if ("0".equals(trimmed) || "false".equals(trimmed))
+                {return BooleanValue.FALSE;}
+            else if ("1".equals(trimmed) || "true".equals(trimmed))
+                {return BooleanValue.TRUE;}
             else
-                throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" + 
+                {throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" + 
                         Type.getTypeName(Type.ATOMIC) + "(\"" + value + "\")' to " +
-                        Type.getTypeName(requiredType));
+                        Type.getTypeName(requiredType));}
         case Type.FLOAT :
             return new FloatValue(value);
         case Type.DOUBLE :
@@ -149,7 +149,7 @@ public class UntypedAtomicValue extends AtomicValue {
         case Type.YEAR_MONTH_DURATION :
         	return new YearMonthDurationValue(value);
         case Type.DAY_TIME_DURATION :
-            DayTimeDurationValue dtdv = new DayTimeDurationValue(value);
+            final DayTimeDurationValue dtdv = new DayTimeDurationValue(value);
             return new DayTimeDurationValue(dtdv.getCanonicalDuration());
         default :
             throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" + 
@@ -164,10 +164,10 @@ public class UntypedAtomicValue extends AtomicValue {
     @Override
     public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
         if (other.isEmpty())
-            return false;
+            {return false;}
         if (Type.subTypeOf(other.getType(), Type.STRING) ||
                 Type.subTypeOf(other.getType(), Type.UNTYPED_ATOMIC)) {
-            int cmp = Collations.compare(collator, value, other.getStringValue());
+            final int cmp = Collations.compare(collator, value, other.getStringValue());
             switch (operator) {
             case Constants.EQ :
                 return cmp == 0;
@@ -204,8 +204,8 @@ public class UntypedAtomicValue extends AtomicValue {
     @Override
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.UNTYPED_ATOMIC))
-            return Collations.compare(collator, value, ((UntypedAtomicValue) other).value) > 0 ?
-                this : other;
+            {return Collations.compare(collator, value, ((UntypedAtomicValue) other).value) > 0 ?
+                this : other;}
         return Collations.compare(collator, value, other.getStringValue()) > 0 ? this : other;
     }
 
@@ -215,7 +215,7 @@ public class UntypedAtomicValue extends AtomicValue {
     @Override
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.UNTYPED_ATOMIC))
-            return Collations.compare(collator, value, ((UntypedAtomicValue) other).value) < 0 ? this : other;
+            {return Collations.compare(collator, value, ((UntypedAtomicValue) other).value) < 0 ? this : other;}
         return Collations.compare(collator, value, other.getStringValue()) < 0 ?
                 this : other;
     }
@@ -257,27 +257,27 @@ public class UntypedAtomicValue extends AtomicValue {
     @Override
     public int conversionPreference(Class<?> javaClass) {
         if (javaClass.isAssignableFrom(StringValue.class))
-            return 0;
+            {return 0;}
         if (javaClass == String.class || javaClass == CharSequence.class)
-            return 1;
+            {return 1;}
         if (javaClass == Character.class || javaClass == char.class)
-            return 2;
+            {return 2;}
         if (javaClass == Double.class || javaClass == double.class)
-            return 10;
+            {return 10;}
         if (javaClass == Float.class || javaClass == float.class)
-            return 11;
+            {return 11;}
         if (javaClass == Long.class || javaClass == long.class)
-            return 12;
+            {return 12;}
         if (javaClass == Integer.class || javaClass == int.class)
-            return 13;
+            {return 13;}
         if (javaClass == Short.class || javaClass == short.class)
-            return 14;
+            {return 14;}
         if (javaClass == Byte.class || javaClass == byte.class)
-            return 15;
+            {return 15;}
         if (javaClass == Boolean.class || javaClass == boolean.class)
-            return 16;
+            {return 16;}
         if (javaClass == Object.class)
-            return 20;
+            {return 20;}
     	return Integer.MAX_VALUE;
     }
 
@@ -287,15 +287,15 @@ public class UntypedAtomicValue extends AtomicValue {
     @Override
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if(target.isAssignableFrom(UntypedAtomicValue.class))
-            return (T)this;
+            {return (T)this;}
         else if(target == Object.class || target == String.class || target == CharSequence.class) {
             return (T)value;
         } else if(target == double.class || target == Double.class) {
             final DoubleValue v = (DoubleValue) convertTo(Type.DOUBLE);
-            return (T)new Double(v.getValue());
+            return (T)Double.valueOf(v.getValue());
         } else if(target == float.class || target == Float.class) {
             final FloatValue v = (FloatValue) convertTo(Type.FLOAT);
-            return (T)new Float(v.value);
+            return (T)Float.valueOf(v.value);
         } else if(target == long.class || target == Long.class) {
             final IntegerValue v = (IntegerValue) convertTo(Type.LONG);
             return (T)Long.valueOf(v.getInt());
@@ -327,7 +327,7 @@ public class UntypedAtomicValue extends AtomicValue {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof UntypedAtomicValue)
-            return value.equals(((UntypedAtomicValue)obj).value);
+            {return value.equals(((UntypedAtomicValue)obj).value);}
         return false;
     }
 

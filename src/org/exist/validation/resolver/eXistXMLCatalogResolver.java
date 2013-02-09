@@ -71,7 +71,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
     public void setCatalogs(List<String> catalogs){
 
         if(catalogs!=null && catalogs.size()>0){
-            String[] allCatalogs = new String[catalogs.size()];
+            final String[] allCatalogs = new String[catalogs.size()];
             int counter=0;
             for (String element : catalogs) {
                 allCatalogs[counter]=element;
@@ -111,11 +111,11 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
     		return null;
     	}
     
-    	URL url = new URL(systemId);
-    	if(url.getProtocol().equals("file"))
+    	final URL url = new URL(systemId);
+    	if("file".equals(url.getProtocol()))
     	{
-    		String path = url.getPath();
-    		File f = new File(path);
+    		final String path = url.getPath();
+    		final File f = new File(path);
     		if(!f.canRead())
     		{
     			return resolveEntity(null, f.getName());
@@ -136,7 +136,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      */
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
         LOG.debug("Resolving type='"+type+"', namespaceURI='"+namespaceURI+"', publicId='"+publicId+"', systemId='"+systemId+"', baseURI='"+baseURI+"'");
-        LSInput retValue= super.resolveResource(type, namespaceURI, publicId, systemId, baseURI);
+        final LSInput retValue= super.resolveResource(type, namespaceURI, publicId, systemId, baseURI);
         
         LOG.debug("Resolved " + (retValue!=null));
         if(retValue!=null){
@@ -152,7 +152,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      */
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
         LOG.debug("Resolving name='"+name+"', publicId='"+publicId+"', baseURI='"+baseURI+"', systemId='"+systemId+"'");
-        InputSource retValue = super.resolveEntity(name, publicId, baseURI, systemId);
+        final InputSource retValue = super.resolveEntity(name, publicId, baseURI, systemId);
         
         LOG.debug("Resolved " + (retValue!=null));
         if(retValue!=null){
@@ -179,7 +179,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
             LOG.debug("Resolving XMLResourceIdentifier: "+getXriDetails(xri));
         }
         
-        String retValue = super.resolveIdentifier(xri);
+        final String retValue = super.resolveIdentifier(xri);
         LOG.debug("Resolved " + (retValue!=null));
         if(retValue!=null){
             LOG.debug("Identifier='" + retValue +"'");
@@ -201,7 +201,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         if(LOG.isDebugEnabled()) {
             LOG.debug("Resolving XMLResourceIdentifier: " + getXriDetails(xri));
         }
-        XMLInputSource retValue = super.resolveEntity(xri);
+        final XMLInputSource retValue = super.resolveEntity(xri);
         
         
         
@@ -223,7 +223,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
     }
     
     private String getXriDetails(XMLResourceIdentifier xrid){
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("PublicId='").append(xrid.getPublicId()).append("' ");
         sb.append("BaseSystemId='").append(xrid.getBaseSystemId()).append("' ");
         sb.append("ExpandedSystemId='").append(xrid.getExpandedSystemId()).append("' ");

@@ -63,7 +63,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public AdminSoapBindingImpl() {
         try {
             pool = BrokerPool.getInstance();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("failed to initialize broker pool");
         }
     }
@@ -71,20 +71,20 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     @Override
     public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException {
     	try {
-    		Subject u = pool.getSecurityManager().authenticate(userId, password);
+    		final Subject u = pool.getSecurityManager().authenticate(userId, password);
 
             LOG.debug("user " + userId + " connected");
             
             return SessionManager.getInstance().createSession(u);
-		} catch (Exception e) {
+		} catch (final Exception e) {
             throw new RemoteException(e.getMessage());
 		}
     }
     
     @Override
     public void disconnect(java.lang.String sessionId) throws java.rmi.RemoteException {
-        SessionManager manager = SessionManager.getInstance();
-        Session session = manager.getSession(sessionId);
+        final SessionManager manager = SessionManager.getInstance();
+        final Session session = manager.getSession(sessionId);
         if (session != null) {
             LOG.debug("disconnecting session " + sessionId);
             manager.disconnect(sessionId);
@@ -95,19 +95,19 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public boolean createCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return createCollection(sessionId,XmldbURI.xmldbUriFor(path));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public boolean createCollection(java.lang.String sessionId, XmldbURI path) throws java.rmi.RemoteException {
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         DBBroker broker = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn txn = transact.beginTransaction();
         try {
             broker = pool.get(session.getUser());
             LOG.debug("creating collection " + path);
-            org.exist.collections.Collection coll =
+            final org.exist.collections.Collection coll =
                     broker.getOrCreateCollection(txn, path);
             if (coll == null) {
                 LOG.debug("failed to create collection");
@@ -118,7 +118,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             broker.flush();
             broker.sync(Sync.MINOR_SYNC);
             return true;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             transact.abort(txn);
             LOG.debug(e.getMessage(), e);
             throw new RemoteException(e.getMessage());
@@ -131,26 +131,26 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public boolean removeCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return removeCollection(sessionId,XmldbURI.xmldbUriFor(path));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public boolean removeCollection(java.lang.String sessionId, XmldbURI path) throws java.rmi.RemoteException {
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         DBBroker broker = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn txn = transact.beginTransaction();
         try {
             broker = pool.get(session.getUser());
-            Collection collection = broker.getCollection(path);
+            final Collection collection = broker.getCollection(path);
             if(collection == null) {
                 transact.abort(txn);
                 return false;
             }
-            boolean removed = broker.removeCollection(txn, collection);
+            final boolean removed = broker.removeCollection(txn, collection);
             transact.commit(txn);
             return removed;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             transact.abort(txn);
             LOG.debug(e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
@@ -163,41 +163,41 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public boolean removeDocument(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return removeDocument(sessionId,XmldbURI.xmldbUriFor(path));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid document URI",e);
     	}
     }
     public boolean removeDocument(java.lang.String sessionId, XmldbURI path) throws java.rmi.RemoteException {
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         DBBroker broker = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn txn = transact.beginTransaction();
         try {
             broker = pool.get(session.getUser());
-            XmldbURI collectionUri = path.removeLastSegment();
-            XmldbURI docUri = path.lastSegment();
+            final XmldbURI collectionUri = path.removeLastSegment();
+            final XmldbURI docUri = path.lastSegment();
             if (collectionUri==null || docUri==null) {
                 transact.abort(txn);
                 throw new EXistException("Illegal document path");
             }
-            Collection collection = broker.getCollection(collectionUri);
+            final Collection collection = broker.getCollection(collectionUri);
             if (collection == null) {
                 transact.abort(txn);
                 throw new EXistException(
                         "Collection " + collectionUri + " not found");
             }
-            DocumentImpl doc = collection.getDocument(broker, docUri);
+            final DocumentImpl doc = collection.getDocument(broker, docUri);
             if(doc == null)
-                throw new EXistException("Document " + docUri + " not found");
+                {throw new EXistException("Document " + docUri + " not found");}
             
             if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
-                collection.removeBinaryResource(txn, broker, doc);
+                {collection.removeBinaryResource(txn, broker, doc);}
             else
-                collection.removeXMLResource(txn, broker, docUri);
+                {collection.removeXMLResource(txn, broker, docUri);}
             
             transact.commit(txn);
             return true;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             transact.abort(txn);
             LOG.debug(e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
@@ -210,39 +210,39 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public void store(java.lang.String sessionId, byte[] data, java.lang.String encoding, java.lang.String path, boolean replace) throws java.rmi.RemoteException {
     	try {
     		store(sessionId,data,encoding,XmldbURI.xmldbUriFor(path),replace);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid document URI",e);
     	}
     }
     public void store(java.lang.String sessionId, byte[] data, java.lang.String encoding, XmldbURI path, boolean replace) throws java.rmi.RemoteException {
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         DBBroker broker = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn txn = transact.beginTransaction();
         try {
             broker = pool.get(session.getUser());
-            XmldbURI collectionUri = path.removeLastSegment();
-            XmldbURI docUri = path.lastSegment();
+            final XmldbURI collectionUri = path.removeLastSegment();
+            final XmldbURI docUri = path.lastSegment();
             if (collectionUri==null || docUri==null) {
                 transact.abort(txn);
                 throw new EXistException("Illegal document path");
             }
-            Collection collection = broker.getCollection(collectionUri);
+            final Collection collection = broker.getCollection(collectionUri);
             if (collection == null) {
                 transact.abort(txn);
                 throw new EXistException("Collection " + collectionUri + " not found");
             }
             if(!replace) {
-                DocumentImpl old = collection.getDocument(broker, docUri);
+                final DocumentImpl old = collection.getDocument(broker, docUri);
                 if(old != null) {
                     transact.abort(txn);
                     throw new RemoteException("Document exists and overwrite is not allowed");
                 }
             }
-            long startTime = System.currentTimeMillis();
+            final long startTime = System.currentTimeMillis();
 // TODO check XML/Binary resource
 //          IndexInfo info = collection.validate(txn, broker, path, new InputSource(new ByteArrayInputStream(data)));
-            IndexInfo info = collection.validateXMLResource(txn, broker, docUri, new InputSource(new ByteArrayInputStream(data)));
+            final IndexInfo info = collection.validateXMLResource(txn, broker, docUri, new InputSource(new ByteArrayInputStream(data)));
             info.getDocument().getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             collection.store(txn, broker, info, new InputSource(new ByteArrayInputStream(data)), false);
             transact.commit(txn);
@@ -252,7 +252,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                     + " took "
                     + (System.currentTimeMillis() - startTime)
                     + "ms.");
-        } catch (Exception e) {
+        } catch (final Exception e) {
             transact.abort(txn);
             LOG.debug(e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
@@ -262,10 +262,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     }
     
     private Session getSession(String id) throws java.rmi.RemoteException {
-        Session session = SessionManager.getInstance().getSession(id);
+        final Session session = SessionManager.getInstance().getSession(id);
         if (session == null)
-            throw new java.rmi.RemoteException(
-                    "Session is invalid or timed out");
+            {throw new java.rmi.RemoteException(
+                    "Session is invalid or timed out");}
         return session;
     }
     
@@ -273,28 +273,28 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public int xupdate(java.lang.String sessionId, java.lang.String collectionName, java.lang.String xupdate) throws java.rmi.RemoteException {
     	try {
     		return xupdate(sessionId,XmldbURI.xmldbUriFor(collectionName), xupdate);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public int xupdate(java.lang.String sessionId, XmldbURI collectionName, java.lang.String xupdate) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final Session session = getSession(sessionId);
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         try {
             broker = pool.get(session.getUser());
-            Collection collection = broker.getCollection(collectionName);
+            final Collection collection = broker.getCollection(collectionName);
             if (collection == null) {
                 transact.abort(transaction);
                 throw new RemoteException(
                         "collection " + collectionName + " not found");
             }
-            DocumentSet docs =
+            final DocumentSet docs =
                     collection.allDocs(broker, new DefaultDocumentSet(), true);
-            XUpdateProcessor processor =
+            final XUpdateProcessor processor =
                     new XUpdateProcessor(broker, docs, AccessContext.SOAP);
-            Modification modifications[] =
+            final Modification modifications[] =
                     processor.parse(new InputSource(new StringReader(xupdate)));
             long mods = 0;
             for (int i = 0; i < modifications.length; i++) {
@@ -303,25 +303,25 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             }
             transact.commit(transaction);
             return (int) mods;
-        } catch (ParserConfigurationException e) {
+        } catch (final ParserConfigurationException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (LockException e) {
+        } catch (final LockException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
         } finally {
@@ -333,30 +333,30 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public int xupdateResource(java.lang.String sessionId, java.lang.String documentName, java.lang.String xupdate) throws java.rmi.RemoteException {
     	try {
     		return xupdateResource(sessionId,XmldbURI.xmldbUriFor(documentName), xupdate);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid document URI",e);
     	}
     }
     public int xupdateResource(java.lang.String sessionId, XmldbURI documentName, java.lang.String xupdate) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final Session session = getSession(sessionId);
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         try {
             broker = pool.get(session.getUser());
 // TODO check XML/Binary resource
 //            DocumentImpl doc = (DocumentImpl)broker.getDocument(documentName);
-            DocumentImpl doc = broker.getXMLResource(documentName, Permission.READ);
+            final DocumentImpl doc = broker.getXMLResource(documentName, Permission.READ);
             if (doc == null) {
                 transact.abort(transaction);
                 throw new RemoteException(
                         "document " + documentName + " not found");
             }
-            MutableDocumentSet docs = new DefaultDocumentSet();
+            final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(doc);
-            XUpdateProcessor processor =
+            final XUpdateProcessor processor =
                     new XUpdateProcessor(broker, docs, AccessContext.SOAP);
-            Modification modifications[] =
+            final Modification modifications[] =
                     processor.parse(new InputSource(new StringReader(xupdate)));
             long mods = 0;
             for (int i = 0; i < modifications.length; i++) {
@@ -365,25 +365,25 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             }
             transact.commit(transaction);
             return (int) mods;
-        } catch (ParserConfigurationException e) {
+        } catch (final ParserConfigurationException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
-        } catch (LockException e) {
+        } catch (final LockException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
         } finally {
@@ -396,33 +396,33 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public void storeBinary(java.lang.String sessionId, byte[] data, java.lang.String path, java.lang.String mimeType, boolean replace) throws java.rmi.RemoteException {
     	try {
     		storeBinary(sessionId,data,XmldbURI.xmldbUriFor(path), mimeType, replace);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid document URI",e);
     	}
     }
     public void storeBinary(java.lang.String sessionId, byte[] data, XmldbURI path, java.lang.String mimeType, boolean replace) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         Collection collection = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn txn = transact.beginTransaction();
         try {
             broker = pool.get(session.getUser());
-            XmldbURI collectionUri = path.removeLastSegment();
-            XmldbURI docUri = path.lastSegment();
+            final XmldbURI collectionUri = path.removeLastSegment();
+            final XmldbURI docUri = path.lastSegment();
             if (collectionUri==null || docUri==null) {
                 transact.abort(txn);
                 throw new EXistException("Illegal document path");
             }
             collection = broker.openCollection(collectionUri, Lock.WRITE_LOCK);
             if (collection == null)
-                throw new EXistException("Collection " + collectionUri
-                        + " not found");
+                {throw new EXistException("Collection " + collectionUri
+                        + " not found");}
             if (!replace) {
-                DocumentImpl old = collection.getDocument(broker, docUri);
+                final DocumentImpl old = collection.getDocument(broker, docUri);
                 if (old != null)
-                    throw new PermissionDeniedException(
-                            "Old document exists and overwrite is not allowed");
+                    {throw new PermissionDeniedException(
+                            "Old document exists and overwrite is not allowed");}
             }
             LOG.debug("Storing binary resource to collection " + collection.getURI());
             
@@ -433,12 +433,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 //            if (modified != null)
 //                doc.setLastModified(modified.getTime());
             transact.commit(txn);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             transact.abort(txn);
             throw new RemoteException(e.getMessage(), e);
         } finally {
             if(collection != null)
-                collection.release(Lock.WRITE_LOCK);
+                {collection.release(Lock.WRITE_LOCK);}
             pool.release(broker);
         }
 //        documentCache.clear();
@@ -449,38 +449,38 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public byte[] getBinaryResource(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return getBinaryResource(sessionId,XmldbURI.xmldbUriFor(path));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid document URI",e);
     	}
     }
     public byte[] getBinaryResource(java.lang.String sessionId, XmldbURI name) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         DocumentImpl doc = null;
         try {
             broker = pool.get(session.getUser());
             // TODO check XML/Binary resource
             doc = broker.getXMLResource(name, Lock.READ_LOCK);
             if (doc == null)
-                throw new EXistException("Resource " + name + " not found");
+                {throw new EXistException("Resource " + name + " not found");}
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
-                throw new EXistException("Document " + name
-                        + " is not a binary resource");
+                {throw new EXistException("Document " + name
+                        + " is not a binary resource");}
             if(!doc.getPermissions().validate(session.getUser(), Permission.READ))
-                throw new PermissionDeniedException("Insufficient privileges to read resource");
-            InputStream is = broker.getBinaryResource((BinaryDocument) doc);
-            long resourceSize = broker.getBinaryResourceSize((BinaryDocument) doc);
+                {throw new PermissionDeniedException("Insufficient privileges to read resource");}
+            final InputStream is = broker.getBinaryResource((BinaryDocument) doc);
+            final long resourceSize = broker.getBinaryResourceSize((BinaryDocument) doc);
             if(resourceSize > Integer.MAX_VALUE)
-                throw new RemoteException("Resource too big to be read using this port.");
-            byte [] data = new byte[(int)resourceSize];
+                {throw new RemoteException("Resource too big to be read using this port.");}
+            final byte [] data = new byte[(int)resourceSize];
             is.read(data);
             is.close();
             return data;
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             throw new RemoteException(ex.getMessage());
         } finally {
             if(doc != null)
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                {doc.getUpdateLock().release(Lock.READ_LOCK);}
             pool.release(broker);
         }
     }
@@ -489,34 +489,34 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public org.exist.soap.CollectionDesc getCollectionDesc(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return getCollectionDesc(sessionId,XmldbURI.xmldbUriFor(path));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public org.exist.soap.CollectionDesc getCollectionDesc(java.lang.String sessionId, XmldbURI collectionName) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         Collection collection = null;
         try {
             broker = pool.get(session.getUser());
             if (collectionName == null)
-                collectionName = XmldbURI.ROOT_COLLECTION_URI;
+                {collectionName = XmldbURI.ROOT_COLLECTION_URI;}
             
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("collection " + collectionName
-                        + " not found!");
-            CollectionDesc desc = new CollectionDesc();
-            List<DocumentDesc> docs = new ArrayList<DocumentDesc>();
-            List<String> collections = new ArrayList<String>();
+                {throw new EXistException("collection " + collectionName
+                        + " not found!");}
+            final CollectionDesc desc = new CollectionDesc();
+            final List<DocumentDesc> docs = new ArrayList<DocumentDesc>();
+            final List<String> collections = new ArrayList<String>();
             if (collection.getPermissions().validate(session.getUser(), Permission.READ)) {
                 DocumentImpl doc;
 //              Hashtable hash;
                 Permission perms;
-                for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                     doc = i.next();
                     perms = doc.getPermissions();
-                    DocumentDesc dd = new DocumentDesc();
+                    final DocumentDesc dd = new DocumentDesc();
 //                    hash = new Hashtable(4);
                     dd.setName(doc.getFileURI().toString());
                     dd.setOwner(perms.getOwner().getName());
@@ -527,7 +527,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                             : DocumentType.XMLResource);
                     docs.add(dd);
                 }
-                for(Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
+                for(final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
                     collections.add(i.next().toString());
                 }
             }
@@ -540,11 +540,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             desc.setGroup(perms.getGroup().getName());
             desc.setPermissions(perms.getMode());
             return desc;
-        } catch (Exception ex){
+        } catch (final Exception ex){
             throw new RemoteException(ex.getMessage());
         } finally {
             if(collection != null)
-                collection.release(Lock.READ_LOCK);
+                {collection.release(Lock.READ_LOCK);}
             pool.release(broker);
         }
     }
@@ -553,29 +553,29 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public void setPermissions(java.lang.String sessionId, java.lang.String resource, java.lang.String owner, java.lang.String ownerGroup, int permissions) throws java.rmi.RemoteException {
     	try {
     		setPermissions(sessionId,XmldbURI.xmldbUriFor(resource),owner,ownerGroup,permissions);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public void setPermissions(java.lang.String sessionId, XmldbURI resource, java.lang.String owner, java.lang.String ownerGroup, int permissions) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         Collection collection = null;
         DocumentImpl doc = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         try {
             broker = pool.get(session.getUser());
-            org.exist.security.SecurityManager manager = pool.getSecurityManager();
+            final org.exist.security.SecurityManager manager = pool.getSecurityManager();
             collection = broker.openCollection(resource, Lock.WRITE_LOCK);
             if (collection == null) {
                 // TODO check XML/Binary resource
                 doc = broker.getXMLResource(resource, Lock.WRITE_LOCK);
                 if (doc == null)
-                    throw new RemoteException("document or collection "
-                            + resource + " not found");
+                    {throw new RemoteException("document or collection "
+                            + resource + " not found");}
                 LOG.debug("changing permissions on document " + resource);
-                Permission perm = doc.getPermissions();
+                final Permission perm = doc.getPermissions();
                 if (perm.getOwner().equals(session.getUser())
                 || manager.hasAdminPrivileges(session.getUser())) {
                     if (owner != null) {
@@ -595,7 +595,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 throw new PermissionDeniedException("not allowed to change permissions");
             }
             LOG.debug("changing permissions on collection " + resource);
-            Permission perm = collection.getPermissions();
+            final Permission perm = collection.getPermissions();
             if (perm.getOwner().equals(session.getUser())
             || manager.hasAdminPrivileges(session.getUser())) {
                 perm.setMode(permissions);
@@ -611,22 +611,22 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             }
             transact.abort(transaction);
             throw new PermissionDeniedException("not allowed to change permissions");
-        } catch (IOException e) {
+        } catch (final IOException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
-        } catch (TransactionException e) {
+        } catch (final TransactionException e) {
             throw new RemoteException(e.getMessage());
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new RemoteException(e.getMessage());
-        } catch (TriggerException e) {
+        } catch (final TriggerException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
 		} finally {
             if(doc != null)
-                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+                {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
             pool.release(broker);
         }
     }
@@ -636,24 +636,24 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     		throws RemoteException {
     	try {
     		moveOrCopyResource(sessionId,XmldbURI.xmldbUriFor(docPath),XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName),move);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     private void moveOrCopyResource(String sessionId, XmldbURI docPath, XmldbURI destinationPath,
             XmldbURI newName, boolean move)
             throws RemoteException {
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         Collection collection = null;
         Collection destination = null;
         DocumentImpl doc = null;
         try {
             broker = pool.get(session.getUser());
-            XmldbURI collectionUri = docPath.removeLastSegment();
-            XmldbURI docUri = docPath.lastSegment();
+            final XmldbURI collectionUri = docPath.removeLastSegment();
+            final XmldbURI docUri = docPath.lastSegment();
             if (collectionUri==null || docUri==null) {
                 transact.abort(transaction);
                 throw new EXistException("Illegal document path");
@@ -679,37 +679,37 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if(move)
 // TODO check XML/Binary resource
 //                broker.moveResource(transaction, doc, destination, newName);
-                broker.moveResource(transaction, doc, destination, newName);
+                {broker.moveResource(transaction, doc, destination, newName);}
             else
 // TODO check XML/Binary resource
 //                broker.copyResource(transaction, doc, destination, newName);
-                broker.copyResource(transaction, doc, destination, newName);
+                {broker.copyResource(transaction, doc, destination, newName);}
             transact.commit(transaction);
 //            documentCache.clear();
             return;
-        } catch (LockException e) {
+        } catch (final LockException e) {
             transact.abort(transaction);
             throw new RemoteException("Could not acquire lock on document " + docPath);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             transact.abort(transaction);
             throw new RemoteException("Could not move/copy document " + docPath);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
-        } catch (TransactionException e) {
+        } catch (final TransactionException e) {
             throw new RemoteException("Error commiting transaction " + e.getMessage());
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new RemoteException(e.getMessage());
-        } catch (TriggerException e) {
+        } catch (final TriggerException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
 		} finally {
             if(destination != null)
-                destination.release(Lock.WRITE_LOCK);
+                {destination.release(Lock.WRITE_LOCK);}
             if(doc != null)
-                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+                {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
             if(collection != null)
-                collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
+                {collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);}
             pool.release(broker);
         }
     }
@@ -719,21 +719,21 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     		throws EXistException, PermissionDeniedException, RemoteException {
     	try {
     		return moveOrCopyCollection(sessionId,XmldbURI.xmldbUriFor(collectionPath),XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName),move);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     private boolean moveOrCopyCollection(String sessionId, XmldbURI collectionPath, XmldbURI destinationPath,
     		XmldbURI newName, boolean move)
             throws EXistException, PermissionDeniedException, RemoteException {
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         Collection collection = null;
         Collection destination = null;
         try {
-            Subject user = session.getUser();
+            final Subject user = session.getUser();
             broker = pool.get(user);
             // get source document
             collection = broker.openCollection(collectionPath, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
@@ -749,26 +749,26 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 throw new EXistException("Destination collection " + destinationPath + " not found");
             }
             if(move)
-                broker.moveCollection(transaction, collection, destination, newName);
+                {broker.moveCollection(transaction, collection, destination, newName);}
             else
-                broker.copyCollection(transaction, collection, destination, newName);
+                {broker.copyCollection(transaction, collection, destination, newName);}
             transact.commit(transaction);
 //            documentCache.clear();
             return true;
-        } catch (IOException e) {
+        } catch (final IOException e) {
         	transact.abort(transaction);
             throw new RemoteException(e.getMessage());            
-        } catch (LockException e) {
+        } catch (final LockException e) {
         	transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
-        } catch (TriggerException e) {
+        } catch (final TriggerException e) {
         	transact.abort(transaction);
             throw new RemoteException(e.getMessage());            
 		} finally {
             if(collection != null)
-                collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
+                {collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);}
             if(destination != null)
-                destination.release(Lock.WRITE_LOCK);
+                {destination.release(Lock.WRITE_LOCK);}
             pool.release(broker);
         }
     }
@@ -782,11 +782,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public void copyCollection(java.lang.String sessionId, java.lang.String collectionPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
         try {
             moveOrCopyCollection(sessionId,collectionPath,destinationPath,newName,false);
-        } catch (RemoteException e) {
+        } catch (final RemoteException e) {
             throw new RemoteException(e.getMessage());
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new RemoteException(e.getMessage());
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new RemoteException(e.getMessage());
         }
     }
@@ -825,7 +825,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 		        ((AccountImpl)u).setPassword(password);
                     }
         
-            for(String groupName : groups.getElements()) {
+            for(final String groupName : groups.getElements()) {
                 if (!u.hasGroup(groupName)) {
 
                     if(!manager.hasAdminPrivileges(user)) {
@@ -841,9 +841,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             
             manager.addAccount(u);
             
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new RemoteException(e.getMessage());
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new RemoteException(e.getMessage());
         } finally {
             pool.release(broker);
@@ -852,16 +852,16 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     @Override
     public org.exist.soap.UserDesc getUser(java.lang.String sessionId, java.lang.String user) throws java.rmi.RemoteException {
-        Session session = getSession(sessionId);
+        final Session session = getSession(sessionId);
         
         DBBroker broker = null;
         try {
             broker = pool.get(session.getUser());
 
-	        Account u = pool.getSecurityManager().getAccount(user);
+	        final Account u = pool.getSecurityManager().getAccount(user);
 	        if (u == null)
-	            throw new RemoteException("user " + user + " does not exist");
-	        UserDesc desc = new UserDesc();
+	            {throw new RemoteException("user " + user + " does not exist");}
+	        final UserDesc desc = new UserDesc();
 	        desc.setName(u.getName());
 	/*
 	        Vector groups = new Vector();
@@ -871,7 +871,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	 */
 	        desc.setGroups(new Strings(u.getGroups()));
 	        return desc;
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new RemoteException(e.getMessage());
         } finally {
             pool.release(broker);
@@ -880,19 +880,19 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     @Override
     public void removeUser(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
-        Subject user = getSession(sessionId).getUser();
-        org.exist.security.SecurityManager manager = pool
+        final Subject user = getSession(sessionId).getUser();
+        final org.exist.security.SecurityManager manager = pool
                 .getSecurityManager();
         if (!manager.hasAdminPrivileges(user))
-            throw new RemoteException(
-                    "you are not allowed to remove users");
+            {throw new RemoteException(
+                    "you are not allowed to remove users");}
         
         DBBroker broker = null;
         try {
         	broker = pool.get(user);
         	
             manager.deleteAccount(name);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RemoteException(e.getMessage());
 		} finally {
 			pool.release(broker);
@@ -901,10 +901,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     @Override
     public org.exist.soap.UserDescs getUsers(java.lang.String sessionId) throws java.rmi.RemoteException {
-    	java.util.Collection<Account> users = pool.getSecurityManager().getUsers();
-        UserDesc[] r = new UserDesc[users.size()];
+    	final java.util.Collection<Account> users = pool.getSecurityManager().getUsers();
+        final UserDesc[] r = new UserDesc[users.size()];
         int i = 0;
-        for (Account user : users) {
+        for (final Account user : users) {
             r[i] = new UserDesc();
             r[i].setName(user.getName());
 /*
@@ -922,9 +922,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     @Override
     public org.exist.soap.Strings getGroups(java.lang.String sessionId) throws java.rmi.RemoteException {
-        java.util.Collection<Group> roles = pool.getSecurityManager().getGroups();
-        List<String> v = new ArrayList<String>(roles.size());
-        for (Group role : roles) {
+        final java.util.Collection<Group> roles = pool.getSecurityManager().getGroups();
+        final List<String> v = new ArrayList<String>(roles.size());
+        for (final Group role : roles) {
             v.add(role.getName());
         }
         return new Strings(v.toArray(new String[v.size()]));
@@ -934,11 +934,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public void moveCollection(java.lang.String sessionId, java.lang.String collectionPath, java.lang.String destinationPath, java.lang.String newName) throws java.rmi.RemoteException {
         try {
             moveOrCopyCollection(sessionId,collectionPath,destinationPath,newName,true);
-        } catch (RemoteException e) {
+        } catch (final RemoteException e) {
             throw new RemoteException(e.getMessage());
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new RemoteException(e.getMessage());
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new RemoteException(e.getMessage());
         }
     }
@@ -952,17 +952,17 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public void lockResource(java.lang.String sessionId, java.lang.String path, java.lang.String userName) throws java.rmi.RemoteException {
     	try {
     		lockResource(sessionId,XmldbURI.xmldbUriFor(path),userName);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public void lockResource(java.lang.String sessionId, XmldbURI path, java.lang.String userName) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
-        Subject user = session.getUser();
+        final Session session = getSession(sessionId);
+        final Subject user = session.getUser();
         DocumentImpl doc = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        final Txn transaction = transact.beginTransaction();
         try {
             broker = pool.get(user);
 // TODO check XML/Binary resource
@@ -973,29 +973,29 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                         + path + " not found");
             }
             if (!doc.getPermissions().validate(user, Permission.WRITE))
-                throw new PermissionDeniedException("User is not allowed to lock resource " + path);
+                {throw new PermissionDeniedException("User is not allowed to lock resource " + path);}
             
-            org.exist.security.SecurityManager manager = pool.getSecurityManager();
+            final org.exist.security.SecurityManager manager = pool.getSecurityManager();
             if (!(userName.equals(user.getName()) || manager.hasAdminPrivileges(user)))
-                throw new PermissionDeniedException("User " + user.getName() + " is not allowed " +
-                        "to lock the resource for user " + userName);
-            Account lockOwner = doc.getUserLock();
+                {throw new PermissionDeniedException("User " + user.getName() + " is not allowed " +
+                        "to lock the resource for user " + userName);}
+            final Account lockOwner = doc.getUserLock();
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
-                throw new PermissionDeniedException("Resource is already locked by user " +
-                        lockOwner.getName());
-            Account lo = manager.getAccount(userName);
+                {throw new PermissionDeniedException("Resource is already locked by user " +
+                        lockOwner.getName());}
+            final Account lo = manager.getAccount(userName);
             doc.setUserLock(lo);
 // TODO check XML/Binary resource
 //            broker.storeDocument(transaction, doc);
             broker.storeXMLResource(transaction, doc);
             transact.commit(transaction);
             return;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
         } finally {
             if(doc != null)
-                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+                {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
             pool.release(broker);
         }
     }
@@ -1004,42 +1004,42 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public void unlockResource(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		unlockResource(sessionId,XmldbURI.xmldbUriFor(path));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public void unlockResource(java.lang.String sessionId, XmldbURI path) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
-        Subject user = session.getUser();
+        final Session session = getSession(sessionId);
+        final Subject user = session.getUser();
         DocumentImpl doc = null;
         try {
             broker = pool.get(user);
             // TODO check XML/Binary resource
             doc = broker.getXMLResource(path, Lock.WRITE_LOCK);
             if (doc == null)
-                throw new EXistException("Resource "
-                        + path + " not found");
+                {throw new EXistException("Resource "
+                        + path + " not found");}
             if (!doc.getPermissions().validate(user, Permission.WRITE))
-                throw new PermissionDeniedException("User is not allowed to lock resource " + path);
-            org.exist.security.SecurityManager manager = pool.getSecurityManager();
-            Account lockOwner = doc.getUserLock();
+                {throw new PermissionDeniedException("User is not allowed to lock resource " + path);}
+            final org.exist.security.SecurityManager manager = pool.getSecurityManager();
+            final Account lockOwner = doc.getUserLock();
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
-                throw new PermissionDeniedException("Resource is already locked by user " +
-                        lockOwner.getName());
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
+                {throw new PermissionDeniedException("Resource is already locked by user " +
+                        lockOwner.getName());}
+            final TransactionManager transact = pool.getTransactionManager();
+            final Txn transaction = transact.beginTransaction();
             doc.setUserLock(null);
 // TODO check XML/Binary resource
 //            broker.storeDocument(transaction, doc);
             broker.storeXMLResource(transaction, doc);
             transact.commit(transaction);
             return;
-        } catch (Exception ex){
+        } catch (final Exception ex){
             throw new RemoteException(ex.getMessage());
         } finally {
             if(doc != null)
-                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+                {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
             pool.release(broker);
         }
     }
@@ -1048,14 +1048,14 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public java.lang.String hasUserLock(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
     		return hasUserLock(sessionId,XmldbURI.xmldbUriFor(path));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public java.lang.String hasUserLock(java.lang.String sessionId, XmldbURI path) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
-        Subject user = session.getUser();
+        final Session session = getSession(sessionId);
+        final Subject user = session.getUser();
         DocumentImpl doc = null;
         try {
             broker = pool.get(user);
@@ -1063,17 +1063,17 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 //            doc = (DocumentImpl) broker.openDocument(path, Lock.READ_LOCK);
             doc = broker.getXMLResource(path, Lock.READ_LOCK);
             if (doc == null)
-                throw new EXistException("Resource "
-                        + path + " not found");
+                {throw new EXistException("Resource "
+                        + path + " not found");}
             if(!doc.getPermissions().validate(user, Permission.READ))
-                throw new PermissionDeniedException("Insufficient privileges to read resource");
-            Account u = doc.getUserLock();
+                {throw new PermissionDeniedException("Insufficient privileges to read resource");}
+            final Account u = doc.getUserLock();
             return u == null ? "" : u.getName();
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             throw new RemoteException(ex.getMessage());
         } finally {
             if(doc != null)
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                {doc.getUpdateLock().release(Lock.READ_LOCK);}
             pool.release(broker);
         }
     }
@@ -1082,14 +1082,14 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public org.exist.soap.Permissions getPermissions(java.lang.String sessionId, java.lang.String resource) throws java.rmi.RemoteException {
     	try {
     		return getPermissions(sessionId,XmldbURI.xmldbUriFor(resource));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public org.exist.soap.Permissions getPermissions(java.lang.String sessionId, XmldbURI resource) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
-        Subject user = session.getUser();
+        final Session session = getSession(sessionId);
+        final Subject user = session.getUser();
         try {
             broker = pool.get(user);
             Collection collection = null;
@@ -1103,25 +1103,25 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	            	try {
 	            	    doc = broker.getXMLResource(resource, Lock.READ_LOCK);
 		                if (doc == null)
-		                    throw new EXistException("document or collection " + resource + " not found");
+		                    {throw new EXistException("document or collection " + resource + " not found");}
 		                perm = doc.getPermissions();
 	            	} finally {
 	            		if (doc != null)
-	            			doc.getUpdateLock().release(Lock.READ_LOCK);
+	            			{doc.getUpdateLock().release(Lock.READ_LOCK);}
 	            	}
 	            } else {
 	                perm = collection.getPermissions();
 	            }
-	            Permissions p = new Permissions();
+	            final Permissions p = new Permissions();
 	            p.setOwner(perm.getOwner().getName());
 	            p.setGroup(perm.getGroup().getName());
 	            p.setPermissions(perm.getMode());
 	            return p;
             } finally {
             	if (collection != null)
-            		collection.release(Lock.READ_LOCK);            	
+            		{collection.release(Lock.READ_LOCK);}            	
             }
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             throw new RemoteException(ex.getMessage());
         } finally {
             pool.release(broker);
@@ -1132,29 +1132,29 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public org.exist.soap.EntityPermissionsList listCollectionPermissions(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
     	try {
     		return listCollectionPermissions(sessionId,XmldbURI.xmldbUriFor(name));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public org.exist.soap.EntityPermissionsList listCollectionPermissions(java.lang.String sessionId, XmldbURI name) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
-        Subject user = session.getUser();
+        final Session session = getSession(sessionId);
+        final Subject user = session.getUser();
         Collection collection = null;
         try {
             broker = pool.get(user);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("Collection " + name + " not found");
+                {throw new EXistException("Collection " + name + " not found");}
             if (!collection.getPermissions().validate(user, Permission.READ))
-                throw new PermissionDeniedException(
-                        "not allowed to read collection " + name);
-            EntityPermissions[] result = new EntityPermissions[collection.getChildCollectionCount(broker)];
+                {throw new PermissionDeniedException(
+                        "not allowed to read collection " + name);}
+            final EntityPermissions[] result = new EntityPermissions[collection.getChildCollectionCount(broker)];
             XmldbURI child, path;
             Collection childColl;
             Permission perm;
             int cnt = 0;
-            for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
+            for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
                 child = i.next();
                 path = name.append(child);
                 childColl = broker.getCollection(path);
@@ -1167,11 +1167,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 cnt++;
             }
             return new EntityPermissionsList(result);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             throw new RemoteException(ex.getMessage());
         } finally {
             if(collection != null)
-                collection.release(Lock.READ_LOCK);
+                {collection.release(Lock.READ_LOCK);}
             pool.release(broker);
         }
     }
@@ -1180,28 +1180,28 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public org.exist.soap.EntityPermissionsList listDocumentPermissions(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException {
     	try {
     		return listDocumentPermissions(sessionId,XmldbURI.xmldbUriFor(name));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public org.exist.soap.EntityPermissionsList listDocumentPermissions(java.lang.String sessionId, XmldbURI name) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
-        Subject user = session.getUser();
+        final Session session = getSession(sessionId);
+        final Subject user = session.getUser();
         Collection collection = null;
         try {
             broker = pool.get(user);
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("Collection " + name + " not found");
+                {throw new EXistException("Collection " + name + " not found");}
             if (!collection.getPermissions().validate(user, Permission.READ))
-                throw new PermissionDeniedException(
-                        "not allowed to read collection " + name);
-            EntityPermissions[] result = new EntityPermissions[collection.getDocumentCount(broker)];
+                {throw new PermissionDeniedException(
+                        "not allowed to read collection " + name);}
+            final EntityPermissions[] result = new EntityPermissions[collection.getDocumentCount(broker)];
             DocumentImpl doc;
             Permission perm;
             int cnt = 0;
-            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+            for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 doc = i.next();
                 perm = doc.getPermissions();
                 result[cnt] = new EntityPermissions();
@@ -1212,11 +1212,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 cnt++;
             }
             return new EntityPermissionsList(result);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             throw new RemoteException(ex.getMessage());
         } finally {
             if(collection != null)
-                collection.release(Lock.READ_LOCK);
+                {collection.release(Lock.READ_LOCK);}
             pool.release(broker);
         }
     }
@@ -1225,36 +1225,36 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     public org.exist.soap.IndexedElements getIndexedElements(java.lang.String sessionId, java.lang.String collectionName, boolean inclusive) throws java.rmi.RemoteException {
     	try {
     		return getIndexedElements(sessionId,XmldbURI.xmldbUriFor(collectionName),inclusive);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new RemoteException("Invalid collection URI",e);
     	}
     }
     public org.exist.soap.IndexedElements getIndexedElements(java.lang.String sessionId, XmldbURI collectionName, boolean inclusive) throws java.rmi.RemoteException {
         DBBroker broker = null;
-        Session session = getSession(sessionId);
-        Subject user = session.getUser();
+        final Session session = getSession(sessionId);
+        final Subject user = session.getUser();
         Collection collection = null;
         try {
             broker = pool.get(user);
             collection = broker.openCollection(collectionName, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("collection " + collectionName
-                        + " not found");
-            Occurrences occurrences[] = broker.getElementIndex().scanIndexedElements(collection,
+                {throw new EXistException("collection " + collectionName
+                        + " not found");}
+            final Occurrences occurrences[] = broker.getElementIndex().scanIndexedElements(collection,
                     inclusive);
-            IndexedElement[] result = new IndexedElement[occurrences.length];
+            final IndexedElement[] result = new IndexedElement[occurrences.length];
             for (int i = 0; i < occurrences.length; i++) {
-                QName qname = (QName)occurrences[i].getTerm();
+                final QName qname = (QName)occurrences[i].getTerm();
                 result[i] = new IndexedElement(qname.getLocalName(),qname.getNamespaceURI(),
                         qname.getPrefix() == null ? "" : qname.getPrefix(),
                         occurrences[i].getOccurrences());
             }
             return new IndexedElements(result);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             throw new RemoteException(ex.getMessage());
         } finally {
             if(collection != null)
-                collection.release(Lock.READ_LOCK);
+                {collection.release(Lock.READ_LOCK);}
             pool.release(broker);
         }
     }

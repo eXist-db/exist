@@ -28,21 +28,21 @@ public class InMemoryNodeSet extends ValueSequence {
 
     public InMemoryNodeSet( Sequence otherSequence ) throws XPathException {
         super( otherSequence );
-        Set<DocumentImpl> docs = new HashSet<DocumentImpl>();
+        final Set<DocumentImpl> docs = new HashSet<DocumentImpl>();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             docs.add( node.getDocument() );
         }
-        for( DocumentImpl doc : docs ) {
+        for( final DocumentImpl doc : docs ) {
             doc.expand();
         }
     }
 
     @Override
     public Sequence getAttributes( NodeTest test ) throws XPathException {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             node.selectAttributes( test, nodes );
         }
         return( nodes );
@@ -50,9 +50,9 @@ public class InMemoryNodeSet extends ValueSequence {
 
     @Override
     public Sequence getDescendantAttributes( NodeTest test ) throws XPathException {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             node.selectDescendantAttributes( test, nodes );
         }
         return( nodes );
@@ -60,9 +60,9 @@ public class InMemoryNodeSet extends ValueSequence {
 
     @Override
     public Sequence getChildren( NodeTest test ) throws XPathException {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             node.selectChildren( test, nodes );
         }
         return( nodes );
@@ -70,9 +70,9 @@ public class InMemoryNodeSet extends ValueSequence {
 
     @Override
     public Sequence getChildrenForParent( NodeImpl parent ) {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             if( node.getNodeId().isChildOf( parent.getNodeId() ) ) {
                 nodes.add( node );
             }
@@ -83,9 +83,9 @@ public class InMemoryNodeSet extends ValueSequence {
     @Override
     public Sequence getDescendants( boolean includeSelf, NodeTest test ) 
             throws XPathException {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             node.selectDescendants( includeSelf, test, nodes );
         }
         return( nodes );
@@ -94,9 +94,9 @@ public class InMemoryNodeSet extends ValueSequence {
     @Override
     public Sequence getAncestors( boolean includeSelf, NodeTest test ) 
             throws XPathException {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             node.selectAncestors( includeSelf, test, nodes );
         }
         return( nodes );
@@ -104,10 +104,10 @@ public class InMemoryNodeSet extends ValueSequence {
 
     @Override
     public Sequence getParents( NodeTest test ) throws XPathException {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node   = (NodeImpl)values[i];
-            NodeImpl parent = (NodeImpl)node.selectParentNode();
+            final NodeImpl node   = (NodeImpl)values[i];
+            final NodeImpl parent = (NodeImpl)node.selectParentNode();
             if( ( parent != null ) && test.matches( parent ) ) {
                 nodes.add( parent );
             }
@@ -117,9 +117,9 @@ public class InMemoryNodeSet extends ValueSequence {
 
     @Override
     public Sequence getSelf( NodeTest test ) throws XPathException {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             if( ( ( test.getType() == Type.NODE ) && ( node.getNodeType() == Node.ATTRIBUTE_NODE ) ) || test.matches( node ) ) {
                 nodes.add( node );
             }
@@ -129,9 +129,9 @@ public class InMemoryNodeSet extends ValueSequence {
 
     @Override
     public Sequence getPrecedingSiblings( NodeTest test ) throws XPathException {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             node.selectPrecedingSiblings( test, nodes );
         }
         return( nodes );
@@ -139,9 +139,9 @@ public class InMemoryNodeSet extends ValueSequence {
 
     @Override
     public Sequence getFollowingSiblings( NodeTest test ) throws XPathException {
-        InMemoryNodeSet nodes = new InMemoryNodeSet();
+        final InMemoryNodeSet nodes = new InMemoryNodeSet();
         for( int i = 0; i <= size; i++ ) {
-            NodeImpl node = (NodeImpl)values[i];
+            final NodeImpl node = (NodeImpl)values[i];
             node.selectFollowingSiblings( test, nodes );
         }
         return( nodes );

@@ -64,34 +64,34 @@ public class RemoteResourceIterator implements ResourceIterator {
 	@SuppressWarnings("unchecked")
 	public Resource nextResource() throws XMLDBException {
         if(pos >= resources.size())
-            return null;
+            {return null;}
         // node or value?
         if(resources.elementAt(pos) instanceof Vector<?>) {
             // node
-            Vector<String> v = (Vector<String>)resources.elementAt(pos++);
-            String doc = v.elementAt(0);
-            String s_id = v.elementAt(1);
+            final Vector<String> v = (Vector<String>)resources.elementAt(pos++);
+            final String doc = v.elementAt(0);
+            final String s_id = v.elementAt(1);
             
-            Vector<Object> params = new Vector<Object>();
+            final Vector<Object> params = new Vector<Object>();
             params.addElement(doc);
             params.addElement(s_id);
-            params.addElement(new Integer(indentXML));
+            params.addElement(Integer.valueOf(indentXML));
             params.addElement(encoding);
             try {
-                byte[] data = (byte[])collection.getClient().execute("retrieve", params);
-                XMLResource res = new RemoteXMLResource(collection, XmldbURI.xmldbUriFor(doc), doc + "_" + s_id);
+                final byte[] data = (byte[])collection.getClient().execute("retrieve", params);
+                final XMLResource res = new RemoteXMLResource(collection, XmldbURI.xmldbUriFor(doc), doc + "_" + s_id);
                 res.setContent(new String(data, encoding));
                 return res;
-            } catch(XmlRpcException xre) {
+            } catch(final XmlRpcException xre) {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
-            } catch(IOException ioe) {
+            } catch(final IOException ioe) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-			} catch (URISyntaxException e) {
+			} catch (final URISyntaxException e) {
                 throw new XMLDBException(ErrorCodes.INVALID_URI, e.getMessage(), e);
 			}
         } else {
             // value
-            XMLResource res = new RemoteXMLResource(collection, null, Integer.toString(pos));
+            final XMLResource res = new RemoteXMLResource(collection, null, Integer.toString(pos));
             res.setContent(resources.elementAt(pos++));
             return res;
         }

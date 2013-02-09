@@ -402,7 +402,7 @@ public class InteractiveClient {
             
             perm = mgtService.getSubCollectionPermissions(current, childCollections[i]);
             
-            if (properties.getProperty("permissions").equals("true")) {
+            if ("true".equals(properties.getProperty("permissions"))) {
                 cols[0] = perm.toString();
             	cols[1] = getOwnerName(perm);
             	cols[2] = getGroupName(perm);
@@ -431,7 +431,7 @@ public class InteractiveClient {
             if (perm == null) {
                 System.out.println("null"); //TODO this is not useful!
             }
-            if (properties.getProperty("permissions").equals("true")) {
+            if ("true".equals(properties.getProperty("permissions"))) {
                 resources[i] = '-' + perm.toString() + '\t' + perm.getOwner().getName()
                 + '\t' + perm.getGroup().getName() + '\t'
                         + URIUtils.urlDecodeUtf8(childResources[j]);
@@ -537,7 +537,7 @@ public class InteractiveClient {
             if (args[0].equalsIgnoreCase("ls")) {
                 // list collection contents
                 getResources();
-                if (properties.getProperty("permissions").equals("true")) {
+                if ("true".equals(properties.getProperty("permissions"))) {
                     for (int i = 0; i < resources.length; i++) {
                         messageln(resources[i]);
                     }
@@ -626,11 +626,11 @@ public class InteractiveClient {
                     errorln("could not parse resource name into a valid URI: "+e.getMessage());
                     return false;
                 }
-                Resource res = retrieve(resource);
+                final Resource res = retrieve(resource);
                 // display document
                 if (res != null) {
                     final String data;
-                    if (res.getResourceType().equals("XMLResource")) {
+                    if ("XMLResource".equals(res.getResourceType())) {
                         data = (String) res.getContent();
                     } else {
                         data = new String((byte[]) res.getContent());
@@ -853,8 +853,8 @@ public class InteractiveClient {
                     String p1;
                     String p2;
                     while (true) {
-                        p1 = console.readLine("password: ", new Character('*'));
-                        p2 = console.readLine("re-enter password: ", new Character('*'));
+                        p1 = console.readLine("password: ", Character.valueOf('*'));
+                        p2 = console.readLine("re-enter password: ", Character.valueOf('*'));
                         if (p1.equals(p2)) {
                             break;
                         }
@@ -915,8 +915,8 @@ public class InteractiveClient {
                     String p1;
                     String p2;
                     while (true) {
-                        p1 = console.readLine("password: ", new Character('*'));
-                        p2 = console.readLine("re-enter password: ", new Character('*'));
+                        p1 = console.readLine("password: ", Character.valueOf('*'));
+                        p2 = console.readLine("re-enter password: ", Character.valueOf('*'));
                         if (p1.equals(p2)) {
                             break;
                         }
@@ -1129,13 +1129,13 @@ public class InteractiveClient {
                 }
                 mgr.shutdown();
                 return true;
-            } else if (args[0].equalsIgnoreCase("help") || args[0].equals("?")) {
+            } else if (args[0].equalsIgnoreCase("help") || "?".equals(args[0])) {
                 displayHelp();
             } else if (args[0].equalsIgnoreCase("quit")) {
                 return false;
                 //XXX:make it pluggable
             } else if (havePluggableCommands) {
-                CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) current.getService("CollectionManagementService", "1.0");
+                final CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) current.getService("CollectionManagementService", "1.0");
                 mgtService.runCommand(args);
                 //****************************************************************
             } else {
@@ -1227,7 +1227,7 @@ public class InteractiveClient {
             }
             try {
                 thread.join();
-            } catch (InterruptedException e) {
+            } catch (final InterruptedException e) {
             }
         } catch (final FileNotFoundException e) {
             System.err.println("ERROR: " + e);
@@ -1386,7 +1386,7 @@ public class InteractiveClient {
                     }
                     
                     if (c instanceof Observable && verbose) {
-                        ProgressObserver observer = new ProgressObserver();
+                        final ProgressObserver observer = new ProgressObserver();
                         ((Observable) c).addObserver(observer);
                     }
                     findRecursive(c, files[i], next);
@@ -1424,7 +1424,7 @@ public class InteractiveClient {
         // String xml;
         
         if (current instanceof Observable && verbose) {
-            ProgressObserver observer = new ProgressObserver();
+            final ProgressObserver observer = new ProgressObserver();
             ((Observable) current).addObserver(observer);
         }
         
@@ -1434,7 +1434,7 @@ public class InteractiveClient {
             if (file.isDirectory()) {
                 if (recurseDirs) {
                     filesCount = 0;
-                    long start = System.currentTimeMillis();
+                    final long start = System.currentTimeMillis();
                     final boolean result = findRecursive(current, file, path);
                     messageln("storing " + filesCount + " files took " + ((System.currentTimeMillis() - start) / 1000) + "sec.");
                     return result;
@@ -1493,7 +1493,7 @@ public class InteractiveClient {
                         c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(files[i].getName()));
                     }
                     if (c instanceof Observable && verbose) {
-                        ProgressObserver observer = new ProgressObserver();
+                        final ProgressObserver observer = new ProgressObserver();
                         ((Observable) c).addObserver(observer);
                     }
                     findGZipRecursive(c, files[i], next);
@@ -1545,7 +1545,7 @@ public class InteractiveClient {
         Resource document;
         // String xml;
         if (current instanceof Observable && verbose) {
-            ProgressObserver observer = new ProgressObserver();
+            final ProgressObserver observer = new ProgressObserver();
             ((Observable) current).addObserver(observer);
         }
         final File files[];
@@ -1554,8 +1554,8 @@ public class InteractiveClient {
             if (file.isDirectory()) {
                 if (recurseDirs) {
                     filesCount = 0;
-                    long start = System.currentTimeMillis();
-                    boolean result = findGZipRecursive(current, file, path);
+                    final long start = System.currentTimeMillis();
+                    final boolean result = findGZipRecursive(current, file, path);
                     messageln("storing " + filesCount + " compressed files took "
                             + ((System.currentTimeMillis() - start) / 1000)
                             + "sec.");
@@ -1623,7 +1623,7 @@ public class InteractiveClient {
             Resource document;
             // String xml;
             if (current instanceof Observable && verbose) {
-                ProgressObserver observer = new ProgressObserver();
+                final ProgressObserver observer = new ProgressObserver();
                 ((Observable) current).addObserver(observer);
             }
 
@@ -1662,7 +1662,7 @@ public class InteractiveClient {
                     messageln("entering directory " + baseStr);
                 }
                 if (!ze.isDirectory()) {
-                    String localName=pathSteps[pathSteps.length-1];
+                    final String localName=pathSteps[pathSteps.length-1];
                     final long start = System.currentTimeMillis();
                     mimeType = MimeTable.getInstance().getContentTypeFor(localName);
                     if(mimeType == null) {
@@ -1777,7 +1777,7 @@ public class InteractiveClient {
         final XmldbURI filenameUri;
         try {
             filenameUri = URIUtils.encodeXmldbUriFor(file.getName());
-        } catch (URISyntaxException e1) {
+        } catch (final URISyntaxException e1) {
             upload.showMessage(file.getAbsolutePath()+ " could not be encoded as a URI");
             return;
         }
@@ -1967,7 +1967,7 @@ public class InteractiveClient {
         
         final CommandlineOptions cOpt = new CommandlineOptions();
         
-        for (CLOption option : opt) {
+        for (final CLOption option : opt) {
             switch (option.getId()) {
                 case CommandlineOptions.HELP_OPT :
                     printUsage();
@@ -2141,7 +2141,7 @@ public class InteractiveClient {
             }
             try {
                 reindex();
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 System.err.println("XMLDBException while reindexing collection: " + getExceptionMessage(e));
                 e.printStackTrace();
                 return false;
@@ -2156,7 +2156,7 @@ public class InteractiveClient {
             }
             try {
                 rmcol(cOpt.optionRmcol);
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 System.err.println("XMLDBException while removing collection: " + getExceptionMessage(e));
                 e.printStackTrace();
                 return false;
@@ -2166,7 +2166,7 @@ public class InteractiveClient {
         if (cOpt.optionMkcol != null) {
             try {
                 mkcol(cOpt.optionMkcol);
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 System.err.println("XMLDBException during mkcol: " + getExceptionMessage(e));
                 e.printStackTrace();
                 return false;
@@ -2178,7 +2178,7 @@ public class InteractiveClient {
                 final Resource res = retrieve(cOpt.optionGet);
                 if (res != null) {
                     // String data;
-                    if (res.getResourceType().equals("XMLResource")) {
+                    if ("XMLResource".equals(res.getResourceType())) {
                         if (cOpt.optionOutputFile != null) {
                             writeOutputFile(cOpt.optionOutputFile, res.getContent());
                         } else {
@@ -2241,7 +2241,7 @@ public class InteractiveClient {
                 }
             }
             // if no argument has been found, read query from stdin
-            if (cOpt.optionXpath.equals("stdin")) {
+            if ("stdin".equals(cOpt.optionXpath)) {
                 try {
                     final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
                     final StringBuilder buf = new StringBuilder();
@@ -2470,7 +2470,7 @@ public class InteractiveClient {
                     String errorMessage="";
                     try {
                         getResources();
-                    } catch (XMLDBException e) {
+                    } catch (final XMLDBException e) {
                         
                         errorMessage=getExceptionMessage(e);
                         ClientFrame.showErrorMessage(
@@ -2609,7 +2609,7 @@ public class InteractiveClient {
         boolean cont = true;
         while (cont) {
             try {
-                if (properties.getProperty("colors").equals("true")) {
+                if ("true".equals(properties.getProperty("colors"))) {
                     line = console.readLine(ANSI_CYAN + "exist:" + path + ">"
                             + ANSI_WHITE);
                 } else {
@@ -2748,7 +2748,7 @@ public class InteractiveClient {
 //            System.out.println("\nbuffer: '" + toComplete + "'; cursor: " + cursor);
             final Set<String> set = completitions.tailSet(toComplete);
             if (set != null && set.size() > 0) {
-                for (String next : completitions.tailSet(toComplete)) {
+                for (final String next : completitions.tailSet(toComplete)) {
                     if (next.startsWith(toComplete)) {
                         candidates.add(next);
                     }
@@ -2803,7 +2803,7 @@ public class InteractiveClient {
             s1 = s1.substring(0, width - 1);
         }
         buf.append(s1);
-        int fill = width - (s1.length() + s2.length());
+        final int fill = width - (s1.length() + s2.length());
         for (int i = 0; i < fill; i++) {
             buf.append(' ');
         }

@@ -318,9 +318,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
         final Resource r;
-        if (type.equals("XMLResource")) {
+        if ("XMLResource".equals(type)) {
             r = new LocalXMLResource(user, brokerPool, this, idURI);
-        } else if (type.equals("BinaryResource")) {
+        } else if ("BinaryResource".equals(type)) {
             r = new LocalBinaryResource(user, brokerPool, this, idURI);
         } else {
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Unknown resource type: " + type);
@@ -468,7 +468,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
         final XmldbURI idURI;
         try {
             idURI = XmldbURI.xmldbUriFor(id);
-        } catch(URISyntaxException e) {
+        } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
         
@@ -545,25 +545,25 @@ public class LocalCollection extends Observable implements CollectionImpl {
      * ValidationService. */
     @Override
     public Service getService(final String name, final String version) throws XMLDBException {
-        if(name.equals("XPathQueryService")) {
+        if("XPathQueryService".equals(name)) {
             return new LocalXPathQueryService(user, brokerPool, this, accessCtx);
         }
-        if(name.equals("XQueryService")) {
+        if("XQueryService".equals(name)) {
             return new LocalXPathQueryService(user, brokerPool, this, accessCtx);
         }
-        if(name.equals("CollectionManagementService") || name.equals("CollectionManager")) {
+        if("CollectionManagementService".equals(name) || "CollectionManager".equals(name)) {
             return new LocalCollectionManagementService(user, brokerPool, this, accessCtx);
         }
-        if(name.equals("UserManagementService")) {
+        if("UserManagementService".equals(name)) {
             return new LocalUserManagementService(user, brokerPool, this);
         }
-        if(name.equals("DatabaseInstanceManager")) {
+        if("DatabaseInstanceManager".equals(name)) {
             return new LocalDatabaseInstanceManager(user, brokerPool);
         }
-        if(name.equals("XUpdateQueryService")) {
+        if("XUpdateQueryService".equals(name)) {
             return new LocalXUpdateQueryService(user, brokerPool, this);
         }
-        if(name.equals("IndexQueryService")) {
+        if("IndexQueryService".equals(name)) {
             return new LocalIndexQueryService(user, brokerPool, this);
         }
         throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
@@ -714,7 +714,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resURI + " not found");
             }
             
-            if(res.getResourceType().equals("XMLResource")) {
+            if("XMLResource".equals(res.getResourceType())) {
                 collection.removeXMLResource(transaction, broker, resURI);
             } else {
                 collection.removeBinaryResource(transaction, broker, resURI);
@@ -754,7 +754,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
     @Override
     public void storeResource(final Resource resource, final Date a, final Date b) throws XMLDBException {
-        if(resource.getResourceType().equals("XMLResource")) {
+        if("XMLResource".equals(resource.getResourceType())) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("storing document " + resource.getId());
             }
@@ -762,7 +762,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             ((LocalXMLResource)resource).datecreated = a;
             ((LocalXMLResource)resource).datemodified = b;
             storeXMLResource((LocalXMLResource) resource);
-        } else if(resource.getResourceType().equals("BinaryResource")) {
+        } else if("BinaryResource".equals(resource.getResourceType())) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("storing binary resource " + resource.getId());
             }
@@ -781,7 +781,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
         final XmldbURI resURI;
         try {
             resURI = XmldbURI.xmldbUriFor(res.getId());
-        } catch(URISyntaxException e) {
+        } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
         
@@ -895,9 +895,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
     }
 
     private void setupParser(final Collection collection, final LocalXMLResource res) throws XMLDBException {
-        String normalize = properties.getProperty(NORMALIZE_HTML, "no");
+        final String normalize = properties.getProperty(NORMALIZE_HTML, "no");
         if((normalize.equalsIgnoreCase("yes") || normalize.equalsIgnoreCase("true")) &&
-                (res.getMimeType().equals("text/html") || res.getId().endsWith(".htm") ||
+                ("text/html".equals(res.getMimeType()) || res.getId().endsWith(".htm") ||
                     res.getId().endsWith(".html"))) {
             try {
                 if(LOG.isDebugEnabled()) {

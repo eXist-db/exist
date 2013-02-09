@@ -88,26 +88,26 @@ public class DumpFilter implements Filter {
         LOG.info("            locale=" + request.getLocale());
         StringBuffer buffer = new StringBuffer();
         buffer.append("           locales=");
-        Enumeration locales = request.getLocales();
+        final Enumeration locales = request.getLocales();
         boolean first = true;
         while (locales.hasMoreElements()) {
-            Locale locale = (Locale) locales.nextElement();
+            final Locale locale = (Locale) locales.nextElement();
             if (first)
-                first = false;
+                {first = false;}
             else
-                buffer.append(", ");
+                {buffer.append(", ");}
             buffer.append(locale.toString());
         }
         LOG.info(buffer.toString());
         Enumeration names = request.getParameterNames();
         while (names.hasMoreElements()) {
-            String name = (String) names.nextElement();
+            final String name = (String) names.nextElement();
             buffer = new StringBuffer();
             buffer.append("         parameter=" + name + "=");
-            String values[] = request.getParameterValues(name);
+            final String values[] = request.getParameterValues(name);
             for (int i = 0; i < values.length; i++) {
                 if (i > 0)
-                    buffer.append(", ");
+                    {buffer.append(", ");}
                 buffer.append(values[i]);
             }
             LOG.info(buffer.toString());
@@ -123,19 +123,19 @@ public class DumpFilter implements Filter {
         // Render the HTTP servlet request properties
         if (request instanceof HttpServletRequest) {
             LOG.info("---------------------------------------------");
-            HttpServletRequest hrequest = (HttpServletRequest) request;
+            final HttpServletRequest hrequest = (HttpServletRequest) request;
             LOG.info("       contextPath=" + hrequest.getContextPath());
             Cookie cookies[] = hrequest.getCookies();
             if (cookies == null)
-                cookies = new Cookie[0];
+                {cookies = new Cookie[0];}
             for (int i = 0; i < cookies.length; i++) {
                 LOG.info("            cookie=" + cookies[i].getName() +
                         "=" + cookies[i].getValue());
             }
             names = hrequest.getHeaderNames();
             while (names.hasMoreElements()) {
-                String name = (String) names.nextElement();
-                String value = hrequest.getHeader(name);
+                final String name = (String) names.nextElement();
+                final String value = hrequest.getHeader(name);
                 LOG.info("            header=" + name + "=" + value);
             }
             LOG.info("            method=" + hrequest.getMethod());
@@ -173,8 +173,8 @@ public class DumpFilter implements Filter {
     public String toString() {
 
         if (filterConfig == null)
-            return ("RequestDumperFilter()");
-        StringBuffer sb = new StringBuffer("RequestDumperFilter(");
+            {return ("RequestDumperFilter()");}
+        final StringBuffer sb = new StringBuffer("RequestDumperFilter(");
         sb.append(filterConfig);
         sb.append(")");
         return (sb.toString());

@@ -102,8 +102,8 @@ public class FunBaseURI extends BasicFunction {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
         }
         Sequence result = null;
         NodeValue node = null;
@@ -111,7 +111,7 @@ public class FunBaseURI extends BasicFunction {
             if (context.isBaseURIDeclared()) {
                 result = context.getBaseURI();
                 if (!((AnyURIValue) result).toURI().isAbsolute() )
-                    throw new XPathException(this, ErrorCodes.XPST0001, "");
+                    {throw new XPathException(this, ErrorCodes.XPST0001, "");}
             } else {
                 result = Sequence.EMPTY_SEQUENCE;
             }
@@ -121,7 +121,7 @@ public class FunBaseURI extends BasicFunction {
                     throw new XPathException(this, ErrorCodes.XPDY0002,
                         "Context sequence is empty and no argument specified");
                 }
-                Item item = contextSequence.itemAt(0);
+                final Item item = contextSequence.itemAt(0);
                 if (!Type.subTypeOf(item.getType(), Type.NODE)) {
                     throw new XPathException(this, ErrorCodes.XPTY0004,
                         "Context item is not a node");
@@ -140,14 +140,14 @@ public class FunBaseURI extends BasicFunction {
             // This is implemented to be a recursive ascent according to
             // section 2.5 in www.w3.org/TR/xpath-functions 
             // see memtree/ElementImpl and dom/ElementImpl. /ljo
-            Node domNode = node.getNode();
-            short type = domNode.getNodeType();
+            final Node domNode = node.getNode();
+            final short type = domNode.getNodeType();
             //A direct processing instruction constructor creates a processing instruction node 
             //whose target property is PITarget and whose content property is DirPIContents. 
             //The base-uri property of the node is empty. 
             //The parent property of the node is empty.
             if (type != Node.DOCUMENT_NODE && domNode.getParentNode() == null)
-                ;
+                {;}
             else if ((type == Node.PROCESSING_INSTRUCTION_NODE ||
                 type == Node.COMMENT_NODE) && (domNode.getParentNode() != null
                 && domNode.getParentNode().getNodeType() == Node.DOCUMENT_NODE)) {
@@ -159,12 +159,12 @@ public class FunBaseURI extends BasicFunction {
                 URI relativeURI = null;
                 URI baseURI = null;
                 try {
-                    String uri = domNode.getBaseURI();
+                    final String uri = domNode.getBaseURI();
                     if (uri != null) { 
                         relativeURI = new URI(uri);
                         baseURI = new URI(context.getBaseURI() + "/");
                     }
-                } catch (URISyntaxException e) {
+                } catch (final URISyntaxException e) {
                     throw new XPathException(e.getMessage());
                 }
                 if (relativeURI != null) {
@@ -182,7 +182,7 @@ public class FunBaseURI extends BasicFunction {
             }
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

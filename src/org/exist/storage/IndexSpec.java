@@ -85,26 +85,26 @@ public class IndexSpec {
      * @throws DatabaseConfigurationException
      */
     public void read(DBBroker broker, Element index) throws DatabaseConfigurationException {
-        Map<String, String> namespaces = getNamespaceMap(index);
-        NodeList childNodes = index.getChildNodes();
+        final Map<String, String> namespaces = getNamespaceMap(index);
+        final NodeList childNodes = index.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
-            Node node = childNodes.item(i);
+            final Node node = childNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 if (FULLTEXT_ELEMENT.equals(node.getLocalName())) {
                     ftSpec = new FulltextIndexSpec(namespaces, (Element)node);
                 } else if (CREATE_ELEMENT.equals(node.getLocalName())) {
-                    Element elem = (Element) node;
-                    String type = elem.getAttribute(TYPE_ATTRIB);
+                    final Element elem = (Element) node;
+                    final String type = elem.getAttribute(TYPE_ATTRIB);
                     if (elem.hasAttribute(QNAME_ATTRIB)) {
-                        String qname = elem.getAttribute(QNAME_ATTRIB);
-                        QNameRangeIndexSpec qnIdx = new QNameRangeIndexSpec(namespaces, qname, type);
+                        final String qname = elem.getAttribute(QNAME_ATTRIB);
+                        final QNameRangeIndexSpec qnIdx = new QNameRangeIndexSpec(namespaces, qname, type);
                         qnameSpecs.put(qnIdx.getQName(), qnIdx);
                     } else if (elem.hasAttribute(PATH_ATTRIB)) {
-                        String path = elem.getAttribute(PATH_ATTRIB);
-                        GeneralRangeIndexSpec valueIdx = new GeneralRangeIndexSpec(namespaces, path, type);
+                        final String path = elem.getAttribute(PATH_ATTRIB);
+                        final GeneralRangeIndexSpec valueIdx = new GeneralRangeIndexSpec(namespaces, path, type);
                         addValueIndex(valueIdx);
                     } else {
-                        String error_message = "Configuration error: element " + elem.getNodeName() +
+                        final String error_message = "Configuration error: element " + elem.getNodeName() +
                             " must have attribute " + PATH_ATTRIB + " or " + QNAME_ATTRIB;
                         throw new DatabaseConfigurationException(error_message);
                     }
@@ -114,7 +114,7 @@ public class IndexSpec {
         // configure custom indexes, but not if broker is null (which means we are reading
         // the default index config from conf.xml)
         if (broker != null)
-            customIndexSpecs = broker.getIndexController().configure(childNodes, namespaces);
+            {customIndexSpecs = broker.getIndexController().configure(childNodes, namespaces);}
     }
 
     /**
@@ -146,7 +146,7 @@ public class IndexSpec {
         if(specs != null) {
             for (int i = 0; i < specs.length; i++) {
                 if(specs[i].matches(path))
-                    return specs[i];
+                    {return specs[i];}
             }
         }
         return null;
@@ -165,8 +165,8 @@ public class IndexSpec {
     }
 
     public List<QName> getIndexedQNames() {
-        ArrayList<QName> qnames = new ArrayList<QName>(8);
-        for (QName qname : qnameSpecs.keySet()) {
+        final ArrayList<QName> qnames = new ArrayList<QName>(8);
+        for (final QName qname : qnameSpecs.keySet()) {
             qnames.add(qname);
         }
         return qnames;
@@ -197,20 +197,20 @@ public class IndexSpec {
      * @return The namespaces map.
      */
     private Map<String, String> getNamespaceMap(Element elem) {
-        Node parent = elem.getParentNode();
+        final Node parent = elem.getParentNode();
         if (parent != null)
-            elem = (Element) parent;
-        HashMap<String, String> map = new HashMap<String, String>();
+            {elem = (Element) parent;}
+        final HashMap<String, String> map = new HashMap<String, String>();
         map.put("xml", Namespaces.XML_NS);
         getNamespaceMap(elem, map);
         return map;
     }
 
     private void getNamespaceMap(Element elem, Map<String, String> map) {
-        NamedNodeMap attrs = elem.getAttributes();
+        final NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
-            Attr attr = (Attr) attrs.item(i);
-            if(attr.getPrefix() != null && attr.getPrefix().equals("xmlns") &&
+            final Attr attr = (Attr) attrs.item(i);
+            if(attr.getPrefix() != null && "xmlns".equals(attr.getPrefix()) &&
             		!attr.getValue().equals(CollectionConfiguration.NAMESPACE)) {
                 map.put(attr.getLocalName(), attr.getValue());
             }
@@ -218,23 +218,23 @@ public class IndexSpec {
         Node child = elem.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE)
-                getNamespaceMap((Element) child, map);
+                {getNamespaceMap((Element) child, map);}
             child = child.getNextSibling();
         }
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         if (ftSpec != null)
-            result.append(ftSpec.toString()).append('\n');
+            {result.append(ftSpec.toString()).append('\n');}
         if (specs!= null) {
             for (int i = 0 ; i < specs.length ; i++) {
-                GeneralRangeIndexSpec spec = specs[i];
+                final GeneralRangeIndexSpec spec = specs[i];
                 if (spec != null)
-                    result.append(spec.toString()).append('\n');
+                    {result.append(spec.toString()).append('\n');}
             }
         }
-        for (QName qName : qnameSpecs.keySet()) {
+        for (final QName qName : qnameSpecs.keySet()) {
             result.append(qnameSpecs.get(qName).toString()).append('\n');
         }
         return result.toString();

@@ -327,20 +327,20 @@ public class XQueryContext implements BinaryValueManager, Context
             throws XPathException
     {
         // the repo and its eXist handler
-        ExistRepository repo = getRepository();
+        final ExistRepository repo = getRepository();
         // try an internal module
-        Module mod = repo.resolveJavaModule(namespace, this);
+        final Module mod = repo.resolveJavaModule(namespace, this);
         if ( mod != null ) {
             return mod;
         }
         // try an eXist-specific module
-        File resolved = repo.resolveXQueryModule(namespace);
+        final File resolved = repo.resolveXQueryModule(namespace);
         // use the resolved file or return null
         if ( resolved == null ) {
             return null;
         }
         // build a module object from the file
-        Source src = new FileSource(resolved, "utf-8", false);
+        final Source src = new FileSource(resolved, "utf-8", false);
         return compileOrBorrowModule(prefix, namespace, "", src);
     }
     // TODO: end of expath repo manageer, may change
@@ -370,19 +370,19 @@ public class XQueryContext implements BinaryValueManager, Context
         this( copyFrom.getAccessContext() );
         this.db = copyFrom.db;
         loadDefaultNS();
-        Iterator<String> prefixes = copyFrom.staticNamespaces.keySet().iterator();
+        final Iterator<String> prefixes = copyFrom.staticNamespaces.keySet().iterator();
 
         while( prefixes.hasNext() ) {
-            String prefix = prefixes.next();
+            final String prefix = prefixes.next();
 
-            if( prefix.equals( "xml" ) || prefix.equals( "xmlns" ) ) {
+            if( "xml".equals(prefix) || "xmlns".equals(prefix) ) {
                 continue;
             }
 
             try {
                 declareNamespace( prefix, copyFrom.staticNamespaces.get( prefix ) );
             }
-            catch( XPathException ex ) {
+            catch( final XPathException ex ) {
                 ex.printStackTrace();
             }
         }
@@ -408,7 +408,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     public XQueryContext copyContext()
     {
-        XQueryContext ctx = new XQueryContext( this );
+        final XQueryContext ctx = new XQueryContext( this );
         copyFields( ctx );
         return( ctx );
     }
@@ -468,20 +468,20 @@ public class XQueryContext implements BinaryValueManager, Context
         // make imported modules available in the new context
         ctx.modules                  = new HashMap<String, Module>();
 
-        for( Module module : this.modules.values() ) {
+        for( final Module module : this.modules.values() ) {
 
             try {
                 ctx.modules.put( module.getNamespaceURI(), module );
-                String prefix = this.staticPrefixes.get( module.getNamespaceURI() );
+                final String prefix = this.staticPrefixes.get( module.getNamespaceURI() );
                 ctx.declareNamespace( prefix, module.getNamespaceURI() );
             }
-            catch( XPathException e ) {
+            catch( final XPathException e ) {
                 // ignore
             }
         }
         ctx.allModules = new HashMap<String, Module>();
 
-        for( Module module : this.allModules.values() ) {
+        for( final Module module : this.allModules.values() ) {
 
             if( module != null ) { //UNDERSTAND: why is it possible? -shabanovd
                 ctx.allModules.put( module.getNamespaceURI(), module );
@@ -515,7 +515,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public void prepareForExecution() {
         //if there is an existing user in the current http session
         //then set the DBBroker user
-    	Subject user = getUserFromHttpSession();
+    	final Subject user = getUserFromHttpSession();
         if(user != null) {
             getBroker().setSubject(user);
         }
@@ -637,7 +637,7 @@ public class XQueryContext implements BinaryValueManager, Context
             uri = "";
         }
 
-        if( prefix.equals( "xml" ) || prefix.equals( "xmlns" ) ) {
+        if( "xml".equals(prefix) || "xmlns".equals(prefix) ) {
             throw( new XPathException( ErrorCodes.XQST0070, "Namespace predefined prefix '" + prefix + "' can not be bound" ) );
         }
 
@@ -678,11 +678,11 @@ public class XQueryContext implements BinaryValueManager, Context
             }
 
             //those prefixes can be rebound to different URIs
-            if(    ( prefix.equals( "xs" )    && Namespaces.SCHEMA_NS.equals( prevURI ) ) 
-                || ( prefix.equals( "xsi" )   && Namespaces.SCHEMA_INSTANCE_NS.equals( prevURI ) ) 
-                || ( prefix.equals( "xdt" )   && Namespaces.XPATH_DATATYPES_NS.equals( prevURI ) ) 
-                || ( prefix.equals( "fn" )    && Namespaces.XPATH_FUNCTIONS_NS.equals( prevURI ) )                  
-                || ( prefix.equals( "local" ) && Namespaces.XQUERY_LOCAL_NS.equals( prevURI ) ) ) {
+            if(    ( "xs".equals(prefix)    && Namespaces.SCHEMA_NS.equals( prevURI ) ) 
+                || ( "xsi".equals(prefix)   && Namespaces.SCHEMA_INSTANCE_NS.equals( prevURI ) ) 
+                || ( "xdt".equals(prefix)   && Namespaces.XPATH_DATATYPES_NS.equals( prevURI ) ) 
+                || ( "fn".equals(prefix)    && Namespaces.XPATH_FUNCTIONS_NS.equals( prevURI ) )                  
+                || ( "local".equals(prefix) && Namespaces.XQUERY_LOCAL_NS.equals( prevURI ) ) ) {
 
                 staticPrefixes.remove( prevURI );
                 staticNamespaces.remove( prefix );
@@ -715,7 +715,7 @@ public class XQueryContext implements BinaryValueManager, Context
         String prefix;
         String uri;
 
-        for( Map.Entry<String, String> entry : namespaceMap.entrySet() ) {
+        for( final Map.Entry<String, String> entry : namespaceMap.entrySet() ) {
             prefix = entry.getKey();
             uri    = entry.getValue();
 
@@ -741,7 +741,7 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         staticPrefixes.remove( uri );
 
-        for( Iterator<String> i = staticNamespaces.values().iterator(); i.hasNext(); ) {
+        for( final Iterator<String> i = staticNamespaces.values().iterator(); i.hasNext(); ) {
 
             if( i.next().equals( uri ) ) {
                 i.remove();
@@ -752,7 +752,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         if( inScopeNamespaces != null ) {
 
-            for( Iterator<String> i = inScopeNamespaces.values().iterator(); i.hasNext(); ) {
+            for( final Iterator<String> i = inScopeNamespaces.values().iterator(); i.hasNext(); ) {
 
                 if( i.next().equals( uri ) ) {
                     i.remove();
@@ -766,7 +766,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         if( inheritedInScopeNamespaces != null ) {
 
-            for( Iterator<String> i = inheritedInScopeNamespaces.values().iterator(); i.hasNext(); ) {
+            for( final Iterator<String> i = inheritedInScopeNamespaces.values().iterator(); i.hasNext(); ) {
 
                 if( i.next().equals( uri ) ) {
                     i.remove();
@@ -1027,7 +1027,7 @@ public class XQueryContext implements BinaryValueManager, Context
         try {
             uriTest = new URI( uri );
         }
-        catch( URISyntaxException e ) {
+        catch( final URISyntaxException e ) {
             throw( new XPathException( "err:XQST0038: Unknown collation : '" + uri + "'" ) );
         }
 
@@ -1104,7 +1104,7 @@ public class XQueryContext implements BinaryValueManager, Context
                 //Initialize to current dateTime
                 calendar = DatatypeFactory.newInstance().newXMLGregorianCalendar( new GregorianCalendar() );
             }
-            catch( DatatypeConfigurationException e ) {
+            catch( final DatatypeConfigurationException e ) {
                 LOG.error( e.getMessage(), e );
             }
         }
@@ -1155,7 +1155,7 @@ public class XQueryContext implements BinaryValueManager, Context
             // no path defined: return all documents in the db
             try {
                 getBroker().getAllXMLResources( ndocs );
-            } catch(PermissionDeniedException pde) {
+            } catch(final PermissionDeniedException pde) {
                 LOG.warn("Permission denied to read resource all resources" + pde.getMessage(), pde);
                 throw new XPathException("Permission denied to read resource all resources" + pde.getMessage(), pde);
             }
@@ -1184,7 +1184,7 @@ public class XQueryContext implements BinaryValueManager, Context
                         }
                     }
                 }
-                catch( PermissionDeniedException e ) {
+                catch( final PermissionDeniedException e ) {
                     LOG.warn( "Permission denied to read resource " + staticDocumentPaths[i] + ". Skipping it." );
                 }
             }
@@ -1199,10 +1199,10 @@ public class XQueryContext implements BinaryValueManager, Context
         ExtendedXMLStreamReader reader;
 
         if( nv.getImplementationType() == NodeValue.IN_MEMORY_NODE ) {
-            NodeImpl node = (NodeImpl)nv;
+            final NodeImpl node = (NodeImpl)nv;
             reader = new InMemoryXMLStreamReader( node.getDocument(), node.getDocument() );
         } else {
-            NodeProxy proxy = (NodeProxy)nv;
+            final NodeProxy proxy = (NodeProxy)nv;
             reader = getBroker().newXMLStreamReader( new NodeProxy( proxy.getDocument(), NodeId.DOCUMENT_NODE, proxy.getDocument().getFirstChildAddress() ), false );
         }
         return( reader );
@@ -1347,7 +1347,7 @@ public class XQueryContext implements BinaryValueManager, Context
             try {
                 Modification.checkFragmentation( this, modifiedDocuments );
             }
-            catch( EXistException e ) {
+            catch( final EXistException e ) {
                 LOG.warn( "Error while checking modified documents: " + e.getMessage(), e );
             }
             modifiedDocuments = null;
@@ -1385,7 +1385,7 @@ public class XQueryContext implements BinaryValueManager, Context
             watchdog.reset();
         }
 
-        for( Module module : modules.values() ) {
+        for( final Module module : modules.values() ) {
             if (module instanceof ExternalModule && ((ModuleContext)((ExternalModule)module).getContext()).getParentContext() != this) {
                 continue;
             }
@@ -1576,7 +1576,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public boolean checkModulesValid()
     {
-    	for (Module module : allModules.values() ) {
+    	for (final Module module : allModules.values() ) {
     		if( !module.isInternalModule() ) {
     			if( !( (ExternalModule)module ).moduleIsValid( getBroker() ) ) {
                     LOG.debug( "Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded" );
@@ -1591,18 +1591,18 @@ public class XQueryContext implements BinaryValueManager, Context
     public void analyzeAndOptimizeIfModulesChanged( Expression expr ) throws XPathException
     {
     	if (analyzed)
-    		return;
+    		{return;}
     	analyzed = true;
-    	for (Module module : expr.getContext().modules.values()) {
+    	for (final Module module : expr.getContext().modules.values()) {
             if( !module.isInternalModule() ) {
-            	Expression root = ((ExternalModule)module).getRootExpression();
+            	final Expression root = ((ExternalModule)module).getRootExpression();
             	((ExternalModule)module).getContext().analyzeAndOptimizeIfModulesChanged(root);
             }
     	}
         expr.analyze( new AnalyzeContextInfo() );
 
         if( optimizationsEnabled() ) {
-            Optimizer optimizer = new Optimizer( this );
+            final Optimizer optimizer = new Optimizer( this );
             expr.accept( optimizer );
 
             if( optimizer.hasOptimized() ) {
@@ -1629,7 +1629,7 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         Module module = null;
         if (namespaceURI != null)
-            module = getModule( namespaceURI );
+            {module = getModule( namespaceURI );}
 
         if( module != null ) {
 //          LOG.debug("module " + namespaceURI + " is already present");
@@ -1647,7 +1647,7 @@ public class XQueryContext implements BinaryValueManager, Context
         try {
 
             // lookup the class
-            Class<?> mClass = Class.forName( moduleClass );
+            final Class<?> mClass = Class.forName( moduleClass );
 
             if( !( Module.class.isAssignableFrom( mClass ) ) ) {
                 LOG.info( "failed to load module. " + moduleClass + " is not an instance of org.exist.xquery.Module." );
@@ -1658,7 +1658,7 @@ public class XQueryContext implements BinaryValueManager, Context
              module = instantiateModule( namespaceURI, (Class<Module>)mClass, (Map<String, Map<String, List<? extends Object>>>) getBroker().getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
             //LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
         }
-        catch( ClassNotFoundException e ) {
+        catch( final ClassNotFoundException e ) {
             LOG.warn( "module class " + moduleClass + " not found. Skipping..." );
         }
         return( module );
@@ -1670,7 +1670,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         try {
 
-            Constructor<Module> cnstr = mClass.getConstructor(Map.class);
+            final Constructor<Module> cnstr = mClass.getConstructor(Map.class);
             
             module = cnstr.newInstance(moduleParameters.get(namespaceURI));
 
@@ -1685,15 +1685,15 @@ public class XQueryContext implements BinaryValueManager, Context
 
             modules.put(module.getNamespaceURI(), module);
             allModules.put(module.getNamespaceURI(), module);
-        } catch(InstantiationException ie) {
+        } catch(final InstantiationException ie) {
             LOG.warn("error while instantiating module class " + mClass.getName(), ie);
-        } catch(IllegalAccessException iae) {
+        } catch(final IllegalAccessException iae) {
             LOG.warn("error while instantiating module class " + mClass.getName(), iae);
-        } catch(XPathException xpe) {
+        } catch(final XPathException xpe) {
             LOG.warn("error while instantiating module class " + mClass.getName(), xpe);
-        } catch(NoSuchMethodException nsme) {
+        } catch(final NoSuchMethodException nsme) {
             LOG.warn("error while instantiating module class " + mClass.getName(), nsme);
-        } catch(InvocationTargetException ite) {
+        } catch(final InvocationTargetException ite) {
             LOG.warn("error while instantiating module class " + mClass.getName(), ite);
         }
         
@@ -1723,7 +1723,7 @@ public class XQueryContext implements BinaryValueManager, Context
         // TODO: redeclaring functions should be forbidden. however, throwing an
         // exception will currently break util:eval.
     	
-    	QName name = function.getSignature().getName();
+    	final QName name = function.getSignature().getName();
     	
         if(Namespaces.XML_NS.equals(name.getNamespaceURI())) {
             throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.XML_NS + "'" );
@@ -1765,17 +1765,17 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public UserDefinedFunction resolveFunction( QName name, int argCount ) throws XPathException
     {
-        FunctionId          id   = new FunctionId( name, argCount );
-        UserDefinedFunction func = declaredFunctions.get( id );
+        final FunctionId          id   = new FunctionId( name, argCount );
+        final UserDefinedFunction func = declaredFunctions.get( id );
         return( func );
     }
 
 
     public Iterator<FunctionSignature> getSignaturesForFunction( QName name )
     {
-        ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>( 2 );
+        final ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>( 2 );
 
-        for( UserDefinedFunction func : declaredFunctions.values() ) {
+        for( final UserDefinedFunction func : declaredFunctions.values() ) {
 
             if( func.getName().equals( name ) ) {
                 signatures.add( func.getSignature() );
@@ -1855,13 +1855,13 @@ public class XQueryContext implements BinaryValueManager, Context
     public Variable declareVariable( QName qn, Object value ) throws XPathException
     {
         Variable var;
-        Module   module = getModule( qn.getNamespaceURI() );
+        final Module   module = getModule( qn.getNamespaceURI() );
 
         if( module != null ) {
             var = module.declareVariable( qn, value );
             return( var );
         }
-        Sequence val = XPathUtil.javaObjectToXPath( value, this );
+        final Sequence val = XPathUtil.javaObjectToXPath( value, this );
         var = globalVariables.get( qn );
 
         if( var == null ) {
@@ -1920,7 +1920,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public Variable resolveVariable( String name ) throws XPathException
     {
-        QName qn = QName.parse( this, name, null );
+        final QName qn = QName.parse( this, name, null );
         return( resolveVariable( qn ) );
     }
 
@@ -1943,7 +1943,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         // check if the variable is declared in a module
         if( var == null ) {
-            Module module = getModule( qname.getNamespaceURI() );
+            final Module module = getModule( qname.getNamespaceURI() );
 
             if( module != null ) {
                 var = module.resolveVariable( qname );
@@ -1963,7 +1963,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     protected Variable resolveLocalVariable( QName qname ) throws XPathException
     {
-        LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
+        final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
 
         for( LocalVariable var = lastVar; var != null; var = var.before ) {
 
@@ -1981,7 +1981,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     public boolean isVarDeclared( QName qname )
     {
-        Module module = getModule( qname.getNamespaceURI() );
+        final Module module = getModule( qname.getNamespaceURI() );
 
         if( module != null ) {
 
@@ -1995,11 +1995,11 @@ public class XQueryContext implements BinaryValueManager, Context
 
     public Map<QName, Variable> getVariables()
     {
-        Map<QName, Variable> variables = new HashMap<QName, Variable>();
+        final Map<QName, Variable> variables = new HashMap<QName, Variable>();
 
         variables.putAll( globalVariables );
 
-        LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable)contextStack.peek();
+        final LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable)contextStack.peek();
 
         for( LocalVariable var = lastVar; var != null; var = var.before ) {
 
@@ -2014,9 +2014,9 @@ public class XQueryContext implements BinaryValueManager, Context
     }
 
     public Map<QName, Variable> getLocalVariables() {
-        Map<QName, Variable> variables = new HashMap<QName, Variable>();
+        final Map<QName, Variable> variables = new HashMap<QName, Variable>();
 
-        LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable)contextStack.peek();
+        final LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable)contextStack.peek();
 
         for ( LocalVariable var = lastVar; var != null; var = var.before ) {
 
@@ -2037,9 +2037,9 @@ public class XQueryContext implements BinaryValueManager, Context
      * @return currently visible local variables as a stack
      */
     public List<Variable> getLocalStack() {
-    	List<Variable> variables = new ArrayList<Variable>(10);
+    	final List<Variable> variables = new ArrayList<Variable>(10);
     	
-    	LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
+    	final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
 
         for ( LocalVariable var = lastVar; var != null; var = var.before ) {
 
@@ -2054,7 +2054,7 @@ public class XQueryContext implements BinaryValueManager, Context
     }
     
     public Map<QName, Variable> getGlobalVariables() {
-        Map<QName, Variable> variables = new HashMap<QName, Variable>();
+        final Map<QName, Variable> variables = new HashMap<QName, Variable>();
 
         variables.putAll( globalVariables );
 
@@ -2068,7 +2068,7 @@ public class XQueryContext implements BinaryValueManager, Context
      * @throws XPathException
      */
     public void restoreStack(List<Variable> stack) throws XPathException {
-    	for (Variable var : stack) {
+    	for (final Variable var : stack) {
     		declareVariableBinding((LocalVariable) var);
     	}
     }
@@ -2146,7 +2146,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public Subject getUserFromHttpSession()
     {
-        RequestModule myModule = (RequestModule)getModule( RequestModule.NAMESPACE_URI );
+        final RequestModule myModule = (RequestModule)getModule( RequestModule.NAMESPACE_URI );
 
         //Sanity check : one may *not* want to bind the module !
         if( myModule == null ) {
@@ -2158,24 +2158,24 @@ public class XQueryContext implements BinaryValueManager, Context
         try {
             var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
         }
-        catch( XPathException xpe ) {
+        catch( final XPathException xpe ) {
             return( null );
         }
 
         if( ( var != null ) && ( var.getValue() != null ) ) {
 
             if( var.getValue().getItemType() == Type.JAVA_OBJECT ) {
-                JavaObjectValue reqValue = (JavaObjectValue)var.getValue().itemAt( 0 );
+                final JavaObjectValue reqValue = (JavaObjectValue)var.getValue().itemAt( 0 );
 
                 if( reqValue.getObject() instanceof RequestWrapper) {
-                    RequestWrapper req = (RequestWrapper) reqValue.getObject();
-                    Object user = req.getAttribute(HTTP_REQ_ATTR_USER);
-                    Object passAttr = req.getAttribute(HTTP_REQ_ATTR_PASS);
+                    final RequestWrapper req = (RequestWrapper) reqValue.getObject();
+                    final Object user = req.getAttribute(HTTP_REQ_ATTR_USER);
+                    final Object passAttr = req.getAttribute(HTTP_REQ_ATTR_PASS);
                     if (user != null) {
-                        String password = passAttr == null ? null : passAttr.toString();
+                        final String password = passAttr == null ? null : passAttr.toString();
                         try {
                             return getBroker().getBrokerPool().getSecurityManager().authenticate(user.toString(), password);
-                        } catch (AuthenticationException e) {
+                        } catch (final AuthenticationException e) {
                             LOG.error("User can not be authenticated: " + user.toString());
                         }
                     } else {
@@ -2481,8 +2481,8 @@ public class XQueryContext implements BinaryValueManager, Context
     public void pushInScopeNamespaces( boolean inherit )
     {
         //TODO : push into an inheritedInScopeNamespaces HashMap... and return an empty HashMap
-        HashMap<String, String> m = (HashMap)inScopeNamespaces.clone();
-        HashMap<String, String> p = (HashMap)inScopePrefixes.clone();
+        final HashMap<String, String> m = (HashMap)inScopeNamespaces.clone();
+        final HashMap<String, String> p = (HashMap)inScopePrefixes.clone();
         namespaceStack.push( inheritedInScopeNamespaces );
         namespaceStack.push( inheritedInScopePrefixes );
         namespaceStack.push( inScopeNamespaces );
@@ -2567,7 +2567,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public void popLocalVariables(LocalVariable var, Sequence resultSeq)
     {
-        LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
+        final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
 
         for( LocalVariable old = lastVar; old != null; old = old.before ) {
 
@@ -2576,7 +2576,7 @@ public class XQueryContext implements BinaryValueManager, Context
             }
             // reset variable unless it is a closure variable (inherited from context)
             if (!old.isClosureVar())
-                old.destroy(this, resultSeq);
+                {old.destroy(this, resultSeq);}
         }
         if( var != null ) {
             var.after = null;
@@ -2657,7 +2657,7 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public Module importModule( String namespaceURI, String prefix, String location ) throws XPathException {
     	
-        if(prefix != null && (prefix.equals("xml") || prefix.equals("xmlns"))) {
+        if(prefix != null && ("xml".equals(prefix) || "xmlns".equals(prefix))) {
             throw new XPathException(ErrorCodes.XQST0070, "The prefix declared for a module import must not be 'xml' or 'xmlns'.");
         }
         
@@ -2668,7 +2668,7 @@ public class XQueryContext implements BinaryValueManager, Context
         Module module = null;
 
         if (namespaceURI != null)
-            module = getRootModule( namespaceURI );
+            {module = getRootModule( namespaceURI );}
 
         if( module != null ) {
             LOG.debug( "Module " + namespaceURI + " already present." );
@@ -2714,7 +2714,7 @@ public class XQueryContext implements BinaryValueManager, Context
                             XmldbURI locationUri = XmldbURI.xmldbUriFor( location );
 
                             if( moduleLoadPath.startsWith( XmldbURI.XMLDB_URI_PREFIX ) ) {
-                                XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor( moduleLoadPath );
+                                final XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor( moduleLoadPath );
                                 locationUri = moduleLoadPathUri.resolveCollectionPath( locationUri );
                             }
 
@@ -2727,7 +2727,7 @@ public class XQueryContext implements BinaryValueManager, Context
                                     throw moduleLoadException("Module location hint URI '" + location + " does not refer to anything.", location);
                                 }
 
-                                if(( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !sourceDoc.getMetadata().getMimeType().equals( "application/xquery" )) {
+                                if(( sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ) || !"application/xquery".equals(sourceDoc.getMetadata().getMimeType())) {
                                     throw moduleLoadException("Module location hint URI '" + location + " does not refer to an XQuery.", location);
                                 }
 
@@ -2799,7 +2799,7 @@ public class XQueryContext implements BinaryValueManager, Context
     @SuppressWarnings( "unchecked" )
     public String getModuleLocation( String namespaceURI )
     {
-        Map<String, String> moduleMap = (Map)getBroker().getConfiguration().getProperty( PROPERTY_STATIC_MODULE_MAP );
+        final Map<String, String> moduleMap = (Map)getBroker().getConfiguration().getProperty( PROPERTY_STATIC_MODULE_MAP );
         return( moduleMap.get( namespaceURI ) );
     }
 
@@ -2812,7 +2812,7 @@ public class XQueryContext implements BinaryValueManager, Context
     @SuppressWarnings( "unchecked" )
     public Iterator<String> getMappedModuleURIs()
     {
-        Map<String, String> moduleMap = (Map)getBroker().getConfiguration().getProperty( PROPERTY_STATIC_MODULE_MAP );
+        final Map<String, String> moduleMap = (Map)getBroker().getConfiguration().getProperty( PROPERTY_STATIC_MODULE_MAP );
         return( moduleMap.keySet().iterator() );
     }
 
@@ -2825,8 +2825,8 @@ public class XQueryContext implements BinaryValueManager, Context
             module = compileModule( prefix, namespaceURI, location, source );
         } else {
 
-            for( Iterator<Module> it = module.getContext().getAllModules(); it.hasNext(); ) {
-                Module importedModule = it.next();
+            for( final Iterator<Module> it = module.getContext().getAllModules(); it.hasNext(); ) {
+                final Module importedModule = it.next();
 
                 if( ( importedModule != null ) && !allModules.containsKey( importedModule.getNamespaceURI() ) ) {
                     setRootModule( importedModule.getNamespaceURI(), importedModule );
@@ -2866,22 +2866,22 @@ public class XQueryContext implements BinaryValueManager, Context
             }
 
             if (namespaceURI == null) {
-                QName qname = source.isModule();
+                final QName qname = source.isModule();
                 if (qname == null)
-                    return null;
+                    {return null;}
                 namespaceURI = qname.getNamespaceURI();
             }
         }
-        catch( IOException e ) {
+        catch( final IOException e ) {
             throw( new XPathException( "IO exception while loading module '" + namespaceURI + "' from '" + source + "'", e ) );
         }
-        ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
+        final ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
         setModule(namespaceURI, modExternal);
-        XQueryContext    modContext = new ModuleContext( this, prefix, namespaceURI, location );
+        final XQueryContext    modContext = new ModuleContext( this, prefix, namespaceURI, location );
         modExternal.setContext( modContext );
-        XQueryLexer      lexer      = new XQueryLexer( modContext, reader );
-        XQueryParser     parser     = new XQueryParser( lexer );
-        XQueryTreeParser astParser  = new XQueryTreeParser( modContext, modExternal );
+        final XQueryLexer      lexer      = new XQueryLexer( modContext, reader );
+        final XQueryParser     parser     = new XQueryParser( lexer );
+        final XQueryTreeParser astParser  = new XQueryTreeParser( modContext, modExternal );
 
         try {
             parser.xpath();
@@ -2890,9 +2890,9 @@ public class XQueryContext implements BinaryValueManager, Context
                 LOG.debug( parser.getErrorMessage() );
                 throw( new XPathException( "error found while loading module from " + location + ": " + parser.getErrorMessage() ) );
             }
-            AST      ast  = parser.getAST();
+            final AST      ast  = parser.getAST();
 
-            PathExpr path = new PathExpr( modContext );
+            final PathExpr path = new PathExpr( modContext );
             astParser.xpath( ast, path );
 
             if( astParser.foundErrors() ) {
@@ -2917,17 +2917,17 @@ public class XQueryContext implements BinaryValueManager, Context
             modExternal.setIsReady(true);
             return( modExternal );
         }
-        catch( RecognitionException e ) {
+        catch( final RecognitionException e ) {
             throw( new XPathException( e.getLine(), e.getColumn(), "error found while loading module from " + location + ": " + e.getMessage() ) );
         }
-        catch( TokenStreamException e ) {
+        catch( final TokenStreamException e ) {
             throw( new XPathException( "error found while loading module from " + location + ": " + e.getMessage(), e ) );
         }
-        catch( XPathException e ) {
+        catch( final XPathException e ) {
             e.prependMessage( "Error while loading module " + location + ": " );
             throw( e );
         }
-        catch( Exception e ) {
+        catch( final Exception e ) {
         	e.printStackTrace();
             throw( new XPathException( "Internal error while loading module: " + location, e ) );
         }
@@ -2939,7 +2939,7 @@ public class XQueryContext implements BinaryValueManager, Context
                     reader.close();
                 }
             }
-            catch( IOException e ) {
+            catch( final IOException e ) {
                 LOG.warn( "Error while closing module source: " + e.getMessage(), e );
             }
         }
@@ -2948,10 +2948,10 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private void declareModuleVars( Module module )
     {
-        String moduleNS = module.getNamespaceURI();
+        final String moduleNS = module.getNamespaceURI();
 
-        for( Iterator<Variable> i = globalVariables.values().iterator(); i.hasNext(); ) {
-            Variable var = i.next();
+        for( final Iterator<Variable> i = globalVariables.values().iterator(); i.hasNext(); ) {
+            final Variable var = i.next();
 
             if( moduleNS.equals( var.getQName().getNamespaceURI() ) ) {
                 module.declareVariable( var );
@@ -2980,8 +2980,8 @@ public class XQueryContext implements BinaryValueManager, Context
     public void resolveForwardReferences() throws XPathException
     {
         while( !forwardReferences.empty() ) {
-            FunctionCall        call = forwardReferences.pop();
-            UserDefinedFunction func = call.getContext().resolveFunction( call.getQName(), call.getArgumentCount() );
+            final FunctionCall        call = forwardReferences.pop();
+            final UserDefinedFunction func = call.getContext().resolveFunction( call.getQName(), call.getArgumentCount() );
 
             if( func == null ) {
                 throw( new XPathException( call, ErrorCodes.XPST0017, "Call to undeclared function: " + call.getQName().getStringValue() ) );
@@ -3089,9 +3089,9 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private void addOption( List<Option> options, String qnameString, String contents ) throws XPathException
     {
-        QName  qn     = QName.parse( this, qnameString, defaultFunctionNamespace );
+        final QName  qn     = QName.parse( this, qnameString, defaultFunctionNamespace );
 
-        Option option = new Option( qn, contents );
+        final Option option = new Option( qn, contents );
 
         //if the option exists, remove it so we can add the new option
         for( int i = 0; i < options.size(); i++ ) {
@@ -3115,10 +3115,10 @@ public class XQueryContext implements BinaryValueManager, Context
         } else if( Option.OUTPUT_SIZE_QNAME.compareTo( qn ) == 0 ) {
             watchdog.setMaxNodesFromOption( option );
         } else if( Option.OPTIMIZE_QNAME.compareTo( qn ) == 0 ) {
-            String[] params = option.tokenizeContents();
+            final String[] params = option.tokenizeContents();
 
             if( params.length > 0 ) {
-                String[] param = Option.parseKeyValuePair( params[0] );
+                final String[] param = Option.parseKeyValuePair( params[0] );
 
                 if( param != null && "enable".equals( param[0] ) ) {
 
@@ -3134,12 +3134,12 @@ public class XQueryContext implements BinaryValueManager, Context
         else if( Option.OPTIMIZE_IMPLICIT_TIMEZONE.compareTo( qn ) == 0 ) {
 
             //TODO : error check
-            Duration duration = TimeUtils.getInstance().newDuration( option.getContents() );
+            final Duration duration = TimeUtils.getInstance().newDuration( option.getContents() );
             implicitTimeZone = new SimpleTimeZone( (int)duration.getTimeInMillis( new Date() ), "XQuery context" );
         } else if( Option.CURRENT_DATETIME.compareTo( qn ) == 0 ) {
 
             //TODO : error check
-            DateTimeValue dtv = new DateTimeValue( option.getContents() );
+            final DateTimeValue dtv = new DateTimeValue( option.getContents() );
             calendar = (XMLGregorianCalendar)dtv.calendar.clone();
         }
     }
@@ -3154,7 +3154,7 @@ public class XQueryContext implements BinaryValueManager, Context
          */
         if( dynamicOptions != null ) {
 
-            for( Option option : dynamicOptions ) {
+            for( final Option option : dynamicOptions ) {
 
                 if( qname.compareTo( option.getQName() ) == 0 ) {
                     return( option );
@@ -3164,7 +3164,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         if( staticOptions != null ) {
 
-            for( Option option : staticOptions ) {
+            for( final Option option : staticOptions ) {
 
                 if( qname.compareTo( option.getQName() ) == 0 ) {
                     return( option );
@@ -3178,7 +3178,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     public Pragma getPragma( String name, String contents ) throws XPathException
     {
-        QName qname = QName.parse( this, name );
+        final QName qname = QName.parse( this, name );
 
         if( "".equals( qname.getNamespaceURI() ) ) {
             throw( new XPathException( "XPST0081: pragma's ('" + name + "') namespace URI is empty" ) );
@@ -3221,7 +3221,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public DocumentImpl storeTemporaryDoc( org.exist.memtree.DocumentImpl doc ) throws XPathException
     {
         try {
-            DocumentImpl targetDoc = getBroker().storeTempResource( doc );
+            final DocumentImpl targetDoc = getBroker().storeTempResource( doc );
 
             if( targetDoc == null ) {
                 throw( new XPathException( "Internal error: failed to store temporary doc fragment" ) );
@@ -3229,13 +3229,13 @@ public class XQueryContext implements BinaryValueManager, Context
             LOG.warn( "Stored: " + targetDoc.getDocId() + ": " + targetDoc.getURI(), new Throwable() );
             return( targetDoc );
         }
-        catch( EXistException e ) {
+        catch( final EXistException e ) {
             throw( new XPathException( TEMP_STORE_ERROR, e ) );
         }
-        catch( PermissionDeniedException e ) {
+        catch( final PermissionDeniedException e ) {
             throw( new XPathException( TEMP_STORE_ERROR, e ) );
         }
-        catch( LockException e ) {
+        catch( final LockException e ) {
             throw( new XPathException( TEMP_STORE_ERROR, e ) );
         }
     }
@@ -3305,30 +3305,30 @@ public class XQueryContext implements BinaryValueManager, Context
         
         // Switch: enable optimizer
         Object param = config.getProperty( PROPERTY_ENABLE_QUERY_REWRITING );
-        enableOptimizer     = ( param != null ) && param.toString().equals( "yes" );
+        enableOptimizer     = ( param != null ) && "yes".equals(param.toString());
 
         // Switch: Backward compatibility
         param = config.getProperty( PROPERTY_XQUERY_BACKWARD_COMPATIBLE );
-        backwardsCompatible = ( param == null ) || param.toString().equals( "yes" );
+        backwardsCompatible = ( param == null ) || "yes".equals(param.toString());
 
         // Switch: raiseErrorOnFailedRetrieval
-        Boolean option = ( (Boolean)config.getProperty( PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL ) );
+        final Boolean option = ( (Boolean)config.getProperty( PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL ) );
         raiseErrorOnFailedRetrieval = ( option != null ) && option.booleanValue();
 
         // Get map of built-in modules
-        Map<String, Class<Module>> builtInModules = (Map)config.getProperty( PROPERTY_BUILT_IN_MODULES );
+        final Map<String, Class<Module>> builtInModules = (Map)config.getProperty( PROPERTY_BUILT_IN_MODULES );
 
         if( builtInModules != null ) {
 
             // Iterate on all map entries
-            for( Map.Entry<String, Class<Module>> entry : builtInModules.entrySet() ) {
+            for( final Map.Entry<String, Class<Module>> entry : builtInModules.entrySet() ) {
 
                 // Get URI and class
-                String        namespaceURI = entry.getKey();
-                Class<Module> moduleClass  = entry.getValue();
+                final String        namespaceURI = entry.getKey();
+                final Class<Module> moduleClass  = entry.getValue();
                 
                 // first check if the module has already been loaded in the parent context
-                Module        module       = getModule( namespaceURI );
+                final Module        module       = getModule( namespaceURI );
 
                 if( module == null ) {
                     // Module does not exist yet, instantiate
@@ -3342,7 +3342,7 @@ public class XQueryContext implements BinaryValueManager, Context
                     try {
                         declareNamespace( module.getDefaultPrefix(), module.getNamespaceURI() );
                         
-                    } catch( XPathException e ) {
+                    } catch( final XPathException e ) {
                         LOG.warn( "Internal error while loading default modules: " + e.getMessage(), e );
                     }
                 }
@@ -3374,7 +3374,7 @@ public class XQueryContext implements BinaryValueManager, Context
             //TODO : include "err" namespace ?
             declareNamespace( "dbgp", Debuggee.NAMESPACE_URI );
 
-        } catch( XPathException e ) {
+        } catch( final XPathException e ) {
             //ignored because it should never happen
             LOG.debug(e);
         }
@@ -3385,7 +3385,7 @@ public class XQueryContext implements BinaryValueManager, Context
     {
         if( updateListener == null ) {
             updateListener = new ContextUpdateListener();
-            DBBroker broker = getBroker();
+            final DBBroker broker = getBroker();
             broker.getBrokerPool().getNotificationService().subscribe( updateListener );
         }
         updateListener.addListener( listener );
@@ -3395,7 +3395,7 @@ public class XQueryContext implements BinaryValueManager, Context
     protected void clearUpdateListeners()
     {
         if( updateListener != null ) {
-            DBBroker broker = getBroker();
+            final DBBroker broker = getBroker();
             broker.getBrokerPool().getNotificationService().unsubscribe( updateListener );
         }
         updateListener = null;
@@ -3412,7 +3412,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public void checkOptions(Properties properties) throws XPathException {
         checkLegacyOptions(properties);
         if(dynamicOptions != null) {
-            for(Option option : dynamicOptions) {
+            for(final Option option : dynamicOptions) {
                 if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
                     properties.put(option.getQName().getLocalName(), option.getContents());
                 }
@@ -3420,10 +3420,10 @@ public class XQueryContext implements BinaryValueManager, Context
         }
 
         if( staticOptions != null ) {
-            for(Option option : staticOptions) {
+            for(final Option option : staticOptions) {
                 if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
                     if (!properties.containsKey(option.getQName().getLocalName()))
-                        properties.put(option.getQName().getLocalName(), option.getContents());
+                        {properties.put(option.getQName().getLocalName(), option.getContents());}
                 }
             }
         }
@@ -3437,15 +3437,15 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     private void checkLegacyOptions( Properties properties ) throws XPathException
     {
-        Option pragma = getOption( Option.SERIALIZE_QNAME );
+        final Option pragma = getOption( Option.SERIALIZE_QNAME );
 
         if( pragma == null ) {
             return;
         }
-        String[] contents = pragma.tokenizeContents();
+        final String[] contents = pragma.tokenizeContents();
 
         for( int i = 0; i < contents.length; i++ ) {
-            String[] pair = Option.parseKeyValuePair( contents[i] );
+            final String[] pair = Option.parseKeyValuePair( contents[i] );
 
             if( pair == null ) {
                 throw( new XPathException( "Unknown parameter found in "
@@ -3501,7 +3501,7 @@ public class XQueryContext implements BinaryValueManager, Context
             for(final BinaryValue bv : binaryValueInstances) {
                 try {
                     bv.close();
-                } catch (IOException ioe) {
+                } catch (final IOException ioe) {
                     LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
                 }
             }
@@ -3512,7 +3512,7 @@ public class XQueryContext implements BinaryValueManager, Context
     public void destroyBinaryValue(BinaryValue value) {
         if (binaryValueInstances != null) {
             for (int i = binaryValueInstances.size() - 1; i > -1; i--) {
-                BinaryValue bv = binaryValueInstances.get(i);
+                final BinaryValue bv = binaryValueInstances.get(i);
                 if (bv == value) {
                     binaryValueInstances.remove(i);
                     return;
@@ -3558,7 +3558,7 @@ public class XQueryContext implements BinaryValueManager, Context
         public void documentUpdated( DocumentImpl document, int event )
         {
 			synchronized( listeners ) { // TODO field must be final?
-	            for( UpdateListener listener : listeners ) {
+	            for( final UpdateListener listener : listeners ) {
 	
 	                if( listener != null ) {
 	                    listener.documentUpdated( document, event );
@@ -3571,7 +3571,7 @@ public class XQueryContext implements BinaryValueManager, Context
         public void unsubscribe()
         {
 			synchronized( listeners ) { // TODO field must be final?
-	            for( UpdateListener listener : listeners ) {
+	            for( final UpdateListener listener : listeners ) {
 	
 	                if( listener != null ) {
 	                    listener.unsubscribe();
@@ -3585,7 +3585,7 @@ public class XQueryContext implements BinaryValueManager, Context
         public void nodeMoved( NodeId oldNodeId, StoredNode newNode )
         {
             for( int i = 0; i < listeners.size(); i++ ) {
-                UpdateListener listener = (UpdateListener)listeners.get( i );
+                final UpdateListener listener = (UpdateListener)listeners.get( i );
 
                 if( listener != null ) {
                     listener.nodeMoved( oldNodeId, newNode );

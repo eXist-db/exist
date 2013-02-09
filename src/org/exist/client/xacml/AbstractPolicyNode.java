@@ -43,7 +43,7 @@ public abstract class AbstractPolicyNode extends PolicyElementNode implements Po
 	public void setCombiningAlgorithm(CombiningAlgorithm algorithm)
 	{
 		if(algorithm == null)
-			throw new NullPointerException("Combining algorithm cannot be null");
+			{throw new NullPointerException("Combining algorithm cannot be null");}
 		this.algorithm = algorithm;
 		fireChanged();
 	}
@@ -69,8 +69,8 @@ public abstract class AbstractPolicyNode extends PolicyElementNode implements Po
 	public void setDocumentName(String documentName)
 	{
 		if(this.documentName == null)
-			this.documentName = documentName;
+			{this.documentName = documentName;}
 		else
-			throw new IllegalStateException("Document name has already been set");
+			{throw new IllegalStateException("Document name has already been set");}
 	}
 }

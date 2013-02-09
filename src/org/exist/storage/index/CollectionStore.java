@@ -85,9 +85,9 @@ public class CollectionStore extends BFile {
     protected void dumpValue(Writer writer, Value value) throws IOException {
         //TODO : what does this 5 stand for ?
         if (value.getLength() == 5 + Collection.LENGTH_COLLECTION_ID) {
-            short collectionId = ByteConversion.byteToShort(value.data(), value.start());
+            final short collectionId = ByteConversion.byteToShort(value.data(), value.start());
             //TODO : what does this 1 stand for ?
-            int docId = ByteConversion.byteToInt(value.data(), value.start() + 1 + Collection.LENGTH_COLLECTION_ID);
+            final int docId = ByteConversion.byteToInt(value.data(), value.start() + 1 + Collection.LENGTH_COLLECTION_ID);
             writer.write('[');
             writer.write("Document: collection = ");
             writer.write(collectionId);

@@ -35,9 +35,9 @@ public abstract class Annotations {
     //workaround
     static {
     	try {
-			Class<?> clazz = Class.forName("org.exist.xquery.xUnit.Annotations");
+			final Class<?> clazz = Class.forName("org.exist.xquery.xUnit.Annotations");
 			clazz.newInstance();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 		}
     }
     
@@ -46,9 +46,9 @@ public abstract class Annotations {
     }
     
     public static AnnotationTrigger getTrigger(Annotation ann) {
-    	Annotations anns = ns.get(ann.getName().getNamespaceURI());
+    	final Annotations anns = ns.get(ann.getName().getNamespaceURI());
     	
-    	if (anns == null) return null;
+    	if (anns == null) {return null;}
     	
     	return anns.getTrigger(ann.getName().getLocalName(), ann);
     }

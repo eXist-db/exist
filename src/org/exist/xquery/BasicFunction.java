@@ -46,20 +46,20 @@ public abstract class BasicFunction extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
         
 		final int argCount = getArgumentCount();
-		Sequence[] args = new Sequence[argCount];
+		final Sequence[] args = new Sequence[argCount];
 		for (int i = 0; i < argCount; i++) {
             try {
                 args[i] = getArgument(i).eval(contextSequence, contextItem);
-            } catch (XPathException e) {
+            } catch (final XPathException e) {
                 e.prependMessage(
                     ErrorCodes.XPTY0004, 
                     "checking function parameter " + (i + 1) + " in call " + ExpressionDumper.dump(this) + ": ");
@@ -67,10 +67,10 @@ public abstract class BasicFunction extends Function {
             }
         }
 		       
-        Sequence result = eval(args, contextSequence);
+        final Sequence result = eval(args, contextSequence);
         
         if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", result);   
+            {context.getProfiler().end(this, "", result);}   
      
         return result;        
 	}

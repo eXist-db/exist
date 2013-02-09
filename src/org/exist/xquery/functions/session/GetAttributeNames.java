@@ -69,28 +69,28 @@ public class GetAttributeNames extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		
-		SessionModule myModule = (SessionModule) context.getModule(SessionModule.NAMESPACE_URI);
+		final SessionModule myModule = (SessionModule) context.getModule(SessionModule.NAMESPACE_URI);
 
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
+		final Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException(this, "Session not set");
+			{throw new XPathException(this, "Session not set");}
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(this, "Variable $session is not bound to an Java object.");
-		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+			{throw new XPathException(this, "Variable $session is not bound to an Java object.");}
+		final JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		if(session.getObject() instanceof SessionWrapper)
 		{
-			ValueSequence result = new ValueSequence();
-			SessionWrapper sessionWrapper = (SessionWrapper)session.getObject();
-			for(Enumeration<String> e = sessionWrapper.getAttributeNames(); e.hasMoreElements();)
+			final ValueSequence result = new ValueSequence();
+			final SessionWrapper sessionWrapper = (SessionWrapper)session.getObject();
+			for(final Enumeration<String> e = sessionWrapper.getAttributeNames(); e.hasMoreElements();)
 			{
-				String attribName = e.nextElement();
+				final String attribName = e.nextElement();
 				result.add(new StringValue(attribName));
 			}
 			return result;
 		}
 		else
-			throw new XPathException(this, "Type error: variable $session is not bound to a session object");
+			{throw new XPathException(this, "Type error: variable $session is not bound to a session object");}
 	}
 }

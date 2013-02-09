@@ -66,21 +66,21 @@ public class GetID extends Function
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
-		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
+		final SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
 		/* session object is read from global variable $session */
-		Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
+		final Variable var = myModule.resolveVariable(SessionModule.SESSION_VAR);
 		if(var == null || var.getValue() == null)
-			throw new XPathException(this, "Session not set");
+			{throw new XPathException(this, "Session not set");}
 		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(this, "Variable $session is not bound to an Java object.");
-		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+			{throw new XPathException(this, "Variable $session is not bound to an Java object.");}
+		final JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		if(session.getObject() instanceof SessionWrapper)
 		{
-			String id = ((SessionWrapper)session.getObject()).getId();
+			final String id = ((SessionWrapper)session.getObject()).getId();
 			if (id == null)
-				return Sequence.EMPTY_SEQUENCE;
+				{return Sequence.EMPTY_SEQUENCE;}
 			return(new StringValue(id));
 		}
 		else

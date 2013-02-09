@@ -68,48 +68,48 @@ public class DynamicTextConstructor extends NodeConstructor {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
         if (newDocumentContext)
-            context.pushDocumentContext();
+            {context.pushDocumentContext();}
         
         Sequence result;
         try {
-            Sequence contentSeq = content.eval(contextSequence, contextItem);
+            final Sequence contentSeq = content.eval(contextSequence, contextItem);
 
             if(contentSeq.isEmpty())
-            	result = Sequence.EMPTY_SEQUENCE;
+            	{result = Sequence.EMPTY_SEQUENCE;}
             else {
-                MemTreeBuilder builder = context.getDocumentBuilder();
+                final MemTreeBuilder builder = context.getDocumentBuilder();
                 context.proceed(this, builder);
-                StringBuilder buf = new StringBuilder();
-                for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+                final StringBuilder buf = new StringBuilder();
+                for(final SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
-                    Item next = i.nextItem();
+                    final Item next = i.nextItem();
                     if(buf.length() > 0)
-                        buf.append(' ');
+                        {buf.append(' ');}
                     buf.append(next.toString());
                 }
                 //It is possible for a text node constructor to construct a text node containing a zero-length string.
                 //However, if used in the content of a constructed element or document node,
                 //such a text node will be deleted or merged with another text node.
                 if (!newDocumentContext && buf.length() == 0)
-                    result = Sequence.EMPTY_SEQUENCE;
+                    {result = Sequence.EMPTY_SEQUENCE;}
                 else {
-                    int nodeNr = builder.characters(buf);
+                    final int nodeNr = builder.characters(buf);
                     result = builder.getDocument().getNode(nodeNr);
                 }
             }
         } finally {
             if (newDocumentContext)
-                context.popDocumentContext();
+                {context.popDocumentContext();}
         }
 
         if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         return result;
         
@@ -127,7 +127,7 @@ public class DynamicTextConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append("text {");        
     	result.append(content.toString());        
     	result.append("}");

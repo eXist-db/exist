@@ -79,14 +79,14 @@ public class IntegerValue extends NumericValue {
 		this(value);
 		this.type = type;
 		if (!checkType(value, type))
-			throw new XPathException(
-				"Value is not a valid integer for type " + Type.getTypeName(type));
+			{throw new XPathException(
+				"Value is not a valid integer for type " + Type.getTypeName(type));}
 	}
 
 	public IntegerValue(String stringValue) throws XPathException {
 		try {
 			value = new BigInteger(StringValue.trimWhitespace(stringValue)); // Long.parseLong(stringValue);
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 				throw new XPathException(ErrorCodes.FORG0001,
 					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage(), e);
 //			}
@@ -98,9 +98,9 @@ public class IntegerValue extends NumericValue {
 		try {
 			value =  new BigInteger(StringValue.trimWhitespace(stringValue)); // Long.parseLong(stringValue);
 			if (!(checkType(value, type)))
-				throw new XPathException(ErrorCodes.FORG0001, "can not convert '" + 
-						stringValue + "' to " + Type.getTypeName(type));
-		} catch (NumberFormatException e) {
+				{throw new XPathException(ErrorCodes.FORG0001, "can not convert '" + 
+						stringValue + "' to " + Type.getTypeName(type));}
+		} catch (final NumberFormatException e) {
 			throw new XPathException(ErrorCodes.FORG0001, "can not convert '" + 
 					stringValue + "' to " + Type.getTypeName(type));
 		}
@@ -270,7 +270,7 @@ public class IntegerValue extends NumericValue {
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		if (this.type == requiredType)
-			return this;
+			{return this;}
 		
 		switch (requiredType) {
 			case Type.ATOMIC :
@@ -360,12 +360,12 @@ public class IntegerValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.IntegerValue)
 	 */
 	public NumericValue round(IntegerValue precision) throws XPathException {
-		if (precision == null) return round();
+		if (precision == null) {return round();}
 		
 		if ( precision.getInt()<=0 )
-			return (IntegerValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.INTEGER);
+			{return (IntegerValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.INTEGER);}
 		else
-			return this;
+			{return this;}
 	}
 
 	/* (non-Javadoc)
@@ -374,9 +374,9 @@ public class IntegerValue extends NumericValue {
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER))
 			// return new IntegerValue(value - ((IntegerValue) other).value, type);
-			return new IntegerValue( value.subtract( ((IntegerValue) other).value ), type );
+			{return new IntegerValue( value.subtract( ((IntegerValue) other).value ), type );}
 		else
-			return ((ComputableValue) convertTo(other.getType())).minus(other);
+			{return ((ComputableValue) convertTo(other.getType())).minus(other);}
 	}
 
 	/* (non-Javadoc)
@@ -385,9 +385,9 @@ public class IntegerValue extends NumericValue {
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER))
 			// return new IntegerValue(value + ((IntegerValue) other).value, type);
-			return new IntegerValue( value.add( ((IntegerValue) other).value ), type );
+			{return new IntegerValue( value.add( ((IntegerValue) other).value ), type );}
 		else
-			return ((ComputableValue) convertTo(other.getType())).plus(other);
+			{return ((ComputableValue) convertTo(other.getType())).plus(other);}
 	}
 
 	/* (non-Javadoc)
@@ -395,11 +395,11 @@ public class IntegerValue extends NumericValue {
 	 */
 	public ComputableValue mult(ComputableValue other) throws XPathException {
 		if(Type.subTypeOf(other.getType(), Type.INTEGER))
-		    return new IntegerValue( value.multiply( ((IntegerValue) other).value ), type );
+		    {return new IntegerValue( value.multiply( ((IntegerValue) other).value ), type );}
         else if(Type.subTypeOf(other.getType(), Type.DURATION))
-            return other.mult(this);
+            {return other.mult(this);}
         else
-            return ((ComputableValue) convertTo(other.getType())).mult(other);
+            {return ((ComputableValue) convertTo(other.getType())).mult(other);}
 	}
 
 	/** The div operator performs floating-point division according to IEEE 754.
@@ -408,22 +408,22 @@ public class IntegerValue extends NumericValue {
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		if (other instanceof IntegerValue) {
 			if (((IntegerValue) other).isZero())
-				throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+				{throw new XPathException(ErrorCodes.FOAR0001, "division by zero");}
 			//http://www.w3.org/TR/xpath20/#mapping : numeric; but xs:decimal if both operands are xs:integer
-			BigDecimal d = new BigDecimal(value);			 
-			BigDecimal od = new BigDecimal(((IntegerValue) other).value);
-			int scale = Math.max(18, Math.max(d.scale(), od.scale()));	
+			final BigDecimal d = new BigDecimal(value);			 
+			final BigDecimal od = new BigDecimal(((IntegerValue) other).value);
+			final int scale = Math.max(18, Math.max(d.scale(), od.scale()));	
 			return new DecimalValue(d.divide(od, scale, BigDecimal.ROUND_HALF_DOWN));
 		} else
 			//TODO : review type promotion
-			return ((ComputableValue) convertTo(other.getType())).div(other);
+			{return ((ComputableValue) convertTo(other.getType())).div(other);}
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
 		if (other.isZero())
 			//If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
-		    throw new XPathException(ErrorCodes.FOAR0001, "division by zero");		
-		ComputableValue result = div(other);
+		    {throw new XPathException(ErrorCodes.FOAR0001, "division by zero");}		
+		final ComputableValue result = div(other);
 		return new IntegerValue(((IntegerValue)result.convertTo(Type.INTEGER)).getLong());		
 	}
 
@@ -433,13 +433,13 @@ public class IntegerValue extends NumericValue {
 	public NumericValue mod(NumericValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
 			if( other.isZero() )
-				throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+				{throw new XPathException(ErrorCodes.FOAR0001, "division by zero");}
 
 			// long ov = ((IntegerValue) other).value.longValue();
-			BigInteger ov =  ((IntegerValue) other).value;
+			final BigInteger ov =  ((IntegerValue) other).value;
 			return new IntegerValue(value.remainder(ov), type);
 		} else
-			return ((NumericValue) convertTo(other.getType())).mod(other);
+			{return ((NumericValue) convertTo(other.getType())).mod(other);}
 	}
 
 	/* (non-Javadoc)
@@ -462,32 +462,32 @@ public class IntegerValue extends NumericValue {
 	 */
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		if(Type.subTypeOf(other.getType(), Type.INTEGER))
-			return new IntegerValue( value.max( ((IntegerValue) other).value) );
+			{return new IntegerValue( value.max( ((IntegerValue) other).value) );}
 		else
-			return ((NumericValue) convertTo(other.getType())).max(collator, other);
+			{return ((NumericValue) convertTo(other.getType())).max(collator, other);}
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if(Type.subTypeOf(other.getType(), Type.INTEGER))
-			return new IntegerValue( value.min( ((IntegerValue) other).value) );
+			{return new IntegerValue( value.min( ((IntegerValue) other).value) );}
 		else
-			return ((NumericValue) convertTo(other.getType())).min(collator, other);
+			{return ((NumericValue) convertTo(other.getType())).min(collator, other);}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class<?> javaClass) {
-		if(javaClass.isAssignableFrom(IntegerValue.class)) return 0;
-		if(javaClass == Long.class || javaClass == long.class) return 1;
-		if(javaClass == Integer.class || javaClass == int.class) return 2;
-		if(javaClass == Short.class || javaClass == short.class) return 3;
-		if(javaClass == Byte.class || javaClass == byte.class) return 4;
-		if(javaClass == Double.class || javaClass == double.class) return 5;
-		if(javaClass == Float.class || javaClass == float.class) return 6;
-		if(javaClass == String.class) return 7;
-		if(javaClass == Boolean.class || javaClass == boolean.class) return 8;
-		if(javaClass == Object.class) return 20;
+		if(javaClass.isAssignableFrom(IntegerValue.class)) {return 0;}
+		if(javaClass == Long.class || javaClass == long.class) {return 1;}
+		if(javaClass == Integer.class || javaClass == int.class) {return 2;}
+		if(javaClass == Short.class || javaClass == short.class) {return 3;}
+		if(javaClass == Byte.class || javaClass == byte.class) {return 4;}
+		if(javaClass == Double.class || javaClass == double.class) {return 5;}
+		if(javaClass == Float.class || javaClass == float.class) {return 6;}
+		if(javaClass == String.class) {return 7;}
+		if(javaClass == Boolean.class || javaClass == boolean.class) {return 8;}
+		if(javaClass == Object.class) {return 20;}
 		
 		return Integer.MAX_VALUE;
 	}
@@ -513,10 +513,10 @@ public class IntegerValue extends NumericValue {
 			return (T)Byte.valueOf((byte)v.value.byteValue());
 		} else if(target == Double.class || target == double.class) {
 			final DoubleValue v = (DoubleValue)convertTo(Type.DOUBLE);
-			return (T)new Double(v.getValue());
+			return (T)Double.valueOf(v.getValue());
 		} else if(target == Float.class || target == float.class) {
 			final FloatValue v = (FloatValue)convertTo(Type.FLOAT);
-			return (T)new Float(v.value);
+			return (T)Float.valueOf(v.value);
 		} else if(target == Boolean.class || target == boolean.class) {
 			return (T)new BooleanValue(effectiveBooleanValue());
                 } else if(target == String.class) {
@@ -537,9 +537,9 @@ public class IntegerValue extends NumericValue {
     public int compareTo(Object o) {
         final AtomicValue other = (AtomicValue)o;
         if(Type.subTypeOf(other.getType(), Type.INTEGER))
-            return value.compareTo(((IntegerValue)other).value);
+            {return value.compareTo(((IntegerValue)other).value);}
         else
-            return getType() > other.getType() ? 1 : -1;
+            {return getType() > other.getType() ? 1 : -1;}
     }
 
     @Override

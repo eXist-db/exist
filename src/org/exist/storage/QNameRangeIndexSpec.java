@@ -37,7 +37,7 @@ public class QNameRangeIndexSpec extends RangeIndexSpec {
 	throws DatabaseConfigurationException {
 		try {
             this.type = getSuperType(Type.getType(typeStr));
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             throw new DatabaseConfigurationException("Unknown type: " + typeStr);
         }
         
@@ -46,8 +46,8 @@ public class QNameRangeIndexSpec extends RangeIndexSpec {
             isAttribute = true;
             name = name.substring(1);
         }
-        String prefix = QName.extractPrefix(name);
-        String localName = QName.extractLocalName(name);
+        final String prefix = QName.extractPrefix(name);
+        final String localName = QName.extractLocalName(name);
         String namespaceURI = "";
         if (prefix != null) {
             namespaceURI = namespaces.get(prefix);
@@ -58,7 +58,7 @@ public class QNameRangeIndexSpec extends RangeIndexSpec {
         }
         qname = new QName(localName, namespaceURI, prefix);
         if (isAttribute)
-            qname.setNameType(ElementValue.ATTRIBUTE);
+            {qname.setNameType(ElementValue.ATTRIBUTE);}
 	}
 
 	public QName getQName() {

@@ -26,9 +26,9 @@ public class NumberFormatter_ru extends NumberFormatter {
     @Override
     public String getAmPm(int hour) {
         if (hour > 12)
-            return "pm";
+            {return "pm";}
         else
-            return "am";
+            {return "am";}
     }
 
     /*

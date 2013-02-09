@@ -52,9 +52,9 @@ public class FileInputSource extends EXistInputSource {
 		this.file=file;
 		// Remember: super.setSystemId must be used instead of local implementation
 		if(file!=null)
-			super.setSystemId(file.toURI().toASCIIString());
+			{super.setSystemId(file.toURI().toASCIIString());}
 		else
-			super.setSystemId(null);
+			{super.setSystemId(null);}
 	}
 	
 	/**
@@ -72,7 +72,7 @@ public class FileInputSource extends EXistInputSource {
         if(file!=null) {
 			try {
 				inputStream = new BufferedInputStream(new FileInputStream(file));
-			} catch(FileNotFoundException fnfe) {
+			} catch(final FileNotFoundException fnfe) {
 				// No way to notify :-(
 			}
 		}
@@ -84,7 +84,7 @@ public class FileInputSource extends EXistInputSource {
         if(inputStream != null) {
             try {
                 inputStream.close();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 // ignore if the stream is already closed
             }
 	        inputStream = null;

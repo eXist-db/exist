@@ -61,24 +61,24 @@ public class InstanceOfExpression extends AbstractExpression {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         Sequence result = BooleanValue.TRUE;
-		Sequence seq = expression.eval(contextSequence, contextItem);
+		final Sequence seq = expression.eval(contextSequence, contextItem);
         
-		int requiredCardinality = type.getCardinality();
+		final int requiredCardinality = type.getCardinality();
 		if (!seq.isEmpty() && requiredCardinality == Cardinality.EMPTY)
-            result = BooleanValue.FALSE;
+            {result = BooleanValue.FALSE;}
         else if (seq.isEmpty() && (requiredCardinality & Cardinality.ZERO) == 0)
-            result = BooleanValue.FALSE;
+            {result = BooleanValue.FALSE;}
 		else if (seq.hasMany() && (requiredCardinality & Cardinality.MANY) == 0)
-            result = BooleanValue.FALSE;
+            {result = BooleanValue.FALSE;}
         else {
-    		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-    			Item next = i.nextItem();
+    		for(final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+    			final Item next = i.nextItem();
     			if(!type.checkType(next)) {
                     result = BooleanValue.FALSE;   
                     break;
@@ -88,7 +88,7 @@ public class InstanceOfExpression extends AbstractExpression {
         }		
         
         if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", result);    
+            {context.getProfiler().end(this, "", result);}    
         
         return result;
 	}
@@ -103,7 +103,7 @@ public class InstanceOfExpression extends AbstractExpression {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append(expression);
     	result.append(" instance of ");
     	result.append(type.toString());

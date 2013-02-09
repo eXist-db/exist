@@ -58,16 +58,16 @@ public class DynamicTypeCheck extends AbstractExpression {
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		Sequence seq = expression.eval(contextSequence, contextItem);
+		final Sequence seq = expression.eval(contextSequence, contextItem);
         Sequence result = null;
         if (Type.subTypeOf(requiredType, Type.ATOMIC) && !Type.subTypeOf(seq.getItemType(), requiredType)) {
             result = new ValueSequence();
         }
         if (seq.hasOne())
-            check(result, seq.itemAt(0));
+            {check(result, seq.itemAt(0));}
         else if (!seq.isEmpty()) {
-            for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-                Item item = i.nextItem();
+            for(final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                final Item item = i.nextItem();
                 check(result, item);
             }
         }
@@ -81,7 +81,7 @@ public class DynamicTypeCheck extends AbstractExpression {
             type = ((NodeProxy) item).getNodeType();
             if (type == NodeProxy.UNKNOWN_NODE_TYPE)
                 //Retrieve the actual node
-                type= ((NodeProxy) item).getNode().getNodeType();
+                {type= ((NodeProxy) item).getNode().getNodeType();}
         }
         if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
             //TODO : how to make this block more generic ? -pb
@@ -89,7 +89,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                 try {
                     item = item.convertTo(requiredType);
                 //No way
-                } catch (XPathException e) {
+                } catch (final XPathException e) {
                     throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
@@ -103,7 +103,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                 try {
                     item = item.convertTo(requiredType);
                 //No way
-                } catch (XPathException e) {
+                } catch (final XPathException e) {
                     throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
@@ -116,7 +116,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                 try {
                     item = item.convertTo(requiredType);
                 //No way
-                } catch (XPathException e) {
+                } catch (final XPathException e) {
                     throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
@@ -128,7 +128,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                 try {
                     item = item.convertTo(requiredType);
                 //No way
-                } catch (XPathException e) {
+                } catch (final XPathException e) {
                     throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
@@ -147,13 +147,13 @@ public class DynamicTypeCheck extends AbstractExpression {
                             ") is not a sub-type of " + Type.getTypeName(requiredType));
 
                 } else
-                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
+                    {throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                         Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
-                        item.getStringValue() + ")'");
+                        item.getStringValue() + ")'");}
             }
         }
         if (result != null)
-            result.add(item);
+            {result.add(item);}
     }
 
     /* (non-Javadoc)
@@ -168,11 +168,11 @@ public class DynamicTypeCheck extends AbstractExpression {
         }
         expression.dump(dumper);
         if(dumper.verbosity() > 1)
-            dumper.display("]");
+            {dumper.display("]");}
     }
     
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("dynamic-type-check");   
         result.append("["); 
         result.append(Type.getTypeName(requiredType));
@@ -226,7 +226,7 @@ public class DynamicTypeCheck extends AbstractExpression {
     }
     
     public Expression getSubExpression(int index) {
-    	if (index == 0) return expression;
+    	if (index == 0) {return expression;}
     	
 	    throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
     }

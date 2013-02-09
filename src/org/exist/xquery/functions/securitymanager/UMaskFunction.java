@@ -112,9 +112,9 @@ public class UMaskFunction extends BasicFunction {
         
         try {
             securityManager.updateAccount(account);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XPathException(this, pde);
-        } catch(EXistException ee) {
+        } catch(final EXistException ee) {
             throw new XPathException(this, ee);
         }
     }

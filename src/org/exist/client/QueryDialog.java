@@ -122,10 +122,10 @@ public class QueryDialog extends JFrame {
                 @Override
                 public void windowClosing(WindowEvent ev) {
                     try {
-                        UserManagementService service = (UserManagementService) collection
+                        final UserManagementService service = (UserManagementService) collection
                             .getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
                         service.unlockResource(resource);
-                    } catch (XMLDBException e) {
+                    } catch (final XMLDBException e) {
                         e.printStackTrace();
                     }
                 }
@@ -150,7 +150,7 @@ public class QueryDialog extends JFrame {
         
 	private void setupComponents(boolean loadedFromDb) {
 		getContentPane().setLayout(new BorderLayout());
-		JToolBar toolbar = new JToolBar();
+		final JToolBar toolbar = new JToolBar();
 		
 		URL url= getClass().getResource("icons/Open24.gif");
 		JButton button= new JButton(new ImageIcon(url));
@@ -245,7 +245,7 @@ public class QueryDialog extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				submitButton.setEnabled(false);
 				if(collection instanceof LocalCollection)
-					killButton.setEnabled(true);
+					{killButton.setEnabled(true);}
 				q=doQuery();
 			}
 		});
@@ -267,16 +267,16 @@ public class QueryDialog extends JFrame {
 			}
 		});
 		
-		JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		final JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		split.setResizeWeight(0.5);
 		
-		JComponent qbox= createQueryBox();
+		final JComponent qbox= createQueryBox();
 		split.setTopComponent(qbox);
 
-        JPanel vbox = new JPanel();
+        final JPanel vbox = new JPanel();
         vbox.setLayout(new BorderLayout());
         
-        JLabel label = new JLabel(Messages.getString("QueryDialog.resultslabel"));
+        final JLabel label = new JLabel(Messages.getString("QueryDialog.resultslabel"));
         vbox.add(label, BorderLayout.NORTH);
         
 		resultTabs = new JTabbedPane();
@@ -293,7 +293,7 @@ public class QueryDialog extends JFrame {
 		
         vbox.add(resultTabs, BorderLayout.CENTER);
         
-        Box statusbar = Box.createHorizontalBox();
+        final Box statusbar = Box.createHorizontalBox();
         statusbar.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         statusMessage = new JTextField(20);
         statusMessage.setEditable(false);
@@ -319,22 +319,22 @@ public class QueryDialog extends JFrame {
 	}
 
 	private JComponent createQueryBox() {
-		JTabbedPane tabs = new JTabbedPane();
+		final JTabbedPane tabs = new JTabbedPane();
 
-		JPanel inputVBox = new JPanel();
+		final JPanel inputVBox = new JPanel();
 		inputVBox.setLayout(new BorderLayout());
 		tabs.add(Messages.getString("QueryDialog.inputtab"), inputVBox);
 		
-		Box historyBox= Box.createHorizontalBox();
+		final Box historyBox= Box.createHorizontalBox();
 		JLabel label= new JLabel(Messages.getString("QueryDialog.historylabel"));
 		historyBox.add(label);
 		final JComboBox historyList= new JComboBox(history);
-		for(String query : client.queryHistory) {
+		for(final String query : client.queryHistory) {
 			addQuery(query);
 		}
 		historyList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String item = (String)client.queryHistory.get(historyList.getSelectedIndex());
+				final String item = (String)client.queryHistory.get(historyList.getSelectedIndex());
 				query.setText(item);
 			}
 		});
@@ -347,17 +347,17 @@ public class QueryDialog extends JFrame {
 		query.setPreferredSize(new Dimension(350, 200));
         inputVBox.add(query, BorderLayout.CENTER);
         
-		Box optionsPanel = Box.createHorizontalBox();
+		final Box optionsPanel = Box.createHorizontalBox();
         
         label = new JLabel(Messages.getString("QueryDialog.contextlabel"));
         optionsPanel.add(label);
         
 		final List<String> data= new ArrayList<String>();
 		try {
-			Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
+			final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
 			data.add(collection.getName());
 			getCollections(root, collection, data);
-		} catch (XMLDBException e) {
+		} catch (final XMLDBException e) {
 			ClientFrame.showErrorMessage(
 					Messages.getString("QueryDialog.collectionretrievalerrormessage")+".", e);
 		}
@@ -365,11 +365,11 @@ public class QueryDialog extends JFrame {
 		collections.addActionListener(new ActionListener() {
                     @Override
 			public void actionPerformed(ActionEvent e) {
-				int p = collections.getSelectedIndex();
-				String context = data.get(p);
+				final int p = collections.getSelectedIndex();
+				final String context = data.get(p);
 				try {
 					collection = client.getCollection(context);
-				} catch (XMLDBException e1) {
+				} catch (final XMLDBException e1) {
 				}
 			}
 		});
@@ -379,7 +379,7 @@ public class QueryDialog extends JFrame {
         optionsPanel.add(label);
         
 		count= new SpinnerNumberModel(100, 1, 10000, 50);
-		JSpinner spinner= new JSpinner(count);
+		final JSpinner spinner= new JSpinner(count);
 		spinner.setMaximumSize(new Dimension(400,100));
 		optionsPanel.add(spinner);
        
@@ -409,8 +409,8 @@ public class QueryDialog extends JFrame {
 	}
 
 	private void open() {
-		String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
-		JFileChooser chooser = new JFileChooser();
+		final String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
+		final JFileChooser chooser = new JFileChooser();
 		chooser.setCurrentDirectory(new File(workDir));
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -418,16 +418,16 @@ public class QueryDialog extends JFrame {
 		
 		if (chooser.showDialog(this, Messages.getString("QueryDialog.opendialog"))
 			== JFileChooser.APPROVE_OPTION) {
-			File selectedDir = chooser.getCurrentDirectory();
+			final File selectedDir = chooser.getCurrentDirectory();
 			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
-			File file = chooser.getSelectedFile();
+			final File file = chooser.getSelectedFile();
 			if(!file.canRead())
-				JOptionPane.showInternalMessageDialog(this, Messages.getString("QueryDialog.cannotreadmessage")+" "+ file.getAbsolutePath(),
-					Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);
+				{JOptionPane.showInternalMessageDialog(this, Messages.getString("QueryDialog.cannotreadmessage")+" "+ file.getAbsolutePath(),
+					Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);}
 			try {
-				BufferedReader reader = new BufferedReader(new FileReader(file));
+				final BufferedReader reader = new BufferedReader(new FileReader(file));
 				try {
-					StringBuilder buf = new StringBuilder();
+					final StringBuilder buf = new StringBuilder();
 					String line;
 					while((line = reader.readLine()) != null) {
 						buf.append(line);
@@ -437,9 +437,9 @@ public class QueryDialog extends JFrame {
 				} finally {
 					reader.close();
 				}
-			} catch (FileNotFoundException e) {
+			} catch (final FileNotFoundException e) {
 				ClientFrame.showErrorMessage(e.getMessage(), e);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				ClientFrame.showErrorMessage(e.getMessage(), e);
 			}
 		}
@@ -447,13 +447,13 @@ public class QueryDialog extends JFrame {
 	
 	private void save(String stringToSave, String fileCategory) {
 		if ( stringToSave == null || "".equals(stringToSave) )
-			return;
-		String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
-		JFileChooser chooser = new JFileChooser();
+			{return;}
+		final String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
+		final JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setCurrentDirectory(new File(workDir));
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		if(fileCategory.equals("result"))
+		if("result".equals(fileCategory))
 		{
 			chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xhtml+xml"));
 			chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xml"));
@@ -464,34 +464,34 @@ public class QueryDialog extends JFrame {
 		}
 		if (chooser.showDialog(this, Messages.getString("QueryDialog.savedialogpre")+" " +fileCategory+ " "+Messages.getString("QueryDialog.savedialogpost"))
 			== JFileChooser.APPROVE_OPTION) {
-			File selectedDir = chooser.getCurrentDirectory();
+			final File selectedDir = chooser.getCurrentDirectory();
 			properties.setProperty("working-dir", selectedDir.getAbsolutePath());
-			File file = chooser.getSelectedFile();
+			final File file = chooser.getSelectedFile();
 			if(file.exists() && (!file.canWrite()))
-				JOptionPane.showMessageDialog(this, Messages.getString("QueryDialog.cannotsavemessagepre")+" " +fileCategory+ " "+Messages.getString("QueryDialog.cannotsavemessageinf")+" " + file.getAbsolutePath(),
-						Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);
+				{JOptionPane.showMessageDialog(this, Messages.getString("QueryDialog.cannotsavemessagepre")+" " +fileCategory+ " "+Messages.getString("QueryDialog.cannotsavemessageinf")+" " + file.getAbsolutePath(),
+						Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);}
 			if(file.exists() &&
 				JOptionPane.showConfirmDialog(this, Messages.getString("QueryDialog.savedialogconfirm"), "Overwrite?", 
 					JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
-				return;
+				{return;}
 			try {
-				FileWriter writer = new FileWriter(file);
+				final FileWriter writer = new FileWriter(file);
 				writer.write(stringToSave);
 				writer.close();
-			} catch (FileNotFoundException e) {
+			} catch (final FileNotFoundException e) {
 				ClientFrame.showErrorMessage(e.getMessage(), e);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				ClientFrame.showErrorMessage(e.getMessage(), e);
 			}
 		}
 	}
 	
 	private QueryThread doQuery() {
-		String xpath= (String) query.getText();
+		final String xpath= (String) query.getText();
 		if (xpath.length() == 0)
-			return null;
+			{return null;}
 		resultDisplay.setText("");
-		QueryThread q = new QueryThread(xpath);
+		final QueryThread q = new QueryThread(xpath);
 		q.start();
 		System.gc();
 		return q;
@@ -499,34 +499,34 @@ public class QueryDialog extends JFrame {
 	
 	
 	private void compileQuery() {
-		String xpath= (String) query.getText();
+		final String xpath= (String) query.getText();
 		if (xpath.length() == 0)
-			return;
+			{return;}
 		resultDisplay.setText("");
 		
 		{
 			statusMessage.setText(Messages.getString("QueryDialog.compilemessage"));
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			long tResult =0;
+			final long tResult =0;
 			long tCompiled=0;
 			
 			try {
-				XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
+				final XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
 				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
-				long t0 = System.currentTimeMillis();
-				CompiledExpression compiled = service.compile(xpath);
-				long t1 = System.currentTimeMillis();
+				final long t0 = System.currentTimeMillis();
+				final CompiledExpression compiled = service.compile(xpath);
+				final long t1 = System.currentTimeMillis();
 				tCompiled = t1 - t0;
 				
 				// In this way we can see the parsed structure meanwhile the query is
-				StringWriter writer = new StringWriter();
+				final StringWriter writer = new StringWriter();
 				service.dump(compiled, writer);
 				exprDisplay.setText(writer.toString());
 				resultTabs.setSelectedComponent(exprDisplay);
 				
 				statusMessage.setText(Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms");
 				
-			} catch (Throwable e) {
+			} catch (final Throwable e) {
 				statusMessage.setText(Messages.getString("QueryDialog.Error")+": "+InteractiveClient.getExceptionMessage(e)+". "+Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms, "+Messages.getString("QueryDialog.Execution")+": " + tResult+"ms");
 		
 				ClientFrame.showErrorMessageQuery(
@@ -555,10 +555,10 @@ public class QueryDialog extends JFrame {
 		
 		public boolean killQuery() {
 			if(context!=null) {
-				XQueryWatchDog xwd = context.getWatchDog();
-				boolean retval = !xwd.isTerminating();
+				final XQueryWatchDog xwd = context.getWatchDog();
+				final boolean retval = !xwd.isTerminating();
 				if( retval )
-					xwd.kill(0);
+					{xwd.kill(0);}
 				context = null;
 
 				return retval;
@@ -579,19 +579,19 @@ public class QueryDialog extends JFrame {
 			long tCompiled=0;
 			ResourceSet result = null;
 			try {
-				XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
+				final XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
 				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
-				long t0 = System.currentTimeMillis();
+				final long t0 = System.currentTimeMillis();
 				
 				if (resource != null) {
                     service.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + resource.getParentCollection().getName());
                 }
 				
-				CompiledExpression compiled = service.compile(xpath);
-				long t1 = System.currentTimeMillis();
+				final CompiledExpression compiled = service.compile(xpath);
+				final long t1 = System.currentTimeMillis();
 				// Check could also be collection instanceof LocalCollection
 				if(compiled instanceof CompiledXQuery)
-					context = ((CompiledXQuery)compiled).getContext();
+					{context = ((CompiledXQuery)compiled).getContext();}
 				tCompiled = t1 - t0;
 				
 				// In this way we can see the parsed structure meanwhile the query is
@@ -610,24 +610,24 @@ public class QueryDialog extends JFrame {
 				
 				statusMessage.setText(Messages.getString("QueryDialog.retrievingmessage"));
 				XMLResource resource;
-				int howmany= count.getNumber().intValue();
+				final int howmany= count.getNumber().intValue();
 				progress.setIndeterminate(false);
 				progress.setMinimum(1);
 				progress.setMaximum(howmany);
 				int j= 0;
 				int select=-1;
-				StringBuilder contents = new StringBuilder();
-				for (ResourceIterator i = result.getIterator(); i.hasMoreResources() && j < howmany; j++) {
+				final StringBuilder contents = new StringBuilder();
+				for (final ResourceIterator i = result.getIterator(); i.hasMoreResources() && j < howmany; j++) {
 					resource= (XMLResource) i.nextResource();
 					progress.setValue(j);
 					try {
 						contents.append((String) resource.getContent());
 						contents.append("\n");
-					} catch (XMLDBException e) {
+					} catch (final XMLDBException e) {
 						select = ClientFrame.showErrorMessageQuery(
 								Messages.getString("QueryDialog.retrievalerrormessage")+": "
 								+ InteractiveClient.getExceptionMessage(e), e);
-						if (select == 3) break;
+						if (select == 3) {break;}
 					}
 				}
 				resultTabs.setSelectedComponent(resultDisplay);
@@ -636,7 +636,7 @@ public class QueryDialog extends JFrame {
 				resultDisplay.scrollToCaret();
 				statusMessage.setText(Messages.getString("QueryDialog.Found")+" " + result.getSize() + " "+Messages.getString("QueryDialog.items")+"." + 
 					" "+Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms, "+Messages.getString("QueryDialog.Execution")+": " + tResult+"ms");
-			} catch (Throwable e) {
+			} catch (final Throwable e) {
 				statusMessage.setText(Messages.getString("QueryDialog.Error")+": "+InteractiveClient.getExceptionMessage(e)+". "+Messages.getString("QueryDialog.Compilation")+": " + tCompiled + "ms, "+Messages.getString("QueryDialog.Execution")+": " + tResult+"ms");
 			    progress.setVisible(false);
 			    
@@ -652,7 +652,7 @@ public class QueryDialog extends JFrame {
                 if (result != null)
                     try {
                         result.clear();
-                    } catch (XMLDBException e) {
+                    } catch (final XMLDBException e) {
                     }
             }
 			if(client.queryHistory.isEmpty() || !((String)client.queryHistory.getLast()).equals(xpath)) {
@@ -669,7 +669,7 @@ public class QueryDialog extends JFrame {
 	
 	private void addQuery(String query) {
 		if(query.length() > 40)
-			query = query.substring(0, 40);
+			{query = query.substring(0, 40);}
 		history.addElement(Integer.toString(history.getSize()+1) + ". " + query);
 	}
 }

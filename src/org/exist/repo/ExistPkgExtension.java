@@ -45,7 +45,7 @@ public class ExistPkgExtension
             throws PackageException
     {
         myXSHelper.ensureNextElement(parser, "package");
-        ExistPkgInfo info = new ExistPkgInfo(pkg);
+        final ExistPkgInfo info = new ExistPkgInfo(pkg);
         try {
             parser.next();
             while ( parser.getEventType() == XMLStreamConstants.START_ELEMENT ) {
@@ -62,7 +62,7 @@ public class ExistPkgExtension
             // position to </package>
             parser.next();
         }
-        catch ( XMLStreamException ex ) {
+        catch ( final XMLStreamException ex ) {
             throw new PackageException("Error reading the exist descriptor", ex);
         }
         pkg.addInfo(getName(), info);
@@ -75,7 +75,7 @@ public class ExistPkgExtension
             try {
                 pkg.getResolver().resolveResource(".exist/classpath.txt");
             }
-            catch ( NotExistException ex ) {
+            catch ( final NotExistException ex ) {
                 setupPackage(pkg, info);
             }
         }
@@ -84,9 +84,9 @@ public class ExistPkgExtension
     private void handleElement(XMLStreamReader parser, Package pkg, ExistPkgInfo info)
             throws PackageException, XMLStreamException
     {
-        String local = parser.getLocalName();
+        final String local = parser.getLocalName();
         if ( "jar".equals(local) ) {
-            String jar = myXSHelper.getElementValue(parser);
+            final String jar = myXSHelper.getElementValue(parser);
             info.addJar(jar);
         }
         else if ( "java".equals(local) ) {
@@ -105,15 +105,15 @@ public class ExistPkgExtension
                  , XMLStreamException
     {
         myXSHelper.ensureNextElement(parser, "namespace");
-        String href = myXSHelper.getElementValue(parser);
+        final String href = myXSHelper.getElementValue(parser);
         myXSHelper.ensureNextElement(parser, "class");
-        String clazz = myXSHelper.getElementValue(parser);
+        final String clazz = myXSHelper.getElementValue(parser);
         // position to </java>
         parser.next();
         try {
             info.addJava(new URI(href), clazz);
         }
-        catch ( URISyntaxException ex ) {
+        catch ( final URISyntaxException ex ) {
             throw new PackageException("Invalid URI: " + href, ex);
         }
     }
@@ -125,15 +125,15 @@ public class ExistPkgExtension
         if ( ! myXSHelper.isNextElement(parser, "import-uri") ) {
             myXSHelper.ensureElement(parser, "namespace");
         }
-        String href = myXSHelper.getElementValue(parser);
+        final String href = myXSHelper.getElementValue(parser);
         myXSHelper.ensureNextElement(parser, "file");
-        String file = myXSHelper.getElementValue(parser);
+        final String file = myXSHelper.getElementValue(parser);
         // position to </xquery>
         parser.next();
         try {
             info.addXQuery(new URI(href), file);
         }
-        catch ( URISyntaxException ex ) {
+        catch ( final URISyntaxException ex ) {
             throw new PackageException("Invalid URI: " + href, ex);
         }
     }
@@ -145,34 +145,34 @@ public class ExistPkgExtension
     {
         // TODO: FIXME: Bad, BAD design!  But will be resolved naturally by moving the
         // install code within the storage class (because we are writing on disk)...
-        FileSystemResolver res = (FileSystemResolver) pkg.getResolver();
-        File classpath = res.resolveResourceAsFile(".exist/classpath.txt");
+        final FileSystemResolver res = (FileSystemResolver) pkg.getResolver();
+        final File classpath = res.resolveResourceAsFile(".exist/classpath.txt");
 
         // create [pkg_dir]/.exist/classpath.txt if not already
-        File exist = classpath.getParentFile();
+        final File exist = classpath.getParentFile();
         if ( ! exist.exists() && ! exist.mkdir() ) {
             throw new PackageException("Impossible to create directory: " + exist);
         }
-        Set<String> jars = info.getJars();
+        final Set<String> jars = info.getJars();
         try {
-            FileWriter out = new FileWriter(classpath);
-            for ( String jar : jars ) {
+            final FileWriter out = new FileWriter(classpath);
+            for ( final String jar : jars ) {
                 StreamSource jar_src;
                 try {
                     jar_src = res.resolveComponent(jar);
                 }
-                catch ( NotExistException ex ) {
-                    String msg = "Inconsistent package descriptor, the JAR file is not in the package: ";
+                catch ( final NotExistException ex ) {
+                    final String msg = "Inconsistent package descriptor, the JAR file is not in the package: ";
                     throw new PackageException(msg + jar, ex);
                 }
-                URI uri = URI.create(jar_src.getSystemId());
-                File file = new File(uri);
+                final URI uri = URI.create(jar_src.getSystemId());
+                final File file = new File(uri);
                 out.write(file.getCanonicalPath());
                 out.write("\n");
             }
             out.close();
         }
-        catch ( IOException ex ) {
+        catch ( final IOException ex ) {
             throw new PackageException("Error writing the eXist classpath file: " + classpath, ex);
         }
     }

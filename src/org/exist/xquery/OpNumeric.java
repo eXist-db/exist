@@ -69,11 +69,11 @@ public class OpNumeric extends BinaryOp {
                 returnType = Math.max(ltype, rtype);
             }
         } else {
-            if (Type.subTypeOf(ltype, Type.NUMBER)) ltype = Type.NUMBER;
-            if (Type.subTypeOf(rtype, Type.NUMBER)) rtype = Type.NUMBER;
-            OpEntry entry = OP_TYPES.get(new OpEntry(operator, ltype, rtype));
+            if (Type.subTypeOf(ltype, Type.NUMBER)) {ltype = Type.NUMBER;}
+            if (Type.subTypeOf(rtype, Type.NUMBER)) {rtype = Type.NUMBER;}
+            final OpEntry entry = OP_TYPES.get(new OpEntry(operator, ltype, rtype));
             if (entry != null)
-                returnType = entry.typeResult;
+                {returnType = entry.typeResult;}
         }
         add(left);
         add(right);
@@ -98,80 +98,80 @@ public class OpNumeric extends BinaryOp {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence lseq = getLeft().eval(contextSequence, contextItem);
-        Sequence rseq = getRight().eval(contextSequence, contextItem);
+        final Sequence lseq = getLeft().eval(contextSequence, contextItem);
+        final Sequence rseq = getRight().eval(contextSequence, contextItem);
         if (lseq.hasMany())
-            throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Too many operands at the left of " + Constants.OPS[operator]);
+            {throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Too many operands at the left of " + Constants.OPS[operator]);}
         if (rseq.hasMany())
-            throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Too many operands at the right of " + Constants.OPS[operator]);
+            {throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Too many operands at the right of " + Constants.OPS[operator]);}
         Sequence result;
         if (rseq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else if (lseq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
             Item lvalue = lseq.itemAt(0);
             Item rvalue = rseq.itemAt(0);
             try {
                 if (lvalue.getType() == Type.UNTYPED_ATOMIC || lvalue.getType() == Type.ATOMIC)
-                    lvalue = lvalue.convertTo(Type.NUMBER);
+                    {lvalue = lvalue.convertTo(Type.NUMBER);}
                 if (rvalue.getType() == Type.UNTYPED_ATOMIC || rvalue.getType() == Type.ATOMIC)
-                    rvalue = rvalue.convertTo(Type.NUMBER);
+                    {rvalue = rvalue.convertTo(Type.NUMBER);}
                 if (!(lvalue instanceof ComputableValue))
-                    throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
+                    {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
                         Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " +
-                        Constants.OPS[operator]);
+                        Constants.OPS[operator]);}
                 if (!(rvalue instanceof ComputableValue))
-                    throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
+                    {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
                         Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " +
-                        Constants.OPS[operator]);
+                        Constants.OPS[operator]);}
                 //TODO : move to implementations
                 if (operator == Constants.IDIV) {
                     if (!Type.subTypeOf(lvalue.getType(), Type.NUMBER))
-                        throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
-                            Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+                        {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
+                            Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);}
                     if (!Type.subTypeOf(rvalue.getType(), Type.NUMBER))
-                        throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
-                            Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
+                        {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
+                            Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);}
                     //If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
                     if (((NumericValue)rvalue).isZero())
-                        throw new XPathException(this, ErrorCodes.FOAR0001, "Division by zero");
+                        {throw new XPathException(this, ErrorCodes.FOAR0001, "Division by zero");}
                     //If either operand is NaN then an error is raised [err:FOAR0002].
                     if (((NumericValue)lvalue).isNaN())
-                        throw new XPathException(this, ErrorCodes.FOAR0002, "Division of " +
-                            Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");
+                        {throw new XPathException(this, ErrorCodes.FOAR0002, "Division of " +
+                            Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");}
                     //If either operand is NaN then an error is raised [err:FOAR0002].
                     if (((NumericValue)rvalue).isNaN())
-                        throw new XPathException(this, ErrorCodes.FOAR0002, "Division of " + 
-                            Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")'");
+                        {throw new XPathException(this, ErrorCodes.FOAR0002, "Division of " + 
+                            Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")'");}
                     //If $arg1 is INF or -INF then an error is raised [err:FOAR0002].
                     if (((NumericValue)lvalue).isInfinite())
-                        throw new XPathException(this, ErrorCodes.FOAR0002, "Division of " +
-                            Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");
+                        {throw new XPathException(this, ErrorCodes.FOAR0002, "Division of " +
+                            Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");}
                     result = ((NumericValue) lvalue).idiv((NumericValue) rvalue);
                 } else {
                     result = applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
                 }
                 //TODO : type-checks on MOD operator : maybe the same ones than above -pb
-            } catch (XPathException e) {
+            } catch (final XPathException e) {
                 e.setLocation(line, column);
                 throw e;
             }
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         //Sets the return type if not already set
         if (returnType == Type.ATOMIC)
             //TODO : refine previously set type ? -pb
-            returnType = result.getItemType();
+            {returnType = result.getItemType();}
         return result;
     }
 
@@ -184,11 +184,11 @@ public class OpNumeric extends BinaryOp {
         case Constants.DIV: return left.div(right);
         case Constants.MOD: {
             if (!Type.subTypeOf(left.getType(), Type.NUMBER))
-                throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
-                    Type.getTypeName(left.getType()) + "(" + left + ")' is not numeric");
+                {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
+                    Type.getTypeName(left.getType()) + "(" + left + ")' is not numeric");}
             if (!Type.subTypeOf(right.getType(), Type.NUMBER))
-                throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
-                    Type.getTypeName(right.getType()) + "(" + right + ")' is not numeric");
+                {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
+                    Type.getTypeName(right.getType()) + "(" + right + ")' is not numeric");}
             return ((NumericValue) left).mod((NumericValue) right);
         }
         default:
@@ -206,7 +206,7 @@ public class OpNumeric extends BinaryOp {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append(getLeft().toString());
         result.append(' ').append(Constants.OPS[operator]).append(' ');
         result.append(getRight());
@@ -267,20 +267,20 @@ public class OpNumeric extends BinaryOp {
 
         public int compareTo(OpEntry that) {
             if (this.op != that.op)
-                return this.op - that.op;
+                {return this.op - that.op;}
             else if (this.typeA != that.typeA)
-                return this.typeA - that.typeA;
+                {return this.typeA - that.typeA;}
             else if (this.typeB != that.typeB)
-                return this.typeB - that.typeB;
-            else return 0;
+                {return this.typeB - that.typeB;}
+            else {return 0;}
    	 }
 
         public boolean equals(Object o) {
             try {
-                OpEntry that = (OpEntry) o;
+                final OpEntry that = (OpEntry) o;
                 return this.op == that.op && this.typeA == that.typeA &&
                     this.typeB == that.typeB;
-            } catch (ClassCastException e) {
+            } catch (final ClassCastException e) {
                 return false;
             }
    	     }
@@ -293,7 +293,7 @@ public class OpNumeric extends BinaryOp {
 
     static {
         for (int i=0; i < OP_TABLE.length; i+=4) {
-            OpEntry entry = new OpEntry(OP_TABLE[i], OP_TABLE[i+1], OP_TABLE[i+2], OP_TABLE[i+3]);
+            final OpEntry entry = new OpEntry(OP_TABLE[i], OP_TABLE[i+1], OP_TABLE[i+2], OP_TABLE[i+3]);
             OP_TYPES.put(entry, entry);
         }
     }

@@ -68,7 +68,7 @@ public class XmldbURL {
      */
     public XmldbURL(URL url) throws MalformedURLException  {
         // check protocol
-        if(url.getProtocol().equals("xmldb")){
+        if("xmldb".equals(url.getProtocol())){
             myUrl = url;
         } else {
             throw new MalformedURLException("URL is not an \"xmldb:\" URL: "+url.toString() );
@@ -141,8 +141,8 @@ public class XmldbURL {
      * Return context, null if not available.
      */
     public String getContext() {
-        String path = myUrl.getPath();
-        int dbPosition=path.indexOf("/db");
+        final String path = myUrl.getPath();
+        final int dbPosition=path.indexOf("/db");
         String context=null;
         
         if(dbPosition!=-1){
@@ -150,7 +150,7 @@ public class XmldbURL {
             context=path.substring(0,dbPosition);
         } 
         
-        if(context!=null && context.equals("")){
+        if(context!=null && "".equals(context)){
             context=null;
         }
         
@@ -172,7 +172,7 @@ public class XmldbURL {
         String path=myUrl.getPath();
         String collectionName=null;
         
-        int dbLocation=path.indexOf("/db");
+        final int dbLocation=path.indexOf("/db");
         
         if(dbLocation!=-1){
             // found pattern "/db"
@@ -180,7 +180,7 @@ public class XmldbURL {
                 // -1 removes the slash
                 collectionName=path.substring(dbLocation, (path.length()-1) );
             } else {
-                int lastSep=path.lastIndexOf('/');
+                final int lastSep=path.lastIndexOf('/');
                 if(lastSep==0){
                     collectionName="/";
                     
@@ -198,7 +198,7 @@ public class XmldbURL {
                 // -1 removes the slash
                 collectionName=path.substring(0, (path.length()-1) );
             } else {
-                int lastSep=path.lastIndexOf('/');
+                final int lastSep=path.lastIndexOf('/');
                 if(lastSep!=-1){
                     collectionName=path.substring(0, lastSep);
                 } else {
@@ -218,7 +218,7 @@ public class XmldbURL {
         String serverPath=myUrl.getPath();
         String documentName=null;
         if(!serverPath.endsWith("/")){
-            int lastSep=serverPath.lastIndexOf('/');
+            final int lastSep=serverPath.lastIndexOf('/');
             if(lastSep==-1){
                 documentName=serverPath;
             } else {
@@ -236,7 +236,7 @@ public class XmldbURL {
         String password = null;
         
         if(userInfo!=null){
-            int separator = userInfo.indexOf(':');
+            final int separator = userInfo.indexOf(':');
             if(separator==-1){
                 username=userInfo;
                 password=null;
@@ -247,12 +247,12 @@ public class XmldbURL {
         }
         
         // Fix credentials. If not found (empty string) fill NULL
-        if(username!=null && username.equals("")){
+        if(username!=null && "".equals(username)){
             username=null;
         }
         
         // Fix credentials. If not found (empty string) fill NULL
-        if(password!=null && password.equals("")){
+        if(password!=null && "".equals(password)){
             password=null;
         }
         
@@ -279,8 +279,8 @@ public class XmldbURL {
      * @return protocol
      */
     public String getHost(){
-        String hostname=myUrl.getHost();
-        if(hostname.equals("")){
+        final String hostname=myUrl.getHost();
+        if("".equals(hostname)){
             return null;
         } else {
             return hostname;

@@ -36,7 +36,7 @@ public class PermissionAiderFactory {
         PermissionAider permission = null;
         try {
             permission = new SimpleACLPermissionAider(ownerName, groupName, mode);
-	} catch(Throwable ex) {
+	} catch(final Throwable ex) {
           LOG.error("Exception while instantiating security permission class.", ex);
         }
         return permission;

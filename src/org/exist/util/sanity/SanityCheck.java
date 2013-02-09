@@ -40,21 +40,21 @@ public class SanityCheck {
     
     public final static void ASSERT(boolean mustBeTrue) {
         if (!mustBeTrue) {
-            AssertFailure failure = new AssertFailure("ASSERT FAILED");
+            final AssertFailure failure = new AssertFailure("ASSERT FAILED");
             showTrace(failure);
         }
     }
 
     public final static void ASSERT(boolean mustBeTrue, String failureMsg) {
         if (!mustBeTrue) {
-            AssertFailure failure = new AssertFailure("ASSERT FAILED: " + failureMsg);
+            final AssertFailure failure = new AssertFailure("ASSERT FAILED: " + failureMsg);
             showTrace(failure);
         }
     }
     
     public final static void THROW_ASSERT(boolean mustBeTrue) {
         if (!mustBeTrue) {
-            AssertFailure failure = new AssertFailure("ASSERT FAILED");
+            final AssertFailure failure = new AssertFailure("ASSERT FAILED");
             showTrace(failure);
             throw failure;
         }
@@ -62,22 +62,22 @@ public class SanityCheck {
     
     public final static void THROW_ASSERT(boolean mustBeTrue, String failureMsg) {
         if (!mustBeTrue) {
-            AssertFailure failure = new AssertFailure("ASSERT FAILED: " + failureMsg);
+            final AssertFailure failure = new AssertFailure("ASSERT FAILED: " + failureMsg);
             showTrace(failure);
             throw failure;
         }
     }
     
     public final static void TRACE(String msg) {
-        AssertFailure failure = new AssertFailure("TRACE: " + msg);
+        final AssertFailure failure = new AssertFailure("TRACE: " + msg);
         showTrace(failure);
     }
     
     public final static void PRINT_STACK(int level) {
-        StackTraceElement elements[] = new Exception("Trace").getStackTrace();
+        final StackTraceElement elements[] = new Exception("Trace").getStackTrace();
         if (level > elements.length)
-            level = elements.length;
-        StringBuilder buf = new StringBuilder();
+            {level = elements.length;}
+        final StringBuilder buf = new StringBuilder();
         for (int i = 1; i < level; i++) {
             buf.append('\n');
             buf.append(elements[i].toString());
@@ -86,8 +86,8 @@ public class SanityCheck {
     }
     
     private final static void showTrace(AssertFailure failure) {
-        StringWriter sout = new StringWriter();
-        PrintWriter out = new PrintWriter(sout);
+        final StringWriter sout = new StringWriter();
+        final PrintWriter out = new PrintWriter(sout);
         out.println("Stacktrace:");
         failure.printStackTrace(out);
         LOG.warn(sout.toString());

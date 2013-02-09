@@ -66,7 +66,7 @@ public abstract class BinaryValue extends AtomicValue {
     @Override
     public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
         if (other.getType() == Type.HEX_BINARY || other.getType() == Type.BASE64_BINARY) {
-            int value = compareTo((BinaryValue)other);
+            final int value = compareTo((BinaryValue)other);
             switch(operator) {
                 case Constants.EQ:
                     return value == 0;
@@ -99,8 +99,8 @@ public abstract class BinaryValue extends AtomicValue {
 
     private int compareTo(BinaryValue otherValue) {
 
-        InputStream is = getInputStream();
-        InputStream otherIs = otherValue.getInputStream();
+        final InputStream is = getInputStream();
+        final InputStream otherIs = otherValue.getInputStream();
 
         if(is == null && otherIs == null) {
             return 0;
@@ -114,13 +114,13 @@ public abstract class BinaryValue extends AtomicValue {
             while(true) {
                 try {
                     read = is.read();
-                } catch(IOException ioe) {
+                } catch(final IOException ioe) {
                     return -1;
                 }
 
                 try {
                     otherRead = otherIs.read();
-                } catch(IOException ioe) {
+                } catch(final IOException ioe) {
                     return 1;
                 }
 
@@ -216,16 +216,16 @@ public abstract class BinaryValue extends AtomicValue {
     @Override
     public String getStringValue() throws XPathException {
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {
             streamTo(baos);
-        } catch(IOException ex) {
+        } catch(final IOException ex) {
             throw new XPathException("Unable to encode string value: " + ex.getMessage(), ex);
         } finally {
             try {
                 baos.close();   //close the stream to ensure all data is flushed
-            } catch(IOException ioe) {
+            } catch(final IOException ioe) {
                 LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
             }
         }
@@ -244,10 +244,10 @@ public abstract class BinaryValue extends AtomicValue {
     public void streamTo(OutputStream os) throws IOException {
         
         //we need to create a safe output stream that cannot be closed
-        OutputStream safeOutputStream = new CloseShieldOutputStream(os);
+        final OutputStream safeOutputStream = new CloseShieldOutputStream(os);
 
         //get the encoder
-        FilterOutputStream fos = getBinaryValueType().getEncoder(safeOutputStream);
+        final FilterOutputStream fos = getBinaryValueType().getEncoder(safeOutputStream);
 
         //stream with the encoder
         streamBinaryTo(fos);
@@ -257,7 +257,7 @@ public abstract class BinaryValue extends AtomicValue {
         //particularly nessecary for Apache Commons Codec stream encoders
         try {
             fos.close();
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
         }
     }

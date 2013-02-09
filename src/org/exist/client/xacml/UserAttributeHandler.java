@@ -25,18 +25,18 @@ public class UserAttributeHandler implements AttributeHandler
 	public UserAttributeHandler(DatabaseInterface dbInterface)
 	{
 		if(dbInterface == null)
-			throw new NullPointerException("Database interface cannot be null");
+			{throw new NullPointerException("Database interface cannot be null");}
 		this.collection = dbInterface.getPolicyCollection();
 	}
 	public void filterFunctions(Set<Object> functions, AttributeDesignator attribute)
 	{
-		URI id = attribute.getId();
+		final URI id = attribute.getId();
 		if(id.equals(XACMLConstants.SUBJECT_ID_ATTRIBUTE) ||
 				id.equals(XACMLConstants.USER_NAME_ATTRIBUTE) || 
 				id.equals(XACMLConstants.GROUP_ATTRIBUTE) || 
 				id.equals(XACMLConstants.SUBJECT_NS_ATTRIBUTE))
 		{
-			List<String> retain = new ArrayList<String>(2);
+			final List<String> retain = new ArrayList<String>(2);
 			retain.add("equals");
 			retain.add("=");
 			functions.retainAll(retain);
@@ -45,24 +45,24 @@ public class UserAttributeHandler implements AttributeHandler
 
 	public boolean getAllowedValues(Set<Object> values, AttributeDesignator attribute)
 	{
-		URI id = attribute.getId();
+		final URI id = attribute.getId();
 		if(id.equals(XACMLConstants.SUBJECT_ID_ATTRIBUTE))
 		{
-			Account[] users = getUsers();
+			final Account[] users = getUsers();
 			for(int i = 0; i < users.length; ++i)
-				values.add(new Integer(users[i].getId()));
+				values.add(Integer.valueOf(users[i].getId()));
 			return false;
 		}
 		if(id.equals(XACMLConstants.USER_NAME_ATTRIBUTE))
 		{
-			Account[] users = getUsers();
+			final Account[] users = getUsers();
 			for(int i = 0; i < users.length; ++i)
 				values.add(users[i].getName());
 			return false;
 		}
 		if(id.equals(XACMLConstants.GROUP_ATTRIBUTE))
 		{
-			String[] groupNames = getGroups();
+			final String[] groupNames = getGroups();
 			for(int i = 0; i < groupNames.length; ++i)
 				values.add(groupNames[i]);
 			return false;
@@ -77,14 +77,14 @@ public class UserAttributeHandler implements AttributeHandler
 	
 	private Account[] getUsers()
 	{
-		UserManagementService service = getUserService();
+		final UserManagementService service = getUserService();
 		if(service == null)
-			return new Account[0];
+			{return new Account[0];}
 		try
 		{
 			return service.getAccounts();
 		}
-		catch (XMLDBException xe)
+		catch (final XMLDBException xe)
 		{
 			ClientFrame.showErrorMessage("Could not get list of users: user attributes will be invalid", xe);
 			return new Account[0];
@@ -92,14 +92,14 @@ public class UserAttributeHandler implements AttributeHandler
 	}
 	private String[] getGroups()
 	{
-		UserManagementService service = getUserService();
+		final UserManagementService service = getUserService();
 		if(service == null)
-			return new String[0];
+			{return new String[0];}
 		try
 		{
 			return service.getGroups();
 		}
-		catch (XMLDBException xe)
+		catch (final XMLDBException xe)
 		{
 			ClientFrame.showErrorMessage("Could not get list of groups: group attributes will be invalid", xe);
 			return new String[0];
@@ -111,7 +111,7 @@ public class UserAttributeHandler implements AttributeHandler
 		{
 			return (UserManagementService)collection.getService("UserManagementService", "1.0");
 		}
-		catch (XMLDBException xe)
+		catch (final XMLDBException xe)
 		{
 			ClientFrame.showErrorMessage("Could not get user management service: user and group attributes will be invalid.", xe);
 			return null;

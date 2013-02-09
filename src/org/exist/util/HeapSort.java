@@ -91,7 +91,7 @@ public final class HeapSort {
 			// a[lo] is the next-biggest element.
 			SwapVals.swap(a,lo,hi);
 			if(b!=null)
-				SwapVals.swap(b,lo,hi);
+				{SwapVals.swap(b,lo,hi);}
 
 			// Heap shrinks by 1 element.
 			hi --;
@@ -147,7 +147,7 @@ public final class HeapSort {
 			// a[lo] is the next-biggest element.
 			SwapVals.swap(a,lo,hi);
 			if(b!=null)
-				SwapVals.swap(b,lo,hi);
+				{SwapVals.swap(b,lo,hi);}
 
 			// Heap shrinks by 1 element.
 			hi --;
@@ -179,7 +179,7 @@ public final class HeapSort {
 			int child = (item-root) * 2 + 1 + root;
 
 			if((child > end || a[item].compareTo(a[child])>=0)
-					&&(child+1 > end || a[item].compareTo(a[child+1])>=0)) return;
+					&&(child+1 > end || a[item].compareTo(a[child+1])>=0)) {return;}
 
 			if(child+1>end || a[child].compareTo(a[child+1])>=0) {
 				SwapVals.swap(a, item, child);
@@ -196,15 +196,15 @@ public final class HeapSort {
 			int child = (item-root) * 2 + 1 + root;
 
 			if((child > end || a[item].compareTo(a[child])>=0)
-					&&(child+1 > end || a[item].compareTo(a[child+1])>=0)) return;
+					&&(child+1 > end || a[item].compareTo(a[child+1])>=0)) {return;}
 
 			if(child+1>end || a[child].compareTo(a[child+1])>=0) {
 				SwapVals.swap(a, item, child);
-				if(b!=null) SwapVals.swap(b, item, child);
+				if(b!=null) {SwapVals.swap(b, item, child);}
 				item = child;
 			} else {
 				SwapVals.swap(a, item, child+1);
-				if(b!=null) SwapVals.swap(b, item, child+1);
+				if(b!=null) {SwapVals.swap(b, item, child+1);}
 				item = child+1;
 			}
 		}
@@ -215,7 +215,7 @@ public final class HeapSort {
 			int child = (item-root) * 2 + 1 + root;
 
 			if((child > end || c.compare( a[item],a[child])>=0)
-					&&(child+1 > end || c.compare(a[item],a[child+1])>=0)) return;
+					&&(child+1 > end || c.compare(a[item],a[child+1])>=0)) {return;}
 
 			if(child+1>end || c.compare(a[child],a[child+1])>=0) {
 				SwapVals.swap(a, item, child);
@@ -232,7 +232,7 @@ public final class HeapSort {
 			int child = (item-root) * 2 + 1 + root;
 
 			if((child > end || a.get(item).compareTo(a.get(child))>=0)
-					&&(child+1 > end || a.get(item).compareTo(a.get(child+1))>=0)) return;
+					&&(child+1 > end || a.get(item).compareTo(a.get(child+1))>=0)) {return;}
 
 			if(child+1>end || a.get(child).compareTo(a.get(child+1))>=0) {
 				SwapVals.swap(a, item, child);
@@ -249,15 +249,15 @@ public final class HeapSort {
 			int child = (item-root) * 2 + 1 + root;
 
 			if((child > end || a[item]>=a[child])
-					&&(child+1 > end || a[item]>=a[child+1])) return;
+					&&(child+1 > end || a[item]>=a[child+1])) {return;}
 
 			if(child+1>end || a[child]>=a[child+1]) {
 				SwapVals.swap(a, item, child);
-				if(b!=null) SwapVals.swap(b, item, child);
+				if(b!=null) {SwapVals.swap(b, item, child);}
 				item = child;
 			} else {
 				SwapVals.swap(a, item, child+1);
-				if(b!=null) SwapVals.swap(b, item, child+1);
+				if(b!=null) {SwapVals.swap(b, item, child+1);}
 				item = child+1;
 			}
 		}
@@ -268,7 +268,7 @@ public final class HeapSort {
 			int child = (item-root) * 2 + 1 + root;
 
 			if((child > end || a[item].getNodeId().compareTo(a[child].getNodeId())>=0)
-					&&(child+1 > end || a[item].getNodeId().compareTo(a[child+1].getNodeId())>=0)) return;
+					&&(child+1 > end || a[item].getNodeId().compareTo(a[child+1].getNodeId())>=0)) {return;}
 
 			if(child+1>end || a[child].getNodeId().compareTo(a[child+1].getNodeId())>=0) {
 				SwapVals.swap(a, item, child);
@@ -281,10 +281,10 @@ public final class HeapSort {
 	}
 
 	public static void main(String[] args) throws Exception {
-		List<String> l = new ArrayList<String>();
+		final List<String> l = new ArrayList<String>();
 
 		if(args.length==0) {
-			String[] a=new String[] {
+			final String[] a=new String[] {
 					"Rudi",
 					"Herbert",
 					"Anton",
@@ -298,7 +298,7 @@ public final class HeapSort {
 		} else {
 			System.err.println("Ordering file "+args[0]+"\n");
 			try {
-				java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
+				final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
 				String rr;
 
 				while((rr=is.readLine())!=null) {
@@ -306,7 +306,7 @@ public final class HeapSort {
 				}
 
 				is.close();
-			} catch(Exception e) {
+			} catch(final Exception e) {
 			}
 		}
 		long a;

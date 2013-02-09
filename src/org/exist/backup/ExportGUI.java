@@ -89,15 +89,15 @@ public class ExportGUI extends javax.swing.JFrame
     {
         super( "Consistency Check and Repair" );
         initComponents();
-        String existHome = System.getProperty( "exist.home", "./" );
-        File   home      = new File( existHome );
+        final String existHome = System.getProperty( "exist.home", "./" );
+        final File   home      = new File( existHome );
         dbConfig.setText( new File( home, "conf.xml" ).getAbsolutePath() );
         outputDir.setText( new File( home, "export" ).getAbsolutePath() );
     }
 
     protected boolean checkOutputDir()
     {
-        File dir = new File( outputDir.getText() );
+        final File dir = new File( outputDir.getText() );
 
         if( !dir.exists() ) {
 
@@ -116,7 +116,7 @@ public class ExportGUI extends javax.swing.JFrame
         if( pool != null ) {
             return( true );
         }
-        File confFile = new File( dbConfig.getText() );
+        final File confFile = new File( dbConfig.getText() );
 
         if( !( confFile.exists() && confFile.canRead() ) ) {
             JOptionPane.showMessageDialog( this, "The selected database configuration file " + confFile.getAbsolutePath() + " does not exist or is not readable.", "Configuration Error", JOptionPane.ERROR_MESSAGE );
@@ -124,12 +124,12 @@ public class ExportGUI extends javax.swing.JFrame
         }
 
         try {
-            Configuration config = new Configuration( confFile.getAbsolutePath(), null );
+            final Configuration config = new Configuration( confFile.getAbsolutePath(), null );
             BrokerPool.configure( 1, 5, config );
             pool = BrokerPool.getInstance();
             return( true );
         }
-        catch( Exception e ) {
+        catch( final Exception e ) {
             JOptionPane.showMessageDialog( this, "Could not start the database instance. Please remember\n" + "that this tool tries to launch an embedded db instance. No other db instance should\n" + "be running on the same data.", "DB Error", JOptionPane.ERROR_MESSAGE );
             e.printStackTrace();
             System.err.println( "ERROR: Failed to open database: " + e.getMessage() );
@@ -347,7 +347,7 @@ public class ExportGUI extends javax.swing.JFrame
         if( !checkOutputDir() ) {
             return;
         }
-        Runnable checkRun = new Runnable() {
+        final Runnable checkRun = new Runnable() {
             public void run()
             {
                 openLog( outputDir.getText() );
@@ -370,7 +370,7 @@ public class ExportGUI extends javax.swing.JFrame
         if( !checkOutputDir() ) {
             return;
         }
-        Runnable th = new Runnable() {
+        final Runnable th = new Runnable() {
             public void run()
             {
                 openLog( outputDir.getText() );
@@ -392,7 +392,7 @@ public class ExportGUI extends javax.swing.JFrame
 
     private void btnChangeDirActionPerformed( java.awt.event.ActionEvent evt )
     { // GEN-FIRST:event_btnChangeDirActionPerformed
-        File               dir     = new File( outputDir.getText() );
+        final File               dir     = new File( outputDir.getText() );
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled( false );
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
@@ -414,7 +414,7 @@ public class ExportGUI extends javax.swing.JFrame
 
     private void btnConfSelectActionPerformed( java.awt.event.ActionEvent evt )
     { // GEN-FIRST:event_btnConfSelectActionPerformed
-        File               dir     = new File( dbConfig.getText() ).getParentFile();
+        final File               dir     = new File( dbConfig.getText() ).getParentFile();
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled( false );
         chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
@@ -426,7 +426,7 @@ public class ExportGUI extends javax.swing.JFrame
                     if( f.isDirectory() ) {
                         return( true );
                     }
-                    MimeType mime = MimeTable.getInstance().getContentTypeFor( f.getName() );
+                    final MimeType mime = MimeTable.getInstance().getContentTypeFor( f.getName() );
 
                     if( mime == null ) {
                         return( false );
@@ -457,7 +457,7 @@ public class ExportGUI extends javax.swing.JFrame
 
         try {
             broker = pool.get( pool.getSecurityManager().getSystemSubject() );
-            SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
+            final SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
                 public void startCollection( String path )
                 {
                     progress.setString( path );
@@ -488,22 +488,22 @@ public class ExportGUI extends javax.swing.JFrame
             progress.setMaximum( documentCount );
 
             Object[] selected     = directAccessBtn.getSelectedObjects();
-            boolean  directAccess = ( selected != null ) && ( selected[0] != null );
+            final boolean  directAccess = ( selected != null ) && ( selected[0] != null );
 
             selected = incrementalBtn.getSelectedObjects();
-            boolean      incremental = ( selected != null ) && ( selected[0] != null );
+            final boolean      incremental = ( selected != null ) && ( selected[0] != null );
             
             selected = zipBtn.getSelectedObjects();
-            boolean zip = ( selected != null ) && ( selected[0] != null );
+            final boolean zip = ( selected != null ) && ( selected[0] != null );
             
             displayMessage( "Starting export ..." );
-            SystemExport sysexport   = new SystemExport( broker, callback, null, directAccess );
-            File         file        = sysexport.export( exportTarget, incremental, zip, errorList );
+            final SystemExport sysexport   = new SystemExport( broker, callback, null, directAccess );
+            final File         file        = sysexport.export( exportTarget, incremental, zip, errorList );
 
             displayMessage( "Export to " + file.getAbsolutePath() + " completed successfully." );
             progress.setString( "" );
         }
-        catch( EXistException e ) {
+        catch( final EXistException e ) {
             System.err.println( "ERROR: Failed to retrieve database broker: " + e.getMessage() );
         }
         finally {
@@ -523,10 +523,10 @@ public class ExportGUI extends javax.swing.JFrame
 
         try {
             broker = pool.get( pool.getSecurityManager().getSystemSubject() );
-            Object[]                                           selected     = directAccessBtn.getSelectedObjects();
-            boolean                                            directAccess = ( selected != null ) && ( selected[0] != null );
-            ConsistencyCheck                                   checker      = new ConsistencyCheck( broker, directAccess );
-            org.exist.backup.ConsistencyCheck.ProgressCallback cb           = new ConsistencyCheck.ProgressCallback() {
+            final Object[]                                           selected     = directAccessBtn.getSelectedObjects();
+            final boolean                                            directAccess = ( selected != null ) && ( selected[0] != null );
+            final ConsistencyCheck                                   checker      = new ConsistencyCheck( broker, directAccess );
+            final org.exist.backup.ConsistencyCheck.ProgressCallback cb           = new ConsistencyCheck.ProgressCallback() {
                 public void startDocument( String path, int current, int count )
                 {
                     progress.setString( path );
@@ -550,7 +550,7 @@ public class ExportGUI extends javax.swing.JFrame
             progress.setIndeterminate( true );
             messages.setText( "" );
             displayMessage( "Checking collections ..." );
-            List<ErrorReport> errors = checker.checkCollectionTree( cb );
+            final List<ErrorReport> errors = checker.checkCollectionTree( cb );
 
             if( errors.size() == 0 ) {
                 displayMessage( "No errors found." );
@@ -578,13 +578,13 @@ public class ExportGUI extends javax.swing.JFrame
             progress.setString( "" );
             return( errors );
         }
-        catch( EXistException e ) {
+        catch( final EXistException e ) {
             System.err.println( "ERROR: Failed to retrieve database broker: " + e.getMessage() );
         }
-        catch (PermissionDeniedException pde) {
+        catch (final PermissionDeniedException pde) {
             System.err.println( "ERROR: Failed to retrieve database broker: " + pde.getMessage() );
         }
-        catch( TerminatedException e ) {
+        catch( final TerminatedException e ) {
             System.err.println( "WARN: Check terminated by db." );
         }
         finally {
@@ -610,13 +610,13 @@ public class ExportGUI extends javax.swing.JFrame
     private void openLog( String dir )
     {
         try {
-            File         file = SystemExport.getUniqueFile( "report", ".log", dir );
-            OutputStream os   = new BufferedOutputStream( new FileOutputStream( file ) );
+            final File         file = SystemExport.getUniqueFile( "report", ".log", dir );
+            final OutputStream os   = new BufferedOutputStream( new FileOutputStream( file ) );
             logWriter = new PrintWriter( new OutputStreamWriter( os, "UTF-8" ) );
         }
-        catch( UnsupportedEncodingException e ) {
+        catch( final UnsupportedEncodingException e ) {
         }
-        catch( FileNotFoundException e ) {
+        catch( final FileNotFoundException e ) {
             System.err.println( "ERROR: failed to create log file" );
         }
     }

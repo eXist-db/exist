@@ -150,7 +150,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     public final static boolean containsWildcards(String str) {
         if (str == null || str.length() == 0)
-            return false;
+            {return false;}
         for (int i = 0; i < str.length(); i++)
             switch (str.charAt(i)) {
             case '*' :
@@ -165,7 +165,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
     public final static boolean startsWithWildcard(String str) {
         if (str == null || str.length() == 0)
-            return false;
+            {return false;}
         switch (str.charAt(0)) {
         case '*' :
         case '?' :
@@ -187,7 +187,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
     public void setDocument(DocumentImpl document) {
         if (this.doc != null && this.doc.getDocId() != document.getDocId())
-            flush();
+            {flush();}
         this.doc = document;
         invertedIndex.setDocument(doc);
     }
@@ -218,9 +218,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     continue;
                 }
                 if (indexingHint == ATTRIBUTE_BY_QNAME)
-                    invertedIndex.addAttribute(token, node, remove);
+                    {invertedIndex.addAttribute(token, node, remove);}
                 else
-                    invertedIndex.addAttribute(token, node.getNodeId(), remove);
+                    {invertedIndex.addAttribute(token, node.getNodeId(), remove);}
             }
         }
     }
@@ -282,7 +282,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         int currentOffset = 0;
         while (span != null) {
             if (data == null)
-                data = span.getContent().transformToLower();
+                {data = span.getContent().transformToLower();}
             else {
                 currentOffset = data.length();
                 data.append(span.getContent().transformToLower());
@@ -303,9 +303,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     }
                 }
                 if (indexingHint == TEXT_BY_QNAME)
-                    invertedIndex.addText(token, (ElementImpl) parent, remove);
+                    {invertedIndex.addText(token, (ElementImpl) parent, remove);}
                 else
-                    invertedIndex.addText(token, parent.getNodeId(), remove);
+                    {invertedIndex.addText(token, parent.getNodeId(), remove);}
             }
             span = span.getNext();
         }
@@ -327,10 +327,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         try {
             lock.acquire(Lock.WRITE_LOCK);
             dbTokens.flush();
-        } catch (LockException e) {
+        } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e); 
             //TODO : throw an exception ? -pb
-        } catch (DBException e) {
+        } catch (final DBException e) {
             LOG.error(e.getMessage(), e); 
             //TODO : throw an exception ? -pb
         } finally {
@@ -362,13 +362,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             // remove QName index
             value = new QNameWordRef(collection.getId());
             dbTokens.removeAll(null, new IndexQuery(IndexQuery.TRUNC_RIGHT, value));
-        } catch (LockException e) {
+        } catch (final LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
             //TODO : throw exception ? -pb
-        } catch (BTreeException e) {
+        } catch (final BTreeException e) {
             LOG.error(e.getMessage(), e);
             //TODO : throw exception ? -pb
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
             //TODO: throw exception ? -pb
         } finally {
@@ -405,41 +405,41 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             QName qname, String expr) throws TerminatedException {
         //Return early
         if (expr == null)
-            return null;
+            {return null;}
         //TODO : filter the expression *before* -pb
         if (stoplist.contains(expr))
-            return null;
+            {return null;}
         //TODO : case conversion should be handled by the tokenizer -pb
         expr = expr.toLowerCase();
         //TODO : use an indexSpec member in order to get rid of this or do the job *before* -pb
         String token;
         if (stem)
-            token = stemmer.stem(expr);
+            {token = stemmer.stem(expr);}
         else
-            token = expr;
+            {token = expr;}
         final NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 250);
-        for (Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
+        for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = (iter.next()).getId();
             Value key;
             if (qname == null)
-                key = new WordRef(collectionId, token);
+                {key = new WordRef(collectionId, token);}
             else {
                 key = new QNameWordRef(collectionId, qname, token, broker.getBrokerPool().getSymbols());
             }
             final Lock lock = dbTokens.getLock();
             try {
                 lock.acquire(Lock.READ_LOCK);
-                VariableByteInput is = dbTokens.getAsStream(key);
+                final VariableByteInput is = dbTokens.getAsStream(key);
                 //Does the token already has data in the index ?
                 if (is == null)
-                    continue;
+                    {continue;}
                 while (is.available() > 0) {
-                    int storedDocId = is.readInt();
-                    int storedSection = is.readByte();
-                    int gidsCount = is.readInt();
+                    final int storedDocId = is.readInt();
+                    final int storedSection = is.readByte();
+                    final int gidsCount = is.readInt();
                     //Read (variable) length of node IDs + frequency + offsets       
-                    int length = is.readFixedInt();
-                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
+                    final int length = is.readFixedInt();
+                    final DocumentImpl storedDocument = docs.getDoc(storedDocId);
                     //Exit if the document is not concerned
                     if (storedDocument == null) {
                         is.skipBytes(length);
@@ -450,7 +450,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     for (int m = 0; m < gidsCount; m++) {
                         NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                         previous = nodeId;
-                        int freq = is.readInt();
+                        final int freq = is.readInt();
                         NodeProxy storedNode;
                         switch (storedSection) {
                         case ATTRIBUTE_SECTION :
@@ -479,9 +479,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     parent = contextSet.parentWithChild(storedNode,
                                         false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                     if (parent != null && !parent.getNodeId().equals(storedNode.getNodeId()))
-                                        parent = null;
+                                        {parent = null;}
                                 } else
-                                    parent = contextSet.get(storedNode);
+                                    {parent = contextSet.get(storedNode);}
                                 break;
                             case QNAME_SECTION:
                             case TEXT_SECTION :
@@ -492,15 +492,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                             }
                             if (parent != null) {
-                                Match match = new FTMatch(-1, nodeId, token, freq);
+                                final Match match = new FTMatch(-1, nodeId, token, freq);
                                 readOccurrences(freq, is, match, token.length());
                                 if (axis == NodeSet.ANCESTOR) {
                                     parent.addMatch(match);
-                                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                                    final int sizeHint = contextSet.getSizeHint(storedDocument);
                                     result.add(parent, sizeHint);
                                 } else {
                                     storedNode.addMatch(match);
-                                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                                    final int sizeHint = contextSet.getSizeHint(storedDocument);
                                     result.add(storedNode, sizeHint);
                                 }
                             } else {
@@ -508,7 +508,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             }
                         //Otherwise, we add all text nodes without check
                         } else {
-                            Match match = new FTMatch(-1, nodeId, token, freq);
+                            final Match match = new FTMatch(-1, nodeId, token, freq);
                             readOccurrences(freq, is, match, token.length());
                             storedNode.addMatch(match);
                             result.add(storedNode, Constants.NO_SIZE_HINT);
@@ -516,10 +516,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         context.proceed();
                     }
                 }
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
                 //TODO : throw exception ? -pb
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error(e.getMessage() + " in '" +
                     dbTokens.getFile().getName() + "'", e);
                 //TODO : throw exception ? -pb
@@ -535,9 +535,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             boolean matchAll) throws TerminatedException {
         //Return early
         if (expr == null)
-            return null;
+            {return null;}
         if (stoplist.contains(expr))
-            return null;
+            {return null;}
         //TODO : case conversion should be handled by the tokenizer -pb
         expr = expr.toLowerCase();
         //If the regexp starts with a char sequence, we restrict the index scan
@@ -548,17 +548,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             StringBuilder buf = new StringBuilder();
             for (int i = 0; i < expr.length(); i++) {
                 if (Character.isLetterOrDigit(expr.charAt(i)))
-                    buf.append(expr.charAt(i));
+                    {buf.append(expr.charAt(i));}
                 else
-                    break;
+                    {break;}
             }
             start = buf;
         }
         try {
-            TermMatcher comparator = new RegexMatcher(expr, type,
+            final TermMatcher comparator = new RegexMatcher(expr, type,
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE, matchAll);
             return getNodes(context, docs, contextSet, axis, qname, comparator, start);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             //TODO : throw exception ? -pb
             return null;
         }
@@ -571,12 +571,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             NodeSet contextSet, int axis, QName qname, TermMatcher matcher,
             CharSequence startTerm) throws TerminatedException {
         if (LOG.isTraceEnabled() && qname != null)
-            LOG.trace("Index lookup by QName: " + qname);
+            {LOG.trace("Index lookup by QName: " + qname);}
         final NodeSet result = new NewArrayNodeSet();
         final SearchCallback cb = new SearchCallback(context, matcher, result,
             contextSet, axis, docs, qname);
         final Lock lock = dbTokens.getLock();		
-        for (Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
+        for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = ((Collection) iter.next()).getId();
             //Compute a key for the token
             Value value;
@@ -595,17 +595,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     value = new QNameWordRef(collectionId, qname, broker.getBrokerPool().getSymbols());
                 }
             }
-            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
+            final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
             try {
                 lock.acquire(Lock.READ_LOCK);
                 dbTokens.query(query, cb);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
                 //TODO : throw exception ? -pb
-            } catch (BTreeException e) {
+            } catch (final BTreeException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : throw exception ? -pb
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
               //TODO : throw exception ? -pb
             } finally {
@@ -618,24 +618,24 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     public String[] getIndexTerms(DocumentSet docs, TermMatcher matcher) {
         final IndexCallback cb = new IndexCallback(null, matcher);
         final Lock lock = dbTokens.getLock();
-        for (Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
+        for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = ((Collection) iter.next()).getId();
             //Compute a key for the token
-            Value value = new WordRef(collectionId);
-            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
+            final Value value = new WordRef(collectionId);
+            final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
             try {
                 lock.acquire(Lock.READ_LOCK);
                 dbTokens.query(query, cb);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
                 //TODO : throw exception ? -pb
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : throw exception ? -pb
-            } catch (BTreeException e) {
+            } catch (final BTreeException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO: throw exception ? -pb
-            } catch (TerminatedException e) {
+            } catch (final TerminatedException e) {
                 LOG.warn(e.getMessage(), e);
                 //TODO : throw exception ? -pb
             } finally {
@@ -649,40 +649,40 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             String start, String end) throws PermissionDeniedException {
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, false);
         final Lock lock = dbTokens.getLock();
-        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
+        for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
             final int collectionId = (i.next()).getId();
             final IndexQuery query;
             if (start == null) {
-                Value startRef = new WordRef(collectionId);
+                final Value startRef = new WordRef(collectionId);
                 query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
             } else if (end == null) {
-                Value startRef = new WordRef(collectionId, start.toLowerCase());
+                final Value startRef = new WordRef(collectionId, start.toLowerCase());
                 query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
             } else {
-                Value startRef = new WordRef(collectionId,  start.toLowerCase());
-                Value endRef = new WordRef(collectionId, end.toLowerCase());
+                final Value startRef = new WordRef(collectionId,  start.toLowerCase());
+                final Value endRef = new WordRef(collectionId, end.toLowerCase());
                 query = new IndexQuery(IndexQuery.BW, startRef, endRef);
             }
             try {
                 lock.acquire(Lock.READ_LOCK);
                 dbTokens.query(query, cb);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
                 //TODO : throw exception ? -pb
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : throw exception ? -pb
-            } catch (BTreeException e) {
+            } catch (final BTreeException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : throw exception ? -pb
-            } catch (TerminatedException e) {
+            } catch (final TerminatedException e) {
                 LOG.warn(e.getMessage(), e);
                 //TODO : throw exception ? -pb
             } finally {
                 lock.release(Lock.READ_LOCK);
             }
         }
-        Occurrences[] result = new Occurrences[cb.map.size()];
+        final Occurrences[] result = new Occurrences[cb.map.size()];
         return (Occurrences[]) cb.map.values().toArray(result);
     }
 
@@ -691,37 +691,37 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final Lock lock = dbTokens.getLock();
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, true);
         for (int q = 0; q < qnames.length; q++) {
-            for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
+            for (final Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext();) {
                 final int collectionId = (i.next()).getId();
                 final IndexQuery query;
                 if (start == null) {
-                    Value startRef = new QNameWordRef(collectionId, qnames[q],
+                    final Value startRef = new QNameWordRef(collectionId, qnames[q],
                         broker.getBrokerPool().getSymbols());
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else if (end == null) {
-                    Value startRef = new QNameWordRef(collectionId, qnames[q],
+                    final Value startRef = new QNameWordRef(collectionId, qnames[q],
                         start.toLowerCase(), broker.getBrokerPool().getSymbols());
                     query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
                 } else {
-                    Value startRef = new QNameWordRef(collectionId, qnames[q], start.toLowerCase(),
+                    final Value startRef = new QNameWordRef(collectionId, qnames[q], start.toLowerCase(),
                         broker.getBrokerPool().getSymbols());
-                    Value endRef = new QNameWordRef(collectionId, qnames[q], end.toLowerCase(),
+                    final Value endRef = new QNameWordRef(collectionId, qnames[q], end.toLowerCase(),
                         broker.getBrokerPool().getSymbols());
                     query = new IndexQuery(IndexQuery.BW, startRef, endRef);
                 }
                 try {
                     lock.acquire(Lock.READ_LOCK);
                     dbTokens.query(query, cb);
-                } catch (LockException e) {
+                } catch (final LockException e) {
                     LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
                     //TODO : throw exception ? -pb
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     LOG.error(e.getMessage(), e);
                     //TODO : throw exception ? -pb
-                } catch (BTreeException e) {
+                } catch (final BTreeException e) {
                     LOG.error(e.getMessage(), e);
                     //TODO : throw exception ? -pb
-                } catch (TerminatedException e) {
+                } catch (final TerminatedException e) {
                     LOG.warn(e.getMessage(), e);
                     //TODO : throw exception ? -pb
                 } finally {
@@ -729,7 +729,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
             }
         }
-        Occurrences[] result = new Occurrences[cb.map.size()];
+        final Occurrences[] result = new Occurrences[cb.map.size()];
         return (Occurrences[]) cb.map.values().toArray(result);
     }
 
@@ -754,11 +754,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     //TODO : unify functionalities with storeText -pb
     private void collect(Set words, Iterator domIterator) {
-        byte[] data = ((Value) domIterator.next()).getData();
-        short type = Signatures.getType(data[OFFSET_NODE_TYPE]);
+        final byte[] data = ((Value) domIterator.next()).getData();
+        final short type = Signatures.getType(data[OFFSET_NODE_TYPE]);
         switch (type) {
         case Node.ELEMENT_NODE :
-            int childrenCount = ByteConversion.byteToInt(data, OFFSET_ELEMENT_CHILDREN_COUNT);
+            final int childrenCount = ByteConversion.byteToInt(data, OFFSET_ELEMENT_CHILDREN_COUNT);
             for (int i = 0; i < childrenCount; i++)
                 //recursive call on children
                 collect(words, domIterator);
@@ -767,24 +767,24 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             int dlnLen = ByteConversion.byteToShort(data, OFFSET_TEXT_DLN_LENGTH);
             int nodeIdLen = broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, OFFSET_DLN);
             try {
-                int readOffset = nodeIdLen + OFFSET_DLN;
-                String s = new String(data, readOffset, data.length - readOffset, "UTF-8");
+                final int readOffset = nodeIdLen + OFFSET_DLN;
+                final String s = new String(data, readOffset, data.length - readOffset, "UTF-8");
                 tokenizer.setText(s);
                 TextToken token;
                 while (null != (token = tokenizer.nextToken())) {
-                    String word = token.getText();
+                    final String word = token.getText();
                     if (stoplist.contains(word))
-                        continue;
+                        {continue;}
                     words.add(word.toLowerCase());
                 }
-            } catch (UnsupportedEncodingException e) {
+            } catch (final UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : throwexception ? -pb
             }
             break;
         case Node.ATTRIBUTE_NODE :
-            byte idSizeType = (byte) (data[OFFSET_NODE_TYPE] & 0x3);
-            boolean hasNamespace = (data[OFFSET_NODE_TYPE] & 0x10) == 0x10;
+            final byte idSizeType = (byte) (data[OFFSET_NODE_TYPE] & 0x3);
+            final boolean hasNamespace = (data[OFFSET_NODE_TYPE] & 0x10) == 0x10;
             dlnLen = ByteConversion.byteToShort(data, OFFSET_ATTRIBUTE_DLN_LENGTH);
             nodeIdLen = broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, OFFSET_DLN);
             int readOffset = Signatures.getLength(idSizeType) + nodeIdLen + OFFSET_DLN;
@@ -795,16 +795,16 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 readOffset += prefixLen + SymbolTable.LENGTH_NS_URI; // skip prefix
             }
             try {
-                String val = new String(data, readOffset, data.length - readOffset, "UTF-8");
+                final String val = new String(data, readOffset, data.length - readOffset, "UTF-8");
                 tokenizer.setText(val);
                 TextToken token;
                 while (null != (token = tokenizer.nextToken())) {
-                    String word = token.getText();
+                    final String word = token.getText();
                     if (stoplist.contains(word))
-                        continue;
+                        {continue;}
                     words.add(word.toLowerCase());
                 }
-            } catch (UnsupportedEncodingException e) {
+            } catch (final UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : throw exception ? -pb
             }
@@ -853,12 +853,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             }
 
             public int compareTo(Object o) {
-                QNameTerm other = (QNameTerm) o;
-                int cmp = qname.compareTo(other.qname);
+                final QNameTerm other = (QNameTerm) o;
+                final int cmp = qname.compareTo(other.qname);
                 if (cmp == 0)
-                    return term.compareTo(other.term);
+                    {return term.compareTo(other.term);}
                 else
-                    return cmp;
+                    {return cmp;}
             }
         }
 
@@ -881,7 +881,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
         public void setDocument(DocumentImpl document) {
             if (this.doc != null && this.doc.getDocId() != document.getDocId())
-                flush();
+                {flush();}
             this.doc = document;
         }
 
@@ -900,12 +900,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
             } else {
                 if (!words[TEXT_NODES].containsKey(token))
-                    words[TEXT_NODES].put(token, null);
+                    {words[TEXT_NODES].put(token, null);}
             }
         }
 
         public void addText(TextToken token, ElementImpl ancestor, boolean remove) {
-            QNameTerm term = new QNameTerm(ancestor.getQName(), token.getText());
+            final QNameTerm term = new QNameTerm(ancestor.getQName(), token.getText());
             if (!remove) {
                 //Is this token already pending ?
                 OccurrenceList list = (OccurrenceList) words[BY_QNAME].get(term);
@@ -920,7 +920,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
             } else {
                 if (!words[BY_QNAME].containsKey(term))
-                    words[BY_QNAME].put(term, null);
+                    {words[BY_QNAME].put(term, null);}
             }
         }
 
@@ -940,12 +940,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
             } else {
                 if (!words[ATTRIBUTE_NODES].containsKey(token))
-                    words[ATTRIBUTE_NODES].put(token, null);
+                    {words[ATTRIBUTE_NODES].put(token, null);}
             }
         }
 
         public void addAttribute(TextToken token, AttrImpl attr, boolean remove) {
-            QNameTerm term = new QNameTerm(attr.getQName(), token.getText());
+            final QNameTerm term = new QNameTerm(attr.getQName(), token.getText());
             if (!remove) {
                 //Is this token already pending ?
                 OccurrenceList list = (OccurrenceList) words[BY_QNAME].get(term);
@@ -960,18 +960,18 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
             } else {
                 if (!words[BY_QNAME].containsKey(term))
-                    words[BY_QNAME].put(term, null);
+                    {words[BY_QNAME].put(term, null);}
             }
         }
 
         public void flush() {
             //return early
             if (this.doc == null)
-                return;
+                {return;}
             final int wordsCount = words[TEXT_NODES].size() + 
                 words[ATTRIBUTE_NODES].size() + words[BY_QNAME].size();
             if (wordsCount == 0)
-                return;
+                {return;}
             final ProgressIndicator progress = new ProgressIndicator(wordsCount, 100);
             final int collectionId = this.doc.getCollection().getId();
             int count = 0;
@@ -986,12 +986,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     throw new IllegalArgumentException("Invalid section type in '" +
                         dbTokens.getFile().getName() + "' (inverted index)");
                 }
-                for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext(); count++) {
-                    Map.Entry entry = (Map.Entry) i.next();
-                    Object token = entry.getKey();
-                    OccurrenceList occurences = (OccurrenceList) entry.getValue();
+                for (final Iterator i = words[currentSection].entrySet().iterator(); i.hasNext(); count++) {
+                    final Map.Entry entry = (Map.Entry) i.next();
+                    final Object token = entry.getKey();
+                    final OccurrenceList occurences = (OccurrenceList) entry.getValue();
                     if (occurences == null)
-                        continue; // may happen if the index is in an invalid state due to earlier errors
+                        {continue;} // may happen if the index is in an invalid state due to earlier errors
                     //Don't forget this one
                     occurences.sort();
                     os.clear();
@@ -999,14 +999,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     os.writeByte(currentSection);
                     os.writeInt(occurences.getTermCount());
                     //Mark position
-                    int lenOffset = os.position();
+                    final int lenOffset = os.position();
                     //Dummy value : actual one will be written below
                     os.writeFixedInt(0);
                     NodeId previous = null;
                     for (int m = 0; m < occurences.getSize(); ) {
                         try {
                             previous = occurences.getNode(m).write(previous, os);
-                        } catch (IOException e) {
+                        } catch (final IOException e) {
                             LOG.error("IOException while writing fulltext index: " + e.getMessage(), e);
                             //TODO : throw exception ? -pb
                         }
@@ -1041,28 +1041,28 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             //return early
             //TODO : is this ever called ? -pb
             if (data.size() == 0)
-                return;
+                {return;}
             final Lock lock = dbTokens.getLock();
             try {
                 lock.acquire(Lock.WRITE_LOCK);
                 Value key;
                 if (currentSection == QNAME_SECTION) {
-                    QNameTerm term = (QNameTerm) token;
+                    final QNameTerm term = (QNameTerm) token;
                     key = new QNameWordRef(collectionId, term.qname, term.term,
                         broker.getBrokerPool().getSymbols());
                 } else {
                     key = new WordRef(collectionId, token.toString());
                 }
                 dbTokens.append(key, data);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 LOG.warn("Failed to acquire lock for '" +
                     dbTokens.getFile().getName() + "' (inverted index)", e);
                 //TODO : throw exception ? -pb
-            } catch (ReadOnlyException e) {
+            } catch (final ReadOnlyException e) {
                 LOG.warn("Read-only error on '" + dbTokens.getFile().getName() +
                     "' (inverted index)", e);
                 //TODO : throw exception ?
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error(e.getMessage() + "' in '" + dbTokens.getFile().getName() +
                     "' (inverted index)", e);
                 //TODO : throw exception ? -pb
@@ -1075,7 +1075,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         public void dropIndex(DocumentImpl document) {
             //Return early
             if (document == null)
-                return;
+                {return;}
             final int collectionId = document.getCollection().getId();
             final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
@@ -1090,13 +1090,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             dbTokens.getFile().getName() + "' (inverted index)");
                 }
                 LOG.debug("Removing " + words[currentSection].size() + " tokens");
-                for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
+                for (final Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
                     //Compute a key for the token
-                    Map.Entry entry = (Map.Entry) i.next();
-                    Object token = entry.getKey();
+                    final Map.Entry entry = (Map.Entry) i.next();
+                    final Object token = entry.getKey();
                     Value key;
                     if (currentSection == QNAME_SECTION) {
-                        QNameTerm term = (QNameTerm) token;
+                        final QNameTerm term = (QNameTerm) token;
                         key = new QNameWordRef(collectionId, term.qname,
                             term.term, broker.getBrokerPool().getSymbols());
                     } else {
@@ -1107,17 +1107,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         lock.acquire(Lock.WRITE_LOCK);
                         boolean changed = false;
                         os.clear();
-                        VariableByteInput is = dbTokens.getAsStream(key);
+                        final VariableByteInput is = dbTokens.getAsStream(key);
                         //Does the token already has data in the index ?
                         if (is == null)
-                            continue;
+                            {continue;}
                         //try {
                         while (is.available() > 0) {
-                            int storedDocId = is.readInt();
-                            byte section = is.readByte();
-                            int gidsCount = is.readInt();
+                            final int storedDocId = is.readInt();
+                            final byte section = is.readByte();
+                            final int gidsCount = is.readInt();
                             //Read (variable) length of node IDs + frequency + offsets
-                            int length = is.readFixedInt();
+                            final int length = is.readFixedInt();
                             if (storedDocId != document.getDocId()) {
                                 // data are related to another document:
                                 // copy them to any existing data
@@ -1146,15 +1146,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 }
                             }
                         }
-                    } catch (LockException e) {
+                    } catch (final LockException e) {
                         LOG.warn("Failed to acquire lock for '" +
                             dbTokens.getFile().getName() + "'", e);
                         //TODO : throw exception ? -pb
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         LOG.error(e.getMessage() + " in '" +
                             dbTokens.getFile().getName() + "'", e);
                         //TODO : throw exception ? -pb
-                    } catch (ReadOnlyException e) {
+                    } catch (final ReadOnlyException e) {
                         LOG.error(e.getMessage() + " in '" +
                             dbTokens.getFile().getName() + "'", e);
                         //TODO : throw exception ? -pb
@@ -1174,7 +1174,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         public void remove() {
             //Return early
             if (doc == null)
-                return;
+                {return;}
             final int collectionId = this.doc.getCollection().getId();
             final Lock lock = dbTokens.getLock();
             for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
@@ -1188,34 +1188,34 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     throw new IllegalArgumentException("Invalid section type in '" +
                         dbTokens.getFile().getName() + "' (inverted index)");
                 }
-                for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
+                for (final Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
                     //Compute a key for the token
-                    Map.Entry entry = (Map.Entry) i.next();
-                    OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
-                    Object token = entry.getKey();
+                    final Map.Entry entry = (Map.Entry) i.next();
+                    final OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
+                    final Object token = entry.getKey();
                     Value key;
                     if (currentSection == QNAME_SECTION) {
-                        QNameTerm term = (QNameTerm) token;
+                        final QNameTerm term = (QNameTerm) token;
                         key = new QNameWordRef(collectionId, term.qname, term.term,
                                 broker.getBrokerPool().getSymbols());
                     } else {
                         key = new WordRef(collectionId, token.toString());
                     }
-                    OccurrenceList newOccurencesList = new OccurrenceList();
+                    final OccurrenceList newOccurencesList = new OccurrenceList();
                     os.clear();
                     try {
                         lock.acquire(Lock.WRITE_LOCK);
-                        Value value = dbTokens.get(key);
+                        final Value value = dbTokens.get(key);
                         if (value == null)
-                            continue;
+                            {continue;}
                         //Add its data to the new list
-                        VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
+                        final VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
                         while (is.available() > 0) {
-                            int storedDocId = is.readInt();
-                            byte storedSection = is.readByte();
-                            int termCount = is.readInt();
+                            final int storedDocId = is.readInt();
+                            final byte storedSection = is.readByte();
+                            final int termCount = is.readInt();
                             //Read (variable) length of node IDs + frequency + offsets
-                            int length = is.readFixedInt();
+                            final int length = is.readFixedInt();
                             if (storedSection != currentSection || storedDocId != this.doc.getDocId()) {
                                 // data are related to another section or document:
                                 // append them to any existing data
@@ -1232,7 +1232,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     NodeId nodeId = broker.getBrokerPool()
                                         .getNodeFactory().createFromStream(previous, is);
                                     previous = nodeId;
-                                    int freq = is.readInt();
+                                    final int freq = is.readInt();
                                     // add the node to the new list if it is not
                                     // in the list of removed nodes
                                     if (!storedOccurencesList.contains(nodeId)) {
@@ -1253,7 +1253,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             os.writeByte(currentSection);
                             os.writeInt(newOccurencesList.getTermCount());
                             //Mark position
-                            int lenOffset = os.position();
+                            final int lenOffset = os.position();
                             //Dummy value : actual one will be written below
                             os.writeFixedInt(0);
                             NodeId previous = null;
@@ -1272,7 +1272,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         }
                         //Store the data
                         if(os.data().size() == 0)
-                            dbTokens.remove(key);
+                            {dbTokens.remove(key);}
                         else if (dbTokens.update(value.getAddress(), key, 
                                 os.data()) == BFile.UNKNOWN_ADDRESS) {
                             LOG.error("Could not update index data for token '" +
@@ -1280,11 +1280,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 "' (inverted index)");
                             //TODO : throw an exception ?
                         }
-                    } catch (LockException e) {
+                    } catch (final LockException e) {
                         LOG.warn("Failed to acquire lock for '" +
                             dbTokens.getFile().getName() + "' (inverted index)", e);
                         //TODO : throw exception ? -pb
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         LOG.error(e.getMessage() + "' in '" +
                             dbTokens.getFile().getName() + "' (inverted index)", e);
                         //TODO : throw exception ? -pb
@@ -1309,7 +1309,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
 
         public String[] getMatches() {
-            String[] a = new String[matches.size()];
+            final String[] a = new String[matches.size()];
             return matches.toArray(a);
         }
 
@@ -1318,14 +1318,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
          */
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             if(context != null)
-                context.proceed();
+                {context.proceed();}
             try {
                 final String word = new String(key.getData(), Collection.LENGTH_COLLECTION_ID, 
                         key.getLength() - Collection.LENGTH_COLLECTION_ID, "UTF-8");
                 if (matcher.matches(word))
-                    matches.add(word);
+                    {matches.add(word);}
                 return true;
-            } catch (UnsupportedEncodingException e) {
+            } catch (final UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : throw exception ?
                 return true;
@@ -1358,26 +1358,26 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             VariableByteInput is;
             try {
                 is = dbTokens.getAsStream(pointer);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
             } 
             word.reuse();
             if (qname == null)
-                WordRef.decode(key, word);
+                {WordRef.decode(key, word);}
             else
-                QNameWordRef.decode(key, word);
+                {QNameWordRef.decode(key, word);}
             if (matcher.matches(word)) {
                 try {
                     while (is.available() > 0) {
                         if(context != null)
-                            context.proceed();
-                        int storedDocId = is.readInt();
-                        byte storedSection = is.readByte();
-                        int termCount = is.readInt();
+                            {context.proceed();}
+                        final int storedDocId = is.readInt();
+                        final byte storedSection = is.readByte();
+                        final int termCount = is.readInt();
                         //Read (variable) length of node IDs + frequency + offsets
-                        int length = is.readFixedInt();
-                        DocumentImpl storedDocument = docs.getDoc(storedDocId);
+                        final int length = is.readFixedInt();
+                        final DocumentImpl storedDocument = docs.getDoc(storedDocId);
                         //Exit if the document is not concerned
                         if (storedDocument == null) {
                             is.skipBytes(length);
@@ -1387,7 +1387,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         for (int m = 0; m < termCount; m++) {
                             NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                             previous = nodeId;
-                            int freq = is.readInt();
+                            final int freq = is.readInt();
                             NodeProxy storedNode;
                             switch (storedSection) {
                             case TEXT_SECTION :
@@ -1417,7 +1417,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         parentNode = contextSet.parentWithChild(storedNode,
                                             false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                         if (parentNode != null && parentNode.getNodeId().equals(nodeId))
-                                            parentNode = null;
+                                            {parentNode = null;}
                                     } else {
                                         parentNode = contextSet.get(storedNode);
                                     }
@@ -1427,9 +1427,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         dbTokens.getFile().getName() + "'");
                                 }
                                 if (parentNode != null) {
-                                    Match match = new FTMatch(-1, nodeId, word.toString(), freq);
+                                    final Match match = new FTMatch(-1, nodeId, word.toString(), freq);
                                     readOccurrences(freq, is, match, word.length());
-                                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                                    final int sizeHint = contextSet.getSizeHint(storedDocument);
                                     if (axis == NodeSet.ANCESTOR) {
                                         parentNode.addMatch(match);
                                         result.add(parentNode, sizeHint);
@@ -1438,23 +1438,23 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         result.add(storedNode, sizeHint);
                                     }
                                 } else
-                                    is.skip(freq);
+                                    {is.skip(freq);}
                             } else {
-                                Match match = new FTMatch(-1, nodeId, word.toString(), freq);
+                                final Match match = new FTMatch(-1, nodeId, word.toString(), freq);
                                 readOccurrences(freq, is, match, word.length());
                                 storedNode.addMatch(match);
                                 result.add(storedNode, Constants.NO_SIZE_HINT);
                             }
                         }
                     }
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);
                     //TODO : throw exception ? -pb
                 }
             }
             //TOUNDERSTAND : why sort here ? -pb
             if (contextSet != null)
-                ((NewArrayNodeSet) result).sort();
+                {((NewArrayNodeSet) result).sort();}
             return true;
         }
     }
@@ -1478,14 +1478,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             word.reuse();
             if (byQName)
-                QNameWordRef.decode(key, word);
+                {QNameWordRef.decode(key, word);}
             else
-                WordRef.decode(key, word);
+                {WordRef.decode(key, word);}
             final String term = word.toString();
             VariableByteInput is;
             try {
                 is = dbTokens.getAsStream(pointer);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
                 //TODO : throw exception ? -pb
                 return true;
@@ -1493,12 +1493,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             try {
                 while (is.available() > 0) {
                     boolean docAdded = false;
-                    int storedDocId = is.readInt();
-                    byte storedSection = is.readByte();
-                    int termCount = is.readInt();
+                    final int storedDocId = is.readInt();
+                    final byte storedSection = is.readByte();
+                    final int termCount = is.readInt();
                     //Read (variable) length of node IDs + frequency + offsets
-                    int length = is.readFixedInt();
-                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
+                    final int length = is.readFixedInt();
+                    final DocumentImpl storedDocument = docs.getDoc(storedDocId);
                     //Exit if the document is not concerned
                     if (storedDocument == null) {
                         is.skipBytes(length);
@@ -1509,11 +1509,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         NodeId nodeId = broker.getBrokerPool().getNodeFactory()
                             .createFromStream(previous, is);
                         previous = nodeId;
-                        int freq = is.readInt();
+                        final int freq = is.readInt();
                         is.skip(freq);
                         if (contextSet != null) {
                             boolean include = false;
-                            NodeProxy parentNode = contextSet.parentWithChild(storedDocument,
+                            final NodeProxy parentNode = contextSet.parentWithChild(storedDocument,
                                 nodeId, false, true);
                             switch (storedSection) {
                             case TEXT_SECTION :
@@ -1544,7 +1544,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         }
                     }
                 }
-            } catch(IOException e) {
+            } catch(final IOException e) {
                 LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);
                 //TODO : throw exception ? -pb
             }
@@ -1570,9 +1570,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             public int compareTo(Object o) {
                 final TermFreq other = (TermFreq)o;
                 if(l == other.l)
-                    return Constants.EQUAL;
+                    {return Constants.EQUAL;}
                 else
-                    return l < other.l ? Constants.INFERIOR : Constants.SUPERIOR;
+                    {return l < other.l ? Constants.INFERIOR : Constants.SUPERIOR;}
             }
         }
 
@@ -1594,26 +1594,26 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
         public void incLastTerm() {
             if(last != null)
-                last.increment();
+                {last.increment();}
         }
 
         public void setLastTermFreq(int freq) {
             if (last != null)
-                last.count = freq;
+                {last.count = freq;}
         }
 
         public long getLast() {
             if(last != null)
-                return last.l;
+                {return last.l;}
             else
-                return -1;
+                {return -1;}
         }
 
         public boolean contains(long l) {
             TermFreq next = first;
             while (next != null ) {
                 if(next.l == l)
-                    return true;
+                    {return true;}
                 next = next.next;
             }
             return false;
@@ -1624,7 +1624,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
 
         public TermFreq[] toArray() {
-            TermFreq[] data = new TermFreq[count];
+            final TermFreq[] data = new TermFreq[count];
             TermFreq next = first;
             int i = 0;
             while( next != null ) {
@@ -1659,14 +1659,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
 
         public static XMLString decode(Value key, XMLString word) {
-            int prefixLength = WordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
+            final int prefixLength = WordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
             return UTF8.decode(key.getData(), prefixLength, key.getLength() - prefixLength, word);
         }
 
         public String toString() {
             if (len > OFFSET_WORD)
-                return new String(data, OFFSET_WORD, len - OFFSET_WORD);
-            else return "no word";
+                {return new String(data, OFFSET_WORD, len - OFFSET_WORD);}
+            else {return "no word";}
         }
     }
 
@@ -1720,15 +1720,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
 
         public static XMLString decode(Value key, XMLString word) {
-            int prefixLength = QNameWordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID +
+            final int prefixLength = QNameWordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID +
                 QNameWordRef.LENGTH_QNAME_TYPE + SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME;
             return UTF8.decode(key.getData(), prefixLength, key.getLength() - prefixLength, word);
         }
 
         public String toString() {
             if (len > OFFSET_WORD)
-                return new String(data, OFFSET_WORD, len - OFFSET_WORD);
-            else return "no word";
+                {return new String(data, OFFSET_WORD, len - OFFSET_WORD);}
+            else {return "no word";}
         }
 
     }

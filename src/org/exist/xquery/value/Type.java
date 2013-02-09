@@ -287,7 +287,7 @@ public class Type {
      */
     public static void defineBuiltInType(int type, String... name) {
         typeNames.put(type, name);
-        for(String n : name) {
+        for(final String n : name) {
             typeCodes.put(n, type);
         }
     }
@@ -307,9 +307,9 @@ public class Type {
      * @param type
      */
     public static String[] getTypeAliases(int type) {
-        String names[] = typeNames.get(type);
+        final String names[] = typeNames.get(type);
         if(names != null && names.length > 1) {
-            String aliases[] = new String[names.length - 1];
+            final String aliases[] = new String[names.length - 1];
             System.arraycopy(names, 1, aliases, 0, names.length - 1);
             return aliases;
         }
@@ -325,9 +325,9 @@ public class Type {
 	public static int getType(String name) throws XPathException {
 		//if (name.equals("node"))
 		//	return NODE;
-		int code = typeCodes.get(name);
+		final int code = typeCodes.get(name);
 		if (code == Object2IntHashMap.UNKNOWN_KEY)
-			throw new XPathException("Type: " + name + " is not defined");
+			{throw new XPathException("Type: " + name + " is not defined");}
 		return code;
 	}
 
@@ -338,13 +338,13 @@ public class Type {
 	 * @throws XPathException
 	 */
 	public static int getType(QName qname) throws XPathException {
-		String uri = qname.getNamespaceURI();
+		final String uri = qname.getNamespaceURI();
 		if (uri.equals(Namespaces.SCHEMA_NS))
-			return getType("xs:" + qname.getLocalName());
+			{return getType("xs:" + qname.getLocalName());}
 		else if (uri.equals(Namespaces.XPATH_DATATYPES_NS))
-			return getType("xdt:" + qname.getLocalName());
+			{return getType("xdt:" + qname.getLocalName());}
 		else
-			return getType(qname.getLocalName());
+			{return getType(qname.getLocalName());}
 	}
 
 	/**
@@ -367,19 +367,19 @@ public class Type {
 	 */
 	public static boolean subTypeOf(int subtype, int supertype) {
 		if (subtype == supertype)
-			return true;
+			{return true;}
 		//Note that it will return true even if subtype == EMPTY
 		if (supertype == ITEM || supertype == ANY_TYPE)
 			//maybe return subtype != EMPTY ?
-			return true;
+			{return true;}
 		//Note that EMPTY is *not* a sub-type of anything else than itself
 		//EmptySequence has to take care of this when it checks its type
 		if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE || subtype == NODE)
-			return false;
+			{return false;}
         subtype = superTypes[subtype];
 		if (subtype == 0)
-			throw new IllegalArgumentException(
-				"type " + subtype + " is not a valid type");
+			{throw new IllegalArgumentException(
+				"type " + subtype + " is not a valid type");}
 		return subTypeOf(subtype, supertype);
 	}
 
@@ -414,31 +414,31 @@ public class Type {
 	public static int getCommonSuperType(int type1, int type2) {
 		//Super shortcut
 		if(type1 == type2)
-			return type1;
+			{return type1;}
         // if one of the types is empty(), return the other type: optimizer is free to choose
         // an optimization based on the more specific type.
         if (type1 == Type.EMPTY)
-            return type2;
+            {return type2;}
         else if (type2 == Type.EMPTY)
-            return type1;
+            {return type1;}
 
 		//TODO : optimize by swapping the arguments based on their numeric values ?
 		//Processing lower value first *should* reduce the size of the Set
 		//Collect type1's super-types
-		HashSet<Integer> t1 = new HashSet<Integer>();
+		final HashSet<Integer> t1 = new HashSet<Integer>();
 		//Don't introduce a shortcut (starting at getSuperType(type1) here
 		//type2 might be a super-type of type1
 		int t;
 		for(t = type1; t != ITEM; t = getSuperType(t)) {
 			//Shortcut
 			if (t == type2)
-				return t;
-			t1.add(new Integer(t));
+				{return t;}
+			t1.add(Integer.valueOf(t));
 		}
 		//Starting from type2's super type : the shortcut should have done its job
 		for(t = getSuperType(type2); t != ITEM ; t = getSuperType(t)) {
 			if (t1.contains(Integer.valueOf(t)))
-				return t;
+				{return t;}
 		}
 		return ITEM;
 	} 

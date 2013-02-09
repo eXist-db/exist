@@ -72,10 +72,10 @@ public class RequestHelper
 	 */
 	public RequestCtx createQueryRequest(XQueryContext context, XACMLSource source)
 	{
-		Set<Subject> subjects = createQuerySubjects(context.getUser(), null);
-		Set<Attribute> resourceAttributes = createQueryResource(source);
-		Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.EXECUTE_QUERY_ACTION);
-		Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());
+		final Set<Subject> subjects = createQuerySubjects(context.getUser(), null);
+		final Set<Attribute> resourceAttributes = createQueryResource(source);
+		final Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.EXECUTE_QUERY_ACTION);
+		final Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());
 
 		return new RequestCtx(subjects, resourceAttributes, actionAttributes, environmentAttributes);
 	}
@@ -111,11 +111,11 @@ public class RequestHelper
 	*/
 	public RequestCtx createReflectionRequest(XQueryContext context, Module contextModule, String className, String methodName)
 	{
-		Account user = context.getUser();
-		Set<Subject> subjects = createQuerySubjects(user, contextModule);
-		Set<Attribute> resourceAttributes = createReflectionResource(className, methodName);
-		Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.INVOKE_METHOD_ACTION);
-		Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());
+		final Account user = context.getUser();
+		final Set<Subject> subjects = createQuerySubjects(user, contextModule);
+		final Set<Attribute> resourceAttributes = createReflectionResource(className, methodName);
+		final Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.INVOKE_METHOD_ACTION);
+		final Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());
 
 		return new RequestCtx(subjects, resourceAttributes, actionAttributes, environmentAttributes);
 	}
@@ -165,27 +165,27 @@ public class RequestHelper
 	*/
 	public RequestCtx createFunctionRequest(XQueryContext context, Module contextModule, QName functionName)
 	{
-		String namespaceURI = functionName.getNamespaceURI();
-		Module functionModule = context.getModule(namespaceURI);
+		final String namespaceURI = functionName.getNamespaceURI();
+		final Module functionModule = context.getModule(namespaceURI);
 		if(functionModule == null)
 		{
 			//main module, not a library module, so access to function is always allowed
 			return null;
 		}
 		
-		Account user = context.getUser();
-		Set<Subject> subjects = createQuerySubjects(user, contextModule);
+		final Account user = context.getUser();
+		final Set<Subject> subjects = createQuerySubjects(user, contextModule);
 
-		Set<Attribute> resourceAttributes = new HashSet<Attribute>(8);
+		final Set<Attribute> resourceAttributes = new HashSet<Attribute>(8);
 		addStringAttribute(resourceAttributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, getModuleCategory(functionModule));
-		XACMLSource moduleSrc = generateModuleSource(functionModule);
+		final XACMLSource moduleSrc = generateModuleSource(functionModule);
 		addSourceAttributes(resourceAttributes, moduleSrc);
 		addValidURIAttribute(resourceAttributes, XACMLConstants.MODULE_NS_ATTRIBUTE, namespaceURI);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.FUNCTION_RESOURCE);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, functionName.getLocalName());
 
-		Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.CALL_FUNCTION_ACTION);
-		Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());
+		final Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.CALL_FUNCTION_ACTION);
+		final Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());
 
 		return new RequestCtx(subjects, resourceAttributes, actionAttributes, environmentAttributes);
 	}
@@ -203,8 +203,8 @@ public class RequestHelper
 	*/
 	public Subject createUserSubject(Account user)
 	{
-		AttributeValue value = new StringAttribute(user.getName());
-		Attribute attr = new Attribute(XACMLConstants.SUBJECT_ID_ATTRIBUTE, null, null, value);
+		final AttributeValue value = new StringAttribute(user.getName());
+		final Attribute attr = new Attribute(XACMLConstants.SUBJECT_ID_ATTRIBUTE, null, null, value);
 		return new Subject(XACMLConstants.ACCESS_SUBJECT, Collections.singleton(attr));
 	}
 	/**
@@ -223,9 +223,9 @@ public class RequestHelper
 	public Set<Attribute> createBasicAction(String action)
 	{
 		if(action == null)
-			return null;
+			{return null;}
 
-		Set<Attribute> attributes = new HashSet<Attribute>(4);
+		final Set<Attribute> attributes = new HashSet<Attribute>(4);
 		addStringAttribute(attributes, XACMLConstants.ACTION_ID_ATTRIBUTE, action);
 		addValidURIAttribute(attributes, XACMLConstants.ACTION_NS_ATTRIBUTE, XACMLConstants.ACTION_NS);
 
@@ -251,12 +251,12 @@ public class RequestHelper
 	public Subject createModuleSubject(Module module)
 	{
 		if(module == null)
-			return null;
+			{return null;}
 
-		Set<Attribute> attributes = new HashSet<Attribute>(8);
+		final Set<Attribute> attributes = new HashSet<Attribute>(8);
 		addValidURIAttribute(attributes, XACMLConstants.SUBJECT_NS_ATTRIBUTE, module.getNamespaceURI());
 		addStringAttribute(attributes, XACMLConstants.MODULE_CATEGORY_ATTRIBUTE, getModuleCategory(module));
-		XACMLSource moduleSrc = generateModuleSource(module);
+		final XACMLSource moduleSrc = generateModuleSource(module);
 		addSourceAttributes(attributes, moduleSrc);
 		addStringAttribute(attributes, XACMLConstants.SUBJECT_ID_ATTRIBUTE, moduleSrc.createId());
 
@@ -284,14 +284,14 @@ public class RequestHelper
 	public Set<Attribute> createReflectionResource(String className, String methodName)
 	{
 		if(className == null)
-			throw new NullPointerException("Class name cannot be null");
+			{throw new NullPointerException("Class name cannot be null");}
 		if(methodName == null)
-			throw new NullPointerException("Method name cannot be null");
+			{throw new NullPointerException("Method name cannot be null");}
 		
-		Set<Attribute> resourceAttributes = new HashSet<Attribute>(8);
+		final Set<Attribute> resourceAttributes = new HashSet<Attribute>(8);
 
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.METHOD_RESOURCE);
-		XACMLSource source = XACMLSource.getInstance(className);
+		final XACMLSource source = XACMLSource.getInstance(className);
 		addSourceAttributes(resourceAttributes, source);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, methodName);
 
@@ -308,9 +308,9 @@ public class RequestHelper
 	public Set<Attribute> createQueryResource(XACMLSource source)
 	{
 		if(source == null)
-			throw new NullPointerException("Query source cannot be null");
+			{throw new NullPointerException("Query source cannot be null");}
 		
-		Set<Attribute> resourceAttributes = new HashSet<Attribute>(4);
+		final Set<Attribute> resourceAttributes = new HashSet<Attribute>(4);
 		addSourceAttributes(resourceAttributes, source);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, source.createId());
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.MAIN_MODULE_RESOURCE);
@@ -333,15 +333,15 @@ public class RequestHelper
 	public Set<Subject> createQuerySubjects(Account user, Module contextModule)
 	{
 		if(user == null)
-			throw new NullPointerException("User cannot be null");
-		Set<Subject> subjects = new HashSet<Subject>(4);
+			{throw new NullPointerException("User cannot be null");}
+		final Set<Subject> subjects = new HashSet<Subject>(4);
 
-		Subject userSubject = createUserSubject(user);
+		final Subject userSubject = createUserSubject(user);
 		subjects.add(userSubject);
 
 		if(contextModule != null)
 		{
-			Subject moduleSubject = createModuleSubject(contextModule);
+			final Subject moduleSubject = createModuleSubject(contextModule);
 			subjects.add(moduleSubject);
 		}
 		return subjects;
@@ -359,8 +359,8 @@ public class RequestHelper
 	public Set<Attribute> createEnvironment(AccessContext accessCtx)
 	{
 		if(accessCtx == null)
-			throw new NullAccessContextException();
-		Set<Attribute> environment = new HashSet<Attribute>(4);
+			{throw new NullAccessContextException();}
+		final Set<Attribute> environment = new HashSet<Attribute>(4);
 		addStringAttribute(environment, XACMLConstants.ACCESS_CONTEXT_ATTRIBUTE, accessCtx.toString());
 		return environment;
 	}
@@ -378,9 +378,9 @@ public class RequestHelper
 	public static XACMLSource generateModuleSource(Module module)
 	{
 		if(module == null)
-			throw new NullPointerException("Module cannot be null");
+			{throw new NullPointerException("Module cannot be null");}
 		if(module.isInternalModule())
-			return XACMLSource.getInstance(module.getClass());
+			{return XACMLSource.getInstance(module.getClass());}
 		return XACMLSource.getInstance(((ExternalModule)module).getSource());
 	}
 
@@ -398,7 +398,7 @@ public class RequestHelper
 	public static String getModuleCategory(Module module)
 	{
 		if(module == null)
-			return null;
+			{return null;}
 		return module.isInternalModule() ? XACMLConstants.INTERNAL_LIBRARY_MODULE : XACMLConstants.EXTERNAL_LIBRARY_MODULE;
 	}
 	
@@ -416,7 +416,7 @@ public class RequestHelper
 	public static void addSourceAttributes(Set<Attribute> attributes, XACMLSource source)
 	{
 		if(source == null)
-			throw new NullPointerException("Source cannot be null");
+			{throw new NullPointerException("Source cannot be null");}
 		addStringAttribute(attributes, XACMLConstants.SOURCE_KEY_ATTRIBUTE, source.getKey());
 		addStringAttribute(attributes, XACMLConstants.SOURCE_TYPE_ATTRIBUTE, source.getType());
 	}
@@ -435,13 +435,13 @@ public class RequestHelper
 	public static void addStringAttribute(Set<Attribute> attributes, URI attrID, String attrValue)
 	{
 		if(attributes == null)
-			return;
+			{return;}
 		if(attrID == null)
-			throw new NullPointerException("Attribute ID cannot be null");
+			{throw new NullPointerException("Attribute ID cannot be null");}
 		if(attrValue == null)
-			throw new NullPointerException("Attribute value cannot be null");
-		AttributeValue value = new StringAttribute(attrValue);
-		Attribute attr = new Attribute(attrID, null, null, value);
+			{throw new NullPointerException("Attribute value cannot be null");}
+		final AttributeValue value = new StringAttribute(attrValue);
+		final Attribute attr = new Attribute(attrID, null, null, value);
 		attributes.add(attr);
 	}
 	
@@ -462,14 +462,14 @@ public class RequestHelper
 	public static void addURIAttribute(Set<Attribute> attributes, URI attrID, String uriString) throws URISyntaxException
 	{
 		if(attributes == null)
-			return;
+			{return;}
 		if(attrID == null)
-			throw new NullPointerException("Attribute ID cannot be null");
+			{throw new NullPointerException("Attribute ID cannot be null");}
 		if(uriString == null)
-			throw new NullPointerException("Attribute value cannot be null");
-		URI uri = new URI(uriString);
-		AttributeValue value = new AnyURIAttribute(uri);
-		Attribute attr = new Attribute(attrID, null, null, value);
+			{throw new NullPointerException("Attribute value cannot be null");}
+		final URI uri = new URI(uriString);
+		final AttributeValue value = new AnyURIAttribute(uri);
+		final Attribute attr = new Attribute(attrID, null, null, value);
 		attributes.add(attr);
 	}
 	
@@ -481,7 +481,7 @@ public class RequestHelper
 		{
 			addURIAttribute(attributes, attrID, uriString);
 		}
-		catch(URISyntaxException e)
+		catch(final URISyntaxException e)
 		{
 			throw new RuntimeException("URI should never be invalid", e);
 		}

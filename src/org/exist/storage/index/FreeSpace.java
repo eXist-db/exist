@@ -46,11 +46,11 @@ public class FreeSpace {
     
     public int compareTo(FreeSpace other) {
         if (free < other.free)
-            return Constants.INFERIOR;
+            {return Constants.INFERIOR;}
         else if (free > other.free)
-            return Constants.SUPERIOR;
+            {return Constants.SUPERIOR;}
         else
-            return Constants.EQUAL;
+            {return Constants.EQUAL;}
 	}
     
     public boolean equals(FreeSpace other) {

@@ -76,15 +76,15 @@ public class XMLDBChmodResource extends XMLDBAbstractCollectionManipulator {
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 	throws XPathException {
         try {
-            Resource res = collection.getResource(args[1].getStringValue());
+            final Resource res = collection.getResource(args[1].getStringValue());
             if (res != null) {
-                UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+                final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
                 ums.chmod(res, ((IntegerValue) args[2].convertTo(Type.INTEGER)).getInt());
             } else {
 		logger.error("Unable to locate resource "+args[1].getStringValue());
                 throw new XPathException(this, "Unable to locate resource "+args[1].getStringValue());
             }
-        } catch (XMLDBException xe) {
+        } catch (final XMLDBException xe) {
 	    logger.error("Unable to change resource permissions", xe);
             throw new XPathException(this, "Unable to change resource permissions", xe);
         }

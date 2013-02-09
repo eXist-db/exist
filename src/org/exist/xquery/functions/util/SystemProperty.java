@@ -67,7 +67,7 @@ public class SystemProperty extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        String key = args[0].getStringValue();
+        final String key = args[0].getStringValue();
         String value = SystemProperties.getInstance().getSystemProperty(key, null);
         if(value == null) {
                 value = System.getProperty(key);

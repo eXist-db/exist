@@ -22,37 +22,37 @@ import java.util.Map;
 public class XQDocHelper {
 
     public static void parse(FunctionSignature signature) {
-        String desc = signature.getDescription();
+        final String desc = signature.getDescription();
         if (desc == null || !desc.startsWith("(:")) {
             return;
         }
-        XQDocHelper helper = parseComment(desc);
+        final XQDocHelper helper = parseComment(desc);
         if (helper == null)
-            return;
+            {return;}
         helper.enhance(signature);
     }
 
     public static void parse(ExternalModule module) {
-        String desc = module.getDescription();
+        final String desc = module.getDescription();
         if (desc == null || !desc.startsWith("(:")) {
             return;
         }
-        XQDocHelper helper = parseComment(desc);
+        final XQDocHelper helper = parseComment(desc);
         if (helper == null)
-            return;
+            {return;}
         helper.enhance(module);
     }
 
     private static XQDocHelper parseComment(String desc) {
-        XQDocLexer lexer = new XQDocLexer(new StringReader(desc));
-        XQDocParser parser = new XQDocParser(lexer);
+        final XQDocLexer lexer = new XQDocLexer(new StringReader(desc));
+        final XQDocParser parser = new XQDocParser(lexer);
         try {
-            XQDocHelper helper = new XQDocHelper();
+            final XQDocHelper helper = new XQDocHelper();
             parser.xqdocComment(helper);
             return helper;
-        } catch (RecognitionException e) {
+        } catch (final RecognitionException e) {
             // ignore: comment will be shown unparsed
-        } catch (TokenStreamException e) {
+        } catch (final TokenStreamException e) {
             // ignore: comment will be shown unparsed
         }
         return null;
@@ -71,19 +71,19 @@ public class XQDocHelper {
     }
 
     public void setParameter(String comment) {
-        String components[] = comment.trim().split("\\s+", 2);
+        final String components[] = comment.trim().split("\\s+", 2);
         if(components != null && components.length == 2) {
             String var = components[0];
             if (var.length() > 0 && var.charAt(0) == '$')
-                var = var.substring(1);
+                {var = var.substring(1);}
             parameters.put(var, components[1]);
         }
     }
 
     public void setTag(String tag, String content) {
-        if (tag.equals("@param")) {
+        if ("@param".equals(tag)) {
             setParameter(content);
-        } else if (tag.equals("@return")) {
+        } else if ("@return".equals(tag)) {
             returnValue = content;
         } else {
             meta.put(tag, content);
@@ -93,45 +93,45 @@ public class XQDocHelper {
     protected void enhance(FunctionSignature signature) {
         signature.setDescription(description.toString());
         if (returnValue != null) {
-            SequenceType returnType = signature.getReturnType();
-            FunctionReturnSequenceType newType =
+            final SequenceType returnType = signature.getReturnType();
+            final FunctionReturnSequenceType newType =
                     new FunctionReturnSequenceType(returnType.getPrimaryType(), returnType.getCardinality(), returnValue);
             signature.setReturnType(newType);
         }
-        SequenceType[] args = signature.getArgumentTypes();
-        for (SequenceType type : args) {
+        final SequenceType[] args = signature.getArgumentTypes();
+        for (final SequenceType type : args) {
             if (type instanceof FunctionParameterSequenceType) {
-                FunctionParameterSequenceType argType = (FunctionParameterSequenceType)type;
-                String desc = parameters.get(argType.getAttributeName());
+                final FunctionParameterSequenceType argType = (FunctionParameterSequenceType)type;
+                final String desc = parameters.get(argType.getAttributeName());
                 if (desc != null)
-                    argType.setDescription(desc);
+                    {argType.setDescription(desc);}
             }
         }
-        for (Map.Entry<String, String> entry: meta.entrySet()) {
+        for (final Map.Entry<String, String> entry: meta.entrySet()) {
             String key = entry.getKey();
             if (key.length() > 1 && key.charAt(0) == '@')
-                key = key.substring(1);
+                {key = key.substring(1);}
             signature.addMetadata(key, entry.getValue());
         }
     }
 
     protected void enhance(ExternalModule module) {
         module.setDescription(description.toString());
-        for (Map.Entry<String, String> entry: meta.entrySet()) {
+        for (final Map.Entry<String, String> entry: meta.entrySet()) {
             String key = entry.getKey();
             if (key.length() > 1 && key.charAt(0) == '@')
-                key = key.substring(1);
+                {key = key.substring(1);}
             module.addMetadata(key, entry.getValue());
         }
     }
 
     public String toString() {
-        StringBuilder out = new StringBuilder();
+        final StringBuilder out = new StringBuilder();
         out.append(description).append("\n\n");
-        for (Map.Entry<String, String> entry : meta.entrySet()) {
+        for (final Map.Entry<String, String> entry : meta.entrySet()) {
             out.append(String.format("%20s\t%s\n", entry.getKey(), entry.getValue()));
         }
-        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+        for (final Map.Entry<String, String> entry : parameters.entrySet()) {
             out.append(String.format("%20s\t%s\n", entry.getKey(), entry.getValue()));
         }
         return out.toString();

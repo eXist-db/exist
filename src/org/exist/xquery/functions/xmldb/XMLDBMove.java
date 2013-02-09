@@ -80,32 +80,32 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
         throws XPathException {
 
-        XmldbURI destination = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
+        final XmldbURI destination = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
         if (getSignature().getArgumentCount() == 3) {
-            XmldbURI doc = new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI();
+            final XmldbURI doc = new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI();
             try {
-                Resource resource = collection.getResource(doc.toString());
+                final Resource resource = collection.getResource(doc.toString());
                 if (resource == null) {
                     logger.error( "Resource " + doc + " not found");
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
-                CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
+                final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
                 service.moveResource(doc, destination, null);
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 logger.error(e.getMessage());
                 throw new XPathException(this, "XMLDB exception caught: " + e.getMessage(), e);
             }
         } else {
             try {
-                CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
+                final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) collection.getService("CollectionManagementService", "1.0");
                 service.move(XmldbURI.xmldbUriFor(collection.getName()),
                         destination, null);
 
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 logger.error(e.getMessage());
                 throw new XPathException(this, "Cannot move collection: " + e.getMessage(), e);
 
-            } catch (URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 logger.error(e.getMessage());
                 throw new XPathException(this, "URI exception: " + e.getMessage(), e);
             }

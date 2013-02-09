@@ -65,20 +65,20 @@ public class DynamicCardinalityCheck extends AbstractExpression {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence seq = expression.eval(contextSequence, contextItem);
+        final Sequence seq = expression.eval(contextSequence, contextItem);
         int actualCardinality;
         if (seq.isEmpty())
-            actualCardinality = Cardinality.EMPTY;
+            {actualCardinality = Cardinality.EMPTY;}
         else if (seq.hasMany())
-            actualCardinality = Cardinality.MANY;
+            {actualCardinality = Cardinality.MANY;}
         else
-            actualCardinality = Cardinality.ONE;
+            {actualCardinality = Cardinality.ONE;}
         if (!Cardinality.checkCardinality(requiredCardinality, actualCardinality)) {
             error.addArgs(ExpressionDumper.dump(expression),
                 Cardinality.getDescription(requiredCardinality),
@@ -86,7 +86,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
             throw new XPathException(this, error.toString());
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", seq);
+            {context.getProfiler().end(this, "", seq);}
         return seq;
     }
 
@@ -102,11 +102,11 @@ public class DynamicCardinalityCheck extends AbstractExpression {
         }
         expression.dump(dumper);
         if(dumper.verbosity() > 1)
-            dumper.display(")");
+            {dumper.display(")");}
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("dynamic-cardinality-check("); 
         result.append("\"" + Cardinality.getDescription(requiredCardinality) + "\"");
         result.append(", "); 
@@ -152,7 +152,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
     
     public Expression getSubExpression(int index) {
         if (index == 0)
-            return expression;
+            {return expression;}
         throw new IndexOutOfBoundsException("Index: " + index + ", Size: "+getSubExpressionCount());
     }
 }

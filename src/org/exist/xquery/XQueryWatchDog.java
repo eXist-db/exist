@@ -67,29 +67,29 @@ public class XQueryWatchDog {
     }
     
     private void configureDefaults() {
-    	DBBroker broker = context.getBroker();
-        Configuration conf = broker.getBrokerPool().getConfiguration();
+    	final DBBroker broker = context.getBroker();
+        final Configuration conf = broker.getBrokerPool().getConfiguration();
         Object option = conf.getProperty(PROPERTY_QUERY_TIMEOUT);
         if(option != null)
-            timeout = ((Long)option).longValue();
+            {timeout = ((Long)option).longValue();}
         if(timeout <= 0)
-            timeout = Long.MAX_VALUE;
+            {timeout = Long.MAX_VALUE;}
         option = conf.getProperty(PROPERTY_OUTPUT_SIZE_LIMIT);
         if(option != null)
-            maxNodesLimit = ((Integer)option).intValue();
+            {maxNodesLimit = ((Integer)option).intValue();}
     }
     
     public void setTimeoutFromOption(Option option) throws XPathException {
-    	String[] contents = option.tokenizeContents();
+    	final String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
-    		throw new XPathException("Option 'timeout' should have exactly one parameter: the timeout value.");
+    		{throw new XPathException("Option 'timeout' should have exactly one parameter: the timeout value.");}
 		try {
 			timeout = Long.parseLong(contents[0]);
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			throw new XPathException("Error parsing timeout value in option " + option.getQName().getStringValue());
 		}
 		if (LOG.isDebugEnabled()) {
-			NumberFormat nf = NumberFormat.getNumberInstance();
+			final NumberFormat nf = NumberFormat.getNumberInstance();
 			LOG.debug("timeout set from option: " + nf.format(timeout) + " ms.");
 		}
     }
@@ -103,16 +103,16 @@ public class XQueryWatchDog {
     }
     
     public void setMaxNodesFromOption(Option option) throws XPathException {
-    	String[] contents = option.tokenizeContents();
+    	final String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
-    		throw new XPathException("Option 'output-size-limit' should have exactly one parameter: the output-size-limit value.");
+    		{throw new XPathException("Option 'output-size-limit' should have exactly one parameter: the output-size-limit value.");}
 		try {
 			setMaxNodes(Integer.parseInt(contents[0]));
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			throw new XPathException("Error parsing output-size-limit value in option " + option.getQName().getStringValue());
 		}
 		if (LOG.isDebugEnabled()) {
-			NumberFormat nf = NumberFormat.getNumberInstance();
+			final NumberFormat nf = NumberFormat.getNumberInstance();
 			LOG.debug("output-size-limit set from option: " + nf.format(maxNodesLimit));
 		}
     }
@@ -120,7 +120,7 @@ public class XQueryWatchDog {
     public void proceed(Expression expr) throws TerminatedException {
     	if(terminate) {
     		if(expr == null)
-    			expr = context.getRootExpression();
+    			{expr = context.getRootExpression();}
     		cleanUp();
     		throw new TerminatedException(expr.getLine(), expr.getColumn(),
     				"The query has been killed by the server.");
@@ -129,8 +129,8 @@ public class XQueryWatchDog {
             final long elapsed = System.currentTimeMillis() - startTime;
             if(elapsed > timeout) {
                 if(expr == null)
-                    expr = context.getRootExpression();
-                NumberFormat nf = NumberFormat.getNumberInstance();
+                    {expr = context.getRootExpression();}
+                final NumberFormat nf = NumberFormat.getNumberInstance();
                 LOG.warn("Query exceeded predefined timeout (" + nf.format(elapsed) + " ms.): " +
                         ExpressionDumper.dump(expr));
                 cleanUp();
@@ -144,8 +144,8 @@ public class XQueryWatchDog {
         proceed(expr);
         if(maxNodesLimit > 0 && builder.getSize() > maxNodesLimit) {
             if(expr == null)
-                expr = context.getRootExpression();
-            NumberFormat nf = NumberFormat.getNumberInstance();
+                {expr = context.getRootExpression();}
+            final NumberFormat nf = NumberFormat.getNumberInstance();
             LOG.warn("Query exceeded predefined output-size-limit (" +  nf.format(maxNodesLimit) + ") for document fragments: " + 
                     ExpressionDumper.dump(expr));
             cleanUp();

@@ -58,10 +58,10 @@ public class XMLDBListTask extends AbstractXMLDBTask
 
         try {
             log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            Collection base = DatabaseManager.getCollection( uri, user, password );
+            final Collection base = DatabaseManager.getCollection( uri, user, password );
 
             if( base == null ) {
-                String msg = "Collection " + uri + " could not be found.";
+                final String msg = "Collection " + uri + " could not be found.";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -70,16 +70,16 @@ public class XMLDBListTask extends AbstractXMLDBTask
                 }
             }
 
-            StringBuilder buffer = new StringBuilder();
+            final StringBuilder buffer = new StringBuilder();
 
             if( hasCollections ) {
-                String[] childCollections = base.listChildCollections();
+                final String[] childCollections = base.listChildCollections();
 
                 if( childCollections != null ) {
                     log( "Listing child collections", Project.MSG_DEBUG );
                     boolean isFirst = true;
 
-                    for( String col : childCollections ) {
+                    for( final String col : childCollections ) {
 
                         // only insert separator for 2nd or later item
                         if( isFirst ) {
@@ -95,7 +95,7 @@ public class XMLDBListTask extends AbstractXMLDBTask
 
             if( hasResources ) {
                 log( "Listing resources", Project.MSG_DEBUG );
-                String[] resources = base.listResources();
+                final String[] resources = base.listResources();
 
                 if( resources != null ) {
 
@@ -105,7 +105,7 @@ public class XMLDBListTask extends AbstractXMLDBTask
 
                     boolean isFirst = true;
 
-                    for( String resource : resources ) {
+                    for( final String resource : resources ) {
 
                         // only insert separator for 2nd or later item
                         if( isFirst ) {
@@ -125,8 +125,8 @@ public class XMLDBListTask extends AbstractXMLDBTask
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception during list: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception during list: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

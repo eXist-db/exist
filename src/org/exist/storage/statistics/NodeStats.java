@@ -41,7 +41,7 @@ class NodeStats {
 
     public void updateMaxDepth() {
         if (depth > maxDepth)
-            maxDepth = depth;
+            {maxDepth = depth;}
         depth = 0;
     }
 
@@ -56,7 +56,7 @@ class NodeStats {
     protected NodeStats addChild(QName qn) {
         if (children != null) {
             for (int i = 0; i < children.length; i++) {
-                NodeStats child = children[i];
+                final NodeStats child = children[i];
                 if (child.qname.equalsSimple(qn)) {
                     return child;
                 }
@@ -76,7 +76,7 @@ class NodeStats {
     protected void mergeInto(DataGuide other, NodePath currentPath) {
         NodePath newPath;
         if (qname == null)
-            newPath = currentPath;
+            {newPath = currentPath;}
         else {
             newPath = new NodePath(currentPath);
             newPath.addComponent(qname);
@@ -85,7 +85,7 @@ class NodeStats {
 
         if (children != null) {
             for (int i = 0; i < children.length; i++) {
-                NodeStats child = children[i];
+                final NodeStats child = children[i];
                 child.mergeInto(other, newPath);
             }
         }
@@ -94,7 +94,7 @@ class NodeStats {
     protected void mergeStats(NodeStats other) {
         nodeCount += other.nodeCount;
         if (other.maxDepth > maxDepth)
-            maxDepth = other.maxDepth;
+            {maxDepth = other.maxDepth;}
     }
 
     protected int getSize() {
@@ -133,16 +133,16 @@ class NodeStats {
     }
 
     protected void read(ByteBuffer buffer, SymbolTable symbols) {
-        short nsid = buffer.getShort();
-        short localid = buffer.getShort();
-        String namespaceURI = symbols.getNamespace(nsid);
-        String localName = symbols.getName(localid);
+        final short nsid = buffer.getShort();
+        final short localid = buffer.getShort();
+        final String namespaceURI = symbols.getNamespace(nsid);
+        final String localName = symbols.getName(localid);
         qname = symbols.getQName(Node.ELEMENT_NODE, namespaceURI,
             localName, "");
         nodeCount = buffer.getInt();
         maxDepth = buffer.getInt();
 
-        int childCount = buffer.getInt();
+        final int childCount = buffer.getInt();
         if (childCount > 0) {
             children = new NodeStats[childCount];
             for (int i = 0; i < childCount; i++) {
@@ -155,11 +155,11 @@ class NodeStats {
     protected void dump(StringBuilder currentPath, List<StringBuilder> paths) {
         StringBuilder newPath;
         if (qname == null)
-            newPath = currentPath;
+            {newPath = currentPath;}
         else {
             newPath = new StringBuilder(currentPath);
             if (newPath.length() > 0)
-                newPath.append(" -> ");
+                {newPath.append(" -> ");}
             newPath.append(qname);
             newPath.append('[').append(nodeCount).append(',');
             newPath.append(maxDepth).append(']');
@@ -167,14 +167,14 @@ class NodeStats {
         paths.add(newPath);
         if (children != null) {
             for (int i = 0; i < children.length; i++) {
-                NodeStats child = children[i];
+                final NodeStats child = children[i];
                 child.dump(newPath, paths);
             }
         }
     }
 
     public void toSAX(ContentHandler handler) throws SAXException {
-        AttributesImpl attribs = new AttributesImpl();
+        final AttributesImpl attribs = new AttributesImpl();
         attribs.addAttribute("", "name", "name", "CDATA", qname.getLocalName());
         attribs.addAttribute("", "namespace", "namespace", "CDATA", qname.getNamespaceURI());
         attribs.addAttribute("", "node-count", "node-count", "CDATA", Integer.toString(nodeCount));

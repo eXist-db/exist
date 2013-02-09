@@ -63,13 +63,13 @@ public class SystemTaskManager {
                 oldUser = broker.getSubject();
                 broker.setSubject(pool.getSecurityManager().getSystemSubject());
                 while (!waitingSystemTasks.isEmpty()) {
-                	SystemTask task = waitingSystemTasks.pop();
+                	final SystemTask task = waitingSystemTasks.pop();
                 	if (task.afterCheckpoint())
-                		pool.sync(broker, Sync.MAJOR_SYNC);
+                		{pool.sync(broker, Sync.MAJOR_SYNC);}
                     runSystemTask(task, broker);
                 }
 
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 SystemTask.LOG.warn("System maintenance task reported error: " + e.getMessage(), e);
                 
             } finally {
@@ -83,10 +83,10 @@ public class SystemTaskManager {
 
     private void runSystemTask(SystemTask task, DBBroker broker) throws EXistException {
         if (SystemTask.LOG.isDebugEnabled())
-            SystemTask.LOG.debug("Running system maintenance task: " + task.getClass().getName());
+            {SystemTask.LOG.debug("Running system maintenance task: " + task.getClass().getName());}
         task.execute(broker);
         if (SystemTask.LOG.isDebugEnabled())
-            SystemTask.LOG.debug("System task completed.");
+            {SystemTask.LOG.debug("System task completed.");}
     }
 
     public void initialize() {

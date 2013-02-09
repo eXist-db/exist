@@ -40,7 +40,7 @@ public class BackupFile
         try {
             date = BackupDirectory.DATE_FORMAT.parse( dateTime );
         }
-        catch( ParseException e ) {
+        catch( final ParseException e ) {
         }
     }
 

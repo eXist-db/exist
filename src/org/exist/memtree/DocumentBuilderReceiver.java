@@ -144,7 +144,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     private void declareNamespaces() {
         if (explicitNSDecl && namespaces != null) {
-            for(Map.Entry<String, String> entry : namespaces.entrySet()) {
+            for(final Map.Entry<String, String> entry : namespaces.entrySet()) {
                 builder.namespaceNode(entry.getKey(), entry.getValue());
             }
             namespaces.clear();
@@ -202,7 +202,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         try {
             qname = checkNS(false, qname);
             builder.addAttribute(qname, value);
-        } catch(DOMException e) {
+        } catch(final DOMException e) {
             throw new SAXException(e.getMessage());
         }
     }
@@ -306,7 +306,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     
     public QName checkNS(boolean isElement, QName qname) {
         if(checkNS) {
-            XQueryContext context = builder.getContext();
+            final XQueryContext context = builder.getContext();
             if(qname.getPrefix() == null) {
             	if (qname.getNamespaceURI() == null || qname.getNamespaceURI().isEmpty()) {
             		return qname;
@@ -315,7 +315,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	                return qname; 
 
             	} else {
-	                String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
+	                final String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
 
 	                context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
 	                qname.setPrefix(prefix);
@@ -323,15 +323,15 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 	            }
             }
         	if(qname.getPrefix().isEmpty() && qname.getNamespaceURI() == null)
-                return qname;
+                {return qname;}
 
-            String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
+            final String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
             if(inScopeNamespace == null) {
                 context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
                 
             } else if(!inScopeNamespace.equals(qname.getNamespaceURI())) {
                 
-                String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
+                final String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
 
                 context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
                 qname.setPrefix(prefix);

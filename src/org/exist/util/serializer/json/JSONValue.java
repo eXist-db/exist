@@ -37,9 +37,9 @@ public class JSONValue extends JSONNode {
 	public JSONValue(String content, boolean escape) {
 		super(Type.VALUE_TYPE, NAME_VALUE);
         if (escape)
-            this.content =  escape(content);
+            {this.content =  escape(content);}
         else
-            this.content = content;
+            {this.content = content;}
 	}
 
 	public JSONValue() {
@@ -48,9 +48,9 @@ public class JSONValue extends JSONNode {
 
 	public void addContent(String str) {
 		if (content == null)
-			content = str;
+			{content = str;}
 		else
-			content += str;
+			{content += str;}
 	}
 	
 	@Override
@@ -62,26 +62,26 @@ public class JSONValue extends JSONNode {
 				next.serializeContent(writer);
 				next = next.getNextOfSame();
 				if (next != null)
-					writer.write(", ");
+					{writer.write(", ");}
 			}
 			writer.write("]");
 		} else
-			serializeContent(writer);		
+			{serializeContent(writer);}		
 	}
 
 	@Override
 	public void serializeContent(Writer writer) throws IOException {
 		if (getSerializationType() != SerializationType.AS_LITERAL)
-			writer.write('"');
+			{writer.write('"');}
 		writer.write(content);
 		if (getSerializationType() != SerializationType.AS_LITERAL)
-			writer.write('"');
+			{writer.write('"');}
 	}
 	
 	protected static String escape(String str) {
-		StringBuilder builder = new StringBuilder();
+		final StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < str.length(); i++) {
-			char ch = str.charAt(i);
+			final char ch = str.charAt(i);
 			switch (ch) {
 			case '\n':
 				builder.append("\\n");

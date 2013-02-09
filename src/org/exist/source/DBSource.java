@@ -84,15 +84,15 @@ public class DBSource extends AbstractSource {
         try {
             doc = broker.getXMLResource(key, Lock.READ_LOCK);
             if (doc == null)
-                return INVALID;
+                {return INVALID;}
             if (doc.getMetadata().getLastModified() > lastModified)
-                return INVALID;
+                {return INVALID;}
             return VALID;
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             return INVALID;
         } finally {
             if (doc != null)
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                {doc.getUpdateLock().release(Lock.READ_LOCK);}
         }
     }
 
@@ -101,10 +101,10 @@ public class DBSource extends AbstractSource {
      */
     public int isValid(Source other) {
         if(!(other instanceof DBSource))
-            return INVALID;
-        DBSource source = (DBSource) other;
+            {return INVALID;}
+        final DBSource source = (DBSource) other;
         if(source.getLastModified() > lastModified)
-            return INVALID;
+            {return INVALID;}
         return VALID;
     }
 
@@ -112,8 +112,8 @@ public class DBSource extends AbstractSource {
      * @see org.exist.source.Source#getReader()
      */
     public Reader getReader() throws IOException {
-        InputStream is = broker.getBinaryResource(doc);
-        BufferedInputStream bis = new BufferedInputStream(is);
+        final InputStream is = broker.getBinaryResource(doc);
+        final BufferedInputStream bis = new BufferedInputStream(is);
         bis.mark(64);
         checkEncoding(bis);
         bis.reset();
@@ -128,29 +128,29 @@ public class DBSource extends AbstractSource {
      * @see org.exist.source.Source#getContent()
      */
     public String getContent() throws IOException {
-        InputStream raw = broker.getBinaryResource(doc);
-        long binaryLength = broker.getBinaryResourceSize(doc);
+        final InputStream raw = broker.getBinaryResource(doc);
+        final long binaryLength = broker.getBinaryResourceSize(doc);
 	if(binaryLength > (long)Integer.MAX_VALUE) {
 		throw new IOException("Resource too big to be read using this method.");
 	}
-        byte [] data = new byte[(int)binaryLength];
+        final byte [] data = new byte[(int)binaryLength];
         raw.read(data);
         raw.close();
-        ByteArrayInputStream is = new ByteArrayInputStream(data);
+        final ByteArrayInputStream is = new ByteArrayInputStream(data);
         checkEncoding(is);
         return new String(data, encoding);
     }
 
     public QName isModule() throws IOException {
-        InputStream raw = broker.getBinaryResource(doc);
-        long binaryLength = broker.getBinaryResourceSize(doc);
+        final InputStream raw = broker.getBinaryResource(doc);
+        final long binaryLength = broker.getBinaryResourceSize(doc);
         if(binaryLength > (long)Integer.MAX_VALUE) {
             throw new IOException("Resource too big to be read using this method.");
         }
-        byte [] data = new byte[(int)binaryLength];
+        final byte [] data = new byte[(int)binaryLength];
         raw.read(data);
         raw.close();
-        ByteArrayInputStream is = new ByteArrayInputStream(data);
+        final ByteArrayInputStream is = new ByteArrayInputStream(data);
         return getModuleDecl(is);
     }
 
@@ -158,7 +158,7 @@ public class DBSource extends AbstractSource {
         if (checkEncoding) {
             String checkedEnc = guessXQueryEncoding(is);
             if (checkedEnc != null)
-                encoding = checkedEnc;
+                {encoding = checkedEnc;}
         }
     }
     
@@ -172,7 +172,7 @@ public class DBSource extends AbstractSource {
         //TODO This check should not even be here! Its up to the database to refuse access not requesting source
         
         if(!doc.getPermissions().validate(subject, mode)) {
-            String modeStr = new UnixStylePermissionAider(mode).toString();
+            final String modeStr = new UnixStylePermissionAider(mode).toString();
             throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have '" + modeStr + "' access to resource '" + doc.getURI() + "'.");
         }
     }

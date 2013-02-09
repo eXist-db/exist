@@ -102,7 +102,7 @@ public class IntRangeSet implements Serializable {
         int i = 0;
         int j = used;
         do {
-            int mid = i + (j-i)/2;
+            final int mid = i + (j-i)/2;
             if (endPoints[mid] < value) {
                 i = Math.max(mid, i+1);
             } else if (startPoints[mid] > value) {
@@ -160,7 +160,7 @@ public class IntRangeSet implements Serializable {
         int i = 0;
         int j = used;
         do {
-            int mid = i + (j-i)/2;
+            final int mid = i + (j-i)/2;
             if (endPoints[mid] < value) {
                 i = Math.max(mid, i+1);
             } else if (startPoints[mid] > value) {
@@ -206,7 +206,7 @@ public class IntRangeSet implements Serializable {
             try {
                 System.arraycopy(startPoints, i, startPoints, i+1, used-i-1);
                 System.arraycopy(endPoints, i, endPoints, i+1, used-i-1);
-            } catch (Exception err) {
+            } catch (final Exception err) {
                 err.printStackTrace();
             }
             startPoints[i] = value;
@@ -238,7 +238,7 @@ public class IntRangeSet implements Serializable {
     }
 
     public String toString() {
-        FastStringBuffer sb = new FastStringBuffer(used*8);
+        final FastStringBuffer sb = new FastStringBuffer(used*8);
         for (int i=0; i<used; i++) {
             sb.append(startPoints[i] + "-" + endPoints[i] + ",");
         }
@@ -251,7 +251,7 @@ public class IntRangeSet implements Serializable {
      */
 
     public boolean equals(Object other) {
-    	if (other == null) return false;
+    	if (other == null) {return false;}
         if (other instanceof IntRangeSet) {
             return used == ((IntRangeSet)other).used &&
                    Arrays.equals(startPoints, ((IntRangeSet)other).startPoints) &&
@@ -281,7 +281,7 @@ public class IntRangeSet implements Serializable {
      */
 
     public boolean containsAll(IntRangeSet other) {
-    	IntRangeSetIterator it = other.iterator();
+    	final IntRangeSetIterator it = other.iterator();
         while (it.hasNext()) {
             if (!contains(it.next())) {
                 return false;

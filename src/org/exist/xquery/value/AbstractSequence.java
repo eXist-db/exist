@@ -64,21 +64,21 @@ public abstract class AbstractSequence implements Sequence {
 
     public int getCardinality() {
         if (isEmpty())
-            return Cardinality.EMPTY;
+            {return Cardinality.EMPTY;}
         if (hasOne())
-            return Cardinality.EXACTLY_ONE;
+            {return Cardinality.EXACTLY_ONE;}
         if (hasMany())
-            return Cardinality.ONE_OR_MORE;
+            {return Cardinality.ONE_OR_MORE;}
         throw new IllegalArgumentException("Illegal argument");
     }
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        Item first = itemAt(0);
+        final Item first = itemAt(0);
         if(Type.subTypeOf(first.getType(), Type.ATOMIC))
-            return ((AtomicValue)first).convertTo(requiredType);
+            {return ((AtomicValue)first).convertTo(requiredType);}
         else
             //TODO : clean atomization
-            return new StringValue(first.getStringValue()).convertTo(requiredType);
+            {return new StringValue(first.getStringValue()).convertTo(requiredType);}
     }
 
     public abstract boolean isEmpty();
@@ -91,9 +91,9 @@ public abstract class AbstractSequence implements Sequence {
 
     @Override
     public Sequence tail() throws XPathException {
-    	ValueSequence tmp = new ValueSequence(getItemCount() - 1);
+    	final ValueSequence tmp = new ValueSequence(getItemCount() - 1);
     	Item item;
-        SequenceIterator iterator = iterate();
+        final SequenceIterator iterator = iterate();
         iterator.nextItem();
         while (iterator.hasNext()) {
             item = iterator.nextItem();
@@ -104,25 +104,25 @@ public abstract class AbstractSequence implements Sequence {
     
     public String getStringValue() throws XPathException {
         if(isEmpty())
-            return "";
-        Item first = iterate().nextItem();
+            {return "";}
+        final Item first = iterate().nextItem();
         return first.getStringValue();
     }
 
     public String toString() {
         try {
-            StringBuilder buf = new StringBuilder();
+            final StringBuilder buf = new StringBuilder();
             buf.append("(");
             boolean gotOne = false;
-            for (SequenceIterator i = iterate(); i.hasNext(); ) {
+            for (final SequenceIterator i = iterate(); i.hasNext(); ) {
                 if (gotOne)
-                    buf.append(", ");
+                    {buf.append(", ");}
                 buf.append(i.nextItem());
                 gotOne = true;
             }
             buf.append(")");
             return buf.toString();
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             return "toString() fails: " + e.getMessage();
         }
     }
@@ -133,7 +133,7 @@ public abstract class AbstractSequence implements Sequence {
     public abstract void add(Item item) throws XPathException;
 
     public void addAll(Sequence other) throws XPathException {
-        for (SequenceIterator i = other.iterate(); i.hasNext(); )
+        for (final SequenceIterator i = other.iterate(); i.hasNext(); )
             add(i.nextItem());
     }
 
@@ -163,26 +163,26 @@ public abstract class AbstractSequence implements Sequence {
      */
     public boolean effectiveBooleanValue() throws XPathException {		
         if (isEmpty())
-            return false;
-        Item first = itemAt(0);
+            {return false;}
+        final Item first = itemAt(0);
         //If its operand is a sequence whose first item is a node, fn:boolean returns true.		
         if (Type.subTypeOf(first.getType(), Type.NODE))
-            return true;
+            {return true;}
         if (hasMany()) {
             if (OLD_EXIST_VERSION_COMPATIBILITY)		
-                return true;
+                {return true;}
             else
-                throw new XPathException(
+                {throw new XPathException(
                     "err:FORG0006: effectiveBooleanValue: first item of '" + 
                     (toString().length() < 20 ? toString() : toString().substring(0, 20)+ "...") + 
-                    "' is not a node, and sequence length > 1");
+                    "' is not a node, and sequence length > 1");}
         }
         //From now, we'll work with singletons...
         //Not sure about this one : does it mean than any singleton, including false() and 0 will return true ?
         if (OLD_EXIST_VERSION_COMPATIBILITY)
-            return true;
+            {return true;}
         else
-            return ((AtomicValue)first).effectiveBooleanValue();
+            {return ((AtomicValue)first).effectiveBooleanValue();}
     }
 
     /* (non-Javadoc)
@@ -190,13 +190,13 @@ public abstract class AbstractSequence implements Sequence {
      */
     public int conversionPreference(Class<?> javaClass) {
         if (javaClass.isAssignableFrom(Sequence.class))
-            return 0;
+            {return 0;}
         else if (javaClass.isAssignableFrom(List.class) || javaClass.isArray())
-            return 1;
+            {return 1;}
         else if (javaClass == Object.class)
-            return 20;
+            {return 20;}
         if(!isEmpty())
-            return itemAt(0).conversionPreference(javaClass);
+            {return itemAt(0).conversionPreference(javaClass);}
         return Integer.MAX_VALUE;
     }
 
@@ -223,7 +223,7 @@ public abstract class AbstractSequence implements Sequence {
             return (T)array;
         } else if(target.isAssignableFrom(List.class)) {
             final List<Item> l = new ArrayList<Item>(getItemCount());
-            for(SequenceIterator i = iterate(); i.hasNext(); ) {
+            for(final SequenceIterator i = iterate(); i.hasNext(); ) {
                 l.add(i.nextItem());
             }
             return (T)l;
@@ -236,17 +236,17 @@ public abstract class AbstractSequence implements Sequence {
 
     public void clearContext(int contextId)  throws XPathException {
         Item next;
-        for (SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
+        for (final SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
             next = i.nextItem();
             if (next instanceof NodeProxy)
-                ((NodeProxy)next).clearContext(contextId);
+                {((NodeProxy)next).clearContext(contextId);}
         }
     }
 
     public void setSelfAsContext(int contextId) throws XPathException {
         Item next;
         NodeValue node;
-        for (SequenceIterator i = unorderedIterator(); i.hasNext();) {
+        for (final SequenceIterator i = unorderedIterator(); i.hasNext();) {
             next = i.nextItem();
             if (Type.subTypeOf(next.getType(), Type.NODE)) {
                 node = (NodeValue) next;

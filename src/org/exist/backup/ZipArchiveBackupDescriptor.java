@@ -54,7 +54,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
             //looking for highest collection
             //TODO: better to put some information on top?
             ZipEntry item = null;
-            Enumeration<? extends ZipEntry> zipEnum = archive.entries();
+            final Enumeration<? extends ZipEntry> zipEnum = archive.entries();
 
             while(zipEnum.hasMoreElements()) {
                 item = zipEnum.nextElement();
@@ -98,7 +98,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
         try {
             bd = new ZipArchiveBackupDescriptor( archive, base + describedItem + "/" );
-        } catch(FileNotFoundException fnfe) {
+        } catch(final FileNotFoundException fnfe) {
             // DoNothing(R)
         }
 
@@ -119,7 +119,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
         try {
             bd = new ZipArchiveBackupDescriptor(archive, describedItem);
-        } catch(FileNotFoundException e) {
+        } catch(final FileNotFoundException e) {
             // DoNothing(R)
         }
         
@@ -134,7 +134,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
     @Override
     public EXistInputSource getInputSource(String describedItem) {
-        ZipEntry ze = archive.getEntry(base + describedItem);
+        final ZipEntry ze = archive.getEntry(base + describedItem);
         EXistInputSource retval = null;
 
         if((ze != null) && !ze.isDirectory()) {
@@ -162,7 +162,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     @Override
     public Properties getProperties() throws IOException {
         Properties properties = null;
-        ZipEntry ze = archive.getEntry(BACKUP_PROPERTIES);
+        final ZipEntry ze = archive.getEntry(BACKUP_PROPERTIES);
 
         if(ze != null) {
             properties = new Properties();
@@ -173,14 +173,14 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
     @Override
     public File getRepoBackup() throws IOException {
-        ZipEntry ze = archive.getEntry(RepoBackup.REPO_ARCHIVE);
+        final ZipEntry ze = archive.getEntry(RepoBackup.REPO_ARCHIVE);
 
         if (ze == null)
-            return null;
-        File temp = File.createTempFile("expathrepo", "zip");
-        FileOutputStream os = new FileOutputStream(temp);
-        InputStream is = archive.getInputStream(ze);
-        byte[] buf = new byte[4096];
+            {return null;}
+        final File temp = File.createTempFile("expathrepo", "zip");
+        final FileOutputStream os = new FileOutputStream(temp);
+        final InputStream is = archive.getInputStream(ze);
+        final byte[] buf = new byte[4096];
         int count;
         while ((count = is.read(buf)) > 0) {
             os.write(buf, 0, count);

@@ -88,29 +88,29 @@ public class FunStartsWith extends CollatingFunction {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 	if(contextItem != null)
-	    contextSequence = contextItem.toSequence();
+	    {contextSequence = contextItem.toSequence();}
 
         Sequence result;
-	String s1 = getArgument(0).eval(contextSequence).getStringValue();
-	String s2 = getArgument(1).eval(contextSequence).getStringValue();        
+	final String s1 = getArgument(0).eval(contextSequence).getStringValue();
+	final String s2 = getArgument(1).eval(contextSequence).getStringValue();        
 	if(s1.length() == 0 || s2.length() == 0)
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
-	    Collator collator = getCollator(contextSequence, contextItem, 3);
+	    final Collator collator = getCollator(contextSequence, contextItem, 3);
 	    if(Collations.startsWith(collator, s1, s2))
-                result = BooleanValue.TRUE;
+                {result = BooleanValue.TRUE;}
 	    else
-                result = BooleanValue.FALSE;
+                {result = BooleanValue.FALSE;}
         }
 
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;
     }

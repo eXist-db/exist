@@ -60,11 +60,11 @@ public class GetUptime extends BasicFunction {
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        Calendar startupTime = context.getBroker().getBrokerPool().getStartupTime();
+        final Calendar startupTime = context.getBroker().getBrokerPool().getStartupTime();
 
-        XMLGregorianCalendar xmlNow = context.getCalendar();
-        Calendar now = xmlNow.toGregorianCalendar();
-        long duration = now.getTimeInMillis() - startupTime.getTimeInMillis();
+        final XMLGregorianCalendar xmlNow = context.getCalendar();
+        final Calendar now = xmlNow.toGregorianCalendar();
+        final long duration = now.getTimeInMillis() - startupTime.getTimeInMillis();
         return new DayTimeDurationValue(duration);
 
     }

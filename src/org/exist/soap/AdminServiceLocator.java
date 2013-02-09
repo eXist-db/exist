@@ -46,7 +46,7 @@ public class AdminServiceLocator extends org.apache.axis.client.Service implemen
         try {
             endpoint = new java.net.URL(Admin_address);
         }
-        catch (java.net.MalformedURLException e) {
+        catch (final java.net.MalformedURLException e) {
             throw new javax.xml.rpc.ServiceException(e);
         }
         return getAdmin(endpoint);
@@ -54,11 +54,11 @@ public class AdminServiceLocator extends org.apache.axis.client.Service implemen
 
     public org.exist.soap.Admin getAdmin(java.net.URL portAddress) throws javax.xml.rpc.ServiceException {
         try {
-            org.exist.soap.AdminSoapBindingStub _stub = new org.exist.soap.AdminSoapBindingStub(portAddress, this);
+            final org.exist.soap.AdminSoapBindingStub _stub = new org.exist.soap.AdminSoapBindingStub(portAddress, this);
             _stub.setPortName(getAdminWSDDServiceName());
             return _stub;
         }
-        catch (org.apache.axis.AxisFault e) {
+        catch (final org.apache.axis.AxisFault e) {
             return null;
         }
     }
@@ -75,12 +75,12 @@ public class AdminServiceLocator extends org.apache.axis.client.Service implemen
     public java.rmi.Remote getPort(Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
         try {
             if (org.exist.soap.Admin.class.isAssignableFrom(serviceEndpointInterface)) {
-                org.exist.soap.AdminSoapBindingStub _stub = new org.exist.soap.AdminSoapBindingStub(new java.net.URL(Admin_address), this);
+                final org.exist.soap.AdminSoapBindingStub _stub = new org.exist.soap.AdminSoapBindingStub(new java.net.URL(Admin_address), this);
                 _stub.setPortName(getAdminWSDDServiceName());
                 return _stub;
             }
         }
-        catch (java.lang.Throwable t) {
+        catch (final java.lang.Throwable t) {
             throw new javax.xml.rpc.ServiceException(t);
         }
         throw new javax.xml.rpc.ServiceException("There is no stub implementation for the interface:  " + (serviceEndpointInterface == null ? "null" : serviceEndpointInterface.getName()));
@@ -95,12 +95,12 @@ public class AdminServiceLocator extends org.apache.axis.client.Service implemen
         if (portName == null) {
             return getPort(serviceEndpointInterface);
         }
-        java.lang.String inputPortName = portName.getLocalPart();
+        final java.lang.String inputPortName = portName.getLocalPart();
         if ("Admin".equals(inputPortName)) {
             return getAdmin();
         }
         else  {
-            java.rmi.Remote _stub = getPort(serviceEndpointInterface);
+            final java.rmi.Remote _stub = getPort(serviceEndpointInterface);
             ((org.apache.axis.client.Stub) _stub).setPortName(portName);
             return _stub;
         }

@@ -74,8 +74,8 @@ public class FunDateTime extends BasicFunction {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
         }
         Sequence result;
         if (args[0].isEmpty() || args[1].isEmpty()) {
@@ -87,15 +87,15 @@ public class FunDateTime extends BasicFunction {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                 "Expected at most one xs:time", args[1]);
         } else {
-            DateValue dv = (DateValue)args[0].itemAt(0);
-            TimeValue tv = (TimeValue)args[1].itemAt(0);
+            final DateValue dv = (DateValue)args[0].itemAt(0);
+            final TimeValue tv = (TimeValue)args[1].itemAt(0);
             if (!dv.getTimezone().isEmpty()) {
                 if (!tv.getTimezone().isEmpty()) {
                     if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0))
                     		.compareTo(null, Constants.EQ, 
                     				((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
                         
-                    	ValueSequence argsSeq = new ValueSequence();
+                    	final ValueSequence argsSeq = new ValueSequence();
                         argsSeq.add(dv);
                         argsSeq.add(tv);
                         
@@ -110,7 +110,7 @@ public class FunDateTime extends BasicFunction {
                 dtv = dtv.substring(0, dtv.length() - 8);
                 result = new DateTimeValue(dtv + tv.getStringValue());
             
-            } else if (((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue().equals("PT0S")) {
+            } else if ("PT0S".equals(((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue())) {
                 dtv = dtv.substring(0, dtv.length() - 9);
                 if (tv.getTimezone().isEmpty()) {
                     result = new DateTimeValue(dtv + tv.getStringValue() + "Z");
@@ -120,7 +120,7 @@ public class FunDateTime extends BasicFunction {
             
             } else {
                 if (tv.getTimezone().isEmpty()) {
-                    String tz = dtv.substring(19);
+                    final String tz = dtv.substring(19);
                     dtv = dtv.substring(0, dtv.length() - 14);
                     result = new DateTimeValue(dtv + tv.getStringValue() + tz);
 
@@ -131,7 +131,7 @@ public class FunDateTime extends BasicFunction {
             }
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

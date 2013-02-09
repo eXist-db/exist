@@ -109,7 +109,7 @@ public class ParseException extends Exception {
 		Token tok = currentToken.next;
 		for (int i = 0; i < maxSize; i++) {
 			if (i != 0)
-				retval += " ";
+				{retval += " ";}
 			if (tok.kind == 0) {
 				retval += tokenImage[0];
 				break;
@@ -139,7 +139,7 @@ public class ParseException extends Exception {
 	 * version cannot be used as part of an ASCII string literal.
 	 */
 	protected String add_escapes(String str) {
-		StringBuilder retval = new StringBuilder();
+		final StringBuilder retval = new StringBuilder();
 		char ch;
 		for (int i = 0; i < str.length(); i++) {
 			switch (str.charAt(i)) {
@@ -171,7 +171,7 @@ public class ParseException extends Exception {
 				continue;
 			default:
 				if ((ch = str.charAt(i)) < 0x20 || ch > 0x7e) {
-					String s = "0000" + Integer.toString(ch, 16);
+					final String s = "0000" + Integer.toString(ch, 16);
 					retval.append("\\u"
 							+ s.substring(s.length() - 4, s.length()));
 				} else {

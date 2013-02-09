@@ -51,15 +51,15 @@ public class DoubleValue extends NumericValue {
 
     public DoubleValue(String stringValue) throws XPathException {
         try {
-			if (stringValue.equals("INF"))
-				value = Double.POSITIVE_INFINITY;
-			else if (stringValue.equals("-INF"))
-				value = Double.NEGATIVE_INFINITY;
-			else if (stringValue.equals("NaN"))
-				value = Double.NaN;
+			if ("INF".equals(stringValue))
+				{value = Double.POSITIVE_INFINITY;}
+			else if ("-INF".equals(stringValue))
+				{value = Double.NEGATIVE_INFINITY;}
+			else if ("NaN".equals(stringValue))
+				{value = Double.NaN;}
 			else
-				value = Double.parseDouble(stringValue);
-		} catch (NumberFormatException e) {
+				{value = Double.parseDouble(stringValue);}
+		} catch (final NumberFormatException e) {
 			throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
 					" from '" + stringValue + "'");
 		}
@@ -73,7 +73,7 @@ public class DoubleValue extends NumericValue {
 	}
 
 	public String getStringValue() {
-		FastStringBuffer sb = new FastStringBuffer(20);
+		final FastStringBuffer sb = new FastStringBuffer(20);
 		//0 is a dummy parameter
 		FloatingPointConverter.appendDouble(sb, value).getNormalizedString(0);	
 		return sb.toString();		
@@ -85,9 +85,9 @@ public class DoubleValue extends NumericValue {
 	
 	public boolean hasFractionalPart() {
 		if (isNaN())
-			return false;
+			{return false;}
 		if (isInfinite())
-			return false;
+			{return false;}
 		return new DecimalValue(new BigDecimal(value)).hasFractionalPart();
 	};	
 
@@ -139,18 +139,18 @@ public class DoubleValue extends NumericValue {
 				return new StringValue(getStringValue());
 			case Type.DECIMAL :
 				if (isNaN())
-					throw new XPathException(ErrorCodes.FORG0001, "can not convert "
+					{throw new XPathException(ErrorCodes.FORG0001, "can not convert "
                                              + Type.getTypeName(getType())
                                              + "('"
                                              + getStringValue()
                                              + "') to "
-                                             + Type.getTypeName(requiredType));
+                                             + Type.getTypeName(requiredType));}
 				if (isInfinite())
-					throw new XPathException(ErrorCodes.FORG0001, "can not convert "
+					{throw new XPathException(ErrorCodes.FORG0001, "can not convert "
                                              + Type.getTypeName(getType()) 
                                              + "('" + getStringValue() 
                                              + "') to " 
-                                             + Type.getTypeName(requiredType));
+                                             + Type.getTypeName(requiredType));}
 				return new DecimalValue(new BigDecimal(value));
 			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
@@ -166,20 +166,20 @@ public class DoubleValue extends NumericValue {
 			case Type.UNSIGNED_BYTE :
 			case Type.POSITIVE_INTEGER :
 				if (isNaN())
-					throw new XPathException(ErrorCodes.FORG0001, "can not convert "
+					{throw new XPathException(ErrorCodes.FORG0001, "can not convert "
                                              + Type.getTypeName(getType())
                                              + "('" + getStringValue()
                                              + "') to "
-                                             + Type.getTypeName(requiredType));
+                                             + Type.getTypeName(requiredType));}
 				if (Double.isInfinite(value))
-					throw new XPathException(ErrorCodes.FORG0001, "can not convert "
+					{throw new XPathException(ErrorCodes.FORG0001, "can not convert "
                                              + Type.getTypeName(getType())
                                              + "('"
                                              + getStringValue()
                                              + "') to "
-                                             + Type.getTypeName(requiredType));
+                                             + Type.getTypeName(requiredType));}
 				if (value > Integer.MAX_VALUE)
-					throw new XPathException(ErrorCodes.FOCA0003, "Value is out of range for type xs:integer");
+					{throw new XPathException(ErrorCodes.FOCA0003, "Value is out of range for type xs:integer");}
 				return new IntegerValue((long) value, requiredType);
 			case Type.BOOLEAN :
 				return new BooleanValue(this.effectiveBooleanValue());				
@@ -237,12 +237,12 @@ public class DoubleValue extends NumericValue {
 	 */
 	public NumericValue round() throws XPathException {
 
-        if (Double.isNaN(value) || Double.isInfinite(value) || value == 0.0) return this;
+        if (Double.isNaN(value) || Double.isInfinite(value) || value == 0.0) {return this;}
 
-        if (value >= -0.5 && value < 0.0) return new DoubleValue(-0.0);
+        if (value >= -0.5 && value < 0.0) {return new DoubleValue(-0.0);}
 
         if (value > Long.MIN_VALUE && value < Long.MAX_VALUE)
-            return new DoubleValue(Math.round(value));
+            {return new DoubleValue(Math.round(value));}
 
         //too big return original value unchanged
         return this;
@@ -252,9 +252,9 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
 	 */
 	public NumericValue round(IntegerValue precision) throws XPathException {
-		if (precision == null) return round();
+		if (precision == null) {return round();}
 		
-        if (Double.isNaN(value) || Double.isInfinite(value) || value == 0.0) return this;
+        if (Double.isNaN(value) || Double.isInfinite(value) || value == 0.0) {return this;}
 		
 		/* use the decimal rounding method */
 		return (DoubleValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.DOUBLE);
@@ -266,9 +266,9 @@ public class DoubleValue extends NumericValue {
 	 */
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
-			return new DoubleValue(value - ((DoubleValue) other).value);
+			{return new DoubleValue(value - ((DoubleValue) other).value);}
 		else
-			return minus((ComputableValue) other.convertTo(getType()));
+			{return minus((ComputableValue) other.convertTo(getType()));}
 	}
 
 	/* (non-Javadoc)
@@ -276,9 +276,9 @@ public class DoubleValue extends NumericValue {
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
-			return new DoubleValue(value + ((DoubleValue) other).value);
+			{return new DoubleValue(value + ((DoubleValue) other).value);}
 		else
-			return plus((ComputableValue) other.convertTo(getType()));
+			{return plus((ComputableValue) other.convertTo(getType()));}
 	}
 
 	/* (non-Javadoc)
@@ -303,40 +303,40 @@ public class DoubleValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
 			//Positive or negative zero divided by positive or negative zero returns NaN.
 			if (this.isZero() && ((NumericValue)other).isZero())
-				return NaN;
+				{return NaN;}
             
 			//A negative number divided by positive zero returns -INF.
 			if (this.isNegative()  && 
                     ((NumericValue)other).isZero() && ((NumericValue)other).isPositive())
-				return NEGATIVE_INFINITY;
+				{return NEGATIVE_INFINITY;}
             
 			//A negative number divided by positive zero returns -INF.
 			if (this.isNegative()  && 
                     ((NumericValue)other).isZero() && ((NumericValue)other).isNegative())
-				return POSITIVE_INFINITY;        
+				{return POSITIVE_INFINITY;}        
             
 			//Division of Positive by negative zero returns -INF and INF, respectively. 
 			if (this.isPositive()  && 
                     ((NumericValue)other).isZero() && ((NumericValue)other).isNegative())
-				return NEGATIVE_INFINITY;
+				{return NEGATIVE_INFINITY;}
             
 			if (this.isPositive()  &&
                     ((NumericValue)other).isZero() && ((NumericValue)other).isPositive())
-				return POSITIVE_INFINITY;
+				{return POSITIVE_INFINITY;}
             
 			//Also, INF or -INF divided by INF or -INF returns NaN.
 			if (this.isInfinite() && ((NumericValue)other).isInfinite())
-				return NaN;
+				{return NaN;}
 		}		
         
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
-			return new DoubleValue(value / ((DoubleValue) other).value);
+			{return new DoubleValue(value / ((DoubleValue) other).value);}
 		else
-			return div((ComputableValue) other.convertTo(getType()));
+			{return div((ComputableValue) other.convertTo(getType()));}
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
-		ComputableValue result = div(other);
+		final ComputableValue result = div(other);
 		return new IntegerValue(((IntegerValue)result.convertTo(Type.INTEGER)).getLong());		
 		/*
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
@@ -354,9 +354,9 @@ public class DoubleValue extends NumericValue {
 	 */
 	public NumericValue mod(NumericValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
-			return new DoubleValue(value % ((DoubleValue) other).value);
+			{return new DoubleValue(value % ((DoubleValue) other).value);}
 		else
-			return mod((NumericValue) other.convertTo(getType()));
+			{return mod((NumericValue) other.convertTo(getType()));}
 	}
 
 	/* (non-Javadoc)
@@ -378,18 +378,18 @@ public class DoubleValue extends NumericValue {
 	 */
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
-			return new DoubleValue(Math.max(value, ((DoubleValue) other).value));
+			{return new DoubleValue(Math.max(value, ((DoubleValue) other).value));}
 		else
-			return new DoubleValue(
-				Math.max(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
+			{return new DoubleValue(
+				Math.max(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));}
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.DOUBLE))
-			return new DoubleValue(Math.min(value, ((DoubleValue) other).value));
+			{return new DoubleValue(Math.min(value, ((DoubleValue) other).value));}
 		else
-			return new DoubleValue(
-				Math.min(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
+			{return new DoubleValue(
+				Math.min(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));}
 	}
 
 	/* (non-Javadoc)
@@ -397,25 +397,25 @@ public class DoubleValue extends NumericValue {
 	 */
 	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(DoubleValue.class))
-			return 0;
+			{return 0;}
 		if (javaClass == Long.class || javaClass == long.class)
-			return 3;
+			{return 3;}
 		if (javaClass == Integer.class || javaClass == int.class)
-			return 4;
+			{return 4;}
 		if (javaClass == Short.class || javaClass == short.class)
-			return 5;
+			{return 5;}
 		if (javaClass == Byte.class || javaClass == byte.class)
-			return 6;
+			{return 6;}
 		if (javaClass == Double.class || javaClass == double.class)
-			return 1;
+			{return 1;}
 		if (javaClass == Float.class || javaClass == float.class)
-			return 2;
+			{return 2;}
 		if (javaClass == String.class)
-			return 7;
+			{return 7;}
 		if (javaClass == Boolean.class || javaClass == boolean.class)
-			return 8;
+			{return 8;}
 		if (javaClass == Object.class)
-			return 20;
+			{return 20;}
 
 		return Integer.MAX_VALUE;
 	}
@@ -423,14 +423,15 @@ public class DoubleValue extends NumericValue {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
 	 */
+	@SuppressWarnings("unchecked")
 	public <T> T toJavaObject(final Class<T> target) throws XPathException {
 		if (target.isAssignableFrom(DoubleValue.class)) {
 			return (T)this;
-                } else if (target == Double.class || target == double.class) {
-			return (T)new Double(value);
-                } else if (target == Float.class || target == float.class) {
+        } else if (target == Double.class || target == double.class) {
+        	return (T)Double.valueOf(value);
+        } else if (target == Float.class || target == float.class) {
 			return (T)new Float(value);
-                } else if (target == Long.class || target == long.class) {
+        } else if (target == Long.class || target == long.class) {
 			return (T)Long.valueOf( ((IntegerValue) convertTo(Type.LONG)).getValue() );
 		} else if (target == Integer.class || target == int.class) {
 			final IntegerValue v = (IntegerValue) convertTo(Type.INT);
@@ -442,9 +443,9 @@ public class DoubleValue extends NumericValue {
 			final IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
 			return (T)Byte.valueOf((byte) v.getValue());
 		} else if (target == String.class)
-			return (T)getStringValue();
+			{return (T)getStringValue();}
 		else if (target == Boolean.class)
-			return (T)Boolean.valueOf(effectiveBooleanValue());
+			{return (T)Boolean.valueOf(effectiveBooleanValue());}
 
 		throw new XPathException(
 			"cannot convert value of type "
@@ -464,9 +465,9 @@ public class DoubleValue extends NumericValue {
     public int compareTo(Object o) {
         final AtomicValue other = (AtomicValue)o;
         if(Type.subTypeOf(other.getType(), Type.DOUBLE))
-            return Double.compare(value, ((DoubleValue)other).value);
+            {return Double.compare(value, ((DoubleValue)other).value);}
         else
-            return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
+            {return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;}
     }
 
     @Override

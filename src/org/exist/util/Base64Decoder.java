@@ -89,7 +89,7 @@ public final class Base64Decoder {
     // Fast routine that assumes full 4-char tokens with no '=' in them.
     //
     private void decode_token() {
-        int num = ((token[0] << 18) |
+        final int num = ((token[0] << 18) |
                 (token[1] << 12) |
                 (token[2] << 6) |
                 (token[3]));
@@ -141,7 +141,7 @@ public final class Base64Decoder {
             throw new IllegalArgumentException("In base64, if the value ends with '=' then the last character must be one of [AEIMQUYcgkosw048]");
         }
 
-        int num = ((b0 << 18) | (b1 << 12) | (b2 << 6) | (b3));
+        final int num = ((b0 << 18) | (b1 << 12) | (b2 << 6) | (b3));
 
         // eq_count will be 0, 1, or 2.
         // No "=" padding means 4 bytes mapped to 3, the normal case,
@@ -168,12 +168,12 @@ public final class Base64Decoder {
 
     public final void translate(CharSequence str) throws IllegalArgumentException {
         if (token == null) // already saw eof marker?
-            return;
-        int length = str.length();
+            {return;}
+        final int length = str.length();
         int lengthAtEOF;
         int found_eq = 0;
         for (int i = 0; i < length; i++) {
-            char c = str.charAt(i);
+            final char c = str.charAt(i);
             if (c > 127) {
                 throw new IllegalArgumentException("non-ASCII character in Base64 value (at offset " + i + ')');
             }

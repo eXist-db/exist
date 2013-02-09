@@ -76,7 +76,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
         if(parameters.containsKey("root")) {
             try {
                 rootPath = XmldbURI.xmldbUriFor(parameters.get("root").get(0).toString());
-            } catch(URISyntaxException e) {
+            } catch(final URISyntaxException e) {
                 throw new TriggerException(e);
             }
         }
@@ -90,30 +90,30 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
     public void makeCopy(DBBroker broker, Txn txn, DocumentImpl doc)
             throws TriggerException {
         if (doc == null)
-            return;
+            {return;}
         // construct the destination path
-        XmldbURI path = rootPath.append(doc.getURI());
+        final XmldbURI path = rootPath.append(doc.getURI());
         try {
             //construct the destination document name
             String dtValue = new DateTimeValue(new Date(doc.getMetadata()
                 .getLastModified())).getStringValue();
             dtValue = dtValue.replaceAll(":", "-"); // multiple ':' are not allowed in URI so use '-'
             dtValue = dtValue.replaceAll("\\.", "-"); // as we are using '-' instead of ':' do the same for '.'
-            XmldbURI name = XmldbURI.create(dtValue);
+            final XmldbURI name = XmldbURI.create(dtValue);
             // create the destination document
             //TODO : how is the transaction handled ? It holds the locks ! 
-            Collection destination = broker.getOrCreateCollection(txn, path);
+            final Collection destination = broker.getOrCreateCollection(txn, path);
             broker.saveCollection(txn, destination);
             broker.copyResource(txn, doc, destination, name);
-        } catch(XPathException xpe) {
+        } catch(final XPathException xpe) {
             throw new TriggerException(xpe);
-        } catch(IOException exception) {
+        } catch(final IOException exception) {
             throw new TriggerException(exception);
-        } catch(PermissionDeniedException exception) {
+        } catch(final PermissionDeniedException exception) {
             throw new TriggerException(exception);
-        } catch(LockException exception) {
+        } catch(final LockException exception) {
             throw new TriggerException(exception);
-        } catch (EXistException exception) {
+        } catch (final EXistException exception) {
             throw new TriggerException(exception);
         }
     }

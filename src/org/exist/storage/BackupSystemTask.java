@@ -73,7 +73,7 @@ public class BackupSystemTask implements SystemTask {
         password = properties.getProperty("password", "guest");
         String collName = properties.getProperty("collection", "xmldb:exist:///db");
         if (!collName.startsWith("xmldb:exist:"))
-            collName = "xmldb:exist://" + collName;
+            {collName = "xmldb:exist://" + collName;}
         collection = XmldbURI.create(collName);
         LOG.debug("Collection to backup: " + collection.toString() + ". User: " + user);
 
@@ -90,49 +90,49 @@ public class BackupSystemTask implements SystemTask {
         directory.mkdirs();
 
         // check for max zip files
-        String filesMaxStr = properties.getProperty("zip-files-max");
-        if (LOG.isDebugEnabled()) LOG.debug("zip-files-max: " + filesMaxStr);
+        final String filesMaxStr = properties.getProperty("zip-files-max");
+        if (LOG.isDebugEnabled()) {LOG.debug("zip-files-max: " + filesMaxStr);}
         if (null != filesMaxStr)
             try
             {
                 zipFilesMax = new Integer(filesMaxStr).intValue();
             }
-            catch (NumberFormatException e) {LOG.debug("zip-files-max property error", e);}
+            catch (final NumberFormatException e) {LOG.debug("zip-files-max property error", e);}
     }
 
 
     public void execute(DBBroker broker) throws EXistException {
-        String dateTime = DataBackup.creationDateFormat.format(Calendar.getInstance().getTime());
-        String dest = directory.getAbsolutePath() + File.separatorChar + prefix + dateTime + suffix;
+        final String dateTime = DataBackup.creationDateFormat.format(Calendar.getInstance().getTime());
+        final String dest = directory.getAbsolutePath() + File.separatorChar + prefix + dateTime + suffix;
 
-        Backup backup = new Backup(user, password, dest, collection);
+        final Backup backup = new Backup(user, password, dest, collection);
         try {
             backup.backup(false, null);
-        } catch (XMLDBException e) {
+        } catch (final XMLDBException e) {
             LOG.debug(e.getMessage(), e);
             throw new EXistException(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.debug(e.getMessage(), e);
             throw new EXistException(e.getMessage(), e);
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             LOG.debug(e.getMessage(), e);
             throw new EXistException(e.getMessage(), e);
         }
 
         // see if old zip files need to be purged
-        if (suffix.equals(".zip") && zipFilesMax > 0) purgeZipFiles();
+        if (".zip".equals(suffix) && zipFilesMax > 0) {purgeZipFiles();}
     }
 
     public void purgeZipFiles()
     {
-        if (LOG.isDebugEnabled()) LOG.debug("starting purgeZipFiles()");
+        if (LOG.isDebugEnabled()) {LOG.debug("starting purgeZipFiles()");}
 
         // get all files in target directory
-        File[] files = directory.listFiles();
+        final File[] files = directory.listFiles();
 
         if (files.length > 0)
         {
-            Map<String, File> sorted = new TreeMap<String, File>();
+            final Map<String, File> sorted = new TreeMap<String, File>();
             for (int i=0; i < files.length; i++)
             {
                 //check for prefix and suffix match
@@ -143,15 +143,15 @@ public class BackupSystemTask implements SystemTask {
             }
             if (sorted.size() > zipFilesMax)
             {
-               Set<String> keys = sorted.keySet();
-                Iterator<String> ki = keys.iterator();
+               final Set<String> keys = sorted.keySet();
+                final Iterator<String> ki = keys.iterator();
                 int i = sorted.size() - zipFilesMax;
                 while (ki.hasNext())
                 {
-                    File f = sorted.get(ki.next());
+                    final File f = sorted.get(ki.next());
                     if (i > 0)
                     {
-                        if (LOG.isDebugEnabled()) LOG.debug("Purging backup : " + f.getName());
+                        if (LOG.isDebugEnabled()) {LOG.debug("Purging backup : " + f.getName());}
                         f.delete();
                     }
                     i--;

@@ -70,7 +70,7 @@ public class FullXmldbURI extends XmldbURI {
 
             //Eventually rewrite wrappedURI *without* user info
             if (userInfo != null) {
-                StringBuilder recomputed = new StringBuilder();//XMLDB_URI_PREFIX);
+                final StringBuilder recomputed = new StringBuilder();//XMLDB_URI_PREFIX);
                 recomputed.append(wrappedURI.getScheme());
                 recomputed.append("://");
                 recomputed.append(wrappedURI.getHost());
@@ -93,7 +93,7 @@ public class FullXmldbURI extends XmldbURI {
         String pathForSuper = null;
 
         if (path != null) {
-            String host = getHost();
+            final String host = getHost();
             if (host == null || EMBEDDED_SERVER_AUTHORITY.equals(host)) {
                 if (getPort() != NO_PORT) {
                     throw new URISyntaxException(XMLDB_URI_PREFIX + wrappedURI.toString(), "Local xmldb URI should not provide a port");
@@ -144,7 +144,7 @@ public class FullXmldbURI extends XmldbURI {
     @Override
     protected void recomputeURI() throws URISyntaxException {
         URI oldWrappedURI = wrappedURI;
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         if (getInstanceName() != null) {
             buf.append(getInstanceName()).append("://");
         }
@@ -169,7 +169,7 @@ public class FullXmldbURI extends XmldbURI {
 
         try {
             wrappedURI = new URI(buf.toString());
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             wrappedURI = oldWrappedURI;
             throw e;
         }
@@ -188,7 +188,7 @@ public class FullXmldbURI extends XmldbURI {
             this.context = "".equals(context) ? null : context;
             recomputeURI();
 
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             this.context = oldContext;
             throw new IllegalArgumentException("Invalid URI: " + e.getMessage());
         }
@@ -226,7 +226,7 @@ public class FullXmldbURI extends XmldbURI {
 
     @Override
     public boolean isContextAbsolute() {
-        String currentContext = this.getContext();
+        final String currentContext = this.getContext();
         if (currentContext == null) {
             return true;
         }
@@ -235,18 +235,18 @@ public class FullXmldbURI extends XmldbURI {
 
     @Override
     public XmldbURI normalizeContext() {
-        String currentContext = this.getContext();
+        final String currentContext = this.getContext();
         if (currentContext == null) {
             return this;
         }
 
-        URI uri = URI.create(currentContext);
+        final URI uri = URI.create(currentContext);
         try {
-            FullXmldbURI xmldbURI = new FullXmldbURI(getXmldbURI());
+            final FullXmldbURI xmldbURI = new FullXmldbURI(getXmldbURI());
             xmldbURI.setContext(uri.normalize().getRawPath());
             return xmldbURI;
 
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw new IllegalArgumentException("Invalid URI: " + e.getMessage());
         }
     }
@@ -257,7 +257,7 @@ public class FullXmldbURI extends XmldbURI {
             throw new NullPointerException("The provided URI is null");
         }
 
-        String currentContext = this.getContext();
+        final String currentContext = this.getContext();
         if (currentContext == null) {
             throw new NullPointerException("The current context is null");
         }
@@ -291,7 +291,7 @@ public class FullXmldbURI extends XmldbURI {
             currentContext += "/";
         }
 
-        URI contextURI = URI.create(currentContext);
+        final URI contextURI = URI.create(currentContext);
 
         return contextURI.resolve(str);
     }
@@ -313,7 +313,7 @@ public class FullXmldbURI extends XmldbURI {
             currentContext += "/";
         }
 
-        URI contextURI = URI.create(currentContext);
+        final URI contextURI = URI.create(currentContext);
 
         return contextURI.resolve(uri);
     }

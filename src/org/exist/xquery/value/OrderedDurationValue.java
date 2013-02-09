@@ -22,21 +22,21 @@ abstract class OrderedDurationValue extends DurationValue {
 
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (other.isEmpty())
-			return false;
-		int r = compareTo(collator, other);	
+			{return false;}
+		final int r = compareTo(collator, other);	
 		if (operator != Constants.EQ && operator != Constants.NEQ){
 			if (getType() == Type.DURATION)
-				throw new XPathException(ErrorCodes.XPTY0004, 
+				{throw new XPathException(ErrorCodes.XPTY0004, 
 						"cannot compare unordered " + Type.getTypeName(getType()) + " to "
-						+ Type.getTypeName(other.getType()));
+						+ Type.getTypeName(other.getType()));}
 			if (other.getType()== Type.DURATION) 
-				throw new XPathException(ErrorCodes.XPTY0004, 
+				{throw new XPathException(ErrorCodes.XPTY0004, 
 					"cannot compare " + Type.getTypeName(getType()) + " to unordered "
-					+ Type.getTypeName(other.getType()));
+					+ Type.getTypeName(other.getType()));}
 			if (Type.getCommonSuperType(getType(), other.getType()) == Type.DURATION) 
-				throw new XPathException(ErrorCodes.XPTY0004, 
+				{throw new XPathException(ErrorCodes.XPTY0004, 
 					"cannot compare " + Type.getTypeName(getType()) + " to "
-					+ Type.getTypeName(other.getType()));
+					+ Type.getTypeName(other.getType()));}
 		}
 		switch (operator) {
 			case Constants.EQ :
@@ -58,22 +58,22 @@ abstract class OrderedDurationValue extends DurationValue {
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.isEmpty())
-			return Constants.INFERIOR;
+			{return Constants.INFERIOR;}
 		if (Type.subTypeOf(other.getType(), Type.DURATION)) {
 			//Take care : this method doesn't seem to take ms into account 
-			int r = duration.compare(((DurationValue) other).duration);
+			final int r = duration.compare(((DurationValue) other).duration);
 			//compare fractional seconds to work around the JDK standard behaviour
 			if (r == DatatypeConstants.EQUAL && 
 					((BigDecimal)duration.getField(DatatypeConstants.SECONDS)) != null &&
 					((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)) != null) {
 				if (((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).compareTo(
 						((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS))) == DatatypeConstants.EQUAL)
-						return Constants.EQUAL;
+						{return Constants.EQUAL;}
 				return (((BigDecimal)duration.getField(DatatypeConstants.SECONDS)).compareTo(
 						((BigDecimal)(((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)))) == DatatypeConstants.LESSER ?
 						Constants.INFERIOR : Constants.SUPERIOR;
 			}
-			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between totally ordered duration values " + this + " and " + other);
+			if (r == DatatypeConstants.INDETERMINATE) {throw new RuntimeException("indeterminate order between totally ordered duration values " + this + " and " + other);}
 			return r;		
 		}
 		throw new XPathException(
@@ -82,12 +82,12 @@ abstract class OrderedDurationValue extends DurationValue {
 	}
 
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() != getType()) throw new XPathException("cannot obtain maximum across different non-numeric data types");
+		if (other.getType() != getType()) {throw new XPathException("cannot obtain maximum across different non-numeric data types");}
 		return compareTo(null, other) > 0 ? this : other;
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() != getType()) throw new XPathException("cannot obtain minimum across different non-numeric data types");
+		if (other.getType() != getType()) {throw new XPathException("cannot obtain minimum across different non-numeric data types");}
 		return compareTo(null, other) < 0 ? this : other;
 	}
 
@@ -95,34 +95,34 @@ abstract class OrderedDurationValue extends DurationValue {
 		switch(other.getType()) {
 			case Type.DAY_TIME_DURATION: {
 				//if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
-				Duration a = getCanonicalDuration();
-				Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
-				Duration result = createSameKind(a.add(b)).getCanonicalDuration();
+				final Duration a = getCanonicalDuration();
+				final Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
+				final Duration result = createSameKind(a.add(b)).getCanonicalDuration();
 				//TODO : move instantiation to the right place
 				return new DayTimeDurationValue(result); }			
 			case Type.YEAR_MONTH_DURATION: {
 				//if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
-				Duration a = getCanonicalDuration();
-				Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
-				Duration result = createSameKind(a.add(b)).getCanonicalDuration();
+				final Duration a = getCanonicalDuration();
+				final Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
+				final Duration result = createSameKind(a.add(b)).getCanonicalDuration();
 				//TODO : move instantiation to the right place
 				return new YearMonthDurationValue(result); }
 			case Type.DURATION: {
 				//if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
-				Duration a = getCanonicalDuration();
-				Duration b = ((DurationValue) other).getCanonicalDuration();	
-				Duration result = createSameKind(a.add(b)).getCanonicalDuration();
+				final Duration a = getCanonicalDuration();
+				final Duration b = ((DurationValue) other).getCanonicalDuration();	
+				final Duration result = createSameKind(a.add(b)).getCanonicalDuration();
 				//TODO : move instantiation to the right place
 				return new DurationValue(result); }
 			case Type.TIME:
 			case Type.DATE_TIME:
 			case Type.DATE:
-				AbstractDateTimeValue date = (AbstractDateTimeValue) other;
-				XMLGregorianCalendar gc = (XMLGregorianCalendar) date.calendar.clone();
+				final AbstractDateTimeValue date = (AbstractDateTimeValue) other;
+				final XMLGregorianCalendar gc = (XMLGregorianCalendar) date.calendar.clone();
 				gc.add(duration);
 				//Shift one year
 				if (gc.getYear() <0)
-					gc.setYear(gc.getYear() - 1);
+					{gc.setYear(gc.getYear() - 1);}
 				return date.createSameKind(gc); 
 			default:
 				throw new XPathException(ErrorCodes.XPTY0004, "cannot add " + 
@@ -134,21 +134,21 @@ abstract class OrderedDurationValue extends DurationValue {
 		switch(other.getType()) {
 		case Type.DAY_TIME_DURATION: {
 			if (getType() != other.getType()) 
-				throw new XPathException(ErrorCodes.XPTY0004, "Tried to substract " + 
+				{throw new XPathException(ErrorCodes.XPTY0004, "Tried to substract " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
-						Type.getTypeName(getType()) + "('" + getStringValue() + "')");
-			Duration a = getCanonicalDuration();
-			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
-			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
+						Type.getTypeName(getType()) + "('" + getStringValue() + "')");}
+			final Duration a = getCanonicalDuration();
+			final Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
+			final Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
 			return new DayTimeDurationValue(result); }				
 		case Type.YEAR_MONTH_DURATION: {
 			if (getType() != other.getType()) 
-				throw new XPathException(ErrorCodes.XPTY0004, "Tried to substract " + 
+				{throw new XPathException(ErrorCodes.XPTY0004, "Tried to substract " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
-						Type.getTypeName(getType()) + "('" + getStringValue() + "')");
-			Duration a = getCanonicalDuration();
-			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
-			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
+						Type.getTypeName(getType()) + "('" + getStringValue() + "')");}
+			final Duration a = getCanonicalDuration();
+			final Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
+			final Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
 			return new YearMonthDurationValue(result); }
 		/*
 		case Type.TIME:

@@ -78,36 +78,36 @@ public class CollectionName extends BasicFunction {
 	    if(args[0].isEmpty()) {
 	        return Sequence.EMPTY_SEQUENCE;
 	    }
-		Item item = args[0].itemAt(0);
+		final Item item = args[0].itemAt(0);
 		if(item.getType() == Type.JAVA_OBJECT) {
-			Object o = ((JavaObjectValue) item).getObject();
+			final Object o = ((JavaObjectValue) item).getObject();
             if (!(o instanceof Collection))
-                throw new XPathException(this, "Passed Java object should be of type org.xmldb.api.base.Collection");
-            Collection collection = (Collection)o;
+                {throw new XPathException(this, "Passed Java object should be of type org.xmldb.api.base.Collection");}
+            final Collection collection = (Collection)o;
             try {
 				return new StringValue(collection.getName());
-			} catch (XMLDBException e) {
+			} catch (final XMLDBException e) {
 				throw new XPathException(this, "Failed to retrieve collection name", e);
 			}
         } else if (Type.subTypeOf(item.getType(), Type.STRING)) {
-            String path = item.getStringValue();
+            final String path = item.getStringValue();
             try {
-                XmldbURI uri = XmldbURI.xmldbUriFor(path).removeLastSegment();
+                final XmldbURI uri = XmldbURI.xmldbUriFor(path).removeLastSegment();
                 return new StringValue(uri.toString());
-            } catch (URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 throw new XPathException(this, "Illegal URI for resource path: " + path);
             }
         } else if(Type.subTypeOf(item.getType(), Type.NODE)) {
-			NodeValue node = (NodeValue) item;
+			final NodeValue node = (NodeValue) item;
 			if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-				NodeProxy p = (NodeProxy) node;
+				final NodeProxy p = (NodeProxy) node;
 				//TODO: use xmldbUri
 				return new StringValue(p.getDocument().getCollection().getURI().toString());	
 			}
 		} else
-			throw new XPathException(this, "First argument to util:collection-name should be either " +
+			{throw new XPathException(this, "First argument to util:collection-name should be either " +
 				"a Java object of type org.xmldb.api.base.Collection or a node; got: " + 
-				Type.getTypeName(item.getType()));
+				Type.getTypeName(item.getType()));}
 		return Sequence.EMPTY_SEQUENCE;
 	}
 

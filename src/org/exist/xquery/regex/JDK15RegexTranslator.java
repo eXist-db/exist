@@ -136,7 +136,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
             throws RegexSyntaxException {
 
         //System.err.println("Input regex: " + regexp);
-        JDK15RegexTranslator tr = new JDK15RegexTranslator();
+        final JDK15RegexTranslator tr = new JDK15RegexTranslator();
         tr.regExp = regExp;
         tr.length = regExp.length();
         tr.xmlVersion = xmlVersion;
@@ -337,7 +337,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
         }
 
         private static List toList(CharClass[] v) {
-            List members = new ArrayList(5);
+            final List members = new ArrayList(5);
             for (int i = 0; i < v.length; i++)
                 members.add(v[i]);
             return members;
@@ -350,7 +350,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
         void output(FastStringBuffer buf) {
             buf.append('[');
             for (int i = 0, len = members.size(); i < len; i++) {
-                CharClass cc = (CharClass) members.get(i);
+                final CharClass cc = (CharClass) members.get(i);
                 cc.output(buf);
             }
             buf.append(']');
@@ -358,9 +358,9 @@ public class JDK15RegexTranslator extends RegexTranslator {
 
         void outputComplement(FastStringBuffer buf) {
             boolean first = true;
-            int len = members.size();
+            final int len = members.size();
             for (int i = 0; i < len; i++) {
-                CharClass cc = (CharClass) members.get(i);
+                final CharClass cc = (CharClass) members.get(i);
                 if (cc instanceof SimpleCharClass) {
                     if (first) {
                         buf.append("[^");
@@ -370,7 +370,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
                 }
             }
             for (int i = 0; i < len; i++) {
-                CharClass cc = (CharClass) members.get(i);
+                final CharClass cc = (CharClass) members.get(i);
                 if (!(cc instanceof SimpleCharClass)) {
                     if (first) {
                         buf.append('[');
@@ -437,7 +437,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
         switch (curChar) {
             case RegexData.EOS:
                 if (!eos)
-                    break;
+                    {break;}
                 // else fall through
             case '?':
             case '*':
@@ -450,7 +450,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
                 return false;
             case '(':
                 copyCurChar();
-                int thisCapture = ++currentCapture;
+                final int thisCapture = ++currentCapture;
                 translateRegExp();
                 expect(')');
                 captures.add(thisCapture);
@@ -485,15 +485,15 @@ public class JDK15RegexTranslator extends RegexTranslator {
                 break;
             default:
                 if (caseBlind) {
-                    int thisChar = absorbSurrogatePair();
-                    int[] variants = CaseVariants.getCaseVariants(thisChar);
+                    final int thisChar = absorbSurrogatePair();
+                    final int[] variants = CaseVariants.getCaseVariants(thisChar);
                     if (variants.length > 0) {
-                        CharClass[] chars = new CharClass[variants.length+1];
+                        final CharClass[] chars = new CharClass[variants.length+1];
                         chars[0] = new SingleChar(thisChar);
                         for (int i=0; i<variants.length; i++) {
                             chars[i+1] = new SingleChar(variants[i]);
                         }
-                        Union union = new Union(chars);
+                        final Union union = new Union(chars);
                         union.output(result);
                         advance();
                         return true;
@@ -507,14 +507,14 @@ public class JDK15RegexTranslator extends RegexTranslator {
     }
 
     private static CharClass makeNameCharClass(byte mask) {
-        List ranges = new ArrayList();
+        final List ranges = new ArrayList();
         // Add colon to the set of characters matched
         ranges.add(new SingleChar(':'));
         // Plus all the characters from the NCName tables
-        IntRangeSet members = XMLCharacterData.getCategory(mask);
-        int used = members.getNumberOfRanges();
-        int[] startPoints = members.getStartPoints();
-        int[] endPoints = members.getEndPoints();
+        final IntRangeSet members = XMLCharacterData.getCategory(mask);
+        final int used = members.getNumberOfRanges();
+        final int[] startPoints = members.getStartPoints();
+        final int[] endPoints = members.getEndPoints();
         for (int i=0; i<used; i++) {
             if (startPoints[i] == endPoints[i]) {
                 ranges.add(new SingleChar(startPoints[i]));
@@ -638,7 +638,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
                     int backRef = (curChar - '0');
                     while (true) {
                         advance();
-                        int c1 = "0123456789".indexOf(curChar);
+                        final int c1 = "0123456789".indexOf(curChar);
                         if (c1 < 0) {
                             break;
                         } else {
@@ -652,7 +652,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
 
                     }
                     if (!captures.contains(backRef)) {
-                        String explanation = (backRef > currentCapture ? "(no such group)" : "(group not yet closed)");
+                        final String explanation = (backRef > currentCapture ? "(no such group)" : "(group not yet closed)");
                         throw makeException("invalid backreference \\" + backRef + " " + explanation);
                     }
                     return new BackReference(backRef);
@@ -667,49 +667,49 @@ public class JDK15RegexTranslator extends RegexTranslator {
             default:
                 throw makeException("invalid escape sequence");
         }
-        CharClass tem = new SingleChar(curChar, true);
+        final CharClass tem = new SingleChar(curChar, true);
         advance();
         return tem;
     }
 
     private CharClass parseProp() throws RegexSyntaxException {
         expect('{');
-        int start = pos;
+        final int start = pos;
         for (; ;) {
             advance();
             if (curChar == '}')
-                break;
+                {break;}
             if (!isAsciiAlnum(curChar) && curChar != '-')
-                expect('}');
+                {expect('}');}
         }
         CharSequence propertyNameCS = regExp.subSequence(start, pos - 1);
         if (ignoreWhitespace && !inCharClassExpr) {
             propertyNameCS = StringValue.collapseWhitespace(propertyNameCS);
         }
-        String propertyName = propertyNameCS.toString();
+        final String propertyName = propertyNameCS.toString();
         advance();
         switch (propertyName.length()) {
             case 0:
                 throw makeException("empty property name");
             case 2:
-                int sci = RegexData.subCategories.indexOf(propertyName);
+                final int sci = RegexData.subCategories.indexOf(propertyName);
                 if (sci < 0 || sci % 2 == 1)
-                    throw makeException("unknown category");
+                    {throw makeException("unknown category");}
                 return getSubCategoryCharClass(sci / 2);
             case 1:
-                int ci = RegexData.categories.indexOf(propertyName.charAt(0));
+                final int ci = RegexData.categories.indexOf(propertyName.charAt(0));
                 if (ci < 0)
-                    throw makeException("unknown category", propertyName);
+                    {throw makeException("unknown category", propertyName);}
                 return getCategoryCharClass(ci);
             default:
                 if (!propertyName.startsWith("Is"))
-                    break;
-                String blockName = propertyName.substring(2);
+                    {break;}
+                final String blockName = propertyName.substring(2);
                 for (int i = 0; i < RegexData.specialBlockNames.length; i++)
                     if (blockName.equals(RegexData.specialBlockNames[i]))
-                        return specialBlockCharClasses[i];
+                        {return specialBlockCharClasses[i];}
                 if (!isBlock(blockName))
-                    throw makeException("invalid block name", blockName);
+                    {throw makeException("invalid block name", blockName);}
                 return new Property("In" + blockName);
         }
         throw makeException("invalid property name", propertyName);
@@ -723,10 +723,10 @@ public class JDK15RegexTranslator extends RegexTranslator {
         } else {
             compl = false;
         }
-        List members = new ArrayList(10);
+        final List members = new ArrayList(10);
         //boolean firstOrLast = true;
         do {
-            CharClass lower = parseCharClassEscOrXmlChar();
+            final CharClass lower = parseCharClassEscOrXmlChar();
             members.add(lower);
             if (curChar == ']' || eos) {
                 addCaseVariant(lower, members);
@@ -734,7 +734,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
             }
             //firstOrLast = isLastInGroup();
             if (curChar == '-') {
-                char next = regExp.charAt(pos);
+                final char next = regExp.charAt(pos);
                 if (next == '[') {
                     // hyphen denotes subtraction
                     addCaseVariant(lower, members);
@@ -746,7 +746,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
                 } else {
                     // hyphen denotes a character range
                     advance();
-                    CharClass upper = parseCharClassEscOrXmlChar();
+                    final CharClass upper = parseCharClassEscOrXmlChar();
                     if (lower.getSingleChar() < 0 || upper.getSingleChar() < 0) {
                         throw makeException("the ends of a range must be single characters");
                     }
@@ -775,7 +775,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
                             }
                         } else {
                             for (int k = lower.getSingleChar(); k <= upper.getSingleChar(); k++) {
-                                int[] variants = CaseVariants.getCaseVariants(k);
+                                final int[] variants = CaseVariants.getCaseVariants(k);
                                 for (int v=0; v<variants.length; v++) {
                                     members.add(new SingleChar(variants[v]));
                                 }
@@ -798,11 +798,11 @@ public class JDK15RegexTranslator extends RegexTranslator {
         }
         CharClass result;
         if (members.size() == 1)
-            result = (CharClass) members.get(0);
+            {result = (CharClass) members.get(0);}
         else
-            result = new Union(members);
+            {result = new Union(members);}
         if (compl)
-            result = new Complement(result);
+            {result = new Complement(result);}
         if (curChar == '[') {
             advance();
             result = new Subtraction(result, parseCharClassExpr());
@@ -815,7 +815,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
 
     private void addCaseVariant(CharClass lower, List members) {
         if (caseBlind) {
-            int[] variants = CaseVariants.getCaseVariants(lower.getSingleChar());
+            final int[] variants = CaseVariants.getCaseVariants(lower.getSingleChar());
             for (int v=0; v<variants.length; v++) {
                 members.add(new SingleChar(variants[v]));
             }
@@ -826,7 +826,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
         switch (curChar) {
             case RegexData.EOS:
                 if (eos)
-                    expect(']');
+                    {expect(']');}
                 break;
             case '\\':
                 advance();
@@ -837,7 +837,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
             case '-':
                 break;
         }
-        CharClass tem = new SingleChar(absorbSurrogatePair());
+        final CharClass tem = new SingleChar(absorbSurrogatePair());
         advance();
         return tem;
     }
@@ -845,27 +845,27 @@ public class JDK15RegexTranslator extends RegexTranslator {
 
     private static synchronized CharClass getCategoryCharClass(int ci) {
         if (categoryCharClasses[ci] == null)
-            categoryCharClasses[ci] = computeCategoryCharClass(RegexData.categories.charAt(ci));
+            {categoryCharClasses[ci] = computeCategoryCharClass(RegexData.categories.charAt(ci));}
         return categoryCharClasses[ci];
     }
 
     private static synchronized CharClass getSubCategoryCharClass(int sci) {
         if (subCategoryCharClasses[sci] == null)
-            subCategoryCharClasses[sci] = computeSubCategoryCharClass(
-                    RegexData.subCategories.substring(sci * 2, (sci + 1) * 2));
+            {subCategoryCharClasses[sci] = computeSubCategoryCharClass(
+                    RegexData.subCategories.substring(sci * 2, (sci + 1) * 2));}
         return subCategoryCharClasses[sci];
     }
 
     private static CharClass computeCategoryCharClass(char code) {
-        List classes = new ArrayList(5);
+        final List classes = new ArrayList(5);
         classes.add(new Property(new String(new char[]{code})));
         for (int ci =RegexData. CATEGORY_NAMES.indexOf(code); ci >= 0; ci = RegexData.CATEGORY_NAMES.indexOf(code, ci + 1)) {
-            int[] addRanges = RegexData.CATEGORY_RANGES[ci / 2];
+            final int[] addRanges = RegexData.CATEGORY_RANGES[ci / 2];
             for (int i = 0; i < addRanges.length; i += 2)
                 classes.add(new CharRange(addRanges[i], addRanges[i + 1]));
         }
         if (code == 'P')
-            classes.add(makeCharClass(RegexData.CATEGORY_Pi + RegexData.CATEGORY_Pf));
+            {classes.add(makeCharClass(RegexData.CATEGORY_Pi + RegexData.CATEGORY_Pf));}
         if (code == 'L') {
             classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Ll));
             classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Lu));
@@ -875,7 +875,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
             classes.add(new Subtraction(new Property("Cn"),
                     new Union(new CharClass[]{new SingleChar(RegexData.UNICODE_3_1_ADD_Lu),
                                               new SingleChar(RegexData.UNICODE_3_1_ADD_Ll)})));
-            List assignedRanges = new ArrayList(5);
+            final List assignedRanges = new ArrayList(5);
             for (int i = 0; i < RegexData.CATEGORY_RANGES.length; i++)
                 for (int j = 0; j < RegexData.CATEGORY_RANGES[i].length; j += 2)
                     assignedRanges.add(new CharRange(RegexData.CATEGORY_RANGES[i][j],
@@ -884,17 +884,17 @@ public class JDK15RegexTranslator extends RegexTranslator {
                     new Union(assignedRanges)));
         }
         if (classes.size() == 1)
-            return (CharClass) classes.get(0);
+            {return (CharClass) classes.get(0);}
         return new Union(classes);
     }
 
     private static CharClass computeSubCategoryCharClass(String name) {
-        CharClass base = new Property(name);
-        int sci = RegexData.CATEGORY_NAMES.indexOf(name);
+        final CharClass base = new Property(name);
+        final int sci = RegexData.CATEGORY_NAMES.indexOf(name);
         if (sci < 0) {
-            if (name.equals("Cn")) {
+            if ("Cn".equals(name)) {
                 // Unassigned
-                List assignedRanges = new ArrayList(5);
+                final List assignedRanges = new ArrayList(5);
                 assignedRanges.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Lu));
                 assignedRanges.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Ll));
                 for (int i = 0; i < RegexData.CATEGORY_RANGES.length; i++)
@@ -905,32 +905,32 @@ public class JDK15RegexTranslator extends RegexTranslator {
                         new CharClass[]{base, new CharRange(UTF16CharacterSet.NONBMP_MIN, UTF16CharacterSet.NONBMP_MAX)}),
                         new Union(assignedRanges));
             }
-            if (name.equals("Pi"))
-                return makeCharClass(RegexData.CATEGORY_Pi);
-            if (name.equals("Pf"))
-                return makeCharClass(RegexData.CATEGORY_Pf);
+            if ("Pi".equals(name))
+                {return makeCharClass(RegexData.CATEGORY_Pi);}
+            if ("Pf".equals(name))
+                {return makeCharClass(RegexData.CATEGORY_Pf);}
             return base;
         }
-        List classes = new ArrayList(5);
+        final List classes = new ArrayList(5);
         classes.add(base);
-        int[] addRanges = RegexData.CATEGORY_RANGES[sci / 2];
+        final int[] addRanges = RegexData.CATEGORY_RANGES[sci / 2];
         for (int i = 0; i < addRanges.length; i += 2)
             classes.add(new CharRange(addRanges[i], addRanges[i + 1]));
-        if (name.equals("Lu"))
-            classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Lu));
-        else if (name.equals("Ll"))
-            classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Ll));
-        else if (name.equals("Nl"))
-            classes.add(new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN, RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));
-        else if (name.equals("No"))
-            return new Subtraction(new Union(classes),
+        if ("Lu".equals(name))
+            {classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Lu));}
+        else if ("Ll".equals(name))
+            {classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Ll));}
+        else if ("Nl".equals(name))
+            {classes.add(new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN, RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));}
+        else if ("No".equals(name))
+            {return new Subtraction(new Union(classes),
                     new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN,
-                            RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));
+                            RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));}
         return new Union(classes);
     }
 
     private static CharClass makeCharClass(String members) {
-        List list = new ArrayList(5);
+        final List list = new ArrayList(5);
         for (int i = 0, len = members.length(); i < len; i++)
             list.add(new SingleChar(members.charAt(i)));
         return new Union(list);

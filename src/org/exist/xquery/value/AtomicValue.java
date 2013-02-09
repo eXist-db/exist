@@ -175,7 +175,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		try {
 			final String s = getStringValue();
 			handler.characters(s.toCharArray(), 0, s.length());
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			throw new SAXException(e);
 		}
 	}
@@ -187,7 +187,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		try {
 			final String s = getStringValue();
 			receiver.characters(s);
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			throw new SAXException(e);
 		}
 	}
@@ -264,15 +264,15 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
             if (Type.subTypeOf(getType(), Type.DECIMAL) && 
                     (Type.subTypeOf(otherValue.getType(), Type.DOUBLE) 
                         || Type.subTypeOf(otherValue.getType(), Type.FLOAT)))
-                    return convertTo(otherValue.getType());
+                    {return convertTo(otherValue.getType());}
     
             if (Type.subTypeOf(getType(), Type.FLOAT) &&
                     Type.subTypeOf(otherValue.getType(), Type.DOUBLE))
-                return convertTo(Type.DOUBLE);
+                {return convertTo(Type.DOUBLE);}
     
             if (Type.subTypeOf(getType(), Type.ANY_URI) &&
                     Type.subTypeOf(otherValue.getType(), Type.STRING))
-                return convertTo(Type.STRING);
+                {return convertTo(Type.STRING);}
         }
         return this;
     }
@@ -286,7 +286,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	public void dump(ExpressionDumper dumper) {
 	    try {
             dumper.display(getStringValue());
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
         }
 	}
 	
@@ -312,7 +312,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	public String toString() {
 		try {
 			return getStringValue();
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			return super.toString();
 		}
 	}
@@ -512,9 +512,9 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		 */
 		public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 			if (other instanceof EmptyValue)
-				return Constants.EQUAL;
+				{return Constants.EQUAL;}
 			else
-				return Constants.INFERIOR;
+				{return Constants.INFERIOR;}
 		}
 
 		/* (non-Javadoc)

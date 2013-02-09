@@ -48,7 +48,7 @@ public abstract class AbstractIndex implements Index {
         this.pool = pool;
         this.dataDir = dataDir; 
         if (config != null && config.hasAttribute("id"))
-            name = config.getAttribute("id");
+            {name = config.getAttribute("id");}
     }
 
     public String getIndexId() {

@@ -111,9 +111,9 @@ public class KillRunningXQuery extends BasicFunction
 		}
         
         if( id != 0 ) {
-            XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
+            final XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
             for (int i = 0; i < watchdogs.length; i++) {
-	        	XQueryContext 	context 	= watchdogs[i].getContext();
+	        	final XQueryContext 	context 	= watchdogs[i].getContext();
 	        	
 	      		if( id == context.hashCode() ) {
 	      			if( !watchdogs[i].isTerminating() ) {

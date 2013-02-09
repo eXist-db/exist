@@ -46,14 +46,14 @@ public class ListGroupsTask extends UserTask
 
         try {
             log( "Listing all groups", Project.MSG_DEBUG );
-            String[] groups = service.getGroups();
+            final String[] groups = service.getGroups();
 
             if( groups != null ) {
 
                 boolean       isFirst = true;
-                StringBuilder buffer  = new StringBuilder();
+                final StringBuilder buffer  = new StringBuilder();
 
-                for( String group : groups ) {
+                for( final String group : groups ) {
 
                     // only insert separator for 2nd or later item
                     if( isFirst ) {
@@ -73,8 +73,8 @@ public class ListGroupsTask extends UserTask
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

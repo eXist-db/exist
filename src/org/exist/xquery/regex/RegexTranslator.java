@@ -76,38 +76,38 @@ public abstract class RegexTranslator {
     }
 
     protected void translateQuantity() throws RegexSyntaxException {
-        String lower = parseQuantExact().toString();
+        final String lower = parseQuantExact().toString();
         int lowerValue = -1;
         try {
             lowerValue = Integer.parseInt(lower);
             result.append(lower);
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             // JDK 1.4 cannot handle ranges bigger than this
             result.append("" + Integer.MAX_VALUE);
         }
         if (curChar == ',') {
             copyCurChar();
             if (curChar != '}') {
-                String upper = parseQuantExact().toString();
+                final String upper = parseQuantExact().toString();
                 try {
-                    int upperValue = Integer.parseInt(upper);
+                    final int upperValue = Integer.parseInt(upper);
                     result.append(upper);
                     if (lowerValue < 0 || upperValue < lowerValue)
-                        throw makeException("invalid range in quantifier");
-                } catch (NumberFormatException e) {
+                        {throw makeException("invalid range in quantifier");}
+                } catch (final NumberFormatException e) {
                     result.append("" + Integer.MAX_VALUE);
                     if (lowerValue < 0 && new BigDecimal(lower).compareTo(new BigDecimal(upper)) > 0)
-                        throw makeException("invalid range in quantifier");
+                        {throw makeException("invalid range in quantifier");}
                 }
             }
         }
     }
 
     protected CharSequence parseQuantExact() throws RegexSyntaxException {
-        FastStringBuffer buf = new FastStringBuffer(16);
+        final FastStringBuffer buf = new FastStringBuffer(16);
         do {
             if ("0123456789".indexOf(curChar) < 0)
-                throw makeException("expected digit in quantifier");
+                {throw makeException("expected digit in quantifier");}
             buf.append(curChar);
             advance();
         } while (curChar != ',' && curChar != '}');
@@ -174,15 +174,15 @@ public abstract class RegexTranslator {
          */
 
         public int compareTo(Object o) {
-            Range other = (Range) o;
+            final Range other = (Range) o;
             if (min < other.min)
-                return -1;
+                {return -1;}
             if (min > other.min)
-                return 1;
+                {return 1;}
             if (max > other.max)
-                return -1;
+                {return -1;}
             if (max < other.max)
-                return 1;
+                {return 1;}
             return 0;
         }
     }
@@ -206,11 +206,11 @@ public abstract class RegexTranslator {
     protected int absorbSurrogatePair() throws RegexSyntaxException {
         if (XMLChar.isSurrogate(curChar)) {
             if (!XMLChar.isHighSurrogate(curChar))
-                throw makeException("invalid surrogate pair");
-            char c1 = curChar;
+                {throw makeException("invalid surrogate pair");}
+            final char c1 = curChar;
             advance();
             if (!XMLChar.isLowSurrogate(curChar))
-                throw makeException("invalid surrogate pair");
+                {throw makeException("invalid surrogate pair");}
             return UTF16CharacterSet.combinePair(c1, curChar);
         } else {
             return curChar;
@@ -274,13 +274,13 @@ public abstract class RegexTranslator {
     }
 
     protected static String highSurrogateRanges(List ranges) {
-        FastStringBuffer highRanges = new FastStringBuffer(ranges.size() * 2);
+        final FastStringBuffer highRanges = new FastStringBuffer(ranges.size() * 2);
         for (int i = 0, len = ranges.size(); i < len; i++) {
-            Range r = (Range)ranges.get(i);
+            final Range r = (Range)ranges.get(i);
             char min1 = XMLChar.highSurrogate(r.getMin());
-            char min2 = XMLChar.lowSurrogate(r.getMin());
+            final char min2 = XMLChar.lowSurrogate(r.getMin());
             char max1 = XMLChar.highSurrogate(r.getMax());
-            char max2 = XMLChar.lowSurrogate(r.getMax());
+            final char max2 = XMLChar.lowSurrogate(r.getMax());
             if (min2 != UTF16CharacterSet.SURROGATE2_MIN) {
                 min1++;
             }
@@ -296,13 +296,13 @@ public abstract class RegexTranslator {
     }
 
     protected static String lowSurrogateRanges(List ranges) {
-        FastStringBuffer lowRanges = new FastStringBuffer(ranges.size() * 2);
+        final FastStringBuffer lowRanges = new FastStringBuffer(ranges.size() * 2);
         for (int i = 0, len = ranges.size(); i < len; i++) {
-            Range r = (Range)ranges.get(i);
-            char min1 = XMLChar.highSurrogate(r.getMin());
-            char min2 = XMLChar.lowSurrogate(r.getMin());
-            char max1 = XMLChar.highSurrogate(r.getMax());
-            char max2 = XMLChar.lowSurrogate(r.getMax());
+            final Range r = (Range)ranges.get(i);
+            final char min1 = XMLChar.highSurrogate(r.getMin());
+            final char min2 = XMLChar.lowSurrogate(r.getMin());
+            final char max1 = XMLChar.highSurrogate(r.getMax());
+            final char max2 = XMLChar.lowSurrogate(r.getMax());
             if (min1 == max1) {
                 if (min2 != UTF16CharacterSet.SURROGATE2_MIN || max2 != UTF16CharacterSet.SURROGATE2_MAX) {
                     lowRanges.append(min1);
@@ -332,17 +332,17 @@ public abstract class RegexTranslator {
         int len = ranges.size();
         while (fromIndex < len) {
             Range r = (Range)ranges.get(fromIndex);
-            int min = r.getMin();
+            final int min = r.getMin();
             int max = r.getMax();
             while (++fromIndex < len) {
-                Range r2 = (Range)ranges.get(fromIndex);
+                final Range r2 = (Range)ranges.get(fromIndex);
                 if (r2.getMin() > max + 1)
-                    break;
+                    {break;}
                 if (r2.getMax() > max)
-                    max = r2.getMax();
+                    {max = r2.getMax();}
             }
             if (max != r.getMax())
-                r = new Range(min, max);
+                {r = new Range(min, max);}
             ranges.set(toIndex++, r);
         }
         while (len > toIndex)

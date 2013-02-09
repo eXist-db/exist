@@ -83,10 +83,10 @@ public class ElementConstructor extends NodeConstructor {
     
     public void addAttribute(AttributeConstructor attr) throws XPathException {
         if(attr.isNamespaceDeclaration()) {
-            if(attr.getQName().equals("xmlns"))
-                addNamespaceDecl("", attr.getLiteralValue());
+            if("xmlns".equals(attr.getQName()))
+                {addNamespaceDecl("", attr.getLiteralValue());}
             else
-                addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
+                {addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());}
         } else  if(attributes == null) {
             attributes = new AttributeConstructor[1];
             attributes[0] = attr;
@@ -99,13 +99,13 @@ public class ElementConstructor extends NodeConstructor {
 	}
 	
 	public void addNamespaceDecl(String name, String uri) throws XPathException {
-        QName qn = new QName(name, uri, "xmlns");
+        final QName qn = new QName(name, uri, "xmlns");
 
         if (name.equalsIgnoreCase("xml") || name.equalsIgnoreCase("xmlns"))
-            throw new XPathException(this, ErrorCodes.XQST0070, "can not redefine '" + qn + "'");
+            {throw new XPathException(this, ErrorCodes.XQST0070, "can not redefine '" + qn + "'");}
         
         if (uri.equalsIgnoreCase(Namespaces.XML_NS))
-            throw new XPathException(this, ErrorCodes.XQST0070, "'"+Namespaces.XML_NS+"' can bind only to 'xml' prefix");
+            {throw new XPathException(this, ErrorCodes.XQST0070, "'"+Namespaces.XML_NS+"' can bind only to 'xml' prefix");}
         	
         if (name.length()!=0 && uri.trim().length()==0) {
            throw new XPathException(this, ErrorCodes.XQST0085, "cannot undeclare a prefix "+name+".");
@@ -120,7 +120,7 @@ public class ElementConstructor extends NodeConstructor {
         } else {
             for(int i = 0; i < namespaceDecls.length; i++) {
                 if (qn.equals(namespaceDecls[i]))
-                    throw new XPathException(this, ErrorCodes.XQST0071, "duplicate definition for '" + qn + "'");
+                    {throw new XPathException(this, ErrorCodes.XQST0071, "duplicate definition for '" + qn + "'");}
             }
             QName decls[] = new QName[namespaceDecls.length + 1];
             System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
@@ -145,10 +145,10 @@ public class ElementConstructor extends NodeConstructor {
 //					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
 //		        		throw new XPathException(getASTNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
                 } else
-                    context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+                    {context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());}
             }
         }
-        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
         newContextInfo.setParent(this);
         newContextInfo.addFlag(IN_NODE_CONSTRUCTOR);
         qnameExpr.analyze(newContextInfo);
@@ -158,7 +158,7 @@ public class ElementConstructor extends NodeConstructor {
             }
         }
         if(content != null)
-            content.analyze(newContextInfo);
+            {content.analyze(newContextInfo);}
         context.popInScopeNamespaces();
     }
     
@@ -172,9 +172,9 @@ public class ElementConstructor extends NodeConstructor {
         context.expressionStart(this);
 		context.pushInScopeNamespaces();
         if (newDocumentContext)
-            context.pushDocumentContext();
+            {context.pushDocumentContext();}
         try {
-            MemTreeBuilder builder = context.getDocumentBuilder();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
             // declare namespaces
             if(namespaceDecls != null) {
                 for(int i = 0; i < namespaceDecls.length; i++) {
@@ -188,7 +188,7 @@ public class ElementConstructor extends NodeConstructor {
                 }
             }
             // process attributes
-            AttributesImpl attrs = new AttributesImpl();
+            final AttributesImpl attrs = new AttributesImpl();
             if(attributes != null) {
                 AttributeConstructor constructor;
                 Sequence attrValues;
@@ -197,11 +197,11 @@ public class ElementConstructor extends NodeConstructor {
                 for (int i = 0; i < attributes.length; i++) {
                     constructor = attributes[i];
                     if(constructor.isNamespaceDeclaration()) {
-                        int p = constructor.getQName().indexOf(':');
+                        final int p = constructor.getQName().indexOf(':');
                         if(p == Constants.STRING_NOT_FOUND)
-                            context.declareInScopeNamespace("", constructor.getLiteralValue());
+                            {context.declareInScopeNamespace("", constructor.getLiteralValue());}
                         else {
-                            String prefix = constructor.getQName().substring(p + 1);
+                            final String prefix = constructor.getQName().substring(p + 1);
                             context.declareInScopeNamespace(prefix, constructor.getLiteralValue());
                         }
                     }
@@ -214,7 +214,7 @@ public class ElementConstructor extends NodeConstructor {
                     attrValues = constructor.eval(contextSequence, contextItem);
                     attrQName = QName.parse(context, constructor.getQName(), "");
                     
-                    String namespaceURI = attrQName.getNamespaceURI();
+                    final String namespaceURI = attrQName.getNamespaceURI();
             		if (namespaceURI != null && !namespaceURI.isEmpty() && attrQName.getPrefix() == null) {
             			String prefix = context.getPrefixForURI(namespaceURI);
             			
@@ -222,7 +222,7 @@ public class ElementConstructor extends NodeConstructor {
             				attrQName.setPrefix(prefix);
             			} else {
             				//generate prefix
-            				for (int n = 1; i < 100; i++) {
+            				for (final int n = 1; i < 100; i++) {
             					prefix = "eXnsp"+n;
             		            if (context.getURIForPrefix(prefix) == null) {
             		            	attrQName.setPrefix(prefix);
@@ -232,12 +232,12 @@ public class ElementConstructor extends NodeConstructor {
             		            prefix = null;
             				}
             				if (prefix == null)
-                                throw new XPathException(this, "Prefix can't be generate.");
+                                {throw new XPathException(this, "Prefix can't be generate.");}
             			}
             		}
                     
                     if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
-                        throw new XPathException(this, ErrorCodes.XQST0040, "'" + attrQName.getLocalName() + "' is a duplicate attribute name");
+                        {throw new XPathException(this, ErrorCodes.XQST0040, "'" + attrQName.getLocalName() + "' is a duplicate attribute name");}
                     
                     v = DynamicAttributeConstructor.normalize(this, attrQName, attrValues.getStringValue());
                     
@@ -248,10 +248,10 @@ public class ElementConstructor extends NodeConstructor {
             context.proceed(this, builder);
 
             // create the element
-            Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
+            final Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
             if(!qnameSeq.hasOne())
-            	throw new XPathException(this, ErrorCodes.XPTY0004, "Type error: the node name should evaluate to a single item");
-            Item qnitem = qnameSeq.itemAt(0);
+            	{throw new XPathException(this, ErrorCodes.XPTY0004, "Type error: the node name should evaluate to a single item");}
+            final Item qnitem = qnameSeq.itemAt(0);
             QName qn;
             if (qnitem instanceof QNameValue) {
                 qn = ((QNameValue)qnitem).getQName();
@@ -259,9 +259,9 @@ public class ElementConstructor extends NodeConstructor {
                 //Do we have the same result than Atomize there ? -pb
             	try {
             		qn = QName.parse(context, qnitem.getStringValue());
-            	} catch (IllegalArgumentException e) {
+            	} catch (final IllegalArgumentException e) {
         			throw new XPathException(this, ErrorCodes.XPTY0004, "" + qnitem.getStringValue() + "' is not a valid element name");
-            	} catch (XPathException e) {
+            	} catch (final XPathException e) {
             		e.setLocation(getLine(), getColumn(), getSource());
             		throw e;
 				}
@@ -279,10 +279,10 @@ public class ElementConstructor extends NodeConstructor {
 
             //Not in the specs but... makes sense
             if(!XMLChar.isValidName(qn.getLocalName()))
-            	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
+            	{throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");}
 
             // add namespace declaration nodes
-            int nodeNr = builder.startElement(qn, attrs);
+            final int nodeNr = builder.startElement(qn, attrs);
             if(namespaceDecls != null) {
                 for(int i = 0; i < namespaceDecls.length; i++) {
                     builder.namespaceNode(namespaceDecls[i]);
@@ -293,7 +293,7 @@ public class ElementConstructor extends NodeConstructor {
                 if (context.getInScopePrefix(qn.getNamespaceURI()) == null) {
                     String prefix = qn.getPrefix();
                     if (prefix == null || prefix.length() == 0)
-                        prefix = "";
+                        {prefix = "";}
                     context.declareInScopeNamespace(prefix, qn.getNamespaceURI());
                     builder.namespaceNode(new QName(prefix, qn.getNamespaceURI(), "xmlns"));
                 }
@@ -307,12 +307,12 @@ public class ElementConstructor extends NodeConstructor {
                 content.eval(contextSequence, contextItem);
             }
             builder.endElement();
-            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            final NodeImpl node = builder.getDocument().getNode(nodeNr);
             return node;
         } finally {
             context.popInScopeNamespaces();
             if (newDocumentContext)
-                context.popDocumentContext();
+                {context.popDocumentContext();}
             context.expressionEnd(this);
         }
     }
@@ -332,7 +332,7 @@ public class ElementConstructor extends NodeConstructor {
 			AttributeConstructor attr;
 			for(int i = 0; i < attributes.length; i++) {
 			    if(i > 0)
-			        dumper.nl();
+			        {dumper.nl();}
 				attr = attributes[i];
 				attr.dump(dumper);
 			}
@@ -340,11 +340,11 @@ public class ElementConstructor extends NodeConstructor {
 	        dumper.startIndent();
 	    }
         if(content != null) {
-            for(Iterator<Expression> i = content.steps.iterator(); i.hasNext(); ) {
-                Expression expr = i.next();
+            for(final Iterator<Expression> i = content.steps.iterator(); i.hasNext(); ) {
+                final Expression expr = i.next();
                 expr.dump(dumper);
                 if(i.hasNext())
-                    dumper.nl();
+                    {dumper.nl();}
             }
             dumper.endIndent().nl();
         }        
@@ -352,7 +352,7 @@ public class ElementConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append("element ");
         //TODO : remove curly braces if Qname
         result.append("{");    
@@ -363,17 +363,17 @@ public class ElementConstructor extends NodeConstructor {
 			AttributeConstructor attr;
 			for(int i = 0; i < attributes.length; i++) {
 			    if(i > 0)
-			    	result.append(" ");
+			    	{result.append(" ");}
 				attr = attributes[i];
 				result.append(attr.toString());
 			}
 		}
         if(content != null) {
-            for(Iterator<Expression> i = content.steps.iterator(); i.hasNext(); ) {
-                Expression expr = i.next();
+            for(final Iterator<Expression> i = content.steps.iterator(); i.hasNext(); ) {
+                final Expression expr = i.next();
                 result.append(expr.toString());
                 if(i.hasNext())
-                	result.append(" ");
+                	{result.append(" ");}
             }
         }        
         result.append("} ");
@@ -385,12 +385,12 @@ public class ElementConstructor extends NodeConstructor {
 	 */
 	public void setPrimaryAxis(int axis) {
 		if(content != null)
-			content.setPrimaryAxis(axis);
+			{content.setPrimaryAxis(axis);}
 	}
 
     public int getPrimaryAxis() {
         if (content != null)
-            content.getPrimaryAxis();
+            {content.getPrimaryAxis();}
         return Constants.UNKNOWN_AXIS;
     }
 
@@ -401,10 +401,10 @@ public class ElementConstructor extends NodeConstructor {
 		super.resetState(postOptimization);
 		qnameExpr.resetState(postOptimization);
 		if(content != null)
-			content.resetState(postOptimization);
+			{content.resetState(postOptimization);}
 		if(attributes != null)
 		    for(int i = 0; i < attributes.length; i++) {
-				Expression next = attributes[i];
+				final Expression next = attributes[i];
 				next.resetState(postOptimization);
 			}
 	}

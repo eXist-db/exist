@@ -42,7 +42,7 @@ public final class HSort {
 	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi)
 	{
 		if (lo >= hi)
-			return;
+			{return;}
 		
 		// Next lines are a generalization from makeheap
 		int drop=1;
@@ -65,7 +65,7 @@ public final class HSort {
 		int lastlo=last+lo;
 		
 		for(int k=hi; k>lo; k--) {
-			C temp=a[k];
+			final C temp=a[k];
 			a[k]=a[lo];
 			siftdown(a, k, lo, temp, drop);
 			if (k==lastlo) {
@@ -79,7 +79,7 @@ public final class HSort {
 	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b)
 	{
 		if (lo >= hi)
-			return;
+			{return;}
 		
 		// Next lines are a generalization from makeheap
 		int drop=1;
@@ -102,7 +102,7 @@ public final class HSort {
 		int lastlo=last+lo;
 		
 		for(int k=hi; k>lo; k--) {
-			C temp=a[k];
+			final C temp=a[k];
 			a[k]=a[lo];
 			int tempB;
 			if(b!=null) {
@@ -123,7 +123,7 @@ public final class HSort {
 	public static <C> void sort(C[] a, Comparator<C> c, int lo, int hi)
 	{
 		if (lo >= hi)
-			return;
+			{return;}
 		
 		// Next lines are a generalization from makeheap
 		int drop=1;
@@ -146,7 +146,7 @@ public final class HSort {
 		int lastlo=last+lo;
 		
 		for(int k=hi; k>lo; k--) {
-			C temp=a[k];
+			final C temp=a[k];
 			a[k]=a[lo];
 			siftdown(a, c, k, lo, temp, drop);
 			if (k==lastlo) {
@@ -160,7 +160,7 @@ public final class HSort {
 	public static <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi)
 	{
 		if (lo >= hi)
-			return;
+			{return;}
 		
 		// Next lines are a generalization from makeheap
 		int drop=1;
@@ -183,7 +183,7 @@ public final class HSort {
 		int lastlo=last+lo;
 		
 		for(int k=hi; k>lo; k--) {
-			C temp=a.get(k);
+			final C temp=a.get(k);
 			a.set(k,a.get(lo));
 			siftdown(a, k, lo, temp, drop);
 			if (k==lastlo) {
@@ -197,7 +197,7 @@ public final class HSort {
 	public static void sort(long[] a, int lo, int hi, Object[] b)
 	{
 		if (lo >= hi)
-			return;
+			{return;}
 		
 		// Next lines are a generalization from makeheap
 		int drop=1;
@@ -220,7 +220,7 @@ public final class HSort {
 		int lastlo=last+lo;
 		
 		for(int k=hi; k>lo; k--) {
-			long temp=a[k];
+			final long temp=a[k];
 			a[k]=a[lo];
 			Object tempB;
 			if(b!=null) {
@@ -241,7 +241,7 @@ public final class HSort {
 	public static void sortByNodeId(NodeProxy[] a, int lo, int hi)
 	{
 		if (lo >= hi)
-			return;
+			{return;}
 		
 		// Next lines are a generalization from makeheap
 		int drop=1;
@@ -264,7 +264,7 @@ public final class HSort {
 		int lastlo=last+lo;
 		
 		for(int k=hi; k>lo; k--) {
-			NodeProxy temp=a[k];
+			final NodeProxy temp=a[k];
 			a[k]=a[lo];
 			siftdownByNodeId(a, k, lo, temp, drop);
 			if (k==lastlo) {
@@ -277,7 +277,7 @@ public final class HSort {
 
 	private static <C extends Comparable<? super C>> void siftdown(C[] a, int n, int vacant, C missing, int drop)
 	{
-		int memo=vacant;
+		final int memo=vacant;
 		int child, parent;
 		int count, next_peek;
 
@@ -287,7 +287,7 @@ public final class HSort {
 		child=2*(vacant+1);
 		while(child<n) {
 			if(a[child].compareTo(a[child-1])<0)
-				child--;
+				{child--;}
 			a[vacant]=a[child];
 			vacant=child;
 			child=2*(vacant+1);
@@ -295,9 +295,9 @@ public final class HSort {
 			count++;
 			if (count==next_peek) {
 				if(a[(vacant-1)/2].compareTo(missing)<=0)
-					break;
+					{break;}
 				else
-					next_peek=(count+drop+1)/2;	      
+					{next_peek=(count+drop+1)/2;}	      
 			}
 		}
 
@@ -313,14 +313,14 @@ public final class HSort {
 				vacant=parent;
 				parent=(vacant-1)/2;
 			} else
-				break;
+				{break;}
 		}
 		a[vacant]=missing;
 	}
 
 	private static <C extends Comparable<? super C>> void siftdown(C[] a, int[] b, int n, int vacant, C missing, int missingB, int drop)
 	{
-		int memo=vacant;
+		final int memo=vacant;
 		int child, parent;
 		int count, next_peek;
 
@@ -330,26 +330,26 @@ public final class HSort {
 		child=2*(vacant+1);
 		while(child<n) {
 			if(a[child].compareTo(a[child-1])<0)
-				child--;
+				{child--;}
 			a[vacant]=a[child];
 			if(b!=null)
-				b[vacant]=b[child];
+				{b[vacant]=b[child];}
 			vacant=child;
 			child=2*(vacant+1);
 
 			count++;
 			if (count==next_peek) {
 				if(a[(vacant-1)/2].compareTo(missing)<=0)
-					break;
+					{break;}
 				else
-					next_peek=(count+drop+1)/2;	      
+					{next_peek=(count+drop+1)/2;}	      
 			}
 		}
 
 		if(child==n) {
 			a[vacant]=a[n-1];
 			if(b!=null)
-				b[vacant]=b[n-1];
+				{b[vacant]=b[n-1];}
 			vacant=n-1;
 		}
 
@@ -358,20 +358,20 @@ public final class HSort {
 			if(a[parent].compareTo(missing)<0) {
 				a[vacant]=a[parent];
 				if(b!=null)
-					b[vacant]=b[parent];
+					{b[vacant]=b[parent];}
 				vacant=parent;
 				parent=(vacant-1)/2;
 			} else
-				break;
+				{break;}
 		}
 		a[vacant]=missing;
 		if(b!=null)
-			b[vacant]=missingB;
+			{b[vacant]=missingB;}
 	}
 
 	private static <C> void siftdown(C[] a, Comparator<C> c, int n, int vacant, C missing, int drop)
 	{
-		int memo=vacant;
+		final int memo=vacant;
 		int child, parent;
 		int count, next_peek;
 
@@ -381,7 +381,7 @@ public final class HSort {
 		child=2*(vacant+1);
 		while(child<n) {
 			if(c.compare(a[child],a[child-1])<0)
-				child--;
+				{child--;}
 			a[vacant]=a[child];
 			vacant=child;
 			child=2*(vacant+1);
@@ -389,9 +389,9 @@ public final class HSort {
 			count++;
 			if (count==next_peek) {
 				if(c.compare(a[(vacant-1)/2],missing)<=0)
-					break;
+					{break;}
 				else
-					next_peek=(count+drop+1)/2;	      
+					{next_peek=(count+drop+1)/2;}	      
 			}
 		}
 
@@ -407,14 +407,14 @@ public final class HSort {
 				vacant=parent;
 				parent=(vacant-1)/2;
 			} else
-				break;
+				{break;}
 		}
 		a[vacant]=missing;
 	}
 
 	private static <C extends Comparable<? super C>> void siftdown(List<C> a, int n, int vacant, C missing, int drop)
 	{
-		int memo=vacant;
+		final int memo=vacant;
 		int child, parent;
 		int count, next_peek;
 
@@ -424,7 +424,7 @@ public final class HSort {
 		child=2*(vacant+1);
 		while(child<n) {
 			if(a.get(child).compareTo(a.get(child-1))<0)
-				child--;
+				{child--;}
 			a.set(vacant, a.get(child));
 			vacant=child;
 			child=2*(vacant+1);
@@ -432,9 +432,9 @@ public final class HSort {
 			count++;
 			if (count==next_peek) {
 				if(a.get((vacant-1)/2).compareTo(missing)<=0)
-					break;
+					{break;}
 				else
-					next_peek=(count+drop+1)/2;	      
+					{next_peek=(count+drop+1)/2;}	      
 			}
 		}
 
@@ -450,14 +450,14 @@ public final class HSort {
 				vacant=parent;
 				parent=(vacant-1)/2;
 			} else
-				break;
+				{break;}
 		}
 		a.set(vacant,missing);
 	}
 	
 	private static void siftdown(long[] a, Object[] b, int n, int vacant, long missing, Object missingB, int drop)
 	{
-		int memo=vacant;
+		final int memo=vacant;
 		int child, parent;
 		int count, next_peek;
 
@@ -467,26 +467,26 @@ public final class HSort {
 		child=2*(vacant+1);
 		while(child<n) {
 			if(a[child]<a[child-1])
-				child--;
+				{child--;}
 			a[vacant]=a[child];
 			if(b!=null)
-				b[vacant]=b[child];
+				{b[vacant]=b[child];}
 			vacant=child;
 			child=2*(vacant+1);
 
 			count++;
 			if (count==next_peek) {
 				if(a[(vacant-1)/2]<=missing)
-					break;
+					{break;}
 				else
-					next_peek=(count+drop+1)/2;	      
+					{next_peek=(count+drop+1)/2;}	      
 			}
 		}
 
 		if(child==n) {
 			a[vacant]=a[n-1];
 			if(b!=null)
-				b[vacant]=b[n-1];
+				{b[vacant]=b[n-1];}
 			vacant=n-1;
 		}
 
@@ -495,29 +495,29 @@ public final class HSort {
 			if(a[parent]<missing) {
 				a[vacant]=a[parent];
 				if(b!=null)
-					b[vacant]=b[parent];
+					{b[vacant]=b[parent];}
 				vacant=parent;
 				parent=(vacant-1)/2;
 			} else
-				break;
+				{break;}
 		}
 		a[vacant]=missing;
 		if(b!=null)
-			b[vacant]=missingB;
+			{b[vacant]=missingB;}
 	}
 
 	private static void siftdownByNodeId(NodeProxy[] a, int n, int vacant, NodeProxy missing, int drop)
 	{
-		int memo=vacant;
+		final int memo=vacant;
 		
 		int count=0;
 		int next_peek=(drop+1)/2;
 
 		int child=2*(vacant+1);
-		NodeId missingNodeId=missing.getNodeId();
+		final NodeId missingNodeId=missing.getNodeId();
 		while(child<n) {
 			if(a[child].getNodeId().compareTo(a[child-1].getNodeId())<0)
-				child--;
+				{child--;}
 			a[vacant]=a[child];
 			vacant=child;
 			child=2*(vacant+1);
@@ -525,9 +525,9 @@ public final class HSort {
 			count++;
 			if (count==next_peek) {
 				if(a[(vacant-1)/2].getNodeId().compareTo(missingNodeId)<=0)
-					break;
+					{break;}
 				else
-					next_peek=(count+drop+1)/2;	      
+					{next_peek=(count+drop+1)/2;}	      
 			}
 		}
 
@@ -543,16 +543,16 @@ public final class HSort {
 				vacant=parent;
 				parent=(vacant-1)/2;
 			} else
-				break;
+				{break;}
 		}
 		a[vacant]=missing;
 	}
 
 	public static void main(String[] args) throws Exception {
-		List<String> l = new ArrayList<String>();
+		final List<String> l = new ArrayList<String>();
 		
 		if(args.length==0) {
-			String[] a=new String[] {
+			final String[] a=new String[] {
 				"Rudi",
 				"Herbert",
 				"Anton",
@@ -567,7 +567,7 @@ public final class HSort {
 		} else {
 			System.err.println("Ordering file "+args[0]+"\n");
 			try {
-				java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
+				final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
 				String rr;
 				
 				while((rr=is.readLine())!=null) {
@@ -575,7 +575,7 @@ public final class HSort {
 				}
 				
 				is.close();
-			} catch(Exception e) {
+			} catch(final Exception e) {
 			}
 		}
 		long a;

@@ -64,9 +64,9 @@ public class Profile extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
     	
-        Profiler profiler = context.getProfiler();
+        final Profiler profiler = context.getProfiler();
         if (isCalledAs("enable-profiling")) {
-            int verbosity = ((IntegerValue)args[0].itemAt(0)).getInt();
+            final int verbosity = ((IntegerValue)args[0].itemAt(0)).getInt();
             profiler.setEnabled(true);
             profiler.setVerbosity(verbosity);
         } else {

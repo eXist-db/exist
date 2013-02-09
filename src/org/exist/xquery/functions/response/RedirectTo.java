@@ -73,12 +73,12 @@ public class RedirectTo extends BasicFunction
      */
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
-        ResponseModule myModule    = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
+        final ResponseModule myModule    = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
 
-        String         redirectURI = args[0].getStringValue();
+        final String         redirectURI = args[0].getStringValue();
 
         // response object is read from global variable $response
-        Variable       var         = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
+        final Variable       var         = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
 
         if( ( var == null ) || ( var.getValue() == null ) ) {
             throw( new XPathException( this, "No response object found in the current XQuery context." ) );
@@ -88,14 +88,14 @@ public class RedirectTo extends BasicFunction
             throw( new XPathException( this, "Variable $response is not bound to an Java object." ) );
         }
 
-        JavaObjectValue value = (JavaObjectValue)var.getValue().itemAt( 0 );
+        final JavaObjectValue value = (JavaObjectValue)var.getValue().itemAt( 0 );
 
         if( value.getObject() instanceof ResponseWrapper ) {
 
             try {
                 ( (ResponseWrapper)value.getObject() ).sendRedirect( redirectURI );
             }
-            catch( IOException e ) {
+            catch( final IOException e ) {
                 throw( new XPathException( this, "An IO exception occurred during redirect: " + e.getMessage(), e ) );
             }
         } else {

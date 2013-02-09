@@ -78,7 +78,7 @@ public class Validator {
         config = brokerPool.getConfiguration();
 
         // Check xerces version        
-        StringBuilder xmlLibMessage = new StringBuilder();
+        final StringBuilder xmlLibMessage = new StringBuilder();
         if(!XmlLibraryChecker.hasValidParser(xmlLibMessage)){
             logger.error(xmlLibMessage);
         }
@@ -139,20 +139,20 @@ public class Validator {
      */
     public ValidationReport validateJing(InputStream stream, String grammarUrl) {
 
-        ValidationReport report = new ValidationReport();
+        final ValidationReport report = new ValidationReport();
         try {
             report.start();
 
             // Setup validation properties. see Jing interface
-            PropertyMapBuilder properties = new PropertyMapBuilder();
+            final PropertyMapBuilder properties = new PropertyMapBuilder();
             ValidateProperty.ERROR_HANDLER.put(properties, report);
 
             // Copied from Jing code ; the Compact syntax seem to have a different
             // Schema reader. To be investigated. http://www.thaiopensource.com/relaxng/api/jing/index.html
-            SchemaReader schemaReader = grammarUrl.endsWith(".rnc") ? CompactSchemaReader.getInstance() : null;
+            final SchemaReader schemaReader = grammarUrl.endsWith(".rnc") ? CompactSchemaReader.getInstance() : null;
 
             // Setup driver
-            ValidationDriver driver = new ValidationDriver(properties.toPropertyMap(), schemaReader);
+            final ValidationDriver driver = new ValidationDriver(properties.toPropertyMap(), schemaReader);
 
             // Load schema
             driver.loadSchema(new InputSource(grammarUrl));
@@ -160,11 +160,11 @@ public class Validator {
             // Validate XML instance
             driver.validate(new InputSource(stream));
 
-        } catch(IOException ex) {
+        } catch(final IOException ex) {
             logger.error(ex);
             report.setThrowable(ex);
 
-        } catch(Exception ex) {
+        } catch(final Exception ex) {
             logger.debug(ex);
             report.setThrowable(ex);
 
@@ -195,13 +195,13 @@ public class Validator {
 
         logger.debug("Start validation.");
 
-        ValidationReport report = new ValidationReport();
-        ValidationContentHandler contenthandler = new ValidationContentHandler();
+        final ValidationReport report = new ValidationReport();
+        final ValidationContentHandler contenthandler = new ValidationContentHandler();
 
 
         try {
 
-            XMLReader xmlReader = getXMLReader(contenthandler, report);
+            final XMLReader xmlReader = getXMLReader(contenthandler, report);
 
             if(grammarUrl == null){
 
@@ -213,7 +213,7 @@ public class Validator {
 
                 // Scenario 2 : path to catalog (xml)
                 logger.debug("Validation using user specified catalog '" + grammarUrl + "'.");
-                eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
+                final eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
                 resolver.setCatalogList(new String[]{grammarUrl});
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
 
@@ -221,20 +221,20 @@ public class Validator {
 
                 // Scenario 3 : path to collection ("/"): search.
                 logger.debug("Validation using searched grammar, start from '" + grammarUrl + "'.");
-                SearchResourceResolver resolver = new SearchResourceResolver(grammarUrl, brokerPool);
+                final SearchResourceResolver resolver = new SearchResourceResolver(grammarUrl, brokerPool);
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
 
             } else {
 
                 // Scenario 4 : path to grammar (xsd, dtd) specified.
                 logger.debug("Validation using specified grammar '" + grammarUrl + "'.");
-                AnyUriResolver resolver = new AnyUriResolver(grammarUrl);
+                final AnyUriResolver resolver = new AnyUriResolver(grammarUrl);
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
             }
 
             logger.debug("Validation started.");
             report.start();
-            InputSource source = new InputSource(stream);
+            final InputSource source = new InputSource(stream);
             xmlReader.parse(source);
             logger.debug("Validation stopped.");
 
@@ -246,11 +246,11 @@ public class Validator {
                 logger.debug("Document is not valid.");
             }
 
-        } catch(IOException ex) {
+        } catch(final IOException ex) {
             logger.error(ex);
             report.setThrowable(ex);
 
-        } catch(Exception ex) {
+        } catch(final Exception ex) {
             logger.error(ex);
             report.setThrowable(ex);
 
@@ -268,15 +268,15 @@ public class Validator {
             ErrorHandler errorHandler) throws ParserConfigurationException, SAXException {
 
         // setup sax factory ; be sure just one instance!
-        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
 
         // Enable validation stuff
         saxFactory.setValidating(true);
         saxFactory.setNamespaceAware(true);
 
         // Create xml reader
-        SAXParser saxParser = saxFactory.newSAXParser();
-        XMLReader xmlReader = saxParser.getXMLReader();
+        final SAXParser saxParser = saxFactory.newSAXParser();
+        final XMLReader xmlReader = saxParser.getXMLReader();
 
         // Setup xmlreader
         xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);

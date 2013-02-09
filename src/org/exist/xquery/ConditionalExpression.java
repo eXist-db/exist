@@ -90,16 +90,16 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         context.expressionStart(this);
-        Sequence testSeq = testExpr.eval(contextSequence, contextItem);
+        final Sequence testSeq = testExpr.eval(contextSequence, contextItem);
         try {
             if (testSeq.effectiveBooleanValue()) {
                 return thenExpr.eval(contextSequence, contextItem);
             } else {
                 return elseExpr.eval(contextSequence, contextItem);
             }
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             if (e.getLine() == 0)
-                e.setLocation(line, column);
+                {e.setLocation(line, column);}
             throw e;
         } finally {
             context.expressionEnd(this);
@@ -132,7 +132,7 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("if ( ");
         result.append(testExpr.toString());
         result.append(" ) then ");
@@ -167,11 +167,11 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
     @Override
     public void replace(Expression oldExpr, Expression newExpr) {
         if (testExpr == oldExpr)
-            testExpr = newExpr;
+            {testExpr = newExpr;}
         else if (thenExpr == oldExpr)
-            thenExpr = newExpr;
+            {thenExpr = newExpr;}
         else if (elseExpr == oldExpr)
-            elseExpr = newExpr;
+            {elseExpr = newExpr;}
     }
 
     @Override

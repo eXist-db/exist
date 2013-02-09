@@ -102,7 +102,7 @@ public class ExistPDP
 	public ExistPDP(BrokerPool pool)
 	{
 		if(pool == null)
-			throw new NullPointerException("BrokerPool cannot be null");
+			{throw new NullPointerException("BrokerPool cannot be null");}
 		this.pool = pool;
 		
 		util = new XACMLUtil(this);
@@ -173,19 +173,19 @@ public class ExistPDP
 	public void evaluate(RequestCtx request) throws PermissionDeniedException
 	{
 		if(request == null)
-			throw new PermissionDeniedException("Request cannot be null");
+			{throw new PermissionDeniedException("Request cannot be null");}
 		
 		if(LOG.isDebugEnabled())
 		{
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			final ByteArrayOutputStream out = new ByteArrayOutputStream();
 			request.encode(out, new Indenter(4));
 			LOG.debug("Processing request:");
 			LOG.debug(out.toString());
 		}
-		ResponseCtx response = pdp.evaluate(request);
+		final ResponseCtx response = pdp.evaluate(request);
 		if(LOG.isDebugEnabled())
 		{
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			final ByteArrayOutputStream out = new ByteArrayOutputStream();
 			response.encode(out, new Indenter(4));
 			LOG.debug("PDP response to request:");
 			LOG.debug(out.toString());
@@ -208,13 +208,13 @@ public class ExistPDP
 	public void handleResponse(ResponseCtx response) throws PermissionDeniedException
 	{
 		if(response == null)
-			throw new PermissionDeniedException("The response was null");
+			{throw new PermissionDeniedException("The response was null");}
 
-		Set<Result> results = response.getResults();
+		final Set<Result> results = response.getResults();
 		if(results == null || results.size() == 0)
-			throw new PermissionDeniedException("The response was empty");
+			{throw new PermissionDeniedException("The response was empty");}
 
-		for(Result result : results)
+		for(final Result result : results)
 			handleResult(result);
 	}
 	
@@ -234,17 +234,17 @@ public class ExistPDP
 	public void handleResult(Result result) throws PermissionDeniedException
 	{
 		if(result == null)
-			throw new PermissionDeniedException("A result of a request's response was null");
+			{throw new PermissionDeniedException("A result of a request's response was null");}
 
-		Set obligations = result.getObligations();
+		final Set obligations = result.getObligations();
 		if(obligations != null && obligations.size() > 0)
 		{
 			throw new PermissionDeniedException("The XACML response had obligations that could not be fulfilled.");
 		}
 
-		int decision = result.getDecision();
+		final int decision = result.getDecision();
 		if(decision == Result.DECISION_PERMIT)
-			return;
+			{return;}
 
 		throw new PermissionDeniedException("The response did not permit the request.  The decision was: " + getDecisionString(decision, result.getStatus()));
 	}
@@ -260,9 +260,9 @@ public class ExistPDP
 			case Result.DECISION_INDETERMINATE:
 				String error = (status == null) ? null : status.getMessage();
 				if(error == null)
-					error = "";
+					{error = "";}
 				else if(error.length() > 0)
-					error = ": " + error;
+					{error = ": " + error;}
 				return "indeterminate (there was an error)" + error;
 			case Result.DECISION_NOT_APPLICABLE:
 				return "the request was not applicable to the policy";
@@ -333,11 +333,11 @@ public class ExistPDP
 	*/
 	private AttributeFinder createAttributeFinder()
 	{
-		List<Object> modules = new ArrayList<Object>(2);
+		final List<Object> modules = new ArrayList<Object>(2);
 		modules.add(new UserAttributeModule(this));
 		modules.add(new CurrentEnvModule());
 		
-		AttributeFinder attributeFinder = new AttributeFinder();
+		final AttributeFinder attributeFinder = new AttributeFinder();
 		attributeFinder.setModules(modules);
 		return attributeFinder;
 	}
@@ -352,9 +352,9 @@ public class ExistPDP
 	*/
 	private PolicyFinder createPolicyFinder()
 	{
-		ExistPolicyModule policyModule = new ExistPolicyModule(this);
+		final ExistPolicyModule policyModule = new ExistPolicyModule(this);
 
-		PolicyFinder policyFinder = new PolicyFinder();
+		final PolicyFinder policyFinder = new PolicyFinder();
 		policyFinder.setModules(Collections.singleton(policyModule));
 		return policyFinder;
 	}

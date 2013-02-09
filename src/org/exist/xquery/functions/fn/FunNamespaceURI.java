@@ -91,37 +91,37 @@ public class FunNamespaceURI extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         Item item = null;
         // check if the node is passed as an argument or should be taken from the context sequence
         if(getArgumentCount() > 0) {
-            Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+            final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
             if(!seq.isEmpty())
-                item = seq.itemAt(0);
+                {item = seq.itemAt(0);}
         } else { 
         	if (contextItem == null)
-            	throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+            	{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
         	item = contextItem;
         }
         
         Sequence result;
         if(item == null)
-            result = AnyURIValue.EMPTY_URI;
+            {result = AnyURIValue.EMPTY_URI;}
         else {        	
             if(!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node; got: " +
-                        Type.getTypeName(item.getType()));
+                {throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node; got: " +
+                        Type.getTypeName(item.getType()));}
             //TODO : how to improve performance ?
-            Node n = ((NodeValue)item).getNode();
+            final Node n = ((NodeValue)item).getNode();
             result = new AnyURIValue(n.getNamespaceURI());
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;          
 	}

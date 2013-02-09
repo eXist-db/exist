@@ -48,11 +48,11 @@ public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
     }
 
     public MutableDocumentSet toDocumentSet() {
-        MutableDocumentSet docs = new DefaultDocumentSet(size());
+        final MutableDocumentSet docs = new DefaultDocumentSet(size());
         LockedDocument lockedDocument;
         for(int idx = 0; idx < tabSize; idx++) {
             if(values[idx] == null || values[idx] == REMOVED)
-                continue;
+                {continue;}
             lockedDocument = (LockedDocument) values[idx];
             docs.add(lockedDocument.document);
         }
@@ -62,14 +62,14 @@ public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
     public DocumentSet getDocsByCollection(Collection collection,
             boolean includeSubColls, MutableDocumentSet targetSet) {
         if (targetSet == null)
-            targetSet = new DefaultDocumentSet(size());
+            {targetSet = new DefaultDocumentSet(size());}
         LockedDocument lockedDocument;
         for(int idx = 0; idx < tabSize; idx++) {
             if(values[idx] == null || values[idx] == REMOVED)
-                continue;
+                {continue;}
             lockedDocument = (LockedDocument) values[idx];
             if (lockedDocument.document.getCollection().getURI().startsWith(collection.getURI()))
-                targetSet.add(lockedDocument.document);
+                {targetSet.add(lockedDocument.document);}
         }
         return targetSet;
     }
@@ -78,7 +78,7 @@ public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
         LockedDocument lockedDocument;
         for(int idx = 0; idx < tabSize; idx++) {
             if(values[idx] == null || values[idx] == REMOVED)
-                continue;
+                {continue;}
             lockedDocument = (LockedDocument) values[idx];
             unlockDocument(lockedDocument); 
         }
@@ -88,7 +88,7 @@ public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
         LockedDocument lockedDocument;
         for(int idx = 0; idx < tabSize; idx++) {
             if(values[idx] == null || values[idx] == REMOVED)
-                continue;
+                {continue;}
             lockedDocument = (LockedDocument) values[idx];
             if (!keep.contains(lockedDocument.document.getDocId())) {
                 values[idx] = REMOVED;
@@ -99,7 +99,7 @@ public class LockedDocumentMap extends Int2ObjectHashMap<Object> {
     }
 
     private void unlockDocument(LockedDocument lockedDocument) {
-        Lock documentLock = lockedDocument.document.getUpdateLock();
+        final Lock documentLock = lockedDocument.document.getUpdateLock();
         documentLock.release(Lock.WRITE_LOCK, lockedDocument.locksAcquired);
     }
 

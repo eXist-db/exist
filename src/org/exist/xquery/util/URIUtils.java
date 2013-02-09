@@ -131,9 +131,9 @@ public class URIUtils {
 	 */
 	public static String urlEncodeUtf8(String uri) {
 		try {
-			String almostEncoded = URLEncoder.encode(uri, "UTF-8");
+			final String almostEncoded = URLEncoder.encode(uri, "UTF-8");
 			return almostEncoded.replaceAll("\\+","%20");
-		} catch(UnsupportedEncodingException e) {
+		} catch(final UnsupportedEncodingException e) {
 			//wrap with a runtime Exception
 			throw new RuntimeException(e);
 		}
@@ -150,7 +150,7 @@ public class URIUtils {
 	public static String urlDecodeUtf8(String uri) {
 		try {
 			return URLDecoder.decode(uri, "UTF-8");
-		} catch(UnsupportedEncodingException e) {
+		} catch(final UnsupportedEncodingException e) {
 			//wrap with a runtime Exception
 			throw new RuntimeException(e);
 		}
@@ -167,7 +167,7 @@ public class URIUtils {
 	public static String urlDecodeUtf8(XmldbURI uri) {
 		try {
 			return URLDecoder.decode(uri.toString(), "UTF-8");
-		} catch(UnsupportedEncodingException e) {
+		} catch(final UnsupportedEncodingException e) {
 			//wrap with a runtime Exception
 			throw new RuntimeException(e);
 		}
@@ -183,8 +183,8 @@ public class URIUtils {
 	 * @return A UTF-8 URL encoded string
 	 */
 	public static String urlEncodePartsUtf8(String url) {
-		String[] split = url.split("/",-1);
-		StringBuilder ret = new StringBuilder(url.length());
+		final String[] split = url.split("/",-1);
+		final StringBuilder ret = new StringBuilder(url.length());
 		for(int i=0;i<split.length;i++) {
 			ret.append(urlEncodeUtf8(split[i]));
 			if(i<split.length-1) {
@@ -204,9 +204,9 @@ public class URIUtils {
 	 */
 	public static String ensureUrlEncodedUtf8(String path) {
 		try {
-			XmldbURI uri = XmldbURI.xmldbUriFor(path);
+			final XmldbURI uri = XmldbURI.xmldbUriFor(path);
 			return uri.getRawCollectionPath();
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			return URIUtils.urlEncodePartsUtf8(path);
 		}
 	}

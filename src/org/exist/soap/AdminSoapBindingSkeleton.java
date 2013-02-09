@@ -30,7 +30,7 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
 
     static {
         org.apache.axis.description.OperationDesc _oper;
-        org.apache.axis.description.FaultDesc _fault;
+        final org.apache.axis.description.FaultDesc _fault;
         org.apache.axis.description.ParameterDesc [] _params;
         _params = new org.apache.axis.description.ParameterDesc [] {
             new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
@@ -421,7 +421,7 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
 
     public java.lang.String connect(java.lang.String userId, java.lang.String password) throws java.rmi.RemoteException
     {
-        java.lang.String ret = impl.connect(userId, password);
+        final java.lang.String ret = impl.connect(userId, password);
         return ret;
     }
 
@@ -432,43 +432,43 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
 
     public boolean removeCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException
     {
-        boolean ret = impl.removeCollection(sessionId, path);
+        final boolean ret = impl.removeCollection(sessionId, path);
         return ret;
     }
 
     public boolean removeDocument(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException
     {
-        boolean ret = impl.removeDocument(sessionId, path);
+        final boolean ret = impl.removeDocument(sessionId, path);
         return ret;
     }
 
     public boolean createCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException
     {
-        boolean ret = impl.createCollection(sessionId, path);
+        final boolean ret = impl.createCollection(sessionId, path);
         return ret;
     }
 
     public int xupdate(java.lang.String sessionId, java.lang.String collectionName, java.lang.String xupdate) throws java.rmi.RemoteException
     {
-        int ret = impl.xupdate(sessionId, collectionName, xupdate);
+        final int ret = impl.xupdate(sessionId, collectionName, xupdate);
         return ret;
     }
 
     public int xupdateResource(java.lang.String sessionId, java.lang.String documentName, java.lang.String xupdate) throws java.rmi.RemoteException
     {
-        int ret = impl.xupdateResource(sessionId, documentName, xupdate);
+        final int ret = impl.xupdateResource(sessionId, documentName, xupdate);
         return ret;
     }
 
     public byte[] getBinaryResource(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException
     {
-        byte[] ret = impl.getBinaryResource(sessionId, name);
+        final byte[] ret = impl.getBinaryResource(sessionId, name);
         return ret;
     }
 
     public org.exist.soap.CollectionDesc getCollectionDesc(java.lang.String sessionId, java.lang.String collectionName) throws java.rmi.RemoteException
     {
-        org.exist.soap.CollectionDesc ret = impl.getCollectionDesc(sessionId, collectionName);
+        final org.exist.soap.CollectionDesc ret = impl.getCollectionDesc(sessionId, collectionName);
         return ret;
     }
 
@@ -494,7 +494,7 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
 
     public org.exist.soap.UserDesc getUser(java.lang.String sessionId, java.lang.String user) throws java.rmi.RemoteException
     {
-        org.exist.soap.UserDesc ret = impl.getUser(sessionId, user);
+        final org.exist.soap.UserDesc ret = impl.getUser(sessionId, user);
         return ret;
     }
 
@@ -505,13 +505,13 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
 
     public org.exist.soap.UserDescs getUsers(java.lang.String sessionId) throws java.rmi.RemoteException
     {
-        org.exist.soap.UserDescs ret = impl.getUsers(sessionId);
+        final org.exist.soap.UserDescs ret = impl.getUsers(sessionId);
         return ret;
     }
 
     public org.exist.soap.Strings getGroups(java.lang.String sessionId) throws java.rmi.RemoteException
     {
-        org.exist.soap.Strings ret = impl.getGroups(sessionId);
+        final org.exist.soap.Strings ret = impl.getGroups(sessionId);
         return ret;
     }
 
@@ -537,31 +537,31 @@ public class AdminSoapBindingSkeleton implements org.exist.soap.Admin, org.apach
 
     public java.lang.String hasUserLock(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException
     {
-        java.lang.String ret = impl.hasUserLock(sessionId, path);
+        final java.lang.String ret = impl.hasUserLock(sessionId, path);
         return ret;
     }
 
     public org.exist.soap.Permissions getPermissions(java.lang.String sessionId, java.lang.String resource) throws java.rmi.RemoteException
     {
-        org.exist.soap.Permissions ret = impl.getPermissions(sessionId, resource);
+        final org.exist.soap.Permissions ret = impl.getPermissions(sessionId, resource);
         return ret;
     }
 
     public org.exist.soap.EntityPermissionsList listCollectionPermissions(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException
     {
-        org.exist.soap.EntityPermissionsList ret = impl.listCollectionPermissions(sessionId, name);
+        final org.exist.soap.EntityPermissionsList ret = impl.listCollectionPermissions(sessionId, name);
         return ret;
     }
 
     public org.exist.soap.EntityPermissionsList listDocumentPermissions(java.lang.String sessionId, java.lang.String name) throws java.rmi.RemoteException
     {
-        org.exist.soap.EntityPermissionsList ret = impl.listDocumentPermissions(sessionId, name);
+        final org.exist.soap.EntityPermissionsList ret = impl.listDocumentPermissions(sessionId, name);
         return ret;
     }
 
     public org.exist.soap.IndexedElements getIndexedElements(java.lang.String sessionId, java.lang.String collectionName, boolean inclusive) throws java.rmi.RemoteException
     {
-        org.exist.soap.IndexedElements ret = impl.getIndexedElements(sessionId, collectionName, inclusive);
+        final org.exist.soap.IndexedElements ret = impl.getIndexedElements(sessionId, collectionName, inclusive);
         return ret;
     }
 

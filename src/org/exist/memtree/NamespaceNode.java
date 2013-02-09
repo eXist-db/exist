@@ -191,7 +191,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
     //Untested
     public String toString()
     {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append( "in-memory#" );
         result.append( "namespace {" );
         result.append( getPrefix() );

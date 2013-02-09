@@ -40,9 +40,9 @@ public class TreeMetrics {
 
     public void addPage(int status) {
         if (status == BTree.BRANCH)
-            addInnerPage();
+            {addInnerPage();}
         else
-            addLeafPage();
+            {addLeafPage();}
     }
 
     public void addLeafPage() {
@@ -65,10 +65,10 @@ public class TreeMetrics {
     }
 
     public void toLogger() {
-        StringWriter sw = new StringWriter();
-        PrintWriter writer = new PrintWriter(sw);
+        final StringWriter sw = new StringWriter();
+        final PrintWriter writer = new PrintWriter(sw);
         print(writer);
         if (BTree.LOG.isDebugEnabled())
-            BTree.LOG.debug(sw.toString());
+            {BTree.LOG.debug(sw.toString());}
     }
 }

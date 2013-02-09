@@ -101,14 +101,14 @@ public class AnyURIValue extends AtomicValue {
 		this.uri = uri.toString();
 	}
 	public AnyURIValue(String s) throws XPathException {
-		String wsTrimString = normalizeEscaped(StringValue.trimWhitespace(s));
-		String escapedString = escape(wsTrimString);
+		final String wsTrimString = normalizeEscaped(StringValue.trimWhitespace(s));
+		final String escapedString = escape(wsTrimString);
         try {
 			new URI(escapedString);
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			try {
 				XmldbURI.xmldbUriFor(escapedString);
-			} catch (URISyntaxException ex) {
+			} catch (final URISyntaxException ex) {
 				throw new XPathException(
 					"Type error: the given string '" + s + "' cannot be cast to " + Type.getTypeName(getType()));
 			}
@@ -270,8 +270,8 @@ public class AnyURIValue extends AtomicValue {
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.ANY_URI) {
-			String otherURI = other.getStringValue();
-			int cmp = uri.compareTo(otherURI);
+			final String otherURI = other.getStringValue();
+			final int cmp = uri.compareTo(otherURI);
 			switch (operator) {
 				case Constants.EQ :
 					return cmp == 0;
@@ -292,7 +292,7 @@ public class AnyURIValue extends AtomicValue {
 							+ " to xs:anyURI");
 			}
 		} else
-			return compareTo(collator, operator, other.convertTo(Type.ANY_URI));
+			{return compareTo(collator, operator, other.convertTo(Type.ANY_URI));}
 	}
 
 	/* (non-Javadoc)
@@ -300,7 +300,7 @@ public class AnyURIValue extends AtomicValue {
 	 */
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.ANY_URI) {
-			String otherURI = other.getStringValue();
+			final String otherURI = other.getStringValue();
 			return uri.compareTo(otherURI);
 		} else {
 			return compareTo(collator, other.convertTo(Type.ANY_URI));
@@ -326,17 +326,17 @@ public class AnyURIValue extends AtomicValue {
 	 */
 	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(AnyURIValue.class))
-			return 0;
+			{return 0;}
 		if (javaClass == XmldbURI.class)
-			return 1;
+			{return 1;}
 		if (javaClass == URI.class)
-			return 2;
+			{return 2;}
 		if (javaClass == URL.class)
-			return 3;
+			{return 3;}
 		if (javaClass == String.class || javaClass == CharSequence.class)
-			return 4;
+			{return 4;}
 		if (javaClass == Object.class)
-			return 20;
+			{return 20;}
 		return Integer.MAX_VALUE;
 	}
 
@@ -354,13 +354,13 @@ public class AnyURIValue extends AtomicValue {
 		} else if (target == URL.class) {
 			try {
 				return (T)new URL(uri);
-			} catch (MalformedURLException e) {
+			} catch (final MalformedURLException e) {
 				throw new XPathException(ErrorCodes.FORG0001,
 					"failed to convert " + uri + " into a Java URL: " + e.getMessage(),
 					e);
 			}
 		} else if (target == String.class || target == CharSequence.class)
-			return (T)uri;
+			{return (T)uri;}
 		else if (target == Object.class) {
 			return (T)uri;
                 }
@@ -375,7 +375,7 @@ public class AnyURIValue extends AtomicValue {
 	public XmldbURI toXmldbURI() throws XPathException {
 		try {
 			return XmldbURI.xmldbUriFor(uri, false);
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			throw new XPathException(ErrorCodes.FORG0001,
 				"failed to convert " + uri + " into an XmldbURI: " + e.getMessage(),
 				e);
@@ -385,7 +385,7 @@ public class AnyURIValue extends AtomicValue {
 	public URI toURI() throws XPathException {
 		try {
 			return new URI(escape(uri));
-		} catch (URISyntaxException e) {
+		} catch (final URISyntaxException e) {
 			throw new XPathException(ErrorCodes.FORG0001,
 				"failed to convert " + uri + " into an URI: " + e.getMessage(),
 				e);
@@ -400,14 +400,14 @@ public class AnyURIValue extends AtomicValue {
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
-            return true;
+            {return true;}
         if (obj instanceof AnyURIValue)
-            return ((AnyURIValue)obj).uri.equals(uri);
+            {return ((AnyURIValue)obj).uri.equals(uri);}
         return false;
     }
 
     private String normalizeEscaped(String in) {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < in.length(); i++) {
             char ch = in.charAt(i);
             if (ch == '%') {

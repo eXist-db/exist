@@ -123,11 +123,11 @@ public class SystemImportHandler extends DefaultHandler {
 //            return;
 //        }
 
-        if(localName.equals("collection") || localName.equals("resource")) {
+        if("collection".equals(localName) || "resource".equals(localName)) {
             
             final DeferredPermission df;
             
-            if(localName.equals("collection")) {
+            if("collection".equals(localName)) {
                 df = restoreCollectionEntry(atts);
             } else {
                 df = restoreResourceEntry(atts);
@@ -135,11 +135,11 @@ public class SystemImportHandler extends DefaultHandler {
             
             deferredPermissions.push(df);
             
-        } else if(localName.equals("subcollection")) {
+        } else if("subcollection".equals(localName)) {
             restoreSubCollectionEntry(atts);
-        } else if(localName.equals("deleted" )) {
+        } else if("deleted".equals(localName)) {
             restoreDeletedEntry(atts);
-        } else if(localName.equals("ace")) {
+        } else if("ace".equals(localName)) {
             addACEToDeferredPermissions(atts);
         } else {
         	rh.startElement(namespaceURI, localName, qName, atts);
@@ -149,7 +149,7 @@ public class SystemImportHandler extends DefaultHandler {
     @Override
     public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 
-        if(namespaceURI.equals(Namespaces.EXIST_NS) && (localName.equals("collection") || localName.equals("resource"))) {
+        if(namespaceURI.equals(Namespaces.EXIST_NS) && ("collection".equals(localName) || "resource".equals(localName))) {
             setDeferredPermissions();
         }
         
@@ -175,7 +175,7 @@ public class SystemImportHandler extends DefaultHandler {
         if(strVersion != null) {
             try {
                 this.version = Integer.parseInt(strVersion);
-            } catch(NumberFormatException nfe) {
+            } catch(final NumberFormatException nfe) {
                 final String msg = "Could not parse version number for Collection '" + name + "', defaulting to version 0";
                 listener.warn(msg);
                 LOG.warn(msg);
@@ -193,14 +193,14 @@ public class SystemImportHandler extends DefaultHandler {
             } else {
                 try {
                     collUri = URIUtils.encodeXmldbUriFor(name);
-                } catch(URISyntaxException e) {
+                } catch(final URISyntaxException e) {
                     listener.warn("Could not parse document name into a URI: " + e.getMessage());
                     return new SkippedEntryDeferredPermission();
                 }
             }
 
-        	TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-        	Txn txn = txnManager.beginTransaction();
+        	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+        	final Txn txn = txnManager.beginTransaction();
         	try {
         		currentCollection = broker.getOrCreateCollection(txn, collUri);
         		
@@ -209,7 +209,7 @@ public class SystemImportHandler extends DefaultHandler {
                 broker.saveCollection(txn, currentCollection);
 
         		txnManager.commit(txn);
-        	} catch (Exception e) {
+        	} catch (final Exception e) {
         		txnManager.abort(txn);
         		throw new SAXException(e);
     		}
@@ -234,7 +234,7 @@ public class SystemImportHandler extends DefaultHandler {
             
             return deferredPermission;
             
-        } catch(Exception e) {
+        } catch(final Exception e) {
             final String msg = "An unrecoverable error occurred while restoring\ncollection '" + name + "'. " + "Aborting restore!";
             LOG.error(msg, e);
             listener.warn(msg);
@@ -272,9 +272,9 @@ public class SystemImportHandler extends DefaultHandler {
 
                 reader.setContentHandler(handler);
                 reader.parse(is);
-            } catch(ParserConfigurationException pce) {
+            } catch(final ParserConfigurationException pce) {
                 throw new SAXException("Could not initalise SAXParser for processing sub-collection: " + descriptor.getSymbolicPath(name, false), pce);
-            } catch(IOException ioe) {
+            } catch(final IOException ioe) {
                 throw new SAXException("Could not read sub-collection for processing: " + ioe.getMessage(), ioe);
             }
         } else {
@@ -287,7 +287,7 @@ public class SystemImportHandler extends DefaultHandler {
         final String skip = atts.getValue( "skip" );
 
         //dont process entries which should be skipped
-        if(skip != null && !skip.equals("no")) {
+        if(skip != null && !"no".equals(skip)) {
             return new SkippedEntryDeferredPermission();
         }
         
@@ -329,14 +329,14 @@ public class SystemImportHandler extends DefaultHandler {
         if(created != null) {
             try {
                 date_created = (new DateTimeValue(created)).getDate();
-            } catch(XPathException xpe) {
+            } catch(final XPathException xpe) {
                 listener.warn("Illegal creation date. Ignoring date...");
             }
         }
         if(modified != null) {
             try {
                 date_modified = (Date) (new DateTimeValue(modified)).getDate();
-            } catch(XPathException xpe) {
+            } catch(final XPathException xpe) {
                 listener.warn("Illegal modification date. Ignoring date...");
             }
         }
@@ -348,7 +348,7 @@ public class SystemImportHandler extends DefaultHandler {
         } else {
             try {
                 docUri = URIUtils.encodeXmldbUriFor(name);
-            } catch(URISyntaxException e) {
+            } catch(final URISyntaxException e) {
                 final String msg = "Could not parse document name into a URI: " + e.getMessage();
                 listener.error(msg);
                 LOG.error(msg, e);
@@ -358,7 +358,7 @@ public class SystemImportHandler extends DefaultHandler {
 
         final EXistInputSource is = descriptor.getInputSource(filename);
         if(is == null) {
-            String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
+            final String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
             listener.warn(msg);
             throw new RuntimeException(msg);
         }
@@ -370,24 +370,24 @@ public class SystemImportHandler extends DefaultHandler {
                 listener.observe((Observable)currentCollection);
             }
 
-			TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-			Txn txn = txnManager.beginTransaction();
+			final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+			final Txn txn = txnManager.beginTransaction();
 	
 			DocumentImpl resource = null;
 			try {
-				if (type.equals("XMLResource")) {
+				if ("XMLResource".equals(type)) {
 					// store as xml resource
 					
-					IndexInfo info = currentCollection.validateXMLResource(txn, broker, docUri, is);
+					final IndexInfo info = currentCollection.validateXMLResource(txn, broker, docUri, is);
 					
 					resource = info.getDocument();
-					DocumentMetadata meta = resource.getMetadata();
+					final DocumentMetadata meta = resource.getMetadata();
 					meta.setMimeType(mimetype);
 					meta.setCreated(date_created.getTime());
 					meta.setLastModified(date_modified.getTime());
 					
 	                if((publicid != null) || (systemid != null)) {
-	                	DocumentType docType = new DocumentTypeImpl(namedoctype, publicid, systemid);
+	                	final DocumentType docType = new DocumentTypeImpl(namedoctype, publicid, systemid);
 	                	meta.setDocType(docType);
 	                }
 
@@ -419,7 +419,7 @@ public class SystemImportHandler extends DefaultHandler {
                 listener.restored(name);
                 
                 return deferredPermission;
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				txnManager.abort(txn);
 				throw new IOException(e);
 			} finally {
@@ -427,7 +427,7 @@ public class SystemImportHandler extends DefaultHandler {
 //					resource.getUpdateLock().release(Lock.READ_LOCK);
 			}
 
-        } catch(Exception e) {
+        } catch(final Exception e) {
             listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.\nReason: " + e.getMessage());
             LOG.error(e.getMessage(), e);
             return new SkippedEntryDeferredPermission();
@@ -440,36 +440,36 @@ public class SystemImportHandler extends DefaultHandler {
         final String name = atts.getValue("name");
         final String type = atts.getValue("type");
         
-        if(type.equals("collection")) {
+        if("collection".equals(type)) {
 
         	try {
-		        Collection col = broker.getCollection(currentCollection.getURI().append(name));
+		        final Collection col = broker.getCollection(currentCollection.getURI().append(name));
 		        if(col != null) {
 		        	//delete
-		        	TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-		        	Txn txn = txnManager.beginTransaction();
+		        	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+		        	final Txn txn = txnManager.beginTransaction();
 		        	try {
 		                broker.removeCollection(txn, col);
 		        		txnManager.commit(txn);
-		        	} catch (Exception e) {
+		        	} catch (final Exception e) {
 		        		txnManager.abort(txn);
 		        		
 		                listener.warn("Failed to remove deleted collection: " + name + ": " + e.getMessage());
 					}
 		        }
-        	} catch (Exception e) {
+        	} catch (final Exception e) {
                 listener.warn("Failed to remove deleted collection: " + name + ": " + e.getMessage());
 			}
 
-        } else if(type.equals("resource")) {
+        } else if("resource".equals(type)) {
 
         	try {
-	        	XmldbURI uri = XmldbURI.create(name);
-	        	DocumentImpl doc = currentCollection.getDocument(broker, uri);
+	        	final XmldbURI uri = XmldbURI.create(name);
+	        	final DocumentImpl doc = currentCollection.getDocument(broker, uri);
 	        	
 	        	if (doc != null) {
-	        		TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-	        		Txn txn = txnManager.beginTransaction();
+	        		final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+	        		final Txn txn = txnManager.beginTransaction();
 		            try {
 		            	
 		            	if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -479,13 +479,13 @@ public class SystemImportHandler extends DefaultHandler {
 		            	}
 		            	txnManager.commit(txn);
 	
-		            } catch(Exception e) {
+		            } catch(final Exception e) {
 		            	txnManager.abort(txn);
 		            	
 		                listener.warn("Failed to remove deleted resource: " + name + ": " + e.getMessage());
 		            }
 	        	}
-        	} catch (Exception e) {
+        	} catch (final Exception e) {
                 listener.warn("Failed to remove deleted resource: " + name + ": " + e.getMessage());
 			}
         }
@@ -503,7 +503,7 @@ public class SystemImportHandler extends DefaultHandler {
 
     private void setDeferredPermissions() {
         
-        DeferredPermission deferredPermission = deferredPermissions.pop();
+        final DeferredPermission deferredPermission = deferredPermissions.pop();
         deferredPermission.apply();
     }
     
@@ -513,7 +513,7 @@ public class SystemImportHandler extends DefaultHandler {
         if(strXSDateTime != null) {
             try {
                 date_created = new DateTimeValue(strXSDateTime).getDate();
-            } catch(XPathException e2) {
+            } catch(final XPathException e2) {
             }
         }
 
@@ -530,15 +530,15 @@ public class SystemImportHandler extends DefaultHandler {
     
     private Collection mkcol(XmldbURI collPath, Date created) throws SAXException {
         
-    	TransactionManager txnManager = broker.getDatabase().getTransactionManager();
-    	Txn txn = txnManager.beginTransaction();
+    	final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
+    	final Txn txn = txnManager.beginTransaction();
     	try {
-    		Collection col = broker.getOrCreateCollection(txn, collPath);
+    		final Collection col = broker.getOrCreateCollection(txn, collPath);
     		
     		txnManager.commit(txn);
     		
     		return col;
-    	} catch (Exception e) {
+    	} catch (final Exception e) {
     		txnManager.abort(txn);
     		throw new SAXException(e);
 		}
@@ -558,14 +558,14 @@ public class SystemImportHandler extends DefaultHandler {
                 final TransactionManager txnManager = broker.getDatabase().getTransactionManager();
                 final Txn txn = txnManager.beginTransaction();
             	try {
-                    Permission permission = getTarget().getPermissions();
+                    final Permission permission = getTarget().getPermissions();
 	                permission.setOwner(getOwner());
 	                permission.setGroup(getGroup());
 	                permission.setMode(getMode());
 	                if(permission instanceof ACLPermission) {
-	                    ACLPermission aclPermission = (ACLPermission)permission;
+	                    final ACLPermission aclPermission = (ACLPermission)permission;
 	                    aclPermission.clear();
-	                    for(ACEAider ace : getAces()) {
+	                    for(final ACEAider ace : getAces()) {
 	                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
 	                    }
 	                }
@@ -573,7 +573,7 @@ public class SystemImportHandler extends DefaultHandler {
 	                
 	                txnManager.commit(txn);
                 
-            	} catch (Exception xe) {
+            	} catch (final Exception xe) {
                 	txnManager.abort(txn);
                 	
                 	throw xe;
@@ -582,7 +582,7 @@ public class SystemImportHandler extends DefaultHandler {
                 	getTarget().release(Lock.WRITE_LOCK);
                 }
                 
-            } catch (Exception xe) {
+            } catch (final Exception xe) {
                 final String msg = "ERROR: Failed to set permissions on Collection '" + getTarget().getURI() + "'.";
                 LOG.error(msg, xe);
                 getListener().warn(msg);
@@ -606,21 +606,21 @@ public class SystemImportHandler extends DefaultHandler {
 
 	            try {
 	            	
-	            	Permission permission = getTarget().getPermissions();
+	            	final Permission permission = getTarget().getPermissions();
 	                permission.setOwner(getOwner());
 	                permission.setGroup(getGroup());
 	                permission.setMode(getMode());
 	                if(permission instanceof ACLPermission) {
-	                    ACLPermission aclPermission = (ACLPermission)permission;
+	                    final ACLPermission aclPermission = (ACLPermission)permission;
 	                    aclPermission.clear();
-	                    for(ACEAider ace : getAces()) {
+	                    for(final ACEAider ace : getAces()) {
 	                        aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
 	                    }
 	                }
 	                broker.storeXMLResource(txn, getTarget());
 	                txnManager.commit(txn);
 	            	
-	            } catch(Exception xe) {
+	            } catch(final Exception xe) {
 	            	txnManager.abort(txn);
 	            	
 	            	throw xe;
@@ -629,7 +629,7 @@ public class SystemImportHandler extends DefaultHandler {
 	                getTarget().getUpdateLock().release(Lock.WRITE_LOCK);
 	            }
             
-            } catch (Exception xe) {
+            } catch (final Exception xe) {
                 final String msg = "ERROR: Failed to set permissions on Document '" + getTarget().getURI() + "'.";
                 LOG.error(msg, xe);
                 getListener().warn(msg);

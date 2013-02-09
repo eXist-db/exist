@@ -52,15 +52,15 @@ public class MimeTypeFileFilter extends FileFilter {
             return true;
         }
 
-        int extensionOffset = file.getName().lastIndexOf('.');	//do-not allow files without an extension
+        final int extensionOffset = file.getName().lastIndexOf('.');	//do-not allow files without an extension
         if(extensionOffset == -1) {
             return false;
         }
 		
         //check the extension is that of a file as defined in mime-types.xml
-        String fileExtension = file.getName().substring(extensionOffset).toLowerCase();
+        final String fileExtension = file.getName().substring(extensionOffset).toLowerCase();
 
-        for(String extension : extensions) {
+        for(final String extension : extensions) {
             if(fileExtension.equals(extension)) {
                 return true;
             }
@@ -73,7 +73,7 @@ public class MimeTypeFileFilter extends FileFilter {
     public String getDescription() {
         String description = this.description + " ("; 
 
-        for(Iterator<String> itExtensions = extensions.iterator(); itExtensions.hasNext();) {
+        for(final Iterator<String> itExtensions = extensions.iterator(); itExtensions.hasNext();) {
             description += itExtensions.next();
             if(itExtensions.hasNext()) {
                 description += ' ';

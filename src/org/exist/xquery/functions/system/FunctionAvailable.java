@@ -69,10 +69,10 @@ public class FunctionAvailable extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         
-        QName functionName = ((QNameValue)args[0].itemAt(0)).getQName();
-        int arity = ((IntegerValue)args[1].itemAt(0)).getInt();
+        final QName functionName = ((QNameValue)args[0].itemAt(0)).getQName();
+        final int arity = ((IntegerValue)args[1].itemAt(0)).getInt();
         
-        Module module = context.getModule(functionName.getNamespaceURI());
+        final Module module = context.getModule(functionName.getNamespaceURI());
         boolean found = false;
         if(module == null) {
             found = context.resolveFunction(functionName, arity) != null;

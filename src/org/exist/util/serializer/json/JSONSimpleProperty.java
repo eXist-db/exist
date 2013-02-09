@@ -22,7 +22,7 @@ public class JSONSimpleProperty extends JSONNode {
         super(Type.SIMPLE_PROPERTY_TYPE, name);
         this.value = JSONValue.escape(value);
         if (isLiteral)
-            setSerializationType(SerializationType.AS_LITERAL);
+            {setSerializationType(SerializationType.AS_LITERAL);}
     }
 
 	@Override
@@ -31,10 +31,10 @@ public class JSONSimpleProperty extends JSONNode {
 		writer.write(getName());
 		writer.write("\" : ");
         if (getSerializationType() != SerializationType.AS_LITERAL)
-            writer.write('"');
+            {writer.write('"');}
 		writer.write(value);
         if (getSerializationType() != SerializationType.AS_LITERAL)
-            writer.write('"');
+            {writer.write('"');}
 	}
 
 	@Override

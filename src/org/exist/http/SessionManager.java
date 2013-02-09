@@ -83,7 +83,7 @@ public class SessionManager {
     private QueryResult[] slots = new QueryResult[32];
 
     public SessionManager(BrokerPool pool) {
-        Properties props = new Properties();
+        final Properties props = new Properties();
         props.put("session-manager", this);
         pool.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new TimeoutCheck(), 2000, props);
     }
@@ -106,19 +106,19 @@ public class SessionManager {
 
     public Sequence get(String query, int sessionId) {
         if (sessionId < 0 || sessionId >= slots.length)
-            return null; // out of scope
-        QueryResult cached = slots[sessionId];
+            {return null;} // out of scope
+        final QueryResult cached = slots[sessionId];
         if (cached == null)
-            return null;
+            {return null;}
         if (cached.queryString.equals(query))
-            return cached.sequence();
+            {return cached.sequence();}
         // wrong query
         return null;
     }
 
     public void release(int sessionId) {
         if (sessionId < 0 || sessionId >= slots.length)
-            return; // out of scope
+            {return;} // out of scope
         slots[sessionId] = null;
     }
 

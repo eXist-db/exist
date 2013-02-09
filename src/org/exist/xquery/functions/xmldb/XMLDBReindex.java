@@ -81,9 +81,9 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
 
         // Reindex
         try {
-            IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
+            final IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
             iqs.reindexCollection();
-        } catch (XMLDBException xe) {
+        } catch (final XMLDBException xe) {
             logger.error("Unable to reindex collection", xe);
             return BooleanValue.FALSE;
         }

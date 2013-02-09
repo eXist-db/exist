@@ -50,7 +50,7 @@ public class GrammarPool implements XMLGrammarPool {
      */
     public GrammarPool() {
         if (logger.isInfoEnabled())
-            logger.info("Initializing GrammarPool.");
+            {logger.info("Initializing GrammarPool.");}
         pool = new XMLGrammarPoolImpl();
     }
     
@@ -61,7 +61,7 @@ public class GrammarPool implements XMLGrammarPool {
      */
     public GrammarPool(XMLGrammarPool pool) {
         if (logger.isInfoEnabled())
-            logger.info("Initializing GrammarPool using supplied pool.");
+            {logger.info("Initializing GrammarPool using supplied pool.");}
         this.pool=pool;
     }
     
@@ -78,11 +78,11 @@ public class GrammarPool implements XMLGrammarPool {
      */
     public Grammar[] retrieveInitialGrammarSet(String type) {
         if (logger.isDebugEnabled())
-            logger.debug("Retrieve initial grammarset ("+type+").");
+            {logger.debug("Retrieve initial grammarset ("+type+").");}
         
-        Grammar[] grammars = pool.retrieveInitialGrammarSet(type);
+        final Grammar[] grammars = pool.retrieveInitialGrammarSet(type);
         if (logger.isDebugEnabled())
-            logger.debug("Found "+grammars.length+" grammars.");
+            {logger.debug("Found "+grammars.length+" grammars.");}
         return grammars;
     }
     
@@ -97,7 +97,7 @@ public class GrammarPool implements XMLGrammarPool {
      */
     public void cacheGrammars(String type, Grammar[] grammar) {
         if (logger.isDebugEnabled())
-            logger.debug("Cache "+grammar.length+" grammars ("+type + ").");
+            {logger.debug("Cache "+grammar.length+" grammars ("+type + ").");}
         pool.cacheGrammars(type, grammar);
     }
         
@@ -110,7 +110,7 @@ public class GrammarPool implements XMLGrammarPool {
      */
     public void unlockPool() {
         if (logger.isDebugEnabled())
-            logger.debug("Unlock grammarpool.");
+            {logger.debug("Unlock grammarpool.");}
         pool.unlockPool();
     }
     
@@ -131,18 +131,18 @@ public class GrammarPool implements XMLGrammarPool {
         
         if(xgd==null){
             if (logger.isDebugEnabled())
-                logger.debug("XMLGrammarDescription is null");
+                {logger.debug("XMLGrammarDescription is null");}
             return null;
         }
         
         if(xgd.getNamespace()!=null){
             if (logger.isDebugEnabled())
-                logger.debug("Retrieve grammar for namespace '"+xgd.getNamespace()+"'.");
+                {logger.debug("Retrieve grammar for namespace '"+xgd.getNamespace()+"'.");}
         }
         
         if(xgd.getPublicId()!=null){
             if (logger.isDebugEnabled())
-                logger.debug("Retrieve grammar for publicId '"+xgd.getPublicId()+"'.");
+                {logger.debug("Retrieve grammar for publicId '"+xgd.getPublicId()+"'.");}
         }
                
         return pool.retrieveGrammar(xgd);
@@ -156,7 +156,7 @@ public class GrammarPool implements XMLGrammarPool {
      */
     public void lockPool() {
         if (logger.isDebugEnabled())
-            logger.debug("Lock grammarpool.");
+            {logger.debug("Lock grammarpool.");}
         pool.lockPool();
     }
     
@@ -167,7 +167,7 @@ public class GrammarPool implements XMLGrammarPool {
      */
     public void clear() {
         if (logger.isDebugEnabled())
-            logger.debug("Clear grammarpool.");
+            {logger.debug("Clear grammarpool.");}
         pool.clear();
     }
     
@@ -180,11 +180,11 @@ public class GrammarPool implements XMLGrammarPool {
         //if (logger.isDebugEnabled())
         //    logger.debug("Removing DTD's from grammarpool.");
 
-        Grammar dtds[] = retrieveInitialGrammarSet(Namespaces.DTD_NS);
+        final Grammar dtds[] = retrieveInitialGrammarSet(Namespaces.DTD_NS);
         if(dtds.length>0){
             if (logger.isDebugEnabled())
-                logger.debug("Removing "+dtds.length+" DTDs.");
-            Grammar schemas[] = retrieveInitialGrammarSet(Namespaces.SCHEMA_NS);
+                {logger.debug("Removing "+dtds.length+" DTDs.");}
+            final Grammar schemas[] = retrieveInitialGrammarSet(Namespaces.SCHEMA_NS);
             clear();
             cacheGrammars(Namespaces.SCHEMA_NS, schemas);
         } else {

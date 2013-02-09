@@ -62,7 +62,7 @@ public class WaitingThread implements LockListener {
             synchronized (monitor) {
                 try {
                     monitor.wait(500);
-                } catch (InterruptedException e) {
+                } catch (final InterruptedException e) {
                     throw new LockException("Interrupted while waiting for read lock");
                 }
             }

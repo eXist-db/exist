@@ -43,7 +43,7 @@ public class FileUtils
       }
       public boolean delete() {
          while (ok && current!=null) {
-            FileRef work = current;
+            final FileRef work = current;
             current.file.listFiles(new FileFilter() {
                public boolean accept(File file) {
                   if (file.isDirectory()) {
@@ -72,7 +72,7 @@ public class FileUtils
       if (!dir.isDirectory()) {
          return dir.delete();
       }
-      DeleteDir doDelete = new DeleteDir(dir);
+      final DeleteDir doDelete = new DeleteDir(dir);
       return doDelete.delete();
       
    }
@@ -85,13 +85,13 @@ public class FileUtils
     * which case return the path unchanged.
     */
    public static String dirname (String path) {
-       int islash = path.lastIndexOf('/');
+       final int islash = path.lastIndexOf('/');
        if (islash >= 0 && islash < path.length() - 1)
-           return path.substring(0, islash);
+           {return path.substring(0, islash);}
        else if (islash >= 0)
-           return path;
+           {return path;}
        else
-           return ".";
+           {return ".";}
    }
 
    /**

@@ -77,19 +77,19 @@ public class Insert extends Modification {
      */
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException, TriggerException {
-        NodeList children = content;
-        if (children.getLength() == 0) return 0;
+        final NodeList children = content;
+        if (children.getLength() == 0) {return 0;}
         try {
-            StoredNode[] ql = selectAndLock(transaction);
-            IndexListener listener = new IndexListener(ql);
-            NotificationService notifier = broker.getBrokerPool().getNotificationService();       
+            final StoredNode[] ql = selectAndLock(transaction);
+            final IndexListener listener = new IndexListener(ql);
+            final NotificationService notifier = broker.getBrokerPool().getNotificationService();       
             NodeImpl parent;             
-            int len = children.getLength();
+            final int len = children.getLength();
             if (LOG.isDebugEnabled())
-                LOG.debug("found " + len + " nodes to insert");
+                {LOG.debug("found " + len + " nodes to insert");}
             for (int i = 0; i < ql.length; i++) {
-                StoredNode node = ql[i];
-                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                final StoredNode node = ql[i];
+                final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 doc.getMetadata().setIndexListener(listener);
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("permission to update document denied");

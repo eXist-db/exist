@@ -121,10 +121,10 @@ public class FunError extends BasicFunction {
             // If first argument is not empty, get qname from argument
             // and construct error code
             if (!args[0].isEmpty()) {
-                QName errorQName = ((QNameValue) args[0].itemAt(0)).getQName();
+                final QName errorQName = ((QNameValue) args[0].itemAt(0)).getQName();
                 String prefix = errorQName.getPrefix();
                 if (prefix==null){
-                    String ns = errorQName.getNamespaceURI();
+                    final String ns = errorQName.getNamespaceURI();
                     prefix = getContext().getPrefixForURI(ns);
                     errorQName.setPrefix(prefix);
                 }

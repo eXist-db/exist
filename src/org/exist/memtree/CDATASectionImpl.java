@@ -148,7 +148,7 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         if (isPersistentSet()) {
             result.append("persistent ");
         }

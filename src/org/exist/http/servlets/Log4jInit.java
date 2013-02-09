@@ -61,10 +61,10 @@ public class Log4jInit extends HttpServlet {
         // Step 1 read config file into memory
         String srcDoc = "not initialized";
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            FileInputStream is = new FileInputStream(srcConfig);
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final FileInputStream is = new FileInputStream(srcConfig);
             
-            byte[] buf = new byte[1024];
+            final byte[] buf = new byte[1024];
             int len;
             while ((len = is.read(buf)) > 0) {
                 baos.write(buf, 0, len);
@@ -73,29 +73,29 @@ public class Log4jInit extends HttpServlet {
             is.close();
             baos.close();
             srcDoc = new String(baos.toByteArray());
-        } catch (FileNotFoundException ex) {
+        } catch (final FileNotFoundException ex) {
             ex.printStackTrace();
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             ex.printStackTrace();
         }
         
         // Step 2 ; substitute Patterns
-        String destDoc = srcDoc.replaceAll("loggerdir", logDir.getAbsolutePath().replaceAll("\\\\","/"));
+        final String destDoc = srcDoc.replaceAll("loggerdir", logDir.getAbsolutePath().replaceAll("\\\\","/"));
         
         // Step 3 ; write back to file
         try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(destDoc.getBytes());
-            FileOutputStream fos =new FileOutputStream(destConfig);
-            byte[] buf = new byte[1024];
+            final ByteArrayInputStream bais = new ByteArrayInputStream(destDoc.getBytes());
+            final FileOutputStream fos =new FileOutputStream(destConfig);
+            final byte[] buf = new byte[1024];
             int len;
             while ((len = bais.read(buf)) > 0) {
                 fos.write(buf, 0, len);
             }
             fos.close();
             bais.close();
-        } catch (FileNotFoundException ex) {
+        } catch (final FileNotFoundException ex) {
             ex.printStackTrace();
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             ex.printStackTrace();
         }
     }
@@ -119,7 +119,7 @@ public class Log4jInit extends HttpServlet {
         System.out.println("============= eXist Initialization =============" );
         
         // Get data from web.xml
-        String file   = getInitParameter("log4j-init-file");
+        final String file   = getInitParameter("log4j-init-file");
 		String logdir = getInitParameter("log4j-log-dir");
 		
 		if( logdir == null ) {
@@ -128,20 +128,20 @@ public class Log4jInit extends HttpServlet {
 		}
         
         // Get path where eXist is running
-        String existDir =  getServletContext().getRealPath("/");
+        final String existDir =  getServletContext().getRealPath("/");
         
         // Define location of logfiles
-        File logsdir = new File(existDir, logdir );
+        final File logsdir = new File(existDir, logdir );
         logsdir.mkdirs();
         
         System.out.println(getTimestamp() + " - eXist logs dir="
                 + logsdir.getAbsolutePath());
         
         // Get log4j configuration file
-        File srcConfigFile = new File(existDir,file);
+        final File srcConfigFile = new File(existDir,file);
         
         // Convert
-        File log4jConfigFile = new File(existDir, "WEB-INF/TMPfile.xml");
+        final File log4jConfigFile = new File(existDir, "WEB-INF/TMPfile.xml");
         convertLogFile(srcConfigFile, log4jConfigFile, logsdir);
         
         System.out.println(getTimestamp() + " - eXist log4j configuration=" 
@@ -152,12 +152,12 @@ public class Log4jInit extends HttpServlet {
         DOMConfigurator.configure(log4jConfigFile.getAbsolutePath());
 
         // Setup exist
-        File eXistConfigFile = new File(existDir, "WEB-INF/conf.xml" );
+        final File eXistConfigFile = new File(existDir, "WEB-INF/conf.xml" );
         System.out.println(getTimestamp() + " - eXist-DB configuration=" 
                 + eXistConfigFile.getAbsolutePath());
         try {
             /*Configuration config = */ new Configuration(eXistConfigFile.getAbsolutePath());
-        } catch (DatabaseConfigurationException ex) {
+        } catch (final DatabaseConfigurationException ex) {
             ex.printStackTrace();
         }
         

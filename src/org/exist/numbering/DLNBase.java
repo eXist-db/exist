@@ -52,7 +52,7 @@ public class DLNBase {
     static {
         BIT_MASK[0] = 0x80;
         for (int i = 1; i < 8; i++) {
-            int mask = 1 << (7 - i);
+            final int mask = 1 << (7 - i);
             BIT_MASK[i] = mask + BIT_MASK[i - 1];
         }
     }
@@ -358,8 +358,8 @@ public class DLNBase {
      * @return all level ids in this node id.
      */
     public int[] getLevelIds() {
-        int count = getLevelCount(0);
-        int[] ids = new int[count];
+        final int count = getLevelCount(0);
+        final int[] ids = new int[count];
         int offset = 0;
         for (int i = 0; i < count; i++) {
             ids[i] = getLevelId(offset);

@@ -159,7 +159,7 @@ public class DebuggableExpression implements Expression, RewritableExpression {
     @Override
     public void replace(Expression oldExpr, Expression newExpr) {
         if (oldExpr == expression)
-            expression = newExpr;
+            {expression = newExpr;}
     }
 
     @Override

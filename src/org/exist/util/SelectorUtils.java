@@ -137,18 +137,18 @@ public final class SelectorUtils {
             return false;
         }
 
-        Vector<String> patDirs = tokenizePath (pattern);
-        Vector<String> strDirs = tokenizePath (str);
+        final Vector<String> patDirs = tokenizePath (pattern);
+        final Vector<String> strDirs = tokenizePath (str);
 
         int patIdxStart = 0;
-        int patIdxEnd   = patDirs.size()-1;
+        final int patIdxEnd   = patDirs.size()-1;
         int strIdxStart = 0;
-        int strIdxEnd   = strDirs.size()-1;
+        final int strIdxEnd   = strDirs.size()-1;
 
         // up to first '**'
         while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
-            String patDir = patDirs.elementAt(patIdxStart);
-            if (patDir.equals("**")) {
+            final String patDir = patDirs.elementAt(patIdxStart);
+            if ("**".equals(patDir)) {
                 break;
             }
             if (!match(patDir,strDirs.elementAt(strIdxStart),
@@ -211,8 +211,8 @@ public final class SelectorUtils {
             return false;
         }
 
-        Vector<String> patDirs = tokenizePath (pattern);
-        Vector<String> strDirs = tokenizePath (str);
+        final Vector<String> patDirs = tokenizePath (pattern);
+        final Vector<String> strDirs = tokenizePath (str);
 
         int patIdxStart = 0;
         int patIdxEnd   = patDirs.size()-1;
@@ -221,8 +221,8 @@ public final class SelectorUtils {
 
         // up to first '**'
         while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
-            String patDir = patDirs.elementAt(patIdxStart);
-            if (patDir.equals("**")) {
+            final String patDir = patDirs.elementAt(patIdxStart);
+            if ("**".equals(patDir)) {
                 break;
             }
             if (!match(patDir,strDirs.elementAt(strIdxStart),
@@ -235,7 +235,7 @@ public final class SelectorUtils {
         if (strIdxStart > strIdxEnd) {
             // String is exhausted
             for (int i = patIdxStart; i <= patIdxEnd; i++) {
-                if (!patDirs.elementAt(i).equals("**")) {
+                if (!"**".equals(patDirs.elementAt(i))) {
                     return false;
                 }
             }
@@ -249,8 +249,8 @@ public final class SelectorUtils {
 
         // up to last '**'
         while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
-            String patDir = patDirs.elementAt(patIdxEnd);
-            if (patDir.equals("**")) {
+            final String patDir = patDirs.elementAt(patIdxEnd);
+            if ("**".equals(patDir)) {
                 break;
             }
             if (!match(patDir,strDirs.elementAt(strIdxEnd),
@@ -263,7 +263,7 @@ public final class SelectorUtils {
         if (strIdxStart > strIdxEnd) {
             // String is exhausted
             for (int i = patIdxStart; i <= patIdxEnd; i++) {
-                if (!patDirs.elementAt(i).equals("**")) {
+                if (!"**".equals(patDirs.elementAt(i))) {
                     return false;
                 }
             }
@@ -273,7 +273,7 @@ public final class SelectorUtils {
         while (patIdxStart != patIdxEnd && strIdxStart <= strIdxEnd) {
             int patIdxTmp = -1;
             for (int i = patIdxStart+1; i <= patIdxEnd; i++) {
-                if (patDirs.elementAt(i).equals("**")) {
+                if ("**".equals(patDirs.elementAt(i))) {
                     patIdxTmp = i;
                     break;
                 }
@@ -285,14 +285,14 @@ public final class SelectorUtils {
             }
             // Find the pattern between padIdxStart & padIdxTmp in str between
             // strIdxStart & strIdxEnd
-            int patLength = (patIdxTmp-patIdxStart-1);
-            int strLength = (strIdxEnd-strIdxStart+1);
+            final int patLength = (patIdxTmp-patIdxStart-1);
+            final int strLength = (strIdxEnd-strIdxStart+1);
             int foundIdx  = -1;
 strLoop:
             for (int i = 0; i <= strLength - patLength; i++) {
                 for (int j = 0; j < patLength; j++) {
-                    String subPat = patDirs.elementAt(patIdxStart+j+1);
-                    String subStr = strDirs.elementAt(strIdxStart+i+j);
+                    final String subPat = patDirs.elementAt(patIdxStart+j+1);
+                    final String subStr = strDirs.elementAt(strIdxStart+i+j);
                     if (!match(subPat,subStr, isCaseSensitive)) {
                         continue strLoop;
                     }
@@ -311,7 +311,7 @@ strLoop:
         }
 
         for (int i = patIdxStart; i <= patIdxEnd; i++) {
-            if (!patDirs.elementAt(i).equals("**")) {
+            if (!"**".equals(patDirs.elementAt(i))) {
                 return false;
             }
         }
@@ -356,8 +356,8 @@ strLoop:
      */
     public static boolean match(String pattern, String str,
             boolean isCaseSensitive) {
-        char[] patArr = pattern.toCharArray();
-        char[] strArr = str.toCharArray();
+        final char[] patArr = pattern.toCharArray();
+        final char[] strArr = str.toCharArray();
         int patIdxStart = 0;
         int patIdxEnd   = patArr.length-1;
         int strIdxStart = 0;
@@ -463,8 +463,8 @@ strLoop:
             }
             // Find the pattern between padIdxStart & padIdxTmp in str between
             // strIdxStart & strIdxEnd
-            int patLength = (patIdxTmp-patIdxStart-1);
-            int strLength = (strIdxEnd-strIdxStart+1);
+            final int patLength = (patIdxTmp-patIdxStart-1);
+            final int strLength = (strIdxEnd-strIdxStart+1);
             int foundIdx  = -1;
             strLoop:
             for (int i = 0; i <= strLength - patLength; i++) {
@@ -512,8 +512,8 @@ strLoop:
      * @return a Vector of path elements from the tokenized path
      */
     public static Vector<String> tokenizePath (String path) {
-        Vector<String> ret = new Vector<String>();
-        StringTokenizer st = new StringTokenizer(path,File.separator);
+        final Vector<String> ret = new Vector<String>();
+        final StringTokenizer st = new StringTokenizer(path,File.separator);
         while (st.hasMoreTokens()) {
             ret.addElement(st.nextToken());
         }

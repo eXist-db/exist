@@ -22,7 +22,7 @@ public class OpSimpleMap extends AbstractExpression {
 
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        AnalyzeContextInfo contextCopy = new AnalyzeContextInfo(contextInfo);
+        final AnalyzeContextInfo contextCopy = new AnalyzeContextInfo(contextInfo);
         left.analyze(contextCopy);
         right.analyze(contextCopy);
     }
@@ -30,16 +30,16 @@ public class OpSimpleMap extends AbstractExpression {
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (contextItem != null)
-            contextSequence = contextItem.toSequence();
-        Sequence leftSeq = left.eval(contextSequence);
+            {contextSequence = contextItem.toSequence();}
+        final Sequence leftSeq = left.eval(contextSequence);
         if (leftSeq.isEmpty())
-            return Sequence.EMPTY_SEQUENCE;
+            {return Sequence.EMPTY_SEQUENCE;}
 
-        ValueSequence result = new ValueSequence();
+        final ValueSequence result = new ValueSequence();
         int pos = 0;
-        for (SequenceIterator i = leftSeq.iterate(); i.hasNext(); pos++) {
+        for (final SequenceIterator i = leftSeq.iterate(); i.hasNext(); pos++) {
             context.setContextSequencePosition(pos, leftSeq);
-            Sequence rightSeq = right.eval(i.nextItem().toSequence());
+            final Sequence rightSeq = right.eval(i.nextItem().toSequence());
             result.addAll(rightSeq);
         }
         return result;

@@ -69,7 +69,7 @@ public class RemoveOverflowLoggable extends AbstractLoggable {
     public void read(ByteBuffer in) {
         pageNum = in.getInt();
         nextPage = in.getInt();
-        short len = in.getShort();
+        final short len = in.getShort();
         oldData = new byte[len];
         in.get(oldData);
     }

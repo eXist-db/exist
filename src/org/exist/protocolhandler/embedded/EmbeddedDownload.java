@@ -89,7 +89,7 @@ public class EmbeddedDownload {
         DBBroker broker = null;
         
         try {
-            XmldbURI path = XmldbURI.create(xmldbURL.getPath());
+            final XmldbURI path = XmldbURI.create(xmldbURL.getPath());
 
             if(pool==null){
                 pool = BrokerPool.getInstance();
@@ -124,12 +124,12 @@ public class EmbeddedDownload {
                 
             } else {
                 if(resource.getResourceType() == DocumentImpl.XML_FILE) {
-                    Serializer serializer = broker.getSerializer();
+                    final Serializer serializer = broker.getSerializer();
                     serializer.reset();
                     
                     // Preserve doctype
                     serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
-                    Writer w = new OutputStreamWriter(os,"UTF-8");
+                    final Writer w = new OutputStreamWriter(os,"UTF-8");
                     serializer.serialize(resource,w);
                     w.close();
                     
@@ -137,12 +137,12 @@ public class EmbeddedDownload {
                     broker.readBinaryResource((BinaryDocument) resource, os);
                 }
             }
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             //ex.printStackTrace();
             LOG.error(ex);
             throw ex;
             
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             //ex.printStackTrace();
             LOG.error(ex);
             throw new IOException(ex.getMessage(), ex);

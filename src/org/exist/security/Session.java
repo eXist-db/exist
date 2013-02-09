@@ -45,7 +45,7 @@ public class Session {
 
 		try {
 			BrokerPool.getInstance().getSecurityManager().registerSession(this);
-		} catch (EXistException e) {
+		} catch (final EXistException e) {
 			//should not happen
 		}
 	}

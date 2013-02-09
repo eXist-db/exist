@@ -25,22 +25,22 @@ public class AbstractPolicyEditor extends PolicyElementEditor
 
 	protected ComboBoxModel getComboModel()
 	{
-		boolean isPolicy = node instanceof PolicyNode;
-		DefaultComboBoxModel model = new DefaultComboBoxModel();
-		Set<CombiningAlgorithm> algorithms = StandardCombiningAlgFactory.getFactory().getStandardAlgorithms();
-		for(CombiningAlgorithm algorithm : algorithms)
+		final boolean isPolicy = node instanceof PolicyNode;
+		final DefaultComboBoxModel model = new DefaultComboBoxModel();
+		final Set<CombiningAlgorithm> algorithms = StandardCombiningAlgFactory.getFactory().getStandardAlgorithms();
+		for(final CombiningAlgorithm algorithm : algorithms)
 		{
 			if(isPolicy)
 			{
 				if(algorithm instanceof RuleCombiningAlgorithm)
 				{
-					String abbreviatedID = abbrev.getAbbreviatedCombiningID(algorithm.getIdentifier());
+					final String abbreviatedID = abbrev.getAbbreviatedCombiningID(algorithm.getIdentifier());
 					model.addElement(abbreviatedID);
 				}
 			}
 			else if(algorithm instanceof PolicyCombiningAlgorithm)
 			{
-				String abbreviatedID = abbrev.getAbbreviatedCombiningID(algorithm.getIdentifier());
+				final String abbreviatedID = abbrev.getAbbreviatedCombiningID(algorithm.getIdentifier());
 				model.addElement(abbreviatedID);
 			}
 		}
@@ -50,10 +50,10 @@ public class AbstractPolicyEditor extends PolicyElementEditor
 	{
 		Object prototype = "";
 		int maxLength = -1;
-		Set<CombiningAlgorithm> algorithms = StandardCombiningAlgFactory.getFactory().getStandardAlgorithms();
-		for(CombiningAlgorithm algorithm : algorithms)
+		final Set<CombiningAlgorithm> algorithms = StandardCombiningAlgFactory.getFactory().getStandardAlgorithms();
+		for(final CombiningAlgorithm algorithm : algorithms)
 		{
-			URI ID = algorithm.getIdentifier();
+			final URI ID = algorithm.getIdentifier();
 			String abbreviatedID = abbrev.getAbbreviatedCombiningID(ID);
 			int length = abbreviatedID.length(); 
 			if(length > maxLength)
@@ -67,18 +67,18 @@ public class AbstractPolicyEditor extends PolicyElementEditor
 	public void setNode(XACMLTreeNode treeNode)
 	{
 		if(!(treeNode instanceof AbstractPolicyNode))
-			throw new IllegalArgumentException("AbstractPolicy Editor can only edit AbstractPolicyNodes");
-		AbstractPolicyNode node = (AbstractPolicyNode)treeNode;
+			{throw new IllegalArgumentException("AbstractPolicy Editor can only edit AbstractPolicyNodes");}
+		final AbstractPolicyNode node = (AbstractPolicyNode)treeNode;
 		super.setNode(node);
-		CombiningAlgorithm algorithm = node.getCombiningAlgorithm();
-		String abbreviatedID = abbrev.getAbbreviatedCombiningID(algorithm.getIdentifier());
+		final CombiningAlgorithm algorithm = node.getCombiningAlgorithm();
+		final String abbreviatedID = abbrev.getAbbreviatedCombiningID(algorithm.getIdentifier());
 		setSelectedItem(abbreviatedID);
 	}
 	public void pushChanges()
 	{
 		super.pushChanges();
-		CombiningAlgorithm algorithm = getAlgorithm();
+		final CombiningAlgorithm algorithm = getAlgorithm();
 		if(algorithm != null)
-			((AbstractPolicyNode)node).setCombiningAlgorithm(algorithm);
+			{((AbstractPolicyNode)node).setCombiningAlgorithm(algorithm);}
 	}
 }

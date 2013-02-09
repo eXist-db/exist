@@ -52,15 +52,15 @@ public class CommentConstructor extends NodeConstructor {
 		Item contextItem)
 		throws XPathException {
         if (newDocumentContext)
-            context.pushDocumentContext();
+            {context.pushDocumentContext();}
         try {
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            int nodeNr = builder.comment(data);
-            NodeImpl node = builder.getDocument().getNode(nodeNr);
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final int nodeNr = builder.comment(data);
+            final NodeImpl node = builder.getDocument().getNode(nodeNr);
             return node;
         } finally {
             if (newDocumentContext)
-                context.popDocumentContext();
+                {context.popDocumentContext();}
         }
     }
 

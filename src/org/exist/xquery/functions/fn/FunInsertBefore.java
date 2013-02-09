@@ -84,18 +84,18 @@ public class FunInsertBefore extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         Sequence result;
 		Sequence seq1 = getArgument(0).eval(contextSequence, contextItem);
 		Sequence seq2 = getArgument(2).eval(contextSequence, contextItem);
 		if (seq1.isEmpty())
-		    result = seq2;
+		    {result = seq2;}
         else if (seq2.isEmpty()) 
-            result = seq1;
+            {result = seq1;}
         else {
     		int pos = 
     			((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
@@ -109,14 +109,14 @@ public class FunInsertBefore extends Function {
     			result.addAll(seq2);
     		} else {
     			for (int i=0; i<seq1.getItemCount(); i++) {
-    				if (i == pos) result.addAll(seq2);
+    				if (i == pos) {result.addAll(seq2);}
     				result.add(seq1.itemAt(i));
     			}
     		}
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;  
         

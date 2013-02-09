@@ -26,7 +26,7 @@ public class DateFormatter {
    
    public static String toXSDDateTime(long value)
    {
-      Date d = new Date(value);
+      final Date d = new Date(value);
       return toXSDDateTime(d);
    }
    

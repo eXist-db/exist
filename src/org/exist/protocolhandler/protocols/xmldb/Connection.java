@@ -75,7 +75,7 @@ public class Connection extends URLConnection {
         LOG.debug(url) ;
         
         InputStream inputstream=null;
-        XmldbURL xmldbURL = new XmldbURL(url);
+        final XmldbURL xmldbURL = new XmldbURL(url);
         
         if(xmldbURL.isEmbedded()){
             inputstream = new EmbeddedInputStream( xmldbURL );
@@ -94,7 +94,7 @@ public class Connection extends URLConnection {
         LOG.debug(url) ;
         
         OutputStream outputstream=null;
-        XmldbURL xmldbURL = new XmldbURL(url);
+        final XmldbURL xmldbURL = new XmldbURL(url);
         
         if(xmldbURL.isEmbedded()){
             outputstream = new EmbeddedOutputStream( xmldbURL );

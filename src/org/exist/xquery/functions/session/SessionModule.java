@@ -115,10 +115,10 @@ public class SessionModule extends AbstractInternalModule
 	{
 		JavaObjectValue ret = null;
 		
-		RequestModule myModule = (RequestModule)context.getModule( RequestModule.NAMESPACE_URI );
+		final RequestModule myModule = (RequestModule)context.getModule( RequestModule.NAMESPACE_URI );
 		
 		// request object is read from global variable $request
-		Variable var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
+		final Variable var = myModule.resolveVariable( RequestModule.REQUEST_VAR );
 		
 		if( var == null || var.getValue() == null ) {
 			throw( new XPathException( fn, "No request object found in the current XQuery context." ) );
@@ -128,11 +128,11 @@ public class SessionModule extends AbstractInternalModule
 			throw( new XPathException( fn, "Variable $request is not bound to an Java object." ) );
 		}
 
-		JavaObjectValue value = (JavaObjectValue)var.getValue().itemAt( 0 );
+		final JavaObjectValue value = (JavaObjectValue)var.getValue().itemAt( 0 );
 		
 		if( value.getObject() instanceof RequestWrapper ) {
-			SessionModule  sessionModule 	= (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
-			SessionWrapper session 			= ((RequestWrapper)value.getObject()).getSession( true );
+			final SessionModule  sessionModule 	= (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
+			final SessionWrapper session 			= ((RequestWrapper)value.getObject()).getSession( true );
 			
 			sessionModule.declareVariable( SessionModule.SESSION_VAR, session );
 			ret = (JavaObjectValue)sessionModule.resolveVariable( SessionModule.SESSION_VAR ).getValue().itemAt( 0 );

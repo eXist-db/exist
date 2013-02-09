@@ -188,18 +188,18 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
         contextInfo.removeFlag( NEED_INDEX_INFO );
 
-        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps( getLeft() );
+        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps( getLeft() );
 
         if( !steps.isEmpty() ) {
             LocationStep firstStep = steps.get( 0 );
             LocationStep lastStep  = steps.get( steps.size() - 1 );
 
             if( firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
-                Expression outerExpr = contextInfo.getContextStep();
+                final Expression outerExpr = contextInfo.getContextStep();
 
                 if( ( outerExpr != null ) && ( outerExpr instanceof LocationStep ) ) {
-                    LocationStep outerStep = ( LocationStep )outerExpr;
-                    NodeTest     test      = outerStep.getTest();
+                    final LocationStep outerStep = ( LocationStep )outerExpr;
+                    final NodeTest     test      = outerStep.getTest();
 
                     if( !test.isWildcardTest() && ( test.getName() != null ) ) {
                         contextQName = new QName( test.getName() );
@@ -213,7 +213,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     }
                 }
             } else if (firstStep != null && lastStep != null) {
-                NodeTest test = lastStep.getTest();
+                final NodeTest test = lastStep.getTest();
 
                 if( !test.isWildcardTest() && ( test.getName() != null ) ) {
                     contextQName = new QName( test.getName() );
@@ -308,22 +308,22 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     {
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
-        long start     = System.currentTimeMillis();
-        int  indexType = Optimize.getQNameIndexType( context, contextSequence, contextQName );
+        final long start     = System.currentTimeMillis();
+        final int  indexType = Optimize.getQNameIndexType( context, contextSequence, contextQName );
 
         if( LOG.isTraceEnabled() ) {
             LOG.trace( "Using QName index on type " + Type.getTypeName( indexType ) );
         }
 
-        Sequence rightSeq = getRight().eval( contextSequence );
+        final Sequence rightSeq = getRight().eval( contextSequence );
         
         // if the right hand sequence has more than one item, we need to merge them
         // into preselectResult
         if (rightSeq.getItemCount() > 1)
-        	preselectResult = new NewArrayNodeSet();
+        	{preselectResult = new NewArrayNodeSet();}
         
         // Iterate through each item in the right-hand sequence
-        for( SequenceIterator itRightSeq = rightSeq.iterate(); itRightSeq.hasNext(); ) {
+        for( final SequenceIterator itRightSeq = rightSeq.iterate(); itRightSeq.hasNext(); ) {
 
             //Get the index key
             Item key = itRightSeq.nextItem().atomize();
@@ -346,7 +346,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 try {
                     key = key.convertTo( indexType );
                 }
-                catch( XPathException xpe ) {
+                catch( final XPathException xpe ) {
 
                     if( LOG.isTraceEnabled() ) {
                         LOG.trace( "Cannot convert key: " + Type.getTypeName( key.getType() ) + " to required index type: " + Type.getTypeName( indexType ) );
@@ -364,8 +364,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 }
 
                 NodeSet  temp;
-                NodeSet  contextSet = useContext ? contextSequence.toNodeSet() : null;
-                Collator collator   = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
+                final NodeSet  contextSet = useContext ? contextSequence.toNodeSet() : null;
+                final Collator collator   = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
 
                 if( truncation == Constants.TRUNC_NONE ) {
                     temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, ( Indexable )key, collator );
@@ -373,14 +373,14 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 } else {
 
                     try {
-                        String matchString = key.getStringValue();
-                        int    matchType   = getMatchType( truncation );
+                        final String matchString = key.getStringValue();
+                        final int    matchType   = getMatchType( truncation );
 
                         temp         = context.getBroker().getValueIndex().match(context.getWatchDog(), contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, matchString, contextQName, matchType, collator, truncation );
 
                         hasUsedIndex = true;
                     }
-                    catch( EXistException e ) {
+                    catch( final EXistException e ) {
                         throw( new XPathException( this, "Error during index lookup: " + e.getMessage(), e ) );
                     }
                 }
@@ -458,7 +458,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         if( ( !Dependency.dependsOn( rightOpDeps, Dependency.CONTEXT_ITEM ) ) ) {
                             result = quickNodeSetCompare( contextSequence );
                         } else {
-                            NodeSet nodes = ( NodeSet )getLeft().eval( contextSequence );
+                            final NodeSet nodes = ( NodeSet )getLeft().eval( contextSequence );
                             result = nodeSetCompare( nodes, contextSequence );
                         }
                     } else {
@@ -473,7 +473,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
 
             // can this result be cached? Don't cache if the result depends on local variables.
-            boolean canCache = ( contextSequence != null ) && contextSequence.isCacheable() && !Dependency.dependsOn( getLeft(), Dependency.CONTEXT_ITEM ) && !Dependency.dependsOn( getRight(), Dependency.CONTEXT_ITEM ) && !Dependency.dependsOnVar( getLeft() ) && !Dependency.dependsOnVar( getRight() );
+            final boolean canCache = ( contextSequence != null ) && contextSequence.isCacheable() && !Dependency.dependsOn( getLeft(), Dependency.CONTEXT_ITEM ) && !Dependency.dependsOn( getRight(), Dependency.CONTEXT_ITEM ) && !Dependency.dependsOnVar( getLeft() ) && !Dependency.dependsOnVar( getRight() );
 
             if( canCache ) {
                 cached = new CachedResult( contextSequence, contextItem, result );
@@ -513,7 +513,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     protected Sequence genericCompare( Sequence ls, Sequence contextSequence, Item contextItem ) throws XPathException
     {
-        long           start    = System.currentTimeMillis();
+        final long           start    = System.currentTimeMillis();
         final Sequence rs       = getRight().eval( contextSequence, contextItem );
         final Collator collator = getCollator( contextSequence );
         Sequence       result   = BooleanValue.FALSE;
@@ -522,7 +522,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             result = BooleanValue.valueOf( compareAtomic( collator, AtomicValue.EMPTY_VALUE, AtomicValue.EMPTY_VALUE ) );
         } else if( ls.isEmpty() && !rs.isEmpty() ) {
 
-            for( SequenceIterator i2 = rs.iterate(); i2.hasNext(); ) {
+            for( final SequenceIterator i2 = rs.iterate(); i2.hasNext(); ) {
 
                 if( compareAtomic( collator, AtomicValue.EMPTY_VALUE, i2.nextItem().atomize() ) ) {
                     result = BooleanValue.TRUE;
@@ -531,8 +531,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
         } else if( !ls.isEmpty() && rs.isEmpty() ) {
 
-            for( SequenceIterator i1 = ls.iterate(); i1.hasNext(); ) {
-                AtomicValue lv = i1.nextItem().atomize();
+            for( final SequenceIterator i1 = ls.iterate(); i1.hasNext(); ) {
+                final AtomicValue lv = i1.nextItem().atomize();
 
                 if( compareAtomic( collator, lv, AtomicValue.EMPTY_VALUE ) ) {
                     result = BooleanValue.TRUE;
@@ -543,8 +543,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             result = BooleanValue.valueOf( compareAtomic( collator, ls.itemAt( 0 ).atomize(), rs.itemAt( 0 ).atomize() ) );
         } else {
 
-            for( SequenceIterator i1 = ls.iterate(); i1.hasNext(); ) {
-                AtomicValue lv = i1.nextItem().atomize();
+            for( final SequenceIterator i1 = ls.iterate(); i1.hasNext(); ) {
+                final AtomicValue lv = i1.nextItem().atomize();
 
                 if( rs.isEmpty() ) {
 
@@ -562,7 +562,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     }
                 } else {
 
-                    for( SequenceIterator i2 = rs.iterate(); i2.hasNext(); ) {
+                    for( final SequenceIterator i2 = rs.iterate(); i2.hasNext(); ) {
 
                         if( compareAtomic( collator, lv, i2.nextItem().atomize() ) ) {
                             result = BooleanValue.TRUE;
@@ -600,25 +600,25 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if( LOG.isTraceEnabled() ) {
             LOG.trace( "No index: fall back to nodeSetCompare" );
         }
-        long           start    = System.currentTimeMillis();
-        NodeSet        result   = new NewArrayNodeSet();
+        final long           start    = System.currentTimeMillis();
+        final NodeSet        result   = new NewArrayNodeSet();
         final Collator collator = getCollator( contextSequence );
 
         if( ( contextSequence != null ) && !contextSequence.isEmpty() && !contextSequence.getDocumentSet().contains( nodes.getDocumentSet() ) ) {
 
-            for( NodeProxy item : nodes ) {
+            for( final NodeProxy item : nodes ) {
                 ContextItem context = item.getContext();
 
                 if( context == null ) {
                     throw( new XPathException( this, "Internal error: context node missing" ) );
                 }
-                AtomicValue lv = item.atomize();
+                final AtomicValue lv = item.atomize();
 
                 do {
-                    Sequence rs = getRight().eval( context.getNode().toSequence() );
+                    final Sequence rs = getRight().eval( context.getNode().toSequence() );
 
-                    for( SequenceIterator i2 = rs.iterate(); i2.hasNext(); ) {
-                        AtomicValue rv = i2.nextItem().atomize();
+                    for( final SequenceIterator i2 = rs.iterate(); i2.hasNext(); ) {
+                        final AtomicValue rv = i2.nextItem().atomize();
 
                         if( compareAtomic( collator, lv, rv ) ) {
                             result.add( item );
@@ -628,12 +628,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
         } else {
 
-            for( NodeProxy item : nodes ) {
-                AtomicValue lv = item.atomize();
-                Sequence    rs = getRight().eval( contextSequence );
+            for( final NodeProxy item : nodes ) {
+                final AtomicValue lv = item.atomize();
+                final Sequence    rs = getRight().eval( contextSequence );
 
-                for( SequenceIterator i2 = rs.iterate(); i2.hasNext(); ) {
-                    AtomicValue rv = i2.nextItem().atomize();
+                for( final SequenceIterator i2 = rs.iterate(); i2.hasNext(); ) {
+                    final AtomicValue rv = i2.nextItem().atomize();
 
                     if( compareAtomic( collator, lv, rv ) ) {
                         result.add( item );
@@ -672,16 +672,16 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare" );
         }
 
-        long     start   = System.currentTimeMillis();
+        final long     start   = System.currentTimeMillis();
 
         //get the NodeSet on the left
-        Sequence leftSeq = getLeft().eval( contextSequence );
+        final Sequence leftSeq = getLeft().eval( contextSequence );
 
         if( !leftSeq.isPersistentSet() ) {
             return( genericCompare( leftSeq, contextSequence, null ) );
         }
 
-        NodeSet nodes = leftSeq.isEmpty() ? NodeSet.EMPTY_SET : ( NodeSet )leftSeq;
+        final NodeSet nodes = leftSeq.isEmpty() ? NodeSet.EMPTY_SET : ( NodeSet )leftSeq;
 
         //nothing on the left, so nothing to do
         if( !( nodes instanceof VirtualNodeSet ) && nodes.isEmpty() ) {
@@ -692,7 +692,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
 
         //get the Sequence on the right
-        Sequence rightSeq = getRight().eval( contextSequence );
+        final Sequence rightSeq = getRight().eval( contextSequence );
 
         //nothing on the right, so nothing to do
         if( rightSeq.isEmpty() ) {
@@ -703,7 +703,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
 
         //get the type of a possible index
-        int indexType = nodes.getIndexType();
+        final int indexType = nodes.getIndexType();
 
         //See if we have a range index defined on the nodes in this sequence
         //remember that Type.ITEM means... no index ;-)
@@ -716,7 +716,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             boolean indexScan = false;
             boolean indexMixed = false;
             if( contextSequence != null ) {
-                IndexFlags iflags     = checkForQNameIndex( idxflags, context, contextSequence, contextQName );
+                final IndexFlags iflags     = checkForQNameIndex( idxflags, context, contextSequence, contextQName );
                 boolean    indexFound = false;
 
                 if( !iflags.indexOnQName ) {
@@ -754,7 +754,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             NodeSet           result = null;
 
             //Iterate through the right hand sequence
-            for( SequenceIterator itRightSeq = rightSeq.iterate(); itRightSeq.hasNext(); ) {
+            for( final SequenceIterator itRightSeq = rightSeq.iterate(); itRightSeq.hasNext(); ) {
 
                 //Get the index key
                 Item key = itRightSeq.nextItem().atomize();
@@ -777,7 +777,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     try {
                         key = key.convertTo( indexType );
                     }
-                    catch( XPathException xpe ) {
+                    catch( final XPathException xpe ) {
                         //TODO : rethrow the exception ? -pb
 
                         //Could not convert the key to a suitable type for the index, fallback to nodeSetCompare()
@@ -800,7 +800,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         LOG.trace( "Checking if range index can be used for key: " + key.getStringValue() );
                     }
 
-                    Collator collator = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
+                    final Collator collator = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
 
                     if( Type.subTypeOf( key.getType(), indexType ) ) {
 
@@ -843,8 +843,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             try {
                                 NodeSet ns;
 
-                                String  matchString = key.getStringValue();
-                                int     matchType   = getMatchType( truncation );
+                                final String  matchString = key.getStringValue();
+                                final int     matchType   = getMatchType( truncation );
 
                                 if( indexScan ) {
                                     ns = context.getBroker().getValueIndex().matchAll( context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, matchString, matchType, 0, true, collator, truncation );
@@ -861,7 +861,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                                 }
 
                             }
-                            catch( EXistException e ) {
+                            catch( final EXistException e ) {
                                 throw( new XPathException( this, e ) );
                             }
                         }
@@ -987,8 +987,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     private boolean compareAtomic( Collator collator, AtomicValue lv, AtomicValue rv ) throws XPathException
     {
         try {
-            int ltype = lv.getType();
-            int rtype = rv.getType();
+            final int ltype = lv.getType();
+            final int rtype = rv.getType();
 
             if( ltype == Type.UNTYPED_ATOMIC ) {
 
@@ -1083,7 +1083,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 }
             }
         }
-        catch( XPathException e ) {
+        catch( final XPathException e ) {
             e.setLocation( e.getLine(), e.getColumn() );
             throw( e );
         }
@@ -1139,7 +1139,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     public String toString()
     {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
 
         if( truncation == Constants.TRUNC_BOTH ) {
             result.append( "contains" ).append( '(' );
@@ -1184,7 +1184,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 //What about Constants.EQ and Constants.NEQ ? Well, it seems to never be called
             }
         }
-        Expression right = getRight();
+        final Expression right = getRight();
         setRight( getLeft() );
         setLeft( right );
     }
@@ -1236,13 +1236,13 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     {
         idxflags.reset( contextQName != null );
 
-        for( Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = i.next();
+        for( final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            final Collection collection = i.next();
 
             if( collection.getURI().equalsInternal( XmldbURI.SYSTEM_COLLECTION_URI ) ) {
                 continue;
             }
-            IndexSpec idxcfg = collection.getIndexConfiguration( context.getBroker() );
+            final IndexSpec idxcfg = collection.getIndexConfiguration( context.getBroker() );
 
             if( idxflags.indexOnQName && ( idxcfg.getIndexByQName( contextQName ) == null ) ) {
                 idxflags.indexOnQName = false;

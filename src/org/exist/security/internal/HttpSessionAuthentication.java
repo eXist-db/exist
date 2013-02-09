@@ -56,7 +56,7 @@ public class HttpSessionAuthentication extends UserAuthentication implements Htt
     @Override
     public void attributeReplaced(HttpSessionBindingEvent event) {
         if (event.getValue()==null)
-            super.logout();
+            {super.logout();}
     }
 
     @Override

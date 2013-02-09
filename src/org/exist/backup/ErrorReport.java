@@ -98,7 +98,7 @@ public class ErrorReport
 
     public String toString()
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append( ERRCODES[code] ).append( ":\n" );
 
         if( message != null ) {

@@ -62,7 +62,7 @@ public class AnyNodeTest implements NodeTest {
      * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
      */
     public boolean matches(NodeProxy proxy) {
-        int type = proxy.getType();
+        final int type = proxy.getType();
         if (type == Type.ITEM || type == Type.NODE) {		
             if (proxy.getNodeType() != NodeProxy.UNKNOWN_NODE_TYPE) {
                 return matches(proxy.getNode());

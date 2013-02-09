@@ -62,20 +62,20 @@ public class FunFloor extends Function {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		//if (contextItem != null)
 		//	contextSequence = contextItem.toSequence();
         
 		Sequence result;
-        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if (seq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
-        	Item item = seq.itemAt(0);
+        	final Item item = seq.itemAt(0);
         	NumericValue value;
         	if (item instanceof NumericValue) {
 				value = (NumericValue) item;
@@ -86,7 +86,7 @@ public class FunFloor extends Function {
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;    
         

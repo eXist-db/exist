@@ -35,24 +35,24 @@ public class NameTest extends TypeTest {
 			type = node.getNodeType();
 		}
 		if (!isOfType(type))
-			return false;
+			{return false;}
 		if(node == null)
-			node = proxy.getNode();
+			{node = proxy.getNode();}
         return matchesName(node);
 	}
 
 	public boolean matches(Node other) {
         if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
-            return matches(((ReferenceNode)other).getReference());
+            {return matches(((ReferenceNode)other).getReference());}
         if(!isOfType(other.getNodeType()))
-			return false;
+			{return false;}
 		return matchesName(other);
 	}
 
 	public boolean matches(QName name) {
 		if (nodeName.getNamespaceURI() != null) {
             if (!nodeName.getNamespaceURI().equals(name.getNamespaceURI()))
-				return false;
+				{return false;}
 		}
 		if (nodeName.getLocalName() != null) {
 			return nodeName.getLocalName().equals(name.getLocalName());
@@ -62,10 +62,10 @@ public class NameTest extends TypeTest {
 	
     public boolean matchesName(Node other) {
         if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
-            return matchesName(((ReferenceNode)other).getReference().getNode());
+            {return matchesName(((ReferenceNode)other).getReference().getNode());}
         if (nodeName.getNamespaceURI() != null) {
             if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI()))
-				return false;
+				{return false;}
 		}
 		if (nodeName.getLocalName() != null) {
 			return nodeName.getLocalName().equals(other.getLocalName());
@@ -76,12 +76,12 @@ public class NameTest extends TypeTest {
     public boolean matches(XMLStreamReader reader) {
         final int ev = reader.getEventType();
         if (!isOfEventType(ev))
-            return false;
+            {return false;}
         switch (ev) {
             case XMLStreamReader.START_ELEMENT :
                 if (nodeName.getNamespaceURI() != null) {
                     if (!nodeName.getNamespaceURI().equals(reader.getNamespaceURI()))
-                        return false;
+                        {return false;}
                 }
                 if (nodeName.getLocalName() != null) {
                     return nodeName.getLocalName().equals(reader.getLocalName());
@@ -105,16 +105,16 @@ public class NameTest extends TypeTest {
     
     public void dump(ExpressionDumper dumper) {
         if(nodeName.getLocalName() == null)
-            dumper.display(nodeName.getPrefix() + ":*");
+            {dumper.display(nodeName.getPrefix() + ":*");}
         else
-            dumper.display(nodeName.getStringValue());        
+            {dumper.display(nodeName.getStringValue());}        
     }    
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         
         if(nodeName.getPrefix() != null) {
             result.append(nodeName.getPrefix());

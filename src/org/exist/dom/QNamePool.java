@@ -65,13 +65,13 @@ public class QNamePool extends AbstractHashtable {
         temp.setNameType(type);
         int idx = temp.hashCode() % tabSize;
         if (idx < 0)
-            idx *= -1;
+            {idx *= -1;}
         if (values[idx] == null)
-            return null; // key does not exist
+            {return null;} // key does not exist
         else if (values[idx].equals(temp)) {
             return values[idx];
         }
-        int rehashVal = rehash(idx);
+        final int rehashVal = rehash(idx);
         for (int i = 0; i < tabSize; i++) {
             idx = (idx + rehashVal) % tabSize;
             if (values[idx] == null) {
@@ -94,13 +94,13 @@ public class QNamePool extends AbstractHashtable {
         temp.setNameType(type);
         try {
             return insert(temp);
-        } catch(HashtableOverflowException e) {
+        } catch(final HashtableOverflowException e) {
             // just clear the pool and try again
             values = new QName[tabSize];
             items = 0;
             try {
                 return insert(temp);
-            } catch (HashtableOverflowException e1) {
+            } catch (final HashtableOverflowException e1) {
                 //Doh ! Report something here !
             }
             // should never happen, but just to be sure
@@ -110,10 +110,10 @@ public class QNamePool extends AbstractHashtable {
 
     protected QName insert(QName value) throws HashtableOverflowException {
         if (value == null)
-            throw new IllegalArgumentException("Illegal value: null");
+            {throw new IllegalArgumentException("Illegal value: null");}
         int idx = value.hashCode() % tabSize;
         if (idx < 0)
-            idx *= -1;
+            {idx *= -1;}
         int bucket = -1;
         // look for an empty bucket
         if (values[idx] == null) {
@@ -129,7 +129,7 @@ public class QNamePool extends AbstractHashtable {
             return values[idx];
         }
         //System.out.println("Hash collision: " + value + " with " + values[idx]);
-        int rehashVal = rehash(idx);
+        final int rehashVal = rehash(idx);
         int rehashCnt = 1;
         for (int i = 0; i < tabSize; i++) {
             idx = (idx + rehashVal) % tabSize;
@@ -162,7 +162,7 @@ public class QNamePool extends AbstractHashtable {
     protected int rehash(int iVal) {
         int retVal = (iVal + iVal / 2) % tabSize;
         if (retVal == 0)
-            retVal = 1;
+            {retVal = 1;}
         return retVal;
     }
 

@@ -44,8 +44,8 @@ public class DateValue extends AbstractDateTimeValue {
 	public DateValue(String dateString) throws XPathException {
 		super(dateString);
 		try {
-			if (calendar.getXMLSchemaType() != DatatypeConstants.DATE) throw new IllegalStateException();
-		} catch (IllegalStateException e) {
+			if (calendar.getXMLSchemaType() != DatatypeConstants.DATE) {throw new IllegalStateException();}
+		} catch (final IllegalStateException e) {
 			throw new XPathException("xs:date must not have hour, minute or second fields set");
 		}
 	}
@@ -93,11 +93,11 @@ public class DateValue extends AbstractDateTimeValue {
             case Type.GMONTH :
                 return new GMonthValue(calendar);
 			case Type.UNTYPED_ATOMIC: {			
-	            DateValue dv = new DateValue(getStringValue()); 
+	            final DateValue dv = new DateValue(getStringValue()); 
 				return new UntypedAtomicValue(dv.getStringValue());		
 			}
 			case Type.STRING : {
-            	DateValue dv = new DateValue(calendar); 
+            	final DateValue dv = new DateValue(calendar); 
 				return new StringValue(dv.getStringValue());
 			}
 			default :

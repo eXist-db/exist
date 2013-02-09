@@ -80,7 +80,7 @@ public class ReentrantReadWriteLock implements Lock {
     public ReentrantReadWriteLock(Object id) {
         id_ = id;
         if (DEBUG)
-            seStack = new Stack<StackTraceElement[]>();
+            {seStack = new Stack<StackTraceElement[]>();}
     }
 
     public String getId() {
@@ -100,17 +100,17 @@ public class ReentrantReadWriteLock implements Lock {
             return true;
         }
         if (Thread.interrupted())
-            throw new LockException();
+            {throw new LockException();}
         Thread caller = Thread.currentThread();
         synchronized (this) {
             WaitingThread waitingOnResource;
             if (caller == owner_) {
                 ++holds_;
-                modeStack.push(new Integer(mode));
+                modeStack.push(Integer.valueOf(mode));
                 if (mode == Lock.WRITE_LOCK)
-                    writeLocks++;
+                    {writeLocks++;}
                 if (DEBUG) {
-                    Throwable t = new Throwable();
+                    final Throwable t = new Throwable();
                     seStack.push(t.getStackTrace());
                 }
                 mode_ = mode;
@@ -118,11 +118,11 @@ public class ReentrantReadWriteLock implements Lock {
             } else if (owner_ == null) {
                 owner_ = caller;
                 holds_ = 1;
-                modeStack.push(new Integer(mode));
+                modeStack.push(Integer.valueOf(mode));
                 if (mode== Lock.WRITE_LOCK)
-                    writeLocks++;
+                    {writeLocks++;}
                 if (DEBUG) {
-                    Throwable t = new Throwable();
+                    final Throwable t = new Throwable();
                     seStack.push(t.getStackTrace());
                 }
                 mode_ = mode;
@@ -130,13 +130,13 @@ public class ReentrantReadWriteLock implements Lock {
             } else if ((waitingOnResource = 
                     DeadlockDetection.deadlockCheckResource(caller, owner_)) != null) {
                 waitingOnResource.suspendWaiting();
-                SuspendedWaiter suspended = new SuspendedWaiter(owner_, mode_, holds_);
+                final SuspendedWaiter suspended = new SuspendedWaiter(owner_, mode_, holds_);
                 suspendedThreads.push(suspended);
                 owner_ = caller;
                 holds_ = 1;
-                modeStack.push(new Integer(mode));
+                modeStack.push(Integer.valueOf(mode));
                 if (mode== Lock.WRITE_LOCK)
-                    writeLocks++;
+                    {writeLocks++;}
                 mode_ = mode;
                 listener = waitingOnResource;
                 return true;
@@ -147,24 +147,24 @@ public class ReentrantReadWriteLock implements Lock {
                         wait(WAIT_CHECK_PERIOD);
                         if ((waitingOnResource = DeadlockDetection.deadlockCheckResource(caller, owner_)) != null) {
                             waitingOnResource.suspendWaiting();
-                            SuspendedWaiter suspended = new SuspendedWaiter(owner_, mode_, holds_);
+                            final SuspendedWaiter suspended = new SuspendedWaiter(owner_, mode_, holds_);
                             suspendedThreads.push(suspended);
                             owner_ = caller;
                             holds_ = 1;
-                            modeStack.push(new Integer(mode));
+                            modeStack.push(Integer.valueOf(mode));
                             if (mode== Lock.WRITE_LOCK)
-                                writeLocks++;
+                                {writeLocks++;}
                             mode_ = mode;
                             listener = waitingOnResource;
                             DeadlockDetection.clearCollectionWaiter(owner_);
                             return true;
                         } else if (caller == owner_) {
                             ++holds_;
-                            modeStack.push(new Integer(mode));
+                            modeStack.push(Integer.valueOf(mode));
                             if (mode == Lock.WRITE_LOCK)
-                                writeLocks++;
+                                {writeLocks++;}
                             if (DEBUG) {
-                                Throwable t = new Throwable();
+                                final Throwable t = new Throwable();
                                 seStack.push(t.getStackTrace());
                             }
                             mode_ = mode;
@@ -175,9 +175,9 @@ public class ReentrantReadWriteLock implements Lock {
                             holds_ = 1;
                             modeStack.push(Integer.valueOf(mode));
                             if (mode == Lock.WRITE_LOCK)
-                                writeLocks++;
+                                {writeLocks++;}
                             if (DEBUG) {
-                                Throwable t = new Throwable();
+                                final Throwable t = new Throwable();
                                 seStack.push(t.getStackTrace());
                             }
                             mode_ = mode;
@@ -185,7 +185,7 @@ public class ReentrantReadWriteLock implements Lock {
                             return true;
                         }
                     }
-                } catch (InterruptedException ex) {
+                } catch (final InterruptedException ex) {
                     notify();
                     throw new LockException("Interrupted while waiting for lock");
                 }
@@ -202,11 +202,11 @@ public class ReentrantReadWriteLock implements Lock {
         synchronized (this) {
             if (caller == owner_) {
                 ++holds_;
-                modeStack.push(new Integer(mode));
+                modeStack.push(Integer.valueOf(mode));
                 if (mode == Lock.WRITE_LOCK)
-                    writeLocks++;
+                    {writeLocks++;}
                 if (DEBUG) {
-                    Throwable t = new Throwable();
+                    final Throwable t = new Throwable();
                     seStack.push(t.getStackTrace());
                 }
                 mode_ = mode;
@@ -216,9 +216,9 @@ public class ReentrantReadWriteLock implements Lock {
                 holds_ = 1;
                 modeStack.push(Integer.valueOf(mode));
                 if (mode == Lock.WRITE_LOCK)
-                    writeLocks++;
+                    {writeLocks++;}
                 if (DEBUG) {
-                    Throwable t = new Throwable();
+                    final Throwable t = new Throwable();
                     seStack.push(t.getStackTrace());
                 }
                 mode_ = mode;
@@ -291,7 +291,7 @@ public class ReentrantReadWriteLock implements Lock {
         }
         if (--holds_ == 0) {
             if (!suspendedThreads.isEmpty()) {
-                SuspendedWaiter suspended = suspendedThreads.pop();
+                final SuspendedWaiter suspended = suspendedThreads.pop();
                 owner_ = suspended.thread;
                 mode_ = suspended.lockMode;
                 holds_ = suspended.lockCount;
@@ -319,12 +319,12 @@ public class ReentrantReadWriteLock implements Lock {
      **/
     public synchronized long holds() {
         if (Thread.currentThread() != owner_)
-            return 0;
+            {return 0;}
         return holds_;
     }
 
     public synchronized LockInfo getLockInfo() {
-        String lockType = mode_ == Lock.WRITE_LOCK ? LockInfo.WRITE_LOCK : LockInfo.READ_LOCK;
+        final String lockType = mode_ == Lock.WRITE_LOCK ? LockInfo.WRITE_LOCK : LockInfo.READ_LOCK;
         return new LockInfo(LockInfo.COLLECTION_LOCK, lockType, getId(), 
             new String[] { (owner_==null)?"":owner_.getName() });
     }

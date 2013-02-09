@@ -118,9 +118,9 @@ public class AttributeImpl extends NodeImpl implements Attr {
 
     @Override
     public String getBaseURI() {
-        Node parent = document.getNode(document.attrParent[nodeNumber]);
+        final Node parent = document.getNode(document.attrParent[nodeNumber]);
         if ( parent == null )
-            return null;
+            {return null;}
         return parent.getBaseURI();
     }
 
@@ -192,7 +192,7 @@ public class AttributeImpl extends NodeImpl implements Attr {
      */
     @Override
     public Node getParentNode() {
-        int parent = document.attrParent[nodeNumber];
+        final int parent = document.attrParent[nodeNumber];
         if( parent > 0 ) {
             return document.getNode(parent);
         }
@@ -230,7 +230,7 @@ public class AttributeImpl extends NodeImpl implements Attr {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append( "in-memory#" );
         result.append( "attribute {" );
         result.append( getQName().getStringValue() );

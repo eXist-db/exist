@@ -8,20 +8,20 @@ public abstract class AbstractNodeContainer extends AbstractTreeNode implements 
 	}
 	public void nodeChanged(XACMLTreeNode node)
 	{
-		NodeContainer parent = getParent();
+		final NodeContainer parent = getParent();
 		if(parent != null)
-			parent.nodeChanged(node);
+			{parent.nodeChanged(node);}
 	}
 	public void nodeAdded(XACMLTreeNode node, int newIndex)
 	{
-		NodeContainer parent = getParent();
+		final NodeContainer parent = getParent();
 		if(parent != null)
-			parent.nodeAdded(node, newIndex);
+			{parent.nodeAdded(node, newIndex);}
 	}
 	public void nodeRemoved(XACMLTreeNode removedNode, int oldChildIndex)
 	{
-		NodeContainer parent = getParent();
+		final NodeContainer parent = getParent();
 		if(parent != null)
-			parent.nodeRemoved(removedNode, oldChildIndex);
+			{parent.nodeRemoved(removedNode, oldChildIndex);}
 	}
 }

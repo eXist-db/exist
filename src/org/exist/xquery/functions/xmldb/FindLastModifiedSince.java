@@ -41,20 +41,20 @@ public class FindLastModifiedSince extends BasicFunction {
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		NodeSet nodes = args[0].toNodeSet();
+		final NodeSet nodes = args[0].toNodeSet();
 		if (nodes.isEmpty())
-			return Sequence.EMPTY_SEQUENCE;
+			{return Sequence.EMPTY_SEQUENCE;}
 		
-		NodeSet result = new NewArrayNodeSet();
-		DateTimeValue dtv = (DateTimeValue) args[1].itemAt(0);
-		long lastModified = dtv.getDate().getTime();
+		final NodeSet result = new NewArrayNodeSet();
+		final DateTimeValue dtv = (DateTimeValue) args[1].itemAt(0);
+		final long lastModified = dtv.getDate().getTime();
 		
-		for (NodeSetIterator i = nodes.iterator(); i.hasNext(); ) {
-			NodeProxy proxy = i.next();
-			DocumentImpl doc = proxy.getDocument();
-			long modified = doc.getMetadata().getLastModified();
+		for (final NodeSetIterator i = nodes.iterator(); i.hasNext(); ) {
+			final NodeProxy proxy = i.next();
+			final DocumentImpl doc = proxy.getDocument();
+			final long modified = doc.getMetadata().getLastModified();
 			if (modified > lastModified)
-				result.add(proxy);
+				{result.add(proxy);}
 		}
 		return result;
 	}

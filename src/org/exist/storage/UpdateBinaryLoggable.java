@@ -50,11 +50,11 @@ public class UpdateBinaryLoggable extends AbstractLoggable {
     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
     */
    public void write(ByteBuffer out) {
-      String originalPath = original.getAbsolutePath();
+      final String originalPath = original.getAbsolutePath();
       byte [] data = originalPath.getBytes();
       out.putInt(data.length);
       out.put(data);
-      String backupPath = backup.getAbsolutePath();
+      final String backupPath = backup.getAbsolutePath();
       data = backupPath.getBytes();
       out.putInt(data.length);
       out.put(data);
@@ -87,16 +87,16 @@ public class UpdateBinaryLoggable extends AbstractLoggable {
     
     public void undo() throws LogException {
        try {
-          FileInputStream is = new FileInputStream(backup);
-          FileOutputStream os = new FileOutputStream(original);
-          byte [] buffer = new byte[4096];
+          final FileInputStream is = new FileInputStream(backup);
+          final FileOutputStream os = new FileOutputStream(original);
+          final byte [] buffer = new byte[4096];
           int len;
           while ((len=is.read(buffer))>=0) {
              os.write(buffer,0,len);
           }
           os.close();
           is.close();
-       } catch (IOException ex) {
+       } catch (final IOException ex) {
           
        }
     }

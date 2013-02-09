@@ -164,7 +164,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
 
         if( namespaces != null ) {
 
-            for( Map.Entry<String, String> entry : namespaces.entrySet() ) {
+            for( final Map.Entry<String, String> entry : namespaces.entrySet() ) {
                 builder.namespaceNode( entry.getKey().toString(), entry.getValue().toString() );
             }
         }
@@ -172,8 +172,8 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
         for( int i = 0; i < atts.getLength(); i++ ) {
 
             if( atts.getQName( i ).startsWith( "xmlns" ) ) {
-                String prefix = atts.getLocalName( i );
-                String uri    = atts.getValue( i );
+                final String prefix = atts.getLocalName( i );
+                final String uri    = atts.getValue( i );
 
                 if( ( namespaces == null ) || !namespaces.containsKey( prefix ) ) {
                     builder.namespaceNode( prefix, uri );

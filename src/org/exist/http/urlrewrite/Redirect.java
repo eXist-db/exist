@@ -34,13 +34,13 @@ public class Redirect extends URLRewrite {
 
     public Redirect(Element config, String uri) throws ServletException {
         super(config, uri);
-        String redirectTo = config.getAttribute("url");
+        final String redirectTo = config.getAttribute("url");
         if (redirectTo.length() == 0)
-            throw new ServletException("<exist:redirect> needs an attribute 'url'.");
+            {throw new ServletException("<exist:redirect> needs an attribute 'url'.");}
         if (redirectTo.matches("^\\w+://.*"))
-            setTarget(redirectTo); // do not touch URIs pointing to other server
+            {setTarget(redirectTo);} // do not touch URIs pointing to other server
         else
-            setTarget(URLRewrite.normalizePath(redirectTo));
+            {setTarget(URLRewrite.normalizePath(redirectTo));}
     }
 
     @Override

@@ -116,9 +116,9 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      * @throws  URISyntaxException  If the given string is not a valid xmldb URI.
      */
     protected XmldbURI(URI xmldbURI, boolean mustHaveXMLDB) throws URISyntaxException {
-        String uriStr = xmldbURI.toString().trim();
+        final String uriStr = xmldbURI.toString().trim();
 
-        if (!uriStr.equals(".") && !uriStr.equals("..") && !uriStr.endsWith("/.") && !uriStr.endsWith("/..")) {
+        if (!".".equals(uriStr) && !"..".equals(uriStr) && !uriStr.endsWith("/.") && !uriStr.endsWith("/..")) {
             // Only normalize if uri is not "." or ".." or doesn't end with "/." or "/.." .  If it's a dot uri, then the final segment is assumed to be a document name
             xmldbURI = xmldbURI.normalize();
         }
@@ -134,7 +134,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         
         parseURI(xmldbURI, hadXmldbPrefix);
 
-        if (mustHaveXMLDB) hadXmldbPrefix = true;
+        if (mustHaveXMLDB) {hadXmldbPrefix = true;}
     }
 
     protected XmldbURI(String collectionPath) {
@@ -153,7 +153,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         if (xmldbURI == null) {
             return (null);
         }
-        URI uri = new URI(escape ? AnyURIValue.escape(xmldbURI) : xmldbURI);
+        final URI uri = new URI(escape ? AnyURIValue.escape(xmldbURI) : xmldbURI);
         return (getXmldbURI(uri));
     }
 
@@ -161,7 +161,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         if (xmldbURI == null) {
             return (null);
         }
-        URI uri = new URI(escape ? AnyURIValue.escape(xmldbURI) : xmldbURI);
+        final URI uri = new URI(escape ? AnyURIValue.escape(xmldbURI) : xmldbURI);
         return (getXmldbURI(uri, mustHaveXMLDB));
     }
 
@@ -169,14 +169,14 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         if (collectionPath == null) {
             return (null);
         }
-        URI uri = new URI(accessURI + URIUtils.iriToURI(collectionPath));
+        final URI uri = new URI(accessURI + URIUtils.iriToURI(collectionPath));
         return (getXmldbURI(uri));
     }
 
     public static XmldbURI create(URI uri) {
         try {
             return (xmldbUriFor(uri));
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw (new IllegalArgumentException("Invalid URI: " + e.getMessage()));
         }
     }
@@ -184,7 +184,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public static XmldbURI create(String uri) {
         try {
             return (xmldbUriFor(uri));
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw (new IllegalArgumentException("Invalid URI: " + e.getMessage()));
         }
     }
@@ -192,7 +192,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public static XmldbURI create(String uri, boolean mustHaveXMLDB) {
         try {
             return (xmldbUriFor(uri, true, mustHaveXMLDB));
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw (new IllegalArgumentException("Invalid URI: " + e.getMessage()));
         }
     }
@@ -200,7 +200,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     public static XmldbURI create(String accessURI, String collectionPath) {
         try {
             return (xmldbUriFor(accessURI, collectionPath));
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw (new IllegalArgumentException("Invalid URI: " + e.getMessage()));
         }
     }
@@ -412,7 +412,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
 
             //TODO: we might want to cache this value
             return (URLDecoder.decode(encodedCollectionPath, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
 
             //Should never happen
             throw (new IllegalArgumentException(encodedCollectionPath + " can not be properly escaped"));
@@ -437,7 +437,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     protected void safeRecomputeURI() {
         try {
             recomputeURI();
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
         }
     }
 
@@ -456,7 +456,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
                 encodedCollectionPath = "/" + encodedCollectionPath;
             }
             recomputeURI();
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             encodedCollectionPath = oldCollectionPath;
             throw (new IllegalArgumentException("Invalid URI: " + e.getMessage()));
         }
@@ -506,12 +506,12 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      * @return  A relative XmldbURI containing the value after the last / in the collection path
      */
     public int numSegments() {
-        String name = getRawCollectionPath();
+        final String name = getRawCollectionPath();
 
         if ((name == null) || "".equals(name)) {
             return (0);
         }
-        String[] split = name.split("/");
+        final String[] split = name.split("/");
         return (split.length);
     }
 
@@ -521,14 +521,14 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      * @return  A relative XmldbURI containing the value after the last / in the collection path
      */
     public XmldbURI[] getPathSegments() {
-        String name = getRawCollectionPath();
+        final String name = getRawCollectionPath();
 
         if ((name == null) || "".equals(name)) {
             return (new XmldbURI[0]);
         }
-        String[] split = name.split("/");
-        int fix = ("".equals(split[0])) ? 1 : 0;
-        XmldbURI[] segments = new XmldbURI[split.length - fix];
+        final String[] split = name.split("/");
+        final int fix = ("".equals(split[0])) ? 1 : 0;
+        final XmldbURI[] segments = new XmldbURI[split.length - fix];
 
         for (int i = fix; i < split.length; i++) {
             segments[i - fix] = XmldbURI.create(split[i]);
@@ -564,8 +564,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     }
 
     public XmldbURI append(XmldbURI uri) {
-        String toAppend = uri.getRawCollectionPath();
-        String prepend = toString();
+        final String toAppend = uri.getRawCollectionPath();
+        final String prepend = toString();
 
         if ("".equals(toAppend)) {
             return (this);
@@ -598,9 +598,9 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      * @deprecated  By definition, using this method is strongly discouraged
      */
     public static String recoverPseudoURIs(String pseudoURI) throws URISyntaxException {
-        Pattern p = Pattern.compile("/");
-        String[] parts = p.split(pseudoURI);
-        StringBuilder newURIString = new StringBuilder(parts[0]);
+        final Pattern p = Pattern.compile("/");
+        final String[] parts = p.split(pseudoURI);
+        final StringBuilder newURIString = new StringBuilder(parts[0]);
 
         for (int i = 1; i < parts.length; i++) {
             newURIString.append("/");
@@ -612,7 +612,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
                     //Try to instantiate the parst as a URI
                     new URI(newURIString + parts[i]);
                     newURIString.append(parts[i]);
-                } catch (URISyntaxException e) {
+                } catch (final URISyntaxException e) {
                     LOG.info("Trying to escape : ''" + parts[i] + "' in '" + pseudoURI + "' !");
                     newURIString.append(URIUtils.encodeForURI(parts[i]));
                 }
@@ -634,7 +634,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
 
             try {
                 return (getXmldbURI().equals(new URI((String) ob)));
-            } catch (URISyntaxException e) {
+            } catch (final URISyntaxException e) {
                 return (false);
             }
         }
@@ -677,17 +677,17 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     }
 
     public XmldbURI normalizeCollectionPath() {
-        String collectionPath = this.encodedCollectionPath;
+        final String collectionPath = this.encodedCollectionPath;
 
         if (collectionPath == null) {
             return (this);
         }
-        URI collectionPathURI = URI.create(collectionPath).normalize();
+        final URI collectionPathURI = URI.create(collectionPath).normalize();
 
         if (collectionPathURI.getPath().equals(collectionPath)) {
             return (this);
         }
-        XmldbURI uri = XmldbURI.create(getXmldbURI());
+        final XmldbURI uri = XmldbURI.create(getXmldbURI());
         uri.setCollectionPath(collectionPathURI.toString());
         return (uri);
     }
@@ -696,7 +696,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         if (uri == null) {
             throw (new NullPointerException("The provided URI is null"));
         }
-        String collectionPath = this.encodedCollectionPath;
+        final String collectionPath = this.encodedCollectionPath;
 
         if (collectionPath == null) {
             throw (new NullPointerException("The current collection path is null"));
@@ -734,7 +734,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         collectionPathURI = URI.create(collectionPath);
          */
 
-        String collectionPath = toCollectionPathURI().toString();
+        final String collectionPath = toCollectionPathURI().toString();
         URI newCollectionURI = null;
 
         if (!collectionPath.endsWith("/")) {
@@ -743,7 +743,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
             newCollectionURI = getURI().resolve(child.toCollectionPathURI().getURI());
         }
 
-        XmldbURI newURI = XmldbURI.create(getXmldbURI());
+        final XmldbURI newURI = XmldbURI.create(getXmldbURI());
         String newCollectionPath = newCollectionURI.getRawPath();
 
         if (newCollectionPath.endsWith("/")) {
@@ -758,7 +758,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         if (uri == null) {
             throw (new NullPointerException("The provided URI is null"));
         }
-        String collectionPath = this.encodedCollectionPath;
+        final String collectionPath = this.encodedCollectionPath;
 
         if (collectionPath == null) {
             throw (new NullPointerException("The current collection path is null"));
@@ -837,9 +837,9 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     }
 
     public static String[] getPathComponents(String collectionPath) {
-        Pattern p = Pattern.compile("/");
-        String[] split = p.split(collectionPath);
-        String[] result = new String[split.length - 1];
+        final Pattern p = Pattern.compile("/");
+        final String[] split = p.split(collectionPath);
+        final String[] result = new String[split.length - 1];
         System.arraycopy(split, 1, result, 0, split.length - 1);
         return (result);
     }
@@ -919,7 +919,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      */
     //TODO : changes // into /  */
     public String makeAbsolute(String name) {
-        StringBuilder out = new StringBuilder();
+        final StringBuilder out = new StringBuilder();
 
         for (int i = 0; i < name.length(); i++) {
 
@@ -960,7 +960,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      */
     //TODO : changes // into /  */
     public final static String normalizeCollectionName(String name) {
-        StringBuilder out = new StringBuilder();
+        final StringBuilder out = new StringBuilder();
 
         for (int i = 0; i < name.length(); i++) {
 

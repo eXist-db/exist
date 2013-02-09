@@ -162,19 +162,19 @@ public class AnalyzeContextInfo {
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("ID: ").append(contextId);
         buf.append(" Type: ").append(Type.getTypeName(staticType)).append(" Flags: ");
         if ((flags & Expression.SINGLE_STEP_EXECUTION) > 0)
-            buf.append("single ");
+            {buf.append("single ");}
         if ((flags & Expression.IN_PREDICATE) > 0)
-            buf.append("in-predicate ");
+            {buf.append("in-predicate ");}
         if ((flags & Expression.IN_WHERE_CLAUSE) > 0)
-            buf.append("in-where-clause ");
+            {buf.append("in-where-clause ");}
         if ((flags & Expression.IN_UPDATE) > 0)
-            buf.append("in-update ");
+            {buf.append("in-update ");}
         if ((flags & Expression.DOT_TEST) > 0)
-            buf.append("dot-test ");
+            {buf.append("dot-test ");}
         buf.append('(').append(flags).append(')');
         return buf.toString();
     }

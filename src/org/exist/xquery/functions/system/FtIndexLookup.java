@@ -103,15 +103,15 @@ public class FtIndexLookup extends Function {
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
 
-        Sequence querySeq = getArgument(1).eval(contextSequence);
+        final Sequence querySeq = getArgument(1).eval(contextSequence);
         if (querySeq.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        String query = querySeq.itemAt(0).getStringValue();
+        final String query = querySeq.itemAt(0).getStringValue();
         
-        String[] terms = getSearchTerms(query);
-        NodeSet hits[] = new NodeSet[terms.length];
-        NodeSet contextSet = contextSequence.toNodeSet();
+        final String[] terms = getSearchTerms(query);
+        final NodeSet hits[] = new NodeSet[terms.length];
+        final NodeSet contextSet = contextSequence.toNodeSet();
         for (int k = 0; k < terms.length; k++) {
             hits[k] =
                     context.getBroker().getTextEngine().getNodesContaining(
@@ -126,15 +126,15 @@ public class FtIndexLookup extends Function {
         NodeSet result = hits[0];
         for(int k = 1; k < hits.length; k++) {
             if(hits[k] != null)
-                result = result.deepIntersection(hits[k]);
+                {result = result.deepIntersection(hits[k]);}
         }
     	logger.debug("FOUND: " + result.getLength());
         return result;
     }
     
     protected String[] getSearchTerms(String searchString) {
-        List<String> tokens = new ArrayList<String>();
-        Tokenizer tokenizer =
+        final List<String> tokens = new ArrayList<String>();
+        final Tokenizer tokenizer =
             context.getBroker().getTextEngine().getTokenizer();
         tokenizer.setText(searchString);
         org.exist.storage.analysis.TextToken token;

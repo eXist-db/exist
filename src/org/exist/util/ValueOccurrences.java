@@ -64,7 +64,7 @@ public class ValueOccurrences {
 
     public void addDocument(DocumentImpl doc) {
         if(!docs.contains(doc.getDocId()))
-            docs.add(doc);
+            {docs.add(doc);}
     }
     
     public void add(ValueOccurrences other) {
@@ -88,7 +88,7 @@ public class ValueOccurrences {
 	public int compareTo(Object o) {
 		try {
 			return value.compareTo(null, ((ValueOccurrences) o).value);
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			e.printStackTrace();
             //TODO : what does this mean ? -pb
 			return Constants.INFERIOR;
@@ -96,10 +96,10 @@ public class ValueOccurrences {
 	}
 	
 	public String toString() {
-		StringBuilder buf = new StringBuilder();
+		final StringBuilder buf = new StringBuilder();
 		try {
 			buf.append("Value: '" + value.getStringValue() +"'");
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			buf.append("Value: '" + e.getMessage() +"'");
 		}
 		buf.append(" occurences: '" + occurrences +"'");

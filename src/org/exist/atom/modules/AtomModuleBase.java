@@ -62,20 +62,20 @@ public class AtomModuleBase implements AtomModule {
 			PermissionDeniedException, NotFoundException, EXistException,
 			IOException, TriggerException {
 		
-		String method = request.getMethod();
-		if (method.equals("GET")) {
+		final String method = request.getMethod();
+		if ("GET".equals(method)) {
 			doGet(broker, request, response);
 
-		} else if (method.equals("POST")) {
+		} else if ("POST".equals(method)) {
 			doPost(broker, request, response);
 
-		} else if (method.equals("PUT")) {
+		} else if ("PUT".equals(method)) {
 			doPut(broker, request, response);
 
-		} else if (method.equals("HEAD")) {
+		} else if ("HEAD".equals(method)) {
 			doHead(broker, request, response);
 
-		} else if (method.equals("DELETE")) {
+		} else if ("DELETE".equals(method)) {
 			doDelete(broker, request, response);
 
 		} else {
@@ -127,9 +127,9 @@ public class AtomModuleBase implements AtomModule {
 
 	protected File storeInTemporaryFile(InputStream is, long len) throws IOException {
 		
-		File tempFile = File.createTempFile("atom", ".tmp");
-		OutputStream os = new FileOutputStream(tempFile);
-		byte[] buffer = new byte[4096];
+		final File tempFile = File.createTempFile("atom", ".tmp");
+		final OutputStream os = new FileOutputStream(tempFile);
+		final byte[] buffer = new byte[4096];
 		int count = 0;
 		long l = 0;
 		do {

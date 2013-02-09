@@ -34,9 +34,9 @@ public class SimpleTokenizer implements Tokenizer {
 
 	protected TextToken alpha(TextToken token, boolean allowWildcards) {
 		if (token == null)
-			token = new TextToken(TextToken.ALPHA, text, pos);
+			{token = new TextToken(TextToken.ALPHA, text, pos);}
 		else
-			token.setType(TextToken.ALPHA);
+			{token.setType(TextToken.ALPHA);}
 		// consume letters
 		char ch = LA(1);
 		int count = 0;
@@ -71,15 +71,15 @@ public class SimpleTokenizer implements Tokenizer {
 
 	private final static boolean isWildcard(char ch) {
 		if (ch == '?' || ch == '*')
-			return true;
+			{return true;}
 		return false;
 	}
 
 	protected TextToken alphanum(TextToken token, boolean allowWildcards) {
 		if (token == null)
-			token = new TextToken(TextToken.ALPHANUM, text, pos);
+			{token = new TextToken(TextToken.ALPHANUM, text, pos);}
 		else
-			token.setType(TextToken.ALPHANUM);
+			{token.setType(TextToken.ALPHANUM);}
 		while (LA(1) != (char) - 1) {
 			if (Character.isLetterOrDigit(LA(1))) {
 				token.consumeNext();
@@ -89,7 +89,7 @@ public class SimpleTokenizer implements Tokenizer {
 				consume();
 				continue;
 			} else
-				break;
+				{break;}
 		}
 		return token;
 	}
@@ -113,9 +113,9 @@ public class SimpleTokenizer implements Tokenizer {
 
 	protected TextToken nextTerminalToken(boolean wildcards) {
 		TextToken token = null;
-		char ch = LA(1);
+		final char ch = LA(1);
 		if (ch == (char) - 1)
-			return eof();
+			{return eof();}
 		if (Character.isLetter(ch) || is_mark(ch) || nonBreakingChar(ch)
 			|| singleCharToken(ch) 
 			|| (wildcards && isWildcard(ch))) {
@@ -124,10 +124,10 @@ public class SimpleTokenizer implements Tokenizer {
 		if (token == null
 			&& (Character.isLetterOrDigit(ch)
 				|| (wildcards && isWildcard(ch))))
-			token = alphanum(null, wildcards);
+			{token = alphanum(null, wildcards);}
 
 		if (token == null)
-			switch (ch) {
+			{switch (ch) {
 				case '\\':
 					if(isWildcard(LA(2))) {
 						consume();
@@ -145,7 +145,7 @@ public class SimpleTokenizer implements Tokenizer {
 				default :
 					token = whitespace();
 					break;
-			}
+			}}
 
 		return token;
 	}
@@ -160,7 +160,7 @@ public class SimpleTokenizer implements Tokenizer {
 		        TextToken token = nextTerminalToken(wildcards);
 		        TextToken next;
 		        int oldPos = pos;
-		        char LA1 = LA(1);
+		        final char LA1 = LA(1);
                 
 		        switch (token.getType()) {
 		            case TextToken.EOF :
@@ -195,19 +195,19 @@ public class SimpleTokenizer implements Tokenizer {
 		                                != null) {
 		                            if (next.getType() == TextToken.EOF
 		                                    || next.getType() == TextToken.WS)
-		                                break;
+		                                {break;}
 		                            if(next.getType() == TextToken.P &&
 		                                    (LA(2) == (char)-1 || Character.isWhitespace(LA(2))))
-		                                break;
+		                                {break;}
 		                            last = next;
 		                        }
 		                        if (last != null)
-		                            token =
+		                            {token =
 		                                new TextToken(
 		                                        TextToken.ALPHANUM,
-		                                        text, token.startOffset(), last.endOffset());
+		                                        text, token.startOffset(), last.endOffset());}
 		                        else
-		                            pos = oldPos;
+		                            {pos = oldPos;}
 		                }
 		                return token;
 		            case TextToken.ALPHANUM :
@@ -229,20 +229,20 @@ public class SimpleTokenizer implements Tokenizer {
 		                        while ((next = nextTerminalToken(wildcards)) != null) {
 		                            if (next.getType() == TextToken.EOF
 		                                    || next.getType() == TextToken.WS)
-		                                break;
+		                                {break;}
 		                            last = next;
 		                        }
 		                        if (last != null)
-		                            token = new TextToken(TextToken.ALPHANUM, text, token.startOffset(), last.endOffset());
+		                            {token = new TextToken(TextToken.ALPHANUM, text, token.startOffset(), last.endOffset());}
 		                        else
-		                            token = new TextToken(TextToken.ALPHANUM, text, token.startOffset(), pos);
+		                            {token = new TextToken(TextToken.ALPHANUM, text, token.startOffset(), pos);}
 		                }
 		                return token;
 		            default :
 		                // fall through to start of while loop
 		        }
 		    }
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			System.out.println("text: " + text);
 			e.printStackTrace();
 			return null;
@@ -250,7 +250,7 @@ public class SimpleTokenizer implements Tokenizer {
 	}
 
 	protected TextToken number() {
-		TextToken token = new TextToken(TextToken.NUMBER, text, pos);
+		final TextToken token = new TextToken(TextToken.NUMBER, text, pos);
 		int oldPos = pos;
 		while (LA(1) != (char) - 1 && Character.isDigit(LA(1))) {
 			token.consumeNext();
@@ -343,8 +343,8 @@ public class SimpleTokenizer implements Tokenizer {
     }
 	
 	public static void main(String args[]) {
-        String t1 = "\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295\u5165\u4E86\u5341\u4E09\u5E74\u65F6\u95F4\u3002";
-		SimpleTokenizer tokenizer = new SimpleTokenizer();
+        final String t1 = "\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295\u5165\u4E86\u5341\u4E09\u5E74\u65F6\u95F4\u3002";
+		final SimpleTokenizer tokenizer = new SimpleTokenizer();
 		tokenizer.setText(t1);
 		TextToken token = tokenizer.nextToken(false);
 		while(token != null && token.getType() != TextToken.EOF) {

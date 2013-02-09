@@ -54,7 +54,7 @@ public class DocumentConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
         newContextInfo.setParent(this);
         newContextInfo.addFlag(IN_NODE_CONSTRUCTOR);
         content.analyze(newContextInfo);
@@ -69,40 +69,40 @@ public class DocumentConstructor extends NodeConstructor {
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES",
                 Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
 
         context.pushDocumentContext();
 
-        Sequence contentSeq = content.eval(contextSequence, contextItem);
+        final Sequence contentSeq = content.eval(contextSequence, contextItem);
 
         context.popDocumentContext();
         context.pushDocumentContext();
 
-        MemTreeBuilder builder = context.getDocumentBuilder(true);
-        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+        final MemTreeBuilder builder = context.getDocumentBuilder(true);
+        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
 
         try {
             if(!contentSeq.isEmpty()) {
                 StringBuilder buf = null;
-                SequenceIterator i = contentSeq.iterate();
+                final SequenceIterator i = contentSeq.iterate();
                 Item next = i.nextItem();
                 while(next != null) {
                     context.proceed(this, builder);
                     if (next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE)
-                        throw new XPathException(this, "Found a node of type " +
-                            Type.getTypeName(next.getType()) + " inside a document constructor");
+                        {throw new XPathException(this, "Found a node of type " +
+                            Type.getTypeName(next.getType()) + " inside a document constructor");}
                     // if item is an atomic value, collect the string values of all
                     // following atomic values and seperate them by a space. 
                     if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
                         if(buf == null)
-                            buf = new StringBuilder();
+                            {buf = new StringBuilder();}
                         else if (buf.length() > 0)
-                            buf.append(' ');
+                            {buf.append(' ');}
                         buf.append(next.getStringValue());
                         next = i.nextItem();
                     // if item is a node, flush any collected character data and
@@ -129,15 +129,15 @@ public class DocumentConstructor extends NodeConstructor {
                     buf.setLength(0);
                 }
             }
-        } catch(SAXException e) {
+        } catch(final SAXException e) {
             throw new XPathException(this,
                 "Encountered SAX exception while processing document constructor: " +
                 ExpressionDumper.dump(this));
         }
         context.popDocumentContext();
-        NodeImpl node =  builder.getDocument();
+        final NodeImpl node =  builder.getDocument();
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", node);
+            {context.getProfiler().end(this, "", node);}
         return node;
     }
 
@@ -158,7 +158,7 @@ public class DocumentConstructor extends NodeConstructor {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("document {");
         //TODO : is this the required syntax ?
         result.append(content.toString());

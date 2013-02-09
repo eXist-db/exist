@@ -58,10 +58,10 @@ public class Append extends Modification {
 	public Append(DBBroker broker, DocumentSet docs, String selectStmt, 
 	        String childAttr, Map<String, String> namespaces, Map<String, Object> variables) {
 		super(broker, docs, selectStmt, namespaces, variables);
-		if(childAttr == null || childAttr.equals("last()"))
-		    child = -1;
+		if(childAttr == null || "last()".equals(childAttr))
+		    {child = -1;}
 		else
-		    child = Integer.parseInt(childAttr);
+		    {child = Integer.parseInt(childAttr);}
 	}
 	
 	/*
@@ -69,17 +69,17 @@ public class Append extends Modification {
 	 */
 	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 		EXistException, XPathException, TriggerException {
-	    NodeList children = content;
+	    final NodeList children = content;
 	    if(children.getLength() == 0)
-	        return 0;
+	        {return 0;}
 		
 	    try {
-	        StoredNode ql[] = selectAndLock(transaction);
-			IndexListener listener = new IndexListener(ql);
-			NotificationService notifier = broker.getBrokerPool().getNotificationService();
+	        final StoredNode ql[] = selectAndLock(transaction);
+			final IndexListener listener = new IndexListener(ql);
+			final NotificationService notifier = broker.getBrokerPool().getNotificationService();
 			for(int i = 0; i < ql.length; i++) {
-				StoredNode node = ql[i];
-				DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+				final StoredNode node = ql[i];
+				final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 				doc.getMetadata().setIndexListener(listener);
 				if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
 					throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");

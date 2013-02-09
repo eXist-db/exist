@@ -41,7 +41,7 @@ public class SingleItemIterator implements SequenceIterator {
 	 */
 	public Item nextItem() {
 		if (!more)
-			return null;
+			{return null;}
 		more = false;
 		return item;
 	}

@@ -141,7 +141,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     	PermissionFactory.sm = this;
     	
-        Properties params = new Properties();
+        final Properties params = new Properties();
         params.put(getClass().getName(), this);
     	pool.getScheduler().createPeriodicJob(TIMEOUT_CHECK_PERIOD, new SessionsCheck(), TIMEOUT_CHECK_PERIOD, params, SimpleTrigger.REPEAT_INDEFINITELY, false);
     }
@@ -162,7 +162,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     	this.pool = pool;
     	
-        TransactionManager transaction = pool.getTransactionManager();
+        final TransactionManager transaction = pool.getTransactionManager();
         Txn txn = null;
 		
         Collection systemCollection = null;
@@ -172,13 +172,13 @@ public class SecurityManagerImpl implements SecurityManager {
                     txn = transaction.beginTransaction();
                     systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
                     if (systemCollection == null)
-                            return;
+                            {return;}
                     systemCollection.setPermissions(Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
                     broker.saveCollection(txn, systemCollection);
 
                     transaction.commit(txn);
                 }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             transaction.abort(txn);
             e.printStackTrace();
             LOG.debug("loading acl failed: " + e.getMessage());
@@ -200,17 +200,17 @@ public class SecurityManagerImpl implements SecurityManager {
 
                 transaction.commit(txn);
             } 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             transaction.abort(txn);
             e.printStackTrace();
             LOG.debug("loading configuration failed: " + e.getMessage());
         }
 			
-        Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
+        final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
         configuration = Configurator.configure(this, _config_);
 
 
-        for (Realm realm : realms) {
+        for (final Realm realm : realms) {
             realm.start(broker);
         }
 		   
@@ -272,7 +272,7 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public boolean deleteGroup(String name) throws PermissionDeniedException, EXistException {
 
-        Group group = getGroup(name);
+        final Group group = getGroup(name);
         if (group == null) {
             return false;
         }
@@ -298,7 +298,7 @@ public class SecurityManagerImpl implements SecurityManager {
     public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException {
 
         if (account == null)
-            return false;
+            {return false;}
 
         if (account.getRealmId() == null) {
             throw new ConfigurationException("Account must have realm id.");
@@ -317,8 +317,8 @@ public class SecurityManagerImpl implements SecurityManager {
 //    	if (SYSTEM.equals(name))
 //    		return defaultRealm.ACCOUNT_SYSTEM;
     	
-        for(Realm realm : realms) {
-            Account account = realm.getAccount(name);
+        for(final Realm realm : realms) {
+            final Account account = realm.getAccount(name);
             if (account != null) {
                 return account;
             }
@@ -341,7 +341,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public boolean hasGroup(String name) {
-    	for (Realm realm : realms) {
+    	for (final Realm realm : realms) {
             if(realm.hasGroup(name)) {
                 return true;
             }
@@ -356,8 +356,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public Group getGroup(String name) {
-    	for(Realm realm : realms) {
-            Group group = realm.getGroup(name);
+    	for(final Realm realm : realms) {
+            final Group group = realm.getGroup(name);
             if(group != null){
                 return group;
             }
@@ -388,7 +388,7 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public boolean hasAccount(String name) {
-    	for(Realm realm : realms) {
+    	for(final Realm realm : realms) {
             if(realm.hasAccount(name)) {
                 return true;
             }
@@ -399,21 +399,21 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public Subject authenticate(final String username, final Object credentials) throws AuthenticationException {
         if (LOG.isDebugEnabled())
-            LOG.debug("Authentication try for '"+username+"'.");
+            {LOG.debug("Authentication try for '"+username+"'.");}
 
         if (username == null)
-        	throw new AuthenticationException(
-        			AuthenticationException.ACCOUNT_NOT_FOUND, "Account NULL not found");
+        	{throw new AuthenticationException(
+        			AuthenticationException.ACCOUNT_NOT_FOUND, "Account NULL not found");}
 
         if("jsessionid".equals(username)) {
     		
     		if (getSystemSubject().getSessionId().equals(credentials))
-    			return getSystemSubject();
+    			{return getSystemSubject();}
 
     		if (getGuestSubject().getSessionId().equals(credentials))
-    			return getGuestSubject();
+    			{return getGuestSubject();}
 
-            Subject subject = sessions.read(new SessionDbRead<Subject>(){
+            final Subject subject = sessions.read(new SessionDbRead<Subject>(){
                 @Override
                 public Subject execute(final Map<String, Session> db) {
                 	
@@ -428,27 +428,27 @@ public class SecurityManagerImpl implements SecurityManager {
             });
 
             if(subject == null)
-                throw new AuthenticationException(AuthenticationException.SESSION_NOT_FOUND, "Session [" + credentials + "] not found");
+                {throw new AuthenticationException(AuthenticationException.SESSION_NOT_FOUND, "Session [" + credentials + "] not found");}
 
             if (events != null)
-            	events.authenticated(subject);
+            	{events.authenticated(subject);}
             
             //TODO: validate session
             return subject;
         }
 
-        for(Realm realm : realms) {
+        for(final Realm realm : realms) {
             try {
-            	Subject subject = realm.authenticate(username, credentials);
+            	final Subject subject = realm.authenticate(username, credentials);
             	
                 if (LOG.isDebugEnabled())
-                	LOG.debug("Authenticated by '"+realm.getId()+"' as '"+subject+"'.");
+                	{LOG.debug("Authenticated by '"+realm.getId()+"' as '"+subject+"'.");}
                 
                 if (events != null)
-                	events.authenticated(subject);
+                	{events.authenticated(subject);}
 
                 return subject;
-            } catch(AuthenticationException e) {
+            } catch(final AuthenticationException e) {
                 if(e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Realm '"+realm.getId()+"' threw exception for account '"+username+"'. ["+e.getMessage()+"]");
@@ -474,7 +474,7 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public Subject getSystemSubject() {
     	if (systemSubject == null)
-    		systemSubject = new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, this);
+    		{systemSubject = new SubjectAccreditedImpl((AccountImpl) defaultRealm.ACCOUNT_SYSTEM, this);}
     	
         return systemSubject; 
     }
@@ -482,7 +482,7 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public Subject getGuestSubject() {
     	if (guestSubject == null)
-    		guestSubject = new SubjectAccreditedImpl((AccountImpl)defaultRealm.getAccount(SecurityManager.GUEST_USER), this);
+    		{guestSubject = new SubjectAccreditedImpl((AccountImpl)defaultRealm.getAccount(SecurityManager.GUEST_USER), this);}
     	
     	return guestSubject;
     }
@@ -516,8 +516,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
         final List<Account> groupMembers = new ArrayList<Account>();
 
-        for(Realm realm : realms) {
-            for(Account account : realm.getAccounts()) {
+        for(final Realm realm : realms) {
+            for(final Account account : realm.getAccounts()) {
                 if(account.hasGroup(groupName)) {
                     groupMembers.add(account);
                 }
@@ -530,7 +530,7 @@ public class SecurityManagerImpl implements SecurityManager {
     @Override
     public List<String> findAllGroupMembers(String groupName) {
         final List<String> userNames = new ArrayList<String>();
-        for(Realm realm : realms) {
+        for(final Realm realm : realms) {
             userNames.addAll(realm.findAllGroupMembers(groupName));
         }
         return userNames;
@@ -733,19 +733,19 @@ public class SecurityManagerImpl implements SecurityManager {
 
         @Override
         public final void execute( JobExecutionContext jec ) throws JobExecutionException {
-            JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
+            final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
 
-            SecurityManagerImpl sm = ( SecurityManagerImpl )jobDataMap.get( SecurityManagerImpl.class.getName() );
+            final SecurityManagerImpl sm = ( SecurityManagerImpl )jobDataMap.get( SecurityManagerImpl.class.getName() );
 
             if (sm == null)
-            	return;
+            	{return;}
             
             sm.sessions.modify(new SessionDbModify(){
 	            @Override
 	            public void execute(final Map<String, Session> db) {
-	            	Iterator<Map.Entry<String, Session>> iter = db.entrySet().iterator();
+	            	final Iterator<Map.Entry<String, Session>> iter = db.entrySet().iterator();
 	            	while (iter.hasNext()) {
-	            		Map.Entry<String, Session> entry = iter.next();
+	            		final Map.Entry<String, Session> entry = iter.next();
 	            		if (entry == null || !entry.getValue().isValid()) {
 	            			iter.remove();
 	            		}
@@ -776,7 +776,7 @@ public class SecurityManagerImpl implements SecurityManager {
     }
         
     private Realm findRealmForRealmId(String realmId) throws ConfigurationException {
-        for(Realm realm : realms) {
+        for(final Realm realm : realms) {
             if(realm.getId().equals(realmId)) {
                 return realm;
             }
@@ -826,8 +826,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public List<String> findUsernamesWhereNameStarts(String startsWith) {
-        List<String> userNames = new ArrayList<String>();
-        for(Realm realm : realms) {
+        final List<String> userNames = new ArrayList<String>();
+        for(final Realm realm : realms) {
             userNames.addAll(realm.findUsernamesWhereNameStarts(startsWith));
         }
         return userNames;
@@ -835,8 +835,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public List<String> findUsernamesWhereUsernameStarts(String startsWith) {
-        List<String> userNames = new ArrayList<String>();
-        for(Realm realm : realms) {
+        final List<String> userNames = new ArrayList<String>();
+        for(final Realm realm : realms) {
             userNames.addAll(realm.findUsernamesWhereUsernameStarts(startsWith));
         }
         return userNames;
@@ -844,8 +844,8 @@ public class SecurityManagerImpl implements SecurityManager {
     
     @Override
     public List<String> findUsernamesWhereNamePartStarts(String startsWith) {
-        List<String> userNames = new ArrayList<String>();
-        for(Realm realm : realms) {
+        final List<String> userNames = new ArrayList<String>();
+        for(final Realm realm : realms) {
             userNames.addAll(realm.findUsernamesWhereNamePartStarts(startsWith));
         }
         return userNames;
@@ -853,8 +853,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public List<String> findGroupnamesWhereGroupnameContains(String fragment) {
-        List<String> groupNames = new ArrayList<String>();
-        for(Realm realm : realms) {
+        final List<String> groupNames = new ArrayList<String>();
+        for(final Realm realm : realms) {
             groupNames.addAll(realm.findGroupnamesWhereGroupnameContains(fragment));
         }
         return groupNames;
@@ -862,8 +862,8 @@ public class SecurityManagerImpl implements SecurityManager {
     
     @Override
     public List<String> findGroupnamesWhereGroupnameStarts(String startsWith) {
-        List<String> groupNames = new ArrayList<String>();
-        for(Realm realm : realms) {
+        final List<String> groupNames = new ArrayList<String>();
+        for(final Realm realm : realms) {
             groupNames.addAll(realm.findGroupnamesWhereGroupnameStarts(startsWith));
         }
         return groupNames;
@@ -871,8 +871,8 @@ public class SecurityManagerImpl implements SecurityManager {
 
     @Override
     public List<String> findAllGroupNames() {
-        List<String> groupNames = new ArrayList<String>();
-        for(Realm realm : realms) {
+        final List<String> groupNames = new ArrayList<String>();
+        for(final Realm realm : realms) {
             groupNames.addAll(realm.findAllGroupNames());
         }
         return groupNames;
@@ -893,19 +893,19 @@ public class SecurityManagerImpl implements SecurityManager {
     public void processPramatterBeforeSave(DBBroker broker, DocumentImpl document) throws ConfigurationException {
         XmldbURI uri = document.getCollection().getURI();
         
-        boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
+        final boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
         if(isRemoved) {
             uri = uri.removeLastSegment();
         }
 		
-        boolean isAccount = uri.endsWith(SecurityManager.ACCOUNTS_COLLECTION_URI);
-        boolean isGroup = uri.endsWith(SecurityManager.GROUPS_COLLECTION_URI);
+        final boolean isAccount = uri.endsWith(SecurityManager.ACCOUNTS_COLLECTION_URI);
+        final boolean isGroup = uri.endsWith(SecurityManager.GROUPS_COLLECTION_URI);
 		
         if(isAccount || isGroup) {
             //uri = uri.removeLastSegment();
             //String realmId = uri.lastSegment().toString();
             //AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
-            Configuration conf = Configurator.parse(document);
+            final Configuration conf = Configurator.parse(document);
 
         	saving.put(document.getURI(), conf.getPropertyInteger("id"));
         }
@@ -918,32 +918,32 @@ public class SecurityManagerImpl implements SecurityManager {
         
         //System.out.println(document);
 
-        boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
+        final boolean isRemoved = uri.endsWith(SecurityManager.REMOVED_COLLECTION_URI);
         if(isRemoved) {
             uri = uri.removeLastSegment();
         }
 		
-        boolean isAccount = uri.endsWith(SecurityManager.ACCOUNTS_COLLECTION_URI);
-        boolean isGroup = uri.endsWith(SecurityManager.GROUPS_COLLECTION_URI);
+        final boolean isAccount = uri.endsWith(SecurityManager.ACCOUNTS_COLLECTION_URI);
+        final boolean isGroup = uri.endsWith(SecurityManager.GROUPS_COLLECTION_URI);
 		
         if(isAccount || isGroup) {
             uri = uri.removeLastSegment();
 
-            String realmId = uri.lastSegment().toString();
+            final String realmId = uri.lastSegment().toString();
 			
-            AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
-            Configuration conf = Configurator.parse(document);
+            final AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
+            final Configuration conf = Configurator.parse(document);
 
             Integer id = -1;
             if(isRemoved) {
                 id = conf.getPropertyInteger("id");
             }
 
-            String name = conf.getProperty("name");
+            final String name = conf.getProperty("name");
 
             if(isAccount) {
                 if (isRemoved && id > 2 && !hasUser(id)) {
-                    AccountImpl account = new AccountImpl( realm, conf );
+                    final AccountImpl account = new AccountImpl( realm, conf );
                     account.removed = true;
                     addUser(account.getId(), account);
                 } else if(name != null) {
@@ -970,7 +970,7 @@ public class SecurityManagerImpl implements SecurityManager {
 	            	        }
             			}
                 	} else {
-                		Account account = new AccountImpl( realm, conf );
+                		final Account account = new AccountImpl( realm, conf );
                 		addUser(account.getId(), account);
                 		realm.registerAccount(account);
                 	}
@@ -981,11 +981,11 @@ public class SecurityManagerImpl implements SecurityManager {
             
             } else if(isGroup) {
                 if (isRemoved && id > 2 && !hasGroup(id)) {
-                    GroupImpl group = new GroupImpl( realm, conf );
+                    final GroupImpl group = new GroupImpl( realm, conf );
                     group.removed = true;
                     addGroup(group.getId(), group);
                 } else if (name != null && !realm.hasGroup(name)) {
-                    GroupImpl group = new GroupImpl( realm, conf );
+                    final GroupImpl group = new GroupImpl( realm, conf );
                     addGroup(group.getId(), group);
                     realm.registerGroup(group);
                 } else {

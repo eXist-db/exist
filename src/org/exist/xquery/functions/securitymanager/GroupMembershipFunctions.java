@@ -222,7 +222,7 @@ public class GroupMembershipFunctions extends BasicFunction {
              * Consider Unix /etc/groups design!
              * See XMLDBCreateGroup and XMLDRemoveUserFromGroup
              */
-            Subject currentSubject = context.getBroker().getSubject();
+            final Subject currentSubject = context.getBroker().getSubject();
             try {
                 //escalate
                 context.getBroker().setSubject(securityManager.getSystemSubject());
@@ -248,7 +248,7 @@ public class GroupMembershipFunctions extends BasicFunction {
              * Consider Unix /etc/groups design!
              * See XMLDBCreateGroup and XMLDRemoveUserFromGroup
              */
-            Subject currentSubject = context.getBroker().getSubject();
+            final Subject currentSubject = context.getBroker().getSubject();
             try {
                 //escalate
                 context.getBroker().setSubject(securityManager.getSystemSubject());

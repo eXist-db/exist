@@ -83,7 +83,7 @@ public class SymbolTable {
         }
 
         public static SymbolType valueOf(byte type_id) {
-            for(SymbolType symbolType : SymbolType.values()) {
+            for(final SymbolType symbolType : SymbolType.values()) {
                 if(symbolType.getTypeId() == type_id) {
                     return symbolType;
                 }
@@ -141,7 +141,7 @@ public class SymbolTable {
      * @param prefix
      */
     public synchronized QName getQName(short type, String namespaceURI, String localName, String prefix) {
-        byte itype = type == Node.ATTRIBUTE_NODE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
+        final byte itype = type == Node.ATTRIBUTE_NODE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
         QName qn = namePool.get(itype, namespaceURI, localName, prefix);
         if(qn == null) {
             qn = namePool.add(itype, namespaceURI, localName, prefix);
@@ -266,9 +266,9 @@ public class SymbolTable {
     }
 
     private void readEntry(VariableByteInput is) throws IOException {
-        byte type = is.readByte();
-        int id = is.readInt();
-        String key = is.readUTF();
+        final byte type = is.readByte();
+        final int id = is.readInt();
+        final String key = is.readUTF();
         //symbol types can be written in any order by SymbolCollection.getById()->SymbolCollection.write()
         switch(SymbolType.valueOf(type)) {
         case NAME:
@@ -339,14 +339,14 @@ public class SymbolTable {
      */
     private void saveSymbols() throws EXistException {
         try {
-            VariableByteOutputStream os = new VariableByteOutputStream(256);
+            final VariableByteOutputStream os = new VariableByteOutputStream(256);
             writeAll(os);
-            FileOutputStream fos = new FileOutputStream(getFile().getAbsolutePath(), false);
+            final FileOutputStream fos = new FileOutputStream(getFile().getAbsolutePath(), false);
             fos.write(os.toByteArray());
             fos.close();
-        } catch(FileNotFoundException e) {
+        } catch(final FileNotFoundException e) {
             throw new EXistException("File not found: " + this.getFile().getAbsolutePath());
-        } catch(IOException e) {
+        } catch(final IOException e) {
             throw new EXistException("IO error occurred while creating "
                 + this.getFile().getAbsolutePath());
         }
@@ -360,9 +360,9 @@ public class SymbolTable {
      */
     private synchronized void loadSymbols() throws EXistException {
         try {
-            FileInputStream fis = new FileInputStream(getFile());
-            VariableByteInput is = new VariableByteInputStream(fis);
-            int magic = is.readFixedInt();
+            final FileInputStream fis = new FileInputStream(getFile());
+            final VariableByteInput is = new VariableByteInputStream(fis);
+            final int magic = is.readFixedInt();
             if(magic == LEGACY_FILE_FORMAT_VERSION_ID) {
                 LOG.info("Converting legacy symbols.dbx to new format...");
                 readLegacy(is);
@@ -375,17 +375,17 @@ public class SymbolTable {
                 read(is);
             }
             fis.close();
-        } catch(FileNotFoundException e) {
+        } catch(final FileNotFoundException e) {
             throw new EXistException("Could not read " + this.getFile().getAbsolutePath());
-        } catch(IOException e) {
+        } catch(final IOException e) {
             throw new EXistException("IO error occurred while reading "
                 + this.getFile().getAbsolutePath() + ": " + e.getMessage(), e);
         }
     }
 
     public void backupSymbolsTo(OutputStream os) throws IOException {
-        FileInputStream fis = new FileInputStream(this.getFile());
-        byte[] buf = new byte[1024];
+        final FileInputStream fis = new FileInputStream(this.getFile());
+        final byte[] buf = new byte[1024];
         int len;
         while((len = fis.read(buf)) > 0) {
             os.write(buf, 0, len);
@@ -394,7 +394,7 @@ public class SymbolTable {
     }
 
     public void backupToArchive(RawDataBackup backup) throws IOException {
-        OutputStream os = backup.newEntry(getFile().getName());
+        final OutputStream os = backup.newEntry(getFile().getName());
         backupSymbolsTo(os);
     }
 
@@ -474,7 +474,7 @@ public class SymbolTable {
 
         protected String[] ensureCapacity(String[] array, int max) {
             if (array.length <= max) {
-                String[] newArray = new String[(max * 3) / 2];
+                final String[] newArray = new String[(max * 3) / 2];
                 System.arraycopy(array, 0, newArray, 0, array.length);
                 return newArray;
             }
@@ -508,7 +508,7 @@ public class SymbolTable {
         protected final void write(VariableByteOutputStream os) throws IOException {
             String symbol;
             int id;
-            for(Iterator<String> i = symbolsByName.iterator(); i.hasNext();) {
+            for(final Iterator<String> i = symbolsByName.iterator(); i.hasNext();) {
                 symbol = i.next();
                 id = symbolsByName.get(symbol);
                 if (id < 0) {
@@ -532,10 +532,10 @@ public class SymbolTable {
                 writeEntry(id, key, outBuffer);
                 getOutputStream().write(outBuffer.toByteArray());
                 getOutputStream().flush();
-            } catch(FileNotFoundException e) {
+            } catch(final FileNotFoundException e) {
                 LOG.error("Symbol table: file not found!", e);
                 //TODO :throw exception -pb
-            } catch(IOException e) {
+            } catch(final IOException e) {
                 LOG.error("Symbol table: caught exception while writing!", e);
                 //TODO : throw exception -pb
             }

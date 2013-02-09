@@ -78,21 +78,21 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         if (getLocalName().equals(name)) {
             return this;
         }
-        List<Configuration> list = getConfigurations(name);
+        final List<Configuration> list = getConfigurations(name);
         if (list == null)
-            return null;
+            {return null;}
         if (list.size() > 0)
-            return list.get(0);
+            {return list.get(0);}
         return null;
     }
 
     @Override
     public List<Configuration> getConfigurations(String name) {
-        NodeList nodes = getElementsByTagNameNS(Configuration.NS, name);
-        List<Configuration> list = new ArrayList<Configuration>();
+        final NodeList nodes = getElementsByTagNameNS(Configuration.NS, name);
+        final List<Configuration> list = new ArrayList<Configuration>();
         if (nodes.getLength() > 0) {
             for (int i = 0; i < nodes.getLength(); i++) {
-                Configuration config = new ConfigurationImpl((ElementAtExist) nodes.item(i));
+                final Configuration config = new ConfigurationImpl((ElementAtExist) nodes.item(i));
                 list.add(config);
             }
         }
@@ -102,8 +102,8 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     @Override
     public String getProperty(String name) {
         if (hasAttribute(name))
-            return getAttribute(name);
-        NodeList nodes = getElementsByTagNameNS(NS, name);
+            {return getAttribute(name);}
+        final NodeList nodes = getElementsByTagNameNS(NS, name);
         if (nodes.getLength() == 1) {
             return nodes.item(0).getNodeValue();
         }
@@ -111,9 +111,9 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     }
 
     public String getProperty(String name, String default_property) {
-        String property = getProperty(name);
+        final String property = getProperty(name);
         if (property == null)
-            return default_property;
+            {return default_property;}
         return property;
     }
 
@@ -122,19 +122,19 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         if(hasAttribute(name)) {
             return null;
         }
-        Map<String, String> map = new HashMap<String, String>();
-        NodeList nodes = getElementsByTagNameNS(NS, name);
+        final Map<String, String> map = new HashMap<String, String>();
+        final NodeList nodes = getElementsByTagNameNS(NS, name);
         for(int i = 0; i < nodes.getLength(); i++) {
-            Node item = nodes.item(i);
+            final Node item = nodes.item(i);
             if(!item.hasAttributes()){
                 return null;
             }
-            NamedNodeMap attrs = item.getAttributes();
+            final NamedNodeMap attrs = item.getAttributes();
             if(attrs.getLength() != 1){
                 return null;
             }
-            String key = attrs.getNamedItem("key").getNodeValue();
-            String value = item.getNodeValue();
+            final String key = attrs.getNamedItem("key").getNodeValue();
+            final String value = item.getNodeValue();
             if(value == null || value.isEmpty()){
                 return null;
             }
@@ -146,7 +146,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     @Override
     public boolean hasProperty(String name) {
         if (hasAttribute(name))
-            return true;
+            {return true;}
         return (getElementsByTagName(name).getLength() == 1);
     }
 
@@ -164,61 +164,61 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 
     @Override
     public Boolean getPropertyBoolean(String name) {
-        String value = getProperty(name);
+        final String value = getProperty(name);
         if(value == null)
-            return null;
+            {return null;}
         if ("yes".equalsIgnoreCase(value))
-            return true;
+            {return true;}
         else if ("no".equalsIgnoreCase(value))
-            return false;
+            {return false;}
         else if ("true".equalsIgnoreCase(value))
-            return true;
+            {return true;}
         else if ("false".equalsIgnoreCase(value))
-            return false;
+            {return false;}
         //???
         return null;
     }
 
     public Boolean getPropertyBoolean(String name, boolean defaultValue) {
-        String value = getProperty(name);
+        final String value = getProperty(name);
         if(value == null)
-            return Boolean.valueOf(defaultValue);
+            {return Boolean.valueOf(defaultValue);}
         return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
     }
 
     @Override
     public Integer getPropertyInteger(String name) {
-        String value = getProperty(name);
+        final String value = getProperty(name);
         if (value == null)
-            return null;
+            {return null;}
         return Integer.valueOf(value);
     }
 
     public Integer getPropertyInteger(String name, Integer defaultValue, boolean positive) {
-        String value = getProperty(name);
+        final String value = getProperty(name);
         if (value == null)
-            return defaultValue;
-        Integer result = Integer.valueOf(value);
+            {return defaultValue;}
+        final Integer result = Integer.valueOf(value);
         if ((positive) && (result < 0))
-            return defaultValue.intValue();
+            {return defaultValue.intValue();}
         return result;
     }
 
     @Override
     public Long getPropertyLong(String name) {
-        String value = getProperty(name);
+        final String value = getProperty(name);
         if (value == null)
-            return null;
+            {return null;}
         return Long.valueOf(value);
     }
 
     public Long getPropertyLong(String name, Long defaultValue, boolean positive) {
-        String value = getProperty(name);
+        final String value = getProperty(name);
         if (value == null)
-            return defaultValue;
-        long result = Long.valueOf(value);
+            {return defaultValue;}
+        final long result = Long.valueOf(value);
         if ((positive) && (result < 0))
-            return defaultValue.longValue();
+            {return defaultValue.longValue();}
         return result;
     }
 
@@ -226,10 +226,10 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         String cacheMem = getAttribute(name);
         if (cacheMem != null) {
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
-                cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
-            Integer result = new Integer(cacheMem);
+                {cacheMem = cacheMem.substring(0, cacheMem.length() - 1);}
+            final Integer result = new Integer(cacheMem);
             if (result < 0)
-                return defaultValue;
+                {return defaultValue;}
             return result;
         }
         return defaultValue;
@@ -241,16 +241,16 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 
     @Override
     public Set<String> getProperties() {
-        Set<String> properties = new HashSet<String>();
-        NamedNodeMap attrs = getAttributes();
+        final Set<String> properties = new HashSet<String>();
+        final NamedNodeMap attrs = getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             //ignore namespace declarations
             if ( !"xmlns".equals( attrs.item(i).getPrefix() ) )
-                properties.add(attrs.item(i).getNodeName());
+                {properties.add(attrs.item(i).getNodeName());}
         }
-        NodeList children = getChildNodes();
+        final NodeList children = getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
+            final Node child = children.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 properties.add(child.getNodeName());
             }
@@ -285,16 +285,16 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     public void save() throws PermissionDeniedException, ConfigurationException {
         //ignore in-memory nodes
         if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
-            return; 
+            {return;} 
         synchronized (this) {
             try {
                 saving = true;
                 if (configuredObjectReference != null && configuredObjectReference.get() != null)
-                    Configurator.save(
+                    {Configurator.save(
                         configuredObjectReference.get(), 
                         getProxyObject().getDocumentAtExist().getURI()
-                    );
-            } catch (Exception e) {
+                    );}
+            } catch (final Exception e) {
                throw new ConfigurationException(e.getMessage(), e);
             } finally {
                 saving = false;
@@ -306,16 +306,16 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     public void save(final DBBroker broker) throws PermissionDeniedException, ConfigurationException {
         //ignore in-memory nodes
         if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
-            return; 
+            {return;} 
         synchronized(this) {
             try {
                 saving = true;
                 if (configuredObjectReference != null && configuredObjectReference.get() != null)
-                    Configurator.save(broker,
+                    {Configurator.save(broker,
                         configuredObjectReference.get(), 
                         getProxyObject().getDocumentAtExist().getURI()
-                    );
-            } catch (Exception e) {
+                    );}
+            } catch (final Exception e) {
                throw new ConfigurationException(e.getMessage(), e);
             } finally {
                 saving = false;
@@ -326,30 +326,30 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ConfigurationImpl) {
-            ConfigurationImpl conf = (ConfigurationImpl)obj;
+            final ConfigurationImpl conf = (ConfigurationImpl)obj;
             if (!(getName().equals(conf.getName())))
-                return false;
-            String id = getProperty(Configuration.ID);
+                {return false;}
+            final String id = getProperty(Configuration.ID);
             if (id == null) {
                 return false;
             }
             if (id.equals(conf.getProperty(Configuration.ID)))
-                return true;
+                {return true;}
         }
         return false;
     }
 
     public boolean equals(Object obj, String uniqField) {
         if (obj instanceof ConfigurationImpl) {
-            ConfigurationImpl conf = (ConfigurationImpl)obj;
+            final ConfigurationImpl conf = (ConfigurationImpl)obj;
             if (!(getName().equals(conf.getName())))
-                return false;
-            String uniq = getProperty( uniqField);
+                {return false;}
+            final String uniq = getProperty( uniqField);
             if (uniq == null) {
                 return false;
             }
             if (uniq.equals(conf.getProperty(uniqField)))
-                return true;
+                {return true;}
         }
         return false;
     }

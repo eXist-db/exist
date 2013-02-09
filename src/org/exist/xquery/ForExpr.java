@@ -87,20 +87,20 @@ public class ForExpr extends BindingExpression {
 //            }
 //        }
         // Save the local variable stack
-        LocalVariable mark = context.markLocalVariables(false);
+        final LocalVariable mark = context.markLocalVariables(false);
         if (groupSpecs != null) {
-            for (GroupSpec spec : groupSpecs) {
-                LocalVariable groupKeyVar = new LocalVariable(QName.parse(context, spec.getKeyVarName()));
+            for (final GroupSpec spec : groupSpecs) {
+                final LocalVariable groupKeyVar = new LocalVariable(QName.parse(context, spec.getKeyVarName()));
                 groupKeyVar.setSequenceType(sequenceType);
                 context.declareVariableBinding(groupKeyVar);
             }
         }
         try {
             contextInfo.setParent(this);
-            AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
+            final AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
             inputSequence.analyze(varContextInfo);
             // Declare the iteration variable
-            LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
+            final LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
             inVar.setSequenceType(sequenceType);
             inVar.setStaticType(varContextInfo.getStaticReturnType());
             context.declareVariableBinding(inVar);
@@ -108,15 +108,15 @@ public class ForExpr extends BindingExpression {
             if (positionalVariable != null) {
                 //could probably be detected by the parser
                 if (varName.equals(positionalVariable))
-                    throw new XPathException(this, ErrorCodes.XQST0089,
-                        "bound variable and positional variable have the same name");
-                LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
+                    {throw new XPathException(this, ErrorCodes.XQST0089,
+                        "bound variable and positional variable have the same name");}
+                final LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
                 posVar.setSequenceType(POSITIONAL_VAR_TYPE);
                 posVar.setStaticType(Type.INTEGER);
                 context.declareVariableBinding(posVar);
             }
             if (whereExpr != null) {
-                AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+                final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
                 newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
                 newContextInfo.setContextId(getExpressionId());
                 whereExpr.analyze(newContextInfo);
@@ -125,11 +125,11 @@ public class ForExpr extends BindingExpression {
             // in the chain to have access to all variables. So if the return expression
             // is another binding expression, we just forward the order specs.
             if (returnExpr instanceof BindingExpression) {
-                AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+                final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
                 newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
                 ((BindingExpression)returnExpr).analyze(newContextInfo, orderBy, groupBy); 
             } else {
-                AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+                final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
                 newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
                 //analyze the order specs and the group specs 
                 if (orderBy != null) {
@@ -137,7 +137,7 @@ public class ForExpr extends BindingExpression {
                         orderBy[i].analyze(newContextInfo);
                 }
                 if (groupSpecs != null) {
-                    for (GroupSpec spec : groupSpecs) {
+                    for (final GroupSpec spec : groupSpecs) {
                         spec.analyze(newContextInfo);
                     }
                 }
@@ -164,14 +164,14 @@ public class ForExpr extends BindingExpression {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "CONTEXT ITEM", contextItem.toSequence());}
             if (resultSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                "RESULT SEQUENCE", resultSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                "RESULT SEQUENCE", resultSequence);}
         }
         context.expressionStart(this);
         // bv - Declare grouping variables and initiate grouped sequence
@@ -233,11 +233,11 @@ public class ForExpr extends BindingExpression {
                 if (!in.isCached()) {
                     setContext(getExpressionId(), in);
                     if (whereExpr != null)
-                        whereExpr.setContextId(getExpressionId());
+                        {whereExpr.setContextId(getExpressionId());}
                 }
                 in = applyWhereExpression(in);
                 if (!in.isCached())
-                    clearContext(getExpressionId(), in);
+                    {clearContext(getExpressionId(), in);}
             }
             // PreorderedValueSequence applies the order specs to all items
             // in one single processing step
@@ -257,9 +257,9 @@ public class ForExpr extends BindingExpression {
             }
             Sequence val = null;
             int p = 1;
-            IntegerValue atVal = new IntegerValue(1);
+            final IntegerValue atVal = new IntegerValue(1);
             if(positionalVariable != null)
-                at.setValue(atVal);
+                {at.setValue(atVal);}
             //Type.EMPTY is *not* a subtype of other types ;
             //the tests below would fail without this prior cardinality check
             if (in.isEmpty() && sequenceType != null &&
@@ -272,28 +272,28 @@ public class ForExpr extends BindingExpression {
             }
             // Loop through each variable binding
             p = 0;
-            for (SequenceIterator i = in.iterate(); i.hasNext(); p++) {
+            for (final SequenceIterator i = in.iterate(); i.hasNext(); p++) {
                 context.proceed(this);
                 contextItem = i.nextItem();
                 context.setContextSequencePosition(p, in);
                 if (positionalVariable != null)
-                    at.setValue(new IntegerValue(p + 1));
+                    {at.setValue(new IntegerValue(p + 1));}
                 contextSequence = contextItem.toSequence();
                 // set variable value to current item
                 var.setValue(contextSequence);
                 if (sequenceType == null)
-                    var.checkType(); //because it makes some conversions ! 
+                    {var.checkType();} //because it makes some conversions ! 
                 val = contextSequence;
                 // check optional where clause
                 if (whereExpr != null && (!fastExec)) {
                     if (contextItem instanceof NodeProxy)
-                        ((NodeProxy)contextItem).addContextNode(getExpressionId(), (NodeProxy)contextItem);
-                    Sequence bool = applyWhereExpression(null);
+                        {((NodeProxy)contextItem).addContextNode(getExpressionId(), (NodeProxy)contextItem);}
+                    final Sequence bool = applyWhereExpression(null);
                     if (contextItem instanceof NodeProxy)
-                        ((NodeProxy)contextItem).clearContext(getExpressionId());
+                        {((NodeProxy)contextItem).clearContext(getExpressionId());}
                     // if where returned false, continue
                     if (!bool.effectiveBooleanValue())
-                        continue;
+                        {continue;}
                 } else {
                     val = contextItem.toSequence();
                 }
@@ -315,7 +315,7 @@ public class ForExpr extends BindingExpression {
                     if (returnExpr instanceof BindingExpression){ 
                         ((BindingExpression)returnExpr).eval(null, null, resultSequence, groupedSequence);
                     } else {
-                        Sequence toGroupSequence = context.resolveVariable(groupedSequence.getToGroupVarName()).getValue();
+                        final Sequence toGroupSequence = context.resolveVariable(groupedSequence.getToGroupVarName()).getValue();
                         groupedSequence.addAll(toGroupSequence);
                     }
                 }
@@ -331,8 +331,8 @@ public class ForExpr extends BindingExpression {
         if (groupSpecs!=null){
             mark = context.markLocalVariables(false);
             context.declareVariableBinding(var);
-            for (Iterator<String> it = groupedSequence.iterate(); it.hasNext(); ){
-                GroupedValueSequence currentGroup = groupedSequence.get(it.next());
+            for (final Iterator<String> it = groupedSequence.iterate(); it.hasNext(); ){
+                final GroupedValueSequence currentGroup = groupedSequence.get(it.next());
                 context.proceed(this);
                 // set binding variable to current group
                 var.setValue(currentGroup);
@@ -342,7 +342,7 @@ public class ForExpr extends BindingExpression {
                     groupKeyVar[i].setValue(currentGroup.getGroupKey().itemAt(i).toSequence());
                 }
                 //evaluate real return expression 
-                Sequence val = groupReturnExpr.eval(null); 
+                final Sequence val = groupReturnExpr.eval(null); 
                 resultSequence.addAll(val);
             }
             //Reset the context position
@@ -350,7 +350,7 @@ public class ForExpr extends BindingExpression {
             context.popLocalVariables(mark);
         }
         if (orderSpecs != null && !fastOrderBy)
-            ((OrderedValueSequence)resultSequence).sort();
+            {((OrderedValueSequence)resultSequence).sort();}
         clearContext(getExpressionId(), in);
         if (sequenceType != null) {
             //Type.EMPTY is *not* a subtype of other types ; checking cardinality first
@@ -358,19 +358,19 @@ public class ForExpr extends BindingExpression {
             if (resultSequence.isEmpty() &&
                     !Cardinality.checkCardinality(sequenceType.getCardinality(),
                     Cardinality.EMPTY))
-                throw new XPathException(this, ErrorCodes.XPTY0004,
+                {throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Invalid cardinality for variable $" + varName + ". Expected " +
                     Cardinality.getDescription(sequenceType.getCardinality()) +
-                    ", got " + Cardinality.getDescription(Cardinality.EMPTY));
+                    ", got " + Cardinality.getDescription(Cardinality.EMPTY));}
             //TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
             if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
                 if (!resultSequence.isEmpty() &&
                         !Type.subTypeOf(resultSequence.getItemType(),
                         sequenceType.getPrimaryType()))
-                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                    {throw new XPathException(this, ErrorCodes.XPTY0004,
                         "Invalid type for variable $" + varName +
                         ". Expected " + Type.getTypeName(sequenceType.getPrimaryType()) +
-                        ", got " +Type.getTypeName(resultSequence.getItemType()));
+                        ", got " +Type.getTypeName(resultSequence.getItemType()));}
             //trigger the old behaviour
             } else {
                 var.checkType();
@@ -379,7 +379,7 @@ public class ForExpr extends BindingExpression {
         actualReturnType = resultSequence.getItemType();
         context.expressionEnd(this);
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", resultSequence);
+            {context.getProfiler().end(this, "", resultSequence);}
         return resultSequence;
     }
 
@@ -388,7 +388,7 @@ public class ForExpr extends BindingExpression {
      */
     public int returnsType() {
         if (sequenceType != null)
-            return sequenceType.getPrimaryType();
+            {return sequenceType.getPrimaryType();}
         //Type.ITEM by default : this may change *after* evaluation
         return actualReturnType;
     }
@@ -401,9 +401,9 @@ public class ForExpr extends BindingExpression {
         dumper.startIndent();
         dumper.display("$").display(varName);
         if (positionalVariable != null)
-            dumper.display(" at ").display(positionalVariable);
+            {dumper.display(" at ").display(positionalVariable);}
         if (sequenceType != null)
-            dumper.display(" as ").display(sequenceType);
+            {dumper.display(" as ").display(sequenceType);}
         dumper.display(" in ");
         inputSequence.dump(dumper);
         dumper.endIndent().nl();
@@ -421,7 +421,7 @@ public class ForExpr extends BindingExpression {
             dumper.display(" by "); 
             for (int i = 0; i < groupSpecs.length; i++) { 
                 if (i > 0) 
-                    dumper.display(", "); 
+                    {dumper.display(", ");} 
                 dumper.display(groupSpecs[i].getGroupExpression().toString()); 
                 dumper.display(" as "); 
                 dumper.display("$").display(groupSpecs[i].getKeyVarName()); 
@@ -432,29 +432,29 @@ public class ForExpr extends BindingExpression {
             dumper.display("order by ");
             for (int i = 0; i < orderSpecs.length; i++) {
                 if (i > 0)
-                    dumper.display(", ");
+                    {dumper.display(", ");}
                 dumper.display(orderSpecs[i]);
             }
             dumper.nl();
         }
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr)
-            dumper.display(" ", returnExpr.getLine());
+            {dumper.display(" ", returnExpr.getLine());}
         else
-            dumper.display("return", returnExpr.getLine()); 
+            {dumper.display("return", returnExpr.getLine());} 
         dumper.startIndent();
         returnExpr.dump(dumper);
         dumper.endIndent().nl();
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("for ");
         result.append("$").append(varName);
         if (positionalVariable != null)
-            result.append(" at ").append(positionalVariable);
+            {result.append(" at ").append(positionalVariable);}
         if (sequenceType != null)
-            result.append(" as ").append(sequenceType);
+            {result.append(" as ").append(sequenceType);}
         result.append(" in ");
         result.append(inputSequence.toString());
         result.append(" ");
@@ -472,7 +472,7 @@ public class ForExpr extends BindingExpression {
             result.append(" by ");
             for(int i = 0; i < groupSpecs.length; i++) {
                 if (i > 0)
-                    result.append(", ");
+                    {result.append(", ");}
                 result.append(groupSpecs[i].getGroupExpression().toString());
                 result.append(" as ");
                 result.append("$").append(groupSpecs[i].getKeyVarName());
@@ -483,16 +483,16 @@ public class ForExpr extends BindingExpression {
             result.append("order by ");
             for (int i = 0; i < orderSpecs.length; i++) {
                 if (i > 0)
-                    result.append(", ");
+                    {result.append(", ");}
                 result.append(orderSpecs[i].toString());
             }
             result.append(" ");
         }
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr)
-            result.append(" ");
+            {result.append(" ");}
         else
-            result.append("return ");
+            {result.append("return ");}
         result.append(returnExpr.toString());
         return result.toString();
     }

@@ -102,44 +102,44 @@ public class FunIdRef extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         if (getArgumentCount() < 1)
-			throw new XPathException(this, ErrorCodes.XPST0017, "function id requires one argument");
+			{throw new XPathException(this, ErrorCodes.XPST0017, "function id requires one argument");}
 		
         if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
 		
         Sequence result;
         boolean processInMem = false;
-        Expression arg = getArgument(0);        
-		Sequence idrefval = arg.eval(contextSequence);
+        final Expression arg = getArgument(0);        
+		final Sequence idrefval = arg.eval(contextSequence);
 		if(idrefval.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
     		String nextId;
     		DocumentSet docs = null;
             if (getArgumentCount() == 2) {
                 // second argument should be a node, whose owner document will be
                 // searched for the id
-                Sequence nodes = getArgument(1).eval(contextSequence);
+                final Sequence nodes = getArgument(1).eval(contextSequence);
                 if (nodes.isEmpty())
-                    throw new XPathException(this, ErrorCodes.XPDY0002, 
-                    		"no node or context item for fn:idref");
+                    {throw new XPathException(this, ErrorCodes.XPDY0002, 
+                    		"no node or context item for fn:idref");}
                 
                 if (!Type.subTypeOf(nodes.itemAt(0).getType(), Type.NODE)) 
-                	throw new XPathException(this, ErrorCodes.XPTY0004, 
-                			"fn:idref() argument is not a node");
+                	{throw new XPathException(this, ErrorCodes.XPTY0004, 
+                			"fn:idref() argument is not a node");}
                 
                 NodeValue node = (NodeValue)nodes.itemAt(0);
                 if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                 	//TODO : how to enforce this ?
                 	//If $node, or the context item if the second argument is omitted, 
                 	//is a node in a tree whose root is not a document node [err:FODC0001] is raised                    processInMem = true;
-                    processInMem = true;
+                    {processInMem = true;}
                 else {
                     MutableDocumentSet ndocs = new DefaultDocumentSet();
                     ndocs.add(((NodeProxy)node).getDocument());
@@ -147,29 +147,29 @@ public class FunIdRef extends Function {
                 }
                 contextSequence = node;
             } else if (contextSequence == null)
-                throw new XPathException(this, ErrorCodes.XPDY0002, "no context item specified");
+                {throw new XPathException(this, ErrorCodes.XPDY0002, "no context item specified");}
             else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
-    			throw new XPathException(this, ErrorCodes.XPTY0004, "context item is not a node");
+    			{throw new XPathException(this, ErrorCodes.XPTY0004, "context item is not a node");}
     		else {
     			if (contextSequence.isPersistentSet())
-                    docs = contextSequence.toNodeSet().getDocumentSet();
+                    {docs = contextSequence.toNodeSet().getDocumentSet();}
                 else
-                    processInMem = true;
+                    {processInMem = true;}
             }
 
             if (processInMem)
-                result = new ValueSequence();
+                {result = new ValueSequence();}
             else
-                result = new ExtArrayNodeSet();
+                {result = new ExtArrayNodeSet();}
 
-            for(SequenceIterator i = idrefval.iterate(); i.hasNext(); ) {
+            for(final SequenceIterator i = idrefval.iterate(); i.hasNext(); ) {
     			nextId = i.nextItem().getStringValue();
-                if (nextId.length() == 0) continue;
+                if (nextId.length() == 0) {continue;}
                 if(XMLChar.isValidNCName(nextId)) {
                     if (processInMem)
-                        getIdRef(result, contextSequence, nextId);
+                        {getIdRef(result, contextSequence, nextId);}
                     else
-                        getIdRef((NodeSet)result, docs, nextId);
+                        {getIdRef((NodeSet)result, docs, nextId);}
                 }
     		}
         }
@@ -177,30 +177,30 @@ public class FunIdRef extends Function {
 		result.removeDuplicates();
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;   
         
 	}
 
 	private void getIdRef(NodeSet result, DocumentSet docs, String id) throws XPathException {
-		NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Constants.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
+		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Constants.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
 
-		for (NodeProxy n : attribs) {
+		for (final NodeProxy n : attribs) {
             n.setNodeType(Node.ATTRIBUTE_NODE);
             result.add(n);
 		}
 	}
 
     private void getIdRef(Sequence result, Sequence seq, String id) throws XPathException {
-        Set<org.exist.memtree.DocumentImpl> visitedDocs = new TreeSet<org.exist.memtree.DocumentImpl>();
-        for (SequenceIterator i = seq.iterate(); i.hasNext();) {
-            org.exist.memtree.NodeImpl v = (org.exist.memtree.NodeImpl) i.nextItem();
-            org.exist.memtree.DocumentImpl doc = v.getDocument();
+        final Set<org.exist.memtree.DocumentImpl> visitedDocs = new TreeSet<org.exist.memtree.DocumentImpl>();
+        for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
+            final org.exist.memtree.NodeImpl v = (org.exist.memtree.NodeImpl) i.nextItem();
+            final org.exist.memtree.DocumentImpl doc = v.getDocument();
             if (!visitedDocs.contains(doc)) {
-                org.exist.memtree.NodeImpl node = doc.selectByIdref(id);
+                final org.exist.memtree.NodeImpl node = doc.selectByIdref(id);
                 if (node != null)
-                    result.add(node);
+                    {result.add(node);}
                 visitedDocs.add(doc);
             }
         }

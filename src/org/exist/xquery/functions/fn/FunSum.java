@@ -81,24 +81,24 @@ public class FunSum extends Function {
                     "DEPENDENCIES",
                     Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         Sequence result;
         
-		Sequence inner = getArgument(0).eval(contextSequence, contextItem);	
+		final Sequence inner = getArgument(0).eval(contextSequence, contextItem);	
 		if (inner.isEmpty()) {
 			//If $zero is not specified, then the value returned for an empty sequence is the xs:integer value 0
 			Sequence zero = IntegerValue.ZERO;
 			if(getSignature().getArgumentCount() == 2)
-				zero = getArgument(1).eval(contextSequence, contextItem);
+				{zero = getArgument(1).eval(contextSequence, contextItem);}
 			result = zero;
 		} else {
-    		SequenceIterator iter = inner.iterate();
+    		final SequenceIterator iter = inner.iterate();
     		Item item = iter.nextItem();
     		AtomicValue value = item.atomize();
 
@@ -114,7 +114,7 @@ public class FunSum extends Function {
     			
         		if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
     				if (((NumericValue)value).isInfinite())
-    					gotInfinity = true;    					
+    					{gotInfinity = true;}    					
     				if (((NumericValue)value).isNaN()) {
     					sum = DoubleValue.NaN;
     					break;
@@ -135,7 +135,7 @@ public class FunSum extends Function {
 		}
 
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
 
         return result;        
 	}
@@ -146,23 +146,23 @@ public class FunSum extends Function {
 			value = ((DurationValue)value).wrap();
 			if (value.getType() == Type.YEAR_MONTH_DURATION) {
             	if (sum != null && sum.getType() != Type.YEAR_MONTH_DURATION)
-            		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(sum.getType()) +
-            				" and " + Type.getTypeName(value.getType()), value);
+            		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(sum.getType()) +
+            				" and " + Type.getTypeName(value.getType()), value);}
     		
 			} else if (value.getType() == Type.DAY_TIME_DURATION) {
             	if (sum != null && sum.getType() != Type.DAY_TIME_DURATION)
-            		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(sum.getType()) +
-            				" and " + Type.getTypeName(value.getType()), value);
+            		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(sum.getType()) +
+            				" and " + Type.getTypeName(value.getType()), value);}
 				
 			} else
-				throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(value.getType()), value);
+				{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(value.getType()), value);}
 
 		//Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
 		} else if (value.getType() == Type.UNTYPED_ATOMIC) 
-        	value = value.convertTo(Type.DOUBLE);
+        	{value = value.convertTo(Type.DOUBLE);}
 		
 		if (!(value instanceof ComputableValue))
-			throw new XPathException(this, ErrorCodes.XPTY0004, "" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+			{throw new XPathException(this, ErrorCodes.XPTY0004, "" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");}
 
 		return value;
 	}

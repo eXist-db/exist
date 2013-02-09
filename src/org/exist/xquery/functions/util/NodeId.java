@@ -70,7 +70,7 @@ public class NodeId extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		
-		NodeValue docNode =(NodeValue) args[0].itemAt(0);
+		final NodeValue docNode =(NodeValue) args[0].itemAt(0);
                 org.exist.numbering.NodeId nodeId;
 		if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                     nodeId = ((NodeImpl)docNode).getNodeId();

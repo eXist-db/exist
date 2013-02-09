@@ -68,35 +68,35 @@ public class NamespaceConstructor extends NodeConstructor {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
-        MemTreeBuilder builder = context.getDocumentBuilder();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
 		context.proceed(this, builder);
         
-        Sequence uriSeq = uri.eval(contextSequence, contextItem);
+        final Sequence uriSeq = uri.eval(contextSequence, contextItem);
         String value;
         if(uriSeq.isEmpty())
-            value = "";
+            {value = "";}
         else {
-            StringBuilder buf = new StringBuilder();
-            for(SequenceIterator i = uriSeq.iterate(); i.hasNext(); ) {
+            final StringBuilder buf = new StringBuilder();
+            for(final SequenceIterator i = uriSeq.iterate(); i.hasNext(); ) {
                 context.proceed(this, builder);
-                Item next = i.nextItem();
+                final Item next = i.nextItem();
                 if(buf.length() > 0)
-                    buf.append(' ');
+                    {buf.append(' ');}
                 buf.append(next.toString());
             }
             value = buf.toString();
         }
         context.declareInScopeNamespace(prefix, value);
-        int nodeNr = builder.namespaceNode(prefix, value);
-        Sequence result = ((DocumentImpl)builder.getDocument()).getNamespaceNode(nodeNr);
+        final int nodeNr = builder.namespaceNode(prefix, value);
+        final Sequence result = ((DocumentImpl)builder.getDocument()).getNamespaceNode(nodeNr);
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         return result;
     }
@@ -112,7 +112,7 @@ public class NamespaceConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append("namespace ").append(prefix);
     	result.append("{");
     	result.append(uri.toString());

@@ -45,17 +45,17 @@ public class GuestFilter implements Filter {
         }
 
         String username = httpServletRequest.getRemoteUser();
-        String requestURI = httpServletRequest.getRequestURI().trim();
-        String sessionID = httpServletRequest.getRequestedSessionId();
+        final String requestURI = httpServletRequest.getRequestURI().trim();
+        final String sessionID = httpServletRequest.getRequestedSessionId();
 
-        HttpSession session = httpServletRequest.getSession(false);
+        final HttpSession session = httpServletRequest.getSession(false);
         if (session != null) {
             LOG.info("session: " + session.toString());
-            Enumeration enumeration = session.getAttributeNames();
+            final Enumeration enumeration = session.getAttributeNames();
 
             while (enumeration.hasMoreElements()) {
-                String key = (String) enumeration.nextElement();
-                Object value = session.getAttribute(key);
+                final String key = (String) enumeration.nextElement();
+                final Object value = session.getAttribute(key);
                 LOG.info("session attribute [" + key + "][" + value.toString() + "]");
                 if (key.equalsIgnoreCase("_eXist_xmldb_user")) {
                     username = ((org.exist.security.internal.SubjectImpl)value).getUsername();
@@ -74,9 +74,9 @@ public class GuestFilter implements Filter {
                 LOG.info("Permission denied to : " + requestURI);
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             } else if (!httpServletRequest.isSecure()) {
-                String serverName = httpServletRequest.getServerName();
-                String path = httpServletRequest.getRequestURI();
-                String newpath = "https://" + serverName + ":" + sslPort + path;
+                final String serverName = httpServletRequest.getServerName();
+                final String path = httpServletRequest.getRequestURI();
+                final String newpath = "https://" + serverName + ":" + sslPort + path;
                 LOG.info("Redirecting to SSL: " + newpath);
                 httpServletResponse.sendRedirect(newpath);
             } else if (httpServletRequest.isSecure()) {
@@ -99,13 +99,13 @@ public class GuestFilter implements Filter {
 
     public void setFilterConfig(FilterConfig filterConfig) {
         this.filterConfig = filterConfig;
-        Enumeration initParams = filterConfig.getInitParameterNames();
+        final Enumeration initParams = filterConfig.getInitParameterNames();
 
         // no initial parameters, so invoke the next filter in the chain
         if (initParams != null) {
             sslPort = "443";
             while (initParams.hasMoreElements()) {
-                String name = (String) initParams.nextElement();
+                final String name = (String) initParams.nextElement();
                 String value = filterConfig.getInitParameter(name);
 
                 LOG.info("Parameter [" + name + "][" + value + "]");

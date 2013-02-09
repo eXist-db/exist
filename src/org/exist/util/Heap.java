@@ -41,7 +41,7 @@ public class Heap  {
 
   public Heap(int capacity, Comparator cmp) 
    throws IllegalArgumentException {
-    if (capacity <= 0) throw new IllegalArgumentException();
+    if (capacity <= 0) {throw new IllegalArgumentException();}
     nodes_ = new Object[capacity];
     cmp_ = cmp;
   }
@@ -59,9 +59,9 @@ public class Heap  {
   /** perform element comaprisons using comparator or natural ordering **/
   protected int compare(Object a, Object b) {
     if (cmp_ == null) 
-      return ((Comparable)a).compareTo(b);
+      {return ((Comparable)a).compareTo(b);}
     else
-      return cmp_.compare(a, b);
+      {return cmp_.compare(a, b);}
   }
 
 
@@ -75,7 +75,7 @@ public class Heap  {
    **/
   public synchronized void insert(Object x) {
     if (count_ >= nodes_.length) {
-      int newcap =  3 * nodes_.length / 2 + 1;
+      final int newcap =  3 * nodes_.length / 2 + 1;
       Object[] newnodes = new Object[newcap];
       System.arraycopy(nodes_, 0, newnodes, 0, nodes_.length);
       nodes_ = newnodes;
@@ -89,7 +89,7 @@ public class Heap  {
         nodes_[k] = nodes_[par];
         k = par;
       }
-      else break;
+      else {break;}
     }
     nodes_[k] = x;
   }
@@ -100,25 +100,25 @@ public class Heap  {
    **/
 
   public synchronized Object extract() {
-    if (count_ < 1) return null;
+    if (count_ < 1) {return null;}
 
     int k = 0; // take element at root;
-    Object least = nodes_[k];
+    final Object least = nodes_[k];
     --count_;
     Object x = nodes_[count_];
     nodes_[count_] = null;
     for (;;) {
-      int l = left(k);
+      final int l = left(k);
       if (l >= count_)
-        break;
+        {break;}
       else {
-        int r = right(k);
+        final int r = right(k);
         int child = (r >= count_ || compare(nodes_[l], nodes_[r]) < 0)? l : r; 
         if (compare(x, nodes_[child]) > 0) {
           nodes_[k] = nodes_[child];
           k = child;
         }
-        else break;
+        else {break;}
       }
     }
     nodes_[k] = x;
@@ -128,9 +128,9 @@ public class Heap  {
   /** Return least element without removing it, or null if empty **/
   public synchronized Object peek() {
     if (count_ > 0) 
-      return nodes_[0];
+      {return nodes_[0];}
     else
-      return null;
+      {return null;}
   }
 
   /** Return number of elements **/

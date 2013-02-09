@@ -53,18 +53,18 @@ public class ChownTask extends UserTask
         }
 
         try {
-            Account usr = service.getAccount( name );
+            final Account usr = service.getAccount( name );
 
             if( resource != null ) {
-                Resource res = base.getResource( resource );
+                final Resource res = base.getResource( resource );
                 service.chown( res, usr, group );
             } else {
                 service.chown( usr, group );
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

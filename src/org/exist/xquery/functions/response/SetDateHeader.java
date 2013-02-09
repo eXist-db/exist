@@ -85,10 +85,10 @@ public class SetDateHeader extends Function
             }
         }
 
-        ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
+        final ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
 
         // response object is read from global variable $response
-        Variable       var      = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
+        final Variable       var      = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
 
         if( ( var == null ) || ( var.getValue() == null ) ) {
             throw( new XPathException( this, "Response not set" ) );
@@ -97,11 +97,11 @@ public class SetDateHeader extends Function
         if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
             throw( new XPathException( this, "Variable $response is not bound to a Java object." ) );
         }
-        JavaObjectValue response = (JavaObjectValue)var.getValue().itemAt( 0 );
+        final JavaObjectValue response = (JavaObjectValue)var.getValue().itemAt( 0 );
 
         //get parameters
-        String          name     = getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
-        long            value    = new DateTimeValue( getArgument( 1 ).eval( contextSequence, contextItem ).getStringValue() ).getDate().getTime();
+        final String          name     = getArgument( 0 ).eval( contextSequence, contextItem ).getStringValue();
+        final long            value    = new DateTimeValue( getArgument( 1 ).eval( contextSequence, contextItem ).getStringValue() ).getDate().getTime();
 
         //set response header
         if( response.getObject() instanceof ResponseWrapper ) {

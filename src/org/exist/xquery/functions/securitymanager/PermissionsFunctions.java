@@ -386,7 +386,7 @@ public class PermissionsFunctions extends BasicFunction {
             public void modify(final Permission permission) throws PermissionDeniedException {
                 try {
                     permission.setMode(modeStr);
-                } catch(SyntaxException se) {
+                } catch(final SyntaxException se) {
                     throw new PermissionDeniedException("Unrecognised mode syntax: " + se.getMessage(), se);
                 }
             }
@@ -436,7 +436,7 @@ public class PermissionsFunctions extends BasicFunction {
             mode |= Permission.EXECUTE;
         }
         
-        Subject currentSubject = context.getBroker().getSubject();
+        final Subject currentSubject = context.getBroker().getSubject();
         try {
             final boolean hasAccess = getPermissions(pathUri).validate(currentSubject, mode);
             return BooleanValue.valueOf(hasAccess);

@@ -54,12 +54,12 @@ public class FilterNested extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (args[0].isEmpty())
-            return Sequence.EMPTY_SEQUENCE;
-        ExtArrayNodeSet inSet = (ExtArrayNodeSet) args[0].toNodeSet();
-        NodeSet filtered = new ExtArrayNodeSet();
-        for (NodeProxy p : inSet) {
+            {return Sequence.EMPTY_SEQUENCE;}
+        final ExtArrayNodeSet inSet = (ExtArrayNodeSet) args[0].toNodeSet();
+        final NodeSet filtered = new ExtArrayNodeSet();
+        for (final NodeProxy p : inSet) {
             if (inSet.hasDescendantsInSet(p.getDocument(), p.getNodeId(), false, -1) == null)
-                filtered.add(p);
+                {filtered.add(p);}
         }
         return filtered;
     }

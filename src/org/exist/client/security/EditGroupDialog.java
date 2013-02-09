@@ -101,7 +101,7 @@ public class EditGroupDialog extends GroupDialog {
             
             getUserManagementService().updateGroup(getGroup());
             
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             JOptionPane.showMessageDialog(this, "Could not update group '" + txtGroupName.getText() + "': " + pde.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
         } catch(final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not update group '" + txtGroupName.getText() + "': " + xmldbe.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);

@@ -60,7 +60,7 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	}
 	private void setup()
 	{
-		SpringLayout layout = new SpringLayout();
+		final SpringLayout layout = new SpringLayout();
 		setLayout(layout);
 		
 		setOpaque(true);
@@ -73,9 +73,9 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		valueBox = new JComboBox();
 		valueBox.setEditable(true);
 		valueBox.setMaximumSize(restrictWidth(functionBox.getMaximumSize()));
-		Component comp = valueBox.getEditor().getEditorComponent();
+		final Component comp = valueBox.getEditor().getEditorComponent();
 		if(comp instanceof JTextComponent)
-			((JTextComponent)comp).getDocument().addDocumentListener(this);
+			{((JTextComponent)comp).getDocument().addDocumentListener(this);}
 		
 		setBoxesVisible(false);
 		
@@ -83,7 +83,7 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		add(functionBox);
 		add(valueBox);
 		
-		Spring constant6 = Spring.constant(6);
+		final Spring constant6 = Spring.constant(6);
 		layout.putConstraint(SpringLayout.NORTH, label, constant6, SpringLayout.NORTH, this);
 		layout.putConstraint(SpringLayout.NORTH, functionBox, constant6, SpringLayout.NORTH, this);
 		layout.putConstraint(SpringLayout.NORTH, valueBox, constant6, SpringLayout.NORTH, this);
@@ -100,7 +100,7 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	{
 		valueBox.removeActionListener(this);
 		functionBox.removeActionListener(this);
-		Component comp = valueBox.getEditor().getEditorComponent();
+		final Component comp = valueBox.getEditor().getEditorComponent();
 		Document doc = null;
 		if(comp instanceof JTextComponent)
 		{
@@ -116,26 +116,26 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 			return;
 		}
 		
-		URI dataType = attribute.getType();
+		final URI dataType = attribute.getType();
 		label.setText(abbrev.getAbbreviatedId(attribute.getId()) + " (" + abbrev.getAbbreviatedType(dataType) + ")");
 		
-		Set<Object> targetFunctions = abbrev.getAbbreviatedTargetFunctions(dataType);
-		for(AttributeHandler handler : attributeHandlers)
+		final Set<Object> targetFunctions = abbrev.getAbbreviatedTargetFunctions(dataType);
+		for(final AttributeHandler handler : attributeHandlers)
 			handler.filterFunctions(targetFunctions, attribute);
 		
 		functionBox.setModel(new DefaultComboBoxModel(targetFunctions.toArray()));
 		if(functionId == null)
 		{
 			if(functionBox.getItemCount() > 0)
-				functionBox.setSelectedIndex(0);
+				{functionBox.setSelectedIndex(0);}
 		}
 		else
-			functionBox.setSelectedItem(abbrev.getAbbreviatedTargetFunctionId(functionId, dataType));
+			{functionBox.setSelectedItem(abbrev.getAbbreviatedTargetFunctionId(functionId, dataType));}
 		functionBox.setMaximumSize(restrictWidth(functionBox.getPreferredSize()));
 
 		valueBox.setEditable(true);
-		Set<Object> allowedValues = new TreeSet<Object>();
-		for(AttributeHandler handler : attributeHandlers)
+		final Set<Object> allowedValues = new TreeSet<Object>();
+		for(final AttributeHandler handler : attributeHandlers)
 		{
 			if(!handler.getAllowedValues(allowedValues, attribute))
 			{
@@ -146,12 +146,12 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		valueBox.setModel(new DefaultComboBoxModel(allowedValues.toArray()));
 		if(valueBox.isEditable())
 		{
-			Dimension max = valueBox.getMaximumSize();
+			final Dimension max = valueBox.getMaximumSize();
 			max.width = MAXIMUM_BOX_WIDTH;
 			valueBox.setMaximumSize(max);
 		}
 		else
-			valueBox.setMaximumSize(restrictWidth(valueBox.getMaximumSize()));
+			{valueBox.setMaximumSize(restrictWidth(valueBox.getMaximumSize()));}
 		
 		valueBox.setSelectedItem((value == null) ? null : value.encode());
 		setBoxesVisible(true);
@@ -160,13 +160,13 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 		valueBox.addActionListener(this);
 		functionBox.addActionListener(this);
 		if(doc != null)
-			doc.addDocumentListener(this);
+			{doc.addDocumentListener(this);}
 	}
 	
 	private Dimension restrictWidth(Dimension size)
 	{
 		if(size.width > MAXIMUM_BOX_WIDTH)
-			size.width = MAXIMUM_BOX_WIDTH;
+			{size.width = MAXIMUM_BOX_WIDTH;}
 		return size;
 	}
 
@@ -182,25 +182,25 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	public AttributeValue getValue()
 	{
 		if(attribute == null || currentValue == null)
-			return null;
+			{return null;}
 		
-		AttributeFactory factory = AttributeFactory.getInstance();
+		final AttributeFactory factory = AttributeFactory.getInstance();
 		try
 		{
-			String textValue = currentValue.toString();
+			final String textValue = currentValue.toString();
 			if(textValue == null || textValue.length() == 0)
-				return null;
-			AttributeValue value = factory.createValue(attribute.getType(), textValue);
-			for(AttributeHandler handler : attributeHandlers)
+				{return null;}
+			final AttributeValue value = factory.createValue(attribute.getType(), textValue);
+			for(final AttributeHandler handler : attributeHandlers)
 				handler.checkUserValue(value, attribute);
 			return value;
 		}
-		catch(UnknownIdentifierException e)
+		catch(final UnknownIdentifierException e)
 		{
 			ClientFrame.showErrorMessage("Invalid attribute type '" + attribute.getType() + "'", e);
 			return null;
 		}
-		catch (ParsingException e)
+		catch (final ParsingException e)
 		{
 			ClientFrame.showErrorMessage("Invalid value '" + currentValue + "'", e);
 			return null;
@@ -214,55 +214,55 @@ public class MatchEditor extends JPanel implements ActionListener, DocumentListe
 	public void addAttributeHandler(AttributeHandler ah)
 	{
 		if(ah == null)
-			return;
+			{return;}
 		if(attributeHandlers == null)
-			attributeHandlers = new ArrayList<AttributeHandler>();
+			{attributeHandlers = new ArrayList<AttributeHandler>();}
 		attributeHandlers.add(ah);
 	}
 	public void removeAttributeHandler(AttributeHandler ah)
 	{
 		if(ah == null || attributeHandlers == null)
-			return;
+			{return;}
 		attributeHandlers.remove(ah);
 	}
 	
 
 	public void actionPerformed(ActionEvent event)
 	{
-		Object source = event.getSource();
+		final Object source = event.getSource();
 		if(source == functionBox)
-			currentFunction = functionBox.getSelectedItem();
+			{currentFunction = functionBox.getSelectedItem();}
 		else if(source == valueBox)
-			currentValue = valueBox.getSelectedItem();
+			{currentValue = valueBox.getSelectedItem();}
 		else
-			return;
+			{return;}
 		fireChanged();
 	}
 	private void fireChanged()
 	{
-		ChangeEvent event = new ChangeEvent(this);
-		for(ChangeListener listener : listeners)
+		final ChangeEvent event = new ChangeEvent(this);
+		for(final ChangeListener listener : listeners)
 			listener.stateChanged(event);
 	}
 	public void addChangeListener(ChangeListener listener)
 	{
 		if(listener != null)
-			listeners.add(listener);
+			{listeners.add(listener);}
 	}
 	public void removeChangeListener(ChangeListener listener)
 	{
 		if(listeners != null)
-			listeners.remove(listener);
+			{listeners.remove(listener);}
 	}
 	
 	private void documentUpdated(DocumentEvent event)
 	{
-		Document doc = event.getDocument(); 
+		final Document doc = event.getDocument(); 
 		try
 		{
 			currentValue = doc.getText(0, doc.getLength());
 		}
-		catch (BadLocationException e)
+		catch (final BadLocationException e)
 		{
 			return;
 		}

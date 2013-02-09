@@ -75,9 +75,9 @@ public class RestoreDialog extends JDialog
 
     private void setupComponents()
     {
-        GridBagLayout grid = new GridBagLayout();
+        final GridBagLayout grid = new GridBagLayout();
         getContentPane().setLayout( grid );
-        GridBagConstraints c = new GridBagConstraints();
+        final GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets( 5, 5, 5, 5 );
 
         JLabel label = new JLabel( "Backup:" );
@@ -151,7 +151,7 @@ public class RestoreDialog extends JDialog
 
         messages = new JTextArea( 5, 50 );
         messages.setEditable( false );
-        JScrollPane scroll = new JScrollPane( messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+        final JScrollPane scroll = new JScrollPane( messages, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
         scroll.setBorder( BorderFactory.createTitledBorder( "Messages" ) );
         c.gridx     = 0;
         c.gridy     = 4;
@@ -200,7 +200,7 @@ public class RestoreDialog extends JDialog
         public void update( Observable o, Object arg )
         {
             progress.setIndeterminate( false );
-            ProgressIndicator ind = (ProgressIndicator)arg;
+            final ProgressIndicator ind = (ProgressIndicator)arg;
             progress.setValue( ind.getPercentage() );
 
             if( o instanceof TextSearchEngine ) {

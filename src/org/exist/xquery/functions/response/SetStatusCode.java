@@ -85,10 +85,10 @@ public class SetStatusCode extends Function
             }
         }
 
-        ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
+        final ResponseModule myModule = (ResponseModule)context.getModule( ResponseModule.NAMESPACE_URI );
 
         // response object is read from global variable $response
-        Variable       var      = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
+        final Variable       var      = myModule.resolveVariable( ResponseModule.RESPONSE_VAR );
 
         if( ( var == null ) || ( var.getValue() == null ) ) {
             throw( new XPathException( this, "Response not set" ) );
@@ -97,10 +97,10 @@ public class SetStatusCode extends Function
         if( var.getValue().getItemType() != Type.JAVA_OBJECT ) {
             throw( new XPathException( this, "Variable $response is not bound to a Java object." ) );
         } 
-        JavaObjectValue response = (JavaObjectValue)var.getValue().itemAt( 0 );
+        final JavaObjectValue response = (JavaObjectValue)var.getValue().itemAt( 0 );
 
         //get parameter
-        int             code     = ( (IntegerValue)getArgument( 0 ).eval( contextSequence, contextItem ).convertTo( Type.INTEGER ) ).getInt();
+        final int             code     = ( (IntegerValue)getArgument( 0 ).eval( contextSequence, contextItem ).convertTo( Type.INTEGER ) ).getInt();
 
         //set response status code
         if( response.getObject() instanceof ResponseWrapper ) {

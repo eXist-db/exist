@@ -63,44 +63,44 @@ public class TriggerSystemTask extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        String className = args[0].getStringValue();
-        Properties properties = new Properties();
+        final String className = args[0].getStringValue();
+        final Properties properties = new Properties();
         if (args[1].hasOne()) {
             parseParameters(((NodeValue) args[1].itemAt(0)).getNode(), properties);
         }
         
         try {
-            Class<?> clazz = Class.forName(className);
-            Object taskObject = clazz.newInstance();
+            final Class<?> clazz = Class.forName(className);
+            final Object taskObject = clazz.newInstance();
 
             if (!(taskObject instanceof SystemTask)) {
-                XPathException xPathException = new XPathException(this, className + " is not an instance of org.exist.storage.SystemTask");
+                final XPathException xPathException = new XPathException(this, className + " is not an instance of org.exist.storage.SystemTask");
                 logger.error("Java classname is not a SystemTask", xPathException);
 				throw xPathException;
             }
 
-            SystemTask task = (SystemTask) taskObject;
+            final SystemTask task = (SystemTask) taskObject;
             task.configure(context.getBroker().getConfiguration(), properties);
             LOG.info("Triggering SystemTask: " + className);
             context.getBroker().getBrokerPool().triggerSystemTask(task);
 
-        } catch (ClassNotFoundException e) {
-            String message = "system task class '" + className + "' not found";
+        } catch (final ClassNotFoundException e) {
+            final String message = "system task class '" + className + "' not found";
             logger.error(message, e);
 			throw new XPathException(this, message);
 
-        } catch (InstantiationException e) {
-            String message = "system task '" + className + "' can not be instantiated";
+        } catch (final InstantiationException e) {
+            final String message = "system task '" + className + "' can not be instantiated";
             logger.error(message, e);
 			throw new XPathException(this, message);
 
-        } catch (IllegalAccessException e) {
-            String message = "system task '" + className + "' can not be accessed";
+        } catch (final IllegalAccessException e) {
+            final String message = "system task '" + className + "' can not be accessed";
             logger.error(message, e);
 			throw new XPathException(this, message);
 
-        } catch (EXistException e) {
-            String message = "system task " + className + " reported an error during initialization: ";
+        } catch (final EXistException e) {
+            final String message = "system task " + className + " reported an error during initialization: ";
             logger.error(message, e);
 			throw new XPathException(this, message + e.getMessage(), e);
         }
@@ -108,16 +108,16 @@ public class TriggerSystemTask extends BasicFunction {
     }
 
     private void parseParameters(Node options, Properties properties) throws XPathException {
-		if(options.getNodeType() == Node.ELEMENT_NODE && options.getLocalName().equals("parameters")) {
+		if(options.getNodeType() == Node.ELEMENT_NODE && "parameters".equals(options.getLocalName())) {
 			Node child = options.getFirstChild();
 			while(child != null) {
-				if(child.getNodeType() == Node.ELEMENT_NODE && child.getLocalName().equals("param")) {
-					Element elem = (Element)child;
-					String name = elem.getAttribute("name");
-					String value = elem.getAttribute("value");
+				if(child.getNodeType() == Node.ELEMENT_NODE && "param".equals(child.getLocalName())) {
+					final Element elem = (Element)child;
+					final String name = elem.getAttribute("name");
+					final String value = elem.getAttribute("value");
 					logger.trace("parseParameters: name[" + name + "] value[" + value + "]");
 					if(name == null || value == null)
-						throw new XPathException(this, "Name or value attribute missing for stylesheet parameter");
+						{throw new XPathException(this, "Name or value attribute missing for stylesheet parameter");}
 					properties.setProperty(name, value);
 				}
 				child = child.getNextSibling();

@@ -48,10 +48,10 @@ public class EmbeddedUser {
             return null;
         }
         
-        SecurityManager secman = pool.getSecurityManager();
+        final SecurityManager secman = pool.getSecurityManager();
         try {
             return secman.authenticate(xmldbURL.getUsername(), xmldbURL.getPassword());
-		} catch (AuthenticationException e) {
+		} catch (final AuthenticationException e) {
 	        return null;  // authentication is failed
 		}
     }

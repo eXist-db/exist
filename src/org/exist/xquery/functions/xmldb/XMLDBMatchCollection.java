@@ -53,9 +53,9 @@ public class XMLDBMatchCollection extends BasicFunction {
     }
 
     private Sequence copyListToValueSequence(List<String> collectionNames) {
-        ValueSequence seq = new ValueSequence(collectionNames.size());
+        final ValueSequence seq = new ValueSequence(collectionNames.size());
         
-        for(String collectionName : collectionNames) {
+        for(final String collectionName : collectionNames) {
             seq.add(new StringValue(collectionName));
         }
         

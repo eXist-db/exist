@@ -44,8 +44,8 @@ public class GYearMonthValue extends AbstractDateTimeValue {
     public GYearMonthValue(String timeValue) throws XPathException {
         super(timeValue);
         try {
-            if (calendar.getXMLSchemaType() != DatatypeConstants.GYEARMONTH) throw new IllegalStateException();
-        } catch (IllegalStateException e) {
+            if (calendar.getXMLSchemaType() != DatatypeConstants.GYEARMONTH) {throw new IllegalStateException();}
+        } catch (final IllegalStateException e) {
             throw new XPathException("xs:gYearMonth instance must not have year, month or day fields set");
         }
     }
@@ -99,21 +99,21 @@ public class GYearMonthValue extends AbstractDateTimeValue {
 	    			} else {
                         // equal? Is this sufficient? /ljo
                         if (this.getCanonicalOrTrimmedCalendar().compare(((AbstractDateTimeValue) other).getCanonicalOrTrimmedCalendar()) == 0)
-                            return DatatypeConstants.EQUAL;
-	    				if (!((DayTimeDurationValue)getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
-	    					return DatatypeConstants.LESSER;
+                            {return DatatypeConstants.EQUAL;}
+	    				if (!"PT0S".equals(((DayTimeDurationValue)getTimezone().itemAt(0)).getStringValue()))
+	    					{return DatatypeConstants.LESSER;}
 	    			}
 	    		} else {
 	    			if (!((AbstractDateTimeValue)other).getTimezone().isEmpty()) {
-	    				if (!((DayTimeDurationValue)((AbstractDateTimeValue)other).getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
-	    					return DatatypeConstants.LESSER;
+	    				if (!"PT0S".equals(((DayTimeDurationValue)((AbstractDateTimeValue)other).getTimezone().itemAt(0)).getStringValue()))
+	    					{return DatatypeConstants.LESSER;}
 	    			}
 				}
 			}
 			// filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
-			int r =	this.getCanonicalOrTrimmedCalendar().compare(((AbstractDateTimeValue) other).getCanonicalOrTrimmedCalendar());
+			final int r =	this.getCanonicalOrTrimmedCalendar().compare(((AbstractDateTimeValue) other).getCanonicalOrTrimmedCalendar());
             //getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
-			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between " + this + " and " + other);
+			if (r == DatatypeConstants.INDETERMINATE) {throw new RuntimeException("indeterminate order between " + this + " and " + other);}
 			return r;
 		}
 		throw new XPathException(

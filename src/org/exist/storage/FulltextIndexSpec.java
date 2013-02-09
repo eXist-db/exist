@@ -83,27 +83,27 @@ public class FulltextIndexSpec {
      */
     public FulltextIndexSpec(Map<String, String> namespaces, Element node) throws DatabaseConfigurationException {
         includeByDefault = true;
-        ArrayList<NodePath> includeList = new ArrayList<NodePath>();
-        ArrayList<NodePath> excludeList = new ArrayList<NodePath>();
-        ArrayList<NodePath> preserveList = new ArrayList<NodePath>();
-        ArrayList<NodePath> mixedList = new ArrayList<NodePath>();
+        final ArrayList<NodePath> includeList = new ArrayList<NodePath>();
+        final ArrayList<NodePath> excludeList = new ArrayList<NodePath>();
+        final ArrayList<NodePath> preserveList = new ArrayList<NodePath>();
+        final ArrayList<NodePath> mixedList = new ArrayList<NodePath>();
 
         // check default settings
-        String def = node.getAttribute(DEFAULT_ATTRIB);
+        final String def = node.getAttribute(DEFAULT_ATTRIB);
         if(def != null && def.length() > 0) {
-            includeByDefault = def.equals("all");
+            includeByDefault = "all".equals(def);
         }
-        String indexAttributes = node.getAttribute(ATTRIBUTES_ATTRIB);
+        final String indexAttributes = node.getAttribute(ATTRIBUTES_ATTRIB);
 		if (indexAttributes != null && indexAttributes.length() > 0) {
-			includeAttributes = indexAttributes.equals("true") || indexAttributes.equals("yes");
+			includeAttributes = "true".equals(indexAttributes) || "yes".equals(indexAttributes);
 		}
 
-		String indexAlphaNum = node.getAttribute(ALPHANUM_ATTRIB);
+		final String indexAlphaNum = node.getAttribute(ALPHANUM_ATTRIB);
 		if (indexAlphaNum != null && indexAlphaNum.length() > 0)
-			setIncludeAlphaNum(indexAlphaNum.equals("true") || indexAlphaNum.equals("yes"));
+			setIncludeAlphaNum(indexAlphaNum.equals("true") || "yes".equals(indexAlphaNum));
 
 		// check paths to include/exclude
-		NodeList children = node.getChildNodes();
+		final NodeList children = node.getChildNodes();
 		String ps, content;
 		Node next;
         Element elem;
@@ -144,8 +144,8 @@ public class FulltextIndexSpec {
                     isAttribute = true;
                     name = name.substring(1);
                 }
-                String prefix = QName.extractPrefix(name);
-                String localName = QName.extractLocalName(name);
+                final String prefix = QName.extractPrefix(name);
+                final String localName = QName.extractLocalName(name);
                 String namespaceURI = "";
                 if (prefix != null) {
                     namespaceURI = (String) namespaces.get(prefix);
@@ -154,9 +154,9 @@ public class FulltextIndexSpec {
                                 " in index definition");
                     }
                 }
-                QName qname = new QName(localName, namespaceURI, null);
+                final QName qname = new QName(localName, namespaceURI, null);
                 if (isAttribute)
-                    qname.setNameType(ElementValue.ATTRIBUTE);
+                    {qname.setNameType(ElementValue.ATTRIBUTE);}
                 qnameSpecs.put(qname, new QNameSpec(qname, elem));
             }
 		}
@@ -167,8 +167,8 @@ public class FulltextIndexSpec {
     }
 
     public List<QName> getIndexedQNames() {
-        ArrayList<QName> qnames = new ArrayList<QName>(qnameSpecs.size());
-        for (QName qname : qnameSpecs.keySet()) {
+        final ArrayList<QName> qnames = new ArrayList<QName>(qnameSpecs.size());
+        for (final QName qname : qnameSpecs.keySet()) {
             qnames.add(qname);
         }
         return qnames;
@@ -180,7 +180,7 @@ public class FulltextIndexSpec {
 	public boolean isSelective() {
 		if((includeByDefault && excludePath.length > 0) ||
 			((!includeByDefault) && includePath.length > 0))
-			return true;
+			{return true;}
 		return false;
 	}
 
@@ -212,14 +212,14 @@ public class FulltextIndexSpec {
             // check exclusions
             for (int i = 0; i < excludePath.length; i++)
                 if( excludePath[i].match(path) )
-                    return false;
+                    {return false;}
                 
             return true;
         }
 
         for (int i = 0; i < includePath.length; i++) {
             if( includePath[i].match(path) )
-                return true;
+                {return true;}
         }
         return false;
     }
@@ -236,14 +236,14 @@ public class FulltextIndexSpec {
             // check exclusions
             for (int i = 0; i < excludePath.length; i++)
                 if( excludePath[i].match(path) )
-                    return false;
+                    {return false;}
                 
             return true;
         }
 
         for (int i = 0; i < includePath.length; i++) {
             if( includePath[i].match(path) )
-                return true;
+                {return true;}
         }
         return false;
     }
@@ -263,7 +263,7 @@ public class FulltextIndexSpec {
     public boolean matchMixedElement(NodePath path) {
         for (int i = 0; i < mixedPath.length; i++) {
             if( mixedPath[i].match(path) )
-                return true;
+                {return true;}
         }
         return false;
     }
@@ -273,7 +273,7 @@ public class FulltextIndexSpec {
     }
 
     public boolean preserveMixedContent(QName qname) {
-        QNameSpec spec = qnameSpecs.get(qname);
+        final QNameSpec spec = qnameSpecs.get(qname);
         if (spec != null) {
             return spec.hasMixedContent();
         }
@@ -291,38 +291,38 @@ public class FulltextIndexSpec {
       public boolean preserveContent( NodePath path ) {
           for (int i = 0; i < preserveContent.length; i++) { 
               if( preserveContent[i].match(path) )
-                  return true;
+                  {return true;}
           }
           return false;
     }
       
       public String toString() {
-    	  StringBuilder result = new StringBuilder("Full-text index\n");
+    	  final StringBuilder result = new StringBuilder("Full-text index\n");
     	  result.append("\tincludeByDefault : ").append(includeByDefault).append('\n');
     	  result.append("\tincludeAttributes : ").append(includeAttributes).append('\n');
     	  result.append("\tincludeAlphaNum : ").append(includeAlphaNum).append('\n');
     	  if (includePath != null) {
   	  		for (int i = 0 ; i < includePath.length; i++) {
-  	  			NodePath path = includePath[i];
+  	  			final NodePath path = includePath[i];
   				if (path != null) 
-  					result.append("\tinclude : ").append(path.toString()).append('\n');   	  
+  					{result.append("\tinclude : ").append(path.toString()).append('\n');}   	  
   	  		}
       	  }
     	  if (excludePath != null) {
 			for (int i = 0 ; i < excludePath.length; i++) {
-				NodePath path = excludePath[i];
+				final NodePath path = excludePath[i];
 				if (path != null) 
-					result.append("\texclude : ").append(path.toString()).append('\n');   	  
+					{result.append("\texclude : ").append(path.toString()).append('\n');}   	  
 			}
     	  }  
     	  if (preserveContent != null) {
     	  		for (int i = 0 ; i < preserveContent.length; i++) {
-    	  			NodePath path = preserveContent[i];
+    	  			final NodePath path = preserveContent[i];
     				if (path != null) 
-    					result.append("\tpreserve content : ").append(path.toString()).append('\n');   	  
+    					{result.append("\tpreserve content : ").append(path.toString()).append('\n');}   	  
     	  		}
     	  }  
-    	  for (QNameSpec spec : qnameSpecs.values()) {
+    	  for (final QNameSpec spec : qnameSpecs.values()) {
     		  result.append("\tQName : ").append(spec).append('\n');   
     	  }
     	  return result.toString();
@@ -342,7 +342,7 @@ public class FulltextIndexSpec {
                 if (!mixedContent) {
                     attr = node.getAttribute("preserve");
                     if (attr != null && attr.length() > 0) {
-                        StringTokenizer tok = new StringTokenizer(attr, ",;: \n\t");
+                        final StringTokenizer tok = new StringTokenizer(attr, ",;: \n\t");
                         while (tok.hasMoreTokens()) {
                             preserve.add(tok.nextToken());
                         }

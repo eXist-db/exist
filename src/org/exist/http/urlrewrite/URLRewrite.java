@@ -60,15 +60,15 @@ public abstract class URLRewrite {
     protected URLRewrite(Element config, String uri) {
         this.uri = uri;
         if (config != null && config.hasAttribute("absolute"))
-        	absolute = config.getAttribute("absolute").equals("yes");
+        	absolute = "yes".equals(config.getAttribute("absolute"));
         if (config != null && config.hasAttribute("method"))
-        	method = config.getAttribute("method").toUpperCase();
+        	{method = config.getAttribute("method").toUpperCase();}
         // Check for add-parameter elements etc.
         if (config != null && config.hasChildNodes()) {
             Node node = config.getFirstChild();
             while (node != null) {
                 if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(node.getNamespaceURI())) {
-                    Element elem = (Element) node;
+                    final Element elem = (Element) node;
                     if ("add-parameter".equals(elem.getLocalName())) {
                         addParameter(elem.getAttribute("name"), elem.getAttribute("value"));
                     } else if ("set-attribute".equals(elem.getLocalName())) {
@@ -86,7 +86,7 @@ public abstract class URLRewrite {
 
     protected void updateRequest(XQueryURLRewrite.RequestWrapper request) {
         if (prefix != null)
-            request.removePathPrefix(prefix);
+            {request.removePathPrefix(prefix);}
     }
 
     protected void rewriteRequest(XQueryURLRewrite.RequestWrapper request) {
@@ -111,18 +111,18 @@ public abstract class URLRewrite {
      * @return the new target path excluding context path
      */
     protected String resolve(XQueryURLRewrite.RequestWrapper request) throws ServletException {
-        String path = request.getInContextPath();
+        final String path = request.getInContextPath();
         if (target == null)
-            return path;
+            {return path;}
         String fixedTarget;
         if (request.getBasePath() != null && target.startsWith("/")) {
             fixedTarget = request.getBasePath() + target;
         } else
-            fixedTarget = target;
+            {fixedTarget = target;}
         try {
-            URI reqURI = new URI(path);
+            final URI reqURI = new URI(path);
             return reqURI.resolve(fixedTarget).toASCIIString();
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw new ServletException(e.getMessage(), e);
         }
     }
@@ -188,7 +188,7 @@ public abstract class URLRewrite {
 
     public void setPrefix(String prefix) {
         if (prefix.endsWith("/"))
-            prefix = prefix.replaceFirst("/+$", "");
+            {prefix = prefix.replaceFirst("/+$", "");}
         this.prefix = prefix;
     }
 
@@ -200,15 +200,15 @@ public abstract class URLRewrite {
 
     public void prepareRequest(XQueryURLRewrite.RequestWrapper request) {
         if (parameters != null) {
-            for(Map.Entry<String, List<String>> param : parameters.entrySet()) {
-                for(String paramValue : param.getValue()) {
+            for(final Map.Entry<String, List<String>> param : parameters.entrySet()) {
+                for(final String paramValue : param.getValue()) {
                     request.addParameter(param.getKey().toString(), paramValue);
                 }
             }
         }
         if (attributes != null) {
-            for (Map.Entry<String, String> entry : attributes.entrySet()) {
-            	String value = entry.getValue();
+            for (final Map.Entry<String, String> entry : attributes.entrySet()) {
+            	final String value = entry.getValue();
                 if(value.equals(UNSET)) {
                     request.removeAttribute(entry.getKey().toString());
                 } else {
@@ -220,7 +220,7 @@ public abstract class URLRewrite {
 
     protected void setHeaders(HttpResponseWrapper response) {
         if (headers != null) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
+            for (final Map.Entry<String, String> entry : headers.entrySet()) {
                 response.setHeader(entry.getKey().toString(), entry.getValue().toString());
             }
         }
@@ -231,14 +231,14 @@ public abstract class URLRewrite {
     }
     
     protected static String normalizePath(String path) {
-        StringBuilder sb = new StringBuilder(path.length());
+        final StringBuilder sb = new StringBuilder(path.length());
         for (int i = 0; i < path.length(); i++) {
-            char c = path.charAt(i);
+            final char c = path.charAt(i);
             if (c == '/') {
                 if (i == 0 || path.charAt(i - 1) != '/')
-                    sb.append(c);
+                    {sb.append(c);}
             } else
-                sb.append(c);
+                {sb.append(c);}
         }
         return sb.toString();
     }

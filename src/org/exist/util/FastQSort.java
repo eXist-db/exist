@@ -110,11 +110,11 @@ public final class FastQSort {
 			// Arbitrarily establishing partition element as the midpoint of
 			// the array.
 			if (a[l].compareTo(a[i]) > 0)
-				SwapVals.swap(a, l, i); // Tri-Median Methode!
+				{SwapVals.swap(a, l, i);} // Tri-Median Methode!
 			if (a[l].compareTo(a[r]) > 0)
-				SwapVals.swap(a, l, r);
+				{SwapVals.swap(a, l, r);}
 			if (a[i].compareTo(a[r]) > 0)
-				SwapVals.swap(a, i, r);
+				{SwapVals.swap(a, i, r);}
 			partionElement = a[i];
 			// loop through the array until indices cross
 			i = l+1;
@@ -138,11 +138,11 @@ public final class FastQSort {
 			// If the right index has not reached the left side of array
 			// must now sort the left partition.
 			if( l < j )
-				IntroSortLoop( a, l, j, maxdepth );
+				{IntroSortLoop( a, l, j, maxdepth );}
 			// If the left index has not reached the right side of array
 			// must now sort the right partition.
 			// Right partition sorting has been inlined
-			if( i >= r )  break;
+			if( i >= r )  {break;}
 			l=i;
 		}
 	}
@@ -167,17 +167,17 @@ public final class FastQSort {
 			if (a[l].compareTo(a[i]) > 0) {
 				SwapVals.swap(a, l, i); // Tri-Median Methode!
 				if(b!=null)
-					SwapVals.swap(b, l, i); // Tri-Median Methode!
+					{SwapVals.swap(b, l, i);} // Tri-Median Methode!
 			}
 			if (a[l].compareTo(a[r]) > 0) {
 				SwapVals.swap(a, l, r);
 				if(b!=null)
-					SwapVals.swap(b, l, r);
+					{SwapVals.swap(b, l, r);}
 			}
 			if (a[i].compareTo(a[r]) > 0) {
 				SwapVals.swap(a, i, r);
 				if(b!=null)
-					SwapVals.swap(b, i, r);
+					{SwapVals.swap(b, i, r);}
 			}
 			partionElement = a[i];
 			// loop through the array until indices cross
@@ -196,7 +196,7 @@ public final class FastQSort {
 				if( i <= j ) {
 					SwapVals.swap(a, i, j);
 					if(b!=null)
-						SwapVals.swap(b, i, j);
+						{SwapVals.swap(b, i, j);}
 					++i;
 					--j;
 				}
@@ -204,10 +204,10 @@ public final class FastQSort {
 			// If the right index has not reached the left side of array
 			// must now sort the left partition.
 			if( l < j )
-				IntroSortLoop( a, l, j, b, maxdepth );
+				{IntroSortLoop( a, l, j, b, maxdepth );}
 			// If the left index has not reached the right side of array
 			// must now sort the right partition.
-			if( i >= r )  break;
+			if( i >= r )  {break;}
 			l=i;
 		}
 	}
@@ -230,11 +230,11 @@ public final class FastQSort {
 			// Arbitrarily establishing partition element as the midpoint of
 			// the array.
 			if (comp.compare(a[l],a[i]) > 0)
-				SwapVals.swap(a, l, i); // Tri-Median Methode!
+				{SwapVals.swap(a, l, i);} // Tri-Median Methode!
 			if (comp.compare(a[l],a[r]) > 0)
-				SwapVals.swap(a, l, r);
+				{SwapVals.swap(a, l, r);}
 			if (comp.compare(a[i],a[r]) > 0)
-				SwapVals.swap(a, i, r);
+				{SwapVals.swap(a, i, r);}
 			partionElement = a[i];
 			// loop through the array until indices cross
 			i = l+1;
@@ -258,10 +258,10 @@ public final class FastQSort {
 			// If the right index has not reached the left side of array
 			// must now sort the left partition.
 			if( l < j )
-				IntroSortLoop( a, comp, l, j, maxdepth );
+				{IntroSortLoop( a, comp, l, j, maxdepth );}
 			// If the left index has not reached the right side of array
 			// must now sort the right partition.
-			if( i >= r )  break;
+			if( i >= r )  {break;}
 			l=i;
 		}
 	}
@@ -284,11 +284,11 @@ public final class FastQSort {
 			// Arbitrarily establishing partition element as the midpoint of
 			// the array.
 			if ((a.get(l)).compareTo(a.get(i)) > 0)
-				SwapVals.swap(a, l, i); // Tri-Median Methode!
+				{SwapVals.swap(a, l, i);} // Tri-Median Methode!
 			if ((a.get(l)).compareTo(a.get(r)) > 0)
-				SwapVals.swap(a, l, r);
+				{SwapVals.swap(a, l, r);}
 			if ((a.get(i)).compareTo(a.get(r)) > 0)
-				SwapVals.swap(a, i, r);
+				{SwapVals.swap(a, i, r);}
 			partionElement = a.get(i);
 			// loop through the array until indices cross
 			i = l+1;
@@ -312,10 +312,10 @@ public final class FastQSort {
 			// If the right index has not reached the left side of array
 			// must now sort the left partition.
 			if( l < j )
-				IntroSortLoop( a, l, j, maxdepth );
+				{IntroSortLoop( a, l, j, maxdepth );}
 			// If the left index has not reached the right side of array
 			// must now sort the right partition.
-			if( i >= r )  break;
+			if( i >= r )  {break;}
 			l=i;
 		}
 	}
@@ -340,17 +340,17 @@ public final class FastQSort {
 			if (a[l] > a[i] ) {
 				SwapVals.swap(a, l, i); // Tri-Median Methode!
 				if(b!=null)
-					SwapVals.swap(b, l, i); // Tri-Median Methode!
+					{SwapVals.swap(b, l, i);} // Tri-Median Methode!
 			}
 			if (a[l] > a[r] ) {
 				SwapVals.swap(a, l, r);
 				if(b!=null)
-					SwapVals.swap(b, l, r);
+					{SwapVals.swap(b, l, r);}
 			}
 			if (a[i] > a[r] ) {
 				SwapVals.swap(a, i, r);
 				if(b!=null)
-					SwapVals.swap(b, i, r);
+					{SwapVals.swap(b, i, r);}
 			}
 			partionElement = a[i];
 			// loop through the array until indices cross
@@ -369,7 +369,7 @@ public final class FastQSort {
 				if( i <= j ) {
 					SwapVals.swap(a, i, j);
 					if(b!=null)
-						SwapVals.swap(b, i, j);
+						{SwapVals.swap(b, i, j);}
 					++i;
 					--j;
 				}
@@ -377,10 +377,10 @@ public final class FastQSort {
 			// If the right index has not reached the left side of array
 			// must now sort the left partition.
 			if( l < j )
-				IntroSortLoop( a, l, j, b, maxdepth );
+				{IntroSortLoop( a, l, j, b, maxdepth );}
 			// If the left index has not reached the right side of array
 			// must now sort the right partition.
-			if( i >= r )  break;
+			if( i >= r )  {break;}
 			l=i;
 		}
 	}
@@ -403,11 +403,11 @@ public final class FastQSort {
 			// Arbitrarily establishing partition element as the midpoint of
 			// the array.
 			if (a[l].getNodeId().compareTo(a[i].getNodeId()) > 0)
-				SwapVals.swap(a, l, i); // Tri-Median Methode!
+				{SwapVals.swap(a, l, i);} // Tri-Median Methode!
 			if (a[l].getNodeId().compareTo(a[r].getNodeId()) > 0)
-				SwapVals.swap(a, l, r);
+				{SwapVals.swap(a, l, r);}
 			if (a[i].getNodeId().compareTo(a[r].getNodeId()) > 0)
-				SwapVals.swap(a, i, r);
+				{SwapVals.swap(a, i, r);}
 			partionElement = a[i];
 			// loop through the array until indices cross
 			i = l+1;
@@ -431,55 +431,55 @@ public final class FastQSort {
 			// If the right index has not reached the left side of array
 			// must now sort the left partition.
 			if( l < j )
-				IntroSortLoopByNodeId( a, l, j, maxdepth );
+				{IntroSortLoopByNodeId( a, l, j, maxdepth );}
 			// If the left index has not reached the right side of array
 			// must now sort the right partition.
-			if( i >= r )  break;
+			if( i >= r )  {break;}
 			l=i;
 		}
 	}
 	
 	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi) {
 		if (lo >= hi)
-			return; // just one item, doesn't need sorting
+			{return;} // just one item, doesn't need sorting
 		IntroSort(a, lo, hi);
 	}
 
 	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b) {
 		if (lo >= hi)
-			return; // just one item, doesn't need sorting
+			{return;} // just one item, doesn't need sorting
 		IntroSort(a, lo, hi, b);
 	}
 
 	public static <C> void sort(C[] a, Comparator<C> c, int lo, int hi) {
 		if (lo >= hi)
-			return; // just one item, doesn't need sorting
+			{return;} // just one item, doesn't need sorting
 		IntroSort(a, c, lo, hi);
 	}
 	
 	public static <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi) {
 		if (lo >= hi)
-			return; // just one item, doesn't need sorting
+			{return;} // just one item, doesn't need sorting
 		IntroSort(a, lo, hi);
 	}
 	
 	public static void sortByNodeId(NodeProxy[] a, int lo, int hi) {
 		if (lo >= hi)
-			return; // just one item, doesn't need sorting
+			{return;} // just one item, doesn't need sorting
 		IntroSortByNodeId(a, lo, hi);
 	}
 
 	public static void sort(long[] a, int lo, int hi, Object b[]) {
 		if (lo >= hi)
-			return; // just one item, doesn't need sorting
+			{return;} // just one item, doesn't need sorting
 		IntroSort(a, lo, hi, b);
 	}
 
 	public static void main(String[] args) throws Exception {
-		List<String> l = new ArrayList<String>();
+		final List<String> l = new ArrayList<String>();
 		
 		if(args.length==0) {
-			String[] a=new String[] {
+			final String[] a=new String[] {
 				"Rudi",
 				"Herbert",
 				"Anton",
@@ -494,7 +494,7 @@ public final class FastQSort {
 		} else {
 			System.err.println("Ordering file "+args[0]+"\n");
 			try {
-				java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
+				final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
 				String rr;
 				
 				while((rr=is.readLine())!=null) {
@@ -502,7 +502,7 @@ public final class FastQSort {
 				}
 				
 				is.close();
-			} catch(Exception e) {
+			} catch(final Exception e) {
 			}
 		}
 		long a;

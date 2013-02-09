@@ -57,7 +57,7 @@ public class OccurrenceList {
         int count = 1;
         for (int i = 1; i < position; i++) {
             if (!nodes[i].equals(nodes[i - 1]))
-                count++;
+                {count++;}
         }
         return count;
     }
@@ -66,9 +66,9 @@ public class OccurrenceList {
         int count = 1;
         for (int i = start + 1; i < position; i++) {
             if (nodes[i].equals(nodes[start]))
-                count++;
+                {count++;}
             else
-                break;
+                {break;}
         }
         return count;
     }
@@ -76,7 +76,7 @@ public class OccurrenceList {
     public boolean contains(NodeId id) {
         for (int i = 0; i < position; i++)
             if (nodes[i].equals(id))
-                return true;
+                {return true;}
         return false;
     }
 

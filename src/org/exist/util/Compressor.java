@@ -51,8 +51,8 @@ public class Compressor {
      * @exception IOException if an error occurs
      */
     public static byte[] compress(byte[] whatToCompress, int length) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ZipOutputStream gzos = new ZipOutputStream(baos);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ZipOutputStream gzos = new ZipOutputStream(baos);
         gzos.setMethod(ZipOutputStream.DEFLATED);
         gzos.putNextEntry(new ZipEntry(length + ""));
         gzos.write(whatToCompress, 0, length);
@@ -71,18 +71,18 @@ public class Compressor {
      */
     public static byte[] uncompress(byte[] whatToUncompress)
 	throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         uncompress(whatToUncompress, baos);
         return baos.toByteArray();
     }
     
     public static void uncompress(byte[] whatToUncompress, OutputStream os)
     throws IOException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
-        ZipInputStream gzis = new ZipInputStream(bais);
-        ZipEntry zipentry = gzis.getNextEntry();
+        final ByteArrayInputStream bais = new ByteArrayInputStream(whatToUncompress);
+        final ZipInputStream gzis = new ZipInputStream(bais);
+        final ZipEntry zipentry = gzis.getNextEntry();
         Integer.parseInt(zipentry.getName());
-        byte[] buf = new byte[512];
+        final byte[] buf = new byte[512];
         int bread;
         while ((bread = gzis.read(buf)) != -1)
             os.write(buf, 0, bread);

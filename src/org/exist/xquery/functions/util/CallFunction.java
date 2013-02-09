@@ -75,16 +75,16 @@ public class CallFunction extends Function {
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
     	
-        Sequence arg0 = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence arg0 = getArgument(0).eval(contextSequence, contextItem);
         if(arg0.getCardinality() != Cardinality.EXACTLY_ONE)
-            throw new XPathException(this, "Expected exactly one item for first argument");
-        Item item0 = arg0.itemAt(0);
+            {throw new XPathException(this, "Expected exactly one item for first argument");}
+        final Item item0 = arg0.itemAt(0);
         if(item0.getType() != Type.FUNCTION_REFERENCE)
-            throw new XPathException(this, "Type error: expected function, got " + Type.getTypeName(item0.getType()));
-        FunctionReference ref = (FunctionReference)item0;
+            {throw new XPathException(this, "Type error: expected function, got " + Type.getTypeName(item0.getType()));}
+        final FunctionReference ref = (FunctionReference)item0;
         
         // pass the remaining parameters to the function call
-        List<Expression> params = new ArrayList<Expression>(getArgumentCount() - 1);
+        final List<Expression> params = new ArrayList<Expression>(getArgumentCount() - 1);
         for(int i = 1; i < getArgumentCount(); i++) {
             params.add(getArgument(i));
         }

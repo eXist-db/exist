@@ -81,23 +81,23 @@ public class RangeExpression extends PathExpr {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {		
     	Sequence result = null;
-		Sequence startSeq = start.eval(contextSequence, contextItem);
-		Sequence endSeq = end.eval(contextSequence, contextItem);
+		final Sequence startSeq = start.eval(contextSequence, contextItem);
+		final Sequence endSeq = end.eval(contextSequence, contextItem);
 		if (startSeq.isEmpty())
-		    result = Sequence.EMPTY_SEQUENCE;
+		    {result = Sequence.EMPTY_SEQUENCE;}
 		else if (endSeq.isEmpty())
-			result = Sequence.EMPTY_SEQUENCE;
+			{result = Sequence.EMPTY_SEQUENCE;}
 		else if (startSeq.hasMany())
-			throw new XPathException(this, ErrorCodes.XPTY0004, "The first operand must have at most one item", startSeq);
+			{throw new XPathException(this, ErrorCodes.XPTY0004, "The first operand must have at most one item", startSeq);}
 		else if (endSeq.hasMany())
-			throw new XPathException(this, ErrorCodes.XPTY0004, "The second operand must have at most one item", endSeq);
+			{throw new XPathException(this, ErrorCodes.XPTY0004, "The second operand must have at most one item", endSeq);}
         else {
         	if (context.isBackwardsCompatible()) {
 	        	NumericValue valueStart;
 	        	try {
 	        		//Currently breaks 1e3 to 3
 	        		valueStart = (NumericValue)startSeq.itemAt(0).convertTo(Type.NUMBER);
-	        	} catch (XPathException e) {
+	        	} catch (final XPathException e) {
 					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
 							startSeq.itemAt(0).getStringValue() + ")'", startSeq);
@@ -106,7 +106,7 @@ public class RangeExpression extends PathExpr {
 	        	try {
 	        		//Currently breaks 3 to 1e3
 	        		valueEnd = (NumericValue)endSeq.itemAt(0).convertTo(Type.NUMBER);
-	        	} catch (XPathException e) {
+	        	} catch (final XPathException e) {
 					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
 							endSeq.itemAt(0).getStringValue() + ")'", endSeq);
@@ -134,17 +134,17 @@ public class RangeExpression extends PathExpr {
 	        	//Quite unusual test : we accept integers but no other *typed* type 
 	        	if (!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
 	        		!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
-					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
+					{throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
-							startSeq.itemAt(0).getStringValue() + ")'", startSeq);
+							startSeq.itemAt(0).getStringValue() + ")'", startSeq);}
 	        	//Quite unusual test : we accept integers but no other *typed* type 
 	        	if (!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
 	        		!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
-					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
+					{throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
-							endSeq.itemAt(0).getStringValue() + ")'", endSeq);
-	        	IntegerValue valueStart = (IntegerValue)startSeq.itemAt(0).convertTo(Type.INTEGER);
-	        	IntegerValue valueEnd = (IntegerValue)endSeq.itemAt(0).convertTo(Type.INTEGER);
+							endSeq.itemAt(0).getStringValue() + ")'", endSeq);}
+	        	final IntegerValue valueStart = (IntegerValue)startSeq.itemAt(0).convertTo(Type.INTEGER);
+	        	final IntegerValue valueEnd = (IntegerValue)endSeq.itemAt(0).convertTo(Type.INTEGER);
 //	       		result = new ValueSequence();
 //				for (long i = valueStart.getLong();	i <= valueEnd.getLong(); i++) {
 //					result.add(new IntegerValue(i));

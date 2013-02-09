@@ -54,10 +54,10 @@ public class XMLDBShutdownTask extends AbstractXMLDBTask
 
         try {
             log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            Collection root = DatabaseManager.getCollection( uri, user, password );
+            final Collection root = DatabaseManager.getCollection( uri, user, password );
 
             if( root == null ) {
-                String msg = "Collection " + uri + " could not be found.";
+                final String msg = "Collection " + uri + " could not be found.";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -66,14 +66,14 @@ public class XMLDBShutdownTask extends AbstractXMLDBTask
                 }
 
             } else {
-                DatabaseInstanceManager mgr = (DatabaseInstanceManager)root.getService( "DatabaseInstanceManager", "1.0" );
+                final DatabaseInstanceManager mgr = (DatabaseInstanceManager)root.getService( "DatabaseInstanceManager", "1.0" );
                 log( "Shutdown database instance", Project.MSG_INFO );
                 mgr.shutdown();
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "Error during database shutdown: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "Error during database shutdown: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

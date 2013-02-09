@@ -59,14 +59,14 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     public XmldbRequestProcessorFactory(String databaseid, boolean useDefaultUser) throws EXistException {
         this.useDefaultUser = useDefaultUser;
         if (databaseid != null && !"".equals(databaseid))
-            this.databaseid = databaseid;
+            {this.databaseid = databaseid;}
         brokerPool = BrokerPool.getInstance(this.databaseid);
     }
 
     public Object getRequestProcessor(XmlRpcRequest pRequest) throws XmlRpcException {
         checkResultSets();
-        XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) pRequest.getConfig();
-        Subject user = authenticate(config.getBasicUserName(), config.getBasicPassword());
+        final XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) pRequest.getConfig();
+        final Subject user = authenticate(config.getBasicUserName(), config.getBasicPassword());
         return new RpcConnection(this, user);
     }
 
@@ -79,14 +79,14 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
         }
 
         if (!useDefaultUser && username.equalsIgnoreCase(SecurityManager.GUEST_USER)) {
-            String message = "The user " + SecurityManager.GUEST_USER + " is prohibited from logging in through XML-RPC.";
+            final String message = "The user " + SecurityManager.GUEST_USER + " is prohibited from logging in through XML-RPC.";
             LOG.debug(message);
             throw new XmlRpcException(0, message);
         }
         // check user
         try {
             return brokerPool.getSecurityManager().authenticate(username, password);
-		} catch (AuthenticationException e) {
+		} catch (final AuthenticationException e) {
             LOG.debug(e.getMessage());
             throw new XmlRpcException(0, e.getMessage());
 		}
@@ -106,7 +106,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     public synchronized void shutdown() {
         try {
             BrokerPool.stop();
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.warn("shutdown failed", e);
         }
     }

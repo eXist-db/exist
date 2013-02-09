@@ -137,7 +137,7 @@ public class RealmImpl extends AbstractRealm {
         super.start(broker);
         try {
             createAdminAndGuestIfNotExist(broker);
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             final boolean exportOnly =  (Boolean) broker.getConfiguration().getProperty(BrokerPool.PROPERTY_EXPORT_ONLY, false);
             if(!exportOnly) {
             	throw new EXistException(pde.getMessage(), pde);
@@ -184,7 +184,7 @@ public class RealmImpl extends AbstractRealm {
         usersByName.modify2E(new PrincipalDbModify2E<Account, PermissionDeniedException, EXistException>(){
             @Override
             public void execute(Map<String, Account> principalDb) throws PermissionDeniedException, EXistException {
-                AbstractAccount remove_account = (AbstractAccount)principalDb.get(account.getName());
+                final AbstractAccount remove_account = (AbstractAccount)principalDb.get(account.getName());
                 if(remove_account == null){
                     throw new IllegalArgumentException("No such account exists!");
                 }
@@ -192,7 +192,7 @@ public class RealmImpl extends AbstractRealm {
                 DBBroker broker = null;
                 try {
                     broker = getDatabase().get(null);
-                    Account user = broker.getSubject();
+                    final Account user = broker.getSubject();
 
                     if(!(account.getName().equals(user.getName()) || user.hasDbaRole()) ) {
                         throw new PermissionDeniedException("You are not allowed to delete '" +account.getName() + "' user");
@@ -201,7 +201,7 @@ public class RealmImpl extends AbstractRealm {
                     remove_account.setRemoved(true);
                     remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
 
-                    TransactionManager transaction = getDatabase().getTransactionManager();
+                    final TransactionManager transaction = getDatabase().getTransactionManager();
                     Txn txn = null;
                     try {
                         txn = transaction.beginTransaction();
@@ -209,7 +209,7 @@ public class RealmImpl extends AbstractRealm {
                         collectionAccounts.removeXMLResource(txn, broker, XmldbURI.create( remove_account.getName() + ".xml"));
 
                         transaction.commit(txn);
-                    } catch(Exception e) {
+                    } catch(final Exception e) {
                         transaction.abort(txn);
                         e.printStackTrace();
                         LOG.debug("loading configuration failed: " + e.getMessage());
@@ -229,25 +229,25 @@ public class RealmImpl extends AbstractRealm {
     @Override
     public boolean deleteGroup(final Group group) throws PermissionDeniedException, EXistException {
         if(group == null)
-            return false;
+            {return false;}
         
         groupsByName.modify2E(new PrincipalDbModify2E<Group, PermissionDeniedException, EXistException>(){
             @Override
             public void execute(Map<String, Group> principalDb) throws PermissionDeniedException, EXistException {
         
-            	AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
+            	final AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
             	if(remove_group == null)
-                    throw new IllegalArgumentException("Group does '"+group.getName()+"' not exist!");
+                    {throw new IllegalArgumentException("Group does '"+group.getName()+"' not exist!");}
 		
-            	DBBroker broker = getDatabase().getActiveBroker();
-                Subject subject = broker.getSubject();
+            	final DBBroker broker = getDatabase().getActiveBroker();
+                final Subject subject = broker.getSubject();
                 
                 ((Group)remove_group).assertCanModifyGroup(subject);
 		
                 remove_group.setRemoved(true);
                 remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID() + ".xml"));
 		
-                TransactionManager transaction = getDatabase().getTransactionManager();
+                final TransactionManager transaction = getDatabase().getTransactionManager();
                 Txn txn = null;
                 try {
                     txn = transaction.beginTransaction();
@@ -255,7 +255,7 @@ public class RealmImpl extends AbstractRealm {
                     collectionGroups.removeXMLResource(txn, broker, XmldbURI.create(remove_group.getName() + ".xml" ));
 
                     transaction.commit(txn);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     transaction.abort(txn);
                     LOG.debug(e);
                 }
@@ -299,7 +299,7 @@ public class RealmImpl extends AbstractRealm {
             @Override
             public List<String> execute(Map<String, Account> principalDb) {
                 final List<String> userNames = new ArrayList<String>();
-                for(String userName : principalDb.keySet()) {
+                for(final String userName : principalDb.keySet()) {
                     if(userName.startsWith(startsWith)) {
                         userNames.add(userName);
                     }
@@ -316,7 +316,7 @@ public class RealmImpl extends AbstractRealm {
             @Override
             public List<String> execute(Map<String, Group> principalDb) {
                 final List<String> groupNames = new ArrayList<String>();
-                for(String groupName : principalDb.keySet()) {
+                for(final String groupName : principalDb.keySet()) {
                     if(groupName.startsWith(startsWith)) {
                         groupNames.add(groupName);
                     }
@@ -332,7 +332,7 @@ public class RealmImpl extends AbstractRealm {
             @Override
             public List<String> execute(Map<String, Group> principalDb) {
                 final List<String> groupNames = new ArrayList<String>();
-                for(String groupName : principalDb.keySet()) {
+                for(final String groupName : principalDb.keySet()) {
                     if(groupName.indexOf(fragment) > -1) {
                         groupNames.add(groupName);
                     }
@@ -368,7 +368,7 @@ public class RealmImpl extends AbstractRealm {
             @Override
             public List<String> execute(Map<String, Account> principalDb) {
                 final List<String> groupMembers = new ArrayList<String>();
-                for(Account account : principalDb.values()) {
+                for(final Account account : principalDb.values()) {
                     if(account.hasGroup(groupName)) {
                         groupMembers.add(account.getName());
                     }

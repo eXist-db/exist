@@ -136,7 +136,7 @@ public abstract class AbstractRestoreListener implements RestoreListener {
         final StringBuilder builder = new StringBuilder();
         builder.append("------------------------------------\n");
         builder.append("Problems occured found during restore:\n");
-        for(Problem problem : problems) {
+        for(final Problem problem : problems) {
             builder.append(problem.toString());
             builder.append(System.getProperty("line.separator"));
         }

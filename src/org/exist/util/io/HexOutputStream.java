@@ -65,7 +65,7 @@ public class HexOutputStream extends FilterOutputStream {
      */
     @Override
     public void write(final int i) throws IOException {
-        byte singleByte[] = new byte[]{ (byte) i };
+        final byte singleByte[] = new byte[]{ (byte) i };
         write(singleByte, 0, 1);
     }
 
@@ -97,7 +97,7 @@ public class HexOutputStream extends FilterOutputStream {
             throw new IndexOutOfBoundsException();
         } else if (len > 0) {
 
-            byte data[] = new byte[len];
+            final byte data[] = new byte[len];
             System.arraycopy(b, offset, data, 0, len);
             write(data);
         }
@@ -114,7 +114,7 @@ public class HexOutputStream extends FilterOutputStream {
         } else {
             try {
                 out.write(hex.decode(b));
-            } catch(DecoderException de) {
+            } catch(final DecoderException de) {
                 throw new IOException("Unable to decode: " + de.getMessage(), de);
             }
         }

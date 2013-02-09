@@ -53,7 +53,7 @@ public class EmbeddedUploadThread extends Thread {
         logger.debug("Thread started." );
         IOException exception=null;
         try {
-            EmbeddedUpload uploader = new EmbeddedUpload();
+            final EmbeddedUpload uploader = new EmbeddedUpload();
             uploader.stream(xmldbURL, bis);
             
         } catch (IOException ex) {

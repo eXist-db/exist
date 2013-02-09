@@ -115,8 +115,8 @@ public class Serialize extends BasicFunction {
         	/** serialize to disk **/
         	
 	        // check the file output path
-	        String path = args[1].itemAt(0).getStringValue();
-	        File file = new File(path);
+	        final String path = args[1].itemAt(0).getStringValue();
+	        final File file = new File(path);
 	        if (file.isDirectory()) {
 	            logger.debug("Output file is a directory: " + file.getAbsolutePath());
 	            return BooleanValue.FALSE;
@@ -134,7 +134,7 @@ public class Serialize extends BasicFunction {
 	        {
 	        	os = new FileOutputStream(file);
 	        }
-	        catch(IOException e)
+	        catch(final IOException e)
 	        {
 	        	throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
 	        }
@@ -159,10 +159,10 @@ public class Serialize extends BasicFunction {
         	
         	try
         	{
-        		String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+        		final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
         		return new StringValue(new String(((ByteArrayOutputStream)os).toByteArray(), encoding));
         	}
-        	catch(UnsupportedEncodingException e)
+        	catch(final UnsupportedEncodingException e)
         	{
         		throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
         	}
@@ -173,16 +173,16 @@ public class Serialize extends BasicFunction {
     private Properties parseSerializationOptions(SequenceIterator siSerializeParams) throws XPathException
     {
     	//parse serialization options
-        Properties outputProperties = new Properties();
+        final Properties outputProperties = new Properties();
         outputProperties.setProperty(OutputKeys.INDENT, "yes");
         outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         while(siSerializeParams.hasNext())
         {
-            String serializeParams = siSerializeParams.nextItem().getStringValue();
-            String params[] = serializeParams.split(" ");
-            for(String param : params)
+            final String serializeParams = siSerializeParams.nextItem().getStringValue();
+            final String params[] = serializeParams.split(" ");
+            for(final String param : params)
             {
-                String opt[] = Option.parseKeyValuePair(param);
+                final String opt[] = Option.parseKeyValuePair(param);
                 outputProperties.setProperty(opt[0], opt[1]);
             }
         }
@@ -193,14 +193,14 @@ public class Serialize extends BasicFunction {
     private void serialize(SequenceIterator siNode, Properties outputProperties, OutputStream os) throws XPathException
     {
         // serialize the node set
-        SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+        final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         try
         {
-            String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-            Writer writer = new OutputStreamWriter(os, encoding);
+            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+            final Writer writer = new OutputStreamWriter(os, encoding);
             sax.setOutput(writer, outputProperties);
-            Serializer serializer = context.getBroker().getSerializer();
+            final Serializer serializer = context.getBroker().getSerializer();
             serializer.reset();
             serializer.setProperties(outputProperties);
             serializer.setSAXHandlers(sax, sax);
@@ -209,18 +209,18 @@ public class Serialize extends BasicFunction {
             
             while(siNode.hasNext())
             {
-        	   NodeValue next = (NodeValue)siNode.nextItem();
+        	   final NodeValue next = (NodeValue)siNode.nextItem();
                serializer.toSAX(next);	
             }
             
             sax.endDocument();
             writer.close();
         }
-        catch(SAXException e)
+        catch(final SAXException e)
         {
             throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             throw new XPathException(this, "A problem occurred while serializing the node set: " + e.getMessage(), e);
         }

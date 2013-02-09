@@ -87,12 +87,12 @@ public class BuiltinFunctions extends BasicFunction {
 	public Sequence eval(Sequence[] args,	Sequence contextSequence)
 		throws XPathException {
 		
-		ValueSequence resultSeq = new ValueSequence();
+		final ValueSequence resultSeq = new ValueSequence();
 		if(getArgumentCount() == 1) {
-			String uri = args[0].getStringValue();
-			Module module = context.getModule(uri);
+			final String uri = args[0].getStringValue();
+			final Module module = context.getModule(uri);
 			if(module == null)
-				throw new XPathException(this, "No module found matching namespace URI: " + uri);
+				{throw new XPathException(this, "No module found matching namespace URI: " + uri);}
 			if (isCalledAs("declared-variables")) {
 				addVariablesFromModule(resultSeq, module);
             } else if (isCalledAs("list-functions")) {
@@ -104,14 +104,14 @@ public class BuiltinFunctions extends BasicFunction {
             if (isCalledAs("list-functions")) {
                 addFunctionRefsFromContext(resultSeq);
             } else {
-                for(Iterator<Module> i = context.getModules(); i.hasNext(); ) {
-                    Module module = i.next();
+                for(final Iterator<Module> i = context.getModules(); i.hasNext(); ) {
+                    final Module module = i.next();
                     addFunctionsFromModule(resultSeq, module);
                 }
                 // Add all functions declared in the local module
-                for(Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
-                    UserDefinedFunction func = i.next();
-                    FunctionSignature sig = func.getSignature();
+                for(final Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
+                    final UserDefinedFunction func = i.next();
+                    final FunctionSignature sig = func.getSignature();
                     resultSeq.add(new QNameValue(context, sig.getName()));
                 }
             }
@@ -120,22 +120,22 @@ public class BuiltinFunctions extends BasicFunction {
 	}
 
 	private void addFunctionsFromModule(ValueSequence resultSeq, Module module) {
-		Set<QName> set = new TreeSet<QName>();
-		FunctionSignature signatures[] = module.listFunctions();
+		final Set<QName> set = new TreeSet<QName>();
+		final FunctionSignature signatures[] = module.listFunctions();
 		// add to set to remove duplicate QName's
 		for(int j = 0; j < signatures.length; j++) {
-			QName qname = signatures[j].getName();
+			final QName qname = signatures[j].getName();
 			set.add(qname);
 		}
-		for(QName qname : set) {
+		for(final QName qname : set) {
 			resultSeq.add(new QNameValue(context, qname));
 		}
 	}
 
     private void addFunctionRefsFromModule(ValueSequence resultSeq, Module module) throws XPathException {
-        FunctionSignature signatures[] = module.listFunctions();
-        for (FunctionSignature signature : signatures) {
-            FunctionCall call = FunOnFunctions.lookupFunction(this, signature.getName(), signature.getArgumentCount());
+        final FunctionSignature signatures[] = module.listFunctions();
+        for (final FunctionSignature signature : signatures) {
+            final FunctionCall call = FunOnFunctions.lookupFunction(this, signature.getName(), signature.getArgumentCount());
             if (call != null) {
                 resultSeq.add(new FunctionReference(call));
             }
@@ -143,9 +143,9 @@ public class BuiltinFunctions extends BasicFunction {
     }
 
     private void addFunctionRefsFromContext(ValueSequence resultSeq) throws XPathException {
-        for (Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
-            UserDefinedFunction f = i.next();
-            FunctionCall call =
+        for (final Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
+            final UserDefinedFunction f = i.next();
+            final FunctionCall call =
                     FunOnFunctions.lookupFunction(this, f.getSignature().getName(), f.getSignature().getArgumentCount());
             if (call != null) {
                 resultSeq.add(new FunctionReference(call));
@@ -154,7 +154,7 @@ public class BuiltinFunctions extends BasicFunction {
     }
 
 	private void addVariablesFromModule(ValueSequence resultSeq, Module module) {
-		for (Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
+		for (final Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
 			resultSeq.add(new QNameValue(context, i.next()));
 		}
 	}

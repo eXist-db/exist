@@ -118,7 +118,7 @@ public class FunNumber extends Function {
             } else {
                 try {
                     result = arg.convertTo(Type.DOUBLE);
-                } catch(XPathException e) {
+                } catch(final XPathException e) {
                     result = DoubleValue.NaN;
                 }
             }
@@ -134,7 +134,7 @@ public class FunNumber extends Function {
             } else {
                 try {
                     result = arg.convertTo(Type.DOUBLE);
-                } catch(XPathException e) {
+                } catch(final XPathException e) {
                     result = DoubleValue.NaN;
                 }
             }

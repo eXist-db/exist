@@ -73,7 +73,7 @@ public class XmlLibraryChecker {
     private static String getClassName(String classid) {
         String className;
 
-        int lastChar = classid.lastIndexOf("@");
+        final int lastChar = classid.lastIndexOf("@");
         if (lastChar == -1) {
             className = classid;
         } else {
@@ -91,12 +91,12 @@ public class XmlLibraryChecker {
 
         String parserClass = "Unable to determine parser class";
         try {
-            SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
-            XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-            String classId = xmlReader.toString();
+            final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
+            final XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+            final String classId = xmlReader.toString();
             parserClass = getClassName(classId);
             
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             logger.error(ex.getMessage());
         }
         return parserClass;
@@ -111,12 +111,12 @@ public class XmlLibraryChecker {
     private static String determineActualTransformerClass(){
         String transformerClass = "Unable to determine transformer class";
         try {
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-            String classId = transformer.toString();
+            final TransformerFactory factory = TransformerFactory.newInstance();
+            final Transformer transformer = factory.newTransformer();
+            final String classId = transformer.toString();
             transformerClass = getClassName(classId);
 
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             logger.error(ex.getMessage());
         }
         return transformerClass;    
@@ -133,8 +133,8 @@ public class XmlLibraryChecker {
          * Parser
          */
         message = new StringBuilder();
-        ServiceLoader<SAXParserFactory> allSax = ServiceLoader.load(SAXParserFactory.class);
-        for(SAXParserFactory sax : allSax){
+        final ServiceLoader<SAXParserFactory> allSax = ServiceLoader.load(SAXParserFactory.class);
+        for(final SAXParserFactory sax : allSax){
             message.append(getClassName(sax.toString()));
             message.append(" ");
         }
@@ -158,8 +158,8 @@ public class XmlLibraryChecker {
          */
         message = new StringBuilder();
 
-        ServiceLoader<TransformerFactory> allXsl = ServiceLoader.load(TransformerFactory.class);
-        for(TransformerFactory xsl : allXsl){
+        final ServiceLoader<TransformerFactory> allXsl = ServiceLoader.load(TransformerFactory.class);
+        for(final TransformerFactory xsl : allXsl){
             message.append(getClassName(xsl.toString()));
             message.append(" ");
         }
@@ -210,12 +210,12 @@ public class XmlLibraryChecker {
     public static boolean hasValidClassVersion(String type, 
                         ClassVersion[] validClasses, StringBuilder message) {
 
-        String sep = System.getProperty("line.separator");
+        final String sep = System.getProperty("line.separator");
 
         message.append("Looking for a valid ").append(type).append("...").append(sep);
 
-        for (ClassVersion validClass : validClasses) {
-            String actualVersion = validClass.getActualVersion();
+        for (final ClassVersion validClass : validClasses) {
+            final String actualVersion = validClass.getActualVersion();
 
             message.append("Checking for ").append(validClass.getSimpleName());
 
@@ -338,26 +338,26 @@ public class XmlLibraryChecker {
             String actualVersion = null;
 
             //get the class name from the specifiec version function string
-            String versionClassName = versionFunction
+            final String versionClassName = versionFunction
                     .substring(0, versionFunction.lastIndexOf('.'));
 
             //get the function name from the specifiec version function string
-            String versionFunctionName = versionFunction.substring(
+            final String versionFunctionName = versionFunction.substring(
                     versionFunction.lastIndexOf('.') + 1, versionFunction.lastIndexOf('('));
 
             try {
                 //get the class
-                Class<?> versionClass = Class.forName(versionClassName);
+                final Class<?> versionClass = Class.forName(versionClassName);
 
                 //get the method
-                Method getVersionMethod = versionClass
+                final Method getVersionMethod = versionClass
                         .getMethod(versionFunctionName, (Class[]) null);
 
                 //invoke the method on the class
                 actualVersion = (String) getVersionMethod
                         .invoke(versionClass, (Object[]) null);
                 
-            } catch (Exception ex) {
+            } catch (final Exception ex) {
                 logger.debug(ex.getMessage());
             }
 

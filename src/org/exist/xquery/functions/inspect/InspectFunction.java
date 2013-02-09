@@ -47,29 +47,29 @@ public class InspectFunction extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        FunctionReference ref = (FunctionReference) args[0].itemAt(0);
-        FunctionSignature sig = ref.getSignature();
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        int nodeNr = generateDocs(sig, builder);
+        final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
+        final FunctionSignature sig = ref.getSignature();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
+        final int nodeNr = generateDocs(sig, builder);
         return builder.getDocument().getNode(nodeNr);
     }
 
     public static int generateDocs(FunctionSignature sig, MemTreeBuilder builder) throws XPathException {
         XQDocHelper.parse(sig);
 
-        AttributesImpl attribs = new AttributesImpl();
+        final AttributesImpl attribs = new AttributesImpl();
         attribs.addAttribute("", "name", "name", "CDATA", sig.getName().toString());
         attribs.addAttribute("", "module", "module", "CDATA", sig.getName().getNamespaceURI());
-        int nodeNr = builder.startElement(FUNCTION_QNAME, attribs);
+        final int nodeNr = builder.startElement(FUNCTION_QNAME, attribs);
         writeParameters(sig, builder);
-        SequenceType returnType = sig.getReturnType();
+        final SequenceType returnType = sig.getReturnType();
         if (returnType != null) {
             attribs.clear();
             attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(returnType.getPrimaryType()));
             attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(returnType.getCardinality()));
             builder.startElement(RETURN_QNAME, attribs);
             if (returnType instanceof FunctionReturnSequenceType) {
-                FunctionReturnSequenceType type = (FunctionReturnSequenceType) returnType;
+                final FunctionReturnSequenceType type = (FunctionReturnSequenceType) returnType;
                 builder.characters(type.getDescription());
             }
             builder.endElement();
@@ -80,9 +80,9 @@ public class InspectFunction extends BasicFunction {
             builder.characters(sig.getDescription());
             builder.endElement();
         }
-        Map<String, String> metadata = sig.getMetadata();
+        final Map<String, String> metadata = sig.getMetadata();
         if (metadata != null) {
-            for (Map.Entry<String, String> meta : metadata.entrySet()) {
+            for (final Map.Entry<String, String> meta : metadata.entrySet()) {
                 builder.startElement(new QName(meta.getKey()), null);
                 builder.characters(meta.getValue());
                 builder.endElement();
@@ -98,15 +98,15 @@ public class InspectFunction extends BasicFunction {
     }
 
     private static void writeParameters(FunctionSignature sig, MemTreeBuilder builder) {
-        SequenceType[] arguments = sig.getArgumentTypes();
+        final SequenceType[] arguments = sig.getArgumentTypes();
         if (arguments != null) {
-            AttributesImpl attribs = new AttributesImpl();
-            for (SequenceType type: arguments) {
+            final AttributesImpl attribs = new AttributesImpl();
+            for (final SequenceType type: arguments) {
                 attribs.clear();
                 attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
                 attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(type.getCardinality()));
                 if (type instanceof FunctionParameterSequenceType)
-                    attribs.addAttribute("", "var", "var", "CDATA", ((FunctionParameterSequenceType)type).getAttributeName());
+                    {attribs.addAttribute("", "var", "var", "CDATA", ((FunctionParameterSequenceType)type).getAttributeName());}
                 builder.startElement(ARGUMENT_QNAME, attribs);
                 if (type instanceof FunctionParameterSequenceType) {
                     builder.characters(((FunctionParameterSequenceType)type).getDescription());
@@ -117,17 +117,17 @@ public class InspectFunction extends BasicFunction {
     }
 
     private static void writeAnnotations(FunctionSignature signature, MemTreeBuilder builder) throws XPathException {
-        AttributesImpl attribs = new AttributesImpl();
-        Annotation[] annots = signature.getAnnotations();
+        final AttributesImpl attribs = new AttributesImpl();
+        final Annotation[] annots = signature.getAnnotations();
         if (annots != null) {
-            for (Annotation annot : annots) {
+            for (final Annotation annot : annots) {
                 attribs.clear();
                 attribs.addAttribute(null, "name", "name", "CDATA", annot.getName().toString());
                 attribs.addAttribute(null, "namespace", "namespace", "CDATA", annot.getName().getNamespaceURI());
                 builder.startElement(ANNOTATION_QNAME, attribs);
-                LiteralValue[] value = annot.getValue();
+                final LiteralValue[] value = annot.getValue();
                 if (value != null) {
-                    for (LiteralValue literal : value) {
+                    for (final LiteralValue literal : value) {
                         builder.startElement(ANNOTATION_VALUE_QNAME, null);
                         builder.characters(literal.getValue().getStringValue());
                         builder.endElement();

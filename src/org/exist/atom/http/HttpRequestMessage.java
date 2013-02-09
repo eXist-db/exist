@@ -64,9 +64,9 @@ public class HttpRequestMessage implements IncomingMessage {
 
 	public long getContentLength() {
 		long len = request.getContentLength();
-		String lenstr = request.getHeader("Content-Length");
+		final String lenstr = request.getHeader("Content-Length");
 		if(lenstr!=null)
-			len = Long.parseLong(lenstr);
+			{len = Long.parseLong(lenstr);}
 		return len;
 	}
 

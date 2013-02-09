@@ -54,52 +54,52 @@ public class DynamicNameCheck extends AbstractExpression {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
         try {
-            Sequence seq = expression.eval(contextSequence, contextItem);
-            for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-                Item item = i.nextItem();
+            final Sequence seq = expression.eval(contextSequence, contextItem);
+            for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                final Item item = i.nextItem();
                 int itemType = item.getType();
                 //If item type is "unknown", try to get it from the sequence type
                 //Should we get a kind of Type.UNKNOWN rather than Type.NODE ?
                 if (itemType == Type.NODE) 
-                    itemType = seq.getItemType();
+                    {itemType = seq.getItemType();}
                 //Last chance...
                 if (item instanceof NodeProxy) {
                     itemType = ((NodeProxy)item).getNodeType();
                     if (itemType == NodeProxy.UNKNOWN_NODE_TYPE)
                         //Retrieve the actual node
-                        itemType = ((NodeProxy)item).getNode().getNodeType();
+                        {itemType = ((NodeProxy)item).getNode().getNodeType();}
                 }
                 if (!Type.subTypeOf(itemType, test.getType())) {
                     throw new XPathException(expression, "Type error in expression" +
                         ": required type is " + Type.getTypeName(test.getType()) +
                         "; got: " + Type.getTypeName(item.getType()) + ": " + item.getStringValue());
                 }
-                Node node = ((NodeValue) item).getNode();
+                final Node node = ((NodeValue) item).getNode();
                 if (!test.matchesName(node))
-                    throw new XPathException(expression, "Type error in expression: " +
+                    {throw new XPathException(expression, "Type error in expression: " +
                         "required node name is " + getPrefixedNodeName(test.getName()) +
-                        "; got: " + getPrefixedNodeName(node));
+                        "; got: " + getPrefixedNodeName(node));}
                 }
                 if (context.getProfiler().isEnabled()) {
                     context.getProfiler().end(this, "", seq);
                 }
                 return seq;
-            } catch(IllegalArgumentException iae) {
+            } catch(final IllegalArgumentException iae) {
                 throw new XPathException(expression, iae);
             }
     }
 
     private String getPrefixedNodeName(Node node) {
-        String prefix = node.getPrefix();
+        final String prefix = node.getPrefix();
         if (prefix == null) {
-            String nameSpace = node.getNamespaceURI();
+            final String nameSpace = node.getNamespaceURI();
             if (nameSpace == null) {
                 return node.getNodeName();
             } else {
@@ -114,10 +114,10 @@ public class DynamicNameCheck extends AbstractExpression {
 
     // TODO should be moved to QName
     private String getPrefixedNodeName(QName name) {
-        String prefix = name.getPrefix();
-        String localName = name.getLocalName();
+        final String prefix = name.getPrefix();
+        final String localName = name.getLocalName();
         if (prefix == null) {
-            String namespaceURI = name.getNamespaceURI();
+            final String namespaceURI = name.getNamespaceURI();
             if (namespaceURI == null) {
                 return localName;
             } else {
@@ -165,11 +165,11 @@ public class DynamicNameCheck extends AbstractExpression {
         }
         expression.dump(dumper);
         if(dumper.verbosity() > 1)
-            dumper.display("]");
+            {dumper.display("]");}
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("dynamic-name-check");
         result.append("["); 
         result.append(Type.getTypeName(test.nodeType));

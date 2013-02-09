@@ -22,12 +22,12 @@ public class MapExpr extends AbstractExpression {
     }
 
     public void map(PathExpr key, PathExpr value) {
-        Mapping mapping = new Mapping(key.simplify(), value.simplify());
+        final Mapping mapping = new Mapping(key.simplify(), value.simplify());
         this.mappings.add(mapping);
     }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        for (Mapping mapping : this.mappings) {
+        for (final Mapping mapping : this.mappings) {
             mapping.key.analyze(contextInfo);
             mapping.value.analyze(contextInfo);
         }
@@ -35,14 +35,14 @@ public class MapExpr extends AbstractExpression {
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (contextItem != null)
-            contextSequence = contextItem.toSequence();
-        MapType map = new MapType(this.context);
-        for (Mapping mapping : this.mappings) {
-            Sequence key = mapping.key.eval(contextSequence);
+            {contextSequence = contextItem.toSequence();}
+        final MapType map = new MapType(this.context);
+        for (final Mapping mapping : this.mappings) {
+            final Sequence key = mapping.key.eval(contextSequence);
             if (key.getItemCount() != 1)
-                throw new XPathException(MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
-            AtomicValue atomic = key.itemAt(0).atomize();
-            Sequence value = mapping.value.eval(contextSequence);
+                {throw new XPathException(MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());}
+            final AtomicValue atomic = key.itemAt(0).atomize();
+            final Sequence value = mapping.value.eval(contextSequence);
             map.add(atomic, value);
         }
         return map;
@@ -54,7 +54,7 @@ public class MapExpr extends AbstractExpression {
 
     public void dump(ExpressionDumper dumper) {
         dumper.display("map {");
-        for (Mapping mapping : this.mappings) {
+        for (final Mapping mapping : this.mappings) {
             mapping.key.dump(dumper);
             dumper.display(" := ");
             mapping.value.dump(dumper);

@@ -35,7 +35,7 @@ public class NodeTransferable implements Transferable
 	
 	private static DataFlavor createFlavor(Class<?> c)
 	{
-		DataFlavor ret = new DataFlavor(c, FLAVOR_DESCRIPTION);
+		final DataFlavor ret = new DataFlavor(c, FLAVOR_DESCRIPTION);
 		CLASS_TO_FLAVOR.put(c, ret);
 		return ret;
 	}
@@ -54,15 +54,15 @@ public class NodeTransferable implements Transferable
 
 		for(Class<?> c = node.getClass(); c != null; c = c.getSuperclass())
 		{
-			DataFlavor flavor = CLASS_TO_FLAVOR.get(c);
+			final DataFlavor flavor = CLASS_TO_FLAVOR.get(c);
 			if(flavor != null)
-				supportedFlavors.add(flavor);
+				{supportedFlavors.add(flavor);}
 		}
 	}
 
 	public DataFlavor[] getTransferDataFlavors()
 	{
-		DataFlavor[] ret = new DataFlavor[supportedFlavors.size()];
+		final DataFlavor[] ret = new DataFlavor[supportedFlavors.size()];
 		supportedFlavors.toArray(ret);
 		return ret;
 	}
@@ -75,18 +75,18 @@ public class NodeTransferable implements Transferable
 	public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException
 	{
 		if(XACMLTreeNode.class.isAssignableFrom(flavor.getRepresentationClass()))
-			return node;
+			{return node;}
 		if(DataFlavor.stringFlavor.equals(flavor))
-			return node.serialize(true);
+			{return node.serialize(true);}
 		if(TEXT_XML_FLAVOR.equals(flavor))
-			return serialize(true);
+			{return serialize(true);}
 		if(APPLICATION_XML_FLAVOR.equals(flavor))
-			return serialize(false);
+			{return serialize(false);}
 		throw new UnsupportedFlavorException(flavor);
 	}
 	private InputStream serialize(boolean indent)
 	{
-		String serializedString = node.serialize(true);
+		final String serializedString = node.serialize(true);
 		return new ByteArrayInputStream(serializedString.getBytes());
 	}
 

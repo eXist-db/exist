@@ -62,23 +62,23 @@ public class SAXToReceiver implements ContentHandler, LexicalHandler {
         String prefix = null;
         int p = qName.indexOf(':');
         if (p > -1)
-            prefix = qName.substring(0, p - 1);
-        AttrList attrs = new AttrList();
+            {prefix = qName.substring(0, p - 1);}
+        final AttrList attrs = new AttrList();
         for (int i = 0; i < atts.getLength(); i++) {
             if (atts.getQName(i).startsWith("xmlns"))
-                continue;
+                {continue;}
             String attrPrefix = null;
             p = atts.getQName(i).indexOf(':');
             if (p > -1)
-                attrPrefix = atts.getQName(i).substring(0, p - 1);
+                {attrPrefix = atts.getQName(i).substring(0, p - 1);}
             int type = AttrImpl.CDATA;
-            String atype = atts.getType(i);
+            final String atype = atts.getType(i);
             if ("ID".equals(atype))
-                type = AttrImpl.ID;
+                {type = AttrImpl.ID;}
             else if ("IDREF".equals(atype))
-                type = AttrImpl.IDREF;
+                {type = AttrImpl.IDREF;}
             else if ("IDREFS".equals(atype))
-                type = AttrImpl.IDREFS;
+                {type = AttrImpl.IDREFS;}
             attrs.addAttribute(new QName(atts.getLocalName(i), atts.getURI(i), attrPrefix), atts.getValue(i), type);
         }
         receiver.startElement(new QName(localName, uri, prefix), attrs);
@@ -86,17 +86,17 @@ public class SAXToReceiver implements ContentHandler, LexicalHandler {
 
     public void endElement(String uri, String localName, String qName) throws SAXException {
         String prefix = null;
-        int p = qName.indexOf(':');
+        final int p = qName.indexOf(':');
         if (p > -1)
-            prefix = qName.substring(0, p - 1);
+            {prefix = qName.substring(0, p - 1);}
         receiver.endElement(new QName(localName, uri, prefix));
     }
 
     public void characters(char[] ch, int start, int length) throws SAXException {
         if (inCDATASection)
-            receiver.cdataSection(ch, start, length);
+            {receiver.cdataSection(ch, start, length);}
         else
-            receiver.characters(new XMLString(ch, start, length));
+            {receiver.characters(new XMLString(ch, start, length));}
     }
 
     public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {

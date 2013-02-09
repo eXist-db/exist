@@ -94,18 +94,18 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
      * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
      */
     public Object makeObject() throws Exception {
-        Configuration config = pool.getConfiguration();
+        final Configuration config = pool.getConfiguration();
 
         // Get validation settings
-        String option = (String) config.getProperty(PROPERTY_VALIDATION_MODE);
-        int validation = convertValidationMode(option);
+        final String option = (String) config.getProperty(PROPERTY_VALIDATION_MODE);
+        final int validation = convertValidationMode(option);
 
-        GrammarPool grammarPool =
+        final GrammarPool grammarPool =
                 (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
-        eXistXMLCatalogResolver resolver =
+        final eXistXMLCatalogResolver resolver =
                 (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
 
-        XMLReader xmlReader = createXmlReader(validation, grammarPool, resolver);
+        final XMLReader xmlReader = createXmlReader(validation, grammarPool, resolver);
 
         setReaderValidationMode(validation, xmlReader);
 
@@ -119,7 +119,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException{
 
         // Create a xmlreader
-        SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
+        final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
         
         if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED){
             saxFactory.setValidating(true);
@@ -128,8 +128,8 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         }
         saxFactory.setNamespaceAware(true);
 
-        SAXParser saxParser = saxFactory.newSAXParser();
-        XMLReader xmlReader = saxParser.getXMLReader();
+        final SAXParser saxParser = saxFactory.newSAXParser();
+        final XMLReader xmlReader = saxParser.getXMLReader();
 
         // Setup grammar cache
         if(grammarPool!=null){
@@ -150,10 +150,10 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     public static int convertValidationMode(String option) {
         int validation = VALIDATION_AUTO;
         if (option != null) {
-            if (option.equals("true") || option.equals("yes")) {
+            if ("true".equals(option) || "yes".equals(option)) {
                 validation = VALIDATION_ENABLED;
 
-            } else if (option.equals("auto")) {
+            } else if ("auto".equals(option)) {
                 validation = VALIDATION_AUTO;
 
             } else {
@@ -195,10 +195,10 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         try {
             xmlReader.setFeature(featureName, value);
 
-        } catch (SAXNotRecognizedException ex) {
+        } catch (final SAXNotRecognizedException ex) {
             LOG.error("SAXNotRecognizedException: " + ex.getMessage());
 
-        } catch (SAXNotSupportedException ex) {
+        } catch (final SAXNotSupportedException ex) {
             LOG.error("SAXNotSupportedException:" + ex.getMessage());
         }
     }
@@ -207,10 +207,10 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         try {
             xmlReader.setProperty(propertyName, object);
 
-        } catch (SAXNotRecognizedException ex) {
+        } catch (final SAXNotRecognizedException ex) {
             LOG.error("SAXNotRecognizedException: " + ex.getMessage());
 
-        } catch (SAXNotSupportedException ex) {
+        } catch (final SAXNotSupportedException ex) {
             LOG.error("SAXNotSupportedException:" + ex.getMessage());
         }
     }

@@ -43,7 +43,7 @@ public final class InsertionSort {
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
-		if(lo0>=hi0)  return;
+		if(lo0>=hi0)  {return;}
 		
 		// Second case, at least two elements
 		if (a[lo0].getNodeId().compareTo(a[lo0 + 1].getNodeId()) > 0) {
@@ -51,7 +51,7 @@ public final class InsertionSort {
 		}
 		
 		// 2b, just two elements
-		if(lo0+1 == hi0)  return;
+		if(lo0+1 == hi0)  {return;}
 		
 		// Last case, the general one
 		for (int i = lo0 + 1; i < hi0; i++) {
@@ -71,7 +71,7 @@ public final class InsertionSort {
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
-		if(lo0>=hi0)  return;
+		if(lo0>=hi0)  {return;}
 		
 		// Second case, at least two elements
 		if(a[lo0].compareTo(a[lo0+1]) > 0) {
@@ -79,7 +79,7 @@ public final class InsertionSort {
 		}
 		
 		// 2b, just two elements
-		if(lo0+1 == hi0)  return;
+		if(lo0+1 == hi0)  {return;}
 		
 		// Last case, the general one
 		for (int i = lo0 + 1; i < hi0; i++) {
@@ -99,16 +99,16 @@ public final class InsertionSort {
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
-		if(lo0>=hi0)  return;
+		if(lo0>=hi0)  {return;}
 		
 		// Second case, at least two elements
 		if(a[lo0].compareTo(a[lo0+1]) > 0) {
 			SwapVals.swap(a,lo0,lo0+1);
-			if(b!=null)  SwapVals.swap(b,lo0,lo0+1);
+			if(b!=null)  {SwapVals.swap(b,lo0,lo0+1);}
 		}
 		
 		// 2b, just two elements
-		if(lo0+1 == hi0)  return;
+		if(lo0+1 == hi0)  {return;}
 		
 		// Last case, the general one
 		for (int i = lo0 + 1; i < hi0; i++) {
@@ -118,13 +118,13 @@ public final class InsertionSort {
 				// Avoiding warnings
 				int tempb=0;
 				
-				if(b!=null)  tempb=b[i+1];
+				if(b!=null)  {tempb=b[i+1];}
 				for(j=i;j>=lo0 && tempa.compareTo(a[j]) < 0;j--) {
 					a[j+1]=a[j];
-					if(b!=null)  b[j+1]=b[j];
+					if(b!=null)  {b[j+1]=b[j];}
 				}
 				a[j+1]=tempa;
-				if(b!=null)  b[j+1]=tempb;
+				if(b!=null)  {b[j+1]=tempb;}
 			}
 		}
 	}
@@ -133,7 +133,7 @@ public final class InsertionSort {
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
-		if(lo0>=hi0)  return;
+		if(lo0>=hi0)  {return;}
 		
 		// Second case, at least two elements
 		if(comp.compare(a[lo0],a[lo0+1]) > 0) {
@@ -141,7 +141,7 @@ public final class InsertionSort {
 		}
 		
 		// 2b, just two elements
-		if(lo0+1 == hi0)  return;
+		if(lo0+1 == hi0)  {return;}
 		
 		// Last case, the general one
 		for (int i = lo0 + 1; i < hi0; i++) {
@@ -161,7 +161,7 @@ public final class InsertionSort {
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
-		if(lo0>=hi0)  return;
+		if(lo0>=hi0)  {return;}
 		
 		// Second case, at least two elements
 		if((a.get(lo0)).compareTo(a.get(lo0+1)) > 0) {
@@ -169,11 +169,11 @@ public final class InsertionSort {
 		}
 		
 		// 2b, just two elements
-		if(lo0+1 == hi0)  return;
+		if(lo0+1 == hi0)  {return;}
 		
 		// Last case, the general one
 		for (int i = lo0 + 1; i < hi0; i++) {
-			C temp = a.get(i+1);
+			final C temp = a.get(i+1);
 			if(temp.compareTo(a.get(i)) < 0) {
 				int j;
 				
@@ -189,16 +189,16 @@ public final class InsertionSort {
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
-		if(lo0>=hi0)  return;
+		if(lo0>=hi0)  {return;}
 		
 		// Second case, at least two elements
 		if(a[lo0] > a[lo0+1]) {
 			SwapVals.swap(a,lo0,lo0+1);
-			if(b!=null)  SwapVals.swap(b,lo0,lo0+1);
+			if(b!=null)  {SwapVals.swap(b,lo0,lo0+1);}
 		}
 		
 		// 2b, just two elements
-		if(lo0+1 == hi0)  return;
+		if(lo0+1 == hi0)  {return;}
 		
 		// Last case, the general one
 		for (int i = lo0 + 1; i < hi0; i++) {
@@ -207,22 +207,22 @@ public final class InsertionSort {
 				int j;
 				Object tempb=null;
 				
-				if(b!=null)  tempb=b[i+1];
+				if(b!=null)  {tempb=b[i+1];}
 				for(j=i;j>=lo0 && tempa<a[j];j--) {
 					a[j+1]=a[j];
-					if(b!=null)  b[j+1]=b[j];
+					if(b!=null)  {b[j+1]=b[j];}
 				}
 				a[j+1]=tempa;
-				if(b!=null)  b[j+1]=tempb;
+				if(b!=null)  {b[j+1]=tempb;}
 			}
 		}
 	}
 	
 	public static void main(String[] args) throws Exception {
-		List<String> l = new ArrayList<String>();
+		final List<String> l = new ArrayList<String>();
 		
 		if(args.length==0) {
-			String[] a=new String[] {
+			final String[] a=new String[] {
 				"Rudi",
 				"Herbert",
 				"Anton",
@@ -237,7 +237,7 @@ public final class InsertionSort {
 		} else {
 			System.err.println("Ordering file "+args[0]+"\n");
 			try {
-				java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
+				final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]));
 				String rr;
 				
 				while((rr=is.readLine())!=null) {
@@ -245,7 +245,7 @@ public final class InsertionSort {
 				}
 				
 				is.close();
-			} catch(Exception e) {
+			} catch(final Exception e) {
 			}
 		}
 		long a;

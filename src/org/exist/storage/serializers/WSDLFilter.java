@@ -85,7 +85,7 @@ public class WSDLFilter implements ContentHandler
 	 */
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException
 	{
-		if(qName.equals("definitions"))
+		if("definitions".equals(qName))
 		{
 			outputHandler.startPrefixMapping("tns", tnsNamespaceUri);
 			outputHandler.startPrefixMapping("soapenc", soapencNamespaceUri);
@@ -98,7 +98,7 @@ public class WSDLFilter implements ContentHandler
 	 */
 	public void endElement(String uri, String localName, String qName) throws SAXException
 	{
-		if(qName.equals("definitions"))
+		if("definitions".equals(qName))
 		{
 			outputHandler.endPrefixMapping("tns");
 			outputHandler.endPrefixMapping("soapenc");

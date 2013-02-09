@@ -104,7 +104,7 @@ public class XMLDBCreateUser extends BasicFunction {
 			throws XPathException {
 
 		if (!context.getSubject().hasDbaRole()) {
-			XPathException xPathException = new XPathException(this,
+			final XPathException xPathException = new XPathException(this,
 					"Permission denied, calling user '"
 							+ context.getSubject().getName()
 							+ "' must be a DBA to call this function.");
@@ -112,19 +112,19 @@ public class XMLDBCreateUser extends BasicFunction {
 			throw xPathException;
 		}
 
-		String user = args[0].getStringValue();
-		String pass = args[1].getStringValue();
+		final String user = args[0].getStringValue();
+		final String pass = args[1].getStringValue();
 
 		logger.info("Attempting to create user " + user);
 
-		UserAider userObj = new UserAider(user);
+		final UserAider userObj = new UserAider(user);
 		userObj.setPassword(pass);
 
 		// changed by wolf: the first group is always the primary group, so we
 		// don't need
 		// an additional argument
-		Sequence groups = args[2];
-		int len = groups.getItemCount();
+		final Sequence groups = args[2];
+		final int len = groups.getItemCount();
 		for (int x = 0; x < len; x++) {
                     userObj.addGroup(groups.itemAt(x).getStringValue());
                 }
@@ -136,20 +136,20 @@ public class XMLDBCreateUser extends BasicFunction {
 					context.getBroker().getBrokerPool(), 
 					XmldbURI.ROOT_COLLECTION_URI,
 					context.getAccessContext());
-			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+			final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			ums.addAccount(userObj);
 
-		} catch (XMLDBException xe) {
+		} catch (final XMLDBException xe) {
 			logger.error("Failed to create user: " + user);
 			if (logger.isDebugEnabled())
-				logger.debug("Failed to create user: " + user, xe);
+				{logger.debug("Failed to create user: " + user, xe);}
 
 			throw new XPathException(this, "Failed to create new user '" + user + "' by "+context.getSubject().getName(), xe);
 		} finally {
 			if (null != collection)
 				try {
 					collection.close();
-				} catch (XMLDBException e) { /* ignore */
+				} catch (final XMLDBException e) { /* ignore */
 				}
 		}
 		return Sequence.EMPTY_SEQUENCE;

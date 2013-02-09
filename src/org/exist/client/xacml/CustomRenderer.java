@@ -29,7 +29,7 @@ public class CustomRenderer extends DefaultTreeCellRenderer
 	
 	private static Icon getIcon(String location)
 	{
-		URL url = ClientFrame.class.getResource(location);
+		final URL url = ClientFrame.class.getResource(location);
 		return (url == null) ? null : new ImageIcon(url);
 	}
 	
@@ -45,40 +45,40 @@ public class CustomRenderer extends DefaultTreeCellRenderer
 	
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus)
 	{
-		XACMLTreeNode node = (XACMLTreeNode)value;
+		final XACMLTreeNode node = (XACMLTreeNode)value;
 		currentModified = node.isModified(false);
 		
-		JLabel comp = (JLabel)super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+		final JLabel comp = (JLabel)super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 		Border border = BorderFactory.createEmptyBorder(1,1,1,1);
 		
-		int bias = mutator.getDestinationBias(node);
+		final int bias = mutator.getDestinationBias(node);
 		if(selected || bias == TreeMutator.BIAS_CURRENT)
-			border = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(BORDER_COLOR), border);
+			{border = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(BORDER_COLOR), border);}
 		else if(bias == TreeMutator.BIAS_AFTER)
-			border = BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0,0,1,0,BORDER_COLOR), border);
+			{border = BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0,0,1,0,BORDER_COLOR), border);}
 		else if(bias == TreeMutator.BIAS_BEFORE)
-			border = BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1,0,0,0,BORDER_COLOR), border);
+			{border = BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1,0,0,0,BORDER_COLOR), border);}
 		comp.setBorder(border);
 		
 		if(value instanceof RuleNode)
-			comp.setIcon(ruleIcon);
+			{comp.setIcon(ruleIcon);}
 		else if(value instanceof TargetNode)
-			comp.setIcon(targetIcon);
+			{comp.setIcon(targetIcon);}
 		else if(value instanceof ConditionNode)
-			comp.setIcon(qmarkIcon);
+			{comp.setIcon(qmarkIcon);}
 		else if(value instanceof PolicyNode)
-			comp.setIcon(policyIcon);
+			{comp.setIcon(policyIcon);}
 		else if(value instanceof PolicySetNode)
-			comp.setIcon(policySetIcon);
+			{comp.setIcon(policySetIcon);}
 		return comp;
 	}
 	private Color getModifiedColor(Color color)
 	{
 		if(!currentModified)
-			return color;
+			{return color;}
 		if(color == null)
-			return null;
-		float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+			{return null;}
+		final float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
 		return (hsb[2] < 0.5f) ? color.brighter() : color.darker();
 	}
 	

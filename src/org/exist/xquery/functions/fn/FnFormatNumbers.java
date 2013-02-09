@@ -77,13 +77,13 @@ public class FnFormatNumbers extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		
-		NumericValue numericValue = (NumericValue)args[0].itemAt(0);
+		final NumericValue numericValue = (NumericValue)args[0].itemAt(0);
 		
 		try {
-			Formatter[] formatters = prepare(args[1].getStringValue());
-			String value = format(formatters[0], numericValue);
+			final Formatter[] formatters = prepare(args[1].getStringValue());
+			final String value = format(formatters[0], numericValue);
 			return new StringValue(value);
-		} catch (java.lang.IllegalArgumentException e) {
+		} catch (final java.lang.IllegalArgumentException e) {
 			e.printStackTrace();
 			throw new XPathException(e.getMessage());
 		}
@@ -94,7 +94,7 @@ public class FnFormatNumbers extends BasicFunction {
 			return NaN;
 		}
 
-		String minuSign = numericValue.isNegative()? String.valueOf(MINUS_SIGN) : "";
+		final String minuSign = numericValue.isNegative()? String.valueOf(MINUS_SIGN) : "";
 		if (numericValue.isInfinite()) {
 			return minuSign + f.prefix + INFINITY + f.suffix;
 		}
@@ -109,7 +109,7 @@ public class FnFormatNumbers extends BasicFunction {
 		if (factor != null) {
 			try {
 				numericValue = (NumericValue) numericValue.mult(factor);
-			} catch (XPathException e) {
+			} catch (final XPathException e) {
 				e.printStackTrace();
 				throw e;
 			}
@@ -117,7 +117,7 @@ public class FnFormatNumbers extends BasicFunction {
 		
 		int pl = 0;
 		
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		
 		if (numericValue.hasFractionalPart()) {
 			
@@ -125,7 +125,7 @@ public class FnFormatNumbers extends BasicFunction {
 
 			val = val.setScale(f.flMAX, BigDecimal.ROUND_HALF_EVEN);
 			
-			String number = val.toPlainString();
+			final String number = val.toPlainString();
 				
 			sb.append(number);
 			
@@ -140,7 +140,7 @@ public class FnFormatNumbers extends BasicFunction {
 			}
 
 		} else {
-			String str = numericValue.getStringValue();
+			final String str = numericValue.getStringValue();
 			pl = str.length();
 			formatInt(str, sb, f);
 		}
@@ -157,7 +157,7 @@ public class FnFormatNumbers extends BasicFunction {
 	}
 	
 	private void formatInt(String number, StringBuilder sb, Formatter f) {
-		int leadingZ = f.mlMIN - number.length();
+		final int leadingZ = f.mlMIN - number.length();
 		for (int i = 0; i < leadingZ; i++) {
 			sb.append('0');
 		}
@@ -183,11 +183,11 @@ public class FnFormatNumbers extends BasicFunction {
 	
 	private Formatter[] prepare(String picture) throws XPathException {
 		if (picture.length() == 0)
-			throw new XPathException(this, ErrorCodes.XTDE1310, "format-number() picture is zero-length");
+			{throw new XPathException(this, ErrorCodes.XTDE1310, "format-number() picture is zero-length");}
 		
-		String[] pics = picture.split(String.valueOf(PATTERN_SEPARATOR_SIGN));
+		final String[] pics = picture.split(String.valueOf(PATTERN_SEPARATOR_SIGN));
 		
-		Formatter[] formatters = new Formatter[2];
+		final Formatter[] formatters = new Formatter[2];
 		for (int i = 0; i < pics.length; i++) {
 			formatters[i] = new Formatter(pics[i]);
 		}
@@ -334,8 +334,8 @@ public class FnFormatNumbers extends BasicFunction {
 					case 4:
 					case 5:
 						if (ds)
-							throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
-								"A sub-picture must not contain more than one decimal-separator-sign.");
+							{throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
+								"A sub-picture must not contain more than one decimal-separator-sign.");}
 
 						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
 							"A sub-picture must not contain a passive character that is preceded by an active character and that is followed by another active character. " +
@@ -347,8 +347,8 @@ public class FnFormatNumbers extends BasicFunction {
 				case PERCENT_SIGN:
 				case PER_MILLE_SIGN:
 					if (isPercent || isPerMille)
-						throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
-							"A sub-picture must not contain more than one percent-sign or per-mille-sign, and it must not contain one of each.");
+						{throw new XPathException(FnFormatNumbers.this, ErrorCodes.XTDE1310, 
+							"A sub-picture must not contain more than one percent-sign or per-mille-sign, and it must not contain one of each.");}
 					
 					isPercent = ch == PERCENT_SIGN;
 					isPerMille = ch == PER_MILLE_SIGN;
@@ -392,7 +392,7 @@ public class FnFormatNumbers extends BasicFunction {
 				}
 			}
 			
-			if (mlMIN == 0 && !ds) mlMIN = 1;
+			if (mlMIN == 0 && !ds) {mlMIN = 1;}
 			
 //			System.out.println("prefix = "+prefix);
 //			System.out.println("suffix = "+suffix);

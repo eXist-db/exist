@@ -124,7 +124,7 @@ public class ByteBufferInputStream extends InputStream {
         newPosition += l;
         try {
             bufAccessor.getBuffer().position((int)newPosition);
-        } catch(IllegalArgumentException iae) {
+        } catch(final IllegalArgumentException iae) {
             throw new IOException("Unable to skip " + l + " bytes", iae);
         }
 

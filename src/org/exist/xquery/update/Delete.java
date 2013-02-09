@@ -75,15 +75,15 @@ public class Delete extends Modification {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
         
-		Sequence inSeq = select.eval(contextSequence);
+		final Sequence inSeq = select.eval(contextSequence);
 		
 		//START trap Delete failure
         /* If we try and Delete a node at an invalid location,
@@ -97,8 +97,8 @@ public class Delete extends Modification {
         	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
-        	XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
+        	final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        	final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
         		prevUpdateErrors = new ValueSequence();
@@ -111,21 +111,21 @@ public class Delete extends Modification {
 			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
         	if(!inSeq.isEmpty())
-        		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
+        		{throw xpe;}	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Delete failure
         
 		if (!inSeq.isEmpty()) {
             //start a transaction
-            Txn transaction = getTransaction();
+            final Txn transaction = getTransaction();
     		try {
-    			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                StoredNode[] ql = selectAndLock(transaction, inSeq);
-                IndexListener listener = new IndexListener(ql);
+    			final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+                final StoredNode[] ql = selectAndLock(transaction, inSeq);
+                final IndexListener listener = new IndexListener(ql);
                 NodeImpl parent;
                 for (int i = 0; i < ql.length; i++) {
-                    StoredNode node = ql[i];
-                    DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                    final StoredNode node = ql[i];
+                    final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
                         //transact.abort(transaction);    
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
@@ -158,16 +158,16 @@ public class Delete extends Modification {
                 finishTriggers(transaction);
                 //commit the transaction
                 commitTransaction(transaction);
-            } catch (EXistException e) {
+            } catch (final EXistException e) {
                 //transact.abort(transaction);
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (PermissionDeniedException e) {
+    		} catch (final PermissionDeniedException e) {
                 //transact.abort(transaction);
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (LockException e) {
+    		} catch (final LockException e) {
                 //transact.abort(transaction);
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (TriggerException e) {
+    		} catch (final TriggerException e) {
                 //transact.abort(transaction);
                 throw new XPathException(this, e.getMessage(), e);
 			} finally {
@@ -176,7 +176,7 @@ public class Delete extends Modification {
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
         
         return Sequence.EMPTY_SEQUENCE;
 	}

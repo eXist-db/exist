@@ -52,7 +52,7 @@ public class Constructor {
 	 */
     public static Object load(NewClass newClazz, Configurable instance, Configuration conf) {
     	
-    	String url = newClazz.mapper();
+    	final String url = newClazz.mapper();
     	if (url == null) {
     		Configurator.LOG.error("Filed must have 'ConfigurationFieldClassMask' annotation or " +
     				"registered mapping instruction for class '"+newClazz.name()+"' ["+conf.getName()+"], " +
@@ -60,20 +60,20 @@ public class Constructor {
     		return null;
     	}
     	
-    	InputStream is = instance.getClass().getClassLoader().getResourceAsStream(url);
+    	final InputStream is = instance.getClass().getClassLoader().getResourceAsStream(url);
     	if (is == null) {
     		Configurator.LOG.error("Registered mapping instruction for class '"+newClazz.name()+"' missing resource '"+url+"', " +
 					"skip instance creation.");
     		return null;
     	}
     	
-        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
         try {
-			XMLStreamReader reader = inputFactory.createXMLStreamReader(is);
+			final XMLStreamReader reader = inputFactory.createXMLStreamReader(is);
 			
 			Object obj = null;
-			Stack<Object> objs = new Stack<Object>();
-			Stack<CallMathod> instructions = new Stack<CallMathod>();
+			final Stack<Object> objs = new Stack<Object>();
+			final Stack<CallMathod> instructions = new Stack<CallMathod>();
 			
 			int eventType;
 			while (reader.hasNext()) {
@@ -89,24 +89,24 @@ public class Constructor {
 			            		return null;
 				            }
 				            
-				            String clazzName = reader.getAttributeValue(0);
-				    	    Class<?> clazz = Class.forName(clazzName);
-				    	    java.lang.reflect.Constructor<?> constructor = clazz.getConstructor();
+				            final String clazzName = reader.getAttributeValue(0);
+				    	    final Class<?> clazz = Class.forName(clazzName);
+				    	    final java.lang.reflect.Constructor<?> constructor = clazz.getConstructor();
 				    	    
 				    	    Object newInstance = constructor.newInstance();
-				    	    if (obj == null) obj = newInstance;
+				    	    if (obj == null) {obj = newInstance;}
 				    	    objs.add(newInstance);
 				    	    
 				    	    if (!instructions.empty())
-				    	    	instructions.peek().setValue(newInstance);
+				    	    	{instructions.peek().setValue(newInstance);}
 				    	    
 			            } else if ("callMethod".equals(localName)) {
 			            	
 			            	Configuration _conf_ = conf;
 			            	if (!instructions.empty())
-			            		_conf_ = instructions.peek().getConfiguration();
+			            		{_conf_ = instructions.peek().getConfiguration();}
 
-			            	CallMathod call = new CallMathod(objs.peek(), _conf_);
+			            	final CallMathod call = new CallMathod(objs.peek(), _conf_);
 			            	
 				            for (int i = 0; i < reader.getAttributeCount(); i++) {
 				            	call.set(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
@@ -122,7 +122,7 @@ public class Constructor {
 						if ("class".equals(localName)) {
 							objs.pop();
 						} else if ("callMethod".equals(localName)) {
-							CallMathod call = instructions.pop();
+							final CallMathod call = instructions.pop();
 							call.eval();
 						}
 						
@@ -133,7 +133,7 @@ public class Constructor {
 			configurations.put(obj, conf);
 			return obj;
 
-        } catch (Exception e) {
+        } catch (final Exception e) {
 			Configurator.LOG.error(e);
 		}
         return null;

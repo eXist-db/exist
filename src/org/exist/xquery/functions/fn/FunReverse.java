@@ -59,7 +59,7 @@ public class FunReverse extends Function {
     	contextId = contextInfo.getContextId();
     	contextInfo.setParent(this);
 
-        AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+        final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
         getArgument(0).analyze(argContextInfo);
         contextInfo.setStaticReturnType(argContextInfo.getStaticReturnType());
     }
@@ -69,19 +69,19 @@ public class FunReverse extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }           
         
         Sequence result;
-        Sequence seq = getArguments(contextSequence, contextItem)[0];
+        final Sequence seq = getArguments(contextSequence, contextItem)[0];
 		if (seq.isEmpty()) 
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
-                Sequence tmp = new ValueSequence();
+                final Sequence tmp = new ValueSequence();
                 Item item;
-                for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                for(final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                     item = i.nextItem();
                     tmp.add(item);
                 }
@@ -92,7 +92,7 @@ public class FunReverse extends Function {
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;
 	}

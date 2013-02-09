@@ -61,9 +61,9 @@ public class NotificationService extends IdentityHashMap<UpdateListener, Object>
 	 * @param listener
 	 */
 	public synchronized void unsubscribe(UpdateListener listener) {
-		Object i = remove(listener);
+		final Object i = remove(listener);
 		if (i == null)
-			throw new RuntimeException(hashCode() + " listener not found: " + listener.hashCode());
+			{throw new RuntimeException(hashCode() + " listener not found: " + listener.hashCode());}
         listener.unsubscribe();
     }
 
@@ -75,7 +75,7 @@ public class NotificationService extends IdentityHashMap<UpdateListener, Object>
 	 * @param event
 	 */
 	public synchronized void notifyUpdate(DocumentImpl document, int event) {
-		for (UpdateListener listener : keySet()) {
+		for (final UpdateListener listener : keySet()) {
 	        listener.documentUpdated(document, event);
 		}
 	}
@@ -85,14 +85,14 @@ public class NotificationService extends IdentityHashMap<UpdateListener, Object>
      * defragmentation run.
 	 */
 	public synchronized void notifyMove(NodeId oldNodeId, StoredNode newNode) {
-		for (UpdateListener listener : keySet()) {
+		for (final UpdateListener listener : keySet()) {
 	        listener.nodeMoved(oldNodeId, newNode);
 		}
 	}
 
     public void debug() {
 		LOG.debug("Registered UpdateListeners:");
-		for (UpdateListener listener : keySet()) {
+		for (final UpdateListener listener : keySet()) {
 	        listener.debug();
 		}
 	}

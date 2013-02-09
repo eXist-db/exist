@@ -30,13 +30,13 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 	public void add(int index, PolicyTreeElement element)
 	{
 		if(element == null)
-			return;
+			{return;}
 		if(element instanceof Policy)
-			add(index, new PolicyNode(this, (Policy)element));
+			{add(index, new PolicyNode(this, (Policy)element));}
 		else if(element instanceof PolicySet)
-			add(index, new PolicySetNode(this, (PolicySet)element));
+			{add(index, new PolicySetNode(this, (PolicySet)element));}
 		else
-			throw new IllegalArgumentException("Only Policies and PolicySets can be top level elements.");
+			{throw new IllegalArgumentException("Only Policies and PolicySets can be top level elements.");}
 	}
 	public void add(PolicyElementNode node)
 	{
@@ -45,34 +45,34 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 	public void add(int index, PolicyElementNode node)
 	{
 		if(node == null)
-			return;
+			{return;}
 		if(node instanceof AbstractPolicyNode)
 		{
 			if(index < 0)
-				index = children.size();
+				{index = children.size();}
 			children.add(index, node);
 			setModified(true);
 			nodeAdded(node, index);
 		}
 		else
-			throw new IllegalArgumentException("Only PolicyNodes and PolicySetNodes can be top level elements.");
+			{throw new IllegalArgumentException("Only PolicyNodes and PolicySetNodes can be top level elements.");}
 	}
 	public void remove(PolicyElementNode node)
 	{
 		if(node == null)
-			return;
-		int index = children.indexOf(node);
+			{return;}
+		final int index = children.indexOf(node);
 		if(index < 0)
-			return;
+			{return;}
 		children.remove(index);
 		setModified(true);
 		nodeRemoved(node, index);
 	}
 	
 	public boolean containsId(String id) {
-		for(PolicyElementNode child : children) {
+		for(final PolicyElementNode child : children) {
 			if( child.getId().toString().equals(id) )
-				return true;
+				{return true;}
 		}
 		return false;
 	}
@@ -93,12 +93,12 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 	
 	public boolean isModified(boolean deep) {
 		if(super.isModified(deep))
-			return true;
+			{return true;}
 		
 		if(deep) {
-			for(PolicyElementNode child : children) {
+			for(final PolicyElementNode child : children) {
 				if(child.isModified(true))
-					return true;
+					{return true;}
 			}
 		}
 		return false;
@@ -108,7 +108,7 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 		children = originalChildren;
 		
 		if(deep) {
-			for(PolicyElementNode child : children)
+			for(final PolicyElementNode child : children)
 				child.revert(true);
 		}
 		super.revert(deep);
@@ -118,55 +118,55 @@ public class RootNode extends AbstractTreeNode implements PolicyElementContainer
 		originalChildren = children;
 		
 		if(deep) {
-			for(PolicyElementNode node : children)
+			for(final PolicyElementNode node : children)
 				node.commit(true);
 		}
 		super.commit(deep);
 	}
 	
 	public Set<String> getRemovedDocumentNames() {
-		Set<String> ret = new HashSet<String>();
-		for(Iterator originalIt = originalChildren.iterator(); originalIt.hasNext();) {
-			AbstractPolicyNode originalChild = (AbstractPolicyNode)originalIt.next();
-			String documentName = originalChild.getDocumentName();
+		final Set<String> ret = new HashSet<String>();
+		for(final Iterator originalIt = originalChildren.iterator(); originalIt.hasNext();) {
+			final AbstractPolicyNode originalChild = (AbstractPolicyNode)originalIt.next();
+			final String documentName = originalChild.getDocumentName();
 			if(!documentNameExists(documentName))
-				ret.add(documentName);
+				{ret.add(documentName);}
 		}
 		return ret;
 	}
 	
 	private boolean documentNameExists(String documentName) {
-		for(Iterator currentIt = children.iterator(); currentIt.hasNext();) {
-			AbstractPolicyNode currentChild = (AbstractPolicyNode)currentIt.next();
-			String currentDocName = currentChild.getDocumentName();
+		for(final Iterator currentIt = children.iterator(); currentIt.hasNext();) {
+			final AbstractPolicyNode currentChild = (AbstractPolicyNode)currentIt.next();
+			final String currentDocName = currentChild.getDocumentName();
 			if(currentDocName != null && currentDocName.equals(documentName))
-				return true;
+				{return true;}
 		}
 		return false;
 	}
 
 	public void addNodeChangeListener(NodeChangeListener listener) {
 		if(listener != null)
-			listeners.add(listener);
+			{listeners.add(listener);}
 	}
 	
 	public void removeNodeChangeListener(NodeChangeListener listener) {
 		if(listener != null)
-			listeners.remove(listener);
+			{listeners.remove(listener);}
 	}
 	
 	public void nodeChanged(XACMLTreeNode node) {
-		for(NodeChangeListener listener : listeners)
+		for(final NodeChangeListener listener : listeners)
 			listener.nodeChanged(node);
 	}
 	
 	public void nodeAdded(XACMLTreeNode node, int newIndex) {
-		for(NodeChangeListener listener : listeners)
+		for(final NodeChangeListener listener : listeners)
 			listener.nodeAdded(node, newIndex);
 	}
 	
 	public void nodeRemoved(XACMLTreeNode removedNode, int oldChildIndex) {
-		for(NodeChangeListener listener : listeners)
+		for(final NodeChangeListener listener : listeners)
 			listener.nodeRemoved(removedNode, oldChildIndex);
 	}
 	

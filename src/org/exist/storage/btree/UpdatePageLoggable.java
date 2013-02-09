@@ -77,14 +77,14 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
         final short pfxLen = (short) prefix.getLength();
         out.putShort(pfxLen);
         if (pfxLen > 0)
-            out.put(prefix.data(), prefix.start(), pfxLen);
+            {out.put(prefix.data(), prefix.start(), pfxLen);}
         out.putShort((short) nValues);
         short len;
         for (int i = 0; i < nValues; i++) {
             len = (short) values[i].getLength();
             out.putShort(len);
             if (len > 0)
-                out.put(values[i].data(), values[i].start(), len);
+                {out.put(values[i].data(), values[i].start(), len);}
         }
         
         out.putShort((short) nPointers);
@@ -113,7 +113,7 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
             dataLen = in.getShort();
             data = new byte[dataLen];
             if (dataLen > 0)
-                in.get(data);
+                {in.get(data);}
             values[i] = new Value(data);
         }
         

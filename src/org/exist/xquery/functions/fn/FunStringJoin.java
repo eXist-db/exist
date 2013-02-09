@@ -90,29 +90,29 @@ public class FunStringJoin extends BasicFunction {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }
         
 		String sep = null;
         if (getArgumentCount() == 2) {
             sep = args[1].getStringValue();
             if(sep.length() == 0)
-                sep = null;
+                {sep = null;}
         }
-		StringBuilder out = new StringBuilder();
+		final StringBuilder out = new StringBuilder();
 		Item next;
 		boolean gotOne = false;
-		for(SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+		for(final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
 			next = i.nextItem();
 			if(gotOne && sep != null)
-				out.append(sep);
+				{out.append(sep);}
 			out.append(next.getStringValue());
 			gotOne = true;
 		}
-		Sequence result = new StringValue(out.toString());
+		final Sequence result = new StringValue(out.toString());
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;
 	}

@@ -88,9 +88,9 @@ public abstract class AbstractRemoteResource
 	public Object getContent()
 		throws XMLDBException
 	{
-		Object res=getExtendedContent();
+		final Object res=getExtendedContent();
 		// Backward compatibility
-		if(isLocal)  return res;
+		if(isLocal)  {return res;}
 		if(res!=null) {
 			if(res instanceof File) {
 				return readFile((File)res);
@@ -109,7 +109,7 @@ public abstract class AbstractRemoteResource
 	protected byte[] getData()
 		throws XMLDBException
 	{
-		Object res=getExtendedContent();
+		final Object res=getExtendedContent();
 		if(res!=null) {
 			if(res instanceof File) {
 				return readFile((File)res);
@@ -118,7 +118,7 @@ public abstract class AbstractRemoteResource
 			} else if(res instanceof String) {
 				try {
 					return ((String)res).getBytes("UTF-8");
-				} catch(UnsupportedEncodingException uee) {
+				} catch(final UnsupportedEncodingException uee) {
 					throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
 				}
 			}
@@ -190,7 +190,7 @@ public abstract class AbstractRemoteResource
 		    // Assuring the virtual file is close state
 		    try {
 		    	vfile.close();
-		    } catch(IOException ioe) {
+		    } catch(final IOException ioe) {
 		    	// IgnoreIT(R)
 		    }
 		    setExtendendContentLength(vfile.length());
@@ -211,7 +211,7 @@ public abstract class AbstractRemoteResource
 				vfile = new VirtualTempFile(((String)value).getBytes("UTF-8"));
 				setExtendendContentLength(vfile.length());
 				wasSet=true;
-			} catch(UnsupportedEncodingException uee) {
+			} catch(final UnsupportedEncodingException uee) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,"input value cannot be translated to UTF-8",uee);
 			}
 		}
@@ -252,20 +252,20 @@ public abstract class AbstractRemoteResource
 			bos=new BufferedOutputStream(fos);
 			
 			getContentIntoAStream(bos);
-		} catch (IOException ioe) {
+		} catch (final IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		} finally {
 			if(bos!=null) {
 				try {
 					bos.close();
-				} catch(IOException ioe) {
+				} catch(final IOException ioe) {
 					// IgnoreIT(R)
 				}
 			}
 			if(fos!=null) {
 				try {
 					fos.close();
-				} catch(IOException ioe) {
+				} catch(final IOException ioe) {
 					// IgnoreIT(R)
 				}
 			}
@@ -282,8 +282,8 @@ public abstract class AbstractRemoteResource
         final List<Object> params = new ArrayList<Object>();
         if(isRetrieve) {
             command = "retrieveFirstChunk";
-            params.add(new Integer(handle));
-            params.add(new Integer(pos));
+            params.add(Integer.valueOf(handle));
+            params.add(Integer.valueOf(pos));
         } else {
             command = "getDocumentData";
             params.add(path.toString());
@@ -293,7 +293,7 @@ public abstract class AbstractRemoteResource
         try {
             final VirtualTempFile vtmpfile = new VirtualTempFile();
             vtmpfile.setTempPrefix("eXistARR");
-            vtmpfile.setTempPostfix(getResourceType().equals("XMLResource")?".xml":".bin");
+            vtmpfile.setTempPostfix("XMLResource".equals(getResourceType())?".xml":".bin");
 
             Map<?,?> table = (Map<?,?>) parent.getClient().execute(command, params);
             
@@ -309,7 +309,7 @@ public abstract class AbstractRemoteResource
             
             long offset = ((Integer)table.get("offset")).intValue();
             byte[] data = (byte[])table.get("data");
-            final boolean isCompressed = properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no").equals("yes");
+            final boolean isCompressed = "yes".equals(properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no"));
                 
             // One for the local cached file
             Inflater dec = null;
@@ -339,9 +339,9 @@ public abstract class AbstractRemoteResource
             while(offset > 0) {
                 params.clear();
                 params.add(table.get("handle"));
-                params.add(useLongOffset?Long.toString(offset):new Integer((int)offset));
+                params.add(useLongOffset?Long.toString(offset):Integer.valueOf((int)offset));
                 table = (Map<?,?>) parent.getClient().execute(method, params);
-                offset = useLongOffset?new Long((String)table.get("offset")).longValue():((Integer)table.get("offset")).longValue();
+                offset = useLongOffset?Long.valueOf((String)table.get("offset")).longValue():((Integer)table.get("offset")).longValue();
                 data = (byte[])table.get("data");
 
                 // One for the local cached file
@@ -395,7 +395,7 @@ public abstract class AbstractRemoteResource
 		if(obj instanceof String) {
 			try {
 				bis=new ByteArrayInputStream(((String)obj).getBytes("UTF-8"));
-			} catch(UnsupportedEncodingException uee) {
+			} catch(final UnsupportedEncodingException uee) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,uee.getMessage(),uee);
 			}
 		} else if(obj instanceof byte[]) {
@@ -424,11 +424,11 @@ public abstract class AbstractRemoteResource
 					bis=contentVFile.getByteStream();
 				}
 				int readed;
-				byte buffer[]=new byte[65536];
+				final byte buffer[]=new byte[65536];
 				while((readed=bis.read(buffer))!=-1) {
 					os.write(buffer,0,readed);
 				}
-			} catch(IOException ioe) {
+			} catch(final IOException ioe) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,ioe.getMessage(),ioe);
 			} finally {
 				if(inputSource!=null) {
@@ -438,7 +438,7 @@ public abstract class AbstractRemoteResource
 						if(bis.markSupported()) {
 							try {
 								bis.reset();
-							} catch(IOException ioe) {
+							} catch(final IOException ioe) {
 								//IgnoreIT(R)
 							}
 						}
@@ -447,7 +447,7 @@ public abstract class AbstractRemoteResource
 					if(bis!=null) {
 						try {
 							bis.close();
-						} catch(IOException ioe) {
+						} catch(final IOException ioe) {
 							//IgnoreIT(R)
 						}
 					}
@@ -463,15 +463,15 @@ public abstract class AbstractRemoteResource
 		throws XMLDBException
 	{
 		if(obj != null)
-			return obj;
+			{return obj;}
 		
 		if(vfile!=null)
-			return vfile.getContent();
+			{return vfile.getContent();}
 		if(inputSource!=null)
-			return inputSource;
+			{return inputSource;}
 		
 		if(contentVFile==null)
-			getRemoteContentIntoLocalFile(null,isRetrieve,handle,pos);
+			{getRemoteContentIntoLocalFile(null,isRetrieve,handle,pos);}
 		
 		return contentVFile.getContent();
 	}
@@ -484,7 +484,7 @@ public abstract class AbstractRemoteResource
 		if(vfile!=null) {
 			try {
 				retval=vfile.getByteStream();
-			} catch(IOException fnfe) {
+			} catch(final IOException fnfe) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, fnfe.getMessage(), fnfe);
 			}
 		} else if(inputSource!=null) {
@@ -494,11 +494,11 @@ public abstract class AbstractRemoteResource
 		} else {
 			// At least one value, please!!!
 			if(contentVFile==null)
-				getRemoteContentIntoLocalFile(null,isRetrieve,handle,pos);
+				{getRemoteContentIntoLocalFile(null,isRetrieve,handle,pos);}
 			
 			try {
 				retval=contentVFile.getByteStream();
-			} catch(IOException fnfe) {
+			} catch(final IOException fnfe) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, fnfe.getMessage(), fnfe);
 			}
 		}
@@ -518,7 +518,7 @@ public abstract class AbstractRemoteResource
 			if(obj instanceof String) {
 				try {
 					retval=((String)obj).getBytes("UTF-8").length;
-				} catch(UnsupportedEncodingException uee) {
+				} catch(final UnsupportedEncodingException uee) {
 					throw new XMLDBException(ErrorCodes.VENDOR_ERROR,uee.getMessage(),uee);
 				}
 			} else if(obj instanceof byte[]) {
@@ -529,14 +529,14 @@ public abstract class AbstractRemoteResource
 		} else if(contentVFile!=null) {
 			retval=contentVFile.length();
 		} else {
-			Properties properties = getProperties();
-			List<Object> params = new ArrayList<Object>();
+			final Properties properties = getProperties();
+			final List<Object> params = new ArrayList<Object>();
 			params.add(path.toString());
 			params.add(properties);
 			try {
-				Map<?,?> table = (Map<?,?>) parent.getClient().execute("describeResource", params);
+				final Map<?,?> table = (Map<?,?>) parent.getClient().execute("describeResource", params);
 				if(table.containsKey("content-length-64bit")) {
-					Object o = table.get("content-length-64bit");
+					final Object o = table.get("content-length-64bit");
 					if(o instanceof Long) {
 						retval = ((Long)o).longValue();
 					} else {
@@ -545,7 +545,7 @@ public abstract class AbstractRemoteResource
 				} else {
 					retval=((Integer)table.get("content-length")).intValue();
 				}
-			} catch (XmlRpcException xre) {
+			} catch (final XmlRpcException xre) {
 				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
 			}
 		}
@@ -558,14 +558,14 @@ public abstract class AbstractRemoteResource
 	private static byte[] readFile(File file)
 		throws XMLDBException
 	{
-		String errmsg="file "+ file.getAbsolutePath();
+		final String errmsg="file "+ file.getAbsolutePath();
                 InputStream is = null;
 		try {
                         is = new FileInputStream(file);
 			
                         return readFile(is,errmsg);
 
-		} catch (FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				errmsg + " could not be found", e);
 		}
@@ -577,7 +577,7 @@ public abstract class AbstractRemoteResource
                         {
                             is.close();
                         }
-                        catch(IOException ioe)
+                        catch(final IOException ioe)
                         {
                             //ignore(ioe);
                         }
@@ -599,16 +599,16 @@ public abstract class AbstractRemoteResource
 		throws XMLDBException
 	{
 		if(errmsg==null)
-			errmsg="stream";
+			{errmsg="stream";}
 		try {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
-			byte[] temp = new byte[1024];
+			final ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
+			final byte[] temp = new byte[1024];
 			int count = 0;
 			while((count = is.read(temp)) > -1) {
 				bos.write(temp, 0, count);
 			}
 			return bos.toByteArray();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 				"IO exception while reading " + errmsg, e);
 		}

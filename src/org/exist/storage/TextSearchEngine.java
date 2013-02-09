@@ -90,30 +90,30 @@ public abstract class TextSearchEngine extends Observable {
 		String stopword, tokenizerClass;
 		Boolean num, stemming, termFrequencies;
 		if ((num = (Boolean) config.getProperty(PROPERTY_INDEX_NUMBERS)) != null)
-			indexNumbers = num.booleanValue();
+			{indexNumbers = num.booleanValue();}
 		if ((stemming = (Boolean) config.getProperty(PROPERTY_STEM)) != null)
-			stem = stemming.booleanValue();
+			{stem = stemming.booleanValue();}
 		if((termFrequencies = (Boolean) config.getProperty(PROPERTY_STORE_TERM_FREQUENCY)) != null)
-			termFreq = termFrequencies.booleanValue();
+			{termFreq = termFrequencies.booleanValue();}
 		String track = (String) config.getProperty(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS);
 		if (track != null)
-			trackMatches = track.equalsIgnoreCase("yes")
+			{trackMatches = track.equalsIgnoreCase("yes")
 			? Serializer.TAG_ELEMENT_MATCHES
-					: Serializer.TAG_NONE;
+					: Serializer.TAG_NONE;}
 		track = (String) config.getProperty(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES);
 		if (track != null && track.equalsIgnoreCase("yes"))
-			trackMatches = trackMatches | Serializer.TAG_ATTRIBUTE_MATCHES;
+			{trackMatches = trackMatches | Serializer.TAG_ATTRIBUTE_MATCHES;}
 		
 		if ((tokenizerClass = (String) config.getProperty(PROPERTY_TOKENIZER)) != null) {
 			try {
-				Class<?> tokClass = Class.forName(tokenizerClass);
+				final Class<?> tokClass = Class.forName(tokenizerClass);
 				tokenizer = (Tokenizer) tokClass.newInstance();
 				LOG.debug("using tokenizer: " + tokenizerClass);
-			} catch (ClassNotFoundException e) {
+			} catch (final ClassNotFoundException e) {
 				LOG.debug(e);
-			} catch (InstantiationException e) {
+			} catch (final InstantiationException e) {
 				LOG.debug(e);
-			} catch (IllegalAccessException e) {
+			} catch (final IllegalAccessException e) {
 				LOG.debug(e);
 			}
 		}
@@ -123,22 +123,22 @@ public abstract class TextSearchEngine extends Observable {
 		}
 
 		if (stem)
-			stemmer = new PorterStemmer();
+			{stemmer = new PorterStemmer();}
 		tokenizer.setStemming(stem);
 		if ((stopword = (String) config.getProperty(PROPERTY_STOPWORD_FILE)) != null) {
 			try {
-				FileReader in = new FileReader(stopword);
-				StreamTokenizer tok = new StreamTokenizer(in);
+				final FileReader in = new FileReader(stopword);
+				final StreamTokenizer tok = new StreamTokenizer(in);
 				int next = tok.nextToken();
 				while (next != StreamTokenizer.TT_EOF) {
 					if (next != StreamTokenizer.TT_WORD)
-						continue;
+						{continue;}
 					stoplist.add(tok.sval);
 					next = tok.nextToken();
 				}
-			} catch (FileNotFoundException e) {
+			} catch (final FileNotFoundException e) {
 				LOG.debug(e);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				LOG.debug(e);
 			}
 		}

@@ -31,7 +31,7 @@ public class Utils {
 
     public static boolean fileCanContainClasses(File file) {
         boolean can      = false;
-        String  fileName = file.getPath();
+        final String  fileName = file.getPath();
 
         if (file.exists()) {
             can = (isJar(fileName) ||

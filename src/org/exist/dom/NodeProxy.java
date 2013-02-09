@@ -249,7 +249,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     public int compareTo(NodeProxy other) {
         final int diff = doc.getDocId() - other.doc.getDocId();
         if (diff != Constants.EQUAL)
-            return diff;
+            {return diff;}
         return nodeId.compareTo(other.nodeId);
     }
 
@@ -262,7 +262,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     public int compareTo(Object other) {
         if(!(other instanceof NodeProxy))
             //Always superior...
-            return Constants.SUPERIOR;
+            {return Constants.SUPERIOR;}
         return compareTo((NodeProxy) other);
     }
 
@@ -275,10 +275,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     public boolean equals(Object other) {
         if (!(other instanceof NodeProxy))
             //Always different...
-            return false;
-        NodeProxy otherNode = (NodeProxy) other;
+            {return false;}
+        final NodeProxy otherNode = (NodeProxy) other;
         if (otherNode.doc.getDocId() != doc.getDocId())
-            return false;
+            {return false;}
         return otherNode.nodeId.equals(nodeId);
     }
 
@@ -291,10 +291,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public boolean equals(NodeValue other) throws XPathException {
         if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-            throw new XPathException("Cannot compare persistent node with in-memory node");
-        NodeProxy otherNode = (NodeProxy) other;
+            {throw new XPathException("Cannot compare persistent node with in-memory node");}
+        final NodeProxy otherNode = (NodeProxy) other;
         if (otherNode.doc.getDocId() != doc.getDocId())
-            return false;
+            {return false;}
         return otherNode.nodeId.equals(nodeId);
     }
 
@@ -308,11 +308,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public boolean before(NodeValue other, boolean isPreceding) throws XPathException {
         if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-            throw new XPathException("Cannot compare persistent node with in-memory node");
-        NodeProxy otherNode = (NodeProxy) other;
+            {throw new XPathException("Cannot compare persistent node with in-memory node");}
+        final NodeProxy otherNode = (NodeProxy) other;
         if (doc.getDocId() != otherNode.doc.getDocId())
             //Totally arbitrary
-            return doc.getDocId() < otherNode.doc.getDocId();
+            {return doc.getDocId() < otherNode.doc.getDocId();}
         return nodeId.before(otherNode.nodeId, isPreceding);
     }
 
@@ -326,11 +326,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public boolean after(NodeValue other, boolean isFollowing) throws XPathException {
         if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
-            throw new XPathException("Cannot compare persistent node with in-memory node");
-        NodeProxy otherNode = (NodeProxy) other;
+            {throw new XPathException("Cannot compare persistent node with in-memory node");}
+        final NodeProxy otherNode = (NodeProxy) other;
         if (doc.getDocId() != otherNode.doc.getDocId())
             //Totally arbitrary
-            return doc.getDocId() > otherNode.doc.getDocId();
+            {return doc.getDocId() > otherNode.doc.getDocId();}
             return nodeId.after(otherNode.nodeId, isFollowing);
     }
 
@@ -367,10 +367,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public Node getNode() {
         if (isDocument())
-            return doc;
+            {return doc;}
         else {
-            NodeImpl realNode = (NodeImpl) doc.getNode(this);
-            if (realNode != null) this.nodeType = realNode.getNodeType();
+            final NodeImpl realNode = (NodeImpl) doc.getNode(this);
+            if (realNode != null) {this.nodeType = realNode.getNodeType();}
             return realNode;
         }
     }
@@ -410,7 +410,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public int getIndexType() {
         if (internalAddress == -1)
-            return Type.ITEM;
+            {return Type.ITEM;}
         return RangeIndexSpec.indexTypeToXPath(StorageAddress.indexTypeFromPointer(internalAddress));
     }
 
@@ -433,11 +433,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public boolean hasMatch(Match m) {
         if (m == null || match == null)
-            return false;
+            {return false;}
         Match next = match;
         do {
             if (next.equals(m))
-                return true;
+                {return true;}
         } while ((next = next.getNextMatch()) != null);
         return false;
     }
@@ -464,10 +464,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public void addMatches(NodeProxy p) {
         if (p == this)
-            return;
+            {return;}
         Match m = p.getMatches();
         if (Match.matchListEquals(m, this.match))
-        	return;
+        	{return;}
         while (m != null) {
             addMatch(m.newCopy());
             m = m.nextMatch;
@@ -494,8 +494,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public void addContextNode(int contextId, NodeValue node) {
         if (node.getImplementationType() != NodeValue.PERSISTENT_NODE)
-            return;
-        NodeProxy contextNode = (NodeProxy) node;
+            {return;}
+        final NodeProxy contextNode = (NodeProxy) node;
         if (context == null) {
             context = new ContextItem(contextId, contextNode);
             return;
@@ -556,7 +556,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     public void deepCopyContext(NodeProxy node) {
         context = null;
         if (node.context == null)
-            return;
+            {return;}
         if (node.context.getNextDirect() == null) {
             // if there's a single context item, we just
             // copy a reference to it. addContextNode will take
@@ -584,7 +584,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public void deepCopyContext(NodeProxy node, int addContextId) {
         if (context == null)
-            deepCopyContext(node);
+            {deepCopyContext(node);}
         addContextNode(addContextId, node);
     }
 
@@ -631,7 +631,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>String</code> value
      */
     public String debugContext() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("Context for " + nodeId + " [ " + toString() + "] : ");
         ContextItem next = context;
         while(next != null) {
@@ -711,18 +711,18 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         try {
             broker = doc.getBrokerPool().get(null);
             if (isDocument()) {
-                Element e = doc.getDocumentElement();
+                final Element e = doc.getDocumentElement();
                 if (e instanceof NodeProxy) {
                     return broker.getNodeValue(new StoredNode((NodeProxy)e), false);
                 } else if (e != null) {
                     return broker.getNodeValue((ElementImpl)e, false);
                 } else
                     // probably a binary resource
-                    return "";
+                    {return "";}
             } else {
                 return broker.getNodeValue(new StoredNode(this), false);
             }
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             //TODO : raise an exception here ! -pb
         } finally {
             doc.getBrokerPool().release(broker);
@@ -740,7 +740,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         try {
             broker = doc.getBrokerPool().get(null);
             return broker.getNodeValue(new StoredNode(this), true);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             //TODO : raise an exception here !
         } finally {
             doc.getBrokerPool().release(broker);
@@ -773,11 +773,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
      */
     public void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException {
-        Serializer serializer = broker.getSerializer();
+        final Serializer serializer = broker.getSerializer();
         serializer.reset();
         serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         if (properties != null)
-            serializer.setProperties(properties);
+            {serializer.setProperties(properties);}
         
         if (handler instanceof LexicalHandler) {
             serializer.setSAXHandlers(handler, (LexicalHandler) handler);
@@ -796,7 +796,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             node = (NodeImpl) getNode();
         }
         if(nodeType == Node.ATTRIBUTE_NODE) {
-            AttrImpl attr = (node == null ? (AttrImpl)getNode() : (AttrImpl)node);
+            final AttrImpl attr = (node == null ? (AttrImpl)getNode() : (AttrImpl)node);
             receiver.attribute(attr.getQName(), attr.getValue());
         } else {
             receiver.addReferenceNode(this);
@@ -808,29 +808,29 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public int conversionPreference(Class javaClass) {
         if (javaClass.isAssignableFrom(NodeProxy.class))
-            return 0;
+            {return 0;}
         if (javaClass.isAssignableFrom(Node.class))
-            return 1;
+            {return 1;}
         if (javaClass == String.class || javaClass == CharSequence.class)
-            return 2;
+            {return 2;}
         if (javaClass == Character.class || javaClass == char.class)
-            return 2;
+            {return 2;}
         if (javaClass == Double.class || javaClass == double.class)
-            return 10;
+            {return 10;}
         if (javaClass == Float.class || javaClass == float.class)
-            return 11;
+            {return 11;}
         if (javaClass == Long.class || javaClass == long.class)
-            return 12;
+            {return 12;}
         if (javaClass == Integer.class || javaClass == int.class)
-            return 13;
+            {return 13;}
         if (javaClass == Short.class || javaClass == short.class)
-            return 14;
+            {return 14;}
         if (javaClass == Byte.class || javaClass == byte.class)
-            return 15;
+            {return 15;}
         if (javaClass == Boolean.class || javaClass == boolean.class)
-            return 16;
+            {return 16;}
         if (javaClass == Object.class)
-            return 20;
+            {return 20;}
         return Integer.MAX_VALUE;
     }
 
@@ -945,9 +945,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public boolean contains(NodeProxy proxy) {
         if (doc.getDocId() != proxy.doc.getDocId())
-            return false;
+            {return false;}
         if (!nodeId.equals(proxy.getNodeId()))
-            return false;
+            {return false;}
         return true;
     }
 
@@ -1070,9 +1070,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public NodeProxy get(DocumentImpl document, NodeId nodeId) {
         if (!this.nodeId.equals(nodeId))
-            return null;
+            {return null;}
         if(this.doc.getDocId() != document.getDocId())
-            return null;
+            {return null;}
         return this;
     }
 
@@ -1087,15 +1087,15 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     public NodeProxy parentWithChild(DocumentImpl otherDoc, NodeId otherId,
             boolean directParent, boolean includeSelf) {
         if (otherDoc.getDocId() != doc.getDocId())
-            return null;
+            {return null;}
         if (includeSelf && otherId.compareTo(nodeId) == 0)
-            return this;
+            {return this;}
         otherId = otherId.getParentId();
         while (otherId != null) {
             if(otherId.compareTo(nodeId) == 0)
-                return this;
+                {return this;}
             else if (directParent)
-                return null;
+                {return null;}
             otherId = otherId.getParentId();
         }
         return null;
@@ -1105,15 +1105,15 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.dom.NodeSet#getContextNodes(boolean)
      */
     public NodeSet getContextNodes(int contextId) {
-        NewArrayNodeSet result = new NewArrayNodeSet();
+        final NewArrayNodeSet result = new NewArrayNodeSet();
         ContextItem contextNode = getContext();
         while (contextNode != null) {
-            NodeProxy p = contextNode.getNode();
+            final NodeProxy p = contextNode.getNode();
             p.addMatches(this);
             if (!result.contains(p)) {
                 //TODO : why isn't "this" involved here ? -pb
                 if (contextId != Expression.NO_CONTEXT_ID)
-                    p.addContextNode(contextId, p);
+                    {p.addContextNode(contextId, p);}
                 result.add(p);
             }
             contextNode = contextNode.getNextDirect();
@@ -1149,9 +1149,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     */
     public int getSizeHint(DocumentImpl document) {
         if(document.getDocId() == doc.getDocId())
-            return 1;
+            {return 1;}
         else
-            return Constants.NO_SIZE_HINT;
+            {return Constants.NO_SIZE_HINT;}
     }
 
     /* (non-Javadoc)
@@ -1190,20 +1190,20 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public NodeSet intersection(NodeSet other) {
         if(other.contains(this))
-            return this;
+            {return this;}
         else
-            return NodeSet.EMPTY_SET;
+            {return NodeSet.EMPTY_SET;}
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#deepIntersection(org.exist.dom.NodeSet)
      */
     public NodeSet deepIntersection(NodeSet other) {
-        NodeProxy p = other.parentWithChild(this, false, true, UNKNOWN_NODE_LEVEL);
+        final NodeProxy p = other.parentWithChild(this, false, true, UNKNOWN_NODE_LEVEL);
         if (p == null)
-            return NodeSet.EMPTY_SET;
+            {return NodeSet.EMPTY_SET;}
         if (!nodeId.equals(p.nodeId))
-	    p.addMatches(this);
+	    {p.addMatches(this);}
         return p;
     }
 
@@ -1212,8 +1212,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public NodeSet union(NodeSet other) {
         if (other.isEmpty())
-            return this;
-        NewArrayNodeSet result = new NewArrayNodeSet();
+            {return this;}
+        final NewArrayNodeSet result = new NewArrayNodeSet();
         result.addAll(other);
         result.add(this);
         return result;
@@ -1233,9 +1233,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>NodeSet</code> value
      */
     public NodeSet filterDocuments(NodeSet otherSet) {
-        DocumentSet docs = otherSet.getDocumentSet();
+        final DocumentSet docs = otherSet.getDocumentSet();
         if (docs.contains(doc.getDocId()))
-            return this;
+            {return this;}
         return NodeSet.EMPTY_SET;
     }
 
@@ -1261,14 +1261,14 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @see org.exist.dom.NodeSet#getParents(boolean)
      */
     public NodeSet getParents(int contextId) {
-        NodeId pid = nodeId.getParentId();
+        final NodeId pid = nodeId.getParentId();
         if (pid == null || pid == NodeId.DOCUMENT_NODE)
-            return NodeSet.EMPTY_SET;
-        NodeProxy parent = new NodeProxy(doc, pid, Node.ELEMENT_NODE);
+            {return NodeSet.EMPTY_SET;}
+        final NodeProxy parent = new NodeProxy(doc, pid, Node.ELEMENT_NODE);
         if (contextId != Expression.NO_CONTEXT_ID)
-            parent.addContextNode(contextId, this);
+            {parent.addContextNode(contextId, this);}
         else
-            parent.copyContext(this);
+            {parent.copyContext(this);}
         parent.addMatches(this);
         return parent;
     }
@@ -1281,16 +1281,16 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @return a <code>NodeSet</code> value
      */
     public NodeSet getAncestors(int contextId, boolean includeSelf) {
-        NodeSet ancestors = new NewArrayNodeSet();
+        final NodeSet ancestors = new NewArrayNodeSet();
         if (includeSelf)
-            ancestors.add(this);
+            {ancestors.add(this);}
         NodeId parentID = nodeId.getParentId();
         while (parentID != null) {
-            NodeProxy parent = new NodeProxy(getDocument(), parentID, Node.ELEMENT_NODE);
+            final NodeProxy parent = new NodeProxy(getDocument(), parentID, Node.ELEMENT_NODE);
             if (contextId != Expression.NO_CONTEXT_ID)
-                parent.addContextNode(contextId, this);
+                {parent.addContextNode(contextId, this);}
             else
-                parent.copyContext(this);
+                {parent.copyContext(this);}
             parent.addMatches(this);
             ancestors.add(parent);
             parentID = parentID.getParentId();
@@ -1390,59 +1390,59 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
-            return NodeSet.EMPTY_SET;
+            {return NodeSet.EMPTY_SET;}
         try {
             NewArrayNodeSet result = null;
-            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
+            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
             int status = reader.next();
             if (status != XMLStreamReader.START_ELEMENT)
-                return NodeSet.EMPTY_SET;
-            int attrs = reader.getAttributeCount();
+                {return NodeSet.EMPTY_SET;}
+            final int attrs = reader.getAttributeCount();
             for (int i = 0; i < attrs; i++) {
                 status = reader.next();
                 if (status != XMLStreamReader.ATTRIBUTE)
-                    break;
-                AttrImpl attr = (AttrImpl) reader.getNode();
+                    {break;}
+                final AttrImpl attr = (AttrImpl) reader.getNode();
                 if (test.matches(attr)) {
-                    NodeProxy child = new NodeProxy(attr);
+                    final NodeProxy child = new NodeProxy(attr);
                     if (Expression.NO_CONTEXT_ID != contextId)
-                        child.addContextNode(contextId, this);
+                        {child.addContextNode(contextId, this);}
                     else
-                        child.copyContext(this);
+                        {child.copyContext(this);}
                     if (!test.isWildcardTest())
-                        return child;
+                        {return child;}
                     if (result == null)
-                        result = new NewArrayNodeSet();
+                        {result = new NewArrayNodeSet();}
                     result.add(child);
                 }
             }
             return result == null ? NodeSet.EMPTY_SET : result;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e.getMessage(), e);
-        } catch (XMLStreamException e) {
+        } catch (final XMLStreamException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
     public NodeSet directSelectChild(QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
-            return NodeSet.EMPTY_SET;
-        NodeImpl node = (NodeImpl) getNode();
+            {return NodeSet.EMPTY_SET;}
+        final NodeImpl node = (NodeImpl) getNode();
         if (node.getNodeType() != Node.ELEMENT_NODE)
-            return NodeSet.EMPTY_SET;
-        NodeList children = node.getChildNodes();
+            {return NodeSet.EMPTY_SET;}
+        final NodeList children = node.getChildNodes();
         if (children.getLength() == 0)
-            return NodeSet.EMPTY_SET;
-        NewArrayNodeSet result = new NewArrayNodeSet();
+            {return NodeSet.EMPTY_SET;}
+        final NewArrayNodeSet result = new NewArrayNodeSet();
         StoredNode child;
         for (int i = 0; i < children.getLength(); i++) {
             child = (StoredNode) children.item(i);
             if (child.getQName().equals(qname)) {
-                NodeProxy p = new NodeProxy(doc, child.getNodeId(), Node.ELEMENT_NODE, child.getInternalAddress());
+                final NodeProxy p = new NodeProxy(doc, child.getNodeId(), Node.ELEMENT_NODE, child.getInternalAddress());
                 if (Expression.NO_CONTEXT_ID != contextId)
-                    p.addContextNode(contextId, this);
+                    {p.addContextNode(contextId, this);}
                 else
-                    p.copyContext(this);
+                    {p.copyContext(this);}
                 p.addMatches(this);
                 result.add(p);
             }
@@ -1457,16 +1457,16 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public String toString() {
         if (nodeId == NodeId.DOCUMENT_NODE)
-            return "Document node for " + doc.getDocId();
+            {return "Document node for " + doc.getDocId();}
         else
-            return doc.getNode(nodeId).getNodeName();
+            {return doc.getNode(nodeId).getNodeName();}
     }
 
     public String toStringWithDetails() {
         if (nodeId == NodeId.DOCUMENT_NODE)
-            return "Document node for " + doc.getDocId();
+            {return "Document node for " + doc.getDocId();}
         else
-            return doc.getNode(nodeId).toString();
+            {return doc.getNode(nodeId).toString();}
     }
 
     private final static class SingleNodeIterator implements NodeSetIterator, SequenceIterator {
@@ -1484,7 +1484,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
         public NodeProxy next() {
             if (!hasNext)
-                return null;
+                {return null;}
             hasNext = false;
             return node;
         }
@@ -1502,7 +1502,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
          */
         public Item nextItem() {
             if (!hasNext)
-                return null;
+                {return null;}
             hasNext = false;
             return node;
         }
@@ -1544,7 +1544,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public DocumentImpl getDocumentAt(int pos) {
         if (pos < 0 || pos > 1)
-            return null;
+            {return null;}
         return this.doc;
     }
 
@@ -1554,7 +1554,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     
     public DocumentImpl getDoc(int docId) {
         if (docId == this.doc.getDocId())
-            return this.doc;
+            {return this.doc;}
         return null;
     }
 
@@ -1566,7 +1566,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public DocumentSet intersection(DocumentSet other) {
         if (other.contains(doc.getDocId())) {
-            DefaultDocumentSet r = new DefaultDocumentSet();
+            final DefaultDocumentSet r = new DefaultDocumentSet();
             r.add(doc);
             return r;
         }
@@ -1575,9 +1575,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public boolean contains(DocumentSet other) {
         if (other.getDocumentCount() > 1)
-            return false;
+            {return false;}
         if (other.getDocumentCount() == 0)
-            return true;
+            {return true;}
         return other.contains(doc.getDocId());
     }
 
@@ -1590,65 +1590,65 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException {
-        Lock dlock = doc.getUpdateLock();
+        final Lock dlock = doc.getUpdateLock();
         if (exclusive)
-            dlock.acquire(Lock.WRITE_LOCK);
+            {dlock.acquire(Lock.WRITE_LOCK);}
         else
-            dlock.acquire(Lock.READ_LOCK);
+            {dlock.acquire(Lock.READ_LOCK);}
     }
 
     public void unlock(boolean exclusive) {
-        Lock dlock = doc.getUpdateLock();
+        final Lock dlock = doc.getUpdateLock();
         if(exclusive)
-            dlock.release(Lock.WRITE_LOCK);
+            {dlock.release(Lock.WRITE_LOCK);}
         else if (dlock.isLockedForRead(Thread.currentThread()))
-            dlock.release(Lock.READ_LOCK);
+            {dlock.release(Lock.READ_LOCK);}
     }
 
     public boolean equalDocs(DocumentSet other) {
         if (this == other)
             // we are comparing the same objects
-            return true;
+            {return true;}
         if (other.getDocumentCount() != 1)
-            return false;
+            {return false;}
         return other.contains(doc.getDocId());
     }
 
     public boolean directMatchAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
-            return false;
+            {return false;}
         try {
-            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
+            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
             int status = reader.next();
             if (status != XMLStreamReader.START_ELEMENT)
-                return false;
-            int attrs = reader.getAttributeCount();
+                {return false;}
+            final int attrs = reader.getAttributeCount();
             for (int i = 0; i < attrs; i++) {
                 status = reader.next();
                 if (status != XMLStreamReader.ATTRIBUTE)
-                    break;
-                AttrImpl attr = (AttrImpl) reader.getNode();
+                    {break;}
+                final AttrImpl attr = (AttrImpl) reader.getNode();
                 if (test.matches(attr)) {
                 	return true;
                 }
             }
             return false;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e.getMessage(), e);
-        } catch (XMLStreamException e) {
+        } catch (final XMLStreamException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
     public boolean directMatchChild(QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
-            return false;
-        NodeImpl node = (NodeImpl) getNode();
+            {return false;}
+        final NodeImpl node = (NodeImpl) getNode();
         if (node.getNodeType() != Node.ELEMENT_NODE)
-            return false;
-        NodeList children = node.getChildNodes();
+            {return false;}
+        final NodeList children = node.getChildNodes();
         if (children.getLength() == 0)
-            return false;
+            {return false;}
         StoredNode child;
         for (int i = 0; i < children.getLength(); i++) {
             child = (StoredNode) children.item(i);

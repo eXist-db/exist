@@ -87,46 +87,46 @@ public class FunTokenize extends FunMatches {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         Sequence result;
-		Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
+		final Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
 		if (stringArg.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
-            String string = stringArg.getStringValue();
+            final String string = stringArg.getStringValue();
             if (string.length() == 0 )
-                result = Sequence.EMPTY_SEQUENCE;
+                {result = Sequence.EMPTY_SEQUENCE;}
 
             else {
-                String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+                final String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
                 if (Pattern.matches(pattern, "")) {
                 	throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
                 }
 		
         		int flags = 0;
         		if (getSignature().getArgumentCount() == 3)
-        			flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)
-        						.getStringValue());
+        			{flags = parseFlags(getArgument(2).eval(contextSequence, contextItem)
+        						.getStringValue());}
         		try {
         			if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
         				pat = Pattern.compile(pattern, flags);
                     }
-                    String[] tokens = pat.split(string, -1);
+                    final String[] tokens = pat.split(string, -1);
                     result = new ValueSequence();
         			for (int i = 0; i < tokens.length; i++)
                         result.add(new StringValue(tokens[i]));        			
-        		} catch (PatternSyntaxException e) {
+        		} catch (final PatternSyntaxException e) {
         			throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
         		}
             }
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);        
+            {context.getProfiler().end(this, "", result);}        
         
         return result;    
 	}

@@ -60,8 +60,8 @@ public class STXTemplatesCache {
      */
     public synchronized Templates getOrUpdateTemplate(DBBroker broker, DocumentImpl stylesheet) throws TransformerConfigurationException, SAXException {
         //is it already in the cache
-        XmldbURI stylesheetUri = stylesheet.getURI();
-        long lastModified = stylesheet.getMetadata().getLastModified();
+        final XmldbURI stylesheetUri = stylesheet.getURI();
+        final long lastModified = stylesheet.getMetadata().getLastModified();
         CachedTemplate cachedTemplate = cache.get(stylesheetUri);
         if(cachedTemplate == null) {
              cachedTemplate = storeInCache(broker, stylesheetUri, stylesheet, lastModified);
@@ -77,16 +77,16 @@ public class STXTemplatesCache {
     }
 
     private CachedTemplate storeInCache(DBBroker broker, XmldbURI stylesheetUri, DocumentImpl stylesheet, long lastModified) throws TransformerConfigurationException, SAXException {
-        Templates compiled = compileTemplate(broker, stylesheet);
-        CachedTemplate cachedTemplate = new CachedTemplate(compiled, lastModified);
+        final Templates compiled = compileTemplate(broker, stylesheet);
+        final CachedTemplate cachedTemplate = new CachedTemplate(compiled, lastModified);
         cache.put(stylesheetUri, cachedTemplate);
         LOG.debug("Compiled and Stored STX Template '" + stylesheetUri.toString() + "' in cache.");
         return cachedTemplate;
     }
 
     private Templates compileTemplate(DBBroker broker, DocumentImpl stylesheet) throws TransformerConfigurationException, SAXException {
-        Serializer serializer = broker.getSerializer();
-        TemplatesHandler thandler = factory.newTemplatesHandler();
+        final Serializer serializer = broker.getSerializer();
+        final TemplatesHandler thandler = factory.newTemplatesHandler();
         serializer.setSAXHandlers(thandler, null);
         serializer.toSAX(stylesheet);
         return thandler.getTemplates();

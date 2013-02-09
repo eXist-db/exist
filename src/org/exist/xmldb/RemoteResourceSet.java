@@ -48,14 +48,14 @@ public class RemoteResourceSet implements ResourceSet {
 
     public void clear() throws XMLDBException {
         if (handle < 0)
-            return;
-        List<Object> params = new ArrayList<Object>(1);
-    	params.add(new Integer(handle));
+            {return;}
+        final List<Object> params = new ArrayList<Object>(1);
+    	params.add(Integer.valueOf(handle));
         if (hash > -1)
-            params.add(new Integer(hash));
+            params.add(Integer.valueOf(hash));
         try {
             collection.getClient().execute("releaseQueryResult", params);
-        } catch (XmlRpcException e) {
+        } catch (final XmlRpcException e) {
             System.err.println("Failed to release query result on server: " + e.getMessage());
         }
         handle = -1;
@@ -73,8 +73,8 @@ public class RemoteResourceSet implements ResourceSet {
 
 
     public Resource getMembersAsResource() throws XMLDBException {
-        List<Object> params = new ArrayList<Object>(2);
-    	params.add(new Integer(handle));
+        final List<Object> params = new ArrayList<Object>(2);
+    	params.add(Integer.valueOf(handle));
     	params.add(outputProperties);
 		
     	try {
@@ -90,7 +90,7 @@ public class RemoteResourceSet implements ResourceSet {
 			
 			long offset = ((Integer)table.get("offset")).intValue();
 			byte[] data = (byte[])table.get("data");
-			boolean isCompressed=outputProperties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no").equals("yes");
+			boolean isCompressed="yes".equals(outputProperties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no"));
 			// One for the local cached file
 			Inflater dec = null;
 			byte[] decResult = null;
@@ -111,7 +111,7 @@ public class RemoteResourceSet implements ResourceSet {
 				params.add(table.get("handle"));
 				params.add(Long.toString(offset));
 				table = (Map<?,?>) collection.getClient().execute("getNextExtendedChunk", params);
-				offset = new Long((String)table.get("offset")).longValue();
+				offset = Long.valueOf((String)table.get("offset")).longValue();
 				data = (byte[])table.get("data");
 				// One for the local cached file
 				if(isCompressed) {
@@ -125,35 +125,35 @@ public class RemoteResourceSet implements ResourceSet {
 				}
 			}
 			if(dec!=null)
-				dec.end();
+				{dec.end();}
 			
-			RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, XmldbURI.EMPTY_URI, null );
+			final RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, XmldbURI.EMPTY_URI, null );
 			res.setContent( vtmpfile );
 			res.setProperties(outputProperties);
 			return res;
-		} catch (XmlRpcException xre) {
-			byte[] data = (byte[]) collection.getClient().execute("retrieveAll", params);
+		} catch (final XmlRpcException xre) {
+			final byte[] data = (byte[]) collection.getClient().execute("retrieveAll", params);
 			String content;
 			try {
 				content = new String(data, outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8"));
-			} catch (UnsupportedEncodingException ue) {
+			} catch (final UnsupportedEncodingException ue) {
 				LOG.warn(ue);
 				content = new String(data);
 			}
-			RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, 
+			final RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, 
 	            	XmldbURI.EMPTY_URI, null );
 	        res.setContent( content );
 	        res.setProperties(outputProperties);
 	        return res;
-		} catch (IOException ioe) {
+		} catch (final IOException ioe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-		} catch (DataFormatException dfe) {
+		} catch (final DataFormatException dfe) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, dfe.getMessage(), dfe);
 		} finally {
 			if(vtmpfile!=null) {
 				try {
 					vtmpfile.close();
-				} catch(IOException ioe) {
+				} catch(final IOException ioe) {
 					//IgnoreIT(R)
 				}
 			}
@@ -161,7 +161,7 @@ public class RemoteResourceSet implements ResourceSet {
 
 		
 	
-	} catch (XmlRpcException xre) {
+	} catch (final XmlRpcException xre) {
 		throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
 	}
     }

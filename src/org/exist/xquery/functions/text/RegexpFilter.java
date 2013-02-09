@@ -175,10 +175,10 @@ public class RegexpFilter extends BasicFunction {
         }
 
         // Match pattern on string
-        Matcher matcher = pattern.matcher( args[0].getStringValue() );
+        final Matcher matcher = pattern.matcher( args[0].getStringValue() );
         
         // Create response
-        Sequence result = new ValueSequence();
+        final Sequence result = new ValueSequence();
         
         // Add each match to response sequence
         while( matcher.find() ){
@@ -190,7 +190,7 @@ public class RegexpFilter extends BasicFunction {
     
 	public Sequence groups(Sequence[] args) throws XPathException {
         Sequence result;
-		Sequence input = args[0];
+		final Sequence input = args[0];
 		if (input.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;        
          } else {
@@ -211,11 +211,11 @@ public class RegexpFilter extends BasicFunction {
 	protected String translateRegexp(String pattern) throws XPathException {
 		// convert pattern to Java regex syntax
         try {
-        	int xmlVersion = 11;
-        	boolean ignoreWhitespace = false;
-        	boolean caseBlind = false;
+        	final int xmlVersion = 11;
+        	final boolean ignoreWhitespace = false;
+        	final boolean caseBlind = false;
 			pattern = JDK15RegexTranslator.translate(pattern, xmlVersion, true, ignoreWhitespace, caseBlind);
-		} catch (RegexSyntaxException e) {
+		} catch (final RegexSyntaxException e) {
 			throw new XPathException(this, "Conversion from XPath2 to Java regular expression " +
 					"syntax failed: " + e.getMessage(), e);
 		}
@@ -223,7 +223,7 @@ public class RegexpFilter extends BasicFunction {
 	}
 
     private Sequence evalGeneric(Sequence[] args, Sequence stringArg) throws XPathException {
-        String string = stringArg.getStringValue();
+        final String string = stringArg.getStringValue();
 		
 		String pattern;
 		
@@ -235,7 +235,7 @@ public class RegexpFilter extends BasicFunction {
         
 		int flags = 0;
         if(args.length==3)
-            flags = parseFlags(args[2].getStringValue());
+            {flags = parseFlags(args[2].getStringValue());}
         
 		return match(string, pattern, flags);
     }
@@ -260,8 +260,8 @@ public class RegexpFilter extends BasicFunction {
 			if(!matcher.find()) {
 				return Sequence.EMPTY_SEQUENCE;
 			} else {
-				int items = matcher.groupCount() + 1;
-				Sequence seq = new ValueSequence();
+				final int items = matcher.groupCount() + 1;
+				final Sequence seq = new ValueSequence();
 				seq.add(new StringValue(string));
 				for(int i=1;i<items;i++) {
 					String val = matcher.group(i);
@@ -272,7 +272,7 @@ public class RegexpFilter extends BasicFunction {
 				}
 				return seq;
 			}
-		} catch (PatternSyntaxException e) {
+		} catch (final PatternSyntaxException e) {
 			throw new XPathException(this, "err:FORX0001: Invalid regular expression: " + e.getMessage(), e);
 		}
     }
@@ -280,7 +280,7 @@ public class RegexpFilter extends BasicFunction {
     protected final static int parseFlags(String s) throws XPathException {
 		int flags = 0;
 		for(int i = 0; i < s.length(); i++) {
-			char ch = s.charAt(i);
+			final char ch = s.charAt(i);
 			switch(ch) {
 				case 'm':
 					flags |= Pattern.MULTILINE;

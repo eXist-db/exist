@@ -51,7 +51,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
 
         //TODO expand perm to full UNIX chmod i.e. perm ::= r | s | t | w | x | X | u | g | o
 
-        String clauses[] = symbolicMode.split(",");
+        final String clauses[] = symbolicMode.split(",");
         for(final String clause : clauses) {
             final String whoPerm[] = clause.split("[+-=]");
 

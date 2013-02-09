@@ -77,11 +77,11 @@ public class EmbeddedUpload {
         File tmp =null;
         try{
             tmp = File.createTempFile("EMBEDDED", "tmp");
-            FileOutputStream fos = new FileOutputStream(tmp);
+            final FileOutputStream fos = new FileOutputStream(tmp);
             
             try{
                 // Transfer bytes from in to out
-                byte[] buf = new byte[1024];
+                final byte[] buf = new byte[1024];
                 int len;
                 while ((len = is.read(buf)) > 0) {
                     fos.write(buf, 0, len);
@@ -93,7 +93,7 @@ public class EmbeddedUpload {
             // Let database read file
             stream(xmldbURL, tmp, user);
             
-        } catch(IOException ex){
+        } catch(final IOException ex){
             //ex.printStackTrace();
             LOG.error(ex);
             throw ex;
@@ -154,16 +154,16 @@ public class EmbeddedUpload {
             
             broker = pool.get(user);
             
-            XmldbURI collectionUri = XmldbURI.create(xmldbURL.getCollection());
-            XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());
+            final XmldbURI collectionUri = XmldbURI.create(xmldbURL.getCollection());
+            final XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());
             
             collection = broker.openCollection(collectionUri, Lock.READ_LOCK);
             
             if(collection == null)
-                throw new IOException("Resource "+collectionUri.toString()+" is not a collection.");
+                {throw new IOException("Resource "+collectionUri.toString()+" is not a collection.");}
             
             if(collection.hasChildCollection(broker, documentUri))
-                throw new IOException("Resource "+documentUri.toString()+" is a collection.");
+                {throw new IOException("Resource "+documentUri.toString()+" is a collection.");}
             
             MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
             String contentType=null;
@@ -178,9 +178,9 @@ public class EmbeddedUpload {
             
             if(mime.isXMLType()) {
                 LOG.debug("storing XML resource");
-                InputSource inputsource = new InputSource(tmp.toURI().toASCIIString());
-                IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
-                DocumentImpl doc = info.getDocument();
+                final InputSource inputsource = new InputSource(tmp.toURI().toASCIIString());
+                final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
+                final DocumentImpl doc = info.getDocument();
                 doc.getMetadata().setMimeType(contentType);
                 collection.release(Lock.READ_LOCK);
                 collectionLocked = false;
@@ -189,7 +189,7 @@ public class EmbeddedUpload {
                 
             } else {
                 LOG.debug("storing Binary resource");
-                InputStream is = new FileInputStream(tmp);
+                final InputStream is = new FileInputStream(tmp);
                 try {
                 	collection.addBinaryResource(txn, broker, documentUri, is, contentType, tmp.length());
                 } finally {
@@ -201,26 +201,26 @@ public class EmbeddedUpload {
             LOG.debug("commit");
             transact.commit(txn);
             
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             try { 
             	// is it still actual? -shabanovd
                 // Throws an exception when the user is unknown!
             	if (transact != null)
-            		transact.abort(txn);
-            } catch (Exception abex) {
+            		{transact.abort(txn);}
+            } catch (final Exception abex) {
                 LOG.debug(abex);
             }
             //ex.printStackTrace();
             LOG.debug(ex);
             throw ex;
             
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             try { 
             	// is it still actual? -shabanovd
                 // Throws an exception when the user is unknown!
             	if (transact != null)
-            		transact.abort(txn);
-            } catch (Exception abex) {
+            		{transact.abort(txn);}
+            } catch (final Exception abex) {
                 LOG.debug(abex);
             }
             //ex.printStackTrace();

@@ -99,21 +99,21 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 	    if(getSignature().getArgumentCount() == 1) {
                 date = ((CollectionImpl)collection).getCreationTime();
 	    } else {
-                Resource resource = collection.getResource(args[1].getStringValue());
+                final Resource resource = collection.getResource(args[1].getStringValue());
                 
                 if(resource == null) {
                     return Sequence.EMPTY_SEQUENCE;
                 }
                 
                 if(isCalledAs("last-modified"))
-		    date = ((EXistResource)resource).getLastModificationTime();
+		    {date = ((EXistResource)resource).getLastModificationTime();}
                 else
-		    date = ((EXistResource)resource).getCreationTime();
+		    {date = ((EXistResource)resource).getCreationTime();}
             }
 
 	    return new DateTimeValue(date);
 
-	} catch(XMLDBException e) {
+	} catch(final XMLDBException e) {
 	    logger.error("Failed to retrieve creation date or modification time of specified resource or creation date of collection");
 
 	    throw new XPathException(this, "Failed to retrieve creation date: " + e.getMessage(), e);

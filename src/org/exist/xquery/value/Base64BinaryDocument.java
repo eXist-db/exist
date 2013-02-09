@@ -45,7 +45,7 @@ public class Base64BinaryDocument extends BinaryValueFromInputStream {
     }
 
     public static Base64BinaryDocument getInstance(BinaryValueManager manager, InputStream is) throws XPathException {
-        Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(manager, is);
+        final Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(manager, is);
         manager.registerBinaryValueInstance(b64BinaryDocument);
         return b64BinaryDocument;
     }

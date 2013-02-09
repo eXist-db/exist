@@ -42,15 +42,15 @@ public class ResizingTable extends JTable
 		//fix for a NullPointerException when setModel from JTable constructor
 		//	generates a tableChanged event
 		if(defaultRenderersByColumnClass != null)
-			setColumnWidths();
+			{setColumnWidths();}
 	}
 	
 	private void setColumnWidths()
 	{
 		if(columnModel == null)
-			return;
+			{return;}
 
-		int[] width = new int[getColumnCount()];
+		final int[] width = new int[getColumnCount()];
 
 		getHeaderWidths(width);
 		getCellMaxWidths(width);
@@ -58,69 +58,69 @@ public class ResizingTable extends JTable
 	}
 	private void getHeaderWidths(int[] width)
 	{
-		JTableHeader header = getTableHeader();
+		final JTableHeader header = getTableHeader();
 		for(int column = 0; column < width.length; column++)
 		{
 			TableCellRenderer renderer = columnModel.getColumn(column).getHeaderRenderer();
 			if(renderer == null)
 			{
 				if(header == null)
-					continue;
+					{continue;}
 				renderer = header.getDefaultRenderer();
 				if(renderer == null)
-					continue;
+					{continue;}
 			}
 
-			Component comp = renderer.getTableCellRendererComponent(this, getColumnName(column), false, false, -1, column);
-			Dimension prefSize = comp.getPreferredSize();
+			final Component comp = renderer.getTableCellRendererComponent(this, getColumnName(column), false, false, -1, column);
+			final Dimension prefSize = comp.getPreferredSize();
 			if(prefSize.width > width[column])
-				width[column] = prefSize.width;
+				{width[column] = prefSize.width;}
 		}
 	}
 	private void setCellWidths(int[] width, boolean override)
 	{
-		int spacingWidth = getIntercellSpacing().width * 2;
+		final int spacingWidth = getIntercellSpacing().width * 2;
 		
 		for(int column = 0; column < width.length; column++)
 		{
-			TableColumn tableColumn = columnModel.getColumn(column);
-			int newWidth = width[column] + spacingWidth + 6;
+			final TableColumn tableColumn = columnModel.getColumn(column);
+			final int newWidth = width[column] + spacingWidth + 6;
 			if(override)
-				tableColumn.setPreferredWidth(newWidth);
+				{tableColumn.setPreferredWidth(newWidth);}
 			else
 			{
-				int currentWidth = tableColumn.getWidth();
+				final int currentWidth = tableColumn.getWidth();
 				tableColumn.setPreferredWidth(Math.max(currentWidth, newWidth));
 			}
 		}
 	}
 	private void getCellMaxWidths(int[] width)
 	{
-		int rowCount = getRowCount();
+		final int rowCount = getRowCount();
 		for(int row = 0; row < rowCount; row++)
 		{
 			for(int column = 0; column < width.length; column++)
 			{
 				TableCellRenderer renderer = getCellRenderer(row, column);
 				if(renderer == null)
-					renderer = getDefaultRenderer(getModel().getColumnClass(column));
+					{renderer = getDefaultRenderer(getModel().getColumnClass(column));}
 				if(renderer == null)
-					continue;
+					{continue;}
 				
-				Object value = getValueAt(row, column);
-				boolean isSelected = isCellSelected(row, column);
-				Component comp = renderer.getTableCellRendererComponent(this, value, isSelected, false, row, column);
+				final Object value = getValueAt(row, column);
+				final boolean isSelected = isCellSelected(row, column);
+				final Component comp = renderer.getTableCellRendererComponent(this, value, isSelected, false, row, column);
 				width[column] = Math.max(comp.getPreferredSize().width, width[column]);
 			}
 		}
 	}
 	public Dimension getPreferredScrollableViewportSize()
 	{
-		Dimension prefSize = getPreferredSize();
-		Dimension maxSize = getMaximumSize();
-		Dimension minSize = getMinimumSize();
-		int width = Math.max(Math.min(maxSize.width, prefSize.width), minSize.width);
-		int height = Math.max(Math.min(maxSize.height, prefSize.height), minSize.height);
+		final Dimension prefSize = getPreferredSize();
+		final Dimension maxSize = getMaximumSize();
+		final Dimension minSize = getMinimumSize();
+		final int width = Math.max(Math.min(maxSize.width, prefSize.width), minSize.width);
+		final int height = Math.max(Math.min(maxSize.height, prefSize.height), minSize.height);
 		return new Dimension(width, height);
 	}
 	public boolean getScrollableTracksViewportWidth()

@@ -104,11 +104,11 @@ public class ExtCollection extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
-        List<String> args = getParameterValues(contextSequence, contextItem);
+        final List<String> args = getParameterValues(contextSequence, contextItem);
         // TODO: disabled cache for now as it may cause concurrency issues
         // better use compile-time inspection and maybe a pragma to mark those
         // sections in the query that can be safely cached
@@ -131,35 +131,35 @@ public class ExtCollection extends Function {
                 docs = context.getStaticallyKnownDocuments();
             } else {
                 MutableDocumentSet ndocs = new DefaultDocumentSet();
-                for (String next : args) {
-                    XmldbURI uri = new AnyURIValue(next).toXmldbURI();
-                    Collection coll = context.getBroker().getCollection(uri);
+                for (final String next : args) {
+                    final XmldbURI uri = new AnyURIValue(next).toXmldbURI();
+                    final Collection coll = context.getBroker().getCollection(uri);
                     if (coll == null) {
                         if (context.isRaiseErrorOnFailedRetrieval()) {
                             throw new XPathException("FODC0002: can not access collection '" + uri + "'");
                         }
                     } else {
                         if (context.inProtectedMode())
-                            context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, ndocs);
+                            {context.getProtectedDocs().getDocsByCollection(coll, includeSubCollections, ndocs);}
                         else
-                            coll.allDocs(context.getBroker(), ndocs,
-                                includeSubCollections, context.getProtectedDocs());
+                            {coll.allDocs(context.getBroker(), ndocs,
+                                includeSubCollections, context.getProtectedDocs());}
                     }
                 }
                 docs = ndocs;
             }
-        } catch (XPathException e) { //From AnyURIValue constructor
+        } catch (final XPathException e) { //From AnyURIValue constructor
             e.setLocation(line, column);
             throw new XPathException("FODC0002: " + e.getMessage());
-        } catch(PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException pde) {
             throw new XPathException("FODC0002: can not access collection '" + pde.getMessage() + "'");
             
         }
         // iterate through all docs and create the node set
-        NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 1);
+        final NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 1);
         Lock dlock;
         DocumentImpl doc;
-        for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
+        for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {
             doc = i.next();
             dlock = doc.getUpdateLock();
             boolean lockAcquired = false;
@@ -169,16 +169,16 @@ public class ExtCollection extends Function {
                     lockAcquired = true;
                 }
                 result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 throw new XPathException(e.getMessage());
             } finally {
                 if (lockAcquired)
-                    dlock.release(Lock.READ_LOCK);
+                    {dlock.release(Lock.READ_LOCK);}
             }
         }
         registerUpdateListener();
         if (context.getProfiler().isEnabled())
-               context.getProfiler().end(this, "", result);
+               {context.getProfiler().end(this, "", result);}
         return result;
     }
 
@@ -189,11 +189,11 @@ public class ExtCollection extends Function {
      */
     private List<String> getParameterValues(Sequence contextSequence,
             Item contextItem) throws XPathException {
-        List<String> args = new ArrayList<String>(getArgumentCount() + 10);
+        final List<String> args = new ArrayList<String>(getArgumentCount() + 10);
         for (int i = 0; i < getArgumentCount(); i++) {
-            Sequence seq = getArgument(i).eval(contextSequence, contextItem);
-            for (SequenceIterator j = seq.iterate(); j.hasNext();) {
-                Item next = j.nextItem();
+            final Sequence seq = getArgument(i).eval(contextSequence, contextItem);
+            for (final SequenceIterator j = seq.iterate(); j.hasNext();) {
+                final Item next = j.nextItem();
                 args.add(next.getStringValue());
             }
         }

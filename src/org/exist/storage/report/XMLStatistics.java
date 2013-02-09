@@ -54,14 +54,14 @@ public class XMLStatistics {
     }
 
     public void genInstanceStatus() throws SAXException {
-        AttributesImpl atts = new AttributesImpl();
+        final AttributesImpl atts = new AttributesImpl();
         //TODO : find a way to retrieve the actual instance's name !
         atts.addAttribute("", "default", "default", "CDATA", "exist");
         this.contentHandler.startElement(NAMESPACE, "database-instances", 
             PREFIX + ":database-instances", atts);
         atts.clear();
         BrokerPool instance;
-        for(Iterator<BrokerPool> i = BrokerPool.getInstances(); i.hasNext(); ) {
+        for(final Iterator<BrokerPool> i = BrokerPool.getInstances(); i.hasNext(); ) {
             instance = i.next();
             atts.addAttribute("", "name", "name", "CDATA", instance.getId());
             this.contentHandler.startElement(NAMESPACE, "database-instance", 
@@ -86,25 +86,25 @@ public class XMLStatistics {
     }
 
     private void genBufferStatus(BrokerPool instance) throws SAXException {
-        AttributesImpl atts = new AttributesImpl();
+        final AttributesImpl atts = new AttributesImpl();
         this.contentHandler.startElement(NAMESPACE, "buffers", PREFIX + ":buffers", atts);
-        Configuration conf = instance.getConfiguration();
+        final Configuration conf = instance.getConfiguration();
         BFile db;
         db = (BFile) conf.getProperty(CollectionStore.FILE_KEY_IN_CONFIG);
         genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ db.getFile().getName() + ")");
-        DOMFile dom = (DOMFile) conf.getProperty(DOMFile.CONFIG_KEY_FOR_FILE);
+        final DOMFile dom = (DOMFile) conf.getProperty(DOMFile.CONFIG_KEY_FOR_FILE);
         genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ dom.getFile().getName() + ")");
         db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
         if (db != null)
-            genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ db.getFile().getName() + ")");
+            {genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ db.getFile().getName() + ")");}
         db = (BFile) conf.getProperty(NativeTextEngine.FILE_KEY_IN_CONFIG);
         if (db != null)
-            genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Fulltext index ("+ db.getFile().getName() + ")");		
+            {genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Fulltext index ("+ db.getFile().getName() + ")");}		
         this.contentHandler.endElement(NAMESPACE, "buffers", PREFIX + ":buffers");
     }
 
     private void genBufferDetails(BufferStats index, BufferStats data, String name) throws SAXException {
-        AttributesImpl atts = new AttributesImpl();
+        final AttributesImpl atts = new AttributesImpl();
         atts.addAttribute("", "name", "name", "CDATA", name);
         this.contentHandler.startElement(NAMESPACE, "file", PREFIX + ":file", atts);
         atts.clear();
@@ -128,7 +128,7 @@ public class XMLStatistics {
     }
 
     public void addValue(String elem, String value) throws SAXException {
-        AttributesImpl atts = new AttributesImpl();
+        final AttributesImpl atts = new AttributesImpl();
         this.contentHandler.startElement(NAMESPACE, elem, PREFIX + ':' + elem, atts);
         this.contentHandler.characters(value.toCharArray(), 0, value.length());
         this.contentHandler.endElement(NAMESPACE, elem, PREFIX + ':' + elem);

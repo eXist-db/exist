@@ -34,7 +34,7 @@ public class DynamicFunctionCall extends AbstractExpression {
     public void dump(ExpressionDumper dumper) {
         functionExpr.dump(dumper);
         dumper.display('(');
-        for (Expression arg : arguments) {
+        for (final Expression arg : arguments) {
             arg.dump(dumper);
         }
         dumper.display(')');
@@ -43,24 +43,24 @@ public class DynamicFunctionCall extends AbstractExpression {
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
-        Sequence funcSeq = functionExpr.eval(contextSequence, contextItem);
+        final Sequence funcSeq = functionExpr.eval(contextSequence, contextItem);
         if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)
-            throw new XPathException(this, ErrorCodes.XPTY0004,
+            {throw new XPathException(this, ErrorCodes.XPTY0004,
                 "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
-                ". Expression: " + ExpressionDumper.dump(functionExpr));
-        Item item0 = funcSeq.itemAt(0);
+                ". Expression: " + ExpressionDumper.dump(functionExpr));}
+        final Item item0 = funcSeq.itemAt(0);
         if (!Type.subTypeOf(item0.getType(), Type.FUNCTION_REFERENCE))
-            throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Type error: expected function, got " + Type.getTypeName(item0.getType()));
-        FunctionReference ref = (FunctionReference)item0;
+            {throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Type error: expected function, got " + Type.getTypeName(item0.getType()));}
+        final FunctionReference ref = (FunctionReference)item0;
         // if the call is a partial application, create a new function
         if (isPartial) {
         	try {
-	        	FunctionCall call = ref.getCall();
+	        	final FunctionCall call = ref.getCall();
 	        	call.setArguments(arguments);
-	        	PartialFunctionApplication partialApp = new PartialFunctionApplication(context, call);
+	        	final PartialFunctionApplication partialApp = new PartialFunctionApplication(context, call);
 	        	return partialApp.eval(contextSequence, contextItem);
-        	} catch (XPathException e) {
+        	} catch (final XPathException e) {
 				e.setLocation(line, column, getSource());
 				throw e;
         	}
@@ -70,7 +70,7 @@ public class DynamicFunctionCall extends AbstractExpression {
             // cachedContextInfo will stay in memory
 	        ref.analyze(new AnalyzeContextInfo(cachedContextInfo));
 	        // Evaluate the function
-	        Sequence result = ref.eval(contextSequence);
+	        final Sequence result = ref.eval(contextSequence);
             ref.resetState(false);
             return result;
         }

@@ -71,10 +71,10 @@ public class CollectionCacheManager implements CacheManager {
 
     @Override
     public int requestMem(Cache cache) {
-        int realSize = collectionCache.getRealSize();
+        final int realSize = collectionCache.getRealSize();
         if (realSize < maxCacheSize) {
             synchronized (this) {
-                int newCacheSize = (int)(collectionCache.getBuffers() * collectionCache.getGrowthFactor());
+                final int newCacheSize = (int)(collectionCache.getBuffers() * collectionCache.getGrowthFactor());
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Growing cache " + collectionCache.getFileName() + " (a " + collectionCache.getClass().getName() +
                         ") from " + collectionCache.getBuffers() + " to " + newCacheSize + ". Current memory usage = " + realSize);
@@ -120,11 +120,11 @@ public class CollectionCacheManager implements CacheManager {
     }
 
     private void registerMBean(String instanceName) {
-        Agent agent = AgentFactory.getInstance();
+        final Agent agent = AgentFactory.getInstance();
         try {
             agent.addMBean(instanceName, "org.exist.management." + instanceName +
                 ":type=CollectionCacheManager", new org.exist.management.CacheManager(this));
-        } catch (DatabaseConfigurationException e) {
+        } catch (final DatabaseConfigurationException e) {
             LOG.warn("Exception while registering cache mbean.", e);
         }
         }

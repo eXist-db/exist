@@ -95,11 +95,11 @@ public class OrderedLinkedList {
 		// insert node
 		newNode.prev = node.prev;
 		if (newNode.prev != null)
-			newNode.prev.next = newNode;
+			{newNode.prev.next = newNode;}
 		node.prev = newNode;
 		newNode.next = node;
 		if (node == header)
-			header = newNode;
+			{header = newNode;}
         return newNode;
 	}
     
@@ -121,27 +121,27 @@ public class OrderedLinkedList {
 				node.next.prev = null;
 				header = node.next;
 			} else
-				header = null;
+				{header = null;}
 		} else {
 			node.prev.next = node.next;
 			if (node.next != null)
-				node.next.prev = node.prev;
+				{node.next.prev = node.prev;}
             else
-                last = node.prev;
+                {last = node.prev;}
 		}
 	}
 	
     public Node removeFirst() {
-        Node node = header;
+        final Node node = header;
         header = node.next;
         if(header != null)
-            header.prev = null;
+            {header.prev = null;}
         --size;
         return  node;
     }
 
     public Node removeLast() {
-        Node node = last;
+        final Node node = last;
         last = node.prev;
         last.next = null;
         --size;
@@ -157,14 +157,14 @@ public class OrderedLinkedList {
 		int count = 0;
 		while (node != null) {
 			if (count++ == pos)
-				return node;
+				{return node;}
 			node = node.next;
 		}
 		return null;
 	}
 
 	public Node[] getData() {
-		Node[] data = new Node[size];
+		final Node[] data = new Node[size];
 		Node next = header;
 		int i = 0;
 		while( next != null ) {
@@ -188,7 +188,7 @@ public class OrderedLinkedList {
     	Node next = header;
     	while( next != null ) {
     		if(next.equals(c))
-    			return true;
+    			{return true;}
     		next = next.next;
     	}
     	return false;
@@ -222,7 +222,7 @@ public class OrderedLinkedList {
 
 		public Object next() {
 			if (next == null)
-				return null;
+				{return null;}
 			final Node current = next;
 			next = next.next;
 			return current;
@@ -234,7 +234,7 @@ public class OrderedLinkedList {
 	}
 
 	public static void main(String args[]) {
-		OrderedLinkedList list = new OrderedLinkedList();
+		final OrderedLinkedList list = new OrderedLinkedList();
 		list.add(new SimpleNode("Adam"));
 		list.add(new SimpleNode("Sabine"));
 		list.add(new SimpleNode("Georg"));

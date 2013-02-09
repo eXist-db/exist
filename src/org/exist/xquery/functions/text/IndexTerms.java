@@ -101,31 +101,31 @@ public class IndexTerms extends BasicFunction {
         if (args[arg].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        NodeSet nodes = args[arg++].toNodeSet();
-        DocumentSet docs = nodes.getDocumentSet();
+        final NodeSet nodes = args[arg++].toNodeSet();
+        final DocumentSet docs = nodes.getDocumentSet();
         QName[] qnames = null;
         if (args.length == 5) {
             qnames = new QName[args[arg].getItemCount()];
             int q = 0;
-            for (SequenceIterator i = args[arg].iterate(); i.hasNext(); q++) {
-                QNameValue qnv = (QNameValue) i.nextItem();
+            for (final SequenceIterator i = args[arg].iterate(); i.hasNext(); q++) {
+                final QNameValue qnv = (QNameValue) i.nextItem();
                 qnames[q] = qnv.getQName();
             }
             ++arg;
         } else
-            qnames = getDefinedIndexes(context.getBroker(), docs);
+            {qnames = getDefinedIndexes(context.getBroker(), docs);}
         String start = null;
         if (!args[arg].isEmpty())
-            start = args[arg].getStringValue();
-        FunctionReference ref = (FunctionReference) args[++arg].itemAt(0);
-        int max = ((IntegerValue) args[++arg].itemAt(0)).getInt();
-        Sequence result = new ValueSequence();
+            {start = args[arg].getStringValue();}
+        final FunctionReference ref = (FunctionReference) args[++arg].itemAt(0);
+        final int max = ((IntegerValue) args[++arg].itemAt(0)).getInt();
+        final Sequence result = new ValueSequence();
         try {
             Occurrences occur[] = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, qnames, start, null);
             if (args.length == 4) {
                 Occurrences occur2[] = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, start, null);
                 if (occur == null || occur.length == 0)
-                    occur = occur2;
+                    {occur = occur2;}
                 else {
                     Occurrences t[] = new Occurrences[occur.length + occur2.length];
                     System.arraycopy(occur, 0, t, 0, occur.length);
@@ -133,21 +133,21 @@ public class IndexTerms extends BasicFunction {
                     occur = t;
                 }
             }
-            int len = (occur.length > max ? max : occur.length);
-            Sequence params[] = new Sequence[2];
+            final int len = (occur.length > max ? max : occur.length);
+            final Sequence params[] = new Sequence[2];
             ValueSequence data = new ValueSequence();
 
-            Vector<Integer> list = new Vector<Integer>(len);
+            final Vector<Integer> list = new Vector<Integer>(len);
             for (int j = 0; j < len; j++) {
-                if (!list.contains(new Integer(occur[j].getOccurrences()))) {
-                    list.add(new Integer(occur[j].getOccurrences()));
+                if (!list.contains(Integer.valueOf(occur[j].getOccurrences()))) {
+                    list.add(Integer.valueOf(occur[j].getOccurrences()));
                 }
             }
             Collections.sort(list);
             Collections.reverse(list);
-            HashMap<Integer, Integer> map = new HashMap<Integer, Integer>(list.size() * 2);
+            final HashMap<Integer, Integer> map = new HashMap<Integer, Integer>(list.size() * 2);
             for (int j = 0; j < list.size(); j++) {
-                map.put(list.get(j), new Integer(j + 1));
+                map.put(list.get(j), Integer.valueOf(j + 1));
             }
 
             for (int j = 0; j < len; j++) {
@@ -163,9 +163,9 @@ public class IndexTerms extends BasicFunction {
                 data.clear();
             }
             if (LOG.isDebugEnabled())
-                LOG.debug("Returning: " + result.getItemCount());
+                {LOG.debug("Returning: " + result.getItemCount());}
             return result;
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new XPathException(this, e);
         }
     }
@@ -175,19 +175,19 @@ public class IndexTerms extends BasicFunction {
      * a list of QNames, which have indexes defined on them.
      */
     private QName[] getDefinedIndexes(DBBroker broker, DocumentSet docs) {
-        Set<QName> indexes = new HashSet<QName>();
-        for (Iterator<org.exist.collections.Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+        final Set<QName> indexes = new HashSet<QName>();
+        for (final Iterator<org.exist.collections.Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
             final org.exist.collections.Collection collection = i.next();
             final IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
-                FulltextIndexSpec fIdxConf = idxConf.getFulltextIndexSpec();
+                final FulltextIndexSpec fIdxConf = idxConf.getFulltextIndexSpec();
                 final List<QName> qnames = fIdxConf.getIndexedQNames();
-                for (QName qName : qnames) {
+                for (final QName qName : qnames) {
                     indexes.add(qName);
                 }
             }
         }
-        QName qnames[] = new QName[indexes.size()];
+        final QName qnames[] = new QName[indexes.size()];
         return indexes.toArray(qnames);
     }
 }

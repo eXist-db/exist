@@ -35,9 +35,9 @@ public class RuleNode extends PolicyElementNode
 	public void setEffect(int effect)
 	{
 		if(effect == Result.DECISION_DENY || effect == Result.DECISION_PERMIT)
-			this.effect = effect;
+			{this.effect = effect;}
 		else
-			throw new IllegalArgumentException("Invalid effect value: " + effect);
+			{throw new IllegalArgumentException("Invalid effect value: " + effect);}
 		fireChanged();
 	}
 	
@@ -49,11 +49,11 @@ public class RuleNode extends PolicyElementNode
 	public boolean isModified(boolean deep)
 	{
 		if(super.isModified(deep) || isEffectModified())
-			return true;
+			{return true;}
 		if(deep)
 		{
 			if(condition.isModified(true))
-				return true;
+				{return true;}
 		}
 		return false;
 	}
@@ -66,14 +66,14 @@ public class RuleNode extends PolicyElementNode
 	{
 		effect = originalEffect;
 		if(deep)
-			condition.revert(deep);
+			{condition.revert(deep);}
 		super.revert(deep);
 	}
 	public void commit(boolean deep)
 	{
 		originalEffect = effect;
 		if(deep)
-			condition.commit(deep);
+			{condition.commit(deep);}
 		super.commit(deep);
 	}
 
@@ -91,7 +91,7 @@ public class RuleNode extends PolicyElementNode
 	}
 	public Rule createRule(URI id)
 	{
-		URI useId = (id == null) ? getId() : id;
+		final URI useId = (id == null) ? getId() : id;
 		return new Rule(useId, effect, getDescription(), getTarget().getTarget(), condition.getCondition());
 	}
 	
@@ -102,17 +102,17 @@ public class RuleNode extends PolicyElementNode
 	public XACMLTreeNode getChild(int index)
 	{
 		if(index == 0)
-			return getTarget();
+			{return getTarget();}
 		if(index == 1)
-			return getCondition();
+			{return getCondition();}
 		return null;
 	}
 	public int indexOfChild(Object child)
 	{
 		if(getTarget() == child)
-			return 0;
+			{return 0;}
 		if(getCondition() == child)
-			return 1;
+			{return 1;}
 		return -1;
 	}
 }

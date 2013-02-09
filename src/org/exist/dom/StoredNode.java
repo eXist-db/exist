@@ -143,7 +143,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      * @param doc
      */
     public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc, boolean pooled) {
-            short type = Signatures.getType(data[start]);
+            final short type = Signatures.getType(data[start]);
         switch (type) {
         case Node.TEXT_NODE :
             return TextImpl.deserialize(data, start, len, doc, pooled);
@@ -186,7 +186,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof StoredNode))
-            return false;
+            {return false;}
         return ((StoredNode)obj).nodeId.equals(nodeId);
     }
 
@@ -279,17 +279,17 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      * @see org.w3c.dom.Node#getParentNode()
      */
     public Node getParentNode() {
-        NodeId parentId = nodeId.getParentId();
+        final NodeId parentId = nodeId.getParentId();
         if (parentId == NodeId.DOCUMENT_NODE)
-            return ownerDocument;
+            {return ownerDocument;}
         // Filter out the temporary nodes wrapper element
         if (parentId.getTreeLevel() == 1 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
-            return ownerDocument;
+            {return ownerDocument;}
         return ownerDocument.getNode(parentId);
     }
 
     public StoredNode getParentStoredNode() {
-        Node parent = getParentNode();
+        final Node parent = getParentNode();
         return parent instanceof StoredNode ? (StoredNode) parent : null;
     }
 
@@ -297,31 +297,31 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      * @see org.w3c.dom.Node#getPreviousSibling()
      */
     public Node getPreviousSibling() {
-        StoredNode parent = getParentStoredNode();
-        if (parent == null) return null;
+        final StoredNode parent = getParentStoredNode();
+        if (parent == null) {return null;}
         if (parent.isDirty()) {
             DBBroker broker = null;
             try {
                 broker = ownerDocument.getBrokerPool().get(null);
-                EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
-                int level = nodeId.getTreeLevel();
+                final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
+                final int level = nodeId.getTreeLevel();
                 StoredNode last = null;
                 while (reader.hasNext()) {
-                    int status = reader.next();
-                    NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                    final int status = reader.next();
+                    final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                     if (status != XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == level) {
                         if (currentId.equals(nodeId))
-                            return last;
+                            {return last;}
                         last = reader.getNode();
                     }
                 }
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
                 //TODO : throw exception -pb
-            } catch (XMLStreamException e) {
+            } catch (final XMLStreamException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
               //TODO : throw exception -pb
-            } catch (EXistException e) {
+            } catch (final EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
               //TODO : throw exception -pb
             } finally {
@@ -329,10 +329,10 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
             }
             return null;
         }
-        NodeId firstChild = parent.getNodeId().newChild();
+        final NodeId firstChild = parent.getNodeId().newChild();
         if (nodeId.equals(firstChild))
-            return null;
-        NodeId siblingId = nodeId.precedingSibling();
+            {return null;}
+        final NodeId siblingId = nodeId.precedingSibling();
         return ownerDocument.getNode(siblingId);
     }
 
@@ -341,9 +341,9 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      */
     public Node getNextSibling() {
         if (nodeId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
-            return null;
+            {return null;}
         final StoredNode parent = getParentStoredNode();
-        if (parent == null) return null;
+        if (parent == null) {return null;}
         if (parent.isDirty()) {
             DBBroker broker = null;
             try {
@@ -351,20 +351,20 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
                 final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
                 while (reader.hasNext()) {
-                    int status = reader.next();
-                    NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                    final int status = reader.next();
+                    final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                     if (status != XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == level) {
                         if (currentId.compareTo(nodeId) > 0)
-                            return reader.getNode();
+                            {return reader.getNode();}
                     }
                 }
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
                 //TODO : throw exception -pb
-            } catch (XMLStreamException e) {
+            } catch (final XMLStreamException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
               //TODO : throw exception -pb
-            } catch (EXistException e) {
+            } catch (final EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
               //TODO : throw exception -pb
             } finally {
@@ -372,28 +372,28 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
             }
             return null;
         }
-        NodeId siblingId = nodeId.nextSibling();
+        final NodeId siblingId = nodeId.nextSibling();
         return ownerDocument.getNode(siblingId);
     }
 
     protected StoredNode getLastNode(StoredNode node) {
         if (!node.hasChildNodes())
-            return node;
+            {return node;}
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(node, true);
+            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(node, true);
             while (reader.hasNext()) {
                 reader.next();
             }
             return reader.getPreviousNode();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
           //TODO : throw exception -pb
-        } catch (XMLStreamException e) {
+        } catch (final XMLStreamException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
           //TODO : throw exception -pb
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
           //TODO : throw exception -pb
         } finally {
@@ -404,7 +404,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
 
     protected StoredNode getLastNode(Iterator<StoredNode> iterator, StoredNode node) {
         if (!node.hasChildNodes())
-            return node;
+            {return node;}
         final int children = node.getChildCount();
         StoredNode next = null;
         for (int i = 0; i < children; i++) {
@@ -416,9 +416,9 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     }
 
     public NodePath getPath() {
-        NodePath path = new NodePath();
+        final NodePath path = new NodePath();
         if (getNodeType() == Node.ELEMENT_NODE)
-            path.addComponent(getQName());
+            {path.addComponent(getQName());}
         NodeImpl parent = (NodeImpl)getParentNode();
         while (parent != null && parent.getNodeType() != Node.DOCUMENT_NODE) {
             path.addComponentAtStart(parent.getQName());
@@ -429,13 +429,13 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
 
     public NodePath getPath(NodePath parentPath) {
         if (getNodeType() == Node.ELEMENT_NODE)
-            parentPath.addComponent(getQName());
+            {parentPath.addComponent(getQName());}
         return parentPath;
     }
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append(nodeId.toString());
         buf.append('\t');
         buf.append(getQName());
@@ -462,7 +462,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
             final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
             iterator.next();
             return accept(iterator, visitor);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.error("Exception while reading node: " + e.getMessage(), e);
             //TODO : throw exception -pb
         } finally {
@@ -491,9 +491,9 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
 
         public boolean visit(StoredNode node) {
             if (node.nodeId.equals(current.nodeId))
-                return false;
+                {return false;}
             if (node.nodeId.getTreeLevel() == current.nodeId.getTreeLevel())
-                last = node;
+                {last = node;}
             return true;
         }
     }
@@ -503,7 +503,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         if( !(other instanceof StoredNode)) {
             return(Constants.INFERIOR);
         }
-        StoredNode n = (StoredNode)other;
+        final StoredNode n = (StoredNode)other;
         if(n.ownerDocument == ownerDocument) {
             return nodeId.compareTo(n.nodeId);
         } else if(ownerDocument.getDocId() < n.ownerDocument.getDocId()) {

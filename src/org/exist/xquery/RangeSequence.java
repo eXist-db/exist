@@ -53,8 +53,8 @@ public class RangeSequence extends AbstractSequence {
 		public Item nextItem() {
 			try {
 				if (current <= end.getLong())
-					return new IntegerValue(current++);
-			} catch (XPathException e) {
+					{return new IntegerValue(current++);}
+			} catch (final XPathException e) {
 				LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
 			}
 			return null;
@@ -63,7 +63,7 @@ public class RangeSequence extends AbstractSequence {
 		public boolean hasNext() {
 			try {
 				return current <= end.getLong();
-			} catch (XPathException e) {
+			} catch (final XPathException e) {
 				LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
 				return false;
 			}
@@ -73,10 +73,10 @@ public class RangeSequence extends AbstractSequence {
 	
 	public int getItemCount() {
 		if (start.compareTo(end) > 0)
-			return 0;
+			{return 0;}
 		try {
 			return ((IntegerValue) end.minus(start)).getInt() + 1;
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
 			return 0;
 		}
@@ -98,7 +98,7 @@ public class RangeSequence extends AbstractSequence {
 		if (pos <= getItemCount())
 			try {
 				return new IntegerValue(start.getLong() + pos);
-			} catch (XPathException e) {
+			} catch (final XPathException e) {
 				LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
 			}
 		return null;

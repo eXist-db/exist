@@ -106,18 +106,18 @@ public class DOMStreamer {
      */
     public void serialize(Node node, boolean callDocumentEvents) throws SAXException {
         if(callDocumentEvents)
-            contentHandler.startDocument();
-        Node top = node;
+            {contentHandler.startDocument();}
+        final Node top = node;
         while (node != null) {
             startNode(node);
             Node nextNode = node.getFirstChild();
             //TODO : make it happy
             if (node instanceof ReferenceNode)
-                nextNode = null;
+                {nextNode = null;}
             while (nextNode == null) {
                 endNode(node);
                 if (top != null && top.equals(node))
-                    break;
+                    {break;}
                 nextNode = node.getNextSibling();
                 if (nextNode == null) {
                     node = node.getParentNode();
@@ -131,7 +131,7 @@ public class DOMStreamer {
             node = nextNode;
         }
         if(callDocumentEvents)
-            contentHandler.endDocument();
+            {contentHandler.endDocument();}
     }
 
     protected void startNode(Node node) throws SAXException {
@@ -146,21 +146,21 @@ public class DOMStreamer {
             String uri = node.getNamespaceURI();
             String prefix = node.getPrefix();
             if (uri == null)
-                uri = "";
+                {uri = "";}
             if (prefix == null)
-                prefix = "";
+                {prefix = "";}
             if (nsSupport.getURI(prefix) == null) {
                 namespaceDecls.put(prefix, uri);
                 nsSupport.declarePrefix(prefix, uri);
             }
             // check attributes for required namespace declarations
-            NamedNodeMap attrs = node.getAttributes();
+            final NamedNodeMap attrs = node.getAttributes();
             Attr nextAttr;
             String attrName;
             for (int i = 0; i < attrs.getLength(); i++) {
                 nextAttr = (Attr) attrs.item(i);
                 attrName = nextAttr.getName();
-                if (attrName.equals("xmlns")) {
+                if ("xmlns".equals(attrName)) {
                     if (nsSupport.getURI("") == null) {
                         uri = nextAttr.getValue();
                         namespaceDecls.put("", uri);
@@ -182,14 +182,14 @@ public class DOMStreamer {
                     }
                 }
             }
-            ElementInfo info = new ElementInfo(node);
+            final ElementInfo info = new ElementInfo(node);
             String[] declaredPrefixes = null;
             if(namespaceDecls.size() > 0)
-                declaredPrefixes = new String[namespaceDecls.size()];
+                {declaredPrefixes = new String[namespaceDecls.size()];}
             // output all namespace declarations
             Map.Entry<String, String> nsEntry;
             int j = 0;
-            for (Iterator<Map.Entry<String, String>> i = namespaceDecls.entrySet().iterator(); i.hasNext(); j++) {
+            for (final Iterator<Map.Entry<String, String>> i = namespaceDecls.entrySet().iterator(); i.hasNext(); j++) {
                 nsEntry = i.next();
                 declaredPrefixes[j] = nsEntry.getKey();
                 contentHandler.startPrefixMapping(declaredPrefixes[j], nsEntry.getValue());
@@ -197,16 +197,16 @@ public class DOMStreamer {
             info.prefixes = declaredPrefixes;
             stack.push(info);
             // output attributes
-            AttributesImpl saxAttrs = new AttributesImpl();
+            final AttributesImpl saxAttrs = new AttributesImpl();
             String attrNS, attrLocalName;
             for (int i = 0; i < attrs.getLength(); i++) {
                 nextAttr = (Attr) attrs.item(i);
                 attrNS = nextAttr.getNamespaceURI();
                 if(attrNS == null)
-                    attrNS = "";
+                    {attrNS = "";}
                 attrLocalName = nextAttr.getLocalName();
                 if(attrLocalName == null)
-                    attrLocalName = QName.extractLocalName(nextAttr.getNodeName());
+                    {attrLocalName = QName.extractLocalName(nextAttr.getNodeName());}
                 saxAttrs.addAttribute(
                     attrNS,
                     attrLocalName,
@@ -217,7 +217,7 @@ public class DOMStreamer {
             }
             String localName = node.getLocalName();
             if(localName == null)
-                localName = QName.extractLocalName(node.getNodeName());
+                {localName = QName.extractLocalName(node.getNodeName());}
             contentHandler.startElement(node.getNamespaceURI(), localName, 
                 node.getNodeName(), saxAttrs);
             break;
@@ -228,10 +228,10 @@ public class DOMStreamer {
         case Node.CDATA_SECTION_NODE :
             cdata = ((CharacterData) node).getData();
             if(lexicalHandler != null)
-                lexicalHandler.startCDATA();
+                {lexicalHandler.startCDATA();}
             contentHandler.characters(cdata.toCharArray(), 0, cdata.length());
             if(lexicalHandler != null)
-                lexicalHandler.endCDATA();
+                {lexicalHandler.endCDATA();}
             break;
         case Node.ATTRIBUTE_NODE :
             break;
@@ -255,9 +255,9 @@ public class DOMStreamer {
 
     protected void endNode(Node node) throws SAXException {
         if (node == null)
-            return;
+            {return;}
         if (node.getNodeType() == Node.ELEMENT_NODE) {
-            ElementInfo info = stack.pop();
+            final ElementInfo info = stack.pop();
             nsSupport.popContext();
             contentHandler.endElement(node.getNamespaceURI(), node.getLocalName(), node.getNodeName());
             if(info.prefixes != null) {

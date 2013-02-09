@@ -165,13 +165,13 @@ public class VirtualTempFile
 		        tempFile.deleteOnExit();
 		        LOG.debug("Writing to temporary file: " + tempFile.getName());
 		        
-		        OutputStream tmpBuffer = new FileOutputStream(tempFile);
+		        final OutputStream tmpBuffer = new FileOutputStream(tempFile);
 		        try {
 		        	tmpBuffer.write(theBlock);
 		        } finally {
 		        	tmpBuffer.close();
 		        }
-			} catch(IOException ioe) {
+			} catch(final IOException ioe) {
 				// Do Nothing(R)
 			}
 		}
@@ -199,7 +199,7 @@ public class VirtualTempFile
 	 */
 	public void setTempPrefix(String newPrefix) {
 		if(newPrefix==null)
-			newPrefix=DEFAULT_TEMP_PREFIX;
+			{newPrefix=DEFAULT_TEMP_PREFIX;}
 		
 		temp_prefix = newPrefix;
 	}
@@ -210,7 +210,7 @@ public class VirtualTempFile
 	 */
 	public void setTempPostfix(String newPostfix) {
 		if(newPostfix==null)
-			newPostfix=DEFAULT_TEMP_POSTFIX;
+			{newPostfix=DEFAULT_TEMP_POSTFIX;}
 		
 		temp_postfix = newPostfix;
 	}
@@ -234,7 +234,7 @@ public class VirtualTempFile
 		}
 		
 		if(os!=null)
-			os=null;
+			{os=null;}
 	}
 	
 	/**
@@ -244,7 +244,7 @@ public class VirtualTempFile
 		throws IOException
 	{
 		if(os==null)
-			throw new IOException("No stream to flush");
+			{throw new IOException("No stream to flush");}
 		os.flush();
 	}
 	
@@ -260,28 +260,28 @@ public class VirtualTempFile
 	{
 		byte[] data = null;
 		
-		if(os!=null)  close();
+		if(os!=null)  {close();}
 		
 		if(tempFile!=null) {
-	        RandomAccessFile raf = new RandomAccessFile(tempFile, "r");
+	        final RandomAccessFile raf = new RandomAccessFile(tempFile, "r");
 	        raf.seek(offset);
 	        long remaining = raf.length() - offset;
 	        if(remaining > maxChunkSize)
-	            remaining = maxChunkSize;
+	            {remaining = maxChunkSize;}
 	        else if(remaining<0)
-	        	remaining = 0;
+	        	{remaining = 0;}
 	        data = new byte[(int)remaining];
 	        raf.readFully(data);
 	        raf.close();
 		} else if(tempBuffer!=null) {
 			long remaining = tempBuffer.length - offset;
 	        if(remaining > maxChunkSize)
-	            remaining = maxChunkSize;
+	            {remaining = maxChunkSize;}
 	        else if(remaining<0)
-	        	remaining = 0;
+	        	{remaining = 0;}
 	        data = new byte[(int)remaining];
 	        if(remaining>0)
-	        	System.arraycopy(tempBuffer,(int)offset,data,0,(int)remaining);
+	        	{System.arraycopy(tempBuffer,(int)offset,data,0,(int)remaining);}
 		}
 		
 		return data;
@@ -295,7 +295,7 @@ public class VirtualTempFile
 		if(os!=null) {
 			try {
 				close();
-			} catch(IOException ioe) {
+			} catch(final IOException ioe) {
 				// IgnoreIT(R)
 			}
 		}
@@ -311,7 +311,7 @@ public class VirtualTempFile
 		if(os!=null) {
 			try {
 				close();
-			} catch(IOException ioe) {
+			} catch(final IOException ioe) {
 				// IgnoreIT(R)
 			}
 		}
@@ -320,21 +320,21 @@ public class VirtualTempFile
 			if(strBuffer!=null) {
 				try {
 					strBuffer.close();
-				} catch(IOException ioe) {
+				} catch(final IOException ioe) {
 					// IgnoreIT(R)
 				}
 				strBuffer=null;
 			}
 			
 			if(deleteTempFile)
-				tempFile.delete();
+				{tempFile.delete();}
 			tempFile=null;
 		}
 		
 		if(baBuffer!=null) {
 			try {
 				baBuffer.close();
-			} catch(IOException ioe) {
+			} catch(final IOException ioe) {
 				// IgnoreIT(R)
 			}
 			baBuffer = null;
@@ -409,7 +409,7 @@ public class VirtualTempFile
 			throw new IOException("No stream to write to");
 		}
 		
-		byte[] buffer = new byte[maxChunkSize];
+		final byte[] buffer = new byte[maxChunkSize];
 		long off=0;
 		int count=0;
 		do {
@@ -432,7 +432,7 @@ public class VirtualTempFile
 	public InputStream getByteStream()
 		throws IOException
 	{
-		if(os!=null)  close();
+		if(os!=null)  {close();}
 		
 		InputStream result = null;
 		if(tempFile!=null) {
@@ -453,8 +453,8 @@ public class VirtualTempFile
 	public Object getContent()
 	{
 		try {
-			if(os!=null)  close();
-		} catch(IOException ioe) {
+			if(os!=null)  {close();}
+		} catch(final IOException ioe) {
 			// IgnoreIT(R)
 		}
 		
@@ -472,9 +472,9 @@ public class VirtualTempFile
 		// First, forcing the write to temp file
 		writeSwitch();
 		// Second, close
-		if(os!=null)  close();
+		if(os!=null)  {close();}
 		
-		File retFile = tempFile;
+		final File retFile = tempFile;
 		
 		// From this point the tempFile is not managed any more by this VirtualTempFile
 		tempFile = null;
@@ -489,10 +489,10 @@ public class VirtualTempFile
 	public void writeToStream(OutputStream out)
 		throws IOException
 	{
-		InputStream result = null;
+		final InputStream result = null;
 		if(tempFile!=null) {
 //			byte[] writeBuffer=new byte[65536];
-			InputStream input = new BufferedInputStream(new FileInputStream(tempFile));
+			final InputStream input = new BufferedInputStream(new FileInputStream(tempFile));
             IOUtils.copy(input, out);
             IOUtils.closeQuietly(input);
 

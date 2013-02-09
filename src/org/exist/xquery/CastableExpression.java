@@ -53,7 +53,7 @@ public class CastableExpression extends AbstractExpression {
 		this.requiredType = requiredType;
 		this.requiredCardinality = requiredCardinality;
 		if (!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
-			expression = new Atomize(context, expression);
+			{expression = new Atomize(context, expression);}
 	}
 
 	/* (non-Javadoc)
@@ -90,52 +90,52 @@ public class CastableExpression extends AbstractExpression {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         if (requiredType == Type.ATOMIC || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION))
-            throw new XPathException(this, ErrorCodes.XPST0080, "cannot convert to " + Type.getTypeName(requiredType));
+            {throw new XPathException(this, ErrorCodes.XPST0080, "cannot convert to " + Type.getTypeName(requiredType));}
 
         if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED)
-            throw new XPathException(this, ErrorCodes.XPST0051, "cannot convert to " + Type.getTypeName(requiredType));
+            {throw new XPathException(this, ErrorCodes.XPST0051, "cannot convert to " + Type.getTypeName(requiredType));}
 
         Sequence result;
         //See : http://article.gmane.org/gmane.text.xml.xquery.general/1413
         //... for the rationale
         //may be more complicated : let's see with following XQTS versions
         if (requiredType == Type.QNAME && Dependency.dependsOnVar(expression))
-        	result = BooleanValue.FALSE;
+        	{result = BooleanValue.FALSE;}
         else {
-			Sequence seq = expression.eval(contextSequence, contextItem);
+			final Sequence seq = expression.eval(contextSequence, contextItem);
 			if(seq.isEmpty()) {
 				//If ? is specified after the target type, the result of the cast expression is an empty sequence.
 				if (Cardinality.checkCardinality(requiredCardinality, Cardinality.ZERO))
-	                result = BooleanValue.TRUE;
+	                {result = BooleanValue.TRUE;}
 				//If ? is not specified after the target type, a type error is raised [err:XPTY0004].
 				else
 					//TODO : raise the error ?
-	                result = BooleanValue.FALSE;
+	                {result = BooleanValue.FALSE;}
 			}
 	        else {
 	    		try {
 	    			seq.itemAt(0).convertTo(requiredType);
 	    			//If ? is specified after the target type, the result of the cast expression is an empty sequence.
 	    			if (Cardinality.checkCardinality(requiredCardinality, seq.getCardinality()))
-	    				result = BooleanValue.TRUE;
+	    				{result = BooleanValue.TRUE;}
 	    			//If ? is not specified after the target type, a type error is raised [err:XPTY0004].
 	    			else
-	    				result = BooleanValue.FALSE;
+	    				{result = BooleanValue.FALSE;}
 	            //TODO : improve by *not* using a costly exception ?
-	    		} catch(XPathException e) {
+	    		} catch(final XPathException e) {
 	                result = BooleanValue.FALSE;
 	    		}
 	        }
         }
         
         if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", result);   
+            {context.getProfiler().end(this, "", result);}   
      
         return result;
 	}
@@ -150,7 +150,7 @@ public class CastableExpression extends AbstractExpression {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append(expression.toString());
     	result.append(" castable as ");
     	result.append(Type.getTypeName(requiredType));

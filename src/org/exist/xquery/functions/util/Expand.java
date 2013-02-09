@@ -84,35 +84,35 @@ public class Expand extends BasicFunction {
     	}
 
         // apply serialization options set on the XQuery context
-        Properties serializeOptions = new Properties();
+        final Properties serializeOptions = new Properties();
         serializeOptions.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         serializeOptions.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
         if (getArgumentCount() == 2) {
-            String serOpts = args[1].getStringValue();
-            String[] contents = Option.tokenize(serOpts);
+            final String serOpts = args[1].getStringValue();
+            final String[] contents = Option.tokenize(serOpts);
             for (int i = 0; i < contents.length; i++) {
-                String[] pair = Option.parseKeyValuePair(contents[i]);
+                final String[] pair = Option.parseKeyValuePair(contents[i]);
                 if (pair == null)
-                    throw new XPathException(this, "Found invalid serialization option: " + pair);
+                    {throw new XPathException(this, "Found invalid serialization option: " + pair);}
                 logger.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
                 serializeOptions.setProperty(pair[0], pair[1]);
             }
         } else
-            context.checkOptions(serializeOptions);
+            {context.checkOptions(serializeOptions);}
 
         context.pushDocumentContext();
         try {
-            InMemoryNodeSet result = new InMemoryNodeSet();
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
-            for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-                int nodeNr = builder.getDocument().getLastNode();
-                NodeValue next = (NodeValue) i.nextItem();
+            final InMemoryNodeSet result = new InMemoryNodeSet();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+            for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+                final int nodeNr = builder.getDocument().getLastNode();
+                final NodeValue next = (NodeValue) i.nextItem();
                 next.toSAX(context.getBroker(), receiver, serializeOptions);
                 result.add(builder.getDocument().getNode(nodeNr + 1));
             }
             return result;
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             throw new XPathException(this, e);
         } finally {
             context.popDocumentContext();

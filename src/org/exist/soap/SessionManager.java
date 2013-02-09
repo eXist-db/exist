@@ -13,7 +13,7 @@ public class SessionManager {
 
 	public static final SessionManager getInstance() {
 		if (instance == null)
-			instance = new SessionManager();
+			{instance = new SessionManager();}
 		return instance;
 	}
 
@@ -28,33 +28,33 @@ public class SessionManager {
 	Map<String, Session> sessions = new TreeMap<String, Session>();
 	
 	public synchronized String createSession(Subject user) {
-		Session session = new Session(user);
-		String id = String.valueOf(session.hashCode());
+		final Session session = new Session(user);
+		final String id = String.valueOf(session.hashCode());
 		sessions.put(id, session);
 		return id;
 	}
 	
 	public synchronized Session getSession(String id) {
 		if(id == null)
-			return null;
-		Session session = (Session)sessions.get(id);
+			{return null;}
+		final Session session = (Session)sessions.get(id);
 		if(session != null)
-			session.updateLastAccessTime();
+			{session.updateLastAccessTime();}
 		return session;
 	}
 
 	public synchronized void disconnect(String id) {
-                Session session = sessions.get(id);
+                final Session session = sessions.get(id);
                 session.cleanupContexts();
 		sessions.remove(id);
 	}
 	
 	@SuppressWarnings("unused")
 	private void checkResultSets() {
-		for (Iterator i = sessions.values().iterator(); i.hasNext();) {
-			Session session = (Session)i.next();
+		for (final Iterator i = sessions.values().iterator(); i.hasNext();) {
+			final Session session = (Session)i.next();
 			if(System.currentTimeMillis() - session.getLastAccessTime() > TIMEOUT)
-				i.remove();
+				{i.remove();}
 		}
 	}
         

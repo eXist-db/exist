@@ -166,27 +166,27 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
  		if(parameters != null)
  		{
  			events = new HashSet<TriggerEvents.EVENTS>();
- 			List<String> paramEvents = (List<String>) parameters.get("event");
+ 			final List<String> paramEvents = (List<String>) parameters.get("event");
  			if (paramEvents != null)
-	 			for (String event : paramEvents) {
+	 			for (final String event : paramEvents) {
 	 				events.addAll(TriggerEvents.convertFromOldDesign(event));
 	 				events.addAll(TriggerEvents.convertFromString(event));
 	 			}
 
- 			List<String> urlQueries = (List<String>) parameters.get("url");
+ 			final List<String> urlQueries = (List<String>) parameters.get("url");
             urlQuery = urlQueries != null ? urlQueries.get(0) : null;
 
-            List<String> strQueries = (List<String>) parameters.get("query");
+            final List<String> strQueries = (List<String>) parameters.get("query");
  			strQuery = strQueries != null ? strQueries.get(0) : null;
  			
- 			for(Iterator itParamName = parameters.keySet().iterator(); itParamName.hasNext();)
+ 			for(final Iterator itParamName = parameters.keySet().iterator(); itParamName.hasNext();)
  			{
- 				String paramName = (String)itParamName.next();
+ 				final String paramName = (String)itParamName.next();
  				
  				//get the binding prefix (if any)
- 				if(paramName.equals("bindingPrefix"))
+ 				if("bindingPrefix".equals(paramName))
  				{
- 					String bindingPrefix = (String)parameters.get("bindingPrefix").get(0);
+ 					final String bindingPrefix = (String)parameters.get("bindingPrefix").get(0);
  					if(bindingPrefix != null && !"".equals(bindingPrefix.trim()))
  					{
  						this.bindingPrefix = bindingPrefix.trim() + ":";
@@ -194,13 +194,13 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
  				}
  				
  				//get the URL of the query (if any)
- 				else if(paramName.equals("url"))
+ 				else if("url".equals(paramName))
  				{
  					urlQuery = (String)parameters.get("url").get(0);
  				}
  				
  				//get the query (if any)
- 				else if(paramName.equals("query"))
+ 				else if("query".equals(paramName))
  				{
  					strQuery = (String)parameters.get("query").get(0);
  				}
@@ -246,7 +246,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if(urlQuery != null) {
 			try {
 				querySource = SourceFactory.getSource(broker, null, urlQuery, false);
-			} catch(Exception e) {
+			} catch(final Exception e) {
 				LOG.error(e);
 			}
 		} else if(strQuery != null) {
@@ -273,9 +273,9 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 			XmldbURI src, XmldbURI dst, boolean isCollection) throws TriggerException {
 		
 		//get the query
-		Source query = getQuerySource(broker);
+		final Source query = getQuerySource(broker);
 		if(query == null)
-			return;        
+			{return;}        
                         
 		// avoid infinite recursion by allowing just one trigger per thread		
 		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforePrepare(this, src)) {
@@ -283,7 +283,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		}
 		TriggerStatePerThread.setTransaction(transaction);
 		
-		XQueryContext context = service.newContext(AccessContext.TRIGGER);
+		final XQueryContext context = service.newContext(AccessContext.TRIGGER);
          //TODO : further initialisations ?
         CompiledXQuery compiledQuery;
         try
@@ -296,45 +296,45 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         	context.declareVariable(bindingPrefix + "event", new StringValue(eventToString(event)));
         	
         	if (isCollection)
-        		context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src));
+        		{context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src));}
         	else
-        		context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src.removeLastSegment()));
+        		{context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src.removeLastSegment()));}
 
         	context.declareVariable(bindingPrefix + "uri", new AnyURIValue(src));
         	if (dst == null)
-        		context.declareVariable(bindingPrefix + "new-uri", Sequence.EMPTY_SEQUENCE);
+        		{context.declareVariable(bindingPrefix + "new-uri", Sequence.EMPTY_SEQUENCE);}
         	else 
-        		context.declareVariable(bindingPrefix + "new-uri", new AnyURIValue(dst));
+        		{context.declareVariable(bindingPrefix + "new-uri", new AnyURIValue(dst));}
         	
         	// For backward compatibility
         	context.declareVariable(bindingPrefix + "eventType", EVENT_TYPE_PREPARE);
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
 
         	if (isCollection)
-        		context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(src));
+        		{context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(src));}
         	else {
         		context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(src.removeLastSegment()));
         		context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(src));
         	}
         	
         	//declare user defined parameters as external variables
-        	for(Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
+        	for(final Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
         	{
-        		String varName = (String)itUserVarName.next();
-        		String varValue = userDefinedVariables.getProperty(varName);
+        		final String varName = (String)itUserVarName.next();
+        		final String varValue = userDefinedVariables.getProperty(varName);
         	
         		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
         	}
         	
-        } catch(XPathException e) {
+        } catch(final XPathException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    } catch(IOException e) {
+	    } catch(final IOException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    } catch (PermissionDeniedException e) {
+	    } catch (final PermissionDeniedException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
@@ -343,15 +343,15 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         //execute the XQuery
         try {
         	//TODO : should we provide another contextSet ?
-	        NodeSet contextSet = NodeSet.EMPTY_SET;
+	        final NodeSet contextSet = NodeSet.EMPTY_SET;
 			service.execute(compiledQuery, contextSet);
 			//TODO : should we have a special processing ?
 			LOG.debug("Trigger fired for prepare");
-        } catch(XPathException e) {
+        } catch(final XPathException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
@@ -373,15 +373,15 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 	private void finish(int event, DBBroker broker, Txn transaction, XmldbURI src, XmldbURI dst, boolean isCollection) {
 		
     	//get the query
-    	Source query = getQuerySource(broker);
+    	final Source query = getQuerySource(broker);
 		if (query == null)
-			return;
+			{return;}
     	
 		// avoid infinite recursion by allowing just one trigger per thread
 		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforeFinish(this, src))
-			return;
+			{return;}
 		
-        XQueryContext context = service.newContext(AccessContext.TRIGGER);
+        final XQueryContext context = service.newContext(AccessContext.TRIGGER);
         CompiledXQuery compiledQuery = null;
         try {
         	//compile the XQuery
@@ -392,42 +392,42 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         	context.declareVariable(bindingPrefix + "event", new StringValue(eventToString(event)));
         	
         	if (isCollection)
-        		context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src));
+        		{context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src));}
         	else
-        		context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src.removeLastSegment()));
+        		{context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src.removeLastSegment()));}
     		
         	context.declareVariable(bindingPrefix + "uri", new AnyURIValue(src));
         	if (dst == null)
-        		context.declareVariable(bindingPrefix + "new-uri", Sequence.EMPTY_SEQUENCE);
+        		{context.declareVariable(bindingPrefix + "new-uri", Sequence.EMPTY_SEQUENCE);}
         	else 
-        		context.declareVariable(bindingPrefix + "new-uri", new AnyURIValue(dst));
+        		{context.declareVariable(bindingPrefix + "new-uri", new AnyURIValue(dst));}
         	
         	// For backward compatibility
         	context.declareVariable(bindingPrefix + "eventType", EVENT_TYPE_FINISH);
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
         	if (isCollection)
-        		context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(src));
+        		{context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(src));}
         	else {
         		context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(src.removeLastSegment()));
         		context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(src));
         	}
         	
         	//declare user defined parameters as external variables
-        	for(Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
+        	for(final Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
         	{
-        		String varName = (String)itUserVarName.next();
-        		String varValue = userDefinedVariables.getProperty(varName);
+        		final String varName = (String)itUserVarName.next();
+        		final String varValue = userDefinedVariables.getProperty(varName);
         	
         		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
         	}
         	
-        } catch(XPathException e) {
+        } catch(final XPathException e) {
         	//Should never be reached
         	LOG.error(e);
-	    } catch(IOException e) {
+	    } catch(final IOException e) {
 	    	//Should never be reached
         	LOG.error(e);
-	    } catch (PermissionDeniedException e) {
+	    } catch (final PermissionDeniedException e) {
         	//Should never be reached
         	LOG.error(e);
 		}
@@ -435,13 +435,13 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 	    //execute the XQuery
         try {
         	//TODO : should we provide another contextSet ?
-	        NodeSet contextSet = NodeSet.EMPTY_SET;	        
+	        final NodeSet contextSet = NodeSet.EMPTY_SET;	        
 			service.execute(compiledQuery, contextSet);
 			//TODO : should we have a special processing ?
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
         	//Should never be reached
 			LOG.error("Error during trigger finish", e);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
         	//Should never be reached
         	LOG.error(e);
         }
@@ -455,9 +455,9 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 	private CompiledXQuery getScript(boolean isBefore, DBBroker broker, Txn transaction, XmldbURI src) throws TriggerException {
 		
 		//get the query
-		Source query = getQuerySource(broker);
+		final Source query = getQuerySource(broker);
 		if(query == null)
-			return null;        
+			{return null;}        
                         
 		// avoid infinite recursion by allowing just one trigger per thread		
 		if(isBefore && !TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforePrepare(this, src)) {
@@ -467,7 +467,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		}
 		TriggerStatePerThread.setTransaction(transaction);
 		
-		XQueryContext context = service.newContext(AccessContext.TRIGGER);
+		final XQueryContext context = service.newContext(AccessContext.TRIGGER);
 
         CompiledXQuery compiledQuery;
         try {
@@ -475,9 +475,9 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         	compiledQuery = service.compile(context, query);
 
         	//declare user defined parameters as external variables
-        	for(Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();) {
-        		String varName = (String)itUserVarName.next();
-        		String varValue = userDefinedVariables.getProperty(varName);
+        	for(final Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();) {
+        		final String varName = (String)itUserVarName.next();
+        		final String varValue = userDefinedVariables.getProperty(varName);
         	
         		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
         	}
@@ -491,15 +491,15 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
             context.prepareForExecution();
 
         	return compiledQuery;
-        } catch(XPathException e) {
+        } catch(final XPathException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    } catch(IOException e) {
+	    } catch(final IOException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-	    } catch (PermissionDeniedException e) {
+	    } catch (final PermissionDeniedException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
@@ -507,20 +507,20 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 	}
 	
 	private void execute(boolean isBefore, DBBroker broker, Txn transaction, QName functionName, XmldbURI ... urls) throws TriggerException {
-		XmldbURI src = urls[0];
-		CompiledXQuery compiledQuery = getScript(isBefore, broker, transaction, src);
+		final XmldbURI src = urls[0];
+		final CompiledXQuery compiledQuery = getScript(isBefore, broker, transaction, src);
 		
-		if (compiledQuery == null) return;
+		if (compiledQuery == null) {return;}
 		
 		ProcessMonitor pm = null;
 		
-		XQueryContext context = compiledQuery.getContext();
+		final XQueryContext context = compiledQuery.getContext();
         //execute the XQuery
         try {
         	
-    		UserDefinedFunction function = context.resolveFunction(functionName, urls.length);
+    		final UserDefinedFunction function = context.resolveFunction(functionName, urls.length);
     		if (function != null) {
-    			List<Expression> args = new ArrayList<Expression>(urls.length);
+    			final List<Expression> args = new ArrayList<Expression>(urls.length);
     			for (int i = 0; i < urls.length; i++)
     				args.add(new LiteralValue(context, new AnyURIValue(urls[i])));
     			
@@ -529,12 +529,12 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 	            context.getProfiler().traceQueryStart();
 	            pm.queryStarted(context.getWatchDog());
 	            
-	            FunctionCall call = new FunctionCall(context, function);
+	            final FunctionCall call = new FunctionCall(context, function);
 	            call.setArguments(args);
 	            call.analyze(new AnalyzeContextInfo());
 	    		call.eval(NodeSet.EMPTY_SET);
     		}
-        } catch(XPathException e) {
+        } catch(final XPathException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
@@ -552,7 +552,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         	TriggerStatePerThread.setTransaction(null);
         	LOG.debug("Trigger fired 'after'");
         } else
-        	LOG.debug("Trigger fired 'before'");
+        	{LOG.debug("Trigger fired 'before'");}
 	}
 
 	public void startDocument() throws SAXException
@@ -775,7 +775,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.CREATE_COLLECTION)) {
 			prepare(1, broker, transaction, uri, (XmldbURI) null, true);
 		} else
-			execute(true, broker, transaction, beforeCreateCollection, uri);
+			{execute(true, broker, transaction, beforeCreateCollection, uri);}
 	}
 
 	@Override
@@ -783,7 +783,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.CREATE_COLLECTION)) {
 			finish(1, broker, transaction, collection.getURI(), (XmldbURI) null, true);
 		} else
-			execute(false, broker, transaction, afterCreateCollection, collection.getURI());
+			{execute(false, broker, transaction, afterCreateCollection, collection.getURI());}
 
 	}
 
@@ -792,7 +792,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.COPY_COLLECTION)) {
 			prepare(5, broker, transaction, collection.getURI(), newUri, true);
 		} else
-			execute(true, broker, transaction, beforeCopyCollection, collection.getURI(), newUri);
+			{execute(true, broker, transaction, beforeCopyCollection, collection.getURI(), newUri);}
 	}
 
 	@Override
@@ -800,7 +800,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.COPY_COLLECTION)) {
 			finish(5, broker, transaction, collection.getURI(), newUri, true);
 		} else
-			execute(false, broker, transaction, afterCopyCollection, collection.getURI(), newUri);
+			{execute(false, broker, transaction, afterCopyCollection, collection.getURI(), newUri);}
 	}
 
 	@Override
@@ -808,7 +808,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.MOVE_COLLECTION)) {
 			prepare(7, broker, transaction, collection.getURI(), newUri, true);
 		} else
-			execute(true, broker, transaction, beforeMoveCollection, collection.getURI(), newUri);
+			{execute(true, broker, transaction, beforeMoveCollection, collection.getURI(), newUri);}
 	}
 
 	@Override
@@ -816,7 +816,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.MOVE_COLLECTION)) {
 			finish(7, broker, transaction, oldUri, collection.getURI(), true);
 		} else
-			execute(false, broker, transaction, afterMoveCollection, oldUri, collection.getURI());
+			{execute(false, broker, transaction, afterMoveCollection, oldUri, collection.getURI());}
 	}
 
 	@Override
@@ -824,7 +824,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.DELETE_COLLECTION)) {
 			prepare(9, broker, transaction, collection.getURI(), (XmldbURI) null, true);
 		} else
-			execute(true, broker, transaction, beforeDeleteCollection, collection.getURI());
+			{execute(true, broker, transaction, beforeDeleteCollection, collection.getURI());}
 	}
 
 	@Override
@@ -832,7 +832,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.DELETE_COLLECTION)) {
 			finish(9, broker, transaction, collection.getURI(), (XmldbURI) null, true);
 		} else
-			execute(false, broker, transaction, afterDeleteCollection, uri);
+			{execute(false, broker, transaction, afterDeleteCollection, uri);}
 	}
 
 	@Override
@@ -840,7 +840,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.CREATE_DOCUMENT)) {
 			prepare(0, broker, transaction, uri, (XmldbURI) null, false);
 		} else
-			execute(true, broker, transaction, beforeCreateDocument, uri);
+			{execute(true, broker, transaction, beforeCreateDocument, uri);}
 	}
 
 	@Override
@@ -848,7 +848,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.CREATE_DOCUMENT)) {
 			finish(0, broker, transaction, document.getURI(), (XmldbURI) null, false);
 		} else
-			execute(false, broker, transaction, afterCreateDocument, document.getURI());
+			{execute(false, broker, transaction, afterCreateDocument, document.getURI());}
 	}
 
 	@Override
@@ -856,7 +856,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.UPDATE_DOCUMENT)) {
 			prepare(2, broker, transaction, document.getURI(), (XmldbURI) null, false);
 		} else
-			execute(true, broker, transaction, beforeUpdateDocument, document.getURI());
+			{execute(true, broker, transaction, beforeUpdateDocument, document.getURI());}
 	}
 
 	@Override
@@ -864,7 +864,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.UPDATE_DOCUMENT)) {
 			finish(2, broker, transaction, document.getURI(), (XmldbURI) null, false);
 		} else
-			execute(false, broker, transaction, afterUpdateDocument, document.getURI());
+			{execute(false, broker, transaction, afterUpdateDocument, document.getURI());}
 	}
 
 	@Override
@@ -872,7 +872,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
 			prepare(4, broker, transaction, document.getURI(), newUri, false);
 		} else
-			execute(true, broker, transaction, beforeCopyDocument, document.getURI());
+			{execute(true, broker, transaction, beforeCopyDocument, document.getURI());}
 	}
 
 	@Override
@@ -880,7 +880,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
 			finish(4, broker, transaction, document.getURI(), newUri, false);
 		} else
-			execute(false, broker, transaction, afterCopyDocument, document.getURI());
+			{execute(false, broker, transaction, afterCopyDocument, document.getURI());}
 	}
 
 	@Override
@@ -888,7 +888,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
 			prepare(6, broker, transaction, document.getURI(), newUri, false);
 		} else
-			execute(true, broker, transaction, beforeMoveDocument, document.getURI());
+			{execute(true, broker, transaction, beforeMoveDocument, document.getURI());}
 	}
 
 	@Override
@@ -896,7 +896,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
 			finish(6, broker, transaction, oldUri, document.getURI(), false);
 		} else
-			execute(false, broker, transaction, afterMoveDocument, oldUri);
+			{execute(false, broker, transaction, afterMoveDocument, oldUri);}
 	}
 
 	@Override
@@ -904,7 +904,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.DELETE_DOCUMENT)) {
 			prepare(8, broker, transaction, document.getURI(), (XmldbURI) null, false);
 		} else
-			execute(true, broker, transaction, beforeDeleteDocument, document.getURI());
+			{execute(true, broker, transaction, beforeDeleteDocument, document.getURI());}
 	}
 
 	@Override
@@ -912,7 +912,7 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		if (events.contains(TriggerEvents.EVENTS.DELETE_DOCUMENT)) {
 			finish(8, broker, transaction, uri, (XmldbURI) null, false);
 		} else
-			execute(false, broker, transaction, afterDeleteDocument, uri);
+			{execute(false, broker, transaction, afterDeleteDocument, uri);}
 	}
 
 	@Override

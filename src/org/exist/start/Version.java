@@ -37,7 +37,7 @@ public class Version {
         _suffix = "";
         int pos = 0;
         int startpos = 0;
-        int endpos = version_string.length();
+        final int endpos = version_string.length();
         while ( (pos < endpos) && Character.isDigit(version_string.charAt(pos))) {
             pos++;
         }
@@ -65,7 +65,7 @@ public class Version {
      * @return string representation of this version
      */
     public String toString() {
-        StringBuilder sb = new StringBuilder(10);
+        final StringBuilder sb = new StringBuilder(10);
         sb.append(_version);
         sb.append('.');
         sb.append(_revision);
@@ -84,13 +84,13 @@ public class Version {
      *         Constants.SUPERIOR if it's newer version than other
      */
     public int compare(Version other) {
-        if (other == null) throw new NullPointerException("other version is null");
-        if (this._version < other._version) return Constants.INFERIOR;
-        if (this._version > other._version) return Constants.SUPERIOR;
-        if (this._revision < other._revision) return Constants.INFERIOR;
-        if (this._revision > other._revision) return Constants.SUPERIOR;
-        if (this._subrevision < other._subrevision) return Constants.INFERIOR;
-        if (this._subrevision > other._subrevision) return Constants.SUPERIOR;
+        if (other == null) {throw new NullPointerException("other version is null");}
+        if (this._version < other._version) {return Constants.INFERIOR;}
+        if (this._version > other._version) {return Constants.SUPERIOR;}
+        if (this._revision < other._revision) {return Constants.INFERIOR;}
+        if (this._revision > other._revision) {return Constants.SUPERIOR;}
+        if (this._subrevision < other._subrevision) {return Constants.INFERIOR;}
+        if (this._subrevision > other._subrevision) {return Constants.SUPERIOR;}
         return Constants.EQUAL;
     }
     

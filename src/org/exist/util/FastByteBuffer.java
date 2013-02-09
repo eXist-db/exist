@@ -211,7 +211,7 @@ public class FastByteBuffer implements ByteArray {
     public FastByteBuffer( int initChunkBits, int maxChunkBits,
                            int rebundleBits ) {
         if ( DEBUG_FORCE_INIT_BITS != 0 )
-            initChunkBits = DEBUG_FORCE_INIT_BITS;
+            {initChunkBits = DEBUG_FORCE_INIT_BITS;}
 
         // %REVIEW%
         // Should this force to larger value, or smaller? Smaller less efficient, but if
@@ -221,14 +221,14 @@ public class FastByteBuffer implements ByteArray {
         // anyway; we need a permanant solution.
         //
         if ( DEBUG_FORCE_FIXED_CHUNKSIZE )
-            maxChunkBits = initChunkBits;
+            {maxChunkBits = initChunkBits;}
         //if(DEBUG_FORCE_FIXED_CHUNKSIZE) initChunkBits=maxChunkBits;
 
         m_array = new byte[16][];
 
         // Don't bite off more than we're prepared to swallow!
         if ( initChunkBits > maxChunkBits )
-            initChunkBits = maxChunkBits;
+            {initChunkBits = maxChunkBits;}
 
         m_chunkBits = initChunkBits;
         m_maxChunkBits = maxChunkBits;
@@ -335,16 +335,16 @@ public class FastByteBuffer implements ByteArray {
 
         // We may have preallocated chunks. If so, all but last should
         // be at full size.
-        @SuppressWarnings("unused")
+        final @SuppressWarnings("unused")
 		boolean lastchunk = ( m_lastChunk + 1 == m_array.length );
 
         if ( m_firstFree < m_chunkSize )
             // Simplified test single-character-fits
-            chunk = m_array[m_lastChunk];
+            {chunk = m_array[m_lastChunk];}
         else {
 
             // Extend array?
-            int i = m_array.length;
+            final int i = m_array.length;
 
             if ( m_lastChunk + 1 == i ) {
                 byte[][] newarray = new byte[i + 16][];
@@ -365,7 +365,7 @@ public class FastByteBuffer implements ByteArray {
 
                     // Should do all the work of both encapsulating
                     // existing data and establishing new sizes/offsets
-                    m_innerFSB = new FastByteBuffer( this );
+                    {m_innerFSB = new FastByteBuffer( this );}
 
                 // Add a chunk.
                 chunk = m_array[m_lastChunk] = new byte[m_chunkSize];
@@ -407,7 +407,7 @@ public class FastByteBuffer implements ByteArray {
         int strlen = length;
 
         if ( 0 == strlen )
-            return;
+            {return;}
 
         int copyfrom = start;
         byte[] chunk = m_array[m_lastChunk];
@@ -418,7 +418,7 @@ public class FastByteBuffer implements ByteArray {
 
             // Copy what fits
             if ( available > strlen )
-                available = strlen;
+                {available = strlen;}
 
             System.arraycopy( chars, copyfrom, m_array[m_lastChunk], m_firstFree,
                 available );
@@ -430,7 +430,7 @@ public class FastByteBuffer implements ByteArray {
             if ( strlen > 0 ) {
 
                 // Extend array?
-                int i = m_array.length;
+                final int i = m_array.length;
 
                 if ( m_lastChunk + 1 == i ) {
                     byte[][] newarray = new byte[i + 16][];
@@ -451,7 +451,7 @@ public class FastByteBuffer implements ByteArray {
 
                         // Should do all the work of both encapsulating
                         // existing data and establishing new sizes/offsets
-                        m_innerFSB = new FastByteBuffer( this );
+                        {m_innerFSB = new FastByteBuffer( this );}
 
                     // Add a chunk.
                     chunk = m_array[m_lastChunk] = new byte[m_chunkSize];
@@ -484,11 +484,11 @@ public class FastByteBuffer implements ByteArray {
         // probably on a different alignment due to previously appended
         // data. We have to work through the source in bite-sized chunks.
         if ( value == null )
-            return;
+            {return;}
         int strlen = value.length();
 
         if ( 0 == strlen )
-            return;
+            {return;}
 
         int copyfrom = 0;
         byte[] chunk = m_array[m_lastChunk];
@@ -499,23 +499,23 @@ public class FastByteBuffer implements ByteArray {
 
             // Copy what fits
             if ( available > strlen )
-                available = strlen;
+                {available = strlen;}
 
-            int sourcechunk = ( copyfrom + value.m_chunkSize - 1 )
+            final int sourcechunk = ( copyfrom + value.m_chunkSize - 1 )
                  >>> value.m_chunkBits;
-            int sourcecolumn = copyfrom & value.m_chunkMask;
+            final int sourcecolumn = copyfrom & value.m_chunkMask;
             int runlength = value.m_chunkSize - sourcecolumn;
 
             if ( runlength > available )
-                runlength = available;
+                {runlength = available;}
 
             System.arraycopy( value.m_array[sourcechunk], sourcecolumn,
                 m_array[m_lastChunk], m_firstFree, runlength );
 
             if ( runlength != available )
-                System.arraycopy( value.m_array[sourcechunk + 1], 0,
+                {System.arraycopy( value.m_array[sourcechunk + 1], 0,
                     m_array[m_lastChunk], m_firstFree + runlength,
-                    available - runlength );
+                    available - runlength );}
 
             strlen -= available;
             copyfrom += available;
@@ -524,7 +524,7 @@ public class FastByteBuffer implements ByteArray {
             if ( strlen > 0 ) {
 
                 // Extend array?
-                int i = m_array.length;
+                final int i = m_array.length;
 
                 if ( m_lastChunk + 1 == i ) {
                     byte[][] newarray = new byte[i + 16][];
@@ -545,7 +545,7 @@ public class FastByteBuffer implements ByteArray {
 
                         // Should do all the work of both encapsulating
                         // existing data and establishing new sizes/offsets
-                        m_innerFSB = new FastByteBuffer( this );
+                        {m_innerFSB = new FastByteBuffer( this );}
 
                     // Add a chunk.
                     chunk = m_array[m_lastChunk] = new byte[m_chunkSize];
@@ -565,10 +565,10 @@ public class FastByteBuffer implements ByteArray {
         int pos = offset;
         for ( int i = 0; i < m_lastChunk; i++ ) {
             if ( i == 0 && m_innerFSB != null )
-                m_innerFSB.copyTo( newBuf, pos );
+                {m_innerFSB.copyTo( newBuf, pos );}
             else
-                System.arraycopy( m_array[i], 0, newBuf,
-                    pos, m_chunkSize );
+                {System.arraycopy( m_array[i], 0, newBuf,
+                    pos, m_chunkSize );}
             pos += m_chunkSize;
         }
         System.arraycopy( m_array[m_lastChunk], 0, newBuf, pos, m_firstFree );
@@ -577,9 +577,9 @@ public class FastByteBuffer implements ByteArray {
     public void copyTo( ByteArray newBuf ) {
         for ( int i = 0; i < m_lastChunk; i++ ) {
             if ( i == 0 && m_innerFSB != null )
-                m_innerFSB.copyTo( newBuf );
+                {m_innerFSB.copyTo( newBuf );}
             else
-                newBuf.append(m_array[i]);
+                {newBuf.append(m_array[i]);}
         }
         newBuf.append(m_array[m_lastChunk], 0, m_firstFree);
         
@@ -588,59 +588,59 @@ public class FastByteBuffer implements ByteArray {
     public void copyTo( ByteBuffer newBuf ) {
         for ( int i = 0; i < m_lastChunk; i++ ) {
             if ( i == 0 && m_innerFSB != null )
-                m_innerFSB.copyTo( newBuf );
+                {m_innerFSB.copyTo( newBuf );}
             else
-                newBuf.put(m_array[i]);
+                {newBuf.put(m_array[i]);}
         }
         newBuf.put(m_array[m_lastChunk], 0, m_firstFree);
         
     }
     
 	public void copyTo( int start, byte[] newBuf, int offset, int len ) {
-		int stop = start + len;
-		int startChunk = start >>> m_chunkBits;
+		final int stop = start + len;
+		final int startChunk = start >>> m_chunkBits;
 		int startColumn = start & m_chunkMask;
-		int stopChunk = stop >>> m_chunkBits;
-		int stopColumn = stop & m_chunkMask;
+		final int stopChunk = stop >>> m_chunkBits;
+		final int stopColumn = stop & m_chunkMask;
 		int pos = offset;
 		for(int i = startChunk; i < stopChunk; ++i) {
 			if( i == 0 && m_innerFSB != null)
-				m_innerFSB.copyTo(startColumn, newBuf, offset, m_chunkSize - startColumn);
+				{m_innerFSB.copyTo(startColumn, newBuf, offset, m_chunkSize - startColumn);}
 			else
-				System.arraycopy(m_array[i], startColumn, newBuf, pos, m_chunkSize - startColumn);
+				{System.arraycopy(m_array[i], startColumn, newBuf, pos, m_chunkSize - startColumn);}
 			pos += m_chunkSize - startColumn;
 			startColumn = 0;
 		}
 		
 		if(stopChunk == 0 && m_innerFSB != null)
-			m_innerFSB.copyTo(startColumn, newBuf, pos, stopColumn - startColumn);
+			{m_innerFSB.copyTo(startColumn, newBuf, pos, stopColumn - startColumn);}
 		else if(stopColumn > startColumn)
-			System.arraycopy(m_array[stopChunk], startColumn, newBuf, pos, stopColumn - startColumn);
+			{System.arraycopy(m_array[stopChunk], startColumn, newBuf, pos, stopColumn - startColumn);}
 	}
 
 	public void copyTo(int start, ByteBuffer buf, int len) {
-		int stop = start + len;
-		int startChunk = start >>> m_chunkBits;
+		final int stop = start + len;
+		final int startChunk = start >>> m_chunkBits;
 		int startColumn = start & m_chunkMask;
-		int stopChunk = stop >>> m_chunkBits;
-		int stopColumn = stop & m_chunkMask;
+		final int stopChunk = stop >>> m_chunkBits;
+		final int stopColumn = stop & m_chunkMask;
 		for(int i = startChunk; i < stopChunk; ++i) {
 			if( i == 0 && m_innerFSB != null)
-				m_innerFSB.copyTo(startColumn, buf, m_chunkSize - startColumn);
+				{m_innerFSB.copyTo(startColumn, buf, m_chunkSize - startColumn);}
 			else
-				buf.put(m_array[i], startColumn, m_chunkSize - startColumn);
+				{buf.put(m_array[i], startColumn, m_chunkSize - startColumn);}
 			startColumn = 0;
 		}
 		
 		if(stopChunk == 0 && m_innerFSB != null)
-			m_innerFSB.copyTo(startColumn, buf, stopColumn - startColumn);
+			{m_innerFSB.copyTo(startColumn, buf, stopColumn - startColumn);}
 		else if(stopColumn > startColumn)
-			buf.put(m_array[stopChunk], startColumn, stopColumn - startColumn);
+			{buf.put(m_array[stopChunk], startColumn, stopColumn - startColumn);}
 	}
 	
     public void set(int position, byte b) {
-        int chunk = position >>> m_chunkBits;
-        int column = position & m_chunkMask;
+        final int chunk = position >>> m_chunkBits;
+        final int column = position & m_chunkMask;
         m_array[chunk][column] = b;
     }
     
@@ -696,7 +696,7 @@ public class FastByteBuffer implements ByteArray {
 
         if ( m_lastChunk == 0 && m_innerFSB != null )
             // Replace this FSB with the appropriate inner FSB, truncated
-            m_innerFSB.setLength( l, this );
+            {m_innerFSB.setLength( l, this );}
 
         else {
             m_firstFree = l & m_chunkMask;
@@ -726,7 +726,7 @@ public class FastByteBuffer implements ByteArray {
         m_lastChunk = l >>> m_chunkBits;
 
         if ( m_lastChunk == 0 && m_innerFSB != null )
-            m_innerFSB.setLength( l, rootFSB );
+            {m_innerFSB.setLength( l, rootFSB );}
 
         else {
 

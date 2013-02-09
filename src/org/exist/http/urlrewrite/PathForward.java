@@ -39,12 +39,12 @@ public class PathForward extends Forward {
         super(config, uri);
         this.filterConfig = filterConfig;
         servletName = config.getAttribute("servlet");
-        String url = config.getAttribute("url");
+        final String url = config.getAttribute("url");
         if (servletName != null && servletName.length() == 0)
-            servletName = null;
+            {servletName = null;}
         if (servletName == null) {
             if (url == null || url.length() == 0)
-                throw new ServletException("<exist:forward> needs either an attribute 'url' or 'servlet'.");
+                {throw new ServletException("<exist:forward> needs either an attribute 'url' or 'servlet'.");}
             setTarget(URLRewrite.normalizePath(url));
         }
     }
@@ -59,10 +59,10 @@ public class PathForward extends Forward {
 	@Override
     protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
         if (servletName != null)
-            return filterConfig.getServletContext().getNamedDispatcher(servletName);
+            {return filterConfig.getServletContext().getNamedDispatcher(servletName);}
         else if (request != null)
-            return request.getRequestDispatcher(target);
+            {return request.getRequestDispatcher(target);}
         else
-            return filterConfig.getServletContext().getRequestDispatcher(target);
+            {return filterConfig.getServletContext().getRequestDispatcher(target);}
     }
 }

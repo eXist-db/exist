@@ -87,11 +87,11 @@ public class FunCurrentDateTime extends Function {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
         Sequence result = new DateTimeValue(context.getCalendar());
         if (isCalledAs("current-dateTime")) {
@@ -103,7 +103,7 @@ public class FunCurrentDateTime extends Function {
         } else {
             throw new Error("Can't handle function " + mySignature.getName().getLocalName());
         }
-        if (context.getProfiler().isEnabled()) context.getProfiler().end(this, "", result);
+        if (context.getProfiler().isEnabled()) {context.getProfiler().end(this, "", result);}
         return result;
     }
 }

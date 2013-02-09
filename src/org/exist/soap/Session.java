@@ -66,7 +66,7 @@ public class Session implements Serializable {
         
         public void cleanupContexts() {
             if(contexts != null) {
-                for(XQueryContext context : contexts) {
+                for(final XQueryContext context : contexts) {
                     context.cleanupBinaryValueInstances();
                 }
             }

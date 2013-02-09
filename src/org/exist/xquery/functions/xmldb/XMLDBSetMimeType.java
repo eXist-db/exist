@@ -70,10 +70,10 @@ public class XMLDBSetMimeType extends BasicFunction {
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
 
         // Get handle to Mime-type info
-        MimeTable mimeTable = MimeTable.getInstance();
+        final MimeTable mimeTable = MimeTable.getInstance();
 
         // Get first parameter
-        String pathParameter = new AnyURIValue(args[0].itemAt(0).getStringValue()).toString();
+        final String pathParameter = new AnyURIValue(args[0].itemAt(0).getStringValue()).toString();
 
         if (pathParameter.matches("^[a-z]+://.*")) {
             throw new XPathException("Can not set mime-type for resources outside the database.");
@@ -82,7 +82,7 @@ public class XMLDBSetMimeType extends BasicFunction {
         XmldbURI pathUri = null;
         try {
             pathUri = XmldbURI.xmldbUriFor(pathParameter);
-        } catch (URISyntaxException ex) {
+        } catch (final URISyntaxException ex) {
             logger.debug(ex.getMessage());
             throw new XPathException("Invalid path '" + pathParameter + "'");
         }
@@ -127,12 +127,12 @@ public class XMLDBSetMimeType extends BasicFunction {
         }
 
         // At this moment it is possible to update the mimetype
-        DBBroker broker = context.getBroker();
-        BrokerPool brokerPool = broker.getBrokerPool();
+        final DBBroker broker = context.getBroker();
+        final BrokerPool brokerPool = broker.getBrokerPool();
 
         DocumentImpl doc = null;
-        TransactionManager txnManager = brokerPool.getTransactionManager();
-        Txn txn = txnManager.beginTransaction();
+        final TransactionManager txnManager = brokerPool.getTransactionManager();
+        final Txn txn = txnManager.beginTransaction();
 
         try {
             // relative collection Path: add the current base URI
@@ -155,7 +155,7 @@ public class XMLDBSetMimeType extends BasicFunction {
                 txnManager.commit(txn);
             }
 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             txnManager.abort(txn);
             logger.error(e.getMessage());
             throw new XPathException(this, e);
@@ -181,7 +181,7 @@ public class XMLDBSetMimeType extends BasicFunction {
             // relative collection Path: add the current base URI
             pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
             
-        } catch (XPathException ex) {
+        } catch (final XPathException ex) {
             logger.debug("Unable to convert path " + pathUri);
             return returnValue;
         }
@@ -192,11 +192,11 @@ public class XMLDBSetMimeType extends BasicFunction {
             if (doc == null) {
                 throw new XPathException("Resource '" + pathUri + "' does not exist.");
             } else {
-                String mimetype = ((DocumentImpl) doc).getMetadata().getMimeType();
+                final String mimetype = ((DocumentImpl) doc).getMetadata().getMimeType();
                 returnValue = MimeTable.getInstance().getContentType(mimetype);
             }
 
-        } catch (PermissionDeniedException ex) {
+        } catch (final PermissionDeniedException ex) {
             logger.debug(ex.getMessage());
 
         } finally {

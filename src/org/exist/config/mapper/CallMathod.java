@@ -47,11 +47,11 @@ public class CallMathod {
 
 	public void set(String name, String value) {
 		if ("name".equals(name))
-			this.name = value;
+			{this.name = value;}
 		else if ("attribute".equals(name))
-			this.attribute = value;
+			{this.attribute = value;}
 		else if ("element".equals(name))
-			this.element = value;
+			{this.element = value;}
 	}
 	
 	public boolean eval() throws Exception {
@@ -63,23 +63,23 @@ public class CallMathod {
     		return false;
         }
         
-        Method[] methods = obj.getClass().getMethods();
+        final Method[] methods = obj.getClass().getMethods();
         for (int k = 0; k < methods.length; k++) {
         	if (methods[k].getName().equals(name)) {
-        		Class<?>[] types = methods[k].getParameterTypes();
+        		final Class<?>[] types = methods[k].getParameterTypes();
         		if (types.length == 1) {
-        			String typeName = types[0].getName();
+        			final String typeName = types[0].getName();
         			if (element != null) {
         				if (typeName.equals(value.getClass().getName())) {
 				            methods[k].invoke(obj, value);
 				            return true;
         				}
         			} else {
-	        			if (typeName.equals("java.lang.String")) {
+	        			if ("java.lang.String".equals(typeName)) {
 				            methods[k].invoke(obj, conf.getElement().getAttribute(attribute));
 				            return true;
 	            		
-	        			} else if (typeName.equals("int") || typeName.equals("java.lang.Integer")) {
+	        			} else if ("int".equals(typeName) || "java.lang.Integer".equals(typeName)) {
 				            methods[k].invoke(obj, Integer.valueOf( conf.getElement().getAttribute(attribute) ));
 				            return true;
 	        			}

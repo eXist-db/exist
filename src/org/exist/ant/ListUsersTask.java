@@ -48,14 +48,14 @@ public class ListUsersTask extends UserTask
 
         try {
             log( "Listing all users", Project.MSG_DEBUG );
-            Account[] users = service.getAccounts();
+            final Account[] users = service.getAccounts();
 
             if( users != null ) {
 
                 boolean       isFirst = true;
-                StringBuilder buffer  = new StringBuilder();
+                final StringBuilder buffer  = new StringBuilder();
 
-                for( Account user : users ) {
+                for( final Account user : users ) {
 
                     // only insert separator for 2nd or later item
                     if( isFirst ) {
@@ -75,8 +75,8 @@ public class ListUsersTask extends UserTask
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

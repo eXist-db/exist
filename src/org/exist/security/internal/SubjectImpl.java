@@ -61,11 +61,11 @@ public final class SubjectImpl extends AbstractSubject {
 	}
 	
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		if (isAuthenticated())
-			sb.append("[auth] ");
+			{sb.append("[auth] ");}
 		else
-			sb.append("[NOT auth] ");
+			{sb.append("[NOT auth] ");}
 		
 		sb.append(account.toString());
 		

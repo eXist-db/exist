@@ -59,18 +59,18 @@ public class FileLockHeartBeat implements JobDescription, Job {
 
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         //get the file lock
-        JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        Map<String, FileLock> params = (Map<String, FileLock>) jobDataMap.get("params");
-        FileLock lock = params.get(FileLock.class.getName());
+        final JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
+        final Map<String, FileLock> params = (Map<String, FileLock>) jobDataMap.get("params");
+        final FileLock lock = params.get(FileLock.class.getName());
         if(lock != null) {
             try {
                 lock.save();
-            } catch(IOException e) {
+            } catch(final IOException e) {
                 lock.message("Caught exception while trying to write lock file", e);
             }
         } else {
             //abort this job
-            JobExecutionException jat = new JobExecutionException("Unable to write heart-beat: lock was null");
+            final JobExecutionException jat = new JobExecutionException("Unable to write heart-beat: lock was null");
             jat.setUnscheduleFiringTrigger(true);
         }
     }

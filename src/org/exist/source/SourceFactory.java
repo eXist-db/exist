@@ -66,7 +66,7 @@ public class SourceFactory {
         {
             location = location.replaceAll("^(file:)?/*(.*)$", "$2");
 
-            File f = new File(contextPath + File.separatorChar + location);
+            final File f = new File(contextPath + File.separatorChar + location);
             if(f.canRead())
             {
 
@@ -74,13 +74,13 @@ public class SourceFactory {
                 source = new FileSource(f, "UTF-8", checkXQEncoding);
             }
             
-            File f2 = new File(location);
+            final File f2 = new File(location);
             if(f2.canRead()){
                 location = f2.toURI().toASCIIString();
                 source = new FileSource(f2, "UTF-8", checkXQEncoding);
             }
 
-            File f3 = new File(new File(contextPath).getAbsolutePath(), location);
+            final File f3 = new File(new File(contextPath).getAbsolutePath(), location);
             if(f3.canRead()){
                 location = f3.toURI().toASCIIString();
                 source = new FileSource(f3, "UTF-8", checkXQEncoding);
@@ -89,7 +89,7 @@ public class SourceFactory {
             /*
              * Try to load as an absolute path
              */
-            File f4 = new File("/" + location);
+            final File f4 = new File("/" + location);
             if(f4.canRead()){
                 location = f4.toURI().toASCIIString();
                 source = new FileSource(f4, "UTF-8", checkXQEncoding);
@@ -105,7 +105,7 @@ public class SourceFactory {
 				    location = f5.toURI().toASCIIString();
 				    source = new FileSource(f5, "UTF-8", checkXQEncoding);
 				}
-			} catch (EXistException e) {
+			} catch (final EXistException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -130,17 +130,17 @@ public class SourceFactory {
         	DocumentImpl resource = null;
         	try
         	{
-				XmldbURI pathUri = XmldbURI.create(location);
+				final XmldbURI pathUri = XmldbURI.create(location);
 				resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
 				if (resource != null)
-					source = new DBSource(broker, (BinaryDocument)resource, true);
+					{source = new DBSource(broker, (BinaryDocument)resource, true);}
         	}
 			finally
 			{
 				//TODO: this is nasty!!! as we are unlocking the resource whilst there
 				//is still a source
 				if(resource != null)
-					resource.getUpdateLock().release(Lock.READ_LOCK);
+					{resource.getUpdateLock().release(Lock.READ_LOCK);}
 			}
         }
         
@@ -153,7 +153,7 @@ public class SourceFactory {
         /* any other URL */
         else
         {
-            URL url = new URL(location);
+            final URL url = new URL(location);
             source = new URLSource(url);
         }
 

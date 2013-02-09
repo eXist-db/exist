@@ -39,7 +39,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
             });
             this.is = new CachingFilterInputStream(cache, is);
 
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             throw new XPathException(ioe);
         }
 
@@ -48,7 +48,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
     }
 
     public static BinaryValueFromInputStream getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
-        BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(manager, binaryValueType, is);
+        final BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(manager, binaryValueType, is);
         manager.registerBinaryValueInstance(binaryInputStream);
         return binaryInputStream;
     }
@@ -64,7 +64,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
     public void streamBinaryTo(final OutputStream os) throws IOException {
         try {
             int read = -1;
-            byte data[] = new byte[READ_BUFFER_SIZE];
+            final byte data[] = new byte[READ_BUFFER_SIZE];
             while((read = is.read(data)) > -1) {
                 os.write(data, 0, read);
             }
@@ -72,7 +72,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
             //reset the buf
             try {
                 is.reset();
-            } catch(IOException ioe) {
+            } catch(final IOException ioe) {
                 LOG.error("Unable to reset stream: " + ioe.getMessage(), ioe);
             }
         }
@@ -99,11 +99,11 @@ public class BinaryValueFromInputStream extends BinaryValue {
         // do not close if this object is part of the contextSequence
         if (contextSequence == this ||
             (contextSequence instanceof ValueSequence && ((ValueSequence)contextSequence).containsValue(this)))
-            return;
+            {return;}
         LOG.debug("Closing input stream");
         try {
             this.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOG.warn("Error during cleanup of binary value: " + e.getMessage(), e);
         }
         context.destroyBinaryValue(this);

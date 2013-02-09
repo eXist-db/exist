@@ -52,7 +52,7 @@ public class ValidationReport implements ErrorHandler {
         
     private ValidationReportItem createValidationReportItem(int type, SAXParseException exception){
         
-        ValidationReportItem vri = new ValidationReportItem();
+        final ValidationReportItem vri = new ValidationReportItem();
         vri.setType(type);
         vri.setLineNumber(exception.getLineNumber());
         vri.setColumnNumber(exception.getColumnNumber());
@@ -136,7 +136,7 @@ public class ValidationReport implements ErrorHandler {
     
     public List<String> getTextValidationReport(){
         
-        List<String> textReport = new ArrayList<String>();
+        final List<String> textReport = new ArrayList<String>();
         
         if( isValid() ){
             textReport.add("Document is valid.");
@@ -148,7 +148,7 @@ public class ValidationReport implements ErrorHandler {
             textReport.add( "Exception: " + throwed.getMessage() );
         }
         
-        for(ValidationReportItem item : validationReport ) {
+        for(final ValidationReportItem item : validationReport ) {
             textReport.add( item.toString() );
         }
 
@@ -158,8 +158,8 @@ public class ValidationReport implements ErrorHandler {
     
     public String[] getValidationReportArray(){
         
-        List<String> vr = getTextValidationReport();
-        String report[] = new String[ vr.size() ];
+        final List<String> vr = getTextValidationReport();
+        final String report[] = new String[ vr.size() ];
         
         return vr.toArray(report);
     }
@@ -175,9 +175,9 @@ public class ValidationReport implements ErrorHandler {
     @Override
     public String toString(){
         
-        StringBuilder sb = new  StringBuilder();
+        final StringBuilder sb = new  StringBuilder();
 
-        for(String line : getTextValidationReport()){
+        for(final String line : getTextValidationReport()){
             sb.append(line);
             sb.append("\n");
         }
@@ -218,8 +218,8 @@ public class ValidationReport implements ErrorHandler {
             return null;
         }
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream ps = new PrintStream(baos);
         throwed.printStackTrace(ps);
 
         return baos.toString();

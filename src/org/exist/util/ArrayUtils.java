@@ -36,7 +36,7 @@ public class ArrayUtils {
      * @return the array without the deleted integer
      */
     public static int[] deleteArrayInt(int[] vals, int idx) {
-        int[] newVals = new int[vals.length - 1];
+        final int[] newVals = new int[vals.length - 1];
         if (idx > 0) {
             System.arraycopy(vals, 0, newVals, 0, idx);
         }
@@ -55,7 +55,7 @@ public class ArrayUtils {
      * @return the array without the deleted long
      */
     public static long[] deleteArrayLong(long[] vals, int idx) {
-        long[] newVals = new long[vals.length - 1];
+        final long[] newVals = new long[vals.length - 1];
         if (idx > 0) {
             System.arraycopy(vals, 0, newVals, 0, idx);
         }
@@ -74,7 +74,7 @@ public class ArrayUtils {
      * @return the array without the deleted short
      */
     public static short[] deleteArrayShort(short[] vals, int idx) {
-        short[] newVals = new short[vals.length - 1];
+        final short[] newVals = new short[vals.length - 1];
         if (idx > 0) {
             System.arraycopy(vals, 0, newVals, 0, idx);
         }
@@ -94,7 +94,7 @@ public class ArrayUtils {
      * @return the array with added integer
      */
     public static int[] insertArrayInt(int[] vals, int val, int idx) {
-        int[] newVals = new int[vals.length + 1];
+        final int[] newVals = new int[vals.length + 1];
         if (idx > 0) {
             System.arraycopy(vals, 0, newVals, 0, idx);
         }
@@ -115,7 +115,7 @@ public class ArrayUtils {
      * @return the array with added long
      */
     public static long[] insertArrayLong(long[] vals, long val, int idx) {
-        long[] newVals = new long[vals.length + 1];
+        final long[] newVals = new long[vals.length + 1];
         if (idx > 0) {
             System.arraycopy(vals, 0, newVals, 0, idx);
         }
@@ -136,7 +136,7 @@ public class ArrayUtils {
      * @return the array with added short
      */
     public static short[] insertArrayShort(short[] vals, short val, int idx) {
-        short[] newVals = new short[vals.length + 1];
+        final short[] newVals = new short[vals.length + 1];
         if (idx > 0) {
             System.arraycopy(vals, 0, newVals, 0, idx);
         }
@@ -172,15 +172,15 @@ public class ArrayUtils {
         int high = size - 1;
         
         while (low <= high) {
-            int mid = (low + high) >> 1;
-            int midVal = a[mid];
+            final int mid = (low + high) >> 1;
+            final int midVal = a[mid];
             
             if (midVal < key)
-                low = mid + 1;
+                {low = mid + 1;}
             else if (midVal > key)
-                high = mid - 1;
+                {high = mid - 1;}
             else
-                return mid; // key found
+                {return mid;} // key found
         }
         return -(low + 1);  // key not found.
     }

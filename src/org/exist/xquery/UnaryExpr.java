@@ -51,47 +51,47 @@ public class UnaryExpr extends PathExpr {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
         
 		if(getLength() == 0)
-			throw new XPathException(this, "unary expression requires an operand");
+			{throw new XPathException(this, "unary expression requires an operand");}
         
         Sequence result;
         
-        Sequence item = getExpression(0).eval(contextSequence);
+        final Sequence item = getExpression(0).eval(contextSequence);
         if (item.isEmpty())
-        	return item;
+        	{return item;}
         
 		NumericValue value = (NumericValue)item.convertTo(Type.NUMBER);
 		if(mode == Constants.MINUS)
-            result = value.negate();
+            {result = value.negate();}
 		else
-            result =  value;
+            {result =  value;}
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         
         return result;        
 	}
 
     public void dump(ExpressionDumper dumper) {    
     	if(mode == Constants.MINUS)
-    		dumper.display("-"); 
+    		{dumper.display("-");} 
     	else
-    		dumper.display("to be implemented");      
+    		{dumper.display("to be implemented");}      
     }    
     
     public String toString() {
     	if(mode == Constants.MINUS)
-    		return "-";
+    		{return "-";}
     	else
-    		return("to be implemented");      
+    		{return("to be implemented");}      
     }
     
     @Override

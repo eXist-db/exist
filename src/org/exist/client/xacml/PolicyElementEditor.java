@@ -52,16 +52,16 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 	}
 	private void setup()
 	{
-		SpringLayout layout = new SpringLayout();
+		final SpringLayout layout = new SpringLayout();
 		comp = new JPanel(layout);
 		comp.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
 		comp.setOpaque(true);
 		
-		Spring constant6 = Spring.constant(6);
-		Spring constant0 = Spring.constant(0);
-		Spring glue12 = Spring.constant(12,12,Short.MAX_VALUE);
+		final Spring constant6 = Spring.constant(6);
+		final Spring constant0 = Spring.constant(0);
+		final Spring glue12 = Spring.constant(12,12,Short.MAX_VALUE);
 
-		JLabel label = new JLabel("ID: ");
+		final JLabel label = new JLabel("ID: ");
 		invalidLabel = new JLabel("Invalid URI");
 		invalidLabel.setForeground(new Color(225, 25, 25));
 		idText = new JTextField(19);
@@ -82,7 +82,7 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 		comp.add(comboLabel);
 		comp.add(comboBox);
 		
-		SpringLayout.Constraints constraints = layout.getConstraints(comboLabel);
+		final SpringLayout.Constraints constraints = layout.getConstraints(comboLabel);
 		constraints.setHeight(Spring.max(constraints.getHeight(), layout.getConstraints(comboBox).getHeight()));
 		layout.putConstraint(SpringLayout.NORTH, comboBox, constant0, SpringLayout.NORTH, comboLabel);
 		layout.putConstraint(SpringLayout.NORTH, comboLabel, nextY, SpringLayout.NORTH, comp);
@@ -94,18 +94,18 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 		Spring right = layout.getConstraint(SpringLayout.EAST, comboBox);
 		
 		
-		JLabel descriptionLabel = new JLabel("Description");
+		final JLabel descriptionLabel = new JLabel("Description");
 		descriptionArea = new JTextArea(4, 35);
 		descriptionArea.setWrapStyleWord(true);
 		descriptionArea.setLineWrap(true);
 		descriptionArea.getDocument().addDocumentListener(this);
-		JScrollPane scroll = new JScrollPane(descriptionArea);
+		final JScrollPane scroll = new JScrollPane(descriptionArea);
 		
 		comp.add(descriptionLabel);
 		comp.add(scroll);
 		layout.putConstraint(SpringLayout.NORTH, descriptionLabel, nextY, SpringLayout.NORTH, comp);
 		layout.putConstraint(SpringLayout.WEST, scroll, constant0, SpringLayout.WEST, idText);
-		Spring idTextWidth = layout.getConstraints(idText).getWidth();
+		final Spring idTextWidth = layout.getConstraints(idText).getWidth();
 		layout.getConstraints(scroll).setWidth(Spring.sum(idTextWidth, idTextWidth));
 		layout.putConstraint(SpringLayout.NORTH, scroll, constant6, SpringLayout.SOUTH, descriptionLabel);
 		
@@ -141,14 +141,14 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 	}
 	public URI getID()
 	{
-		String IDStr = getIDString();
+		final String IDStr = getIDString();
 		if(IDStr == null)
-			return null;
+			{return null;}
 		try
 		{
 			return new URI(IDStr);
 		}
-		catch (URISyntaxException e)
+		catch (final URISyntaxException e)
 		{
 			ClientFrame.showErrorMessage("Invalid policy ID '" + IDStr + "'", e);
 			return null;
@@ -157,12 +157,12 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 	
 	public CombiningAlgorithm getAlgorithm()
 	{
-		URI algURI = abbrev.getFullCombiningURI((String)comboBox.getSelectedItem(), (node instanceof PolicyNode));
+		final URI algURI = abbrev.getFullCombiningURI((String)comboBox.getSelectedItem(), (node instanceof PolicyNode));
 		try
 		{
 			return StandardCombiningAlgFactory.getInstance().createAlgorithm(algURI);
 		}
-		catch (UnknownIdentifierException e)
+		catch (final UnknownIdentifierException e)
 		{
 			ClientFrame.showErrorMessage("Invalid rule combining algorithm '" + algURI + "'", e);
 			return null;
@@ -171,12 +171,12 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 	public void setNode(XACMLTreeNode treeNode)
 	{
 		if(!(treeNode instanceof PolicyElementNode))
-			throw new IllegalArgumentException("PolicyElementEditor can only edit PolicyElementNodes");
+			{throw new IllegalArgumentException("PolicyElementEditor can only edit PolicyElementNodes");}
 		this.node = (PolicyElementNode)treeNode;
 		if(node == null)
-			setValues(null, null);
+			{setValues(null, null);}
 		else
-			setValues(node.getId(), node.getDescription());
+			{setValues(node.getId(), node.getDescription());}
 		
 		setupCombo();
 	}
@@ -194,11 +194,11 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 	}
 	public void pushChanges()
 	{
-		String description = descriptionArea.getText();
+		final String description = descriptionArea.getText();
 		node.setDescription((description.length() == 0) ? null : description);
-		URI id = getId();
+		final URI id = getId();
 		if(id != null)
-			node.setId(id);
+			{node.setId(id);}
 	}
 	public URI getId()
 	{
@@ -206,7 +206,7 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 		{
 			return new URI(idText.getText());
 		}
-		catch (URISyntaxException e)
+		catch (final URISyntaxException e)
 		{
 			return null;
 		}
@@ -225,7 +225,7 @@ public abstract class PolicyElementEditor extends AbstractNodeEditor implements 
 	}
 	protected void documentUpdated(DocumentEvent event)
 	{
-		URI id = getId();
+		final URI id = getId();
 		if(id == null)
 		{
 			idText.setForeground(Color.red);

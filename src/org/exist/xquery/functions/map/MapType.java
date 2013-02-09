@@ -29,17 +29,17 @@ public class MapType extends AbstractMapType {
         super(context);
         // if there's no collation, we'll use a hash map for better performance
         if (collation == null)
-            this.map = PersistentHashMap.EMPTY;
+            {this.map = PersistentHashMap.EMPTY;}
         else
-            this.map = PersistentTreeMap.create(getComparator(collation), null);
+            {this.map = PersistentTreeMap.create(getComparator(collation), null);}
     }
 
     public MapType(XQueryContext context, String collation, AtomicValue key, Sequence value) throws XPathException {
         super(context);
         if (collation == null)
-            this.map = PersistentHashMap.EMPTY;
+            {this.map = PersistentHashMap.EMPTY;}
         else
-            this.map = PersistentTreeMap.create(getComparator(collation), null);
+            {this.map = PersistentTreeMap.create(getComparator(collation), null);}
         this.type = key.getType();
         this.map = this.map.assoc(key, value);
     }
@@ -57,12 +57,12 @@ public class MapType extends AbstractMapType {
             setItemType(other.getItemType());
             if (map instanceof PersistentHashMap) {
                 ITransientMap<AtomicValue, Sequence> tmap = ((PersistentHashMap)map).asTransient();
-                for (Map.Entry<AtomicValue, Sequence> entry : other) {
+                for (final Map.Entry<AtomicValue, Sequence> entry : other) {
                     tmap = tmap.assoc(entry.getKey(), entry.getValue());
                 }
                 map = tmap.persistentMap();
             } else {
-                for (Map.Entry<AtomicValue, Sequence> entry : other)
+                for (final Map.Entry<AtomicValue, Sequence> entry : other)
                     map = map.assoc(entry.getKey(), entry.getValue());
             }
         }
@@ -76,21 +76,21 @@ public class MapType extends AbstractMapType {
     public Sequence get(AtomicValue key) {
         key = convert(key);
         if (key == null)
-            return Sequence.EMPTY_SEQUENCE;
-        Map.Entry<AtomicValue, Sequence> e = this.map.entryAt(key);
+            {return Sequence.EMPTY_SEQUENCE;}
+        final Map.Entry<AtomicValue, Sequence> e = this.map.entryAt(key);
         return e == null ? Sequence.EMPTY_SEQUENCE : e.getValue();
     }
 
     public boolean contains(AtomicValue key) {
         key = convert(key);
         if (key == null)
-            return false;
+            {return false;}
         return this.map.containsKey(key);
     }
 
     public Sequence keys() {
-        ValueSequence seq = new ValueSequence();
-        for (Map.Entry<AtomicValue, Sequence> entry: this.map) {
+        final ValueSequence seq = new ValueSequence();
+        for (final Map.Entry<AtomicValue, Sequence> entry: this.map) {
             seq.add(entry.getKey());
         }
         return seq;
@@ -99,7 +99,7 @@ public class MapType extends AbstractMapType {
     public AbstractMapType remove(AtomicValue key) {
         try {
             return new MapType(this.context, this.map.without(key));
-        } catch (Exception e) {
+        } catch (final Exception e) {
             return this;
         }
     }
@@ -117,32 +117,32 @@ public class MapType extends AbstractMapType {
     @Override
     public AtomicValue getKey() {
         if (map.count() == 0)
-            return null;
-        Iterator<Map.Entry<AtomicValue,Sequence>> iter = this.map.iterator();
+            {return null;}
+        final Iterator<Map.Entry<AtomicValue,Sequence>> iter = this.map.iterator();
         return iter.next().getKey();
     }
 
     @Override
     public Sequence getValue() {
         if (map.count() == 0)
-            return null;
-        Iterator<Map.Entry<AtomicValue,Sequence>> iter = this.map.iterator();
+            {return null;}
+        final Iterator<Map.Entry<AtomicValue,Sequence>> iter = this.map.iterator();
         return iter.next().getValue();
     }
 
     private void setItemType(int newType) {
         if (type == Type.ANY_TYPE)
-            type = newType;
+            {type = newType;}
         else if (type != newType) {
             type = Type.ITEM;
             if (map instanceof PersistentHashMap) {
                 try {
                     PersistentTreeMap tmap = PersistentTreeMap.create(getComparator(null), null);
-                    for (Map.Entry<AtomicValue, Sequence> entry : map) {
+                    for (final Map.Entry<AtomicValue, Sequence> entry : map) {
                         tmap = tmap.assoc(entry.getKey(), entry.getValue());
                     }
                     map = tmap;
-                } catch (XPathException e) {
+                } catch (final XPathException e) {
                 }
             }
         }
@@ -152,7 +152,7 @@ public class MapType extends AbstractMapType {
         if (type != Type.ITEM) {
             try {
                 return key.convertTo(type);
-            } catch (XPathException e) {
+            } catch (final XPathException e) {
                 return null;
             }
         }

@@ -50,7 +50,7 @@ public class QNameValue extends AtomicValue {
      */
 	public QNameValue(XQueryContext context, String name) throws XPathException {
         if (name.length() == 0)
-            throw new XPathException(ErrorCodes.FORG0001, "An empty string is not a valid lexical representation of xs:QName.");
+            {throw new XPathException(ErrorCodes.FORG0001, "An empty string is not a valid lexical representation of xs:QName.");}
 
     	qname = QName.parse(context, name, context.getURIForPrefix(""));
 	    stringValue = computeStringValue();
@@ -85,7 +85,7 @@ public class QNameValue extends AtomicValue {
 		
 	private String computeStringValue() {
 		//TODO : previous approach was to resolve the qname when needed. We now try to keep the original qname
-		String prefix = qname.getPrefix();
+		final String prefix = qname.getPrefix();
 		//Not clear what to work with here...
         // WM: Changing the prefix is problematic (e.g. if a module
         // defines different prefixes than the main module). We should
@@ -100,9 +100,9 @@ public class QNameValue extends AtomicValue {
 //	    }
 	    //TODO : check that the prefix matches the URI in the current context ?
 		if (prefix != null && prefix.length() > 0)
-			return prefix + ':' + qname.getLocalName();
+			{return prefix + ':' + qname.getLocalName();}
 		else 
-			return qname.getLocalName();
+			{return qname.getLocalName();}
 	}
 
 	/**
@@ -129,7 +129,7 @@ public class QNameValue extends AtomicValue {
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.QNAME) {
-			int cmp = qname.compareTo(((QNameValue) other).qname);
+			final int cmp = qname.compareTo(((QNameValue) other).qname);
 			switch (operator) {
 				case Constants.EQ :
 					return cmp == 0;
@@ -150,9 +150,9 @@ public class QNameValue extends AtomicValue {
 					throw new XPathException(ErrorCodes.XPTY0004, "cannot apply operator to QName");
 			}
 		} else
-			throw new XPathException(
+			{throw new XPathException(
 				"Type error: cannot compare QName to "
-					+ Type.getTypeName(other.getType()));
+					+ Type.getTypeName(other.getType()));}
 	}
 
 	/**
@@ -162,9 +162,9 @@ public class QNameValue extends AtomicValue {
 		if (other.getType() == Type.QNAME) {
 			return qname.compareTo(((QNameValue) other).qname);
 		} else
-			throw new XPathException(
+			{throw new XPathException(
 				"Type error: cannot compare QName to "
-					+ Type.getTypeName(other.getType()));
+					+ Type.getTypeName(other.getType()));}
 	}
 
 	/**
@@ -183,11 +183,11 @@ public class QNameValue extends AtomicValue {
 	 */
 	public int conversionPreference(Class<?> javaClass) {
 		if (javaClass.isAssignableFrom(QNameValue.class))
-			return 0;
+			{return 0;}
 		if (javaClass == String.class)
-			return 1;
+			{return 1;}
 		if (javaClass == Object.class)
-			return 20;
+			{return 20;}
 
 		return Integer.MAX_VALUE;
 	}
@@ -215,7 +215,7 @@ public class QNameValue extends AtomicValue {
 	public String toString() {
 		try {
 			return this.getStringValue();
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			return super.toString();
 		}			
 	}
@@ -229,9 +229,9 @@ public class QNameValue extends AtomicValue {
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
-            return true;
+            {return true;}
         if (obj instanceof QNameValue)
-            return ((QNameValue)obj).qname.equals(qname);
+            {return ((QNameValue)obj).qname.equals(qname);}
         return false;
     }
 

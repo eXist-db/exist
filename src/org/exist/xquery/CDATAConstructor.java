@@ -54,35 +54,35 @@ public class CDATAConstructor extends NodeConstructor {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
         if (newDocumentContext)
-            context.pushDocumentContext();
+            {context.pushDocumentContext();}
         try {
-            MemTreeBuilder builder = context.getDocumentBuilder();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
             
             int nodeNr;
             if (literalCharacters) {
             	//Empty CDATA sections generate no text nodes
                 if (cdata.isEmpty())
-                    return Sequence.EMPTY_SEQUENCE;
+                    {return Sequence.EMPTY_SEQUENCE;}
                 
             	nodeNr = builder.characters(cdata);
             } else {
             	nodeNr = builder.cdataSection(cdata);
             }
-        	NodeImpl node = builder.getDocument().getNode(nodeNr);
+        	final NodeImpl node = builder.getDocument().getNode(nodeNr);
 
             if (context.getProfiler().isEnabled())
-                context.getProfiler().end(this, "", node);
+                {context.getProfiler().end(this, "", node);}
 
             return node;
         } finally {
             if (newDocumentContext)
-                context.popDocumentContext();
+                {context.popDocumentContext();}
         }
     }
 

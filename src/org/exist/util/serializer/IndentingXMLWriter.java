@@ -176,10 +176,10 @@ public class IndentingXMLWriter extends XMLWriter {
         final String option = outputProperties.getProperty(EXistOutputKeys.INDENT_SPACES, "4");
         try {
             indentAmount = Integer.parseInt(option);
-        } catch(NumberFormatException e) {
+        } catch(final NumberFormatException e) {
             //Nothing to do ?
         }
-        indent = outputProperties.getProperty(OutputKeys.INDENT, "no").equals("yes");
+        indent = "yes".equals(outputProperties.getProperty(OutputKeys.INDENT, "no"));
     }
 
     protected boolean isInlineTag(final String namespaceURI, final String localName) {

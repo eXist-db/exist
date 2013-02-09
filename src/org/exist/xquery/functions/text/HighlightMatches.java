@@ -82,20 +82,20 @@ public class HighlightMatches extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
         if (args[0].isEmpty())
-            return Sequence.EMPTY_SEQUENCE;
+            {return Sequence.EMPTY_SEQUENCE;}
         
-        FunctionReference func = (FunctionReference) args[1].itemAt(0);
+        final FunctionReference func = (FunctionReference) args[1].itemAt(0);
         
         context.pushDocumentContext();
         
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        ValueSequence result = new ValueSequence();
-        for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-            NodeValue v = (NodeValue) i.nextItem();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
+        final ValueSequence result = new ValueSequence();
+        for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+            final NodeValue v = (NodeValue) i.nextItem();
             if (v.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                 result.add(v);
             } else {
-                NodeProxy p = (NodeProxy) v;
+                final NodeProxy p = (NodeProxy) v;
                 processText(builder, p, result, func, args[2]);
             }
         }
@@ -106,8 +106,8 @@ public class HighlightMatches extends BasicFunction {
     private final void processText(MemTreeBuilder builder, NodeProxy proxy, Sequence result, 
             FunctionReference callback, Sequence extraArgs) 
     throws DOMException, XPathException {
-        TextImpl text = (TextImpl) proxy.getNode();
-        Match match = proxy.getMatches();
+        final TextImpl text = (TextImpl) proxy.getNode();
+        final Match match = proxy.getMatches();
         int nodeNr;
         if (match == null) {
             nodeNr = builder.characters(text.getXMLString());
@@ -118,8 +118,8 @@ public class HighlightMatches extends BasicFunction {
             while (next != null) {
                 if (next.getNodeId().equals(text.getNodeId())) {
                     if (offsets == null)
-                        offsets = new ArrayList<Match.Offset>();
-                    int freq = next.getFrequency();
+                        {offsets = new ArrayList<Match.Offset>();}
+                    final int freq = next.getFrequency();
                     for (int i = 0; i < freq; i++) {
                         offsets.add(next.getOffset(i));
                     }
@@ -130,16 +130,16 @@ public class HighlightMatches extends BasicFunction {
             if (offsets != null) {
                 FastQSort.sort(offsets, 0, offsets.size() - 1);
                 
-                XMLString str = text.getXMLString();
+                final XMLString str = text.getXMLString();
 
                 int pos = 0;
-                for (Match.Offset offset : offsets) {
+                for (final Match.Offset offset : offsets) {
                     if (offset.getOffset() > pos) {
                         nodeNr = builder.characters(str.substring(pos, offset.getOffset() - pos));
                         result.add(builder.getDocument().getNode(nodeNr));
                     }
                     
-                    Sequence params[] = { 
+                    final Sequence params[] = { 
                             new StringValue(str.substring(offset.getOffset(), offset.getLength())),
                             proxy,
                             extraArgs

@@ -121,7 +121,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         }
 
         int mode = 0;
-        for(char c : modeStr.toCharArray()) {
+        for(final char c : modeStr.toCharArray()) {
             switch(c) {
                 case READ_CHAR:
                     mode |= READ;
@@ -144,13 +144,13 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     private int lookupTargetId(ACE_TARGET target, String targetName) throws PermissionDeniedException {
         final int id;
         if(target == ACE_TARGET.USER) {
-            Account account = sm.getAccount(targetName);
+            final Account account = sm.getAccount(targetName);
             if(account == null) {
                 throw new PermissionDeniedException("User Account for username '" + targetName + "' is unknown.");
             }
             id = account.getId();
         } else if(target == ACE_TARGET.GROUP) {
-            Group group = sm.getGroup(targetName);
+            final Group group = sm.getGroup(targetName);
             if(group == null) {
                 throw new PermissionDeniedException("User Group for groupname '" + targetName + "' is unknown.");
             }
@@ -199,7 +199,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
             throw new PermissionDeniedException("ACL Entry does not exist");
         }
 
-        int ace = acl[index];
+        final int ace = acl[index];
         acl[index] = ((ace >>> 6) << 6) | (mode << 3) | access_type.getVal();
     }
 
@@ -238,7 +238,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     }
 
     public String getACEModeString(int index) {
-        int aceMode = getACEMode(index);
+        final int aceMode = getACEMode(index);
 
         final char ch[] = new char[] {
             (aceMode & READ) != READ ? UNSET_CHAR : READ_CHAR,
@@ -266,7 +266,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     @Override
     public void read(VariableByteInput istream) throws IOException {
         super.read(istream);
-        int aclLength = istream.read();
+        final int aclLength = istream.read();
         acl = new int[aclLength];
         for(int i = 0; i < aclLength; i++) {
             acl[i] = istream.readInt();
@@ -298,19 +298,19 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
             return true;
         }
         
-        int userId = user.getId();
-        int userGroupIds[] = user.getGroupIds();
+        final int userId = user.getId();
+        final int userGroupIds[] = user.getGroupIds();
         
         /*** START EXTENDED ACL VALIDATION ***/
         //exact encoding is [target(3),id(20),mode(3),access_type(3)]
 
         //check ACL
-        for(int ace : acl) {
+        for(final int ace : acl) {
 
-            int aceTarget = ace >>> 26;
-            int id = (ace >>> 6) & 1048575;
-            int aceMode = (ace >>> 3) & 7;
-            int accessType = ace & 7;
+            final int aceTarget = ace >>> 26;
+            final int id = (ace >>> 6) & 1048575;
+            final int aceMode = (ace >>> 3) & 7;
+            final int accessType = ace & 7;
 
             if((aceTarget & ACE_TARGET.USER.getVal()) == ACE_TARGET.USER.getVal()){
                 //check for a user
@@ -319,7 +319,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
                 }
             } else if((aceTarget & ACE_TARGET.GROUP.getVal()) == ACE_TARGET.GROUP.getVal()){
                 //check for a group
-                for(int userGroupId : userGroupIds) {
+                for(final int userGroupId : userGroupIds) {
                     if(userGroupId == id && (aceMode & mode) == mode) {
                         return(accessType == ACE_ACCESS_TYPE.ALLOWED.getVal());
                     }
@@ -339,8 +339,8 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
 
         //check group
         
-        int groupId = (int)((vector >>> 8) & 1048575);
-        for(int userGroupId : userGroupIds) {
+        final int groupId = (int)((vector >>> 8) & 1048575);
+        for(final int userGroupId : userGroupIds) {
             if(userGroupId == groupId) {
                 return (mode & ((vector >>> 4) & 7)) == mode;
             }

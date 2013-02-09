@@ -75,19 +75,19 @@ public class Rename extends Modification {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
 		
-		Sequence contentSeq = value.eval(contextSequence);
+		final Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.isEmpty())
-			throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+			{throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));}
         
-        Sequence inSeq = select.eval(contextSequence);
+        final Sequence inSeq = select.eval(contextSequence);
         
         //START trap Rename failure
         /* If we try and Rename a node at an invalid location,
@@ -101,8 +101,8 @@ public class Rename extends Modification {
         	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
-        	XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
+        	final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        	final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
         		prevUpdateErrors = new ValueSequence();
@@ -115,14 +115,14 @@ public class Rename extends Modification {
 			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
         	if(!inSeq.isEmpty())
-        		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
+        		{throw xpe;}	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Rename failure
         
         if (!inSeq.isEmpty()) {
                 
             QName newQName;
-            Item item = contentSeq.itemAt(0);
+            final Item item = contentSeq.itemAt(0);
             if (item.getType() == Type.QNAME) {
                 newQName = ((QNameValue) item).getQName();
             } else {
@@ -131,14 +131,14 @@ public class Rename extends Modification {
     
     		try {
                 //start a transaction
-                Txn transaction = getTransaction();
-                StoredNode[] ql = selectAndLock(transaction, inSeq);
+                final Txn transaction = getTransaction();
+                final StoredNode[] ql = selectAndLock(transaction, inSeq);
                 NodeImpl parent;
-                IndexListener listener = new IndexListener(ql);
-                NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+                final IndexListener listener = new IndexListener(ql);
+                final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 for (int i = 0; i < ql.length; i++) {
-                    StoredNode node = ql[i];
-                    DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                    final StoredNode node = ql[i];
+                    final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
                             throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
@@ -148,12 +148,12 @@ public class Rename extends Modification {
                     parent = (NodeImpl) node.getParentNode();
                     switch (node.getNodeType()) {
                         case Node.ELEMENT_NODE:
-                            ElementImpl newElem = new ElementImpl((ElementImpl) node);
+                            final ElementImpl newElem = new ElementImpl((ElementImpl) node);
                             newElem.setNodeName(newQName);
                             parent.updateChild(transaction, node, newElem);
                             break;
                         case Node.ATTRIBUTE_NODE:
-                            AttrImpl newAttr = new AttrImpl((AttrImpl) node);
+                            final AttrImpl newAttr = new AttrImpl((AttrImpl) node);
                             newAttr.setNodeName(newQName);
                             parent.updateChild(transaction, node, newAttr);
                             break;
@@ -171,13 +171,13 @@ public class Rename extends Modification {
                 
                 //commit the transaction
                 commitTransaction(transaction);
-            } catch (PermissionDeniedException e) {
+            } catch (final PermissionDeniedException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (EXistException e) {
+    		} catch (final EXistException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (LockException e) {
+    		} catch (final LockException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (TriggerException e) {
+    		} catch (final TriggerException e) {
                 throw new XPathException(this, e.getMessage(), e);
 			} finally {
                 unlockDocuments();
@@ -185,7 +185,7 @@ public class Rename extends Modification {
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
         
         return Sequence.EMPTY_SEQUENCE;
 	}
@@ -205,7 +205,7 @@ public class Rename extends Modification {
 	}
 	
 	public String toString() {
-		StringBuilder result = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
 		result.append("update rename ");		
 		result.append(select.toString());		
 		result.append(" as ");		

@@ -38,14 +38,14 @@ public abstract class AbstractCommandResolver implements CommandResolver {
 		Command cmd;
 		try {
 			cmd = commandClass.newInstance();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 			return;
 		}
 		
-		String[] names = cmd.getNames();
+		final String[] names = cmd.getNames();
 		
-		if (names == null) return; //TODO: report for debug
+		if (names == null) {return;} //TODO: report for debug
 		
 		for (int i = 0; i < names.length; i++ ) {
 			//TODO: check for conflicts
@@ -54,18 +54,18 @@ public abstract class AbstractCommandResolver implements CommandResolver {
 	}
 	
 	public Command getCommand(String name) throws CommandNotFoundException {
-		Command cmd = commands.get(name);
+		final Command cmd = commands.get(name);
 		
 		if (cmd == null)
-			throw new CommandNotFoundException("Command '"+name+"' not found.");
+			{throw new CommandNotFoundException("Command '"+name+"' not found.");}
 		
 		return cmd;
 	}
 	
 	public void execute(XmldbURI collection, String[] params) throws CommandException {
-		Command cmd = getCommand(params[0]);
+		final Command cmd = getCommand(params[0]);
 		
-    	String[] commandData = new String[params.length-1];
+    	final String[] commandData = new String[params.length-1];
     	System.arraycopy(params, 1, commandData, 0, params.length-1);
 
     	cmd.process(collection, commandData);

@@ -34,7 +34,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 	@Override
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 			throws XPathException {
-		FunctionReference newRef = createPartial(contextSequence, contextItem, function);
+		final FunctionReference newRef = createPartial(contextSequence, contextItem, function);
 		return newRef;
 	}
 
@@ -49,39 +49,39 @@ public class PartialFunctionApplication extends AbstractExpression {
 	}
 	
 	private FunctionReference createPartial(Sequence contextSequence, Item contextItem, FunctionCall staticCall) throws XPathException {
-		FunctionSignature signature = staticCall.getSignature();
-		SequenceType[] paramTypes = signature.getArgumentTypes();
+		final FunctionSignature signature = staticCall.getSignature();
+		final SequenceType[] paramTypes = signature.getArgumentTypes();
 		// the parameters of the newly created inline function:
 		// old params except the fixed ones
-		List<SequenceType> newParamTypes = new ArrayList<SequenceType>();
+		final List<SequenceType> newParamTypes = new ArrayList<SequenceType>();
 		// the arguments to pass to the inner call
-		List<Expression> callArgs = new ArrayList<Expression>();
+		final List<Expression> callArgs = new ArrayList<Expression>();
 		// parameter variables of the new inline function
-		List<QName> variables = new ArrayList<QName>();
+		final List<QName> variables = new ArrayList<QName>();
 		// the inline function
-		int argCount = staticCall.getArgumentCount();
+		final int argCount = staticCall.getArgumentCount();
 		for (int i = 0; i < argCount; i++) {
-			Expression param = staticCall.getArgument(i);
+			final Expression param = staticCall.getArgument(i);
 			if (param instanceof Function.Placeholder) {
 				// copy parameter sequence types
 				// overloaded functions like concat may have an arbitrary number of arguments
 				if (i < paramTypes.length)
-					newParamTypes.add(paramTypes[i]);
+					{newParamTypes.add(paramTypes[i]);}
 				else
 					// overloaded function: add last sequence type
-					newParamTypes.add(paramTypes[paramTypes.length - 1]);
+					{newParamTypes.add(paramTypes[paramTypes.length - 1]);}
 				// create local parameter variables
-				QName varName = new QName("vp" + i);
+				final QName varName = new QName("vp" + i);
 				variables.add(varName);
 				// the argument to the inner call is a variable ref
-				VariableReference ref = new VariableReference(context, varName.toString());
+				final VariableReference ref = new VariableReference(context, varName.toString());
 				callArgs.add(ref);
 			} else {
 				// fixed argument: just compute the argument value
 				try {
-					Sequence seq = param.eval(contextSequence, contextItem);
+					final Sequence seq = param.eval(contextSequence, contextItem);
 					callArgs.add(new PrecomputedValue(context, seq));
-				} catch (XPathException e) {
+				} catch (final XPathException e) {
 					if(e.getLine() <= 0) {
 						e.setLocation(line, column, getSource());
 					}
@@ -91,23 +91,23 @@ public class PartialFunctionApplication extends AbstractExpression {
 				}
 			}
 		}
-		SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
-		QName name = new QName(PARTIAL_FUN_PREFIX + hashCode());
-		FunctionSignature newSignature = new FunctionSignature(name, newParamArray, signature.getReturnType());
-		UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
+		final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
+		final QName name = new QName(PARTIAL_FUN_PREFIX + hashCode());
+		final FunctionSignature newSignature = new FunctionSignature(name, newParamArray, signature.getReturnType());
+		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
 		func.setLocation(staticCall.getLine(), staticCall.getColumn());
 		
 		// add the created parameter variables to the function
-		for (QName varName: variables) {
+		for (final QName varName: variables) {
 			func.addVariable(varName);
 		}
 		
-		FunctionCall innerCall = new FunctionCall(staticCall);
+		final FunctionCall innerCall = new FunctionCall(staticCall);
 		innerCall.setArguments(callArgs);
 		
 		func.setFunctionBody(innerCall);
 		
-		FunctionCall newCall = new FunctionCall(context, func);
+		final FunctionCall newCall = new FunctionCall(context, func);
 		newCall.setLocation(staticCall.getLine(), staticCall.getColumn());
 		return new FunctionReference(newCall);
 	}

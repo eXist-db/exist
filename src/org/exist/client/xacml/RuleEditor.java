@@ -18,7 +18,7 @@ public class RuleEditor extends PolicyElementEditor
 	}
 	protected ComboBoxModel getComboModel()
 	{
-		DefaultComboBoxModel model = new DefaultComboBoxModel();
+		final DefaultComboBoxModel model = new DefaultComboBoxModel();
 		model.addElement(PERMIT);
 		model.addElement(DENY);
 		return model;
@@ -29,33 +29,33 @@ public class RuleEditor extends PolicyElementEditor
 	}
 	public int getEffect()
 	{
-		String effect = (String)getSelectedItem();
+		final String effect = (String)getSelectedItem();
 		if(DENY.equals(effect))
-			return Result.DECISION_DENY;
+			{return Result.DECISION_DENY;}
 		if(PERMIT.equals(effect))
-			return Result.DECISION_PERMIT;
+			{return Result.DECISION_PERMIT;}
 		throw new IllegalStateException("Invalid effect: '" + effect + "'");
 	}
 	public void setNode(XACMLTreeNode treeNode)
 	{
 		if(!(treeNode instanceof RuleNode))
-			throw new IllegalArgumentException("RuleEditor can only edit RuleNodes");
+			{throw new IllegalArgumentException("RuleEditor can only edit RuleNodes");}
 		
-		RuleNode node = (RuleNode)treeNode;
+		final RuleNode node = (RuleNode)treeNode;
 		super.setNode(node);
-		int effect = node.getEffect();
+		final int effect = node.getEffect();
 		if(effect == Result.DECISION_DENY)
-			setSelectedItem(DENY);
+			{setSelectedItem(DENY);}
 		else if(effect == Result.DECISION_PERMIT)
-			setSelectedItem(PERMIT);
+			{setSelectedItem(PERMIT);}
 		else
-			throw new IllegalArgumentException("Unknown effect for rule '" + getId() + "'");
+			{throw new IllegalArgumentException("Unknown effect for rule '" + getId() + "'");}
 	}
 
 	public void pushChanges()
 	{
 		super.pushChanges();
-		int effect = getEffect();
+		final int effect = getEffect();
 		((RuleNode)node).setEffect(effect);
 	}
 }

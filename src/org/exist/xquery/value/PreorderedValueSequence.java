@@ -52,8 +52,8 @@ public class PreorderedValueSequence extends AbstractSequence {
 		this.orderSpecs = specs;
 		nodes = new OrderedNodeProxy[input.getItemCount()];
 		int j = 0;
-		for(SequenceIterator i = input.unorderedIterator(); i.hasNext(); j++) {
-			NodeProxy p = (NodeProxy)i.nextItem();
+		for(final SequenceIterator i = input.unorderedIterator(); i.hasNext(); j++) {
+			final NodeProxy p = (NodeProxy)i.nextItem();
 			nodes[j] = new OrderedNodeProxy(p);
 			p.addContextNode(contextId, nodes[j]);
 		}
@@ -62,15 +62,15 @@ public class PreorderedValueSequence extends AbstractSequence {
 	
 	private void processAll() throws XPathException {
 		for(int i = 0; i < orderSpecs.length; i++) {
-			Expression expr = orderSpecs[i].getSortExpression();
-			NodeSet result = expr.eval(null).toNodeSet();
-			for(Iterator j = result.iterator(); j.hasNext(); ) {
-				NodeProxy p = (NodeProxy)j.next();
+			final Expression expr = orderSpecs[i].getSortExpression();
+			final NodeSet result = expr.eval(null).toNodeSet();
+			for(final Iterator j = result.iterator(); j.hasNext(); ) {
+				final NodeProxy p = (NodeProxy)j.next();
 				ContextItem context = p.getContext();
 				//TODO : review to consider transverse context
 				while(context != null) {
 					if(context.getNode() instanceof OrderedNodeProxy) {
-						OrderedNodeProxy cp = (OrderedNodeProxy)context.getNode();
+						final OrderedNodeProxy cp = (OrderedNodeProxy)context.getNode();
 						cp.values[i] = p.atomize();
 					}
 					context = context.getNextDirect();
@@ -171,21 +171,21 @@ public class PreorderedValueSequence extends AbstractSequence {
 					b = p2.values[i];
 					if(a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
 						if((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = Constants.INFERIOR;
+							{cmp = Constants.INFERIOR;}
 						else
-							cmp = Constants.SUPERIOR;
+							{cmp = Constants.SUPERIOR;}
 					} else if(a != AtomicValue.EMPTY_VALUE && b == AtomicValue.EMPTY_VALUE) {
 						if((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = Constants.SUPERIOR;
+							{cmp = Constants.SUPERIOR;}
 						else
-							cmp = Constants.INFERIOR;
+							{cmp = Constants.INFERIOR;}
 					} else
-						cmp = a.compareTo(orderSpecs[i].getCollator(), b);
+						{cmp = a.compareTo(orderSpecs[i].getCollator(), b);}
 					if((orderSpecs[i].getModifiers() & OrderSpec.DESCENDING_ORDER) != 0)
-						cmp = cmp * -1;
+						{cmp = cmp * -1;}
 					if(cmp != Constants.EQUAL)
-						break;
-				} catch (XPathException e) {
+						{break;}
+				} catch (final XPathException e) {
 				}
 			}
 			return cmp;
@@ -220,7 +220,7 @@ public class PreorderedValueSequence extends AbstractSequence {
 		 */
 		public Item nextItem() {
 			if(pos < nodes.length)
-				return nodes[pos++];
+				{return nodes[pos++];}
 			return null;
 		}
 	}

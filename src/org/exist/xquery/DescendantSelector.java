@@ -42,14 +42,14 @@ public class DescendantSelector implements NodeSelector {
     }
 
     public NodeProxy match(DocumentImpl doc, NodeId nodeId) {
-        NodeProxy p = new NodeProxy(doc, nodeId);
-        NodeProxy contextNode = context.parentWithChild(doc, nodeId, false, false);
+        final NodeProxy p = new NodeProxy(doc, nodeId);
+        final NodeProxy contextNode = context.parentWithChild(doc, nodeId, false, false);
         if (contextNode == null)
-            return null;
+            {return null;}
         if (Expression.NO_CONTEXT_ID != contextId) {
             p.deepCopyContext(contextNode, contextId);
         } else
-            p.copyContext(contextNode);
+            {p.copyContext(contextNode);}
         return p;
     }
 }

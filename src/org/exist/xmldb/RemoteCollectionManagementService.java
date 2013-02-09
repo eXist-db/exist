@@ -61,7 +61,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public Collection createCollection( String collName, Date created ) throws XMLDBException {
     	try{
     		return createCollection(XmldbURI.xmldbUriFor(collName), created);
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
@@ -123,20 +123,20 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void removeCollection( String collName ) throws XMLDBException {
     	try{
     		removeCollection(XmldbURI.xmldbUriFor(collName));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
     
     public void removeCollection( XmldbURI collName ) throws XMLDBException {
         if (parent != null)
-        	collName = parent.getPathURI().resolveCollectionPath(collName);
+        	{collName = parent.getPathURI().resolveCollectionPath(collName);}
 
-        List<Object> params = new ArrayList<Object>(1);
+        final List<Object> params = new ArrayList<Object>(1);
         params.add( collName.toString() );
         try {
             client.execute( "removeCollection", params );
-        } catch ( XmlRpcException xre ) {
+        } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
@@ -158,7 +158,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             String newName) throws XMLDBException {
     	try{
     		move(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
@@ -173,13 +173,13 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         if(newName == null) {
             newName = collectionPath.lastSegment();
         }
-       List<Object> params = new ArrayList<Object>(1);
+       final List<Object> params = new ArrayList<Object>(1);
         params.add( collectionPath.toString() );
         params.add( destinationPath.toString() );
         params.add( newName.toString() );
         try {
             client.execute( "moveCollection", params );
-        } catch ( XmlRpcException xre ) {
+        } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
@@ -193,7 +193,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             String newName) throws XMLDBException {
     	try{
     		moveResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
@@ -201,20 +201,20 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     		throws XMLDBException { 
     	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
 	if (destinationPath == null)
-	    destinationPath = resourcePath.removeLastSegment();
+	    {destinationPath = resourcePath.removeLastSegment();}
     	else
-	    destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+	    {destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);}
         if(newName == null) {
             newName = resourcePath.lastSegment();
         }
 
-        List<Object> params = new ArrayList<Object>(1);
+        final List<Object> params = new ArrayList<Object>(1);
         params.add( resourcePath.toString() );
         params.add( destinationPath.toString() );
         params.add( newName.toString() );
         try {
             client.execute( "moveResource", params );
-        } catch ( XmlRpcException xre ) {
+        } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
@@ -228,7 +228,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             String newName) throws XMLDBException {
     	try{
     		copy(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
@@ -244,13 +244,13 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             newName = collectionPath.lastSegment();
         }
 
-        List<Object> params = new ArrayList<Object>(1);
+        final List<Object> params = new ArrayList<Object>(1);
         params.add( collectionPath.toString() );
         params.add( destinationPath.toString() );
         params.add( newName.toString() );
         try {
             client.execute( "copyCollection", params );
-        } catch ( XmlRpcException xre ) {
+        } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
@@ -264,7 +264,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
             String newName) throws XMLDBException {
     	try{
     		copyResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
-    	} catch(URISyntaxException e) {
+    	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
@@ -273,19 +273,19 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     		throws XMLDBException { 
     	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
     	if (destinationPath == null)
-	    destinationPath = resourcePath.removeLastSegment();
+	    {destinationPath = resourcePath.removeLastSegment();}
     	else
-	    destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+	    {destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);}
         if(newName == null) {
             newName = resourcePath.lastSegment();
         }
-        List<Object> params = new ArrayList<Object>(1);
+        final List<Object> params = new ArrayList<Object>(1);
         params.add( resourcePath.toString() );
         params.add( destinationPath.toString() );
         params.add( newName.toString() );
         try {
             client.execute( "copyResource", params );
-        } catch ( XmlRpcException xre ) {
+        } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );
@@ -293,12 +293,12 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     }
     
 	public void runCommand(String[] params) throws XMLDBException {
-        List<Object> _params_ = new ArrayList<Object>(params.length+1);
+        final List<Object> _params_ = new ArrayList<Object>(params.length+1);
         _params_.add(parent.getPathURI());
        	_params_.add( params );
         try {
             client.execute( "runCommand", _params_ );
-        } catch ( XmlRpcException xre ) {
+        } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 xre.getMessage(),
                 xre );

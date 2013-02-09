@@ -52,8 +52,8 @@ public class IndexController {
 
     public IndexController(DBBroker broker) {
         this.broker = broker;
-        List<IndexWorker> workers = broker.getBrokerPool().getIndexManager().getWorkers(broker);
-        for (IndexWorker worker : workers) {
+        final List<IndexWorker> workers = broker.getBrokerPool().getIndexManager().getWorkers(broker);
+        for (final IndexWorker worker : workers) {
             indexWorkers.put(worker.getIndexId(), worker);
         }
     }
@@ -77,12 +77,12 @@ public class IndexController {
      * @throws DatabaseConfigurationException if a configuration error occurs
      */
     public Map<String, Object> configure(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
-        Map<String, Object> map = new HashMap<String, Object>();
+        final Map<String, Object> map = new HashMap<String, Object>();
         Object conf;
-        for (IndexWorker indexWorker : indexWorkers.values()) {
+        for (final IndexWorker indexWorker : indexWorkers.values()) {
             conf = indexWorker.configure(this, configNodes, namespaces);
             if (conf != null)
-                map.put(indexWorker.getIndexId(), conf);
+                {map.put(indexWorker.getIndexId(), conf);}
         }
         return map;
     }
@@ -108,9 +108,9 @@ public class IndexController {
      * @return instance of index worker
      */    
     public IndexWorker getWorkerByIndexName(String indexName) {
-        for (IndexWorker worker : indexWorkers.values()) {
+        for (final IndexWorker worker : indexWorkers.values()) {
             if (indexName.equals(worker.getIndexName()))
-                return worker;
+                {return worker;}
         }
         return null;
     }
@@ -123,9 +123,9 @@ public class IndexController {
     public void setDocument(DocumentImpl doc) {
         if (currentDoc != doc)
             //Reset listener
-            listener = null;
+            {listener = null;}
         currentDoc = doc;
-        for (IndexWorker indexWorker : indexWorkers.values()) {
+        for (final IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.setDocument(currentDoc);
         }
     }
@@ -139,9 +139,9 @@ public class IndexController {
     public void setMode(int mode) {
         if (currentMode != mode)
             //Reset listener
-            listener = null;
+            {listener = null;}
         currentMode = mode;
-        for (IndexWorker indexWorker : indexWorkers.values()) {
+        for (final IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.setMode(currentMode);
         }
     }
@@ -180,7 +180,7 @@ public class IndexController {
      * Flushes all index workers.
      */
     public void flush() {
-        for (IndexWorker indexWorker : indexWorkers.values()) {
+        for (final IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.flush();
         }
     }  
@@ -193,7 +193,7 @@ public class IndexController {
      */
     public void removeCollection(Collection collection, DBBroker broker)
             throws PermissionDeniedException {
-        for (IndexWorker indexWorker : indexWorkers.values()) {
+        for (final IndexWorker indexWorker : indexWorkers.values()) {
             indexWorker.removeCollection(collection, broker);
         }
     }
@@ -208,7 +208,7 @@ public class IndexController {
      */
     public void reindex(Txn transaction, StoredNode reindexRoot, int mode) {
         if (reindexRoot == null)
-            return;
+            {return;}
         reindexRoot = broker.objectWith(new NodeProxy(reindexRoot.getDocument(), reindexRoot.getNodeId()));
         setDocument(reindexRoot.getDocument(), mode);
         getStreamListener();
@@ -245,13 +245,13 @@ public class IndexController {
      */
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
         StoredNode next, top = null;
-        for (IndexWorker indexWorker : indexWorkers.values()) {
+        for (final IndexWorker indexWorker : indexWorkers.values()) {
             next = indexWorker.getReindexRoot(node, path, includeSelf);
             if (next != null && (top == null || top.getNodeId().isDescendantOf(next.getNodeId())))
-                top = next;
+                {top = next;}
         }
         if (top != null && top.getNodeId().equals(node.getNodeId()))
-            top = node;
+            {top = node;}
         return top;
     }
 
@@ -276,7 +276,7 @@ public class IndexController {
         }
         StreamListener first = null;
         StreamListener current, previous = null;
-        for (IndexWorker worker : indexWorkers.values()) {
+        for (final IndexWorker worker : indexWorkers.values()) {
             // wolf: setDocument() should have been called before
             //worker.setDocument(currentDoc, currentMode);
             current = worker.getListener();
@@ -284,10 +284,10 @@ public class IndexController {
                 first = current;
             } else {
                 if (current != null)
-                    previous.setNextInChain(current);
+                    {previous.setNextInChain(current);}
             }
             if (current != null)
-                previous = current;
+                {previous = current;}
         }
         listener = first;
         return listener;
@@ -328,7 +328,7 @@ public class IndexController {
      */
     public void startElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
-           listener.startElement(transaction, node, path);
+           {listener.startElement(transaction, node, path);}
     }
 
     /**
@@ -341,7 +341,7 @@ public class IndexController {
      */
     public void endElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
-            listener.endElement(transaction, node, path);
+            {listener.endElement(transaction, node, path);}
     }
 
     /**
@@ -354,7 +354,7 @@ public class IndexController {
      */     
     public void attribute(Txn transaction, AttrImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
-            listener.attribute(transaction, node, path);
+            {listener.attribute(transaction, node, path);}
     }
 
     /**
@@ -367,7 +367,7 @@ public class IndexController {
      */    
     public void characters(Txn transaction, TextImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
-            listener.characters(transaction, node, path);
+            {listener.characters(transaction, node, path);}
     }
 
     /**
@@ -379,7 +379,7 @@ public class IndexController {
     public MatchListener getMatchListener(NodeProxy proxy) {
         MatchListener first = null;
         MatchListener current, previous = null;
-        for (IndexWorker worker : indexWorkers.values()) {
+        for (final IndexWorker worker : indexWorkers.values()) {
             current = worker.getMatchListener(broker, proxy);
             if (current != null) {
                 if (first == null) {

@@ -48,7 +48,7 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
 
     @Override
     public void prepare(int event, DBBroker broker, Txn txn, Collection collection, Collection newCollection) throws TriggerException {
-        for(CollectionTrigger trigger : getTriggers()) {
+        for(final CollectionTrigger trigger : getTriggers()) {
             trigger.prepare(event, broker, txn, collection, newCollection);
         }
     }
@@ -56,66 +56,66 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
     @Override
     public void finish(int event, DBBroker broker, Txn txn, Collection collection, Collection newCollection) {
         try {
-            for(CollectionTrigger trigger : getTriggers()) {
+            for(final CollectionTrigger trigger : getTriggers()) {
                 trigger.finish(event, broker, txn, collection, newCollection);
             }
-        } catch (TriggerException te) {
+        } catch (final TriggerException te) {
             LOG.error(te.getMessage(), te);
         }
     }
 
     @Override
     public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
-        for(CollectionTrigger trigger : getTriggers()) {
+        for(final CollectionTrigger trigger : getTriggers()) {
             trigger.beforeCreateCollection(broker, txn, uri);
         }
     }
 
     @Override
     public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
-        for(CollectionTrigger trigger : getTriggers()) {
+        for(final CollectionTrigger trigger : getTriggers()) {
             trigger.afterCreateCollection(broker, txn, collection);
         }
     }
 
     @Override
     public void beforeCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
-        for(CollectionTrigger trigger : getTriggers()) {
+        for(final CollectionTrigger trigger : getTriggers()) {
             trigger.beforeCopyCollection(broker, txn, collection, newUri);
         }
     }
 
     @Override
     public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
-        for(CollectionTrigger trigger : getTriggers()) {
+        for(final CollectionTrigger trigger : getTriggers()) {
             trigger.afterCopyCollection(broker, txn, collection, oldUri);
         }
     }
 
     @Override
     public void beforeMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
-        for(CollectionTrigger trigger : getTriggers()) {
+        for(final CollectionTrigger trigger : getTriggers()) {
             trigger.beforeMoveCollection(broker, txn, collection, newUri);
         }
     }
 
     @Override
     public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
-        for(CollectionTrigger trigger : getTriggers()) {
+        for(final CollectionTrigger trigger : getTriggers()) {
             trigger.afterMoveCollection(broker, txn, collection, oldUri);
         }
     }
 
     @Override
     public void beforeDeleteCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
-        for(CollectionTrigger trigger : getTriggers()) {
+        for(final CollectionTrigger trigger : getTriggers()) {
             trigger.beforeDeleteCollection(broker, txn, collection);
         }
     }
 
     @Override
     public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
-        for(CollectionTrigger trigger : getTriggers()) {
+        for(final CollectionTrigger trigger : getTriggers()) {
             trigger.afterDeleteCollection(broker, txn, uri);
         }
     }

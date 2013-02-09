@@ -34,7 +34,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
         //TODO temporary approach, consider implementing a TranscodingBinaryValueFromBinaryString(BinaryValueFromBinaryString) class
         //that only does the transncoding lazily
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         FilterOutputStream fos = null;
         try {
 
@@ -42,20 +42,20 @@ public class BinaryValueFromBinaryString extends BinaryValue {
             fos = binaryValueType.getEncoder(baos);
             streamBinaryTo(fos);
 
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             throw new XPathException(ioe);
         } finally {
             if(fos != null) {
                 try {
                     fos.close();
-                } catch(IOException ioe) {
+                } catch(final IOException ioe) {
                     LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
                 }
             }
 
             try {
                 baos.close();
-            } catch(IOException ioe) {
+            } catch(final IOException ioe) {
                 LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
             }
         }
@@ -67,13 +67,13 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     public void streamBinaryTo(OutputStream os) throws IOException {
         
         //we need to create a safe output stream that cannot be closed
-        OutputStream safeOutputStream = new CloseShieldOutputStream(os);
+        final OutputStream safeOutputStream = new CloseShieldOutputStream(os);
         
         //get the decoder
-        FilterOutputStream fos = getBinaryValueType().getDecoder(safeOutputStream);
+        final FilterOutputStream fos = getBinaryValueType().getDecoder(safeOutputStream);
         
         //write with the decoder
-        byte data[] = value.getBytes();
+        final byte data[] = value.getBytes();
         fos.write(data);
         
         //we do have to close the decoders output stream though
@@ -81,7 +81,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
         //particularly nessecary for Apache Commons Codec stream encoders
         try {
             fos.close();
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             LOG.error("Unable to close stream: " + ioe.getMessage(), ioe);
         }
     }
@@ -89,7 +89,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     @Override
     public void streamTo(OutputStream os) throws IOException {
         //write
-        byte data[] = value.getBytes(); //TODO consider a more efficient approach for writting large strings
+        final byte data[] = value.getBytes(); //TODO consider a more efficient approach for writting large strings
         os.write(data);
     }
 
@@ -101,7 +101,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
 
         try {
             streamBinaryTo(baos);
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             LOG.error("Unable to get read only buffer: " + ioe.getMessage(), ioe);
         }
 

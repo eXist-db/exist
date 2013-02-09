@@ -85,7 +85,7 @@ public class CDATASectionImpl extends CharacterDataImpl implements CDATASection 
     @Override
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
-        byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
+        final byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
             nodeIdLen + cdata.UTF8Size());
         int pos = 0;
         data[pos] = (byte) ( Signatures.Cdata << 0x5 );
@@ -105,12 +105,12 @@ public class CDATASectionImpl extends CharacterDataImpl implements CDATASection 
             boolean pooled) {
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;
-        int dlnLen = ByteConversion.byteToShort(data, pos);
+        final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);        
+        final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);        
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
-        CDATASectionImpl cdata = new CDATASectionImpl(dln);
+        final CDATASectionImpl cdata = new CDATASectionImpl(dln);
         cdata.cdata = UTF8.decode(data, pos, len - (pos - start));
         return cdata;
     }

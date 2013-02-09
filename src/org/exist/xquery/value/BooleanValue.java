@@ -117,13 +117,13 @@ public class BooleanValue extends AtomicValue {
 	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		boolean otherVal = other.effectiveBooleanValue();
+		final boolean otherVal = other.effectiveBooleanValue();
 		if (otherVal == value)
-			return Constants.EQUAL;
+			{return Constants.EQUAL;}
 		else if (value)
-			return Constants.SUPERIOR;
+			{return Constants.SUPERIOR;}
 		else
-			return Constants.INFERIOR;
+			{return Constants.INFERIOR;}
 	}
 
 	/* (non-Javadoc)
@@ -145,29 +145,29 @@ public class BooleanValue extends AtomicValue {
 			boolean otherValue = ((BooleanValue) other).value;
 			return value && (!otherValue) ? this : other;
 		} else
-			throw new XPathException(
+			{throw new XPathException(
 				"Invalid argument to aggregate function: expected boolean, got: "
-					+ Type.getTypeName(other.getType()));
+					+ Type.getTypeName(other.getType()));}
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.BOOLEAN) {
-			boolean otherValue = ((BooleanValue) other).value;
+			final boolean otherValue = ((BooleanValue) other).value;
 			return (!value) && otherValue ? this : other;
 		} else
-			throw new XPathException(
+			{throw new XPathException(
 				"Invalid argument to aggregate function: expected boolean, got: "
-					+ Type.getTypeName(other.getType()));
+					+ Type.getTypeName(other.getType()));}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
 	 */
 	public int conversionPreference(Class<?> javaClass) {
-		if(javaClass.isAssignableFrom(BooleanValue.class)) return 0;
-		if(javaClass == Boolean.class || javaClass == boolean.class) return 1;
-		if(javaClass == Object.class) return 20;
-		if(javaClass == String.class || javaClass == CharSequence.class) return 2;
+		if(javaClass.isAssignableFrom(BooleanValue.class)) {return 0;}
+		if(javaClass == Boolean.class || javaClass == boolean.class) {return 1;}
+		if(javaClass == Object.class) {return 20;}
+		if(javaClass == String.class || javaClass == CharSequence.class) {return 2;}
 		
 		return Integer.MAX_VALUE;
 	}
@@ -197,19 +197,19 @@ public class BooleanValue extends AtomicValue {
         final AtomicValue other = (AtomicValue)o;
         if(Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
             if(value == ((BooleanValue)other).value)
-                return Constants.EQUAL;
+                {return Constants.EQUAL;}
             else if(value)
-                return Constants.SUPERIOR;
+                {return Constants.SUPERIOR;}
             else
-                return Constants.INFERIOR;
+                {return Constants.INFERIOR;}
         } else
-            return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
+            {return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;}
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof BooleanValue)
-            return value == ((BooleanValue)obj).value;
+            {return value == ((BooleanValue)obj).value;}
         return false;
     }
 }

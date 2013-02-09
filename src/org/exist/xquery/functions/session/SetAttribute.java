@@ -85,10 +85,10 @@ public class SetAttribute extends Function
 			}
         }
         
-		SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
+		final SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
 
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+		final Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
 		
 		if( var == null || var.getValue() == null ) {
 			// No saved session, so create one
@@ -100,8 +100,8 @@ public class SetAttribute extends Function
 		}
 		
 		// get attribute name parameter
-		String attribName = getArgument(0).eval( contextSequence, contextItem ).getStringValue();
-		Sequence attribValue = getArgument(1).eval( contextSequence, contextItem) ;
+		final String attribName = getArgument(0).eval( contextSequence, contextItem ).getStringValue();
+		final Sequence attribValue = getArgument(1).eval( contextSequence, contextItem) ;
 		
 		if( session.getObject() instanceof SessionWrapper ) {
 			((SessionWrapper)session.getObject()).setAttribute (attribName, attribValue );

@@ -65,7 +65,7 @@ public class ExtNear extends ExtFulltext {
      * @see org.exist.xquery.functions.ExtFulltext#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
         super.analyze(newContextInfo);
         if (maxDistance != null) {
             maxDistance.analyze(newContextInfo);
@@ -77,7 +77,7 @@ public class ExtNear extends ExtFulltext {
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext)
             throws XPathException {
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         //The expression can be called multiple times, so we need to
         //clear the previous preselectResult
         preselectResult = null;
@@ -88,15 +88,15 @@ public class ExtNear extends ExtFulltext {
             min_distance = ((IntegerValue) minDistance.eval(contextSequence).convertTo(Type.INTEGER)).getInt();
         }
         //Get the search terms
-        String arg = searchTerm.eval(contextSequence).getStringValue();
+        final String arg = searchTerm.eval(contextSequence).getStringValue();
         String[] terms;
         try {
             terms = getSearchTerms(arg);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XPathException(e.getMessage());
         }
         //Lookup the terms in the full-text index. returns one node set for each term
-        NodeSet[] hits = getMatches(contextSequence.getDocumentSet(),
+        final NodeSet[] hits = getMatches(contextSequence.getDocumentSet(),
                 useContext ? contextSequence.toNodeSet() : null,
                 NodeSet.DESCENDANT, contextQName, terms);
         //Walk through the matches and compute the combined node set
@@ -120,8 +120,8 @@ public class ExtNear extends ExtFulltext {
                 exactMatch(context, terms, preselectResult));
         }
         if (context.getProfiler().traceFunctions())
-            context.getProfiler().traceIndexUsage(context, FTIndex.ID, this,
-                PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
+            {context.getProfiler().traceIndexUsage(context, FTIndex.ID, this,
+                PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);}
         return preselectResult;
     }
 
@@ -135,14 +135,14 @@ public class ExtNear extends ExtFulltext {
         String[] terms;
         try {
             terms = getSearchTerms(searchArg);
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             throw new XPathException(e.getMessage());
         }
-        NodeSet hits = processQuery(terms, nodes);
+        final NodeSet hits = processQuery(terms, nodes);
         if (hits == null)
-            return Sequence.EMPTY_SEQUENCE;
+            {return Sequence.EMPTY_SEQUENCE;}
         if (terms.length == 1)
-            return hits;
+            {return hits;}
         boolean hasWildcards = false;
         for (int i = 0; i < terms.length; i++) {
             hasWildcards |= NativeTextEngine.containsWildcards(terms[i]);
@@ -152,11 +152,11 @@ public class ExtNear extends ExtFulltext {
 
     private Sequence exactMatch(XQueryContext context, String[] terms, NodeSet result) {
         //Walk through hits and calculate term-distances
-        NodeSet r = new ExtArrayNodeSet();
+        final NodeSet r = new ExtArrayNodeSet();
         final Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
         String term;
-        for (NodeProxy current : result) {
-            String value = current.getNodeValueSeparated();
+        for (final NodeProxy current : result) {
+            final String value = current.getNodeValueSeparated();
             tok.setText(value);
             int j = 0;
             if (j < terms.length) {
@@ -167,7 +167,7 @@ public class ExtNear extends ExtFulltext {
             int current_distance = -1;
             TextToken token;
             while ((token = tok.nextToken()) != null) {
-                String word = token.getText().toLowerCase();
+                final String word = token.getText().toLowerCase();
                 if (current_distance > max_distance) {
                     // reset
                     j = 0;
@@ -175,7 +175,7 @@ public class ExtNear extends ExtFulltext {
                     current_distance = -1;
                 } //That else would cause some words to be ignored in the matching
                 if (word.equalsIgnoreCase(term)) {
-                    boolean withIn = current_distance >= min_distance;
+                    final boolean withIn = current_distance >= min_distance;
                     current_distance = 0;
                     j++;
                     if (j == terms.length) {
@@ -206,24 +206,24 @@ public class ExtNear extends ExtFulltext {
     private Sequence patternMatch(XQueryContext context, String[] terms,
             NodeSet result) throws XPathException {
         //Generate list of search term patterns
-        Pattern patterns[] = new Pattern[terms.length];
-        Matcher matchers[] = new Matcher[terms.length];
+        final Pattern patterns[] = new Pattern[terms.length];
+        final Matcher matchers[] = new Matcher[terms.length];
         for (int i = 0; i < patterns.length; i++) {
             try {
                 patterns[i] = Pattern.compile(GlobToRegex.globToRegexp(terms[i]), 
                         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 matchers[i] = patterns[i].matcher("");
-            } catch (PatternSyntaxException e) {
+            } catch (final PatternSyntaxException e) {
                 throw new XPathException("Malformed pattern: " + patterns[i]);
             }
         }
         //Walk through hits and calculate term-distances
-        ExtArrayNodeSet r = new ExtArrayNodeSet(100);
-        Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
+        final ExtArrayNodeSet r = new ExtArrayNodeSet(100);
+        final Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
         Matcher matcher;
         TextToken token;
-        for (NodeProxy current : result) {
-            String value = current.getNodeValueSeparated();
+        for (final NodeProxy current : result) {
+            final String value = current.getNodeValueSeparated();
             tok.setText(value);
             int j = 0;
             if (j < patterns.length) {
@@ -233,7 +233,7 @@ public class ExtNear extends ExtFulltext {
             }
             int current_distance = -1;
             while ((token = tok.nextToken()) != null) {
-                String word = token.getText().toLowerCase();
+                final String word = token.getText().toLowerCase();
                 if (current_distance > max_distance) {
                     //Reset
                     j = 0;
@@ -243,7 +243,7 @@ public class ExtNear extends ExtFulltext {
                 matcher.reset(word);
                 matchers[0].reset(word);
                 if (matcher.matches()) {
-                    boolean withIn = current_distance >= min_distance ? true : false;
+                    final boolean withIn = current_distance >= min_distance ? true : false;
                     current_distance = 0;
                     j++;
                     if (j == patterns.length) {
@@ -284,7 +284,7 @@ public class ExtNear extends ExtFulltext {
     }
 
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("near(");
         buf.append(path);
         buf.append(", ");

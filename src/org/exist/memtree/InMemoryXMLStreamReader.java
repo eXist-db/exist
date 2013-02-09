@@ -146,7 +146,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
             throw( new XMLStreamException( "parser must be on START_ELEMENT to read next text" ) );
         }
         int          eventType = next();
-        StringBuffer content   = new StringBuffer();
+        final StringBuffer content   = new StringBuffer();
 
         while( eventType != END_ELEMENT ) {
 
@@ -216,15 +216,15 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
 
     public String getAttributeValue( String namespaceURI, String localName )
     {
-        int attrCount = doc.getAttributesCountFor( currentNode );
+        final int attrCount = doc.getAttributesCountFor( currentNode );
 
         if( attrCount == 0 ) {
             return( null );
         }
-        int attrStart = doc.alpha[currentNode];
+        final int attrStart = doc.alpha[currentNode];
 
         for( int i = 0; i < attrCount; i++ ) {
-            org.exist.dom.QName qname = doc.attrName[attrStart + i];
+            final org.exist.dom.QName qname = doc.attrName[attrStart + i];
 
             if( (namespaceURI == null || namespaceURI.equals( qname.getNamespaceURI() )) && localName.equals( qname.getLocalName() ) ) {
                 return( doc.attrValue[attrStart + i] );
@@ -252,7 +252,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         if( index > getAttributeCount() ) {
             throw( new ArrayIndexOutOfBoundsException( "bad attribute index" ) );
         }
-        int attr = doc.alpha[currentNode];
+        final int attr = doc.alpha[currentNode];
         return( doc.attrName[attr + index] );
     }
 
@@ -300,7 +300,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
             throw( new ArrayIndexOutOfBoundsException( "bad attribute index" ) );
         }
         doc.expand();
-        int attr = doc.alpha[currentNode];
+        final int attr = doc.alpha[currentNode];
         return( doc.attrNodeId[attr + index] );
     }
 
@@ -314,8 +314,8 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         if( index > getAttributeCount() ) {
             throw( new ArrayIndexOutOfBoundsException( "bad attribute index" ) );
         }
-        int attr = doc.alpha[currentNode];
-        int type = doc.attrType[attr + index];
+        final int attr = doc.alpha[currentNode];
+        final int type = doc.attrType[attr + index];
 
         switch( type ) {
 
@@ -347,7 +347,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         if( index > getAttributeCount() ) {
             throw( new ArrayIndexOutOfBoundsException( "bad attribute index" ) );
         }
-        int attr = doc.alpha[currentNode];
+        final int attr = doc.alpha[currentNode];
         return( doc.attrValue[attr + index] );
     }
 
@@ -375,8 +375,8 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         if( index > getNamespaceCount() ) {
             throw( new ArrayIndexOutOfBoundsException( "bad namespace index" ) );
         }
-        int                 ns      = doc.alphaLen[currentNode];
-        org.exist.dom.QName nsQName = doc.namespaceCode[ns + index];
+        final int                 ns      = doc.alphaLen[currentNode];
+        final org.exist.dom.QName nsQName = doc.namespaceCode[ns + index];
         return( nsQName.getLocalName() );
     }
 
@@ -386,8 +386,8 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         if( index > getNamespaceCount() ) {
             throw( new ArrayIndexOutOfBoundsException( "bad namespace index" ) );
         }
-        int                 ns      = doc.alphaLen[currentNode];
-        org.exist.dom.QName nsQName = doc.namespaceCode[ns + index];
+        final int                 ns      = doc.alphaLen[currentNode];
+        final org.exist.dom.QName nsQName = doc.namespaceCode[ns + index];
         return( nsQName.getNamespaceURI() );
     }
 
@@ -415,7 +415,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
 
     public char[] getTextCharacters()
     {
-        char[] ch = new char[doc.alphaLen[currentNode]];
+        final char[] ch = new char[doc.alphaLen[currentNode]];
         System.arraycopy( doc.characters, doc.alpha[currentNode], ch, 0, ch.length );
         return( ch );
     }
@@ -522,7 +522,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
 
     public String getPITarget()
     {
-        org.exist.dom.QName qn = doc.nodeName[currentNode];
+        final org.exist.dom.QName qn = doc.nodeName[currentNode];
         return( ( qn != null ) ? qn.getLocalName() : null );
     }
 

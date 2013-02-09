@@ -43,28 +43,28 @@ public class OpOr extends LogicalOp {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
         if (getLength() == 0)
-            return Sequence.EMPTY_SEQUENCE;
+            {return Sequence.EMPTY_SEQUENCE;}
         if (contextItem != null)
-            contextSequence = contextItem.toSequence();
+            {contextSequence = contextItem.toSequence();}
         boolean doOptimize = optimize;
         if (contextSequence != null && !contextSequence.isPersistentSet())
-            doOptimize = false;
+            {doOptimize = false;}
         Sequence result;
-        Expression left = getLeft();
-        Expression right = getRight();
-        Sequence ls = left.eval(contextSequence, null);
+        final Expression left = getLeft();
+        final Expression right = getRight();
+        final Sequence ls = left.eval(contextSequence, null);
         // first check if left operand is a persistent set
         doOptimize = doOptimize && (ls.isPersistentSet() || ls.isEmpty());
         if (doOptimize) {
             // yes: try to optimize by looking at right operand
-            Sequence rs = right.eval(contextSequence, null);
+            final Sequence rs = right.eval(contextSequence, null);
             if (rs.isPersistentSet()) {
                 NodeSet rl = ls.toNodeSet();
                 rl = rl.getContextNodes(contextId);
@@ -79,27 +79,27 @@ public class OpOr extends LogicalOp {
                 }
             } else {
                 // fall back
-                boolean rl = ls.effectiveBooleanValue();
+                final boolean rl = ls.effectiveBooleanValue();
                 if (rl) {
                     result = BooleanValue.TRUE;
                 } else {
-                    boolean rr = rs.effectiveBooleanValue();
+                    final boolean rr = rs.effectiveBooleanValue();
                     result = rl || rr ? BooleanValue.TRUE : BooleanValue.FALSE;
                 }
             }
         } else {
             // no: default evaluation based on boolean value
-            boolean rl = ls.effectiveBooleanValue();
+            final boolean rl = ls.effectiveBooleanValue();
             if (rl) {
                 result = BooleanValue.TRUE;
             } else {
-                Sequence rs = right.eval(contextSequence, null);
-                boolean rr = rs.effectiveBooleanValue();
+                final Sequence rs = right.eval(contextSequence, null);
+                final boolean rr = rs.effectiveBooleanValue();
                 result = rl || rr ? BooleanValue.TRUE : BooleanValue.FALSE;
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 
@@ -112,7 +112,7 @@ public class OpOr extends LogicalOp {
      */
     public void dump(ExpressionDumper dumper) {
         if (getLength() == 0)
-            return;
+            {return;}
         dumper.display("(");
         getExpression(0).dump(dumper);
         for (int i = 1; i < getLength(); i++) {
@@ -124,8 +124,8 @@ public class OpOr extends LogicalOp {
 
     public String toString() {
         if (getLength() == 0)
-            return "";
-        StringBuilder result = new StringBuilder("(");
+            {return "";}
+        final StringBuilder result = new StringBuilder("(");
         result.append(getExpression(0).toString());
         for (int i = 1; i < getLength(); i++) {
             result.append(") or (");

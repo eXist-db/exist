@@ -32,9 +32,9 @@ public class MapResourceSet implements ResourceSet
      */
     public MapResourceSet(Map<String, Resource> resources) {
         this.resources = resources;
-		Iterator<Resource> iter = resources.values().iterator();
+		final Iterator<Resource> iter = resources.values().iterator();
 		while ( iter.hasNext() ) {
-			Resource res = iter.next();
+			final Resource res = iter.next();
 			resourcesVector.add(res);
 		}
 	}
@@ -44,7 +44,7 @@ public class MapResourceSet implements ResourceSet
      */
     public MapResourceSet(ResourceSet rs) throws XMLDBException {
         for ( int i=0; i<rs.getSize(); i++ ){
-        	Resource res = rs.getResource( i );
+        	final Resource res = rs.getResource( i );
             resources.put(res.getId(), res);
 			resourcesVector.add( rs.getResource( i ) );           
         }
@@ -113,10 +113,10 @@ public class MapResourceSet implements ResourceSet
      */
    public Resource getResource( long pos ) throws XMLDBException {
         if ( pos < 0 || pos >= resources.size() )
-                return null;
-        Object r = resourcesVector.get( (int) pos );
+                {return null;}
+        final Object r = resourcesVector.get( (int) pos );
         if(r instanceof Resource)
-        	return (Resource)r;
+        	{return (Resource)r;}
          return null;
     }
 
@@ -137,7 +137,7 @@ public class MapResourceSet implements ResourceSet
       *@exception  XMLDBException  thrown if pos is out of range
     */
       public void removeResource( long pos ) throws XMLDBException {
-		Resource r = resourcesVector.get( (int) pos );
+		final Resource r = resourcesVector.get( (int) pos );
 		resourcesVector.removeElementAt( (int) pos );
 		resources.remove( r.getId()  );
 	  }

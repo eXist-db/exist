@@ -74,19 +74,19 @@ public class Update extends Modification {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
 		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+			{contextSequence = contextItem.toSequence();}
         
-        Sequence contentSeq = value.eval(contextSequence);
+        final Sequence contentSeq = value.eval(contextSequence);
         if (contentSeq.isEmpty())
-            throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+            {throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));}
         
-        Sequence inSeq = select.eval(contextSequence);
+        final Sequence inSeq = select.eval(contextSequence);
         
         //START trap Update failure
         /* If we try and Update a node at an invalid location,
@@ -100,8 +100,8 @@ public class Update extends Modification {
         	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
-        	XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
+        	final XPathException xpe = new XPathException(this, Messages.getMessage(Error.UPDATE_SELECT_TYPE));
+        	final Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
         		prevUpdateErrors = new ValueSequence();
@@ -114,25 +114,25 @@ public class Update extends Modification {
 			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
         	if(!inSeq.isEmpty())
-        		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
+        		{throw xpe;}	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Update failure
         
         if (!inSeq.isEmpty()) {          
         	context.pushInScopeNamespaces();
     		try {
-    			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
+    			final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 
                 //start a transaction
-                Txn transaction = getTransaction();
-                StoredNode ql[] = selectAndLock(transaction, inSeq);
-                IndexListener listener = new IndexListener(ql);
+                final Txn transaction = getTransaction();
+                final StoredNode ql[] = selectAndLock(transaction, inSeq);
+                final IndexListener listener = new IndexListener(ql);
                 TextImpl text;
                 AttrImpl attribute;
                 ElementImpl parent;
                 for (int i = 0; i < ql.length; i++) {
-                    StoredNode node = ql[i];
-                    DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                    final StoredNode node = ql[i];
+                    final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.WRITE)){
                             throw new XPathException(this, "User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
@@ -143,11 +143,11 @@ public class Update extends Modification {
                     switch (node.getNodeType())
                     {
                         case Node.ELEMENT_NODE:
-    						NodeListImpl content = new NodeListImpl();
-    						for (SequenceIterator j = contentSeq.iterate(); j.hasNext(); ) {
-    							Item next = j.nextItem();
+    						final NodeListImpl content = new NodeListImpl();
+    						for (final SequenceIterator j = contentSeq.iterate(); j.hasNext(); ) {
+    							final Item next = j.nextItem();
     							if (Type.subTypeOf(next.getType(), Type.NODE))
-    								content.add(((NodeValue)next).getNode());
+    								{content.add(((NodeValue)next).getNode());}
     							else {
     								text = new TextImpl(next.getStringValue());
     								content.add(text);
@@ -168,7 +168,7 @@ public class Update extends Modification {
                                         + node.getNodeId());
                                 break;
                             }
-                            AttrImpl attr = (AttrImpl) node;
+                            final AttrImpl attr = (AttrImpl) node;
                             attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue());
                             attribute.setOwnerDocument(doc);
                             parent.updateChild(transaction, node, attribute);
@@ -185,13 +185,13 @@ public class Update extends Modification {
                 finishTriggers(transaction);
                 //commit the transaction
                 commitTransaction(transaction);
-            } catch (LockException e) {
+            } catch (final LockException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (PermissionDeniedException e) {
+    		} catch (final PermissionDeniedException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (EXistException e) {
+    		} catch (final EXistException e) {
                 throw new XPathException(this, e.getMessage(), e);
-    		} catch (TriggerException e) {
+    		} catch (final TriggerException e) {
                 throw new XPathException(this, e.getMessage(), e);
 			} finally {
                 unlockDocuments();
@@ -200,7 +200,7 @@ public class Update extends Modification {
         }
 
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);
+            {context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);}
         
         return Sequence.EMPTY_SEQUENCE;
 	}
@@ -218,7 +218,7 @@ public class Update extends Modification {
 	}
 	
 	public String toString() {
-		StringBuilder result = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
 		result.append("update value" );		
 		result.append(select.toString());
 		result.append(" with ");

@@ -77,25 +77,25 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 	 */
 	public Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence)
         throws XPathException {
-		NodeValue data = (NodeValue) args[1].itemAt(0);
-		StringWriter writer = new StringWriter();
-		Properties properties = new Properties();
+		final NodeValue data = (NodeValue) args[1].itemAt(0);
+		final StringWriter writer = new StringWriter();
+		final Properties properties = new Properties();
 		properties.setProperty(OutputKeys.INDENT, "yes");
-        DOMSerializer serializer = new ExtendedDOMSerializer(context.getBroker(), writer, properties);
+        final DOMSerializer serializer = new ExtendedDOMSerializer(context.getBroker(), writer, properties);
 		try {
 			serializer.serialize(data.getNode());
-		} catch(TransformerException e) {
+		} catch(final TransformerException e) {
 			logger.debug("Exception while serializing XUpdate document", e);
 			throw new XPathException(this, "Exception while serializing XUpdate document: " + e.getMessage(), e);
 		}
-		String xupdate = writer.toString();
+		final String xupdate = writer.toString();
 
 		long modifications = 0;
 		try {
-			XUpdateQueryService service = (XUpdateQueryService)c.getService("XUpdateQueryService", "1.0");
+			final XUpdateQueryService service = (XUpdateQueryService)c.getService("XUpdateQueryService", "1.0");
 			logger.debug("Processing XUpdate request: " + xupdate);
 			modifications = service.update(xupdate);
-		} catch(XMLDBException e) {
+		} catch(final XMLDBException e) {
 			throw new XPathException(this, "Exception while processing xupdate: " + e.getMessage(), e);
 		}
 		

@@ -91,9 +91,9 @@ public class DatabaseImpl implements Database {
   private Boolean ssl_verify_hostname=false;
 
   public DatabaseImpl() {
-    	String initdb = System.getProperty( "exist.initdb" );
+    	final String initdb = System.getProperty( "exist.initdb" );
     	if(initdb != null)
-    		autoCreate = initdb.equalsIgnoreCase("true");
+    		{autoCreate = initdb.equalsIgnoreCase("true");}
   }
 
   /**
@@ -104,11 +104,11 @@ public class DatabaseImpl implements Database {
   private void configure(String instanceName) throws XMLDBException {
         // System.out.println("Configuring '" + instanceName + "' using " + Configuration.getPath(configuration, null));
     try {
-      Configuration config = new Configuration(configuration, null);
+      final Configuration config = new Configuration(configuration, null);
       BrokerPool.configure(instanceName, 1, 5, config);
             if (shutdown != null)
-                BrokerPool.getInstance(instanceName).registerShutdownListener(shutdown);
-        } catch (Exception e ) {
+                {BrokerPool.getInstance(instanceName).registerShutdownListener(shutdown);}
+        } catch (final Exception e ) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "configuration error: " + e.getMessage(), e );
     }
     currentInstanceName = instanceName;
@@ -121,12 +121,12 @@ public class DatabaseImpl implements Database {
     XmldbURI xmldbURI = null;
     try {
             //Ugly workaround for non-URI compliant collection (resources ?) names (most likely IRIs)
-      String newURIString = XmldbURI.recoverPseudoURIs(uri);
+      final String newURIString = XmldbURI.recoverPseudoURIs(uri);
             //Remember that DatabaseManager (provided in xmldb.jar) trims the leading "xmldb:" !!!
             //... prepend it to have a real xmldb URI again...
       xmldbURI = XmldbURI.xmldbUriFor(XmldbURI.XMLDB_URI_PREFIX + newURIString);
       return acceptsURI(xmldbURI);
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
             //... even in the error message
       throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not well formed: " + XmldbURI.XMLDB_URI_PREFIX + uri);
     }
@@ -262,7 +262,7 @@ public class DatabaseImpl implements Database {
         final XmldbURI path;
         try {
             path = XmldbURI.xmldbUriFor(c);
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
         
@@ -297,10 +297,10 @@ public class DatabaseImpl implements Database {
       user = SecurityManager.GUEST_USER;
       password = SecurityManager.GUEST_USER;
     }
-    SecurityManager securityManager = pool.getSecurityManager();
+    final SecurityManager securityManager = pool.getSecurityManager();
     try {
         return securityManager.authenticate(user, password);
-	} catch (AuthenticationException e) {
+	} catch (final AuthenticationException e) {
 		throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
 	}
   }
@@ -313,9 +313,9 @@ public class DatabaseImpl implements Database {
    * @throws XMLDBException
    */
   private XmlRpcClient getRpcClient(String user, String password, URL url) throws XMLDBException {
-      String key = user + "@" + url.toString();
+      final String key = user + "@" + url.toString();
       XmlRpcClient client = rpcClients.get(key);
-      XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+      final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
       config.setEnabledForExtensions(true);
       config.setServerURL(url);
       config.setBasicUserName(user);
@@ -357,30 +357,30 @@ public class DatabaseImpl implements Database {
 
     public String getProperty(String property) throws XMLDBException {
         
-        if (property.equals("create-database")) {
+        if ("create-database".equals(property)) {
             //TODO : rename ?
             return Boolean.valueOf(autoCreate).toString();
         }
         
-        if (property.equals("database-id")) 
+        if ("database-id".equals(property)) 
         {
             //TODO : consider multivalued property
             return currentInstanceName;
         }
 
-        if (property.equals("configuration")) {
+        if ("configuration".equals(property)) {
             return configuration;
         }
 
-        if (property.equals("ssl-enable")) {
+        if ("ssl-enable".equals(property)) {
             return "" + ssl_enable;
         }
         
-        if (property.equals("ssl-allow-self-signed")) {
+        if ("ssl-allow-self-signed".equals(property)) {
             return "" + ssl_allow_self_signed;
         }
         
-        if (property.equals("ssl-verify-hostname")) {
+        if ("ssl-verify-hostname".equals(property)) {
             return "" + ssl_allow_self_signed;
         }
         
@@ -389,30 +389,30 @@ public class DatabaseImpl implements Database {
 
     public void setProperty(String property, String value) throws XMLDBException {
 
-        if (property.equals("create-database")) {
-            autoCreate = value.equals("true");
+        if ("create-database".equals(property)) {
+            autoCreate = "true".equals(value);
         }
         
         //TODO : rename ?
-        if (property.equals("database-id")) 
+        if ("database-id".equals(property)) 
         {
             //TODO : consider multivalued property
             currentInstanceName = value;
         }
 
-        if (property.equals("configuration")) {
+        if ("configuration".equals(property)) {
             configuration = value;
         }
 
-        if (property.equals("ssl-enable")) {
+        if ("ssl-enable".equals(property)) {
             ssl_enable = Boolean.valueOf(value);
         }
 
-        if (property.equals("ssl-allow-self-signed")) {
+        if ("ssl-allow-self-signed".equals(property)) {
             ssl_allow_self_signed = Boolean.valueOf(value);
         }
 
-        if (property.equals("ssl-verify-hostname")) {
+        if ("ssl-verify-hostname".equals(property)) {
             ssl_verify_hostname = Boolean.valueOf(value);
         }
 

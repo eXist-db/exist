@@ -442,7 +442,7 @@ public class XMLWriter {
         }
         declarationWritten = true;
         final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        if(omitXmlDecl.equals("no")) {
+        if("no".equals(omitXmlDecl)) {
             final String version = outputProperties.getProperty(OutputKeys.VERSION, "1.0");
             final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");

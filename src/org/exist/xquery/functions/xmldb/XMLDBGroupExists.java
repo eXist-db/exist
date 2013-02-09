@@ -76,16 +76,16 @@ public class XMLDBGroupExists extends BasicFunction {
     @Override
     public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
 
-        String groupName = args[0].getStringValue();
+        final String groupName = args[0].getStringValue();
 
-        DBBroker broker = context.getBroker();
-        Subject currentUser = broker.getSubject();
+        final DBBroker broker = context.getBroker();
+        final Subject currentUser = broker.getSubject();
 
         if(currentUser.hasGroup(groupName)) {
             return BooleanValue.TRUE;
         } else if(currentUser.hasDbaRole()) {
-            SecurityManager sm = broker.getBrokerPool().getSecurityManager();
-            Group group = sm.getGroup(groupName);
+            final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+            final Group group = sm.getGroup(groupName);
             return BooleanValue.valueOf(group != null);
         } else {
             throw new XPathException("You do not have permission to determine if the group exists");

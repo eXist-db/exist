@@ -72,16 +72,16 @@ public class XMLDBRegisterDatabase extends BasicFunction {
 	 */
 	public Sequence eval(Sequence args[], Sequence contextSequence)
 			throws XPathException {
-		String driverName = args[0].getStringValue();
-		boolean createDatabase = args[1].effectiveBooleanValue();
+		final String driverName = args[0].getStringValue();
+		final boolean createDatabase = args[1].effectiveBooleanValue();
 		try {
-			Class<?> driver = Class.forName(driverName);
-			Database database = (Database) driver.newInstance();
+			final Class<?> driver = Class.forName(driverName);
+			final Database database = (Database) driver.newInstance();
 			database.setProperty("create-database", createDatabase
 					? "true"
 					: "false");
 			DatabaseManager.registerDatabase(database);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			logger.error("failed to initiate XMLDB database driver: " + driverName);
             return BooleanValue.FALSE;
 		}

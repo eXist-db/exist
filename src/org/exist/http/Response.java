@@ -100,15 +100,15 @@ public class Response {
 	}
 	
 	public void write(DataOutputStream os) throws IOException {
-		byte[] contentData = content == null ? (binaryContent != null ? binaryContent : null) : content.getBytes(encoding);
-		StringBuilder buf = new StringBuilder();
+		final byte[] contentData = content == null ? (binaryContent != null ? binaryContent : null) : content.getBytes(encoding);
+		final StringBuilder buf = new StringBuilder();
 		buf.append("HTTP/1.0 ");
 		buf.append(Integer.toString(code));
 		if(statusDesc != null) {
 			buf.append(' ');
 			buf.append(statusDesc);
 		} else
-			buf.append(" OK");
+			{buf.append(" OK");}
 		buf.append('\n');
 		buf.append(stdHeaders);
 		buf.append("Content-Type: ");
@@ -119,7 +119,7 @@ public class Response {
 		
 		os.writeBytes(buf.toString());
 		if(contentData != null)
-			os.write(contentData, 0, contentData.length);
+			{os.write(contentData, 0, contentData.length);}
 		os.flush();
 		os.close();
 	}

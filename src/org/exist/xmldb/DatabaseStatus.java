@@ -19,7 +19,7 @@ public class DatabaseStatus {
 	private Map<String, IndexStats> indexStats = new TreeMap<String, IndexStats>();
 	
 	public DatabaseStatus(BrokerPool pool) {
-		Configuration conf = pool.getConfiguration();
+		final Configuration conf = pool.getConfiguration();
 		
 		// get id for this instance
 		id = pool.getId();

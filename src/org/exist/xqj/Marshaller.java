@@ -85,10 +85,10 @@ public class Marshaller {
      * @throws SAXException
      */
     public static void marshall(DBBroker broker, Sequence seq, ContentHandler handler) throws XPathException, SAXException {
-        AttributesImpl attrs = new AttributesImpl();
+        final AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", ATTR_ITEM_TYPE, ATTR_ITEM_TYPE, "CDATA", Type.getTypeName(seq.getItemType()));
         handler.startElement(NAMESPACE, SEQ_ELEMENT, SEQ_ELEMENT_QNAME, attrs);
-        for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
             marshallItem(broker, i.nextItem(), handler);
         }
         handler.endElement(NAMESPACE, SEQ_ELEMENT, SEQ_ELEMENT_QNAME);
@@ -106,7 +106,7 @@ public class Marshaller {
      * @throws SAXException
      */
     public static void marshall(DBBroker broker, Sequence seq,int start,int howmany, ContentHandler handler) throws XPathException, SAXException {
-        AttributesImpl attrs = new AttributesImpl();
+        final AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", ATTR_ITEM_TYPE, ATTR_ITEM_TYPE, "CDATA", Type.getTypeName(seq.getItemType()));
         handler.startElement(NAMESPACE, SEQ_ELEMENT, SEQ_ELEMENT_QNAME, attrs);
         for (int i = start; i < howmany && i < seq.getItemCount(); i++ ) {
@@ -125,39 +125,39 @@ public class Marshaller {
      * @throws XPathException
      */
     public static void marshallItem(DBBroker broker, Item item, ContentHandler handler) throws SAXException, XPathException {
-        AttributesImpl attrs = new AttributesImpl();
+        final AttributesImpl attrs = new AttributesImpl();
         int type = item.getType();
         if (type == Type.NODE)
-            type = ((NodeValue)item).getNode().getNodeType();
+            {type = ((NodeValue)item).getNode().getNodeType();}
         attrs.addAttribute("", ATTR_TYPE, ATTR_TYPE, "CDATA", Type.getTypeName(type));
         if (Type.subTypeOf(item.getType(), Type.NODE)) {
             handler.startElement(NAMESPACE, VALUE_ELEMENT, VALUE_ELEMENT_QNAME, attrs);
-            NodeValue nv = (NodeValue) item;
+            final NodeValue nv = (NodeValue) item;
             nv.toSAX(broker, handler, OUTPUT_PROPERTIES);
             handler.endElement(NAMESPACE, VALUE_ELEMENT, VALUE_ELEMENT_QNAME);
         } else {
             handler.startElement(NAMESPACE, VALUE_ELEMENT, VALUE_ELEMENT_QNAME, attrs);
-            String value = item.getStringValue();
+            final String value = item.getStringValue();
             handler.characters(value.toCharArray(), 0, value.length());
             handler.endElement(NAMESPACE, VALUE_ELEMENT, VALUE_ELEMENT_QNAME);
         }
     }
 
     public static Sequence demarshall(DBBroker broker, Reader reader) throws XMLStreamException, XPathException {
-        XMLInputFactory factory = XMLInputFactory.newInstance();
+        final XMLInputFactory factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
         factory.setProperty(XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
-        XMLStreamReader parser = factory.createXMLStreamReader(reader);
+        final XMLStreamReader parser = factory.createXMLStreamReader(reader);
         return demarshall(broker, parser);
     }
     
     public static Sequence demarshall(DBBroker broker,Node n) throws XMLStreamException, XPathException {
-    	DOMSource source = new DOMSource(n, null);
-    	XMLInputFactory factory = XMLInputFactory.newInstance();
+    	final DOMSource source = new DOMSource(n, null);
+    	final XMLInputFactory factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
         factory.setProperty(XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
         
-        XMLStreamReader parser = factory.createXMLStreamReader(source);
+        final XMLStreamReader parser = factory.createXMLStreamReader(source);
     	return demarshall(broker,parser);    	
     	
     }
@@ -167,10 +167,10 @@ public class Marshaller {
         while (event != XMLStreamConstants.START_ELEMENT)
             event = parser.next();
         if (!NAMESPACE.equals(parser.getNamespaceURI()))
-            throw new XMLStreamException("Root element is not in the correct namespace. Expected: " + NAMESPACE);
+            {throw new XMLStreamException("Root element is not in the correct namespace. Expected: " + NAMESPACE);}
         if (!SEQ_ELEMENT.equals(parser.getLocalName()))
-            throw new XMLStreamException("Root element should be a " + SEQ_ELEMENT_QNAME);
-        ValueSequence result = new ValueSequence();
+            {throw new XMLStreamException("Root element should be a " + SEQ_ELEMENT_QNAME);}
+        final ValueSequence result = new ValueSequence();
         while ((event = parser.next()) != XMLStreamConstants.END_DOCUMENT) {
             switch (event) {
                 case XMLStreamConstants.START_ELEMENT :
@@ -184,19 +184,19 @@ public class Marshaller {
                             }
                         }
                         if (typeName != null) {
-                            int type = Type.getType(typeName);
+                            final int type = Type.getType(typeName);
                             Item item;
                             if (Type.subTypeOf(type, Type.NODE))
-                                item = streamToDOM(type, parser);
+                                {item = streamToDOM(type, parser);}
                             else
-                                item = new StringValue(parser.getElementText()).convertTo(type);
+                                {item = new StringValue(parser.getElementText()).convertTo(type);}
                             result.add(item);
                         }
                     }
                     break;
                 case XMLStreamConstants.END_ELEMENT :
                     if (NAMESPACE.equals(parser.getNamespaceURI()) && SEQ_ELEMENT.equals(parser.getLocalName()))
-                        return result;
+                        {return result;}
                     break;
             }
         }
@@ -205,38 +205,38 @@ public class Marshaller {
 
     public static Sequence demarshall(NodeImpl node) throws XMLStreamException, XPathException {
         if (!NAMESPACE.equals(node.getNamespaceURI()))
-            throw new XMLStreamException("Root element is not in the correct namespace. Expected: " + NAMESPACE);
+            {throw new XMLStreamException("Root element is not in the correct namespace. Expected: " + NAMESPACE);}
         if (!SEQ_ELEMENT.equals(node.getLocalName()))
-            throw new XMLStreamException("Root element should be a " + SEQ_ELEMENT_QNAME);
-        ValueSequence result = new ValueSequence();
-        InMemoryNodeSet values = new InMemoryNodeSet();
+            {throw new XMLStreamException("Root element should be a " + SEQ_ELEMENT_QNAME);}
+        final ValueSequence result = new ValueSequence();
+        final InMemoryNodeSet values = new InMemoryNodeSet();
         node.selectChildren(new NameTest(Type.ELEMENT, VALUE_QNAME), values);
-        for (SequenceIterator i = values.iterate(); i.hasNext();) {
-            ElementImpl child = (ElementImpl) i.nextItem();
-            String typeName = child.getAttribute(ATTR_TYPE);
+        for (final SequenceIterator i = values.iterate(); i.hasNext();) {
+            final ElementImpl child = (ElementImpl) i.nextItem();
+            final String typeName = child.getAttribute(ATTR_TYPE);
             if (typeName != null) {
-                int type = Type.getType(typeName);
+                final int type = Type.getType(typeName);
                 Item item;
                 if (Type.subTypeOf(type, Type.NODE)) {
                     item = (Item) child.getFirstChild();
                     if (type == Type.DOCUMENT) {
-                        NodeImpl n = (NodeImpl) item;
-                        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
+                        final NodeImpl n = (NodeImpl) item;
+                        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
                         try {
                             receiver.startDocument();
                             n.getDocument().copyTo(n, receiver);
                             receiver.endDocument();
-                        } catch (SAXException e) {
+                        } catch (final SAXException e) {
                             throw new XPathException("Error while demarshalling node: " + e.getMessage(), e);
                         }
                         item = (Item) receiver.getDocument();
                     }
                 } else {
-                    StringBuilder data = new StringBuilder();
+                    final StringBuilder data = new StringBuilder();
                     Node txt = child.getFirstChild();
                     while (txt != null) {
                         if (!(txt.getNodeType() == Node.TEXT_NODE || txt.getNodeType() == Node.CDATA_SECTION_NODE))
-                            throw new XMLStreamException("sx:value should only contain text if type is " + typeName);
+                            {throw new XMLStreamException("sx:value should only contain text if type is " + typeName);}
                         data.append(txt.getNodeValue());
                         txt = txt.getNextSibling();
                     }
@@ -251,9 +251,9 @@ public class Marshaller {
     public static Item streamToDOM(XMLStreamReader parser, XQItemType type) throws XMLStreamException, XQException {
         if (type.getBaseType() == XQItemType.XQITEMKIND_DOCUMENT_ELEMENT ||
                 type.getBaseType() == XQItemType.XQITEMKIND_DOCUMENT_SCHEMA_ELEMENT)
-            return streamToDOM(Type.DOCUMENT, parser);
+            {return streamToDOM(Type.DOCUMENT, parser);}
         else
-            return streamToDOM(Type.ELEMENT, parser);
+            {return streamToDOM(Type.ELEMENT, parser);}
     }
 
     /**
@@ -263,16 +263,16 @@ public class Marshaller {
      * @throws XMLStreamException
      */
     public static Item streamToDOM(int rootType, XMLStreamReader parser) throws XMLStreamException {
-        MemTreeBuilder builder = new MemTreeBuilder();
+        final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         int event;
         boolean finish = false;
         while ((event = parser.next()) != XMLStreamConstants.END_DOCUMENT) {
             switch (event) {
                 case XMLStreamConstants.START_ELEMENT :
-                    AttributesImpl attribs = new AttributesImpl();
+                    final AttributesImpl attribs = new AttributesImpl();
                     for (int i = 0; i < parser.getAttributeCount(); i++) {
-                        javax.xml.namespace.QName qn = parser.getAttributeName(i);
+                        final javax.xml.namespace.QName qn = parser.getAttributeName(i);
                         attribs.addAttribute(qn.getNamespaceURI(), qn.getLocalPart(), qn.getPrefix() + ':' + qn.getLocalPart(),
                                 parser.getAttributeType(i), parser.getAttributeValue(i));
                     }
@@ -283,23 +283,23 @@ public class Marshaller {
                     break;
                 case XMLStreamConstants.END_ELEMENT :
                     if (NAMESPACE.equals(parser.getNamespaceURI()) && VALUE_ELEMENT.equals(parser.getLocalName()))
-                        finish = true;
+                        {finish = true;}
                     else
-                        builder.endElement();
+                        {builder.endElement();}
                     break;
                 case XMLStreamConstants.CHARACTERS :
                     builder.characters(parser.getText());
                     break;
             }
-            if (finish) break;
+            if (finish) {break;}
         }
         builder.endDocument();
         if (rootType == Type.DOCUMENT)
-            return builder.getDocument();
+            {return builder.getDocument();}
         else if (rootType == Type.ELEMENT)
-            return (NodeImpl) builder.getDocument().getDocumentElement();
+            {return (NodeImpl) builder.getDocument().getDocumentElement();}
         else
-            return (NodeImpl) builder.getDocument().getFirstChild();
+            {return (NodeImpl) builder.getDocument().getFirstChild();}
     }
     
     
@@ -311,10 +311,10 @@ public class Marshaller {
      * @throws XMLStreamException
      */
     public static Item streamToDOM(Reader reader, XQItemType type) throws XMLStreamException, XQException {
-    	XMLInputFactory factory = XMLInputFactory.newInstance();
+    	final XMLInputFactory factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
         factory.setProperty(XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
-        XMLStreamReader parser = factory.createXMLStreamReader(reader);
+        final XMLStreamReader parser = factory.createXMLStreamReader(reader);
         
         return streamToDOM(parser, type);
     }
@@ -328,7 +328,7 @@ public class Marshaller {
      * @throws XMLStreamException
      */
     public static Node streamToNode(String content) throws XMLStreamException {
-    	StringReader reader = new StringReader(content);
+    	final StringReader reader = new StringReader(content);
     	return streamToNode(reader);
     }
     
@@ -341,20 +341,20 @@ public class Marshaller {
      * @throws XMLStreamException
      */
     public static Node streamToNode(Reader reader) throws XMLStreamException {
-    	XMLInputFactory factory = XMLInputFactory.newInstance();
+    	final XMLInputFactory factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
         factory.setProperty(XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
-        XMLStreamReader parser = factory.createXMLStreamReader(reader);
-        MemTreeBuilder builder = new MemTreeBuilder();
+        final XMLStreamReader parser = factory.createXMLStreamReader(reader);
+        final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         int event;
         boolean finish = false;
         while ((event = parser.next()) != XMLStreamConstants.END_DOCUMENT) {
             switch (event) {
                 case XMLStreamConstants.START_ELEMENT :
-                    AttributesImpl attribs = new AttributesImpl();
+                    final AttributesImpl attribs = new AttributesImpl();
                     for (int i = 0; i < parser.getAttributeCount(); i++) {
-                        javax.xml.namespace.QName qn = parser.getAttributeName(i);
+                        final javax.xml.namespace.QName qn = parser.getAttributeName(i);
                         attribs.addAttribute(qn.getNamespaceURI(), qn.getLocalPart(), qn.getPrefix() + ':' + qn.getLocalPart(),
                                 parser.getAttributeType(i), parser.getAttributeValue(i));
                     }
@@ -365,15 +365,15 @@ public class Marshaller {
                     break;
                 case XMLStreamConstants.END_ELEMENT :
                     if (NAMESPACE.equals(parser.getNamespaceURI()) && VALUE_ELEMENT.equals(parser.getLocalName()))
-                        finish = true;
+                        {finish = true;}
                     else
-                        builder.endElement();
+                        {builder.endElement();}
                     break;
                 case XMLStreamConstants.CHARACTERS :
                     builder.characters(parser.getText());
                     break;
             }
-            if (finish) break;
+            if (finish) {break;}
         }
         builder.endDocument();
         return builder.getDocument().getDocumentElement();

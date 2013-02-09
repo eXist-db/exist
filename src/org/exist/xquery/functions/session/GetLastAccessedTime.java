@@ -78,15 +78,15 @@ public class GetLastAccessedTime extends Function
 			context.getProfiler().start(this);       
 			context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
 			if (contextSequence != null)
-				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+				{context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
 			if (contextItem != null)
-				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+				{context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
 		}        
 		
-		SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
+		final SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
 		
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+		final Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
 		
 		if( var == null || var.getValue() == null ) {
 			// throw( new XPathException( this, "Session not set" ) );
@@ -97,14 +97,14 @@ public class GetLastAccessedTime extends Function
 			throw( new XPathException( this, "Variable $session is not bound to a Java object." ) );
 		}
 
-		JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
+		final JavaObjectValue session = (JavaObjectValue)var.getValue().itemAt( 0 );
 		
 		if( session.getObject() instanceof SessionWrapper ) {
 			try {
-				long lastAccessedTime = ( (SessionWrapper)session.getObject() ).getLastAccessedTime();
+				final long lastAccessedTime = ( (SessionWrapper)session.getObject() ).getLastAccessedTime();
 				return new DateTimeValue(new Date(lastAccessedTime));
 			}
-			catch( IllegalStateException ise ) {
+			catch( final IllegalStateException ise ) {
 				return new DateTimeValue(new Date(0));
 			}
 		} else {

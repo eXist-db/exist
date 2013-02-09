@@ -53,17 +53,17 @@ public class VariableReference extends AbstractExpression {
         Variable var = null;
         try {
             var = getVariable();
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             // ignore: variable might not be known yet
             return;
         }
         if (var == null)
-            throw new XPathException(this, ErrorCodes.XPDY0002,
-                "variable '$" + qname + "' is not set.");
+            {throw new XPathException(this, ErrorCodes.XPDY0002,
+                "variable '$" + qname + "' is not set.");}
         if (!var.isInitialized())
-            throw new XPathException(this, ErrorCodes.XQST0054,
+            {throw new XPathException(this, ErrorCodes.XQST0054,
                 "variable declaration of '$" + qname + "' cannot " +
-                "be executed because of a circularity.");
+                "be executed because of a circularity.");}
         contextInfo.setStaticReturnType(var.getStaticType());
     }
 
@@ -76,28 +76,28 @@ public class VariableReference extends AbstractExpression {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Variable var = getVariable();
+        final Variable var = getVariable();
         if (var == null)
-            throw new XPathException(this, ErrorCodes.XPDY0002, "variable '$" + qname + "' is not set.");
-        Sequence seq = var.getValue();
+            {throw new XPathException(this, ErrorCodes.XPDY0002, "variable '$" + qname + "' is not set.");}
+        final Sequence seq = var.getValue();
         if (seq == null)
-            throw new XPathException(this, ErrorCodes.XPDY0002, "undefined value for variable '$" + qname + "'");
-        Sequence result = seq;
+            {throw new XPathException(this, ErrorCodes.XPDY0002, "undefined value for variable '$" + qname + "'");}
+        final Sequence result = seq;
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 
     protected Variable getVariable() throws XPathException {
         try {
             return context.resolveVariable(qname);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             e.setLocation(line, column);
             throw e;
         }
@@ -126,16 +126,16 @@ public class VariableReference extends AbstractExpression {
      */
     public int returnsType() {
         try {
-            Variable var = context.resolveVariable(qname);
+            final Variable var = context.resolveVariable(qname);
             if(var != null) {
                 if (var.getValue() != null) {
-                    int type = var.getValue().getItemType();
+                    final int type = var.getValue().getItemType();
                     return type;
                 } else {
                     return var.getType();
                 }
             }
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             //TODO : don't ignore ? -pb
         }
         return Type.ITEM;
@@ -146,12 +146,12 @@ public class VariableReference extends AbstractExpression {
      */
     public int getDependencies() {
         try {
-            Variable var = context.resolveVariable(qname);
+            final Variable var = context.resolveVariable(qname);
             if (var != null) {
-                int deps = var.getDependencies(context);
+                final int deps = var.getDependencies(context);
                 return deps;
             }
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             //TODO : don't ignore ? -pb
         }
         return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
@@ -162,12 +162,12 @@ public class VariableReference extends AbstractExpression {
      */
     public int getCardinality() {
         try {
-            Variable var = context.resolveVariable(qname);
+            final Variable var = context.resolveVariable(qname);
             if (var != null && var.getValue() != null) {
-                int card = var.getValue().getCardinality();
+                final int card = var.getValue().getCardinality();
                 return card;
             }
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             //TODO : don't ignore ?
         }
         return Cardinality.ZERO_OR_MORE; // unknown cardinality

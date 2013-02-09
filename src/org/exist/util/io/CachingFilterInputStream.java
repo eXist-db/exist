@@ -132,7 +132,7 @@ public class CachingFilterInputStream extends FilterInputStream {
         }
 
         if(useCache && cacheOffset < srcOffset) {
-            int data = getCache().get(cacheOffset++);
+            final int data = getCache().get(cacheOffset++);
 
             //are we outside the cache
             if(cacheOffset >= srcOffset) {
@@ -141,7 +141,7 @@ public class CachingFilterInputStream extends FilterInputStream {
             return data;
 
         } else {
-            int data = src.read();
+            final int data = src.read();
 
             //have we reached the end of the stream?
             if(data == END_OF_STREAM) {
@@ -256,7 +256,7 @@ public class CachingFilterInputStream extends FilterInputStream {
             if(actualLen < n) {
                 useCache = false;
                 
-                byte skipped[] = new byte[(int)(n - actualLen)];
+                final byte skipped[] = new byte[(int)(n - actualLen)];
                 int srcLen = src.read(skipped);
 
                 //have we reached the end of the stream?
@@ -276,7 +276,7 @@ public class CachingFilterInputStream extends FilterInputStream {
 
         } else {
 
-            byte skipped[] = new byte[(int)n];  //TODO could overflow
+            final byte skipped[] = new byte[(int)n];  //TODO could overflow
             int actualLen = src.read(skipped);
 
             //increase srcOffset due to read operation above

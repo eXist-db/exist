@@ -67,9 +67,9 @@ public abstract class NodeConstructor extends AbstractExpression {
         // constructor appears inside another constructor, we don't want it to be called once
         // for every context item, so we just return a dependency on context set:
         if (newDocumentContext)
-            return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
+            {return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;}
         else
-            return Dependency.CONTEXT_SET;
+            {return Dependency.CONTEXT_SET;}
     }
 
     /* (non-Javadoc)

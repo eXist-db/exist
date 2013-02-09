@@ -48,17 +48,17 @@ public abstract class AbstractBackupDescriptor implements BackupDescriptor
         if( date == null ) {
 
             try {
-                Properties properties = getProperties();
-                String     dateStr    = properties.getProperty( "date" );
+                final Properties properties = getProperties();
+                final String     dateStr    = properties.getProperty( "date" );
 
                 if( dateStr != null ) {
-                    DateTimeValue dtv = new DateTimeValue( dateStr );
+                    final DateTimeValue dtv = new DateTimeValue( dateStr );
                     date = dtv.getDate();
                 }
             }
-            catch( IOException e ) {
+            catch( final IOException e ) {
             }
-            catch( XPathException e ) {
+            catch( final XPathException e ) {
             }
 
             if( date == null ) {
@@ -79,11 +79,11 @@ public abstract class AbstractBackupDescriptor implements BackupDescriptor
 
     public void parse( ContentHandler handler ) throws IOException, SAXException, ParserConfigurationException
     {
-        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        final SAXParserFactory saxFactory = SAXParserFactory.newInstance();
         saxFactory.setNamespaceAware( true );
         saxFactory.setValidating( false );
-        SAXParser sax    = saxFactory.newSAXParser();
-        XMLReader reader = sax.getXMLReader();
+        final SAXParser sax    = saxFactory.newSAXParser();
+        final XMLReader reader = sax.getXMLReader();
         reader.setContentHandler( handler );
         reader.parse( getInputSource() );
     }

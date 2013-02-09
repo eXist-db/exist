@@ -92,53 +92,53 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
         if (newDocumentContext)
-            context.pushDocumentContext();
+            {context.pushDocumentContext();}
         
         NodeImpl node;
         try {
-            MemTreeBuilder builder = context.getDocumentBuilder();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
             builder.setReplaceAttributeFlag(replaceAttribute);
             context.proceed(this, builder);
 
-            Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
+            final Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
             if(!nameSeq.hasOne())
-            	throw new XPathException(this, "The name expression should evaluate to a single value");
+            	{throw new XPathException(this, "The name expression should evaluate to a single value");}
 
-            Item qnItem = nameSeq.itemAt(0);
+            final Item qnItem = nameSeq.itemAt(0);
             QName qn;
             if (qnItem.getType() == Type.QNAME)
-                qn = ((QNameValue) qnItem).getQName();
+                {qn = ((QNameValue) qnItem).getQName();}
             else
             	try {
             		qn = QName.parse(context, nameSeq.getStringValue(), null);
-		    	} catch (IllegalArgumentException e) {
+		    	} catch (final IllegalArgumentException e) {
 					throw new XPathException(this, ErrorCodes.XPTY0004, "'" + nameSeq.getStringValue() + "' is not a valid attribute name");
 				}
 
             //Not in the specs but... makes sense
             if(!XMLChar.isValidName(qn.getLocalName()))
-            	throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qn.getLocalName() + "' is not a valid attribute name");
+            	{throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qn.getLocalName() + "' is not a valid attribute name");}
             
-            if (qn.getLocalName().equals("xmlns") && qn.getNamespaceURI().isEmpty())
-            	throw new XPathException(this, ErrorCodes.XQDY0044, "'" + qn.getLocalName() + "' is not a valid attribute name");
+            if ("xmlns".equals(qn.getLocalName()) && qn.getNamespaceURI().isEmpty())
+            	{throw new XPathException(this, ErrorCodes.XQDY0044, "'" + qn.getLocalName() + "' is not a valid attribute name");}
 
             String value;
-            Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
+            final Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
             if(valueSeq.isEmpty())
-            	value = "";
+            	{value = "";}
             else {
-                StringBuilder buf = new StringBuilder();
-                for(SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
-                    Item next = i.nextItem();
+                final StringBuilder buf = new StringBuilder();
+                for(final SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
+                    final Item next = i.nextItem();
                     buf.append(next.getStringValue());
                     if(i.hasNext())
-                        buf.append(' ');
+                        {buf.append(' ');}
                 }
                 value = buf.toString();
             }
@@ -147,18 +147,18 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             
             node = null;
             try {
-                int nodeNr = builder.addAttribute(qn, value);
+                final int nodeNr = builder.addAttribute(qn, value);
                 node = builder.getDocument().getAttribute(nodeNr);
-            } catch (DOMException e) {
+            } catch (final DOMException e) {
                 throw new XPathException(this, ErrorCodes.XQDY0025, "element has more than one attribute '" + qn + "'");
             } 
         } finally {
             if (newDocumentContext)
-                context.popDocumentContext();
+                {context.popDocumentContext();}
         }
 
         if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", node);          
+            {context.getProfiler().end(this, "", node);}          
         
         return node;
     }
@@ -168,7 +168,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     	if (qn.equalsSimple(Namespaces.XML_ID_QNAME)) {
     		value = StringValue.trimWhitespace(StringValue.collapseWhitespace(value));
             if (!XMLChar.isValidNCName(value))
-                throw new XPathException(expr, ErrorCodes.XQDY0091, "Value of xml:id attribute is not a valid NCName: " + value);
+                {throw new XPathException(expr, ErrorCodes.XQDY0091, "Value of xml:id attribute is not a valid NCName: " + value);}
     	}
     	return value;
     }
@@ -191,7 +191,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     }
     
     public String toString() {
-    	StringBuilder result = new StringBuilder();
+    	final StringBuilder result = new StringBuilder();
     	result.append("attribute ");
         //TODO : remove curly braces if Qname
         result.append("{");  

@@ -113,7 +113,7 @@ public class Backup
 
     public static String encode( String enco )
     {
-        StringBuilder out = new StringBuilder();
+        final StringBuilder out = new StringBuilder();
         char          t;
 
         for( int y = 0; y < enco.length(); y++ ) {
@@ -147,7 +147,7 @@ public class Backup
 
     public static String decode( String enco )
     {
-        StringBuilder out  = new StringBuilder();
+        final StringBuilder out  = new StringBuilder();
         String        temp = "";
         char          t;
 
@@ -159,23 +159,23 @@ public class Backup
             } else {
                 temp = enco.substring( y, y + 4 );
 
-                if( temp.equals( "&22;" ) ) {
+                if( "&22;".equals(temp) ) {
                     out.append( '"' );
-                } else if( temp.equals( "&26;" ) ) {
+                } else if( "&26;".equals(temp) ) {
                     out.append( '&' );
-                } else if( temp.equals( "&2A;" ) ) {
+                } else if( "&2A;".equals(temp) ) {
                     out.append( '*' );
-                } else if( temp.equals( "&3A;" ) ) {
+                } else if( "&3A;".equals(temp) ) {
                     out.append( ':' );
-                } else if( temp.equals( "&3C;" ) ) {
+                } else if( "&3C;".equals(temp) ) {
                     out.append( '<' );
-                } else if( temp.equals( "&3E;" ) ) {
+                } else if( "&3E;".equals(temp) ) {
                     out.append( ">" );
-                } else if( temp.equals( "&3F;" ) ) {
+                } else if( "&3F;".equals(temp) ) {
                     out.append( '?' );
-                } else if( temp.equals( "&5C;" ) ) {
+                } else if( "&5C;".equals(temp) ) {
                     out.append( '\\' );
-                } else if( temp.equals( "&7C;" ) ) {
+                } else if( "&7C;".equals(temp) ) {
                     out.append( '|' );
                 } else {
                 }
@@ -188,13 +188,13 @@ public class Backup
 
     public void backup( boolean guiMode, JFrame parent ) throws XMLDBException, IOException, SAXException
     {
-        Collection current = DatabaseManager.getCollection( rootCollection.toString(), user, pass );
+        final Collection current = DatabaseManager.getCollection( rootCollection.toString(), user, pass );
 
         if( guiMode ) {
-            BackupDialog dialog = new BackupDialog( parent, false );
+            final BackupDialog dialog = new BackupDialog( parent, false );
             dialog.setSize( new Dimension( 350, 150 ) );
             dialog.setVisible( true );
-            BackupThread thread = new BackupThread( current, dialog );
+            final BackupThread thread = new BackupThread( current, dialog );
             thread.start();
 
             if( parent == null ) {
@@ -207,7 +207,7 @@ public class Backup
                         try {
                             wait( 20 );
                         }
-                        catch( InterruptedException e ) {
+                        catch( final InterruptedException e ) {
                         }
                     }
                 }
@@ -225,7 +225,7 @@ public class Backup
         if( cname.charAt( 0 ) != '/' ) {
             cname = "/" + cname;
         }
-        String       path   = target + encode( URIUtils.urlDecodeUtf8( cname ) );
+        final String       path   = target + encode( URIUtils.urlDecodeUtf8( cname ) );
         BackupWriter output;
 
         if( target.endsWith( ".zip" ) ) {
@@ -250,32 +250,32 @@ public class Backup
         current.setProperty( EXistOutputKeys.PROCESS_XSL_PI, defaultOutputProperties.getProperty( EXistOutputKeys.PROCESS_XSL_PI ) );
 
         // get resources and permissions
-        String[] resources = current.listResources();
+        final String[] resources = current.listResources();
 
         // do not sort: order is important because permissions need to be read in the same order below
         // Arrays.sort( resources );
 
-        UserManagementService   mgtService   = (UserManagementService)current.getService( "UserManagementService", "1.0" );
-        Permission[]            perms        = mgtService.listResourcePermissions();
-        Permission              currentPerms = mgtService.getPermissions( current );
+        final UserManagementService   mgtService   = (UserManagementService)current.getService( "UserManagementService", "1.0" );
+        final Permission[]            perms        = mgtService.listResourcePermissions();
+        final Permission              currentPerms = mgtService.getPermissions( current );
 
 
         if( dialog != null ) {
             dialog.setCollection( current.getName() );
             dialog.setResourceCount( resources.length );
         }
-        Writer        contents   = output.newContents();
+        final Writer        contents   = output.newContents();
 
         // serializer writes to __contents__.xml
-        SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+        final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
         serializer.setOutput( contents, contentsOutputProps );
 
         serializer.startDocument();
         serializer.startPrefixMapping( "", Namespaces.EXIST_NS );
 
         // write <collection> element
-        CollectionImpl cur  = (CollectionImpl)current;
-        AttributesImpl attr = new AttributesImpl();
+        final CollectionImpl cur  = (CollectionImpl)current;
+        final AttributesImpl attr = new AttributesImpl();
 
         //The name should have come from an XmldbURI.toString() call
         attr.addAttribute( Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName() );
@@ -299,7 +299,7 @@ public class Backup
 
             try {
 
-                if( resources[i].equals( "__contents__.xml" ) ) {
+                if( "__contents__.xml".equals(resources[i]) ) {
 
                     //Skipping resources[i]
                     continue;
@@ -311,14 +311,14 @@ public class Backup
                     dialog.setProgress( i );
                 }
                 
-                String name 	= resources[i];
+                final String name 	= resources[i];
                 String filename = encode( URIUtils.urlDecodeUtf8( resources[i] ) );
                 
                 // Check for special resource names which cause problems as filenames, and if so, replace the filename with a generated filename
                 
-                if( name.trim().equals( "." ) ) {
+                if( ".".equals(name.trim()) ) {
                 	filename = EXIST_GENERATED_FILENAME_DOT_FILENAME + i;
-                } else if( name.trim().equals( ".." ) ) {
+                } else if( "..".equals(name.trim()) ) {
                 	filename = EXIST_GENERATED_FILENAME_DOTDOT_FILENAME + i;
                 }
 
@@ -338,7 +338,7 @@ public class Backup
                     writer.flush();
                 }
                 output.closeEntry();
-                EXistResource ris = (EXistResource)resource;
+                final EXistResource ris = (EXistResource)resource;
 
                 //store permissions
                 attr.clear();
@@ -359,7 +359,7 @@ public class Backup
                 attr.addAttribute( Namespaces.EXIST_NS, "filename", "filename", "CDATA", filename );
                 attr.addAttribute( Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", encode( ( (EXistResource)resource ).getMimeType() ) );
 
-                if( !resource.getResourceType().equals( "BinaryResource" ) ) {
+                if( !"BinaryResource".equals(resource.getResourceType()) ) {
 
                     if( ris.getDocType() != null ) {
 
@@ -382,18 +382,18 @@ public class Backup
                 }
                 serializer.endElement( Namespaces.EXIST_NS, "resource", "resource" );
             }
-            catch( XMLDBException e ) {
+            catch( final XMLDBException e ) {
                 System.err.println( "Failed to backup resource " + resources[i] + " from collection " + current.getName() );
                 throw e;
             }
         }
 
         // write subcollections
-        String[] collections = current.listChildCollections();
+        final String[] collections = current.listChildCollections();
 
         for( int i = 0; i < collections.length; i++ ) {
 
-            if( current.getName().equals( XmldbURI.SYSTEM_COLLECTION ) && collections[i].equals( "temp" ) ) {
+            if( current.getName().equals( XmldbURI.SYSTEM_COLLECTION ) && "temp".equals(collections[i]) ) {
                 continue;
             }
             attr.clear();
@@ -430,14 +430,14 @@ public class Backup
     public static void main( String[] args )
     {
         try {
-            Class<?> cl       = Class.forName( "org.exist.xmldb.DatabaseImpl" );
-            Database database = (Database)cl.newInstance();
+            final Class<?> cl       = Class.forName( "org.exist.xmldb.DatabaseImpl" );
+            final Database database = (Database)cl.newInstance();
             database.setProperty( "create-database", "true" );
             DatabaseManager.registerDatabase( database );
-            Backup backup = new Backup( "admin", null, "backup", URIUtils.encodeXmldbUriFor( args[0] ) );
+            final Backup backup = new Backup( "admin", null, "backup", URIUtils.encodeXmldbUriFor( args[0] ) );
             backup.backup( false, null );
         }
-        catch( Throwable e ) {
+        catch( final Throwable e ) {
             e.printStackTrace();
             System.exit(1);
         }
@@ -445,21 +445,21 @@ public class Backup
 
     public static void writeUnixStylePermissionAttributes(AttributesImpl attr, Permission permission) {
         if (permission == null)
-            return;
+            {return;}
 
         try {
             attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", permission.getOwner().getName());
             attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", permission.getGroup().getName());
             attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(permission.getMode()));
-        } catch (Exception e) {
+        } catch (final Exception e) {
 
         }
     }
 
     public static void writeACLPermission(SAXSerializer serializer, ACLPermission acl) throws SAXException {
         if (acl == null)
-            return;
-        AttributesImpl attr = new AttributesImpl();
+            {return;}
+        final AttributesImpl attr = new AttributesImpl();
         attr.addAttribute(Namespaces.EXIST_NS, "entries", "entries", "CDATA", Integer.toString(acl.getACECount()));
         attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", Short.toString(acl.getVersion()));
 
@@ -498,7 +498,7 @@ public class Backup
                 backup( collection_, dialog_ );
                 dialog_.setVisible( false );
             }
-            catch( Exception e ) {
+            catch( final Exception e ) {
                 e.printStackTrace();
             }
         }

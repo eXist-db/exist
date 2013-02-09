@@ -88,9 +88,9 @@ public class FunRoot extends Function {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         
@@ -99,33 +99,33 @@ public class FunRoot extends Function {
         Item item;
  
         if (contextItem != null)
-        	contextSequence = contextItem.toSequence();
+        	{contextSequence = contextItem.toSequence();}
 		if (contextSequence == null || contextSequence.isEmpty()) 
-			result = Sequence.EMPTY_SEQUENCE;            
+			{result = Sequence.EMPTY_SEQUENCE;}            
         
 		//If we have one argumment, we take it into account
 		if (getSignature().getArgumentCount() > 0) 
-			seq = getArgument(0).eval(contextSequence, contextItem);
+			{seq = getArgument(0).eval(contextSequence, contextItem);}
 		//Otherwise, we take the context sequence and we iterate over it
 		else
-			seq = contextSequence; 
+			{seq = contextSequence;} 
 		
 		if (seq == null)
-			throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
+			{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
 
         if (seq.isPersistentSet())
-            result = new ExtArrayNodeSet(seq.getItemCount());
+            {result = new ExtArrayNodeSet(seq.getItemCount());}
         else
-            result = new ValueSequence(seq.getItemCount());
+            {result = new ValueSequence(seq.getItemCount());}
 
-		for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+		for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(this, ErrorCodes.XPTY0004,  "Item is not a node; got '" + item + "'", seq);
-            Sequence s = item.toSequence();
+                {throw new XPathException(this, ErrorCodes.XPTY0004,  "Item is not a node; got '" + item + "'", seq);}
+            final Sequence s = item.toSequence();
 
             if (s.isPersistentSet()) {
-                NodeProxy p = s.toNodeSet().get(0);
+                final NodeProxy p = s.toNodeSet().get(0);
                 result.add(new NodeProxy(p.getDocument()));
             } else {
                 if (seq.hasOne() && item.getType() == Type.ATTRIBUTE) {
@@ -137,7 +137,7 @@ public class FunRoot extends Function {
 		}
     
 	    if (context.getProfiler().isEnabled())
-	            context.getProfiler().end(this, "", result);    
+	            {context.getProfiler().end(this, "", result);}    
         
         return result;
         

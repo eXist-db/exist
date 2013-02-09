@@ -50,12 +50,12 @@ public class NodeXPath extends Function
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
 		
-		Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+		final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
 		if(seq.isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		
-		NodeValue nv = (NodeValue)seq.itemAt(0);
+		final NodeValue nv = (NodeValue)seq.itemAt(0);
 		Node n = nv.getNode();
 
 		//if at the document level just return /
@@ -67,7 +67,7 @@ public class NodeXPath extends Function
 		 * - node names become path names 
 		 * - attributes become predicates
 		 */
-        StringBuilder buf = new StringBuilder(nodeToXPath(n));
+        final StringBuilder buf = new StringBuilder(nodeToXPath(n));
 		while((n = n.getParentNode()) != null)
 		{
 			if(n.getNodeType() == Node.ELEMENT_NODE)
@@ -88,12 +88,12 @@ public class NodeXPath extends Function
 	 */
 	public StringBuilder nodeToXPath(Node n)
 	{
-		StringBuilder xpath = new StringBuilder("/" + getFullNodeName(n));
+		final StringBuilder xpath = new StringBuilder("/" + getFullNodeName(n));
 		
-		NamedNodeMap attrs = n.getAttributes();
+		final NamedNodeMap attrs = n.getAttributes();
 		for(int i = 0; i < attrs.getLength(); i++)
 		{
-			Node attr = attrs.item(i);
+			final Node attr = attrs.item(i);
 			xpath.append("[@" + getFullNodeName(attr) + " eq \"" + attr.getNodeValue() + "\"]");
 		}
 		
@@ -108,7 +108,7 @@ public class NodeXPath extends Function
 	 */
 	public String getFullNodeName(Node n)
 	{
-		return n.getPrefix() != null && !n.getPrefix().equals("") ? n.getPrefix() + ":" + n.getLocalName() : n.getLocalName();
+		return n.getPrefix() != null && !"".equals(n.getPrefix()) ? n.getPrefix() + ":" + n.getLocalName() : n.getLocalName();
 	}
 
 }

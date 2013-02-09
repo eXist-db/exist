@@ -65,10 +65,10 @@ public class QueryResponseDocument  implements java.io.Serializable {
 
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
-        if (!(obj instanceof QueryResponseDocument)) return false;
-        QueryResponseDocument other = (QueryResponseDocument) obj;
-        if (obj == null) return false;
-        if (this == obj) return true;
+        if (!(obj instanceof QueryResponseDocument)) {return false;}
+        final QueryResponseDocument other = (QueryResponseDocument) obj;
+        if (obj == null) {return false;}
+        if (this == obj) {return true;}
         if (__equalsCalc != null) {
             return (__equalsCalc == obj);
         }

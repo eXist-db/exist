@@ -200,9 +200,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public XUpdateProcessor(DBBroker broker, DocumentSet docs, AccessContext accessCtx)
 		throws ParserConfigurationException {
 		if(accessCtx == null)
-			throw new NullAccessContextException();
+			{throw new NullAccessContextException();}
 		this.accessCtx = accessCtx;
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		factory.setValidating(false);
 		this.builder = factory.newDocumentBuilder();
@@ -211,11 +211,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		//namespaces.put("xml", Namespaces.XML_NS);
 		//TODO : move this to a dedicated configure() method.
 		if (broker != null) {
-			Configuration config = broker.getConfiguration();
+			final Configuration config = broker.getConfiguration();
 			Boolean temp;
 			if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
 				!= null)
-				preserveWhitespaceTemp = temp.booleanValue();
+				{preserveWhitespaceTemp = temp.booleanValue();}
 		}
 	}
 	
@@ -238,7 +238,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	 */
 	public Modification[] parse(InputSource is)
 		throws ParserConfigurationException, IOException, SAXException {
-		XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
+		final XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
 		try {
 			reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, this);
             reader.setFeature(Namespaces.SAX_NAMESPACES, true);
@@ -246,7 +246,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			reader.setContentHandler(this);
 			
 			reader.parse(is);
-			Modification mods[] = new Modification[modifications.size()];
+			final Modification mods[] = new Modification[modifications.size()];
 			return modifications.toArray(mods);
 		} finally {
 			broker.getBrokerPool().getParserPool().returnXMLReader(reader);
@@ -306,12 +306,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 
 			if (normalized.length() > 0) {
-				Text text = doc.createTextNode(charBuf.toString());
+				final Text text = doc.createTextNode(charBuf.toString());
 				if (stack.isEmpty()) {
 					//LOG.debug("appending text to fragment: " + text.getData());
 					contents.add(text);
 				} else {
-					Element last = stack.peek();
+					final Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -328,15 +328,15 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				return;
 			} else if (IF.equals(localName)) {
 				if (inModification)
-					throw new SAXException("xupdate:if is not allowed inside a modification");
+					{throw new SAXException("xupdate:if is not allowed inside a modification");}
 				select = atts.getValue("test");
-				Conditional cond = new Conditional(broker, documentSet, select, namespaces, variables);
+				final Conditional cond = new Conditional(broker, documentSet, select, namespaces, variables);
 				cond.setAccessContext(accessCtx);
 				conditionals.push(cond);
 				return;
 			} else if (VALUE_OF.equals(localName)) {
 				if(!inModification)
-					throw new SAXException("xupdate:value-of is not allowed outside a modification");
+					{throw new SAXException("xupdate:value-of is not allowed outside a modification");}
 				
 			} else if (APPEND.equals(localName)
 				|| INSERT_BEFORE.equals(localName)
@@ -346,11 +346,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				|| UPDATE.equals(localName)
 				|| REPLACE.equals(localName)) {
 				if (inModification)
-					throw new SAXException("nested modifications are not allowed");
+					{throw new SAXException("nested modifications are not allowed");}
 				select = atts.getValue("select");
 				if (select == null)
-					throw new SAXException(
-						localName + " requires a select attribute");
+					{throw new SAXException(
+						localName + " requires a select attribute");}
 				doc = builder.newDocument();
 				contents = new NodeListImpl();
 				inModification = true;
@@ -361,49 +361,49 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					|| PROCESSING_INSTRUCTION.equals(localName)
 					|| COMMENT.equals(localName))) {
 				if(!inModification)
-					throw new SAXException(
+					{throw new SAXException(
 							"creation elements are only allowed inside "
-							+ "a modification");
+							+ "a modification");}
 				charBuf.setLength(0);
 			} else
-				throw new SAXException("Unknown XUpdate element: " + qName);
+				{throw new SAXException("Unknown XUpdate element: " + qName);}
 
 			// start a new modification section
 			if (APPEND.equals(localName)) {
-			    String child = atts.getValue("child");
+			    final String child = atts.getValue("child");
 				modification = new Append(broker, documentSet, select, child, namespaces, variables);
 			} else if (UPDATE.equals(localName))
-				modification = new Update(broker, documentSet, select, namespaces, variables);
+				{modification = new Update(broker, documentSet, select, namespaces, variables);}
 			else if (INSERT_BEFORE.equals(localName))
-				modification =
-					new Insert(broker, documentSet, select, Insert.INSERT_BEFORE, namespaces, variables);
+				{modification =
+					new Insert(broker, documentSet, select, Insert.INSERT_BEFORE, namespaces, variables);}
 			else if (INSERT_AFTER.equals(localName))
-				modification =
-					new Insert(broker, documentSet, select, Insert.INSERT_AFTER, namespaces, variables);
+				{modification =
+					new Insert(broker, documentSet, select, Insert.INSERT_AFTER, namespaces, variables);}
 			else if (REMOVE.equals(localName))
-				modification = new Remove(broker, documentSet, select, namespaces, variables);
+				{modification = new Remove(broker, documentSet, select, namespaces, variables);}
 			else if (RENAME.equals(localName))
-				modification = new Rename(broker, documentSet, select, namespaces, variables);
+				{modification = new Rename(broker, documentSet, select, namespaces, variables);}
 			else if (REPLACE.equals(localName))
-				modification = new Replace(broker, documentSet, select, namespaces, variables);
+				{modification = new Replace(broker, documentSet, select, namespaces, variables);}
 
 			// process commands for node creation
 			else if (ELEMENT.equals(localName)) {
 				String name = atts.getValue("name");
 				if (name == null)
-					throw new SAXException("element requires a name attribute");
-				int p = name.indexOf(':');
+					{throw new SAXException("element requires a name attribute");}
+				final int p = name.indexOf(':');
 				String namespace = null;
 				String prefix = "";
 				if (p != Constants.STRING_NOT_FOUND) {
 					prefix = name.substring(0, p);
 					if (name.length() == p + 1)
-						throw new SAXException(
-							"illegal prefix in qname: " + name);
+						{throw new SAXException(
+							"illegal prefix in qname: " + name);}
 					name = name.substring(p + 1);
 					namespace = atts.getValue("namespace");
 					if(namespace == null)
-						namespace = (String) namespaces.get(prefix);
+						{namespace = (String) namespaces.get(prefix);}
 					if (namespace == null) {
 						throw new SAXException(
 							"no namespace defined for prefix " + prefix);
@@ -416,59 +416,59 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				elem.setPrefix(prefix);
 				}
 				else
-					elem = doc.createElement(name);
+					{elem = doc.createElement(name);}
 			
 				if (stack.isEmpty()) {
 					contents.add(elem);
 				} else {
-					Element last = stack.peek();
+					final Element last = stack.peek();
 					last.appendChild(elem);
 				}
 				this.setWhitespaceHandling((Element) stack.push(elem));
 			} else if (ATTRIBUTE.equals(localName)) {
-				String name = atts.getValue("name");
+				final String name = atts.getValue("name");
 				if (name == null)
-					throw new SAXException("attribute requires a name attribute");
-				int p = name.indexOf(':');
+					{throw new SAXException("attribute requires a name attribute");}
+				final int p = name.indexOf(':');
 				String namespace = null;
 				if (p != Constants.STRING_NOT_FOUND) {
-					String prefix = name.substring(0, p);
+					final String prefix = name.substring(0, p);
 					if (name.length() == p + 1)
-						throw new SAXException(
-							"illegal prefix in qname: " + name);
+						{throw new SAXException(
+							"illegal prefix in qname: " + name);}
 					namespace = atts.getValue("namespace");
 					if(namespace == null)
-						namespace = (String) namespaces.get(prefix);
+						{namespace = (String) namespaces.get(prefix);}
 					if (namespace == null)
-						throw new SAXException(
-							"no namespace defined for prefix " + prefix);
+						{throw new SAXException(
+							"no namespace defined for prefix " + prefix);}
 				}
 				Attr attrib = namespace != null && namespace.length() > 0 ?
 								doc.createAttributeNS(namespace, name) :
 								doc.createAttribute(name);
 				if (stack.isEmpty()) {
 					for(int i = 0; i < contents.getLength(); i++) {
-						Node n = contents.item(i);
+						final Node n = contents.item(i);
 						String ns = n.getNamespaceURI();
-						String nname = ns == null ? n.getNodeName() : n.getLocalName();
-						if(ns == null) ns = "";
+						final String nname = ns == null ? n.getNodeName() : n.getLocalName();
+						if(ns == null) {ns = "";}
 						// check for duplicate attributes
 						if(n.getNodeType() == Node.ATTRIBUTE_NODE &&
 								nname.equals(name) &&
 								ns.equals(namespace))
-							throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified twice");
+							{throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified twice");}
 					}
 					contents.add(attrib);
 				} else {
-					Element last = (Element) stack.peek();
+					final Element last = (Element) stack.peek();
 					if(namespace != null && last.hasAttributeNS(namespace, name) ||
 					   namespace == null && last.hasAttribute(name))
-						throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified " +
-								"twice on the same element");
+						{throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified " +
+								"twice on the same element");}
 					if (namespace != null)
-					last.setAttributeNodeNS(attrib);
+					{last.setAttributeNodeNS(attrib);}
 					else
-					  last.setAttributeNode(attrib);
+					  {last.setAttributeNode(attrib);}
 				}
 				inAttribute = true;
 				currentNode = attrib;
@@ -477,39 +477,39 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			} else if (VALUE_OF.equals(localName)) {
 				select = atts.getValue("select");
 				if (select == null)
-					throw new SAXException("value-of requires a select attribute");
-				Sequence seq = processQuery(select);
+					{throw new SAXException("value-of requires a select attribute");}
+				final Sequence seq = processQuery(select);
 				if (LOG.isDebugEnabled())
-					LOG.debug("Found " + seq.getItemCount() + " items for value-of");
+					{LOG.debug("Found " + seq.getItemCount() + " items for value-of");}
 				Item item;
 				try {
-					for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+					for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
 						item = i.nextItem();
 						if(Type.subTypeOf(item.getType(), Type.NODE)) { 
-							Node node = NodeSetHelper.copyNode(doc, ((NodeValue)item).getNode());
+							final Node node = NodeSetHelper.copyNode(doc, ((NodeValue)item).getNode());
 							if (stack.isEmpty())
-								contents.add(node);
+								{contents.add(node);}
 							else {
-								Element last = (Element) stack.peek();
+								final Element last = (Element) stack.peek();
 								last.appendChild(node);
 							}
 						} else {
-							String value = item.getStringValue();
+							final String value = item.getStringValue();
 							characters(value.toCharArray(), 0, value.length());
 						}
 					}
-				} catch (XPathException e) {
+				} catch (final XPathException e) {
 					throw new SAXException(e.getMessage(), e);
 				}
 			}
 		} else if (inModification) {
-			Element elem = namespaceURI != null && namespaceURI.length() > 0 ?
+			final Element elem = namespaceURI != null && namespaceURI.length() > 0 ?
 									doc.createElementNS(namespaceURI, qName) :
 									doc.createElement(qName);
 			Attr a;
 			for (int i = 0; i < atts.getLength(); i++) {
-                String name = atts.getQName(i);
-                String nsURI = atts.getURI(i);
+                final String name = atts.getQName(i);
+                final String nsURI = atts.getURI(i);
                 if (name.startsWith("xmlns")) {
                     // Why are these showing up? They are supposed to be stripped out?
                 } else {
@@ -518,15 +518,15 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
                             doc.createAttribute(name);
                     a.setValue(atts.getValue(i));
                     if (nsURI != null)
-                    elem.setAttributeNodeNS(a);
+                    {elem.setAttributeNodeNS(a);}
                     else
-                      elem.setAttributeNode(a);
+                      {elem.setAttributeNode(a);}
                 }
 			}
 			if (stack.isEmpty()) {
 				contents.add(elem);
 			} else {
-				Element last = (Element) stack.peek();
+				final Element last = (Element) stack.peek();
 				last.appendChild(elem);
 			}
             this.setWhitespaceHandling((Element) stack.push(elem));
@@ -534,27 +534,27 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	}
 
 	private void startVariableDecl(Attributes atts) throws SAXException {
-		String select = atts.getValue("select");
+		final String select = atts.getValue("select");
 		if (select == null)
-			throw new SAXException("variable declaration requires a select attribute");
-		String name = atts.getValue("name");
+			{throw new SAXException("variable declaration requires a select attribute");}
+		final String name = atts.getValue("name");
 		if (name == null)
-			throw new SAXException("variable declarations requires a name attribute");
+			{throw new SAXException("variable declarations requires a name attribute");}
 		createVariable(name, select);
 	}
 
 	private void startModifications(Attributes atts) throws SAXException {
-		String version = atts.getValue("version");
+		final String version = atts.getValue("version");
 		if (version == null)
-			throw new SAXException(
+			{throw new SAXException(
 				"version attribute is required for "
-					+ "element modifications");
-		if (!version.equals("1.0"))
-			throw new SAXException(
+					+ "element modifications");}
+		if (!"1.0".equals(version))
+			{throw new SAXException(
 				"Version "
 					+ version
 					+ " of XUpdate "
-					+ "not supported.");
+					+ "not supported.");}
 	}
 
 	/**
@@ -566,11 +566,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			final String normalized = preserveWhitespace ? charBuf.toString() :
 				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
-				Text text = doc.createTextNode(charBuf.toString());
+				final Text text = doc.createTextNode(charBuf.toString());
 				if (stack.isEmpty()) {
 					contents.add(text);
 				} else {
-					Element last = stack.peek();
+					final Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
@@ -578,7 +578,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 		if (XUPDATE_NS.equals(namespaceURI)) {
 			if (IF.equals(localName)) {
-				Conditional cond = conditionals.pop();
+				final Conditional cond = conditionals.pop();
 				modifications.add(cond);
 			} else if (localName.equals(ELEMENT)) {
 				this.resetWhitespaceHandling(stack.pop());
@@ -595,7 +595,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				modification.setContent(contents);
 				modification.setAccessContext(accessCtx);
 				if(!conditionals.isEmpty()) {
-					Conditional cond = conditionals.peek();
+					final Conditional cond = conditionals.peek();
 					cond.addModification(modification);
 				} else {
 					modifications.add(modification);
@@ -614,12 +614,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		throws SAXException {
 		if (inModification) {
 			if (inAttribute) {
-			    Attr attr = (Attr)currentNode;
+			    final Attr attr = (Attr)currentNode;
 			    String val = attr.getValue();
 			    if(val == null)
-			        val = new String(ch, start, length);
+			        {val = new String(ch, start, length);}
 			    else
-			        val += new String(ch, start, length);
+			        {val += new String(ch, start, length);}
 				attr.setValue(val);
 			} else {
 				charBuf.append(ch, start, length);
@@ -635,12 +635,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
         if (this.preserveWhitespace) {
             if (this.inModification) {
                 if (this.inAttribute) {
-                    Attr attr = (Attr) this.currentNode;
+                    final Attr attr = (Attr) this.currentNode;
                     String val = attr.getValue();
                     if(val == null)
-                        val = new String(ch, start, length);
+                        {val = new String(ch, start, length);}
                     else
-                        val += new String(ch, start, length);
+                        {val += new String(ch, start, length);}
                     attr.setValue(val);
                 } else {
                     this.charBuf.append(ch, start, length);
@@ -650,7 +650,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	}
     
     private void setWhitespaceHandling(Element e) {
-        String wsSetting = e.getAttributeNS(Namespaces.XML_NS, "space");
+        final String wsSetting = e.getAttributeNS(Namespaces.XML_NS, "space");
         if ("preserve".equals(wsSetting)) {
             this.spaceStack.push(wsSetting);
             this.preserveWhitespace = true;
@@ -662,7 +662,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
     }
     
     private void resetWhitespaceHandling(Element e) {
-        String wsSetting = e.getAttributeNS(Namespaces.XML_NS, "space");
+        final String wsSetting = e.getAttributeNS(Namespaces.XML_NS, "space");
         if ("preserve".equals(wsSetting) || "default".equals(wsSetting)) {
             // Since an opinion was expressed, restore what was previously set:
             this.spaceStack.pop();
@@ -684,27 +684,27 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			final String normalized =
 				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
-				Text text = doc.createTextNode(normalized);
+				final Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
 					
 					if (LOG.isDebugEnabled())
-						LOG.debug("appending text to fragment: " + text.getData());
+						{LOG.debug("appending text to fragment: " + text.getData());}
 					
 					contents.add(text);
 				} else {
-					Element last = stack.peek();
+					final Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
 			charBuf.setLength(0);
 		}
 		if (inModification) {
-			ProcessingInstruction pi =
+			final ProcessingInstruction pi =
 				doc.createProcessingInstruction(target, data);
 			if (stack.isEmpty()) {
 				contents.add(pi);
 			} else {
-				Element last = stack.peek();
+				final Element last = stack.peek();
 				last.appendChild(pi);
 			}
 		}
@@ -719,12 +719,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private void createVariable(String name, String select)
 		throws SAXException {
 		if (LOG.isDebugEnabled())
-			LOG.debug("creating variable " + name + " as " + select);
+			{LOG.debug("creating variable " + name + " as " + select);}
 		
-		Sequence result = processQuery(select);
+		final Sequence result = processQuery(select);
 		
 		if (LOG.isDebugEnabled())
-			LOG.debug("found " + result.getItemCount() + " for variable " + name);
+			{LOG.debug("found " + result.getItemCount() + " for variable " + name);}
 		
 		variables.put(name, result);
 	}
@@ -735,50 +735,50 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			context = new XQueryContext(broker.getBrokerPool(), accessCtx);
 			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry<String, String> namespaceEntry;
-			for (Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
+			for (final Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
 				namespaceEntry = (Map.Entry<String, String>) i.next();
 				context.declareNamespace(
 					namespaceEntry.getKey(),
 					namespaceEntry.getValue());
 			}
 			Map.Entry<String, Object> entry;
-			for (Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
+			for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
 				entry = (Map.Entry<String, Object>) i.next();
 				context.declareVariable(entry.getKey().toString(), entry.getValue());
 			}
 			// TODO(pkaminsk2): why replicate XQuery.compile here?
-			XQueryLexer lexer = new XQueryLexer(context, new StringReader(select));
-			XQueryParser parser = new XQueryParser(lexer);
-			XQueryTreeParser treeParser = new XQueryTreeParser(context);
+			final XQueryLexer lexer = new XQueryLexer(context, new StringReader(select));
+			final XQueryParser parser = new XQueryParser(lexer);
+			final XQueryTreeParser treeParser = new XQueryTreeParser(context);
 			parser.xpath();
 			if (parser.foundErrors()) {
 				throw new SAXException(parser.getErrorMessage());
 			}
 
-			AST ast = parser.getAST();
+			final AST ast = parser.getAST();
 			
 			if (LOG.isDebugEnabled())
-				LOG.debug("generated AST: " + ast.toStringTree());
+				{LOG.debug("generated AST: " + ast.toStringTree());}
 
-			PathExpr expr = new PathExpr(context);
+			final PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);
 			if (treeParser.foundErrors()) {
 				throw new SAXException(treeParser.getErrorMessage());
 			}
 			expr.analyze(new AnalyzeContextInfo());
-			Sequence seq = expr.eval(null, null);
+			final Sequence seq = expr.eval(null, null);
 			return seq;
-		} catch (RecognitionException e) {
+		} catch (final RecognitionException e) {
 			LOG.warn("error while creating variable", e);
 			throw new SAXException(e);
-		} catch (TokenStreamException e) {
+		} catch (final TokenStreamException e) {
 			LOG.warn("error while creating variable", e);
 			throw new SAXException(e);
-		} catch (XPathException e) {
+		} catch (final XPathException e) {
 			throw new SAXException(e);
 		} finally {
             if (context != null)
-                context.reset(false);
+                {context.reset(false);}
         }
 	}
 
@@ -790,23 +790,23 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			final String normalized =
 				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
 			if (normalized.length() > 0) {
-				Text text = doc.createTextNode(normalized);
+				final Text text = doc.createTextNode(normalized);
 				if (stack.isEmpty()) {
 					//LOG.debug("appending text to fragment: " + text.getData());
 					contents.add(text);
 				} else {
-					Element last = stack.peek();
+					final Element last = stack.peek();
 					last.appendChild(text);
 				}
 			}
 			charBuf.setLength(0);
 		}
 		if (inModification) {
-			Comment comment = doc.createComment(new String(ch, start, length));
+			final Comment comment = doc.createComment(new String(ch, start, length));
 			if (stack.isEmpty()) {
 				contents.add(comment);
 			} else {
-				Element last = stack.peek();
+				final Element last = stack.peek();
 				last.appendChild(comment);
 			}
 		}

@@ -97,7 +97,7 @@ public final class AccessContext
 	private AccessContext(String value)
 	{
 		if(value == null || value.length() == 0)
-			throw new NullPointerException("Access context value cannot be null");
+			{throw new NullPointerException("Access context value cannot be null");}
 		this.value = value;
 	}
 	

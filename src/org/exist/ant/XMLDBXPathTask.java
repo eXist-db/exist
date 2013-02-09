@@ -83,7 +83,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
         }
 
         if( text != null ) {
-            PropertyHelper helper = PropertyHelper.getPropertyHelper( getProject() );
+            final PropertyHelper helper = PropertyHelper.getPropertyHelper( getProject() );
             query = helper.replaceProperties( null, text, null );
         }
 
@@ -97,10 +97,10 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
 
         try {
             log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            Collection base = DatabaseManager.getCollection( uri, user, password );
+            final Collection base = DatabaseManager.getCollection( uri, user, password );
 
             if( base == null ) {
-                String msg = "Collection " + uri + " could not be found.";
+                final String msg = "Collection " + uri + " could not be found.";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -109,7 +109,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
                 }
 
             } else {
-                XPathQueryService service = (XPathQueryService)base.getService( "XPathQueryService", "1.0" );
+                final XPathQueryService service = (XPathQueryService)base.getService( "XPathQueryService", "1.0" );
 
                 // set pretty-printing on
                 service.setProperty( OutputKeys.INDENT, "yes" );
@@ -133,7 +133,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
 
                 if( ( destDir != null ) && ( results != null ) ) {
                     log( "write results to directory " + destDir.getAbsolutePath(), Project.MSG_INFO );
-                    ResourceIterator iter = results.getIterator();
+                    final ResourceIterator iter = results.getIterator();
                     XMLResource      res  = null;
 
                     log( "Writing results to directory " + destDir.getAbsolutePath(), Project.MSG_DEBUG );
@@ -149,9 +149,9 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
                     if( count ) {
                         getProject().setNewProperty( outputproperty, String.valueOf( results.getSize() ) );
                     } else {
-                        ResourceIterator iter   = results.getIterator();
+                        final ResourceIterator iter   = results.getIterator();
                         XMLResource      res    = null;
-                        StringBuffer     result = new StringBuffer();
+                        final StringBuffer     result = new StringBuffer();
 
                         while( iter.hasMoreResources() ) {
                             res = (XMLResource)iter.nextResource();
@@ -163,8 +163,8 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
                 }
             }
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught while executing query: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught while executing query: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -173,8 +173,8 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
             }
 
         }
-        catch( IOException e ) {
-            String msg = "XMLDB exception caught while writing destination file: " + e.getMessage();
+        catch( final IOException e ) {
+            final String msg = "XMLDB exception caught while writing destination file: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -188,10 +188,10 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
     private void writeResource( XMLResource resource, File dest ) throws IOException, XMLDBException
     {
         if( dest != null ) {
-            Properties outputProperties = new Properties();
+            final Properties outputProperties = new Properties();
             outputProperties.setProperty( OutputKeys.INDENT, "yes" );
 
-            SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
+            final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
 
             Writer        writer     = null;
 
@@ -205,7 +205,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
                 if( !fname.endsWith( ".xml" ) ) {
                     fname += ".xml";
                 }
-                File file = new File( dest, fname );
+                final File file = new File( dest, fname );
                 writer = new OutputStreamWriter( new FileOutputStream( file ), encoding );
             } else {
                 writer = new OutputStreamWriter( new FileOutputStream( dest ), encoding );
@@ -218,7 +218,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask
             SerializerPool.getInstance().returnObject( serializer );
 
         } else {
-            String msg = "Destination target does not exist.";
+            final String msg = "Destination target does not exist.";
 
             if( failonerror ) {
                 throw( new BuildException( msg ) );

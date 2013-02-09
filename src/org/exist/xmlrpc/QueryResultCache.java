@@ -32,7 +32,7 @@ public class QueryResultCache {
         // no empty bucket. need to resize.
         AbstractCachedResult[] temp = new AbstractCachedResult[(results.length * 3) / 2];
         System.arraycopy(results, 0, temp, 0, results.length);
-        int pos = results.length;
+        final int pos = results.length;
         temp[pos] = qr;
         results = temp;
         return pos;
@@ -40,18 +40,18 @@ public class QueryResultCache {
 
     public AbstractCachedResult get(int pos) {
         if (pos < 0 || pos >= results.length)
-            return null;
+            {return null;}
         return results[pos];
     }
     
     public QueryResult getResult(int pos) {
-    	AbstractCachedResult acr = get(pos);
+    	final AbstractCachedResult acr = get(pos);
     	
     	return (acr!=null && acr instanceof QueryResult)?(QueryResult)acr:null;
     }
     
     public SerializedResult getSerializedResult(int pos) {
-    	AbstractCachedResult acr = get(pos);
+    	final AbstractCachedResult acr = get(pos);
     	
     	return (acr!=null && acr instanceof SerializedResult)?(SerializedResult)acr:null;
     }
@@ -82,11 +82,11 @@ public class QueryResultCache {
     public void checkTimestamps() {
         final long now = System.currentTimeMillis();
         for (int i = 0; i < results.length; i++) {
-        	AbstractCachedResult result = results[i];
+        	final AbstractCachedResult result = results[i];
             if (result != null) {
                 if (now - result.getTimestamp() > TIMEOUT) {
                     if (LOG.isDebugEnabled())
-                        LOG.debug("Removing result set " + new Date(result.getTimestamp()).toString());
+                        {LOG.debug("Removing result set " + new Date(result.getTimestamp()).toString());}
                     // Here we should not free resources, because they could be still in use
                     // by other threads, so leave the work to the garbage collector
                     results[i] = null;

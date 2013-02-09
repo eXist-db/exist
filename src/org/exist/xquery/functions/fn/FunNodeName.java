@@ -71,35 +71,35 @@ public class FunNodeName extends Function {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
         Sequence result;
-        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
         if(seq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
-            Item item = seq.itemAt(0);
+            final Item item = seq.itemAt(0);
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-            	throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
+            	{throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");}
             //TODO : how to improve performance ?
-            Node n = ((NodeValue)item).getNode(); 
+            final Node n = ((NodeValue)item).getNode(); 
             //Returns an expanded-QName for node kinds that can have names.
             if (n instanceof QNameable) {
-            	QName qn= ((QNameable)n).getQName();
+            	final QName qn= ((QNameable)n).getQName();
             	if (qn.equalsSimple(QName.EMPTY_QNAME))
-            		result = Sequence.EMPTY_SEQUENCE;
+            		{result = Sequence.EMPTY_SEQUENCE;}
             	else            		
-            		result = new QNameValue(context, qn);
+            		{result = new QNameValue(context, qn);}
             //For other kinds of nodes it returns the empty sequence.
             } else
-            	result = Sequence.EMPTY_SEQUENCE;
+            	{result = Sequence.EMPTY_SEQUENCE;}
         }
         
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
+            {context.getProfiler().end(this, "", result);} 
         
         return result;   
         

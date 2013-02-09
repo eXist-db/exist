@@ -66,32 +66,32 @@ public class FTMatchListener extends AbstractMatchListener {
         while (nextMatch != null) {
             if (proxy.getNodeId().isDescendantOf(nextMatch.getNodeId())) {
                 if (ancestors == null)
-                    ancestors = new ExtArrayNodeSet();
+                    {ancestors = new ExtArrayNodeSet();}
                 ancestors.add(new NodeProxy(proxy.getDocument(), nextMatch.getNodeId()));
             }
             nextMatch = nextMatch.getNextMatch();
         }
         if (ancestors != null && !ancestors.isEmpty()) {
-            for (Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext();) {
-                NodeProxy p = i.next();
+            for (final Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext();) {
+                final NodeProxy p = i.next();
                 int startOffset = 0;
                 try {
-                    XMLStreamReader reader = broker.getXMLStreamReader(p, false);
+                    final XMLStreamReader reader = broker.getXMLStreamReader(p, false);
                     while (reader.hasNext()) {
-                        int ev = reader.next();
-                        NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                        final int ev = reader.next();
+                        final NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                         if (nodeId.equals(proxy.getNodeId()))
-                            break;
+                            {break;}
                         if (ev == XMLStreamConstants.CHARACTERS)
-                            startOffset += reader.getText().length();
+                            {startOffset += reader.getText().length();}
                     }
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
-                } catch (XMLStreamException e) {
+                } catch (final XMLStreamException e) {
                     LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
                 }
                 if (offsetStack == null)
-                    offsetStack = new Stack<NodeOffset>();
+                    {offsetStack = new Stack<NodeOffset>();}
                 offsetStack.push(new NodeOffset(p.getNodeId(), startOffset));
             }
         }
@@ -106,7 +106,7 @@ public class FTMatchListener extends AbstractMatchListener {
         while (nextMatch != null) {
             if (nextMatch.getNodeId().equals(getCurrentNode().getNodeId())) {
                 if (offsetStack == null)
-                    offsetStack = new Stack<NodeOffset>();
+                    {offsetStack = new Stack<NodeOffset>();}
                 offsetStack.push(new NodeOffset(nextMatch.getNodeId()));
                 break;
             }
@@ -136,15 +136,15 @@ public class FTMatchListener extends AbstractMatchListener {
             // walk through the stack to find matches which start in
             // the current string of text
             for (int i = 0; i < offsetStack.size(); i++) {
-                NodeOffset no = offsetStack.get(i);
+                final NodeOffset no = offsetStack.get(i);
                 int end = no.offset + seq.length();
                 // scan all matches
                 Match next = match;
                 while (next != null) {
                     if (next.getIndexId() == FTIndex.ID && next.getNodeId().equals(no.nodeId)) {
-                        int freq = next.getFrequency();
+                        final int freq = next.getFrequency();
                         for (int j = 0; j < freq; j++) {
-                            Match.Offset offset = next.getOffset(j);
+                            final Match.Offset offset = next.getOffset(j);
                             if (offset.getOffset() < end &&
                                 offset.getOffset() + offset.getLength() > no.offset) {
                                 // add it to the list to be processed
@@ -159,7 +159,7 @@ public class FTMatchListener extends AbstractMatchListener {
                                     start = 0;
                                 }
                                 if (start + len > seq.length())
-                                    len = seq.length() - start;
+                                    {len = seq.length() - start;}
                                 offsets.add(new Match.Offset(start, len));
                             }
                         }
@@ -176,8 +176,8 @@ public class FTMatchListener extends AbstractMatchListener {
             if (next.getIndexId() == FTIndex.ID &&
                 next.getNodeId().equals(getCurrentNode().getNodeId())) {
                 if (offsets == null)
-                    offsets = new ArrayList<Match.Offset>();
-                int freq = next.getFrequency();
+                    {offsets = new ArrayList<Match.Offset>();}
+                final int freq = next.getFrequency();
                 for (int i = 0; i < freq; i++) {
                     offsets.add(next.getOffset(i));
                 }
@@ -187,10 +187,10 @@ public class FTMatchListener extends AbstractMatchListener {
         // now print out the text, marking all matches with a match element
         if (offsets != null) {
             FastQSort.sort(offsets, 0, offsets.size() - 1);
-            String s = seq.toString();
+            final String s = seq.toString();
             int pos = 0;
             for (int i = 0; i < offsets.size(); i++) {
-                Match.Offset offset = offsets.get(i);
+                final Match.Offset offset = offsets.get(i);
                 if (offset.getOffset() > pos) {
                     super.characters(s.substring(pos, pos + (offset.getOffset() - pos)));
                 }
@@ -203,7 +203,7 @@ public class FTMatchListener extends AbstractMatchListener {
                 super.characters(s.substring(pos));
             }
         } else
-            super.characters(seq);
+            {super.characters(seq);}
     }
 
     private class NodeOffset {

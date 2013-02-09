@@ -50,15 +50,15 @@ public class RemoveUserTask extends UserTask
         }
 
         try {
-            Account u = service.getAccount( name );
+            final Account u = service.getAccount( name );
 
             if( u != null ) {
                 service.removeAccount( u );
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );

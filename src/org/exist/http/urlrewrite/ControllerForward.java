@@ -66,9 +66,9 @@ public class ControllerForward extends URLRewrite {
     @Override
     protected void updateRequest(XQueryURLRewrite.RequestWrapper request) {
         super.updateRequest(request);
-        if (!(target.length() == 0 || target.equals("/") ||target.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
-            String oldURI = request.getInContextPath();
-            String uri = target + oldURI;
+        if (!(target.length() == 0 || "/".equals(target) ||target.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
+            final String oldURI = request.getInContextPath();
+            final String uri = target + oldURI;
             request.setInContextPath(uri);
         }
     }
@@ -76,12 +76,12 @@ public class ControllerForward extends URLRewrite {
     @Override
     protected void rewriteRequest(XQueryURLRewrite.RequestWrapper request) {
         if (target != null && target.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-            XmldbURI dbURI = XmldbURI.create(target);
+            final XmldbURI dbURI = XmldbURI.create(target);
             this.uri = "/rest";
             String colPath = dbURI.getCollectionPath();
-            String contextPath = request.getInContextPath();
+            final String contextPath = request.getInContextPath();
             if (contextPath.startsWith(colPath))
-                colPath = "";
+                {colPath = "";}
             request.setPaths("/rest" + colPath + contextPath, "/rest");
             request.setBasePath("/rest" + colPath);
             request.setAttribute(XQueryURLRewrite.RQ_ATTR, "true");

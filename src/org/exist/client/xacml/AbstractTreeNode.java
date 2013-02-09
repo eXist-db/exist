@@ -37,6 +37,6 @@ public abstract class AbstractTreeNode implements XACMLTreeNode
 	protected void fireChanged()
 	{
 		if(parent != null)
-			parent.nodeChanged(this);
+			{parent.nodeChanged(this);}
 	}
 }

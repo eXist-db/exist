@@ -49,31 +49,31 @@ public class DatabaseInterface
 	private void setup(Collection systemCollection)
 	{
 		if(systemCollection == null)
-			throw new NullPointerException("System collection cannot be null");
+			{throw new NullPointerException("System collection cannot be null");}
 			
 		InputStream in = null;
 		try
 		{
-			CollectionManagementService service = (CollectionManagementService)systemCollection.getService("CollectionManagementService", "1.0");
+			final CollectionManagementService service = (CollectionManagementService)systemCollection.getService("CollectionManagementService", "1.0");
 			policyCollection = service.createCollection(XACMLConstants.POLICY_COLLECTION_NAME);
-			Collection confCol = service.createCollection("config" + XACMLConstants.POLICY_COLLECTION);
+			final Collection confCol = service.createCollection("config" + XACMLConstants.POLICY_COLLECTION);
 			
-			String confName = XACMLConstants.POLICY_COLLECTION_NAME + ".xconf";
-			XMLResource res = (XMLResource)confCol.createResource(confName, "XMLResource");
+			final String confName = XACMLConstants.POLICY_COLLECTION_NAME + ".xconf";
+			final XMLResource res = (XMLResource)confCol.createResource(confName, "XMLResource");
 			
 			in = DatabaseInterface.class.getResourceAsStream(confName);
 			if(in == null)
-				LOG.warn("Could not find policy collection configuration file '" + confName + "'");
+				{LOG.warn("Could not find policy collection configuration file '" + confName + "'");}
 			
-			String content = XACMLUtil.toString(in);
+			final String content = XACMLUtil.toString(in);
 			res.setContent(content);
 			confCol.storeResource(res);
 		}
-		catch(IOException ioe)
+		catch(final IOException ioe)
 		{
 			ClientFrame.showErrorMessage("Error setting up XACML editor", ioe);
 		}
-		catch(XMLDBException xe)
+		catch(final XMLDBException xe)
 		{
 			ClientFrame.showErrorMessage("Error setting up XACML editor", xe);
 		}
@@ -82,7 +82,7 @@ public class DatabaseInterface
 			if(in != null)
 			{
 				try { in.close(); }
-				catch(IOException ioe) {}
+				catch(final IOException ioe) {}
 			}
 		}
 	}
@@ -94,35 +94,35 @@ public class DatabaseInterface
 		{
 			removeDocs = new TreeSet<String>(Arrays.asList(policyCollection.listResources()));
 		}
-		catch(XMLDBException xe)
+		catch(final XMLDBException xe)
 		{
 			LOG.warn("Could not list policy collection resources", xe);
 			removeDocs = null;
 		}
 		
-		int size = root.getChildCount();
+		final int size = root.getChildCount();
 		for(int i = 0; i < size; ++i)
 		{
-			AbstractPolicyNode node = (AbstractPolicyNode)root.getChild(i);
+			final AbstractPolicyNode node = (AbstractPolicyNode)root.getChild(i);
 			
 			String documentName = node.getDocumentName();
 			if(documentName != null && removeDocs != null)
-				removeDocs.remove(documentName);
+				{removeDocs.remove(documentName);}
 
 			if(!node.isModified(true))
-				continue;
+				{continue;}
 			node.commit(true);
 
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			final ByteArrayOutputStream out = new ByteArrayOutputStream();
 			node.create().encode(out);
 			try
 			{
 				XMLResource xres;
-				Resource res = (documentName == null) ? null : policyCollection.getResource(documentName);
+				final Resource res = (documentName == null) ? null : policyCollection.getResource(documentName);
 				if(res == null)
-					xres = null;
+					{xres = null;}
 				else if(res instanceof XMLResource)
-					xres = (XMLResource)res;
+					{xres = (XMLResource)res;}
 				else
 				{
 					xres = null;
@@ -143,9 +143,9 @@ public class DatabaseInterface
 				policyCollection.storeResource(xres);
 				node.commit(true);
 			}
-			catch (XMLDBException e)
+			catch (final XMLDBException e)
 			{
-				StringBuffer message = new StringBuffer();
+				final StringBuffer message = new StringBuffer();
 				message.append("Error saving policy '");
 				message.append(node.getId());
 				message.append("' ");
@@ -159,15 +159,15 @@ public class DatabaseInterface
 			}
 		}
 		if(removeDocs == null)
-			return;
-		for(String documentName : removeDocs)
+			{return;}
+		for(final String documentName : removeDocs)
 		{
 			try
 			{
-				Resource removeResource = policyCollection.getResource(documentName);
+				final Resource removeResource = policyCollection.getResource(documentName);
 				policyCollection.removeResource(removeResource);
 			}
-			catch (XMLDBException xe)
+			catch (final XMLDBException xe)
 			{
 				LOG.warn("Could not remove resource '" + documentName + "'", xe);
 			}
@@ -176,7 +176,7 @@ public class DatabaseInterface
 	
 	public RootNode getPolicies()
 	{
-		RootNode root = new RootNode();
+		final RootNode root = new RootNode();
 		findPolicies(root);
 		root.commit(true);
 		return root;
@@ -185,37 +185,37 @@ public class DatabaseInterface
 	{
 		try
 		{
-			String[] resourceIds = policyCollection.listResources();
+			final String[] resourceIds = policyCollection.listResources();
 			for(int i = 0; i < resourceIds.length; ++i)
 			{
-				String resourceId = resourceIds[i];
-				Resource resource = policyCollection.getResource(resourceId);
+				final String resourceId = resourceIds[i];
+				final Resource resource = policyCollection.getResource(resourceId);
 				if(resource != null && resource instanceof XMLResource)
-					handleResource((XMLResource)resource, root);
+					{handleResource((XMLResource)resource, root);}
 			}
 		}
-		catch (XMLDBException xe)
+		catch (final XMLDBException xe)
 		{
 			ClientFrame.showErrorMessage("Error scanning for policies", xe);
 		}
 	}
 	private void handleResource(XMLResource xres, RootNode root) throws XMLDBException
 	{
-		String documentName = xres.getDocumentId();
-		Node content = xres.getContentAsDOM();
+		final String documentName = xres.getDocumentId();
+		final Node content = xres.getContentAsDOM();
 		Element rootElement;
 		if(content instanceof Document)
-			rootElement = ((Document)content).getDocumentElement();
+			{rootElement = ((Document)content).getDocumentElement();}
 		else if(content instanceof Element)
-			rootElement = (Element)content;
+			{rootElement = (Element)content;}
 		else
 		{
 			LOG.warn("The DOM representation of resource '" + documentName + "' in the policy collection was not a Document or Element node.");
 			return;
 		}
 		
-		String namespace = rootElement.getNamespaceURI();
-		String tagName = rootElement.getTagName();
+		final String namespace = rootElement.getNamespaceURI();
+		final String tagName = rootElement.getTagName();
 		
 		//sunxacml does not do namespaces, so this part is commented out for now
 		if(/*XACMLConstants.XACML_POLICY_NAMESPACE.equals(namespace) && */XACMLConstants.POLICY_ELEMENT_LOCAL_NAME.equals(tagName))
@@ -225,7 +225,7 @@ public class DatabaseInterface
 			{
 				policy = Policy.getInstance(rootElement);
 			}
-			catch(ParsingException pe)
+			catch(final ParsingException pe)
 			{
 				ClientFrame.showErrorMessage("Error parsing policy document '" + documentName +"'", pe);
 				return;
@@ -239,7 +239,7 @@ public class DatabaseInterface
 			{
 				policySet = PolicySet.getInstance(rootElement);
 			}
-			catch(ParsingException pe)
+			catch(final ParsingException pe)
 			{
 				ClientFrame.showErrorMessage("Error parsing policy set document '" + documentName +"'", pe);
 				return;
@@ -247,6 +247,6 @@ public class DatabaseInterface
 			root.add(new PolicySetNode(root, documentName, policySet));
 		}
 		else
-			LOG.warn("Document '" + documentName + "' in policy collection is not a policy: root tag has namespace '" + namespace + "' and name '" + tagName + "'");
+			{LOG.warn("Document '" + documentName + "' in policy collection is not a policy: root tag has namespace '" + namespace + "' and name '" + tagName + "'");}
 	}
 }

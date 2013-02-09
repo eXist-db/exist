@@ -82,10 +82,10 @@ public class FunSubSequence extends Function {
     	contextInfo.setParent(this);
 
         for(int i = 0; i < getArgumentCount(); i++) {
-            AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+            final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
             getArgument(i).analyze(argContextInfo);
             if (i == 0)
-                contextInfo.setStaticReturnType(argContextInfo.getStaticReturnType());
+                {contextInfo.setStaticReturnType(argContextInfo.getStaticReturnType());}
         }
     }
 
@@ -102,17 +102,17 @@ public class FunSubSequence extends Function {
                     "DEPENDENCIES",
                     Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());}
         }
 
         Sequence result;
-        Sequence seq = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
         if (seq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            {result = Sequence.EMPTY_SEQUENCE;}
         else {
             int start = ((DoubleValue) getArgument(1).eval(contextSequence,
                     contextItem).convertTo(Type.DOUBLE)).getInt();
@@ -132,7 +132,7 @@ public class FunSubSequence extends Function {
             	--length;
                 --start;
             } else
-            	--start;
+            	{--start;}
                         
             Sequence tmp;
             if (seq instanceof NodeSet) {
@@ -144,7 +144,7 @@ public class FunSubSequence extends Function {
             }
             
             Item item;
-            SequenceIterator iterator = seq.iterate();
+            final SequenceIterator iterator = seq.iterate();
             for(int i = 0; i < start; i++) {
                 item = iterator.nextItem();
             } 
@@ -159,7 +159,7 @@ public class FunSubSequence extends Function {
         }
 
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
 
         return result;
 

@@ -101,7 +101,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 		throws XPathException {
 
 		try {
-			Permission perm = getPermissions(collection, args);
+			final Permission perm = getPermissions(collection, args);
 			if("get-owner".equals(getSignature().getName().getLocalName())) {
 				return new StringValue(perm.getOwner().getName());
             } else {
@@ -109,7 +109,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
             }
 
 
-        } catch (XMLDBException xe) {
+        } catch (final XMLDBException xe) {
             logger.error("Unable to retrieve resource permissions");
             throw new XPathException(this, "Unable to retrieve resource permissions", xe);
         }

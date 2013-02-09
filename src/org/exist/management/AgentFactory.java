@@ -31,23 +31,23 @@ public class AgentFactory {
 
     public static Agent getInstance() {
         if (instance == null) {
-            String className = System.getProperty("exist.jmxagent", "org.exist.management.impl.JMXAgent");
+            final String className = System.getProperty("exist.jmxagent", "org.exist.management.impl.JMXAgent");
             try {
-                Class<?> clazz = Class.forName(className);
+                final Class<?> clazz = Class.forName(className);
                 if (!Agent.class.isAssignableFrom(clazz)) {
                     LOG.warn("Class " + className + " does not implement interface Agent. Using fallback.");
                 } else {
                     instance = (Agent) clazz.newInstance();
                 }
-            } catch (ClassNotFoundException e) {
+            } catch (final ClassNotFoundException e) {
                 LOG.warn("Class not found for JMX agent: " + className);
-            } catch (IllegalAccessException e) {
+            } catch (final IllegalAccessException e) {
                 LOG.warn("Failed to instantiate class for JMX agent: " + className);
-            } catch (InstantiationException e) {
+            } catch (final InstantiationException e) {
                 LOG.warn("Failed to instantiate class for JMX agent: " + className);
             }
             if (instance == null)
-                instance = new DummyAgent();
+                {instance = new DummyAgent();}
         }
         return instance;
     }

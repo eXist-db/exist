@@ -65,7 +65,7 @@ public class TriggerStatePerThread {
 			DocumentTrigger trigger, XmldbURI modifiedDocument) {
 
 		// another trigger is already running
-		DocumentTrigger runningTrigger = getRunningTrigger();
+		final DocumentTrigger runningTrigger = getRunningTrigger();
 		if ( runningTrigger != null && 
 			trigger != runningTrigger ) {
 			return false;

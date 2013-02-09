@@ -122,9 +122,9 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
      */
     @Override
     public String getBaseURI() {
-        StoredNode parent = getParentStoredNode();
+        final StoredNode parent = getParentStoredNode();
         if (parent != null )
-            return parent.getBaseURI();
+            {return parent.getBaseURI();}
         return getDocument().getBaseURI();
     }
 
@@ -135,7 +135,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
      */
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append( "<?" );
         buf.append( target );
         buf.append( " " );
@@ -149,19 +149,19 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         byte[] td;
         try {
             td = target.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException uee) {
+        } catch (final UnsupportedEncodingException uee) {
             LOG.warn(uee);
             td = target.getBytes();
         }
         byte[] dd;
         try {
             dd = data.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException uee) {
+        } catch (final UnsupportedEncodingException uee) {
             LOG.warn(uee);
             dd = data.getBytes();
         }
         int nodeIdLen = nodeId.size();
-        byte[] d = new byte[td.length + dd.length + nodeIdLen + 7];
+        final byte[] d = new byte[td.length + dd.length + nodeIdLen + 7];
         int pos = 0;
         d[pos] = (byte) (Signatures.Proc << 0x5);
         pos += LENGTH_SIGNATURE_LENGTH; 
@@ -180,9 +180,9 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc, boolean pooled) {
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;
-        int dlnLen = ByteConversion.byteToShort(data, pos);
+        final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
         int l = ByteConversion.byteToInt(data, pos);
@@ -190,7 +190,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         String target;
         try {
             target = new String(data, pos, l, "UTF-8");
-        } catch (UnsupportedEncodingException uee) {
+        } catch (final UnsupportedEncodingException uee) {
             LOG.warn(uee);
             target = new String(data, pos, l);
         }
@@ -198,16 +198,16 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         String cdata;
         try {
             cdata = new String(data, pos, len - (pos - start), "UTF-8");
-        } catch (UnsupportedEncodingException uee) {
+        } catch (final UnsupportedEncodingException uee) {
             LOG.warn(uee);
             cdata = new String(data, pos, len - (pos - start));
         }
         //OK : we have the necessary material to build the processing instruction
         ProcessingInstructionImpl pi;
         if(pooled)
-            pi = (ProcessingInstructionImpl) NodePool.getInstance().borrowNode(Node.PROCESSING_INSTRUCTION_NODE);
+            {pi = (ProcessingInstructionImpl) NodePool.getInstance().borrowNode(Node.PROCESSING_INSTRUCTION_NODE);}
         else
-            pi = new ProcessingInstructionImpl();
+            {pi = new ProcessingInstructionImpl();}
         pi.setTarget(target);
         pi.data = cdata;
         pi.setNodeId(dln);

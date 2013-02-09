@@ -37,7 +37,7 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append( "<!-- " );
         buf.append( cdata.toString() );
         buf.append( " -->" );
@@ -49,19 +49,19 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         String s;
         try {
             s = StringValue.expand(cdata);
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             LOG.warn(e);
             s = cdata.toString();
         }
         byte[] cd;
         try {
             cd = s.getBytes( "UTF-8" );
-        } catch (UnsupportedEncodingException uee) {
+        } catch (final UnsupportedEncodingException uee) {
             LOG.warn(uee);
             cd = s.getBytes();
         }
         int nodeIdLen = nodeId.size();
-        byte[] data = new byte[StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
+        final byte[] data = new byte[StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
            + nodeIdLen + cd.length];
         int pos = 0;
         data[pos] = (byte) ( Signatures.Comm << 0x5 );
@@ -78,25 +78,25 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
            DocumentImpl doc, boolean pooled) {
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;
-        int dlnLen = ByteConversion.byteToShort(data, pos);
+        final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
         String cdata;
         try {
             cdata = new String(data, pos, len - (pos - start), "UTF-8" );
-        } catch ( UnsupportedEncodingException uee ) {
+        } catch ( final UnsupportedEncodingException uee ) {
             LOG.warn(uee);
             cdata = new String(data, pos, len - (pos - start));
         }
         //OK : we have the necessary material to build the comment
         CommentImpl comment;
         if(pooled)
-            comment = (CommentImpl) NodePool.getInstance().borrowNode(Node.COMMENT_NODE);
+            {comment = (CommentImpl) NodePool.getInstance().borrowNode(Node.COMMENT_NODE);}
             //comment = (CommentImpl)NodeObjectPool.getInstance().borrowNode(CommentImpl.class);
         else
-            comment = new CommentImpl();
+            {comment = new CommentImpl();}
         comment.setNodeId(dln);
         comment.appendData(cdata);
         return comment;

@@ -93,7 +93,7 @@ class IndexDialog extends JFrame {
 		this.client = client;
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());		
 		//capture the frame's close event
-		WindowListener windowListener = new WindowAdapter()
+		final WindowListener windowListener = new WindowAdapter()
 		{
 			public void windowClosing (WindowEvent e)
 			{
@@ -115,15 +115,15 @@ class IndexDialog extends JFrame {
 	private void setupComponents()
 	{
 		//Dialog Content Panel
-		GridBagLayout grid = new GridBagLayout();
+		final GridBagLayout grid = new GridBagLayout();
 		getContentPane().setLayout(grid);
 		
 		//Constraints for Layout
-		GridBagConstraints c = new GridBagConstraints();
+		final GridBagConstraints c = new GridBagConstraints();
 		c.insets = new Insets(2, 2, 2, 2);
 
 		//collection label
-		JLabel label = new JLabel("Collection");
+		final JLabel label = new JLabel("Collection");
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 1;
@@ -135,11 +135,11 @@ class IndexDialog extends JFrame {
 		getContentPane().add(label);
 		
 		//get the collections but not system collections
-		ArrayList alCollections = new ArrayList();
+		final ArrayList alCollections = new ArrayList();
         try
         {
-            Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            ArrayList alAllCollections = getCollections(root, new ArrayList());
+            final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
+            final ArrayList alAllCollections = getCollections(root, new ArrayList());
             for(int i = 0; i < alAllCollections.size(); i++)
             {
             	//TODO : use XmldbURIs !
@@ -149,7 +149,7 @@ class IndexDialog extends JFrame {
             	}
             }
         }
-        catch (XMLDBException e)
+        catch (final XMLDBException e)
         {
             //showErrorMessage(e.getMessage(), e);
             return;
@@ -163,7 +163,7 @@ class IndexDialog extends JFrame {
         		
         		saveChanges(true);
         		
-        		JComboBox cb = (JComboBox)e.getSource();
+        		final JComboBox cb = (JComboBox)e.getSource();
    				actionGetIndexes(cb.getSelectedItem().toString());
     		}
         });
@@ -178,9 +178,9 @@ class IndexDialog extends JFrame {
         getContentPane().add(cmbCollections);
 
         //Panel to hold controls relating to the FullText Index
-		JPanel panelFullTextIndex = new JPanel();
+		final JPanel panelFullTextIndex = new JPanel();
 		panelFullTextIndex.setBorder(new TitledBorder("Full Text Index"));
-		GridBagLayout panelFullTextIndexGrid = new GridBagLayout();
+		final GridBagLayout panelFullTextIndexGrid = new GridBagLayout();
 		panelFullTextIndex.setLayout(panelFullTextIndexGrid);
 		
 		
@@ -250,7 +250,7 @@ class IndexDialog extends JFrame {
         colAction = tblFullTextIndexes.getColumnModel().getColumn(0);
         colAction.setCellEditor(new ComboBoxCellEditor(CONFIG_TYPE));
         colAction.setCellRenderer(new ComboBoxCellRenderer(CONFIG_TYPE));
-        JScrollPane scrollFullTextIndexes = new JScrollPane(tblFullTextIndexes);
+        final JScrollPane scrollFullTextIndexes = new JScrollPane(tblFullTextIndexes);
 		scrollFullTextIndexes.setPreferredSize(new Dimension(250, 150));
 		c.gridx = 0;
 		c.gridy = 3;
@@ -263,9 +263,9 @@ class IndexDialog extends JFrame {
 		panelFullTextIndex.add(scrollFullTextIndexes);
 		
 		//Toolbar with add/delete buttons for FullText Index
-		Box fulltextIndexToolbarBox = Box.createHorizontalBox();
+		final Box fulltextIndexToolbarBox = Box.createHorizontalBox();
 		//add button
-		JButton btnAddFullTextIndex = new JButton("Add");
+		final JButton btnAddFullTextIndex = new JButton("Add");
 		btnAddFullTextIndex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
@@ -274,7 +274,7 @@ class IndexDialog extends JFrame {
 		});
 		fulltextIndexToolbarBox.add(btnAddFullTextIndex);
 		//delete button
-		JButton btnDeleteFullTextIndex = new JButton("Delete");
+		final JButton btnDeleteFullTextIndex = new JButton("Delete");
 		btnDeleteFullTextIndex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
@@ -305,9 +305,9 @@ class IndexDialog extends JFrame {
 		
 		
         //Panel to hold controls relating to the Range Indexes
-		JPanel panelRangeIndexes = new JPanel();
+		final JPanel panelRangeIndexes = new JPanel();
 		panelRangeIndexes.setBorder(new TitledBorder("Range Indexes"));
-		GridBagLayout panelRangeIndexesGrid = new GridBagLayout();
+		final GridBagLayout panelRangeIndexesGrid = new GridBagLayout();
 		panelRangeIndexes.setLayout(panelRangeIndexesGrid);
         
         //Table to hold the Range Indexes with Sroll bar
@@ -322,7 +322,7 @@ class IndexDialog extends JFrame {
         colxsType = tblRangeIndexes.getColumnModel().getColumn(0);
         colxsType.setCellEditor(new ComboBoxCellEditor(CONFIG_TYPE));
         colxsType.setCellRenderer(new ComboBoxCellRenderer(CONFIG_TYPE));
-        JScrollPane scrollRangeIndexes = new JScrollPane(tblRangeIndexes);
+        final JScrollPane scrollRangeIndexes = new JScrollPane(tblRangeIndexes);
 		scrollRangeIndexes.setPreferredSize(new Dimension(350, 150));
 		c.gridx = 0;
 		c.gridy = 0;
@@ -335,9 +335,9 @@ class IndexDialog extends JFrame {
 		panelRangeIndexes.add(scrollRangeIndexes);
         
 		//Toolbar with add/delete buttons for Range Index
-		Box rangeIndexToolbarBox = Box.createHorizontalBox();
+		final Box rangeIndexToolbarBox = Box.createHorizontalBox();
 		//add button
-		JButton btnAddRangeIndex = new JButton("Add");
+		final JButton btnAddRangeIndex = new JButton("Add");
 		btnAddRangeIndex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
@@ -346,7 +346,7 @@ class IndexDialog extends JFrame {
 		});
 		rangeIndexToolbarBox.add(btnAddRangeIndex);
 		//delete button
-		JButton btnDeleteRangeIndex = new JButton("Delete");
+		final JButton btnDeleteRangeIndex = new JButton("Delete");
 		btnDeleteRangeIndex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e)
 			{
@@ -375,15 +375,15 @@ class IndexDialog extends JFrame {
 	    grid.setConstraints(panelRangeIndexes, c);
 		getContentPane().add(panelRangeIndexes);
 
-        Box mainBtnBox = Box.createHorizontalBox();
-        JButton cancelBtn = new JButton("Cancel");
+        final Box mainBtnBox = Box.createHorizontalBox();
+        final JButton cancelBtn = new JButton("Cancel");
         cancelBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 IndexDialog.this.setVisible(false);
 				IndexDialog.this.dispose();
             }
         });
-        JButton saveBtn = new JButton("Save");
+        final JButton saveBtn = new JButton("Save");
         saveBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 saveChanges(false);
@@ -416,7 +416,7 @@ class IndexDialog extends JFrame {
             boolean doSave = true;
             if (ask) {
                 //ask the user if they would like to save the changes
-                int result = JOptionPane.showConfirmDialog(getContentPane(), "The configuration for the collection has changed, would you like to save the changes?", "Save Changes", JOptionPane.YES_NO_OPTION);
+                final int result = JOptionPane.showConfirmDialog(getContentPane(), "The configuration for the collection has changed, would you like to save the changes?", "Save Changes", JOptionPane.YES_NO_OPTION);
                 doSave = result == JOptionPane.YES_OPTION;
             }
 			
@@ -426,12 +426,12 @@ class IndexDialog extends JFrame {
 				if(cx.Save())
 				{
 					//save ok, reindex?
-					int result = JOptionPane.showConfirmDialog(getContentPane(), "Your changes have been saved, but will not take effect until the collection is reindexed!\n Would you like to reindex " + cmbCollections.getSelectedItem() + " and sub-collections now?", "Reindex", JOptionPane.YES_NO_OPTION);
+					final int result = JOptionPane.showConfirmDialog(getContentPane(), "Your changes have been saved, but will not take effect until the collection is reindexed!\n Would you like to reindex " + cmbCollections.getSelectedItem() + " and sub-collections now?", "Reindex", JOptionPane.YES_NO_OPTION);
 					
 					if(result == JOptionPane.YES_OPTION)
 					{
 						//reindex collection
-						Runnable reindexThread = new Runnable()
+						final Runnable reindexThread = new Runnable()
 						{
 							public void run()
 							{
@@ -473,7 +473,7 @@ class IndexDialog extends JFrame {
 	private ArrayList getCollections(Collection root, ArrayList collectionsList) throws XMLDBException
     {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
-        String[] childCollections= root.listChildCollections();
+        final String[] childCollections= root.listChildCollections();
         Collection child;
         for(int i = 0; i < childCollections.length; i++)
         {
@@ -490,7 +490,7 @@ class IndexDialog extends JFrame {
 	
 	private void actionDeleteFullTextIndex()
 	{
-		int iSelectedRow = tblFullTextIndexes.getSelectedRow();
+		final int iSelectedRow = tblFullTextIndexes.getSelectedRow();
 		if(iSelectedRow > -1 )
 		{
 			fulltextIndexModel.removeRow(iSelectedRow);
@@ -504,7 +504,7 @@ class IndexDialog extends JFrame {
 	
 	private void actionDeleteRangeIndex()
 	{
-		int iSelectedRow = tblRangeIndexes.getSelectedRow();
+		final int iSelectedRow = tblRangeIndexes.getSelectedRow();
 		if(iSelectedRow > -1 )
 		{
 			rangeIndexModel.removeRow(iSelectedRow);
@@ -524,7 +524,7 @@ class IndexDialog extends JFrame {
 			fulltextIndexModel.fireTableDataChanged();
 			rangeIndexModel.fireTableDataChanged();
 		}
-		catch(XMLDBException xe)
+		catch(final XMLDBException xe)
 		{
 			//TODO: CONSIDER whether CollectionXConf Should throw xmldb exception at all?
 		}

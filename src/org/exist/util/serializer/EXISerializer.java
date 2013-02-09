@@ -46,15 +46,15 @@ public class EXISerializer implements ContentHandler, Receiver {
 	private SAXEncoder encoder;
 	
 	public EXISerializer(OutputStream exiOutputStream) throws EXIException, IOException {
-		EXIFactory exiFactory = DefaultEXIFactory.newInstance();
+		final EXIFactory exiFactory = DefaultEXIFactory.newInstance();
 		encoder = new SAXEncoder(exiFactory);
 		encoder.setOutputStream(exiOutputStream);
 	}
 	
 	public EXISerializer(OutputStream exiOutputStream, InputStream xsdInputStream) throws EXIException, IOException {
-		EXIFactory exiFactory = DefaultEXIFactory.newInstance();
-		GrammarFactory grammarFactory = GrammarFactory.newInstance();
-		Grammar g = grammarFactory.createGrammar(xsdInputStream);
+		final EXIFactory exiFactory = DefaultEXIFactory.newInstance();
+		final GrammarFactory grammarFactory = GrammarFactory.newInstance();
+		final Grammar g = grammarFactory.createGrammar(xsdInputStream);
 		exiFactory.setGrammar(g);
 		encoder = new SAXEncoder(exiFactory);
 		encoder.setOutputStream(exiOutputStream);
@@ -85,7 +85,7 @@ public class EXISerializer implements ContentHandler, Receiver {
 		if(attribs != null) {
 			attributes = new AttributesImpl();
 			for(int x=0; x < attribs.size; x++) {
-				QName attribQName = attribs.getQName(x);
+				final QName attribQName = attribs.getQName(x);
 				attributes.addAttribute(attribQName.getNamespaceURI(),
 						attribQName.getLocalName(),
 						attribQName.getStringValue(),
@@ -105,7 +105,7 @@ public class EXISerializer implements ContentHandler, Receiver {
 
 	@Override
 	public void characters(CharSequence seq) throws SAXException {
-		String sequence = seq.toString();
+		final String sequence = seq.toString();
 		encoder.characters(sequence.toCharArray(), 0, sequence.length());
 	}
 

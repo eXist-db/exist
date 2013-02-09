@@ -59,23 +59,23 @@ public class DigestAuthenticator implements Authenticator {
 			HttpServletResponse response, 
 			boolean sendChallenge) throws IOException {
 		
-		String credentials = request.getHeader("Authorization");
+		final String credentials = request.getHeader("Authorization");
 		if (credentials == null) {
 			sendChallenge(request, response);
 			return null;
 		}
-		Digest digest = new Digest(request.getMethod());
+		final Digest digest = new Digest(request.getMethod());
 		parseCredentials(digest, credentials);
-		SecurityManager secman = pool.getSecurityManager();
-		AccountImpl user = (AccountImpl)secman.getAccount(digest.username);
+		final SecurityManager secman = pool.getSecurityManager();
+		final AccountImpl user = (AccountImpl)secman.getAccount(digest.username);
 		if (user == null) {
 			// If user does not exist then send a challenge request again
-			if (sendChallenge) sendChallenge(request, response);
+			if (sendChallenge) {sendChallenge(request, response);}
 			return null;
 		}
 		if (!digest.check(user.getDigestPassword())) {
 			// If password is incorrect then send a challenge request again
-			if (sendChallenge) sendChallenge(request, response);
+			if (sendChallenge) {sendChallenge(request, response);}
 			return null;
 		}
 		return new SubjectAccreditedImpl(user, this);
@@ -100,11 +100,11 @@ public class DigestAuthenticator implements Authenticator {
 
 	private static void parseCredentials(Digest digest, String credentials) {
 		credentials = credentials.substring("Digest ".length());
-		StringBuilder current = new StringBuilder();
+		final StringBuilder current = new StringBuilder();
 		String name = null, value;
 		boolean inQuotedString = false;
 		for (int i = 0; i < credentials.length(); i++) {
-			char ch = credentials.charAt(i);
+			final char ch = credentials.charAt(i);
 			switch (ch) {
 			case ' ':
 				break;
@@ -115,15 +115,15 @@ public class DigestAuthenticator implements Authenticator {
 					current.setLength(0);
 					inQuotedString = false;
 					if ("username".equalsIgnoreCase(name))
-						digest.username = value;
+						{digest.username = value;}
 					else if ("realm".equalsIgnoreCase(name))
-						digest.realm = value;
+						{digest.realm = value;}
 					else if ("nonce".equalsIgnoreCase(name))
-						digest.nonce = value;
+						{digest.nonce = value;}
 					else if ("uri".equalsIgnoreCase(name))
-						digest.uri = value;
+						{digest.uri = value;}
 					else if ("response".equalsIgnoreCase(name))
-						digest.response = value;
+						{digest.response = value;}
 				} else {
 					value = null;
 					inQuotedString = true;
@@ -159,16 +159,16 @@ public class DigestAuthenticator implements Authenticator {
 		public boolean check(String credentials) throws IOException {
 			if (credentials == null)
 				// no password set for the user: return true
-				return true;
+				{return true;}
 			try {
-				MessageDigest md = MessageDigest.getInstance("MD5");
+				final MessageDigest md = MessageDigest.getInstance("MD5");
 
 				// calc A2 digest
 				md.reset();
 				md.update(method.getBytes("ISO-8859-1"));
 				md.update((byte) ':');
 				md.update(uri.getBytes("ISO-8859-1"));
-				byte[] ha2 = md.digest();
+				final byte[] ha2 = md.digest();
 
 				// calc digest
 				md.update(credentials.getBytes("ISO-8859-1"));
@@ -176,13 +176,13 @@ public class DigestAuthenticator implements Authenticator {
 				md.update(nonce.getBytes("ISO-8859-1"));
 				md.update((byte) ':');
 				md.update(MessageDigester.byteArrayToHex(ha2).getBytes("ISO-8859-1"));
-				byte[] digest = md.digest();
+				final byte[] digest = md.digest();
 
 				// check digest
 				return (MessageDigester.byteArrayToHex(digest).equalsIgnoreCase(response));
-			} catch (NoSuchAlgorithmException e) {
+			} catch (final NoSuchAlgorithmException e) {
 				throw new RuntimeException("MD5 not supported");
-			} catch (UnsupportedEncodingException e) {
+			} catch (final UnsupportedEncodingException e) {
 				throw new RuntimeException("Encoding not supported");
 			}
 

@@ -55,7 +55,7 @@ public class RpcServlet extends XmlRpcServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         // Request logger
 
-        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        final Descriptor descriptor = Descriptor.getDescriptorSingleton();
         if( descriptor.allowRequestLogging() && !descriptor.requestsFiltered()) {
             // Wrap HttpServletRequest, because both request Logger and xmlrpc
             // need the request InputStream, which is consumed when read.
@@ -66,14 +66,14 @@ public class RpcServlet extends XmlRpcServlet {
 
         try {
             super.doPost(request, response);
-        } catch (Throwable e){
+        } catch (final Throwable e){
             log("Problem during XmlRpc execution", e);
             throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
         }
     }
 
     protected XmlRpcHandlerMapping newXmlRpcHandlerMapping() throws XmlRpcException {
-        DefaultHandlerMapping mapping = new DefaultHandlerMapping();
+        final DefaultHandlerMapping mapping = new DefaultHandlerMapping();
         mapping.setVoidMethodEnabled(true);
         mapping.setRequestProcessorFactoryFactory(new XmldbRequestProcessorFactoryFactory());
         mapping.loadDefault(RpcConnection.class);
@@ -87,9 +87,9 @@ public class RpcServlet extends XmlRpcServlet {
         public RequestProcessorFactory getRequestProcessorFactory(Class pClass) throws XmlRpcException {
             try {
                 if (instance == null)
-                    instance = new XmldbRequestProcessorFactory("exist", useDefaultUser);
+                    {instance = new XmldbRequestProcessorFactory("exist", useDefaultUser);}
                 return instance;
-            } catch (EXistException e) {
+            } catch (final EXistException e) {
                 throw new XmlRpcException("Failed to initialize XMLRPC interface: " + e.getMessage(), e);
             }
         }
@@ -106,7 +106,7 @@ public class RpcServlet extends XmlRpcServlet {
 
         public XmlRpcHandler getHandler(String pHandlerName) throws XmlRpcNoSuchHandlerException, XmlRpcException {
             if (pHandlerName.indexOf('.') < 0)
-                pHandlerName = "Default." + pHandlerName;
+                {pHandlerName = "Default." + pHandlerName;}
             return super.getHandler(pHandlerName);
         }
     }

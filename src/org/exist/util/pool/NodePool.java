@@ -73,13 +73,13 @@ public class NodePool {
     }
 
     public void returnNode(NodeImpl node) {
-        Pool pool = (Pool) poolMap.get(node.getNodeType());
+        final Pool pool = (Pool) poolMap.get(node.getNodeType());
         if (pool != null)
-            pool.returnNode(node);
+            {pool.returnNode(node);}
     }
 
     public int getSize(short key) {
-        Pool pool = (Pool) poolMap.get(key);
+        final Pool pool = (Pool) poolMap.get(key);
         return pool.stack.size();
     }
     
@@ -115,7 +115,7 @@ public class NodePool {
         public void returnNode(NodeImpl node) {
             // Only cache up to maxActive nodes
             if (stack.size() < maxActive)
-                stack.addLast(node);
+                {stack.addLast(node);}
         }
     }
 }

@@ -74,22 +74,22 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
     
     protected T newInstance(DBBroker broker) throws TriggerException {
         try {
-            T trigger = getClazz().newInstance();
+            final T trigger = getClazz().newInstance();
 
             XmldbURI collectionForTrigger = getCollectionConfigurationURI();
             if(collectionForTrigger.startsWith(XmldbURI.CONFIG_COLLECTION_URI)) {
                 collectionForTrigger = collectionForTrigger.trimFromBeginning(XmldbURI.CONFIG_COLLECTION_URI);
             }
 
-            Collection collection = broker.getCollection(collectionForTrigger);
+            final Collection collection = broker.getCollection(collectionForTrigger);
             trigger.configure(broker, collection, getParameters());
 
             return trigger;
-        } catch (InstantiationException ie) {
+        } catch (final InstantiationException ie) {
             throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + ie.getMessage(), ie);
-        } catch (IllegalAccessException iae) {
+        } catch (final IllegalAccessException iae) {
             throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + iae.getMessage(), iae);
-        } catch (PermissionDeniedException pde) {
+        } catch (final PermissionDeniedException pde) {
             throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + pde.getMessage(), pde);
         }
     }

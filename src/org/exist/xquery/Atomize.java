@@ -58,27 +58,27 @@ public class Atomize extends AbstractExpression {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }        
 		
-        Sequence result = atomize(expression.eval(contextSequence, contextItem));
+        final Sequence result = atomize(expression.eval(contextSequence, contextItem));
 
         if (context.getProfiler().isEnabled())           
-            context.getProfiler().end(this, "", result);   
+            {context.getProfiler().end(this, "", result);}   
      
         return result;
 	}
 
     public static Sequence atomize(Sequence input) throws XPathException {
         if (input.isEmpty())
-            return Sequence.EMPTY_SEQUENCE;
+            {return Sequence.EMPTY_SEQUENCE;}
         if (input.hasOne())
-            return input.itemAt(0).atomize();
+            {return input.itemAt(0).atomize();}
         Item next;
-        ValueSequence result = new ValueSequence();
-        for(SequenceIterator i = input.iterate(); i.hasNext(); ) {
+        final ValueSequence result = new ValueSequence();
+        for(final SequenceIterator i = input.iterate(); i.hasNext(); ) {
             next = i.nextItem();
             result.add(next.atomize());
         }
@@ -94,10 +94,10 @@ public class Atomize extends AbstractExpression {
      */
     public void dump(ExpressionDumper dumper) {
         if(dumper.verbosity() > 1)
-            dumper.display("atomize[");
+            {dumper.display("atomize[");}
         expression.dump(dumper);
         if(dumper.verbosity() > 1)
-            dumper.display("]");
+            {dumper.display("]");}
     }
     
     public void accept(ExpressionVisitor visitor) {
@@ -105,7 +105,7 @@ public class Atomize extends AbstractExpression {
     }
     
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("atomize[");
         result.append(expression.toString());
         result.append("]");
@@ -152,7 +152,7 @@ public class Atomize extends AbstractExpression {
     }
     
     public Expression getSubExpression(int index) {
-    	if (index == 0) return expression;
+    	if (index == 0) {return expression;}
     	
 	    throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
     }

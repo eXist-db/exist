@@ -58,8 +58,8 @@ public abstract class NumericValue extends ComputableValue {
 					return operator == Constants.NEQ;
 				}
 			}			
-			double otherVal = ((NumericValue)other).getDouble();
-			double val = getDouble();
+			final double otherVal = ((NumericValue)other).getDouble();
+			final double val = getDouble();
 			switch(operator) {
 				case Constants.EQ:
 					return val == otherVal;
@@ -90,16 +90,16 @@ public abstract class NumericValue extends ComputableValue {
 			if (isNaN()) {
 				//NaN does not equal itself.
 				if (((NumericValue)other).isNaN())
-				return Constants.INFERIOR;
+				{return Constants.INFERIOR;}
 			}
-			double otherVal = ((NumericValue)other).getDouble();
-			double val = getDouble();
+			final double otherVal = ((NumericValue)other).getDouble();
+			final double val = getDouble();
 			if(val == otherVal)
-				return Constants.EQUAL;
+				{return Constants.EQUAL;}
 			else if(val > otherVal)
-				return Constants.SUPERIOR;
+				{return Constants.SUPERIOR;}
 			else
-				return Constants.INFERIOR;
+				{return Constants.INFERIOR;}
 		} else {
 			throw new XPathException("cannot compare numeric value to non-numeric value");
 		}
@@ -108,11 +108,11 @@ public abstract class NumericValue extends ComputableValue {
     @Override
     public boolean equals(Object obj) {
 		if (obj == null)
-			return false;
+			{return false;}
         if (NumericValue.class.isAssignableFrom(obj.getClass()))
             try {
                 return compareTo(null, Constants.EQ, (NumericValue)obj);
-            } catch (XPathException e) {
+            } catch (final XPathException e) {
                 // should not be possible due to type check
             }
         return false;

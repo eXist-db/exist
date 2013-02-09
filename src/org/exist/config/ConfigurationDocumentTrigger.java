@@ -78,15 +78,15 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
             if (documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
 //            	Subject currectSubject = broker.getSubject();
                 try {
-                	SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+                	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 //                	broker.setSubject(sm.getSystemSubject());
 
                     ConverterFrom1_0.convert(sm, document);
                     
-                } catch (PermissionDeniedException pde) {
+                } catch (final PermissionDeniedException pde) {
                     LOG.error(pde.getMessage(), pde);
                     //TODO : raise exception ? -pb
-                } catch (EXistException ee) {
+                } catch (final EXistException ee) {
                     LOG.error(ee.getMessage(), ee);
                     //TODO : raise exception ? -pb
 //                } finally {
@@ -98,7 +98,7 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
     }
 
     private void checkForUpdates(DBBroker broker, XmldbURI uri, DocumentImpl document) {
-        Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
+        final Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
         if (conf != null) {
             conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
         }
@@ -106,14 +106,14 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
         if (uri.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
 //        	Subject currectSubject = broker.getSubject();
             try {
-            	SecurityManager sm = broker.getBrokerPool().getSecurityManager();
+            	final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
 //            	broker.setSubject(sm.getSystemSubject());
             	
                 ConverterFrom1_0.convert(sm, document);
-            } catch (PermissionDeniedException pde) {
+            } catch (final PermissionDeniedException pde) {
                 LOG.error(pde.getMessage(), pde);
                 //TODO : raise exception ? -pb
-            } catch (EXistException ee) {
+            } catch (final EXistException ee) {
                 LOG.error(ee.getMessage(), ee);
                 //TODO : raise exception ? -pb
 //            } finally {
@@ -134,15 +134,15 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
             DocumentImpl document) throws TriggerException {
         //check saving list
         if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
-            return;
+            {return;}
 
         checkForUpdates(broker, document.getURI(), document);
 
-        XmldbURI uri = document.getCollection().getURI();
+        final XmldbURI uri = document.getCollection().getURI();
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
                 broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
-            } catch (ConfigurationException e) {
+            } catch (final ConfigurationException e) {
                 LOG.error("Configuration can't be proccessed [" + document.getURI() + "]", e);
                 //TODO : raise exception ? -pb
             }
@@ -154,14 +154,14 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
             DocumentImpl document) throws TriggerException {
         //check saving list
         if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
-            return;
+            {return;}
 
-        XmldbURI uri = document.getCollection().getURI();
+        final XmldbURI uri = document.getCollection().getURI();
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
                 broker.getBrokerPool().getSecurityManager()
                 .processPramatterBeforeSave(broker, document);
-            } catch (ConfigurationException e) {
+            } catch (final ConfigurationException e) {
                 LOG.error("Configuration can't be proccessed [" + document.getURI() + "]", e);
                 //TODO : raise exception ? -pb
             }
@@ -173,15 +173,15 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
             DocumentImpl document) throws TriggerException {
         //check saving list
         if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
-            return;
+            {return;}
 
     	checkForUpdates(broker, document.getURI(), document);
 
-        XmldbURI uri = document.getCollection().getURI();
+        final XmldbURI uri = document.getCollection().getURI();
         if (uri.startsWith(SecurityManager.SECURITY_COLLECTION_URI)) {
             try {
                 broker.getBrokerPool().getSecurityManager().processPramatter(broker, document);
-            } catch (ConfigurationException e) {
+            } catch (final ConfigurationException e) {
                 LOG.error("Configuration can't be proccessed [" + document.getURI() + "]", e);
                 //TODO : raise exception ? -pb
             }
@@ -221,7 +221,7 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
     @Override
     public void afterDeleteDocument(DBBroker broker, Txn transaction,
             XmldbURI uri) throws TriggerException {
-        Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
+        final Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
         if (conf != null) {
             Configurator.unregister(conf);
             //XXX: inform object that configuration was deleted
@@ -256,11 +256,11 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
             PermissionFactory.getDefaultResourcePermission() instanceof ACLPermission;
         //map unix style user and group ids to acl style
         if (aclPermissionInUse && namespaceURI != null &&
-                namespaceURI.equals(Configuration.NS) && localName.equals("account")) {
-            Attributes newAttrs = modifyUserGroupIdAttribute(attributes, userIdMappings);
+                namespaceURI.equals(Configuration.NS) && "account".equals(localName)) {
+            final Attributes newAttrs = modifyUserGroupIdAttribute(attributes, userIdMappings);
             super.startElement(namespaceURI, localName, qname, newAttrs);
-        } else if(aclPermissionInUse && namespaceURI != null && namespaceURI.equals(Configuration.NS) && localName.equals("group")) {
-            Attributes newAttrs = modifyUserGroupIdAttribute(attributes, groupIdMappings);
+        } else if(aclPermissionInUse && namespaceURI != null && namespaceURI.equals(Configuration.NS) && "group".equals(localName)) {
+            final Attributes newAttrs = modifyUserGroupIdAttribute(attributes, groupIdMappings);
             super.startElement(namespaceURI, localName, qname, newAttrs);
         } else {
             super.startElement(namespaceURI, localName, qname, attributes);
@@ -269,15 +269,15 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 
     private Attributes modifyUserGroupIdAttribute(final Attributes attrs,
             final Map<Integer, Integer> idMappings) {
-        String strId = attrs.getValue("id");
+        final String strId = attrs.getValue("id");
         if (strId != null) {
             Integer id = Integer.parseInt(strId);
             Integer newId = idMappings.get(id);
             if(newId == null) {
                 newId = id;
             }
-            AttributesImpl newAttrs = new AttributesImpl(attrs);
-            int idIndex = newAttrs.getIndex("id");
+            final AttributesImpl newAttrs = new AttributesImpl(attrs);
+            final int idIndex = newAttrs.getIndex("id");
             newAttrs.setAttribute(idIndex, newAttrs.getURI(idIndex), "id",
                 newAttrs.getQName(idIndex), newAttrs.getType(idIndex), newId.toString());
             return newAttrs;

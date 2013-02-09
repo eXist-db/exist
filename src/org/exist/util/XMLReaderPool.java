@@ -61,7 +61,7 @@ public class XMLReaderPool extends StackObjectPool {
     public synchronized XMLReader borrowXMLReader() {
         try {
             return (XMLReader) borrowObject();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e );
         }
     }
@@ -77,7 +77,7 @@ public class XMLReaderPool extends StackObjectPool {
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, DUMMY_HANDLER);
             
             // DIZZZ; workaround Xerces bug. Cached DTDs cause for problems during validation parsing.
-            GrammarPool grammarPool =
+            final GrammarPool grammarPool =
                (GrammarPool) getReaderProperty(reader,
                                     XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL);
             if(grammarPool!=null){
@@ -85,7 +85,7 @@ public class XMLReaderPool extends StackObjectPool {
             }
             
             returnObject(reader);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
         }
     }
@@ -96,10 +96,10 @@ public class XMLReaderPool extends StackObjectPool {
         try {
             object=xmlReader.getProperty(propertyName);
 
-        } catch (SAXNotRecognizedException ex) {
+        } catch (final SAXNotRecognizedException ex) {
             LOG.error("SAXNotRecognizedException: " + ex.getMessage());
 
-        } catch (SAXNotSupportedException ex) {
+        } catch (final SAXNotSupportedException ex) {
             LOG.error("SAXNotSupportedException:" + ex.getMessage());
         }
         return object;

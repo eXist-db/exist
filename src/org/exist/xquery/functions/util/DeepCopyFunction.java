@@ -68,17 +68,17 @@ public class DeepCopyFunction extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
         
-        Item a = args[0].itemAt(0);
+        final Item a = args[0].itemAt(0);
         
-        MemTreeBuilder builder = new MemTreeBuilder(context);
+        final MemTreeBuilder builder = new MemTreeBuilder(context);
         builder.startDocument();
-        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         
         try {
-            Properties props = new Properties();
+            final Properties props = new Properties();
             a.toSAX(context.getBroker(), receiver, props);
             
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             throw new XPathException(this, "Cannot Deep-copy Item");
         }
         

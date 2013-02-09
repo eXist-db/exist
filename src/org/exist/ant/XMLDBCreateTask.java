@@ -59,7 +59,7 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
             Collection base = DatabaseManager.getCollection( uri, user, password );
 
             if( base == null ) {
-                String msg = "Collection " + uri + " could not be found.";
+                final String msg = "Collection " + uri + " could not be found.";
 
                 if( failonerror ) {
                     throw( new BuildException( msg ) );
@@ -85,8 +85,8 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
             }
 
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -95,8 +95,8 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
             }
 
         }
-        catch( URISyntaxException e ) {
-            String msg = "URISyntaxException: " + e.getMessage();
+        catch( final URISyntaxException e ) {
+            final String msg = "URISyntaxException: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -124,15 +124,15 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
         Collection                  current  = root;
         Collection                  c;
         XmldbURI                    baseUri  = XmldbURI.xmldbUriFor( base );
-        XmldbURI                    collPath = XmldbURI.xmldbUriFor( relPath );
+        final XmldbURI                    collPath = XmldbURI.xmldbUriFor( relPath );
         log( "BASEURI=" + baseUri, Project.MSG_DEBUG );
         log( "RELPATH=" + relPath, Project.MSG_DEBUG );
 
         //log("PATH=" + path, Project.MSG_DEBUG);
 
-        XmldbURI[] segments = collPath.getPathSegments();
+        final XmldbURI[] segments = collPath.getPathSegments();
 
-        for( XmldbURI segment : segments ) {
+        for( final XmldbURI segment : segments ) {
             baseUri = baseUri.append( segment );
 
             log( "Get collection " + baseUri, Project.MSG_DEBUG );

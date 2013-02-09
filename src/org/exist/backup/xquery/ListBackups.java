@@ -69,7 +69,7 @@ public class ListBackups extends BasicFunction
 
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
-        String exportDir = args[0].getStringValue();
+        final String exportDir = args[0].getStringValue();
         File   dir       = new File( exportDir );
 
         if( !dir.isAbsolute() ) {
@@ -79,13 +79,13 @@ public class ListBackups extends BasicFunction
         context.pushDocumentContext();
 
         try {
-            MemTreeBuilder builder = context.getDocumentBuilder();
-            int            nodeNr  = builder.startElement( DIRECTORY_ELEMENT, null );
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final int            nodeNr  = builder.startElement( DIRECTORY_ELEMENT, null );
 
             if( dir.isDirectory() && dir.canRead() ) {
-                Pattern pattern = Pattern.compile( BackupDirectory.FILE_REGEX );
-                Matcher matcher = pattern.matcher( "" );
-                File[]  files   = dir.listFiles();
+                final Pattern pattern = Pattern.compile( BackupDirectory.FILE_REGEX );
+                final Matcher matcher = pattern.matcher( "" );
+                final File[]  files   = dir.listFiles();
 
                 for( int i = 0; i < files.length; i++ ) {
                     matcher.reset( files[i].getName() );
@@ -98,18 +98,18 @@ public class ListBackups extends BasicFunction
                             if( files[i].getName().endsWith( ".zip" ) ) {
                                 descriptor = new ZipArchiveBackupDescriptor( files[i] );
                             } else {
-                            	File descriptorFile = new File(new File(files[i], "db"), BackupDescriptor.COLLECTION_DESCRIPTOR);
+                            	final File descriptorFile = new File(new File(files[i], "db"), BackupDescriptor.COLLECTION_DESCRIPTOR);
                                 descriptor = new FileSystemBackupDescriptor( descriptorFile );
                             }
-                            Properties properties = descriptor.getProperties();
+                            final Properties properties = descriptor.getProperties();
 
                             if( properties != null ) {
-                                AttributesImpl attrs = new AttributesImpl();
+                                final AttributesImpl attrs = new AttributesImpl();
                                 attrs.addAttribute( "", "file", "file", "CDATA", files[i].getName() );
                                 builder.startElement( BACKUP_ELEMENT, attrs );
 
-                                for( Iterator<Object> iter = properties.keySet().iterator(); iter.hasNext(); ) {
-                                    String key = iter.next().toString();
+                                for( final Iterator<Object> iter = properties.keySet().iterator(); iter.hasNext(); ) {
+                                    final String key = iter.next().toString();
                                     builder.startElement( new QName( key, Namespaces.EXIST_NS, "" ), null );
                                     builder.characters( (String)properties.get( key ) );
                                     builder.endElement();
@@ -117,7 +117,7 @@ public class ListBackups extends BasicFunction
                                 builder.endElement();
                             }
                         }
-                        catch( IOException e ) {
+                        catch( final IOException e ) {
                         }
                     }
                 }

@@ -69,10 +69,10 @@ public class EncodeURL extends BasicFunction {
 		Sequence contextSequence)
 		throws XPathException {
 		
-		ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
+		final ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
 			
 		// request object is read from global variable $response
-		Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
+		final Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
 		if(var == null || var.getValue() == null) {
 			throw new XPathException(this, "No request object found in the current XQuery context.");
 		}
@@ -81,9 +81,9 @@ public class EncodeURL extends BasicFunction {
 		}
 		
 		// get parameters
-		String url = args[0].getStringValue();
+		final String url = args[0].getStringValue();
 		
-		JavaObjectValue value = (JavaObjectValue)
+		final JavaObjectValue value = (JavaObjectValue)
 			var.getValue().itemAt(0);
 		if(value.getObject() instanceof ResponseWrapper) {
 			return new AnyURIValue(((ResponseWrapper)value.getObject()).encodeURL(url));

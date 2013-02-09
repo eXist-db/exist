@@ -99,7 +99,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         String path = adjustPath(request);
 
         // second, perform descriptor actions
-        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        final Descriptor descriptor = Descriptor.getDescriptorSingleton();
         if (descriptor != null) {
             // TODO: figure out a way to log PUT requests with
             // HttpServletRequestWrapper and
@@ -110,7 +110,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         // third, authenticate the user
-        Subject user = authenticate(request, response);
+        final Subject user = authenticate(request, response);
         if (user == null) {
             // You now get a challenge if there is no user
             // response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -120,21 +120,21 @@ public class EXistServlet extends AbstractExistHttpServlet {
 
         DBBroker broker = null;
         try {
-            XmldbURI dbpath = XmldbURI.create(path);
+            final XmldbURI dbpath = XmldbURI.create(path);
             broker = getPool().get(user);
-            Collection collection = broker.getCollection(dbpath);
+            final Collection collection = broker.getCollection(dbpath);
             if (collection != null) {
                 response.sendError(400, "A PUT request is not allowed against a plain collection path.");
                 return;
             }
             srvREST.doPut(broker, dbpath, request, response);
 
-        } catch (BadRequestException e) {
+        } catch (final BadRequestException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
             // Else return a FORBIDDEN Error
@@ -143,12 +143,12 @@ public class EXistServlet extends AbstractExistHttpServlet {
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             }
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
             LOG.error(e);
             throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
         } finally {
@@ -168,7 +168,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
             path = "";
         }
 
-        int p = path.lastIndexOf(';');
+        final int p = path.lastIndexOf(';');
         if (p != Constants.STRING_NOT_FOUND) {
             path = path.substring(0, p);
         }
@@ -190,7 +190,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         String path = adjustPath(request);
 
         // second, perform descriptor actions
-        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        final Descriptor descriptor = Descriptor.getDescriptorSingleton();
         if (descriptor != null && !descriptor.requestsFiltered()) {
             // logs the request if specified in the descriptor
             descriptor.doLogRequestInReplayLog(request);
@@ -200,7 +200,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         // third, authenticate the user
-        Subject user = authenticate(request, response);
+        final Subject user = authenticate(request, response);
         if (user == null) {
             // You now get a challenge if there is no user
             // response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -222,13 +222,13 @@ public class EXistServlet extends AbstractExistHttpServlet {
                 srvREST.doGet(broker, request, response, path);
             }
             
-        } catch (BadRequestException e) {
+        } catch (final BadRequestException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage());
             }
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
             // Else return a FORBIDDEN Error
@@ -237,21 +237,21 @@ public class EXistServlet extends AbstractExistHttpServlet {
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             }
-        } catch (NotFoundException e) {
+        } catch (final NotFoundException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage());
             }
             response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } catch (EOFException ee) {
+        } catch (final EOFException ee) {
             getLog().error("GET Connection has been interrupted", ee);
             throw new ServletException("GET Connection has been interrupted", ee);
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
             getLog().error(e.getMessage(), e);
             throw new ServletException("An error occurred: " + e.getMessage(), e);
         } finally {
@@ -265,7 +265,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         String path = adjustPath(request);
 
         // second, perform descriptor actions
-        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        final Descriptor descriptor = Descriptor.getDescriptorSingleton();
         if (descriptor != null && !descriptor.requestsFiltered()) {
             // logs the request if specified in the descriptor
             descriptor.doLogRequestInReplayLog(request);
@@ -275,7 +275,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         // third, authenticate the user
-        Subject user = authenticate(request, response);
+        final Subject user = authenticate(request, response);
         if (user == null) {
             // You now get a challenge if there is no user
             // response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -288,13 +288,13 @@ public class EXistServlet extends AbstractExistHttpServlet {
         try {
             broker = getPool().get(user);
             srvREST.doHead(broker, request, response, path);
-        } catch (BadRequestException e) {
+        } catch (final BadRequestException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
             // Else return a FORBIDDEN Error
@@ -303,17 +303,17 @@ public class EXistServlet extends AbstractExistHttpServlet {
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             }
-        } catch (NotFoundException e) {
+        } catch (final NotFoundException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
             getLog().error(e);
             throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
         } finally {
@@ -334,14 +334,14 @@ public class EXistServlet extends AbstractExistHttpServlet {
         String path = adjustPath(request);
 
         // second, perform descriptor actions
-        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        final Descriptor descriptor = Descriptor.getDescriptorSingleton();
         if (descriptor != null) {
             // map's the path if a mapping is specified in the descriptor
             path = descriptor.mapPath(path);
         }
 
         // third, authenticate the user
-        Subject user = authenticate(request, response);
+        final Subject user = authenticate(request, response);
         if (user == null) {
             // You now get a challenge if there is no user
             // response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -354,7 +354,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         try {
             broker = getPool().get(user);
             srvREST.doDelete(broker, path, request, response);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
             // Else return a FORBIDDEN Error
@@ -363,14 +363,14 @@ public class EXistServlet extends AbstractExistHttpServlet {
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             }
-        } catch (NotFoundException e) {
+        } catch (final NotFoundException e) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
             getLog().error(e);
             throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
 
@@ -394,7 +394,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // HttpServletRequest in HttpServletRequestWrapper
         // otherwise we cannot access the POST parameters from the content body
         // of the request!!! - deliriumsky
-        Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        final Descriptor descriptor = Descriptor.getDescriptorSingleton();
         if (descriptor != null) {
             if (descriptor.allowRequestLogging()) {
                 request = new HttpServletRequestWrapper(req, getFormEncoding());
@@ -423,7 +423,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         // third, authenticate the user
-        Subject user = authenticate(request, response);
+        final Subject user = authenticate(request, response);
         if (user == null) {
             // You now get a challenge if there is no user
             // response.sendError(HttpServletResponse.SC_FORBIDDEN,
@@ -444,7 +444,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
                 // REST Server
                 srvREST.doPost(broker, request, response, path);
             }
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
             // Else return a FORBIDDEN Error
@@ -453,22 +453,22 @@ public class EXistServlet extends AbstractExistHttpServlet {
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             }
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } catch (BadRequestException e) {
+        } catch (final BadRequestException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (NotFoundException e) {
+        } catch (final NotFoundException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
             getLog().error(e);
             throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
         } finally {

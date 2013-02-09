@@ -65,7 +65,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
 
     @Override
     public byte readByte() throws IOException, EOFException {
-        if (position == end) throw new EOFException();
+        if (position == end) {throw new EOFException();}
         return data[position++];
     }
 
@@ -76,7 +76,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
      */
     @Override
     public int read() throws IOException {
-        if (position == end) return -1;
+        if (position == end) {return -1;}
         return data[position++] & 0xFF;
     }
 
@@ -92,11 +92,11 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
 
     @Override
     public short readShort() throws IOException {
-        if (position == end) throw new EOFException();
+        if (position == end) {throw new EOFException();}
         byte b = data[position++];
         short i = (short) (b & 0177);
         for (int shift = 7; (b & 0200) != 0; shift += 7) {
-            if (position == end) throw new EOFException();
+            if (position == end) {throw new EOFException();}
             b = data[position++];
             i |= (b & 0177) << shift;
         }
@@ -105,11 +105,11 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
 
     @Override
     public int readInt() throws IOException {
-        if (position == end) throw new EOFException();
+        if (position == end) {throw new EOFException();}
         byte b = data[position++];
         int i = b & 0177;
         for (int shift = 7; (b & 0200) != 0; shift += 7) {
-            if (position == end) throw new EOFException();
+            if (position == end) {throw new EOFException();}
             b = data[position++];
             i |= (b & 0177) << shift;
         }
@@ -126,11 +126,11 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
 
     @Override
     public long readLong() throws IOException {
-        if (position == end) throw new EOFException();
+        if (position == end) {throw new EOFException();}
         byte b = data[position++];
         long i = b & 0177L;
         for (int shift = 7; (b & 0200) != 0; shift += 7) {
-            if (position == end) throw new EOFException();
+            if (position == end) {throw new EOFException();}
             b = data[position++];
             i |= (b & 0177L) << shift;
         }
@@ -143,7 +143,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
     	String s;
         try {
             s = new String(data, position, len, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
         	LOG.warn(e);
             s = new String(data, position, len);
         }
@@ -184,12 +184,12 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
     }
 
     public String toString(int len) {
-        byte[] subArray = new byte[len];
+        final byte[] subArray = new byte[len];
         System.arraycopy(data, position, subArray, 0, len);
-        StringBuilder buf = new StringBuilder("[");
+        final StringBuilder buf = new StringBuilder("[");
         for (int i = 0 ; i < len; i++) {
             if (i > 0)
-                buf.append(" ");
+                {buf.append(" ");}
             buf.append(subArray[i]);
         }
         buf.append("]");

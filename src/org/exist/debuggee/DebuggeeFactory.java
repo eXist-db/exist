@@ -40,23 +40,23 @@ public class DebuggeeFactory {
 
     public static Debuggee getInstance() {
         if (instance == null) {
-            String className = System.getProperty("exist.debuggee", "org.exist.debuggee.DebuggeeImpl");
+            final String className = System.getProperty("exist.debuggee", "org.exist.debuggee.DebuggeeImpl");
             try {
-                Class<?> clazz = Class.forName(className);
+                final Class<?> clazz = Class.forName(className);
                 if (!Debuggee.class.isAssignableFrom(clazz)) {
                     LOG.warn("Class " + className + " does not implement interface Debuggee. Using fallback.");
                 } else {
                     instance = (Debuggee) clazz.newInstance();
                 }
-            } catch (ClassNotFoundException e) {
+            } catch (final ClassNotFoundException e) {
                 LOG.warn("Class not found for debuggee: " + className);
-            } catch (IllegalAccessException e) {
+            } catch (final IllegalAccessException e) {
                 LOG.warn("Failed to instantiate class for debuggee: " + className);
-            } catch (InstantiationException e) {
+            } catch (final InstantiationException e) {
                 LOG.warn("Failed to instantiate class for debuggee: " + className);
             }
             if (instance == null)
-                instance = new DummyDebuggee();
+                {instance = new DummyDebuggee();}
         }
         return instance;
     }
@@ -76,10 +76,10 @@ public class DebuggeeFactory {
 				context.declareVariable(Debuggee.SESSION,  xdebug);
 			} else {
 				//looking for session in cookies (FF XDebug Helper add-ons as example)
-    			Cookie[] cookies = request.getCookies();
+    			final Cookie[] cookies = request.getCookies();
     			if (cookies != null) {
         			for (int i = 0; i < cookies.length; i++) {
-        				if (cookies[i].getName().equals("XDEBUG_SESSION")) {
+        				if ("XDEBUG_SESSION".equals(cookies[i].getName())) {
         					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
         					context.declareVariable(Debuggee.SESSION, cookies[i].getValue());
             				break;
@@ -90,9 +90,9 @@ public class DebuggeeFactory {
 		}
 		
 		if (context.requireDebugMode()) {
-			String idekey = request.getParameter("KEY");
+			final String idekey = request.getParameter("KEY");
 			if (idekey != null)
-				context.declareVariable(Debuggee.IDEKEY,  idekey);
+				{context.declareVariable(Debuggee.IDEKEY,  idekey);}
 		}
     }
 }

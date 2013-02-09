@@ -91,7 +91,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
             throw( new BuildException( "invalid uri: '" + uri + "'" ) );
         }
 
-        String baseURI = uri.substring( 0, p );
+        final String baseURI = uri.substring( 0, p );
         String path;
 
         if( p == ( uri.length() - 3 ) ) {
@@ -111,8 +111,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                 root = DatabaseManager.getCollection( uri, user, password );
             }
         }
-        catch( XMLDBException e ) {
-            String msg = "XMLDB exception caught: " + e.getMessage();
+        catch( final XMLDBException e ) {
+            final String msg = "XMLDB exception caught: " + e.getMessage();
 
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
@@ -123,7 +123,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
         }
 
         if( root == null ) {
-            String msg = "Collection " + uri + " could not be found.";
+            final String msg = "Collection " + uri + " could not be found.";
 
             if( failonerror ) {
                 throw( new BuildException( msg ) );
@@ -157,16 +157,16 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 
                 if( type != null ) {
 
-                    if( type.equals( "xml" ) ) {
+                    if( "xml".equals(type) ) {
                         mime = ( baseMimeType != null ) ? ( new MimeType( baseMimeType, MimeType.XML ) ) : MimeType.XML_TYPE;
-                    } else if( type.equals( "binary" ) ) {
+                    } else if( "binary".equals(type) ) {
                         mime = ( baseMimeType != null ) ? ( new MimeType( baseMimeType, MimeType.BINARY ) ) : MimeType.BINARY_TYPE;
                     }
                 }
 
                 // single file
                 if( mime == null ) {
-                    String msg = "Cannot guess mime-type kind for " + srcFile.getName() + ". Treating it as a binary.";
+                    final String msg = "Cannot guess mime-type kind for " + srcFile.getName() + ". Treating it as a binary.";
                     log( msg, Project.MSG_ERR );
                     mime = ( baseMimeType != null ) ? ( new MimeType( baseMimeType, MimeType.BINARY ) ) : MimeType.BINARY_TYPE;
                 }
@@ -193,8 +193,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                     	setPermissions( res );
                     }
                 }
-                catch( XMLDBException e ) {
-                    String msg = "XMLDB exception caught: " + e.getMessage();
+                catch( final XMLDBException e ) {
+                    final String msg = "XMLDB exception caught: " + e.getMessage();
 
                     if( failonerror ) {
                         throw( new BuildException( msg, e ) );
@@ -204,21 +204,21 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                 }
             } else {
 
-                for( FileSet fileSet : fileSetList ) {
+                for( final FileSet fileSet : fileSetList ) {
                     log( "Storing fileset", Project.MSG_DEBUG );
 
                     // using fileset
-                    DirectoryScanner scanner = fileSet.getDirectoryScanner( getProject() );
+                    final DirectoryScanner scanner = fileSet.getDirectoryScanner( getProject() );
                     scanner.scan();
-                    String[] includedFiles = scanner.getIncludedFiles();
-                    String[] includedDirs  = scanner.getIncludedDirectories();
+                    final String[] includedFiles = scanner.getIncludedFiles();
+                    final String[] includedDirs  = scanner.getIncludedDirectories();
                     log( "Found " + includedDirs.length + " directories and " + includedFiles.length + " files.\n" );
 
-                    File baseDir = scanner.getBasedir();
+                    final File baseDir = scanner.getBasedir();
 
                     if( includeEmptyDirs && createSubcollections ) {
 
-                        for( String included : includedDirs ) {
+                        for( final String included : includedDirs ) {
 
                             try {
                                 file = new File( baseDir, included );
@@ -246,8 +246,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                                     col = mkcol( root, baseURI, XmldbURI.ROOT_COLLECTION + path, included );
                                 }
                             }
-                            catch( XMLDBException e ) {
-                                String msg = "XMLDB exception caught: " + e.getMessage();
+                            catch( final XMLDBException e ) {
+                                final String msg = "XMLDB exception caught: " + e.getMessage();
 
                                 if( failonerror ) {
                                     throw( new BuildException( msg, e ) );
@@ -258,7 +258,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
                         }
                     }
 
-                    for( String included : includedFiles ) {
+                    for( final String included : includedFiles ) {
 
                         try {
                             file = new File( baseDir, included );
@@ -304,15 +304,15 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 
                             if( type != null ) {
 
-                                if( type.equals( "xml" ) ) {
+                                if( "xml".equals(type) ) {
                                     currentMime = ( currentBaseMimeType != null ) ? ( new MimeType( currentBaseMimeType, MimeType.XML ) ) : MimeType.XML_TYPE;
-                                } else if( type.equals( "binary" ) ) {
+                                } else if( "binary".equals(type) ) {
                                     currentMime = ( currentBaseMimeType != null ) ? ( new MimeType( currentBaseMimeType, MimeType.BINARY ) ) : MimeType.BINARY_TYPE;
                                 }
                             }
 
                             if( currentMime == null ) {
-                                String msg = "Cannot find mime-type kind for " + file.getName() + ". Treating it as a binary.";
+                                final String msg = "Cannot find mime-type kind for " + file.getName() + ". Treating it as a binary.";
                                 log( msg, Project.MSG_ERR );
                                 currentMime = ( currentBaseMimeType != null ) ? ( new MimeType( currentBaseMimeType, MimeType.BINARY ) ) : MimeType.BINARY_TYPE;
                             }
@@ -329,8 +329,8 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
 							}
 
                         }
-                        catch( XMLDBException e ) {
-                            String msg = "XMLDB exception caught: " + e.getMessage();
+                        catch( final XMLDBException e ) {
+                            final String msg = "XMLDB exception caught: " + e.getMessage();
 
                             if( failonerror ) {
                                 throw( new BuildException( msg, e ) );

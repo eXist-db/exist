@@ -75,7 +75,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	protected LocalCollection createLocalCollection(String name) throws XMLDBException {
 		try {
 			return new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(name).toXmldbURI(), context.getAccessContext());
-		} catch(XPathException e) {
+		} catch(final XPathException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
 	}
@@ -84,19 +84,19 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 		throws XPathException {
 		
         if (0 == args.length)
-            throw new XPathException(this, "Expected a collection as the argument " + (paramNumber + 1) + ".");
+            {throw new XPathException(this, "Expected a collection as the argument " + (paramNumber + 1) + ".");}
         
-        boolean collectionNeedsClose = false;
+        final boolean collectionNeedsClose = false;
         
         Collection collection = null;
-        Item item = args[paramNumber].itemAt(0);
+        final Item item = args[paramNumber].itemAt(0);
         if(Type.subTypeOf(item.getType(), Type.NODE))
         {
-        	NodeValue node = (NodeValue)item;
+        	final NodeValue node = (NodeValue)item;
         	logger.debug("Found node");
         	if(node.getImplementationType() == NodeValue.PERSISTENT_NODE)
         	{
-        		org.exist.collections.Collection internalCol = ((NodeProxy)node).getDocument().getCollection();
+        		final org.exist.collections.Collection internalCol = ((NodeProxy)node).getDocument().getCollection();
         		logger.debug("Found node");
         		try
         		{
@@ -104,7 +104,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 					collection = createLocalCollection(internalCol.getURI().toString());
 					logger.debug("Loaded collection " + collection.getName());
 				}
-        		catch(XMLDBException e)
+        		catch(final XMLDBException e)
         		{
 					throw new XPathException(this, "Failed to access collection: " + internalCol.getURI(), e);
 				}
@@ -117,7 +117,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         if(collection == null)
         {
         	//Otherwise, just extract the name as a string:
-            String collectionURI = args[paramNumber].getStringValue();
+            final String collectionURI = args[paramNumber].getStringValue();
             if(collectionURI != null)
             {
                 try
@@ -154,10 +154,10 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                         collection = org.xmldb.api.DatabaseManager.getCollection(collectionURI);
                     }
                 }
-                catch(XMLDBException xe)
+                catch(final XMLDBException xe)
                 {
                     if(errorIfAbsent)
-                        throw new XPathException(this, "Could not locate collection: "+collectionURI, xe);
+                        {throw new XPathException(this, "Could not locate collection: "+collectionURI, xe);}
                     collection = null;
                 }
             }
@@ -180,7 +180,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
             	{
                 	collection.close();
             	}
-            	catch(Exception e)
+            	catch(final Exception e)
             	{
             		throw new XPathException(this, "Unable to close collection", e);
         		}
@@ -192,9 +192,9 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
     abstract protected Sequence evalWithCollection(Collection c, Sequence[] args, Sequence contextSequence) throws XPathException;
     
     static public final Collection createCollection(Collection parentColl, String name) throws XMLDBException, XPathException {
-        Collection child = parentColl.getChildCollection(name);
+        final Collection child = parentColl.getChildCollection(name);
         if (child == null) {
-        	CollectionManagementService mgtService = (CollectionManagementService) parentColl.getService("CollectionManagementService", "1.0");
+        	final CollectionManagementService mgtService = (CollectionManagementService) parentColl.getService("CollectionManagementService", "1.0");
             return mgtService.createCollection(name);
         }
         return child;
@@ -202,9 +202,9 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
     
     static public final Collection createCollectionPath(Collection parentColl, String relPath) throws XMLDBException, XPathException {
         Collection current = parentColl;
-        StringTokenizer tok = new StringTokenizer(new AnyURIValue(relPath).toXmldbURI().toString(), "/");
+        final StringTokenizer tok = new StringTokenizer(new AnyURIValue(relPath).toXmldbURI().toString(), "/");
         while (tok.hasMoreTokens()) {
-            String token = tok.nextToken();
+            final String token = tok.nextToken();
             current = createCollection(current, token);
         }
         return current;

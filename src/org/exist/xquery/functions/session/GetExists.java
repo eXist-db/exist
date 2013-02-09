@@ -68,10 +68,10 @@ public class GetExists extends BasicFunction
 	{
 		BooleanValue exists = BooleanValue.TRUE;
 		
-		SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
+		final SessionModule myModule = (SessionModule)context.getModule( SessionModule.NAMESPACE_URI );
 		
 		// session object is read from global variable $session
-		Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
+		final Variable var = myModule.resolveVariable( SessionModule.SESSION_VAR );
 		
 		if( var == null || var.getValue() == null ) {
 			exists = BooleanValue.FALSE;

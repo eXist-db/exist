@@ -48,19 +48,19 @@ public class XMLUtil {
     private static Logger LOG = Logger.getLogger(XMLUtil.class.getName());
 
     public final static String dump(DocumentFragment fragment) {
-        StringWriter writer = new StringWriter();
-        DOMSerializer serializer = new DOMSerializer();
+        final StringWriter writer = new StringWriter();
+        final DOMSerializer serializer = new DOMSerializer();
         serializer.setWriter(writer);
         try {
             serializer.serialize(fragment);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             //Nothing to do ?
         }
         return writer.toString();
     }
 
     public final static String encodeAttrMarkup(String str) {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         char ch;
         for (int i = 0; i < str.length(); i++)
             switch (ch = str.charAt(i)) {
@@ -72,12 +72,12 @@ public class XMLUtil {
                         break;
                     }
                     if (!Character.isLetter(str.charAt(j)))
-                        break;
+                        {break;}
                 }
                 if (isEntity)
-                    buf.append('&');
+                    {buf.append('&');}
                 else
-                    buf.append("&amp;");
+                    {buf.append("&amp;");}
                 break;
             case '<' :
                 buf.append("&lt;");
@@ -95,7 +95,7 @@ public class XMLUtil {
     }
 
     public final static String decodeAttrMarkup(String str) {
-        StringBuilder out = new StringBuilder(str.length());
+        final StringBuilder out = new StringBuilder(str.length());
         char ch;
         String ent;
         int p;
@@ -105,14 +105,14 @@ public class XMLUtil {
                 p = str.indexOf(';', i);
                 if (p != Constants.STRING_NOT_FOUND) {
                     ent = str.substring(i + 1, p);
-                    if (ent.equals("amp"))
-                        out.append('&');
-                    else if (ent.equals("lt"))
-                        out.append('<');
-                    else if (ent.equals("gt"))
-                        out.append('>');
-                    else if (ent.equals("quot"))
-                        out.append('"');
+                    if ("amp".equals(ent))
+                        {out.append('&');}
+                    else if ("lt".equals(ent))
+                        {out.append('<');}
+                    else if ("gt".equals(ent))
+                        {out.append('>');}
+                    else if ("quot".equals(ent))
+                        {out.append('"');}
                     i = p;
                     continue;
                 }
@@ -124,21 +124,21 @@ public class XMLUtil {
 
     public final static String getEncoding(String xmlDecl) {
         if (xmlDecl == null)
-            return null;
-        StringBuilder buf = new StringBuilder();
-        int p0 = xmlDecl.indexOf("encoding");
+            {return null;}
+        final StringBuilder buf = new StringBuilder();
+        final int p0 = xmlDecl.indexOf("encoding");
         if (p0 == Constants.STRING_NOT_FOUND)
-            return null;
+            {return null;}
         for (int i = p0 + 8; i < xmlDecl.length(); i++)
             if (Character.isWhitespace(xmlDecl.charAt(i))
                     || xmlDecl.charAt(i) == '=')
-                continue;
+                {continue;}
             else if (xmlDecl.charAt(i) == '"') {
                 while (xmlDecl.charAt(++i) != '"' && i < xmlDecl.length())
                     buf.append(xmlDecl.charAt(i));
                 return buf.toString();
             } else
-                return null;
+                {return null;}
         return null;
     }
 
@@ -155,20 +155,20 @@ public class XMLUtil {
 				 */
 				boolean foundQuestionMark = false;
 				int placeInDeclString = 0;
-				byte[] declString = new byte[4];
+				final byte[] declString = new byte[4];
 				int x = (i+1);
 				for (; x < data.length; x++)
 				{
 
-					if(data[x] == 0) continue;
+					if(data[x] == 0) {continue;}
 
-					if(!foundQuestionMark && data[x] != '?') break;
-					else foundQuestionMark = true;
+					if(!foundQuestionMark && data[x] != '?') {break;}
+					else {foundQuestionMark = true;}
 
 					declString[placeInDeclString] = data[x];
 					placeInDeclString++;
 					
-					if(placeInDeclString >= 4) break;
+					if(placeInDeclString >= 4) {break;}
 				}
 				
 				if (placeInDeclString == 4
@@ -179,14 +179,14 @@ public class XMLUtil {
 					
 				{
 
-					ByteArrayOutputStream out = new ByteArrayOutputStream(150);
+					final ByteArrayOutputStream out = new ByteArrayOutputStream(150);
 					
 					out.write('<');
 					out.write(declString, 0, 4);
 					
 					for (int j = (x+1); j < data.length; j++)
 					{
-						if(data[j] != 0) out.write(data[j]);
+						if(data[j] != 0) {out.write(data[j]);}
 						
 						if (data[j] == '?')
 						{
@@ -196,13 +196,13 @@ public class XMLUtil {
 							 */
 							for (; j < data.length; j++)
 							{
-								if(data[j] == 0) continue;
+								if(data[j] == 0) {continue;}
 								
 								out.write(data[j]);
 								
-								if(data[j] != '>') break;
+								if(data[j] != '>') {break;}
 								
-								String xmlDecl = new String(out.toByteArray());
+								final String xmlDecl = new String(out.toByteArray());
 								return xmlDecl;
 							}
 							
@@ -230,32 +230,32 @@ public class XMLUtil {
 
     public static String readFile(InputStream in, String defaultEncoding)
             throws IOException {
-        byte[] chunk = new byte[512];
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final byte[] chunk = new byte[512];
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
         int l;
         do {
             l = in.read(chunk);
             if (l > 0)
-                out.write(chunk, 0, l);
+                {out.write(chunk, 0, l);}
         } while (l > -1);
         in.close();
-        byte[] data = out.toByteArray();
-        String xmlDecl = getXMLDecl(data);
+        final byte[] data = out.toByteArray();
+        final String xmlDecl = getXMLDecl(data);
         String enc = getEncoding(xmlDecl);
         if (enc == null)
-            enc = defaultEncoding;
+            {enc = defaultEncoding;}
         try {
             return new String(out.toByteArray(), enc);
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
             LOG.warn(e);
             return new String(out.toByteArray());
         }
     }
 
     public static String parseValue(String value, String key) {
-        int p = value.indexOf(key);
+        final int p = value.indexOf(key);
         if (p == Constants.STRING_NOT_FOUND)
-            return null;
+            {return null;}
         return parseValue(value, p);
     }
 
@@ -264,13 +264,13 @@ public class XMLUtil {
             // Do nothing
         }
         if (p == value.length())
-            return null;
+            {return null;}
         int e = ++p;
         while ((e < value.length()) && (value.charAt(++e) != '"')) {
             // Do nothing
         }
         if (e == value.length())
-            return null;
+            {return null;}
         return value.substring(p, e);
     }
 

@@ -33,21 +33,21 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 	 */
 	public long update(String commands) throws XMLDBException {
 		LOG.debug("processing xupdate:\n" + commands);
-		Vector<Object> params = new Vector<Object>();
+		final Vector<Object> params = new Vector<Object>();
 		byte[] xupdateData;
 		try {
 			xupdateData = commands.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			LOG.warn(e);
 			xupdateData = commands.getBytes();
 		}
 		params.addElement(parent.getPath());
 		params.addElement(xupdateData);
 		try {
-			Integer mods = (Integer) parent.getClient().execute("xupdate", params);
+			final Integer mods = (Integer) parent.getClient().execute("xupdate", params);
 			LOG.debug("processed " + mods + " modifications");
 			return mods.intValue();
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
@@ -57,11 +57,11 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 	 */
 	public long updateResource(String id, String commands) throws XMLDBException {
 		LOG.debug("processing xupdate:\n" + commands);
-		Vector<Object> params = new Vector<Object>();
+		final Vector<Object> params = new Vector<Object>();
 		byte[] xupdateData;
 		try {
 			xupdateData = commands.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			LOG.warn(e);
 			xupdateData = commands.getBytes();
 		}
@@ -69,10 +69,10 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 		params.addElement(parent.getPath() + "/" + id);
 		params.addElement(xupdateData);
 		try {
-			Integer mods = (Integer) parent.getClient().execute("xupdateResource", params);
+			final Integer mods = (Integer) parent.getClient().execute("xupdateResource", params);
 			LOG.debug("processed " + mods + " modifications");
 			return mods.intValue();
-		} catch (XmlRpcException e) {
+		} catch (final XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }

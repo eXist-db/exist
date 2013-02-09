@@ -81,7 +81,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      */
     public void add(PathExpr path) {
         Expression expr;
-        for (Iterator<Expression> i = path.steps.iterator(); i.hasNext();) {
+        for (final Iterator<Expression> i = path.steps.iterator(); i.hasNext();) {
             expr = (Expression) i.next();
             add(expr);
         }
@@ -103,8 +103,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @param pred
      */
     public void addPredicate(Predicate pred) {
-        Expression e = (Expression) steps.get(steps.size() - 1);
-        if (e instanceof Step) ((Step) e).addPredicate(pred);
+        final Expression e = (Expression) steps.get(steps.size() - 1);
+        if (e instanceof Step) {((Step) e).addPredicate(pred);}
     }
 
     /* RewritableExpression API */
@@ -116,7 +116,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @param newExpr the new expression to replace the old
      */
     public void replace(Expression oldExpr, Expression newExpr) {
-        int idx = steps.indexOf(oldExpr);
+        final int idx = steps.indexOf(oldExpr);
         if (idx < 0) {
             LOG.warn("Expression not found: " + ExpressionDumper.dump(oldExpr) + "; in: " + ExpressionDumper.dump(this));
             return;
@@ -126,9 +126,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public Expression getPrevious(Expression current) {
-        int idx = steps.indexOf(current);
+        final int idx = steps.indexOf(current);
         if (idx > 1)
-            return steps.get(idx - 1);
+            {return steps.get(idx - 1);}
         return null;
     }
 
@@ -139,7 +139,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public void remove(Expression oldExpr) {
-        int idx = steps.indexOf(oldExpr);
+        final int idx = steps.indexOf(oldExpr);
         if (idx < 0) {
             LOG.warn("Expression to remove not found: " + ExpressionDumper.dump(oldExpr) + "; in: " + ExpressionDumper.dump(this));
             return;
@@ -165,18 +165,18 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             // if this is a sequence of steps, the IN_PREDICATE flag
             // is only passed to the first step, so it has to be removed
             // for subsequent steps
-            Expression expr = steps.get(i);
+            final Expression expr = steps.get(i);
             if ((contextInfo.getFlags() & IN_PREDICATE) > 0 ) {
                 if (i == 1) {
                     //take care : predicates in predicates are not marked as such ! -pb
                     contextInfo.setFlags(contextInfo.getFlags() & (~IN_PREDICATE));
                     //Where clauses should be identified. TODO : pass bound variable's inputSequence ? -pb
                     if ((contextInfo.getFlags() & IN_WHERE_CLAUSE) == 0)
-                        contextInfo.setContextId(Expression.NO_CONTEXT_ID);
+                        {contextInfo.setContextId(Expression.NO_CONTEXT_ID);}
                 }
             }
             if (i > 1)
-                contextInfo.setContextStep((Expression) steps.get(i - 1));
+                {contextInfo.setContextStep((Expression) steps.get(i - 1));}
             contextInfo.setParent(this);
             expr.analyze(contextInfo);
         }
@@ -188,14 +188,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                     "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
         if (contextItem != null)
-            contextSequence = contextItem.toSequence();
+            {contextSequence = contextItem.toSequence();}
         Sequence result = null;
         if (steps.size() == 0) {
             result = Sequence.EMPTY_SEQUENCE;
@@ -206,17 +206,17 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             DocumentSet contextDocs = null;
             Expression expr = steps.get(0);
             if (expr instanceof VariableReference) {
-                Variable var = ((VariableReference) expr).getVariable();
+                final Variable var = ((VariableReference) expr).getVariable();
                 //TOUNDERSTAND : how null could be possible here ? -pb
                 if (var != null) 
-                    contextDocs = var.getContextDocs();
+                    {contextDocs = var.getContextDocs();}
             }
             //contextDocs == null *is* significant
             setContextDocSet(contextDocs);
             //To prevent processing nodes after atomic values...
             //TODO : let the parser do it ? -pb
             boolean gotAtomicResult = false;
-            for (Iterator<Expression> iter = steps.iterator(); iter.hasNext();) {
+            for (final Iterator<Expression> iter = steps.iterator(); iter.hasNext();) {
                 expr = iter.next();
                 context.getWatchDog().proceed(expr);
                 //TODO : maybe this could be detected by the parser ? -pb
@@ -231,7 +231,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 //contextDocs == null *is* significant
                 expr.setContextDocSet(contextDocs);
                 // switch into single step mode if we are processing in-memory nodes only
-                boolean inMemProcessing = currentContext != null &&
+                final boolean inMemProcessing = currentContext != null &&
                         Type.subTypeOf(currentContext.getItemType(), Type.NODE) &&
                         !currentContext.isPersistentSet();
                 //DESIGN : first test the dependency then the result
@@ -247,14 +247,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     ((ValueSequence)exprResult).keepUnOrdered(unordered);
                     //Restore a position which may have been modified by inner expressions 
                     int p = context.getContextPosition();
-                    Sequence seq = context.getContextSequence();
-                    for (SequenceIterator iterInner = currentContext.iterate(); iterInner.hasNext(); p++) {
+                    final Sequence seq = context.getContextSequence();
+                    for (final SequenceIterator iterInner = currentContext.iterate(); iterInner.hasNext(); p++) {
                         context.setContextSequencePosition(p, seq);
                         context.getWatchDog().proceed(expr);
-                        Item current = iterInner.nextItem();
+                        final Item current = iterInner.nextItem();
                         //0 or 1 item
                         if (!currentContext.hasMany())
-                            exprResult = expr.eval(currentContext, current);
+                            {exprResult = expr.eval(currentContext, current);}
                         else {
                             exprResult.addAll(expr.eval(currentContext, current));
                         }
@@ -269,13 +269,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (steps.size() > 1 && !(result instanceof VirtualNodeSet) &&
                         !(expr instanceof EnclosedExpr) && !result.isEmpty() &&
                         !Type.subTypeOf(result.getItemType(), Type.NODE))
-                    gotAtomicResult = true;
+                    {gotAtomicResult = true;}
                 if(steps.size() > 1 && getLastExpression() instanceof Step)
                     // remove duplicate nodes if this is a path 
                     // expression with more than one step
-                    result.removeDuplicates();
+                    {result.removeDuplicates();}
                 if (!staticContext)
-                    currentContext = result;
+                    {currentContext = result;}
             }
             if (gotAtomicResult && !expr.allowMixedNodesInReturn() &&
                     !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
@@ -284,7 +284,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 
@@ -307,7 +307,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     public Expression getLastExpression() {
         if (steps.size() == 0) 
-            return null;
+            {return null;}
         return steps.get(steps.size() - 1);
     }
 
@@ -323,7 +323,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     @Override
     public boolean allowMixedNodesInReturn() {
         if (steps.size() == 1)
-            return steps.get(0).allowMixedNodesInReturn();
+            {return steps.get(0).allowMixedNodesInReturn();}
         return super.allowMixedNodesInReturn();
     }
 
@@ -341,47 +341,47 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public void dump(ExpressionDumper dumper) {
         Expression next = null;
         int count = 0;
-        for (Iterator<Expression> iter = steps.iterator(); iter.hasNext(); count++) {
+        for (final Iterator<Expression> iter = steps.iterator(); iter.hasNext(); count++) {
             next = iter.next(); 
             //Open a first parenthesis
             if (next instanceof LogicalOp)
-                dumper.display('(');
+                {dumper.display('(');}
             if (count > 0) {
                 if (next instanceof Step)
-                    dumper.display("/");
+                    {dumper.display("/");}
                 else
-                    dumper.nl();
+                    {dumper.nl();}
             }
             next.dump(dumper);
         }
         //Close the last parenthesis
         if (next instanceof LogicalOp)
-            dumper.display(')');
+            {dumper.display(')');}
     }
 
     public String toString() { 
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         Expression next = null;
         if (steps.size() == 0)
-            result.append("()");
+            {result.append("()");}
         else {
             int count = 0;
-            for (Iterator<Expression> iter = steps.iterator(); iter.hasNext(); count++) {
+            for (final Iterator<Expression> iter = steps.iterator(); iter.hasNext(); count++) {
                 next = iter.next(); 
                 // Open a first parenthesis
                 if (next instanceof LogicalOp)
-                    result.append('(');
+                    {result.append('(');}
                 if (count > 0) {
                     if (next instanceof Step)
-                        result.append("/");
+                        {result.append("/");}
                     else
-                        result.append(' ');
+                        {result.append(' ');}
                 }
                 result.append(next.toString());
             }
             // Close the last parenthesis
             if (next instanceof LogicalOp)
-                result.append(')');
+                {result.append(')');}
         }
         return result.toString();
     }
@@ -389,12 +389,12 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public int returnsType() {
         if (steps.size() == 0) 
         	//Not so simple. ITEM should be re-tuned in some circumstances that have to be determined
-            return Type.NODE;
+            {return Type.NODE;}
         return steps.get(steps.size() - 1).returnsType();
     }
 
     public int getCardinality() {
-        if (steps.size() == 0) return Cardinality.ZERO;
+        if (steps.size() == 0) {return Cardinality.ZERO;}
         return ((Expression) steps.get(steps.size() -1)).getCardinality();
     }
  
@@ -406,7 +406,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public int getDependencies() {
         Expression next;
         int deps = 0;
-        for (Iterator<Expression> i = steps.iterator(); i.hasNext();) {
+        for (final Iterator<Expression> i = steps.iterator(); i.hasNext();) {
             next = i.next();
             deps = deps | next.getDependencies();
         }
@@ -415,35 +415,35 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     public void replaceLastExpression(Expression s) {
         if (steps.size() == 0)
-            return;
+            {return;}
         steps.set(steps.size() - 1, s);
     }
 
     public String getLiteralValue() {
         if (steps.size() == 0) 
-            return "";
-        Expression next = steps.get(0);
+            {return "";}
+        final Expression next = steps.get(0);
         if (next instanceof LiteralValue) {
             try {
                 return ((LiteralValue) next).getValue().getStringValue();
-            } catch (XPathException e) {
+            } catch (final XPathException e) {
                 //TODO : is there anything to do here ?
             }
         }
         if (next instanceof PathExpr)
-            return ((PathExpr)next).getLiteralValue();
+            {return ((PathExpr)next).getLiteralValue();}
         return "";
     }
 
     public int getLine() {
         if (line < 0 && steps.size() > 0)
-            return steps.get(0).getLine();
+            {return steps.get(0).getLine();}
         return line;
     }
 
     public int getColumn() {
         if (column < 0 && steps.size() > 0)
-            return steps.get(0).getColumn();
+            {return steps.get(0).getColumn();}
         return column;
     }
 
@@ -454,12 +454,12 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      */
     public void setPrimaryAxis(int axis) {
         if (steps.size() > 0) 
-            steps.get(0).setPrimaryAxis(axis);
+            {steps.get(0).setPrimaryAxis(axis);}
     }
 
     public int getPrimaryAxis() {
         if (steps.size() > 0)
-            return steps.get(0).getPrimaryAxis();
+            {return steps.get(0).getPrimaryAxis();}
         return Constants.UNKNOWN_AXIS;
     }
 
@@ -495,7 +495,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      * @see org.exist.xquery.CompiledXQuery#dump(java.io.Writer)
      */
     public void dump(Writer writer) {
-        ExpressionDumper dumper = new ExpressionDumper(writer);
+        final ExpressionDumper dumper = new ExpressionDumper(writer);
         dump(dumper);
     }
 

@@ -51,7 +51,7 @@ public class eXistURLStreamHandlerFactory implements URLStreamHandlerFactory {
             URL.setURLStreamHandlerFactory(new eXistURLStreamHandlerFactory());
             initOK=true;
             LOG.info("Succesfully registered eXistURLStreamHandlerFactory.");
-        } catch (Error ex){
+        } catch (final Error ex){
             LOG.warn("The JVM has already an URLStreamHandlerFactory registered, skipping...");
         }
         

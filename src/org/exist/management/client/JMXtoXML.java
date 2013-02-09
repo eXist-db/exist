@@ -95,9 +95,9 @@ public class JMXtoXML {
             CATEGORIES.put("processes", new ObjectName[]{new ObjectName("org.exist.management.*:type=ProcessReport")});
             CATEGORIES.put("sanity", new ObjectName[]{new ObjectName("org.exist.management.*.tasks:type=SanityReport")});
             CATEGORIES.put("all", new ObjectName[]{new ObjectName("org.exist.*:*"), onMemory, onRuntime});
-        } catch (MalformedObjectNameException e) {
+        } catch (final MalformedObjectNameException e) {
             LOG.warn("Error in initialization: " + e.getMessage(), e);
-        } catch (NullPointerException e) {
+        } catch (final NullPointerException e) {
             LOG.warn("Error in initialization: " + e.getMessage(), e);
         }
     }
@@ -135,7 +135,7 @@ public class JMXtoXML {
 	 * Connect to the local JMX instance.
 	 */
 	public void connect() {
-		ArrayList<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
+		final ArrayList<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
 		if (servers.size() > 0) {
             connection = servers.get(0);
         }
@@ -150,11 +150,11 @@ public class JMXtoXML {
 	 */
 	public void connect(String address, int port) throws IOException {
         url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+address+":" + port + "/jmxrmi");
-        Map<String, String[]> env = new HashMap<String, String[]>();
-        String[] creds = {"guest", "guest"};
+        final Map<String, String[]> env = new HashMap<String, String[]>();
+        final String[] creds = {"guest", "guest"};
         env.put(JMXConnector.CREDENTIALS, creds);
 
-        JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
+        final JMXConnector jmxc = JMXConnectorFactory.connect(url, env);
         connection = jmxc.getMBeanServerConnection();
 
         LOG.debug("Connected to JMX server at " + url.toString());
@@ -170,9 +170,9 @@ public class JMXtoXML {
 	 * @throws TransformerException
 	 */
 	public String generateReport(String categories[]) throws TransformerException {
-		Element root = generateXMLReport(null, categories);
-		StringWriter writer = new StringWriter();
-		DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
+		final Element root = generateXMLReport(null, categories);
+		final StringWriter writer = new StringWriter();
+		final DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
 		streamer.serialize(root);
 		return writer.toString();
 	}
@@ -193,14 +193,14 @@ public class JMXtoXML {
 	 */
 	public long ping(String instance, long timeout) {
 		ping = SanityReport.PING_WAITING;
-		long start = System.currentTimeMillis();
-		Ping thread = new Ping(instance);
+		final long start = System.currentTimeMillis();
+		final Ping thread = new Ping(instance);
 		thread.start();
 		synchronized (this) {
 			while (ping == SanityReport.PING_WAITING) {
 				try {
 					wait(100);
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 				}
 				if ((System.currentTimeMillis() - start) >= timeout) {
 					return PING_TIMEOUT;
@@ -221,9 +221,9 @@ public class JMXtoXML {
         @Override
 		public void run() {
 			try {
-				ObjectName name = new ObjectName("org.exist.management." + instance + ".tasks:type=SanityReport");
+				final ObjectName name = new ObjectName("org.exist.management." + instance + ".tasks:type=SanityReport");
 				ping = (Long) connection.invoke(name, "ping", new Object[] { Boolean.TRUE }, new String[] { boolean.class.getName() });
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				LOG.warn(e.getMessage(), e);
 				ping = SanityReport.PING_ERROR;
 			}
@@ -244,7 +244,7 @@ public class JMXtoXML {
 	 * @throws TransformerException
 	 */
 	public Element generateXMLReport(String errcode, String categories[]) {
-		MemTreeBuilder builder = new MemTreeBuilder();
+		final MemTreeBuilder builder = new MemTreeBuilder();
 		
 		try {
 			builder.startDocument();
@@ -259,9 +259,9 @@ public class JMXtoXML {
 				builder.characters(errcode);
 				builder.endElement();
 			}
-			for (String category : categories) {
-				ObjectName[] names = CATEGORIES.get(category);
-				for (ObjectName name : names) {
+			for (final String category : categories) {
+				final ObjectName[] names = CATEGORIES.get(category);
+				for (final ObjectName name : names) {
 					queryMBeans(builder, name);
 				}
 			}
@@ -269,7 +269,7 @@ public class JMXtoXML {
 			builder.endElement();
 			
 			builder.endDocument();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 			LOG.warn("Could not generate XML report from JMX: " + e.getMessage());
 		}
@@ -291,30 +291,30 @@ public class JMXtoXML {
 
 
 
-		for (ObjectName name : beans) {
-			MBeanInfo info = conn.getMBeanInfo(name);
+		for (final ObjectName name : beans) {
+			final MBeanInfo info = conn.getMBeanInfo(name);
 
 			String className = info.getClassName();
-			int p = className.lastIndexOf('.');
+			final int p = className.lastIndexOf('.');
 			if (p > -1 && p + 1 < className.length()) {
                 className = className.substring(p + 1);
             }
 
-			QName qname = new QName(className, JMX_NAMESPACE, JMX_PREFIX);
+			final QName qname = new QName(className, JMX_NAMESPACE, JMX_PREFIX);
 			builder.startElement(qname, null);
 			builder.addAttribute(new QName("name"), name.toString());
 
-			MBeanAttributeInfo[] beanAttribs = info.getAttributes();
+			final MBeanAttributeInfo[] beanAttribs = info.getAttributes();
 			for (int i = 0; i < beanAttribs.length; i++) {
 				if (beanAttribs[i].isReadable()) {
 					try {
-						QName attrQName = new QName(beanAttribs[i].getName(), JMX_NAMESPACE, JMX_PREFIX);
-						Object attrib = conn.getAttribute(name, beanAttribs[i].getName());
+						final QName attrQName = new QName(beanAttribs[i].getName(), JMX_NAMESPACE, JMX_PREFIX);
+						final Object attrib = conn.getAttribute(name, beanAttribs[i].getName());
 
 						builder.startElement(attrQName, null);
 						serializeObject(builder, attrib);
 						builder.endElement();
-					} catch (Exception e) {
+					} catch (final Exception e) {
 						LOG.debug("exception caught: " + e.getMessage(), e);
 					}
 				}
@@ -343,15 +343,15 @@ public class JMXtoXML {
 	}
 	
 	private void serialize(MemTreeBuilder builder, Object[] data) throws SAXException {
-		for (Object o : data) {
+		for (final Object o : data) {
 			serializeObject(builder, o);
 		}
 	}
 
 	private void serialize(MemTreeBuilder builder, CompositeData data) throws SAXException {
-		CompositeType type = data.getCompositeType();
-		for (String key : type.keySet()) {
-			QName qname = new QName(key, JMX_NAMESPACE, JMX_PREFIX);
+		final CompositeType type = data.getCompositeType();
+		for (final String key : type.keySet()) {
+			final QName qname = new QName(key, JMX_NAMESPACE, JMX_PREFIX);
 			builder.startElement(qname, null);
 			serializeObject(builder, data.get(key));
 			builder.endElement();
@@ -359,13 +359,13 @@ public class JMXtoXML {
 	}
 	
 	private void serialize(MemTreeBuilder builder, TabularData data) throws SAXException {
-		CompositeType rowType = data.getTabularType().getRowType();
-		for (Object rowObj : data.values()) {
-			CompositeData row = (CompositeData) rowObj;
+		final CompositeType rowType = data.getTabularType().getRowType();
+		for (final Object rowObj : data.values()) {
+			final CompositeData row = (CompositeData) rowObj;
 			builder.startElement(ROW_ELEMENT, null);
-			for (String key : rowType.keySet()) {
-				Object columnData = row.get(key.toString());
-				QName columnQName = new QName(key.toString(), JMX_NAMESPACE, JMX_PREFIX);
+			for (final String key : rowType.keySet()) {
+				final Object columnData = row.get(key.toString());
+				final QName columnQName = new QName(key.toString(), JMX_NAMESPACE, JMX_PREFIX);
 				builder.startElement(columnQName, null);
 				serializeObject(builder, columnData);
 				builder.endElement();
@@ -378,16 +378,16 @@ public class JMXtoXML {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		File home = ConfigurationHelper.getExistHome();
+		final File home = ConfigurationHelper.getExistHome();
 		DOMConfigurator.configure(new File(home, "log4j.xml").getAbsolutePath());
 		
-		JMXtoXML client = new JMXtoXML();
+		final JMXtoXML client = new JMXtoXML();
 		try {
 			client.connect("localhost", 1099);
 			System.out.println(client.generateReport(args));
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
-		} catch (TransformerException e) {
+		} catch (final TransformerException e) {
 			e.printStackTrace();
 		}
 	}

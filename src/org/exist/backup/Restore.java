@@ -121,8 +121,8 @@ public class Restore {
             contents = null;
 
             final Properties properties = bd.getProperties();
-            if((properties != null ) && properties.getProperty("incremental", "no").equals("yes")) {
-                String previous = properties.getProperty("previous", "");
+            if((properties != null ) && "yes".equals(properties.getProperty("incremental", "no"))) {
+                final String previous = properties.getProperty("previous", "");
 
                 if(previous.length() > 0) {
                     contents = new File(bd.getParentDir(), previous);

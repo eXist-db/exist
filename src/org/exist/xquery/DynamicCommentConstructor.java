@@ -64,28 +64,28 @@ public class DynamicCommentConstructor extends NodeConstructor {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
         if (newDocumentContext)
-            context.pushDocumentContext();
+            {context.pushDocumentContext();}
         Sequence result;
         try {
-            Sequence contentSeq = content.eval(contextSequence, contextItem);
+            final Sequence contentSeq = content.eval(contextSequence, contextItem);
             if (contentSeq.isEmpty())
-                result = Sequence.EMPTY_SEQUENCE;
+                {result = Sequence.EMPTY_SEQUENCE;}
             else {
-                MemTreeBuilder builder = context.getDocumentBuilder();
+                final MemTreeBuilder builder = context.getDocumentBuilder();
                 context.proceed(this, builder);
-                StringBuilder buf = new StringBuilder();
-                for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+                final StringBuilder buf = new StringBuilder();
+                for(final SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
-                    Item next = i.nextItem();
+                    final Item next = i.nextItem();
                     if(buf.length() > 0)
-                        buf.append(' ');
+                        {buf.append(' ');}
                     buf.append(next.toString());
                 }
                 if (buf.indexOf("--") != Constants.STRING_NOT_FOUND ||
@@ -93,15 +93,15 @@ public class DynamicCommentConstructor extends NodeConstructor {
                     throw new XPathException(this, ErrorCodes.XQDY0072, 
                         "'" + buf.toString() + "' is not a valid comment");
                 }
-                int nodeNr = builder.comment(buf.toString());
+                final int nodeNr = builder.comment(buf.toString());
                 result = builder.getDocument().getNode(nodeNr);
             }
         } finally {
             if (newDocumentContext)
-                context.popDocumentContext();
+                {context.popDocumentContext();}
         }
         if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 
@@ -117,7 +117,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("comment {");
         result.append(content.toString());
         result.append("} ");

@@ -47,18 +47,18 @@ public class UtilityPanel extends JFrame implements Observer {
         BufferedImage image = null;
         try {
             image = ImageIO.read(getClass().getResource("icon32.png"));
-        } catch (IOException e) {
+        } catch (final IOException e) {
         }
         this.setIconImage(image);
 
         if (!launcher.isSystemTraySupported())
-            setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            {setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);}
 
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 
         setBackground(new Color(255, 255, 255, 255));
 
-        JToolBar toolbar = new JToolBar();
+        final JToolBar toolbar = new JToolBar();
         toolbar.setOpaque(false);
         toolbar.setBorderPainted(false);
         //toolbar.setBackground(new Color(255, 255, 255, 255));
@@ -111,28 +111,28 @@ public class UtilityPanel extends JFrame implements Observer {
 
         getContentPane().add(toolbar);
 
-        JPanel msgPanel = new JPanel();
+        final JPanel msgPanel = new JPanel();
         msgPanel.setLayout(new BorderLayout());
 
         statusLabel = new JLabel("", SwingConstants.CENTER);
         statusLabel.setPreferredSize(new Dimension(300, 20));
         statusLabel.setMinimumSize(new Dimension(200, 20));
         if (!launcher.isSystemTraySupported())
-            statusLabel.setText("System tray icon not supported.");
+            {statusLabel.setText("System tray icon not supported.");}
 
         msgPanel.add(statusLabel, BorderLayout.NORTH);
 
-        JCheckBox showMessages = new JCheckBox("Show console messages");
+        final JCheckBox showMessages = new JCheckBox("Show console messages");
         showMessages.setHorizontalAlignment(SwingConstants.LEFT);
         showMessages.setOpaque(false);
         showMessages.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
-                boolean showMessages = itemEvent.getStateChange() == ItemEvent.SELECTED;
+                final boolean showMessages = itemEvent.getStateChange() == ItemEvent.SELECTED;
                 if (showMessages) {
                     messages.setVisible(true);
                 } else
-                    messages.setVisible(false);
+                    {messages.setVisible(false);}
                 UtilityPanel.this.pack();
             }
         });
@@ -150,19 +150,19 @@ public class UtilityPanel extends JFrame implements Observer {
         setMinimumSize(new Dimension(350, 80));
         pack();
 
-        Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+        final Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(d.width - this.getWidth() - 40, 60);
 
         launcher.addObserver(this);
 
         if (!hideOnStart)
-            setVisible(true);
+            {setVisible(true);}
     }
 
     private JButton createButton(JToolBar toolbar, String image, String title) {
-        URL imageURL = UtilityPanel.class.getResource(image);
-        ImageIcon icon = new ImageIcon(imageURL, title);
-        JButton button = new JButton(title, icon);
+        final URL imageURL = UtilityPanel.class.getResource(image);
+        final ImageIcon icon = new ImageIcon(imageURL, title);
+        final JButton button = new JButton(title, icon);
 
         button.setBorderPainted(false);
         button.setContentAreaFilled(false);
@@ -187,7 +187,7 @@ public class UtilityPanel extends JFrame implements Observer {
     @Override
     public void update(Observable observable, final Object o) {
         if (o instanceof ExistRepository.Notification) {
-            ExistRepository.Notification notification = (ExistRepository.Notification) o;
+            final ExistRepository.Notification notification = (ExistRepository.Notification) o;
             if (notification.getPackageURI().equals(Launcher.PACKAGE_DASHBOARD)) {
                 dashboardButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
             } else if (notification.getPackageURI().equals(Launcher.PACKAGE_EXIDE)) {

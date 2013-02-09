@@ -49,14 +49,14 @@ public class SequenceConstructor extends PathExpr {
         contextId = contextInfo.getContextId();
         int staticType = Type.ANY_TYPE;
         for (int i = 0 ; i < steps.size() ; i++) {
-            Expression expr = steps.get(i);
+            final Expression expr = steps.get(i);
             //Create a new context info because each sequence expression could modify it (add/remove flags...)
-            AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
+            final AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
             expr.analyze(info);
             if (staticType == Type.ANY_TYPE)
-                staticType = info.getStaticReturnType();
+                {staticType = info.getStaticReturnType();}
             else if (staticType != Type.ITEM && staticType != info.getStaticReturnType())
-                staticType = Type.ITEM;
+                {staticType = Type.ITEM;}
         }
         contextInfo.setStaticReturnType(staticType);
     }
@@ -70,18 +70,18 @@ public class SequenceConstructor extends PathExpr {
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);}
             if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());
+                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());}
         }
-        ValueSequence result = new ValueSequence();
+        final ValueSequence result = new ValueSequence();
         result.keepUnOrdered(unordered);
-        for(Expression step : steps) {
+        for(final Expression step : steps) {
             context.pushDocumentContext();
             try {
-                Sequence temp = step.eval(contextSequence, contextItem);
+                final Sequence temp = step.eval(contextSequence, contextItem);
                 if(temp != null && !temp.isEmpty()) {
                       result.addAll(temp);
                 }
@@ -90,7 +90,7 @@ public class SequenceConstructor extends PathExpr {
             }
         }
         if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result);
+            {context.getProfiler().end(this, "", result);}
         return result;
     }
 
@@ -101,9 +101,9 @@ public class SequenceConstructor extends PathExpr {
         dumper.display("(");
         dumper.startIndent();
         boolean moreThanOne = false;
-        for(Expression step : steps) {
+        for(final Expression step : steps) {
             if (moreThanOne)
-                dumper.display(", ");
+                {dumper.display(", ");}
             moreThanOne = true;
             step.dump(dumper);
         }
@@ -112,12 +112,12 @@ public class SequenceConstructor extends PathExpr {
     }
 
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        final StringBuilder result = new StringBuilder();
         result.append("( ");
         boolean moreThanOne = false;
-        for (Expression step : steps) {
+        for (final Expression step : steps) {
             if (moreThanOne)
-                result.append(", ");
+                {result.append(", ");}
             moreThanOne = true;
             result.append(step.toString());
         }
