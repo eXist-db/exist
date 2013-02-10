@@ -2,11 +2,9 @@
 Build
 -----
 
-This module relies on the presence of the following jar files in your EXIST_HOME/lib/user folder:
+This module relies on the presence of the following jar files in your $EXIST_HOME/extensions/modules/lib folder:
 
 	calabash.jar
-	saxon9-s9api.jar
-
 
 If you are building from source then the module build process will try and download
 these files for you if you enable the module.
@@ -56,8 +54,6 @@ Status
 Currently there are a few limitations with this extension
 
 * func signature will change soon to accept xml for pipeline, output, as well as specify input/output/parameter ports and options ... for now its primitive
-
-* function returns a string (which you can parse back into xml using eXist function) ... need to stay this way for a little bit during testing, will add smart serialization in a bit
 
 * p:xquery has no context with eXist ... this is a big limitation, but there are several ways around this
 
