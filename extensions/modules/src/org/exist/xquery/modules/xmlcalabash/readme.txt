@@ -23,7 +23,7 @@ To use xmlcalabash uncomment in conf.xml
     <module class="org.exist.xquery.modules.xmlcalabash.XMLCalabashModule"
           uri="http://xmlcalabash.com" />
 
-This has been tested with XML Calabash v0.9.23
+This has been tested with XML Calabash v0.9.29
 
 
 -----
