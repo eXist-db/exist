@@ -1965,7 +1965,11 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * Set permissions for the collection.
      *
      * @param permissions
+     *
+     * @deprecated This function is considered a security problem
+     * and should be removed, move code to copyOf or Constructor
      */
+    @Deprecated
     public void setPermissions(final Permission permissions) throws LockException {
         try {
             getLock().acquire(Lock.WRITE_LOCK);

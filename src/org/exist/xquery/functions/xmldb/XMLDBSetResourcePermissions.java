@@ -79,7 +79,7 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
  */
 	
     @Override
-    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
+    public Sequence evalWithCollection(final Collection collection, final Sequence[] args, final Sequence contextSequence)
 		throws XPathException {
 
         try {
@@ -102,23 +102,22 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
                 }
                 
                 // Must actually get a User object for the Permission...
-                final Permission perms = PermissionFactory.getPermission(user, group, mode);
                 final Account usr = ums.getAccount(user);
                 if (usr == null) {
                     logger.error("Needs a valid user name, not: " + user);
                     
                     throw new XPathException(this, "Needs a valid user name, not: " + user);
                 }
-                perms.setOwner(usr);
-                
-                ums.setPermissions(res, perms);
+
+
+                ums.chown(res, usr, group);
+                ums.chmod(mode);
+
             } else {
                 logger.error("Unable to locate resource " + args[1].getStringValue());
 
                 throw new XPathException(this, "Unable to locate resource " + args[1].getStringValue());
             }
-        } catch (final PermissionDeniedException pde) {
-            throw new XPathException(this, "Unable to change resource permissions: " + pde.getMessage(), pde);
         } catch (final XMLDBException xe) {
             throw new XPathException(this, "Unable to change resource permissions:" + xe.getMessage(), xe);
         }
