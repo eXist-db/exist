@@ -49,6 +49,8 @@ public abstract class MetaData {
 	public abstract Collection getCollection(String uuid) throws EXistException, PermissionDeniedException;
 
 	public abstract List<DocumentImpl> matchDocuments(String key, String value) throws EXistException, PermissionDeniedException;
+    public abstract List<DocumentImpl> matchDocumentsByKey(String key) throws EXistException, PermissionDeniedException;
+    public abstract List<DocumentImpl> matchDocumentsByValue(String value) throws EXistException, PermissionDeniedException;
 
 	public abstract Metas addMetas(DocumentAtExist doc);
 	public abstract Metas addMetas(Collection col);

@@ -382,7 +382,49 @@ public class MetaDataImpl extends MetaData {
 		}
 	}
 	
-	public void close() {
+    public List<DocumentImpl> matchDocumentsByKey(String key) throws EXistException {
+        
+        EntityJoin<String, MetaImpl> join = new EntityJoin<String, MetaImpl>(metadataByUUID);
+        join.addCondition(keyToMeta, key);
+        
+        ForwardCursor<MetaImpl> entities = join.entities();
+        try { 
+            List<DocumentImpl> list = new ArrayList<DocumentImpl>();
+            for (MetaImpl entity : entities) {
+                try {
+                    list.add(getDocument(entity.getObject()));
+                } catch (PermissionDeniedException ex) {
+                    //ignore
+                }
+            }
+            return list;
+        } finally {
+            entities.close();
+        }
+    }
+
+    public List<DocumentImpl> matchDocumentsByValue(String value) throws EXistException {
+        
+        EntityJoin<String, MetaImpl> join = new EntityJoin<String, MetaImpl>(metadataByUUID);
+        join.addCondition(valueToMeta, value);
+        
+        ForwardCursor<MetaImpl> entities = join.entities();
+        try { 
+            List<DocumentImpl> list = new ArrayList<DocumentImpl>();
+            for (MetaImpl entity : entities) {
+                try {
+                    list.add(getDocument(entity.getObject()));
+                } catch (PermissionDeniedException ex) {
+                    //ignore
+                }
+            }
+            return list;
+        } finally {
+            entities.close();
+        }
+    }
+
+    public void close() {
 		store.close();
 		env.close();
 	}
