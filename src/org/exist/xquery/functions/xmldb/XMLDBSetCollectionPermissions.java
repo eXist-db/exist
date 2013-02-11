@@ -21,12 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.security.Permission;
-import org.exist.security.PermissionFactory;
-import org.exist.security.Account;
-import org.exist.security.PermissionDeniedException;
+import org.exist.security.*;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -76,7 +72,7 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
  */
 	
     @Override
-    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence evalWithCollection(final Collection collection, final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
         try {
             final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
@@ -95,19 +91,16 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
                 throw new XPathException(this, "Needs a valid group name, not: " + group);
             }
 
-            // Must actually get a User object for the Permission...
-            final Permission perms = PermissionFactory.getPermission(user, group, mode);
             final Account usr = ums.getAccount(user);
             if (usr == null) {
                 logger.error("Needs a valid user name, not: " + user);
                 
                 throw new XPathException(this, "Needs a valid user name, not: " + user);
             }
-            perms.setOwner(usr);
-            
-            ums.setPermissions(collection, perms);
-        } catch(final PermissionDeniedException pde) {
-            throw new XPathException(this, "Unable to change collection permissions: " + pde.getMessage(), pde);
+
+            ums.chown(usr, group);
+            ums.chmod(mode);
+
         } catch(final XMLDBException xe) {
             throw new XPathException(this, "Unable to change collection permissions: " + xe.getMessage(), xe);
         }
