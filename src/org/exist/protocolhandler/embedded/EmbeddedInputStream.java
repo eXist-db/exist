@@ -68,7 +68,7 @@ public class EmbeddedInputStream extends InputStream {
 
         logger.debug("Initializing EmbeddedInputStream");
 
-        bis = new PipedInputStream(2048);
+        bis = new PipedInputStream();
         bos = new PipedOutputStream(bis);
 
         rt = new EmbeddedDownloadThread(brokerPool, xmldbURL , bos);
