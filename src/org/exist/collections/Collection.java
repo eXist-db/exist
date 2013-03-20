@@ -1820,7 +1820,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             }
             
             // do we have write permission on the old document or are we the owner of the old document?
-            if(!((oldDoc.getPermissions().getOwner().getId() != broker.getSubject().getId()) | (oldDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE)))) {
+            if (!((oldDoc.getPermissions().getOwner().getId() == broker.getSubject().getId()) || (oldDoc.getPermissions().validate(broker.getSubject(), Permission.WRITE)))) {
                 throw new PermissionDeniedException("A resource with the same name already exists in the target collection '" + path + "', and you do not have write access on that resource.");
             }
         } else {
