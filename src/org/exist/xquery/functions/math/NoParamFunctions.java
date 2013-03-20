@@ -42,12 +42,13 @@ import org.exist.xquery.value.Type;
  */
 public class NoParamFunctions extends BasicFunction {
     
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(NoParamFunctions.class);
+	//private static final Logger logger = Logger.getLogger(NoParamFunctions.class);
+    
+    public static final String PI = "pi";
 
 	public final static FunctionSignature signature[] = {
         new FunctionSignature(
-                new QName("pi", MathModule.NAMESPACE_URI),
+                new QName(PI, MathModule.NAMESPACE_URI),
                 "Returns the value of pi.",
                 null,
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi")
@@ -80,8 +81,8 @@ public class NoParamFunctions extends BasicFunction {
         
         
         Sequence result;
-        String functionName = getSignature().getName().getLocalName();
-        if("pi".equals(functionName)) {
+        final String functionName = getSignature().getName().getLocalName();
+        if(PI.equals(functionName)) {
             result=new DoubleValue(Math.PI);
             
         } else {

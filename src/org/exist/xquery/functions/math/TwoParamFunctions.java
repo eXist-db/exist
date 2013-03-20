@@ -48,9 +48,12 @@ public class TwoParamFunctions extends BasicFunction {
 	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(TwoParamFunctions.class);
     
+    public static final String ATAN2 = "atan2";
+    public static final String POW = "pow";
+    
     public final static FunctionSignature signature[] = {
         new FunctionSignature(
-                new QName("atan2", MathModule.NAMESPACE_URI),
+                new QName(ATAN2, MathModule.NAMESPACE_URI),
                 "Returns the angle in radians subtended at the origin by the point on a "
                 + "plane with coordinates (x, y) and the positive x-axis, the result being in the range -π to +π.",
                 new SequenceType[] {
@@ -60,7 +63,7 @@ public class TwoParamFunctions extends BasicFunction {
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the theta component of the point (r, theta) in polar coordinates that corresponds to the point (x, y) in Cartesian coordinates.")
                 ),
         new FunctionSignature(
-                new QName("pow", MathModule.NAMESPACE_URI),
+                new QName(POW, MathModule.NAMESPACE_URI),
                 "Returns the result of raising the first argument to the power of the second.",
                 new SequenceType[] {
                     new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The value"),
@@ -92,18 +95,18 @@ public class TwoParamFunctions extends BasicFunction {
        
         Sequence result;
         double calcValue=0;
-        String functionName = getSignature().getName().getLocalName();
+        final String functionName = getSignature().getName().getLocalName();
         
-        Sequence seqA = args[0].convertTo(Type.DOUBLE);
-        NumericValue valueA = (NumericValue)seqA.itemAt(0).convertTo(Type.DOUBLE);
+        final Sequence seqA = args[0].convertTo(Type.DOUBLE);
+        final NumericValue valueA = (NumericValue)seqA.itemAt(0).convertTo(Type.DOUBLE);
         
-        Sequence seqB = args[1].convertTo(Type.DOUBLE);
-        NumericValue valueB = (NumericValue)seqB.itemAt(0).convertTo(Type.DOUBLE);
+        final Sequence seqB = args[1].convertTo(Type.DOUBLE);
+        final NumericValue valueB = (NumericValue)seqB.itemAt(0).convertTo(Type.DOUBLE);
         
-        if("atan2".equals(functionName)) {
+        if(ATAN2.equals(functionName)) {
             calcValue = Math.atan2(valueA.getDouble(), valueB.getDouble());
             
-        } else if("power".equals(functionName)) {            
+        } else if(POW.equals(functionName)) {            
             calcValue=Math.pow(valueA.getDouble(), valueB.getDouble());
             
         } else {
