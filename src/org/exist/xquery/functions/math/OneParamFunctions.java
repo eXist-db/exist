@@ -45,72 +45,83 @@ import org.exist.xquery.value.Type;
  */
 public class OneParamFunctions extends BasicFunction {
 	
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(OneParamFunctions.class);
+	//private static final Logger logger = Logger.getLogger(OneParamFunctions.class);
+    
+    public static final String ACOS = "acos";
+    public static final String ASIN = "asin";
+    public static final String ATAN = "atan";
+    public static final String COS = "cos";
+    public static final String EXP = "exp";
+    public static final String EXP10 = "exp10";
+    public static final String LOG = "log";
+    public static final String LOG10 = "log10";
+    public static final String SIN = "sin";
+    public static final String SQRT = "sqrt";
+    public static final String TAN = "tan";
     
     public final static FunctionSignature signature[] = {
         new FunctionSignature(
-                new QName("acos", MathModule.NAMESPACE_URI),
+                new QName(ACOS, MathModule.NAMESPACE_URI),
                 "Returns the arc cosine of the argument, the result being in the range zero to +π radians.",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
                 ),
         new FunctionSignature(
-                new QName("asin", MathModule.NAMESPACE_URI),
+                new QName(ASIN, MathModule.NAMESPACE_URI),
                 "Returns the arc sine of the argument, the result being in the range -π/2 to +π/2 radians.",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "result")
                 ),
         new FunctionSignature(
-                new QName("atan", MathModule.NAMESPACE_URI),
+                new QName(ATAN, MathModule.NAMESPACE_URI),
                 "Returns the arc tangent of the argument, the result being in the range -π/2 to +π/2 radians.",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
                 ),
         new FunctionSignature(
-                new QName("cos", MathModule.NAMESPACE_URI),
+                new QName(COS, MathModule.NAMESPACE_URI),
                 "Returns the cosine of the argument, expressed in radians.",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the cosine")
                 ),
         new FunctionSignature(
-                new QName("exp", MathModule.NAMESPACE_URI),
+                new QName(EXP, MathModule.NAMESPACE_URI),
                 "Calculates e (the Euler Constant) raised to the power of $arg",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "e (the Euler Constant) raised to the power of a value or expression")
                 ),
         new FunctionSignature( // NEW
-                new QName("exp10", MathModule.NAMESPACE_URI),
+                new QName(EXP10, MathModule.NAMESPACE_URI),
                 "Calculates 10 raised to the power of $arg",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "e (the Euler Constant) raised to the power of a value or expression")
                 ),
         new FunctionSignature(
-                new QName("log", MathModule.NAMESPACE_URI),
+                new QName(LOG, MathModule.NAMESPACE_URI),
                 "Returns the natural logarithm of the argument.",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the log")
                 ),
         new FunctionSignature( // NEW
-                new QName("log10", MathModule.NAMESPACE_URI),
+                new QName(LOG10, MathModule.NAMESPACE_URI),
                 "Returns the base-ten logarithm of the argument.",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the log")
                 ),
         new FunctionSignature(
-                new QName("sin", MathModule.NAMESPACE_URI),
+                new QName(SIN, MathModule.NAMESPACE_URI),
                 "Returns the sine of the argument, expressed in radians.",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the sine")
                 ),
         new FunctionSignature(
-                new QName("sqrt", MathModule.NAMESPACE_URI),
+                new QName(SQRT, MathModule.NAMESPACE_URI),
                 "Returns the non-negative square root of the argument.",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The input number") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the square root of $x")
                 ),
         new FunctionSignature(
-                new QName("tan", MathModule.NAMESPACE_URI),
+                new QName(TAN, MathModule.NAMESPACE_URI),
                 "Returns the tangent of the argument, expressed in radians.",
                 new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The radians") },
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the tangent")
@@ -132,61 +143,61 @@ public class OneParamFunctions extends BasicFunction {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null){
+            if (contextSequence != null) {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
             }
         }
         
         Sequence result;
         final Sequence seq = args[0].convertTo(Type.DOUBLE);
-        final NumericValue value = (NumericValue)seq.itemAt(0).convertTo(Type.DOUBLE);
+        final NumericValue value = (NumericValue) seq.itemAt(0).convertTo(Type.DOUBLE);
 
-        if(seq.isEmpty()) {
+        if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
             
         } else {          
-            double calcValue=0;
+            double calcValue = 0;
             final String functionName = getSignature().getName().getLocalName();
-            if("acos".equals(functionName)) {
-                calcValue=Math.acos(value.getDouble());
+            if (ACOS.equals(functionName)) {
+                calcValue = Math.acos(value.getDouble());
                 
-            } else if("asin".equals(functionName)) {
-                calcValue=Math.asin(value.getDouble());
+            } else if (ASIN.equals(functionName)) {
+                calcValue = Math.asin(value.getDouble());
                 
-            } else if("atan".equals(functionName)) {
-                calcValue=Math.atan(value.getDouble());
+            } else if (ATAN.equals(functionName)) {
+                calcValue = Math.atan(value.getDouble());
                 
-            } else if("cos".equals(functionName)) {
-                calcValue=Math.cos(value.getDouble());
+            } else if (COS.equals(functionName)) {
+                calcValue = Math.cos(value.getDouble());
                 
-            } else if("exp".equals(functionName)) {
-                calcValue=Math.exp(value.getDouble());
+            } else if (EXP.equals(functionName)) {
+                calcValue = Math.exp(value.getDouble());
                 
-            } else if("exp10".equals(functionName)) {
-                calcValue=Math.pow(10.0d, calcValue);
+            } else if (EXP10.equals(functionName)) {
+                calcValue = Math.pow(10.0d, value.getDouble());
                 
-            } else if("log".equals(functionName)) {
-                calcValue=Math.log(value.getDouble());
+            } else if (LOG.equals(functionName)) {
+                calcValue = Math.log(value.getDouble());
                 
-            } else if("log10".equals(functionName)) {
-                calcValue=Math.log10(value.getDouble());
+            } else if (LOG10.equals(functionName)) {
+                calcValue = Math.log10(value.getDouble());
                 
-            } else if("sin".equals(functionName)) {
-                calcValue=Math.sin(value.getDouble());
+            } else if (SIN.equals(functionName)) {
+                calcValue = Math.sin(value.getDouble());
                 
-            } else if("sqrt".equals(functionName)) {
-                calcValue=Math.sqrt(value.getDouble());
+            } else if (SQRT.equals(functionName)) {
+                calcValue = Math.sqrt(value.getDouble());
                 
-            } else if("tan".equals(functionName)) {
-                calcValue=Math.tan(value.getDouble());
+            } else if (TAN.equals(functionName)) {
+                calcValue = Math.tan(value.getDouble());
                 
             } else {
-                throw new XPathException(this, "Function "+functionName+" not found.");
+                throw new XPathException(this, "Function " + functionName + " not found.");
             }
-            result=new DoubleValue(calcValue);
+            result = new DoubleValue(calcValue);
         }
         
-        if (context.getProfiler().isEnabled()){
+        if (context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", result);
         }
         
