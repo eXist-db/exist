@@ -38,8 +38,21 @@
         <echo>test3</echo>
     </target>
     
+    <target name="test4_UpdatePassword" description="Bug ID: #807 Setting a users password via ant task is not working">
+      
+      <!-- set password testtest user //-->
+      <xdb:password uri="${exist.uri}/db" user="${exist.user}" password="${exist.password}" name="testtest" secret="password-changed"/>
+      
+      <!-- execute xpath with new password //--> 
+      <xdb:xpath uri="${test.coll}/antunit" user="testtest" password="password-changed" query="0" outputproperty="xpath-result"/>
+      
+      <au:assertTrue message="XLMDBXPath did not match">
+        <contains string="${xpath-result}" substring="0"/>
+      </au:assertTrue>
 
-    <target name="test4_RemoveUser">
+    </target>
+
+    <target name="test5_RemoveUser">
         
         <!-- remove testtest user //-->
         <xdb:rmuser uri="${exist.uri}/db" user="${exist.user}" password="${exist.password}" name="testtest"/>        
@@ -53,6 +66,4 @@
         <echo message="${list2.user}"/>
 
     </target>
-    
-
 </project>

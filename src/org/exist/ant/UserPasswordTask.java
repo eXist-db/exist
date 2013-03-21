@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
+ *  Copyright (C) 2010-2013 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -59,6 +59,7 @@ public class UserPasswordTask extends UserTask
 
                 if( secret != null ) {
                     usr.setPassword( secret );
+                    this.service.updateUser(usr);
                 }
 
             } else {
