@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2007-2010 The eXist Project
+ *  Copyright (C) 2007-2013 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -30,6 +30,8 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.transform.OutputKeys;
+
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import org.exist.collections.Collection;
@@ -37,6 +39,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
@@ -46,6 +49,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
@@ -68,6 +72,7 @@ import org.xml.sax.SAXException;
  * Compresses a sequence of resources and/or collections
  * 
  * @author Adam Retter <adam@exist-db.org>
+ * @author Leif-Jöran Olsson <ljo@exist-db.org>
  * @version 1.0
  */
 public abstract class AbstractCompressFunction extends BasicFunction
@@ -275,6 +280,14 @@ public abstract class AbstractCompressFunction extends BasicFunction
                             Serializer serializer = context.getBroker().getSerializer();
                             serializer.setUser(context.getUser());
                             serializer.setProperty("omit-xml-declaration", "no");
+                            final Option option = context.getOption(Option.SERIALIZE_QNAME);
+                            final String[] params = option.tokenizeContents();
+                            for (final String param : params) {
+                                // OutputKeys.INDENT
+                                final String[] kvp = Option.parseKeyValuePair(param);
+                                serializer.setProperty(kvp[0], kvp[1]);
+                            }
+
                             value = serializer.serialize((NodeValue) content).getBytes();
                         }
                     }
