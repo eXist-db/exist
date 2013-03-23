@@ -211,6 +211,7 @@ public class FilteredExpression extends AbstractExpression {
      */
     public int getDependencies() {
         int deps = Dependency.CONTEXT_SET;
+        deps |= expression.getDependencies();
         for (final Predicate pred : predicates) {
             deps |= pred.getDependencies();
         }
