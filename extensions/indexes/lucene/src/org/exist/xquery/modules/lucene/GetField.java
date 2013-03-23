@@ -51,7 +51,9 @@ public class GetField extends BasicFunction {
 		DocumentImpl doc = null;
 		try {
 			doc = context.getBroker().getXMLResource(uri, Lock.READ_LOCK);
-			
+			if (doc == null) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
 			// Get the lucene worker
             LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
             String content = index.getFieldContent(context, doc.getDocId(), field);
