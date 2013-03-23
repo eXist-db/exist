@@ -209,7 +209,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
         {
 
             if(!(element.getNodeName().equals("entry") || element.getNamespaceURI().length() > 0))
-                throw new XPathException(this, "Item must be type of xs:anyURI or element enry.");
+                throw new XPathException(this, "Item must be type of xs:anyURI or element entry.");
 
             if(element.getChildNodes().getLength() > 1)
                 throw new XPathException(this, "Entry content is not valid XML fragment.");
@@ -280,14 +280,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                             Serializer serializer = context.getBroker().getSerializer();
                             serializer.setUser(context.getUser());
                             serializer.setProperty("omit-xml-declaration", "no");
-                            final Option option = context.getOption(Option.SERIALIZE_QNAME);
-                            final String[] params = option.tokenizeContents();
-                            for (final String param : params) {
-                                // OutputKeys.INDENT
-                                final String[] kvp = Option.parseKeyValuePair(param);
-                                serializer.setProperty(kvp[0], kvp[1]);
-                            }
-
+                            getDynamicSerializerOptions(serializer);
                             value = serializer.serialize((NodeValue) content).getBytes();
                         }
                     }
@@ -326,6 +319,18 @@ public abstract class AbstractCompressFunction extends BasicFunction
             }
 	}
 
+    private void getDynamicSerializerOptions(Serializer serializer) throws SAXException {
+        final Option option = context.getOption(Option.SERIALIZE_QNAME);
+        if (option != null) {
+            final String[] params = option.tokenizeContents();
+            for (final String param : params) {
+                // OutputKeys.INDENT
+                final String[] kvp = Option.parseKeyValuePair(param);
+                serializer.setProperty(kvp[0], kvp[1]);
+            }
+        }
+    }
+
 	/**
 	 * Adds a document to a archive
 	 * 
@@ -361,7 +366,8 @@ public abstract class AbstractCompressFunction extends BasicFunction
 			Serializer serializer = context.getBroker().getSerializer();
 			serializer.setUser(context.getUser());
 			serializer.setProperty("omit-xml-declaration", "no");
-			String strDoc = serializer.serialize(doc);
+            getDynamicSerializerOptions(serializer);
+            String strDoc = serializer.serialize(doc);
             value = strDoc.getBytes();            
 		} else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary file
