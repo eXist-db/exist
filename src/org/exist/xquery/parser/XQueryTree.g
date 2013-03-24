@@ -1863,41 +1863,54 @@ throws PermissionDeniedException, EXistException, XPathException
 :
 	( axis=forwardAxis )?
 	{ 
-		NodeTest test; 
+		NodeTest test = null; 
 		XQueryAST ast = null;
 	}
 	(
 		qn:QNAME
 		{
-			QName qname= QName.parse(staticContext, qn.getText());
-			if (axis == Constants.ATTRIBUTE_AXIS) {
-                //qname.setNamespaceURI(null);
-                test= new NameTest(Type.ATTRIBUTE, qname);
-                qname.setNameType(ElementValue.ATTRIBUTE);
-            } else {
-                test= new NameTest(Type.ELEMENT, qname);
-            }
-			ast = qn;
+			try {
+				QName qname= QName.parse(staticContext, qn.getText());
+				if (axis == Constants.ATTRIBUTE_AXIS) {
+	                //qname.setNamespaceURI(null);
+	                test= new NameTest(Type.ATTRIBUTE, qname);
+	                qname.setNameType(ElementValue.ATTRIBUTE);
+	            } else {
+	                test= new NameTest(Type.ELEMENT, qname);
+	            }
+				ast = qn;
+			} catch(XPathException ex1) {
+				ex1.setLocation(qn.getLine(), qn.getColumn());
+				throw ex1;
+			}
 		}
 		|
 		#( PREFIX_WILDCARD nc1:NCNAME )
 		{
-			QName qname= new QName(nc1.getText(), null, null);
-			qname.setNamespaceURI(null);
-			test= new NameTest(Type.ELEMENT, qname);
-			if (axis == Constants.ATTRIBUTE_AXIS)
-				test.setType(Type.ATTRIBUTE);
-			ast = nc1;
+			try {
+				QName qname= new QName(nc1.getText(), null, null);
+				qname.setNamespaceURI(null);
+				test= new NameTest(Type.ELEMENT, qname);
+				if (axis == Constants.ATTRIBUTE_AXIS)
+					test.setType(Type.ATTRIBUTE);
+				ast = nc1;
+			} catch(XPathException ex2) {
+				ex2.setLocation(nc1.getLine(), nc1.getColumn());
+			}
 		}
 		|
 		#( nc:NCNAME WILDCARD )
 		{
-			String namespaceURI= staticContext.getURIForPrefix(nc.getText());
-			QName qname= new QName(null, namespaceURI, nc.getText());
-			test= new NameTest(Type.ELEMENT, qname);
-			if (axis == Constants.ATTRIBUTE_AXIS)
-				test.setType(Type.ATTRIBUTE);
-			ast = nc;
+			try {
+				String namespaceURI= staticContext.getURIForPrefix(nc.getText());
+				QName qname= new QName(null, namespaceURI, nc.getText());
+				test= new NameTest(Type.ELEMENT, qname);
+				if (axis == Constants.ATTRIBUTE_AXIS)
+					test.setType(Type.ATTRIBUTE);
+				ast = nc;
+			} catch(XPathException ex3) {
+				ex3.setLocation(nc1.getLine(), nc1.getColumn());
+			}
 		}
 		|
 		w:WILDCARD
