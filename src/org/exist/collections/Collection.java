@@ -115,7 +115,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     private int refCount;
     private int timestamp;
     
-    private Lock lock = null;
+    private final Lock lock;
     
     /** user-defined Reader */
     private XMLReader userReader;
@@ -125,13 +125,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
 
     private Permission permissions;
 
-    private Collection(final DBBroker broker){
+    public Collection(final DBBroker broker, final XmldbURI path) {
         //The permissions assigned to this collection
         permissions = PermissionFactory.getDefaultCollectionPermission();
-    }
 
-    public Collection(final DBBroker broker, final XmldbURI path) {
-        this(broker);
         setPath(path);
         lock = new ReentrantReadWriteLock(path);
     }
@@ -590,9 +587,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     private void addDocumentsToSet(final DBBroker broker, final MutableDocumentSet docs, final LockedDocumentMap lockMap, final int lockType) throws LockException {
     	for(final DocumentImpl doc : documents.values()) {
             if(doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
-                lock = doc.getUpdateLock();
+                doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
 
-                lock.acquire(Lock.WRITE_LOCK);
                 docs.add(doc);
                 lockMap.add(doc);
             }
