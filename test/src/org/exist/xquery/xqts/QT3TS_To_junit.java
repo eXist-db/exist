@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -25,7 +25,6 @@ import java.io.*;
 
 import junit.framework.Assert;
 
-import org.apache.tools.ant.BuildException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.NodeProxy;
@@ -186,11 +185,10 @@ public class QT3TS_To_junit {
     }
 
     private MimeTable mtable = null;
-    private MimeTable getMimeTable() throws BuildException {
+    private MimeTable getMimeTable() {
         if ( mtable == null ) {
         	mtable = MimeTable.getInstance();
         }
-
         return mtable;
     }
     

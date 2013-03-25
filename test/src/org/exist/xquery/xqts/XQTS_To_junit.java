@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009-2012 The eXist Project
+ *  Copyright (C) 2009-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -23,20 +23,27 @@ package org.exist.xquery.xqts;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
+import junit.framework.Assert;
+
+import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
+import org.exist.security.xacml.AccessContext;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
-import org.junit.After;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XPathQueryService;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.value.Sequence;
+import org.xml.sax.InputSource;
 
 /**
  * JUnit tests generator from XQTS Catalog.
@@ -45,8 +52,6 @@ import org.xmldb.api.modules.XPathQueryService;
  *
  */
 public class XQTS_To_junit {
-
-    private org.exist.start.Main database;
 
     private String sep = File.separator;
 
@@ -66,85 +71,181 @@ public class XQTS_To_junit {
         }
     }
 
+    private BrokerPool db = null;
+    private DBBroker broker = null;
+    private Collection collection = null;
+
     public void startup() throws Exception {
-        database = new org.exist.start.Main("jetty");
-        database.run(new String[]{"jetty"});
+        Configuration configuration = new Configuration();
+        BrokerPool.configure(1, 10, configuration);
+        init();
     }
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @After
+    public void init() throws Exception {
+        db = BrokerPool.getInstance();
+        
+        broker = db.get(db.getSecurityManager().getSystemSubject());
+        Assert.assertNotNull(broker);
+        
+        collection = broker.getOrCreateCollection(null, XQTS_case.XQTS_URI);
+        Assert.assertNotNull(collection);
+        broker.saveCollection(null, collection);
+    }
+
+    public void release() throws Exception {
+        db.release(broker);
+    }
+        
     public void shutdown() throws Exception {
-        database.shutdown();
+        release();
+        
+        db.shutdown();
         System.out.println("database was shutdown");
     }
 
-    private Collection collection;
+    public void load() throws Exception {
+        File folder = new File(XQTS_case.XQTS_folder);
+        
+        File[] files = folder.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                if (file.getName().equals("CVS") 
+                        || file.getName().equals("drivers")
+                    )
+                    continue; //ignore
+                
+                loadDirectory(file, collection);
+            } else {
+                if (file.getName().equals(".project"))
+                    continue; //ignore
+                
+                loadFile(file, collection);
+            }
+        }
+    }
 
-    public void create() throws XMLDBException, IOException {
+    private void loadDirectory(File folder, Collection col) throws Exception {
+        //System.out.println("******* loadDirectory "+folder.getName());
+        if (!(folder.exists() && folder.canRead()))
+            return;
+        
+        Collection current = broker.getOrCreateCollection(null, col.getURI().append(folder.getName()));
+        broker.saveCollection(null, current);
+            
+        File[] files = folder.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                if (file.getName().equals("CVS"))
+                    continue; //ignore
+                
+                loadDirectory(file, current);
+            } else {
+                loadFile(file, current);
+            }
+        }
+    }
+
+    private void loadFile(File file, Collection col) throws Exception {
+        //System.out.println("******* loadFile "+file.getName());
+        
+        if (file.getName().endsWith(".html") 
+                || file.getName().endsWith(".xsd")
+//                || file.getName().equals("badxml.xml")
+//                || file.getName().equals("BCisInvalid.xml")
+//                || file.getName().equals("InvalidUmlaut.xml")
+//                || file.getName().equals("InvalidXMLId.xml")
+//                || file.getName().equals("invalid-xml.xml")
+            )
+            return;
+        
+        if (!(file.exists() && file.canRead()))
+            return;
+        
+        MimeType mime = getMimeTable().getContentTypeFor( file.getName() );
+        if (mime != null && mime.isXMLType()) {
+            IndexInfo info = col.validateXMLResource(null, broker, 
+                    XmldbURI.create(file.getName()), 
+                    new InputSource(new FileInputStream(file))
+                );
+            //info.getDocument().getMetadata().setMimeType();
+            col.store(null, broker, info, new InputSource(new FileInputStream(file)), false);
+        } else {
+            TransactionManager txManager = db.getTransactionManager();
+            Txn txn = txManager.beginTransaction();
+
+            col.addBinaryResource(txn, broker, 
+                    XmldbURI.create(file.getName()), 
+                    new FileInputStream(file), 
+                    MimeType.BINARY_TYPE.getName(), file.length());
+
+            txManager.commit(txn);
+        }
+        //System.out.println(file);
+    }
+
+    private MimeTable mtable = null;
+    private MimeTable getMimeTable() {
+        if ( mtable == null ) {
+            mtable = MimeTable.getInstance();
+        }
+        return mtable;
+    }
+
+    public void create() throws Exception {
         File file = ConfigurationHelper.getExistHome();
         File folder = new File(file.getAbsolutePath()+sep+"test"+sep+"src"+sep+"org"+sep+"exist"+sep+"xquery"+sep+"xqts"+sep);
         if (!folder.canRead()) {
             throw new IOException("XQTS junit tests folder unreadable.");
         }
 
-        collection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
-        if (collection == null) {
-            loadXQTS();
-            collection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
-            if (collection == null) {
-                throw new IOException("There are no XQTS data in the database");
-            }
-        }
-
         String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
             "return xs:string($XQTSCatalog/catalog:test-suite/@version)";
 
-        XPathQueryService service = (XPathQueryService) collection.getService("XPathQueryService", "1.0");
-        ResourceSet results = service.query(query);
+        XQuery xqs = broker.getXQueryService();
+        
+        Sequence results = xqs.execute(query, null, AccessContext.TEST);
 
-        if (results.getSize() != 0) {
-            String catalog = (String) results.getResource(0).getContent();
+        if (! results.isEmpty()) {
+            String catalog = (String) results.itemAt(0).getStringValue();
             catalog = "XQTS_"+adoptString(catalog);
             File subfolder = new File(folder.getAbsolutePath()+sep+catalog);
             processGroups(null, subfolder, "."+catalog);
         }
     }
 
-    private void loadXQTS() {
-        File buildFile = new File("webapp/xqts/build.xml");
-        //File xqtsFile = new File("webapp/xqts/build.xml");
-        Project p = new Project();
-        p.setUserProperty("ant.file", buildFile.getAbsolutePath());
-        p.setUserProperty("config.basedir", "../../"+XQTS_case.XQTS_folder);
-        DefaultLogger consoleLogger = new DefaultLogger();
-        consoleLogger.setErrorPrintStream(System.err);
-        consoleLogger.setOutputPrintStream(System.out);
-        consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
-        p.addBuildListener(consoleLogger);
+//    private void loadXQTS() {
+//        File buildFile = new File("webapp/xqts/build.xml");
+//        //File xqtsFile = new File("webapp/xqts/build.xml");
+//        Project p = new Project();
+//        p.setUserProperty("ant.file", buildFile.getAbsolutePath());
+//        p.setUserProperty("config.basedir", "../../"+XQTS_case.XQTS_folder);
+//        DefaultLogger consoleLogger = new DefaultLogger();
+//        consoleLogger.setErrorPrintStream(System.err);
+//        consoleLogger.setOutputPrintStream(System.out);
+//        consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
+//        p.addBuildListener(consoleLogger);
+//
+//        try {
+//            p.fireBuildStarted();
+//            p.init();
+//            ProjectHelper helper = ProjectHelper.getProjectHelper();
+//            p.addReference("ant.projectHelper", helper);
+//            helper.parse(p, buildFile);
+//            p.executeTarget("store");
+//            p.fireBuildFinished(null);
+//            Thread.sleep(60*1000);
+//        } catch (BuildException e) {
+//            p.fireBuildFinished(e);
+//        } catch (InterruptedException e) {
+//            //Nothing to do
+//        }
+//    }
 
-        try {
-            p.fireBuildStarted();
-            p.init();
-            ProjectHelper helper = ProjectHelper.getProjectHelper();
-            p.addReference("ant.projectHelper", helper);
-            helper.parse(p, buildFile);
-            p.executeTarget("store");
-            p.fireBuildFinished(null);
-            Thread.sleep(60*1000);
-        } catch (BuildException e) {
-            p.fireBuildFinished(e);
-        } catch (InterruptedException e) {
-            //Nothing to do
-        }
-    }
+    private boolean processGroups(String parentName, File folder, String _package_) throws Exception {
 
-    private boolean processGroups(String parentName, File folder, String _package_)
-            throws XMLDBException, IOException {
-        XPathQueryService service = (XPathQueryService) collection.getService("XPathQueryService", "1.0");
-        String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
+        String query = 
+            "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml')";
 
         if (parentName == null)
@@ -153,8 +254,11 @@ public class XQTS_To_junit {
             query += "for $testGroup in $XQTSCatalog//catalog:test-group[@name = '"+parentName+"']/catalog:test-group";
 
         query += "\treturn xs:string($testGroup/@name)";
-        ResourceSet results = service.query(query);
-        if (results.getSize() != 0) {
+
+        XQuery xqs = broker.getXQueryService();
+        Sequence results = xqs.execute(query, null, AccessContext.TEST);
+
+        if (!results.isEmpty()) {
             File subfolder;
             String subPackage;
 
@@ -177,8 +281,8 @@ public class XQTS_To_junit {
                 allTests.write("\t\tC_"+adoptString(parentName)+".class");
             }
 
-            for (int i = 0; i < results.getSize(); i++) {
-                String groupName = (String) results.getResource(i).getContent();
+            for (int i = 0; i < results.getItemCount(); i++) {
+                String groupName = results.itemAt(i).getStringValue();
                 subfolder = new File(folder.getAbsolutePath()+sep+groupName);
                 subPackage = _package_+"."+adoptString(groupName);
 
@@ -223,16 +327,17 @@ public class XQTS_To_junit {
         out.close();
     }
 
-    private boolean testCases(String testGroup, File folder, String _package_)
-            throws XMLDBException, IOException {
-        XPathQueryService service = (XPathQueryService) collection.getService("XPathQueryService", "1.0");
+    private boolean testCases(String testGroup, File folder, String _package_) throws Exception {
+
         String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml')"+
             "for $testGroup in $XQTSCatalog//catalog:test-group[@name = '"+testGroup+"']/catalog:test-case"+
             "\treturn xs:string($testGroup/@name)";
 
-        ResourceSet results = service.query(query);
-        if (results.getSize() != 0) {
+        XQuery xqs = broker.getXQueryService();
+        Sequence results = xqs.execute(query, null, AccessContext.TEST);
+
+        if (!results.isEmpty()) {
             folder.mkdirs();
             File jTest = new File(folder.getAbsolutePath()+sep+"C_"+adoptString(testGroup)+".java");
             FileWriter fstream = new FileWriter(jTest.getAbsoluteFile());
@@ -245,8 +350,8 @@ public class XQTS_To_junit {
                 "public class C_"+adoptString(testGroup)+" extends XQTS_case {\n" +
                 "\tprivate String testGroup = \""+testGroup+"\";\n\n");
 
-            for (int i = 0; i < results.getSize(); i++) {
-                String caseName = (String) results.getResource(i).getContent();
+            for (int i = 0; i < results.getItemCount(); i++) {
+                String caseName = results.itemAt(i).getStringValue();
                 out.write("\t/* "+caseName+" */" +
                     "\t@Test\n" +
                     "\tpublic void test_"+adoptString(caseName)+"() {\n" +

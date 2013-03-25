@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -35,7 +35,6 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.w3c.tests.TestCase;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Variable;
 import org.exist.xquery.VariableImpl;

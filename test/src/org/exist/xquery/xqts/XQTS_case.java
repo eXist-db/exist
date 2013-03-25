@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009-2012 The eXist Project
+ *  Copyright (C) 2009-2013 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -32,17 +32,13 @@ import java.util.TimeZone;
 
 import junit.framework.Assert;
 
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DefaultLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.ProjectHelper;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeListImpl;
+import org.exist.dom.NodeProxy;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.storage.DBBroker;
 import org.exist.w3c.tests.TestCase;
-import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -53,10 +49,6 @@ import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -65,6 +57,7 @@ import org.xmldb.api.modules.XMLResource;
 public class XQTS_case extends TestCase {
 
     protected static final String XQTS_folder = "test/external/XQTS_1_0_3/";
+//    protected static final String QT_NS = "http://www.w3.org/2010/09/qt-fots-catalog";
 
     private static Map<String, String> sources = null;
     private static Map<String, String> moduleSources = null;
@@ -73,65 +66,51 @@ public class XQTS_case extends TestCase {
 
     @Override
     public void loadTS() throws Exception {
-        testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
-        if (testCollection == null) {
-            File buildFile = new File("webapp/xqts/build.xml");
-            Project p = new Project();
-            p.setUserProperty("ant.file", buildFile.getAbsolutePath());
-            p.setUserProperty("config.basedir", "../../"+XQTS_folder);
-            DefaultLogger consoleLogger = new DefaultLogger();
-            consoleLogger.setErrorPrintStream(System.err);
-            consoleLogger.setOutputPrintStream(System.out);
-            consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
-            p.addBuildListener(consoleLogger);
-
-            try {
-                p.fireBuildStarted();
-                p.init();
-                ProjectHelper helper = ProjectHelper.getProjectHelper();
-                p.addReference("ant.projectHelper", helper);
-                helper.parse(p, buildFile);
-                p.executeTarget("store");
-                p.fireBuildFinished(null);
-                Thread.sleep(60 * 1000);
-            } catch (BuildException e) {
-                p.fireBuildFinished(e);
-            } catch (InterruptedException e) {
-                //
-            }
+        System.out.println("loading XQTS...");
+        XQTS_To_junit convertor = new XQTS_To_junit();
+        convertor.init();
+        try {
+            convertor.load();
+            System.out.println("loaded QT3.");
+        } finally {
+            convertor.release();
+        }
+    }
+    
+    public void prepare(DBBroker broker, XQuery xquery) throws Exception {
+        if (sources != null && moduleSources != null) {
+            return;
         }
 
-        testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
-        if (testCollection == null) throw new Exception("XQTS collection wasn't found");
-
+        Assert.assertNotNull( "XQTS collection wasn't found", broker.getCollection(XQTS_URI) );
+        
+        broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+        
         if (sources == null) {
             sources = new HashMap<String, String>();
-
-            XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
 
             String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
             "return $XQTSCatalog//catalog:sources//catalog:source";
 
-            ResourceSet results = service.query(query);
+            Sequence results = xquery.execute(query, null, AccessContext.TEST);
 
-            for (int i = 0; i < results.getSize(); i++) {
-                ElementImpl source = (ElementImpl) ((XMLResource) results.getResource(i)).getContentAsDOM();
+            for (NodeProxy node : results.toNodeSet()) {
+                ElementImpl source = (ElementImpl) node.getNode();
                 sources.put(source.getAttribute("ID"), XQTS_folder + source.getAttribute("FileName"));
             }
         }
         if (moduleSources == null) {
             moduleSources = new HashMap<String, String>();
 
-            XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
-
             String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";"+
                 "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml') "+
                 "return $XQTSCatalog//catalog:sources//catalog:module";
 
-            ResourceSet results = service.query(query);
-            for (int i = 0; i < results.getSize(); i++) {
-                ElementImpl source = (ElementImpl) ((XMLResource) results.getResource(i)).getContentAsDOM();
+            Sequence results = xquery.execute(query, null, AccessContext.TEST);
+
+            for (NodeProxy node : results.toNodeSet()) {
+                ElementImpl source = (ElementImpl) node.getNode();
                 moduleSources.put(source.getAttribute("ID"), "test/external/XQTS_1_0_3/"+source.getAttribute("FileName")+".xq");
             }
         }
@@ -154,20 +133,27 @@ public class XQTS_case extends TestCase {
 //        if (testCase.equals("Constr-cont-document-3"))
 //            return; //Added by p.b. as a quick attempt to work around current blocking code
 
+        DBBroker broker = null;
+        XQuery xquery = null;
+
         try {
-            XQueryService service = (XQueryService) testCollection.getService(
-                    "XQueryService", "1.0");
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+
+            xquery = broker.getXQueryService();
+
+            prepare(broker, xquery);
 
             String query = "declare namespace catalog=\"http://www.w3.org/2005/02/query-test-XQTSCatalog\";\n"+
             "let $XQTSCatalog := xmldb:document('/db/XQTS/XQTSCatalog.xml')\n"+
             "let $tc := $XQTSCatalog/catalog:test-suite//catalog:test-group[@name eq \""+testGroup+"\"]/catalog:test-case[@name eq \""+testCase+"\"]\n"+
             "return $tc";
 
-            ResourceSet results = service.query(query);
+            Sequence results = xquery.execute(query, null, AccessContext.TEST);
             
-            Assert.assertFalse("", results.getSize() != 1);
+            Assert.assertFalse("", !results.hasOne());
 
-            ElementImpl TC = (ElementImpl) ((XMLResource) results.getResource(0)).getContentAsDOM();
+            ElementImpl TC = (ElementImpl) results.itemAt(0);
 
             //collect test case information 
             String folder = "";
@@ -216,19 +202,12 @@ public class XQTS_case extends TestCase {
                 }
             }
 
-            DBBroker broker = null;
             Sequence result = null;
 
             //compile & evaluate
             File caseScript = new File(XQTS_folder+"Queries/XQuery/"+folder, script+".xq");
             try {
                 XQueryContext context;
-                XQuery xquery;
-
-                broker = pool.get(pool.getSecurityManager().getSystemSubject());
-                xquery = broker.getXQueryService();
-
-                broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
                 context = xquery.newContext(AccessContext.TEST);
 
@@ -352,11 +331,15 @@ public class XQTS_case extends TestCase {
 	                            exp.append("{'");
 	                            Reader reader = new BufferedReader(new FileReader(expectedResult));
 	                            char ch;
-	                            while (reader.ready()) {
-	                                ch = (char)reader.read();
-	                                if (ch == '\r')
-	                                    ch = (char)reader.read();
-	                                exp.append(String.valueOf(ch)); 
+	                            try {
+    	                            while (reader.ready()) {
+    	                                ch = (char)reader.read();
+    	                                if (ch == '\r')
+    	                                    ch = (char)reader.read();
+    	                                exp.append(String.valueOf(ch)); 
+    	                            }
+	                            } finally {
+	                                reader.close();
 	                            }
 	                            exp.append("'}");
                             }
@@ -409,13 +392,11 @@ public class XQTS_case extends TestCase {
 //                        Assert.fail("expected error is "+expectedError+", got "+error+" ["+e.getMessage()+"]");
 //                }
             } catch (Exception e) {
-            	if (e instanceof XMLDBException) {
-					if (e.getMessage().contains("SENR0001")) {
-						if (!expectedError.isEmpty())
-							return;
-					}
-					
+				if (e.getMessage().contains("SENR0001")) {
+					if (!expectedError.isEmpty())
+						return;
 				}
+
                 e.printStackTrace();
 
                 StringBuilder message = new StringBuilder();
@@ -428,11 +409,11 @@ public class XQTS_case extends TestCase {
 				}
 
                 Assert.fail(message.toString());
-            } finally {
-            	pool.release(broker);
             }
-        } catch (XMLDBException e) {
+        } catch (Exception e) {
             Assert.fail(e.toString());
+        } finally {
+            pool.release(broker);
         } 
     }
 
