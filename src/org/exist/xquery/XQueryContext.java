@@ -681,7 +681,8 @@ public class XQueryContext implements BinaryValueManager, Context
             if(    ( "xs".equals(prefix)    && Namespaces.SCHEMA_NS.equals( prevURI ) ) 
                 || ( "xsi".equals(prefix)   && Namespaces.SCHEMA_INSTANCE_NS.equals( prevURI ) ) 
                 || ( "xdt".equals(prefix)   && Namespaces.XPATH_DATATYPES_NS.equals( prevURI ) ) 
-                || ( "fn".equals(prefix)    && Namespaces.XPATH_FUNCTIONS_NS.equals( prevURI ) )                  
+                || ( "fn".equals(prefix)    && Namespaces.XPATH_FUNCTIONS_NS.equals( prevURI ) )
+                || ( "math".equals(prefix)) && Namespaces.XPATH_FUNCTIONS_MATH_NS.equals( prevURI )
                 || ( "local".equals(prefix) && Namespaces.XQUERY_LOCAL_NS.equals( prevURI ) ) ) {
 
                 staticPrefixes.remove( prevURI );
