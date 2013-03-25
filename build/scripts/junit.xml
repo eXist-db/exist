@@ -387,22 +387,20 @@
     <available file="${junit.reports}/src/org/exist/xquery/xqts/XQTS_1_0_3" property="xqts_junit.present"/>
 
     <target name="prepare-xqts" depends="download-xqts" unless="xqts_junit.present">
-        <!--
-        <delete>
-            <fileset dir="${junit.reports}/src/org/exist/xquery/xqts/" excludes="XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
-        </delete>
-        -->
-
         <echo message="---------------------------------------"/>
         <echo message="Generating junit tests from XQTS ......"/>
         <echo message="---------------------------------------"/>
         <delete failonerror="false">
             <fileset dir="${junit.reports}/src/org/exist/xquery/xqts/" excludes="XQTS_case.java,XQTS_To_junit.java,QT3TS_case.java,QT3TS_To_junit.java"/>
         </delete>
+    	<!-- workaround include bug -->
+    	<copy todir="${basedir}/cat">
+    		<fileset dir="${junit.reports}/external/XQTS_1_0_3/cat"/>
+    	</copy>
         <java classname="org.exist.xquery.xqts.XQTS_To_junit">
             <sysproperty key="exist.home" value="${basedir}" />
             <sysproperty key="exist.jmxagent" value="" />
-	    <!-- fixme! - jetty.port.jetty /ljo -->
+	    	<!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
             <sysproperty key="jetty.port.ssl" value="${jetty.port.ssl}" />
             <classpath refid="classpath.core"/>
@@ -411,6 +409,7 @@
             <classpath refid="classpath.junit"/>
             <classpath refid="classpath.test-libs"/>
         </java>
+        <delete dir="${basedir}/cat" failonerror="false"/>
         <echo>JUnit tests generated.</echo>
     </target>
 
