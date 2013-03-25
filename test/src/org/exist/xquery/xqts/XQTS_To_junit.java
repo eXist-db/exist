@@ -63,6 +63,7 @@ public class XQTS_To_junit {
         XQTS_To_junit convertor = new XQTS_To_junit();
         try {
             convertor.startup();
+            convertor.load();
             convertor.create();
         } catch (Exception e) {
             e.printStackTrace();
@@ -125,7 +126,7 @@ public class XQTS_To_junit {
     }
 
     private void loadDirectory(File folder, Collection col) throws Exception {
-        //System.out.println("******* loadDirectory "+folder.getName());
+//        System.out.println("******* loadDirectory "+folder.getName());
         if (!(folder.exists() && folder.canRead()))
             return;
         
@@ -146,39 +147,58 @@ public class XQTS_To_junit {
     }
 
     private void loadFile(File file, Collection col) throws Exception {
-        //System.out.println("******* loadFile "+file.getName());
+//        System.out.println("******* loadFile "+file.getName());
         
         if (file.getName().endsWith(".html") 
                 || file.getName().endsWith(".xsd")
-//                || file.getName().equals("badxml.xml")
-//                || file.getName().equals("BCisInvalid.xml")
-//                || file.getName().equals("InvalidUmlaut.xml")
-//                || file.getName().equals("InvalidXMLId.xml")
-//                || file.getName().equals("invalid-xml.xml")
+//                || file.getName().equals("")
             )
             return;
         
         if (!(file.exists() && file.canRead()))
             return;
         
-        MimeType mime = getMimeTable().getContentTypeFor( file.getName() );
-        if (mime != null && mime.isXMLType()) {
-            IndexInfo info = col.validateXMLResource(null, broker, 
-                    XmldbURI.create(file.getName()), 
-                    new InputSource(new FileInputStream(file))
-                );
-            //info.getDocument().getMetadata().setMimeType();
-            col.store(null, broker, info, new InputSource(new FileInputStream(file)), false);
-        } else {
-            TransactionManager txManager = db.getTransactionManager();
-            Txn txn = txManager.beginTransaction();
+        TransactionManager txManager = db.getTransactionManager();
+        Txn txn = null;
+        try {
+            MimeType mime = getMimeTable().getContentTypeFor( file.getName() );
+            if (mime != null && mime.isXMLType()) {
+                txn = txManager.beginTransaction();
 
-            col.addBinaryResource(txn, broker, 
-                    XmldbURI.create(file.getName()), 
-                    new FileInputStream(file), 
-                    MimeType.BINARY_TYPE.getName(), file.length());
+                IndexInfo info = col.validateXMLResource(txn, broker, 
+                        XmldbURI.create(file.getName()), 
+                        new InputSource(new FileInputStream(file))
+                    );
+                //info.getDocument().getMetadata().setMimeType();
+                FileInputStream is = new FileInputStream(file);
+                try {
+                    col.store(txn, broker, info, new InputSource(is), false);
+                } finally {
+                    is.close();
+                }
 
-            txManager.commit(txn);
+                txManager.commit(txn);
+            } else {
+                txn = txManager.beginTransaction();
+    
+                FileInputStream is = new FileInputStream(file);
+                try {
+                    col.addBinaryResource(txn, broker, 
+                            XmldbURI.create(file.getName()), 
+                            is, 
+                            MimeType.BINARY_TYPE.getName(), file.length());
+                } finally {
+                    is.close();
+                }
+    
+                txManager.commit(txn);
+            }
+        } catch (Exception e) {
+            if (txn != null) {
+                txManager.abort(txn);
+            }
+            System.out.println("fail to load file "+file.getName());
+            e.printStackTrace();
         }
         //System.out.println(file);
     }

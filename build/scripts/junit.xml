@@ -397,7 +397,7 @@
         <echo message="Generating junit tests from XQTS ......"/>
         <echo message="---------------------------------------"/>
         <delete failonerror="false">
-            <fileset dir="${junit.reports}/src/org/exist/xquery/xqts/" excludes="XQTS_case.java,XQTS_To_junit.java,config.xml,hacked-tests.xml,xqts.xql"/>
+            <fileset dir="${junit.reports}/src/org/exist/xquery/xqts/" excludes="XQTS_case.java,XQTS_To_junit.java,QT3TS_case.java,QT3TS_To_junit.java"/>
         </delete>
         <java classname="org.exist.xquery.xqts.XQTS_To_junit">
             <sysproperty key="exist.home" value="${basedir}" />

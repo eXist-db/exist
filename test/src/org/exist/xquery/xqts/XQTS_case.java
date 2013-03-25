@@ -68,8 +68,8 @@ public class XQTS_case extends TestCase {
     public void loadTS() throws Exception {
         System.out.println("loading XQTS...");
         XQTS_To_junit convertor = new XQTS_To_junit();
-        convertor.init();
         try {
+            convertor.init();
             convertor.load();
             System.out.println("loaded QT3.");
         } finally {
