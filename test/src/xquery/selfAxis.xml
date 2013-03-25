@@ -127,6 +127,21 @@
         <expected>
             <test>test</test>
         </expected>
-    </test>    
-    
+    </test>  
+    <test output="text">
+        <task>[filter context] use self within filter step</task>
+        <code>
+            let $values := 1 to 10
+            return $values[. = 5]
+        </code>
+        <expected>5</expected>
+    </test>
+    <test output="text">
+        <task>[filter context] use self in function call within filter step</task>
+        <code>
+            let $values := (3,4,6,6 ,2,7, 3,1,2)
+            return $values[index-of($values, .)[2]]
+        </code>
+        <expected>6 3 2</expected>
+    </test>
 </TestSet>
