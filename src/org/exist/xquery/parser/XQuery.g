@@ -1082,8 +1082,11 @@ nameTest throws XPathException
 	( ( ncnameOrKeyword COLON STAR ) | STAR )
 	=> wildcard
 	|
-	name=qName
-	{ #nameTest= #[QNAME, name]; }
+	name=n:qName
+	{ 
+		#nameTest= #[QNAME, name]; 
+		#nameTest.copyLexInfo(#n);
+	}
 	;
 
 wildcard
@@ -1484,8 +1487,12 @@ elementWithoutAttributes throws XPathException
     { #elementWithoutAttributes.copyLexInfo(#q); }
      exception catch [RecognitionException e]
         {
-            lexer.wsExplicit = false;
-            throw new XPathException(#q, "err:XPST0003: No closing end tag found for element constructor: " + name);
+        	if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
+            	lexer.wsExplicit = false;
+            	throw new XPathException(#q, "err:XPST0003: No closing end tag found for element constructor: " + name);
+            } else {
+            	throw e;
+            }
         }
 	;
 
@@ -1528,8 +1535,12 @@ elementWithAttributes throws XPathException
     { #elementWithAttributes.copyLexInfo(#q); }
     exception catch [RecognitionException e]
         {
-            lexer.wsExplicit = false;
-            throw new XPathException(#q, "err:XPST0003: Static error: no closing end tag found for element constructor: " + name);
+        	if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
+	            lexer.wsExplicit = false;
+	            throw new XPathException(#q, "err:XPST0003: Static error: no closing end tag found for element constructor: " + name);
+	        } else {
+	        	throw e;
+	        }
         }
 	;
 

@@ -4559,6 +4559,7 @@ inputState.guessing--;
 		returnAST = null;
 		ASTPair currentAST = new ASTPair();
 		org.exist.xquery.parser.XQueryAST nameTest_AST = null;
+		org.exist.xquery.parser.XQueryAST n_AST = null;
 		String name= null;
 		
 		boolean synPredMatched354 = false;
@@ -4700,10 +4701,14 @@ inputState.guessing--;
 		}
 		else if ((_tokenSet_1.member(LA(1)))) {
 			name=qName();
+			n_AST = (org.exist.xquery.parser.XQueryAST)returnAST;
 			astFactory.addASTChild(currentAST, returnAST);
 			if ( inputState.guessing==0 ) {
 				nameTest_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
-				nameTest_AST= (org.exist.xquery.parser.XQueryAST)astFactory.create(QNAME,name);
+				
+						nameTest_AST= (org.exist.xquery.parser.XQueryAST)astFactory.create(QNAME,name); 
+						nameTest_AST.copyLexInfo(n_AST);
+					
 				currentAST.root = nameTest_AST;
 				currentAST.child = nameTest_AST!=null &&nameTest_AST.getFirstChild()!=null ?
 					nameTest_AST.getFirstChild() : nameTest_AST;
@@ -11647,8 +11652,12 @@ inputState.guessing--;
 		catch (RecognitionException e) {
 			if (inputState.guessing==0) {
 				
-				lexer.wsExplicit = false;
-				throw new XPathException(q_AST, "err:XPST0003: Static error: no closing end tag found for element constructor: " + name);
+					if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
+					            lexer.wsExplicit = false;
+					            throw new XPathException(q_AST, "err:XPST0003: Static error: no closing end tag found for element constructor: " + name);
+					        } else {
+					        	throw e;
+					        }
 				
 			} else {
 				throw e;
@@ -11752,8 +11761,12 @@ inputState.guessing--;
 		catch (RecognitionException e) {
 			if (inputState.guessing==0) {
 				
-				lexer.wsExplicit = false;
-				throw new XPathException(q_AST, "err:XPST0003: No closing end tag found for element constructor: " + name);
+					if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
+					lexer.wsExplicit = false;
+					throw new XPathException(q_AST, "err:XPST0003: No closing end tag found for element constructor: " + name);
+				} else {
+					throw e;
+				}
 				
 			} else {
 				throw e;
