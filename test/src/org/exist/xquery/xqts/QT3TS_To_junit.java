@@ -169,15 +169,26 @@ public class QT3TS_To_junit {
             		new InputSource(new FileInputStream(file))
             	);
             //info.getDocument().getMetadata().setMimeType();
-            col.store(null, broker, info, new InputSource(new FileInputStream(file)), false);
+        	
+        	FileInputStream is = new FileInputStream(file);
+        	try {
+        	    col.store(null, broker, info, new InputSource(is), false);
+        	} finally {
+        	    is.close();
+        	}
         } else {
         	TransactionManager txManager = db.getTransactionManager();
         	Txn txn = txManager.beginTransaction();
 
-        	col.addBinaryResource(txn, broker, 
-            		XmldbURI.create(file.getName()), 
-            		new FileInputStream(file), 
-            		MimeType.BINARY_TYPE.getName(), file.length());
+            FileInputStream is = new FileInputStream(file);
+            try {
+            	col.addBinaryResource(txn, broker, 
+                		XmldbURI.create(file.getName()), 
+                		is, 
+                		MimeType.BINARY_TYPE.getName(), file.length());
+            } finally {
+                is.close();
+            }
 
 			txManager.commit(txn);
         }
