@@ -91,10 +91,10 @@ public abstract class LogicalOp extends BinaryOp {
 			//Possibly more expression types to add there
 			(getParent() instanceof EnclosedExpr ||
 			//First, the intermediate PathExpr
-			(getParent() != null && getParent().getParent() == null)) ? 
+			(getParent() == null)) ?
 			Type.BOOLEAN : Type.NODE 
 			:
-			Type.BOOLEAN;		
+			Type.BOOLEAN;
 	}
 	
 	/* (non-Javadoc)
