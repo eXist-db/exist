@@ -183,9 +183,6 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 }
             } );
 
-        if( ( contextInfo.getContextStep() != null ) && ( contextInfo.getContextStep() instanceof LocationStep ) ) {
-            ( ( LocationStep )contextInfo.getContextStep() ).setUseDirectAttrSelect( false );
-        }
         contextInfo.removeFlag( NEED_INDEX_INFO );
 
         List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps( getLeft() );

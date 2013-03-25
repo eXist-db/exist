@@ -74,8 +74,6 @@ public class LocationStep extends Step {
 
 	protected boolean inUpdate = false;
 
-	protected boolean useDirectAttrSelect = true;
-
 	protected boolean useDirectChildSelect = false;
 
 	protected boolean applyPredicate = true;
@@ -273,9 +271,6 @@ public class LocationStep extends Step {
 //		if ((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
 //			preloadedData = true;
 //		}
-		if ((contextInfo.getFlags() & NEED_INDEX_INFO) > 0) {
-			useDirectAttrSelect = false;
-		}
 		if ((contextInfo.getFlags() & USE_TREE_TRAVERSAL) > 0) {
 			useDirectChildSelect = true;
 		}
@@ -595,27 +590,6 @@ public class LocationStep extends Step {
 				return nodes.getAttributes(test);
 		}
 		NodeSet contextSet = contextSequence.toNodeSet();
-		boolean selectDirect = false;
-		if (useDirectAttrSelect && axis == Constants.ATTRIBUTE_AXIS) {
-			if (contextSet instanceof VirtualNodeSet)
-				selectDirect = ((VirtualNodeSet) contextSet)
-						.preferTreeTraversal()
-						&& contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
-			else
-				selectDirect = contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
-		}
-		if (selectDirect) {
-			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-						"OPTIMIZATION", "direct attribute selection");
-			if (contextSet.isEmpty())
-				return NodeSet.EMPTY_SET;
-			// TODO : why only the first node ?
-			NodeProxy proxy = contextSet.get(0);
-			if (proxy != null)
-				return contextSet.directSelectAttribute(context.getBroker(),
-						test, contextId);
-		}
 		if (!hasPreloadedData() && test.isWildcardTest()) {
 			NodeSet result = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
@@ -1387,16 +1361,6 @@ public class LocationStep extends Step {
 	}
 
 	/**
-	 * The method <code>setUseDirectAttrSelect</code>
-	 * 
-	 * @param useDirectAttrSelect
-	 *            a <code>boolean</code> value
-	 */
-	public void setUseDirectAttrSelect(boolean useDirectAttrSelect) {
-		this.useDirectAttrSelect = useDirectAttrSelect;
-	}
-
-	/**
 	 * The method <code>registerUpdateListener</code>
 	 * 
 	 */
@@ -1915,27 +1879,6 @@ public class LocationStep extends Step {
 				return nodes.matchAttributes(test);
 		}
 		NodeSet contextSet = contextSequence.toNodeSet();
-		boolean selectDirect = false;
-		if (useDirectAttrSelect && axis == Constants.ATTRIBUTE_AXIS) {
-			if (contextSet instanceof VirtualNodeSet)
-				selectDirect = ((VirtualNodeSet) contextSet)
-						.preferTreeTraversal()
-						&& contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
-			else
-				selectDirect = contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
-		}
-		if (selectDirect) {
-			if (context.getProfiler().isEnabled())
-				context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-						"OPTIMIZATION", "direct attribute selection");
-			if (contextSet.isEmpty())
-				return false;
-			// TODO : why only the first node ?
-			NodeProxy proxy = contextSet.get(0);
-			if (proxy != null)
-				return contextSet.directMatchAttribute(context.getBroker(),
-						test, contextId);
-		}
 		if (test.isWildcardTest()) {
 			NodeSet result = new VirtualNodeSet(context.getBroker(), axis,
 					test, contextId, contextSet);
