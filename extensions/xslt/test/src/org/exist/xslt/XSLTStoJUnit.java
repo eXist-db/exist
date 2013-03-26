@@ -49,11 +49,11 @@ public class XSLTStoJUnit implements ContentHandler {
 	
 	private static final String NAME = "name";
 
-	private static final String INPUT = "input";
+//	private static final String INPUT = "input";
 	private static final String STYLESHEET = "stylesheet";
 	private static final String SOURCE_DOCUMENT = "source-document";
 
-	private static final String OUTPUT = "output";
+//	private static final String OUTPUT = "output";
 	private static final String RESULT_DOCUMENT = "result-document";
 	
 	private static final String ERROR = "error";

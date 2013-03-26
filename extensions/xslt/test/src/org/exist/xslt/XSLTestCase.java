@@ -119,24 +119,28 @@ public class XSLTestCase {
 		if (testConf.canRead()) { 
 			// Open the file and then get a channel from the stream
 			FileInputStream fis = new FileInputStream(testConf);
-			FileChannel fc = fis.getChannel();
-
-			// Get the file's size and then map it into memory
-			int sz = (int)fc.size();
-			MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
-
-			// Charset and decoder for ISO-8859-15
-			Charset charset = Charset.forName("ISO-8859-15");
-			CharsetDecoder decoder = charset.newDecoder();
-		    
-		    // Decode the file into a char buffer
-			CharBuffer cb = decoder.decode(bb);
-
-			// Perform the search
-			loadBench(testConf, cb, bench);
-
-			// Close the channel and the stream
-			fc.close();
+			try {
+    			FileChannel fc = fis.getChannel();
+    
+    			// Get the file's size and then map it into memory
+    			int sz = (int)fc.size();
+    			MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
+    
+    			// Charset and decoder for ISO-8859-15
+    			Charset charset = Charset.forName("ISO-8859-15");
+    			CharsetDecoder decoder = charset.newDecoder();
+    		    
+    		    // Decode the file into a char buffer
+    			CharBuffer cb = decoder.decode(bb);
+    
+    			// Perform the search
+    			loadBench(testConf, cb, bench);
+    
+    			// Close the channel and the stream
+    			fc.close();
+			} finally {
+			    fis.close();
+			}
 		}
 	}
 
@@ -149,9 +153,9 @@ public class XSLTestCase {
 		int position;
 		
 		Matcher lm = linePattern.matcher(cb);	// Line matcher
-		int lines = 0;
+//		int lines = 0;
 		while (lm.find()) {
-			lines++;
+//			lines++;
 			CharSequence cs = lm.group(); 	// The current line
 			String str = cs.toString();
 			
@@ -476,32 +480,36 @@ public class XSLTestCase {
 		} else {
 			// Open the file and then get a channel from the stream
 			FileInputStream fis = new FileInputStream(file);
-			FileChannel fc = fis.getChannel();
-
-			// Get the file's size and then map it into memory
-			int sz = (int)fc.size();
-			MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
-
-			// Charset and decoder for ISO-8859-15
-			Charset charset = Charset.forName("ISO-8859-15");
-			CharsetDecoder decoder = charset.newDecoder();
-		    
-		    // Decode the file into a char buffer
-			CharBuffer cb = decoder.decode(bb);
-
-			result = cb.toString();
-			//TODO: rewrite to handle <?xml*?>
-			if (result.startsWith("<?xml version=\"1.0\"?>"))
-					result = result.substring("<?xml version=\"1.0\"?>".length());
-			if (result.startsWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>"))
-				result = result.substring("<?xml version=\"1.0\" encoding=\"utf-8\"?>".length());
-
-			//XXX: rethink: prexslt query processing
-//			result = result.replaceAll("{", "{{");
-//			result = result.replaceAll("}", "}}");
-
-			// Close the channel and the stream
-			fc.close();
+			try {
+    			FileChannel fc = fis.getChannel();
+    
+    			// Get the file's size and then map it into memory
+    			int sz = (int)fc.size();
+    			MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
+    
+    			// Charset and decoder for ISO-8859-15
+    			Charset charset = Charset.forName("ISO-8859-15");
+    			CharsetDecoder decoder = charset.newDecoder();
+    		    
+    		    // Decode the file into a char buffer
+    			CharBuffer cb = decoder.decode(bb);
+    
+    			result = cb.toString();
+    			//TODO: rewrite to handle <?xml*?>
+    			if (result.startsWith("<?xml version=\"1.0\"?>"))
+    					result = result.substring("<?xml version=\"1.0\"?>".length());
+    			if (result.startsWith("<?xml version=\"1.0\" encoding=\"utf-8\"?>"))
+    				result = result.substring("<?xml version=\"1.0\" encoding=\"utf-8\"?>".length());
+    
+    			//XXX: rethink: prexslt query processing
+//    			result = result.replaceAll("{", "{{");
+//    			result = result.replaceAll("}", "}}");
+    
+    			// Close the channel and the stream
+    			fc.close();
+			} finally {
+			    fis.close();
+			}
 		}
 		return result;
 	}

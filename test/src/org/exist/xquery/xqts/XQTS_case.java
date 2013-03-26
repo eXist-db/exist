@@ -137,7 +137,7 @@ public class XQTS_case extends TestCase {
         XQuery xquery = null;
 
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = db.get(db.getSecurityManager().getSystemSubject());
             broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
             xquery = broker.getXQueryService();
@@ -153,7 +153,7 @@ public class XQTS_case extends TestCase {
             
             Assert.assertFalse("", !results.hasOne());
 
-            ElementImpl TC = (ElementImpl) results.itemAt(0);
+            ElementImpl TC = (ElementImpl) results.toNodeSet().get(0).getNode();
 
             //collect test case information 
             String folder = "";
@@ -413,7 +413,7 @@ public class XQTS_case extends TestCase {
         } catch (Exception e) {
             Assert.fail(e.toString());
         } finally {
-            pool.release(broker);
+            db.release(broker);
         } 
     }
 
@@ -460,7 +460,7 @@ public class XQTS_case extends TestCase {
     }
 
 	@Override
-	protected String getCollection() {
-		return XQTS_URI.toString();
+	protected XmldbURI getCollection() {
+		return XQTS_URI;
 	}
 }

@@ -40,12 +40,15 @@ import junit.framework.Assert;
 
 import org.custommonkey.xmlunit.Diff;
 import org.exist.Namespaces;
+import org.exist.collections.Collection;
 import org.exist.dom.NodeProxy;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.Configuration;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.XmldbURI;
@@ -62,8 +65,6 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
@@ -74,66 +75,24 @@ import org.xmldb.api.base.XMLDBException;
  */
 public abstract class TestCase {
 	
-	public static org.exist.start.Main database = null;
-	private static int inUse = 0;
-	public static Collection testCollection = null;
-	
-	public static BrokerPool pool = null;
-	
-	private static Thread shutdowner = null;
-	
+    protected static BrokerPool db = null;
+    protected static DBBroker broker = null;
+    protected static Collection testCollection = null;
+
 	public static final String testLocation = "test/external/";
 
-	static class Shutdowner implements Runnable {
-
-		public void run() {
-			try {
-				while (true) {
-					Thread.sleep(10 * 1000);
-	
-					if (inUse == 0) {
-						//double check
-						Thread.sleep(10 * 1000);
-						
-						if (inUse == 0) {
-							database.shutdown();
-		
-							System.out.println("database was shutdown");
-							database = null;
-						}
-					}
-				}
-			} catch (InterruptedException e) {
-			}
-		}
-		
-	}
-	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 //		System.out.println("setUpBeforeClass ENTERED");
-		try {
-			if (database == null) {
-				System.out.println("Start up database...");
-				database = new org.exist.start.Main("jetty");
-				database.run(new String[] { "jetty" });
 
-//				testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
+	    Configuration configuration = new Configuration();
+        BrokerPool.configure(1, 10, configuration);
 
-				if (shutdowner == null) {
-					shutdowner = new Thread(new Shutdowner());
-					shutdowner.start();
-				}
-				
-				pool = BrokerPool.getInstance();
-				System.out.println("Database ready.");
-			}
-			synchronized (database) {
-				inUse++;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        db = BrokerPool.getInstance();
+        
+        broker = db.get(db.getSecurityManager().getSystemSubject());
+        Assert.assertNotNull(broker);
+
 //		System.out.println("setUpBeforeClass PASSED");
 	}
 
@@ -141,9 +100,10 @@ public abstract class TestCase {
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		synchronized (database) {
-			inUse--;
-		}
+//      System.out.println("tearDownAfterClass ENTERED");
+
+	    db.release(broker);
+
 //		System.out.println("tearDownAfterClass PASSED");
 	}
 
@@ -154,14 +114,14 @@ public abstract class TestCase {
 	public void setUp() throws Exception {
 //		System.out.println("setUp ENTERED");
 		if (testCollection == null) {
-			synchronized (database) {
+			synchronized (db) {
 				if (testCollection == null) {
-					testCollection = DatabaseManager.getCollection("xmldb:exist://"+getCollection(), "admin", "");
+					testCollection = broker.getCollection(getCollection());
 					if (testCollection == null) {
 						System.out.println("setUp no TS data");
 						loadTS();
 						System.out.println("setUp checking TS data");
-						testCollection = DatabaseManager.getCollection("xmldb:exist://"+getCollection(), "admin", "");
+	                    testCollection = broker.getCollection(getCollection());
 						if (testCollection == null) {
 							Assert.fail("There is no Test Suite data at database");
 						}
@@ -172,7 +132,7 @@ public abstract class TestCase {
 //		System.out.println("setUp PASSED");
 	}
 	
-	protected abstract String getCollection();
+	protected abstract XmldbURI getCollection();
 
 	/**
 	 * @throws java.lang.Exception
@@ -372,12 +332,12 @@ public abstract class TestCase {
 		LocalXMLResource res = null;
 		if (r instanceof NodeProxy) {
 			NodeProxy p = (NodeProxy) r;
-			res = new LocalXMLResource(user, pool, collection, p);
+			res = new LocalXMLResource(user, db, collection, p);
 		} else if (r instanceof Node) {
-			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
+			res = new LocalXMLResource(user, db, collection, XmldbURI.EMPTY_URI);
 			res.setContentAsDOM((Node)r);
 		} else if (r instanceof AtomicValue) {
-			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
+			res = new LocalXMLResource(user, db, collection, XmldbURI.EMPTY_URI);
 			res.setContent(r);
 		} else if (r instanceof LocalXMLResource)
 			res = (LocalXMLResource) r;

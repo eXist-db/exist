@@ -42,10 +42,10 @@ import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.w3c.tests.TestCase;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
-import org.junit.Before;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -67,19 +67,6 @@ public class XSLTS_case extends TestCase {
 		
 	}
 
-	@Before
-	public void setUp() throws Exception {
-		synchronized (database) {
-			if (testCollection == null) {
-				loadTS();
-//				testCollection = DatabaseManager.getCollection("xmldb:exist:///db/XQTS", "admin", "");
-//				if (testCollection == null) {
-//					Assert.fail("There is no Test Suite data at database");
-//				}
-			}
-		}
-	}
-	
 	protected void testCase(String inputURL, String xslURL, String outputURL, String expectedError) throws Exception {
 //		String input = loadFile(XSLTS_folder+"TestInputs/"+inputURL, false);
 //		String stylesheet = loadFile(XSLTS_folder+"TestInputs/"+xslURL, true);
@@ -95,13 +82,13 @@ public class XSLTS_case extends TestCase {
 			XQueryContext context;
 //			XQuery xquery;
 //			
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
+			broker = db.get(db.getSecurityManager().getSystemSubject());
 //				xquery = broker.getXQueryService();
 //
 //				broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 //				
 //				context = xquery.newContext(AccessContext.TEST);
-				context = new XSLContext(pool);
+				context = new XSLContext(db);
 //		        
 //			} catch (Exception e) {
 //				Assert.fail(e.getMessage());
@@ -123,7 +110,7 @@ public class XSLTS_case extends TestCase {
 //			Sequence result = xquery.execute(compiled, null);
 			
 			TransformerFactoryImpl factory = new TransformerFactoryImpl();
-			factory.setBrokerPool(pool);
+			factory.setBrokerPool(db);
 			
 			Templates templates = factory.newTemplates(
 					new SourceImpl(
@@ -174,7 +161,7 @@ public class XSLTS_case extends TestCase {
 				Assert.fail("expected error is "+expectedError+", get "+error+" ["+e.getMessage()+"]");
 			}
 		} finally {
-			pool.release(broker);
+			db.release(broker);
 		}
 
 //        StringBuilder content = new StringBuilder();
@@ -230,40 +217,44 @@ public class XSLTS_case extends TestCase {
 		} else {
 			// Open the file and then get a channel from the stream
 			FileInputStream fis = new FileInputStream(file);
-			FileChannel fc = fis.getChannel();
-
-			// Get the file's size and then map it into memory
-			int sz = (int)fc.size();
-			MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
-
-			// Charset and decoder for ISO-8859-15
-			Charset charset = Charset.forName("ISO-8859-15");
-			CharsetDecoder decoder = charset.newDecoder();
-		    
-		    // Decode the file into a char buffer
-			CharBuffer cb = decoder.decode(bb);
-
-			result = cb.toString();
-			//TODO: rewrite to handle <?xml*?>
-			if (result.startsWith("<?xml ")) {
-				int endAt = result.indexOf("?>");
-				result = result.substring(endAt+2);
+			try {
+    			FileChannel fc = fis.getChannel();
+    
+    			// Get the file's size and then map it into memory
+    			int sz = (int)fc.size();
+    			MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
+    
+    			// Charset and decoder for ISO-8859-15
+    			Charset charset = Charset.forName("ISO-8859-15");
+    			CharsetDecoder decoder = charset.newDecoder();
+    		    
+    		    // Decode the file into a char buffer
+    			CharBuffer cb = decoder.decode(bb);
+    
+    			result = cb.toString();
+    			//TODO: rewrite to handle <?xml*?>
+    			if (result.startsWith("<?xml ")) {
+    				int endAt = result.indexOf("?>");
+    				result = result.substring(endAt+2);
+    			}
+    
+    			//XXX: rethink: prexslt query processing
+    			if (incapsulate) {
+    				result = result.replaceAll("\\{", "\\{\\{");
+    				result = result.replaceAll("\\}", "\\}\\}");
+    			}
+    
+    			// Close the channel and the stream
+    			fc.close();
+			} finally {
+			    fis.close();
 			}
-
-			//XXX: rethink: prexslt query processing
-			if (incapsulate) {
-				result = result.replaceAll("\\{", "\\{\\{");
-				result = result.replaceAll("\\}", "\\}\\}");
-			}
-
-			// Close the channel and the stream
-			fc.close();
 		}
 		return result;
 	}
 
 	@Override
-	protected String getCollection() {
-		return "/db/XQTS";
+	protected XmldbURI getCollection() {
+		return XmldbURI.create("/db/XSLTS");
 	}
 }
