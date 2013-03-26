@@ -1741,7 +1741,7 @@ public class RESTServer {
                 if (asMimeType.equals(MimeType.HTML_TYPE.getName())) {
                     outputProperties.setProperty("method", "xhtml");
                     outputProperties.setProperty("media-type", "text/html; charset=" + encoding);
-                    outputProperties.setProperty("ident", "yes");
+                    outputProperties.setProperty("indent", "yes");
                     outputProperties.setProperty("omit-xml-declaration", "no");
                 }
 
