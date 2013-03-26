@@ -33,7 +33,6 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.w3c.tests.TestCase;
-import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Variable;
@@ -48,9 +47,6 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -82,7 +78,7 @@ public class QT3TS_case extends TestCase {
         XQuery xquery = null;
 
         try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            broker = db.get(db.getSecurityManager().getSystemSubject());
             xquery = broker.getXQueryService();
 
             broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -92,7 +88,7 @@ public class QT3TS_case extends TestCase {
             return xquery.execute(query, null, AccessContext.TEST);
             
         } finally {
-        	pool.release(broker);
+        	db.release(broker);
         }
     }
     
@@ -101,7 +97,7 @@ public class QT3TS_case extends TestCase {
 
 		DBBroker broker = null;
 	    try {
-	        broker = pool.get(pool.getSecurityManager().getSystemSubject());
+	        broker = db.get(db.getSecurityManager().getSystemSubject());
 	        XQuery xquery = broker.getXQueryService();
 	
 	        broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -142,7 +138,7 @@ public class QT3TS_case extends TestCase {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			pool.release(broker);
+			db.release(broker);
 		}
 	    return enviroments;
     }
@@ -152,7 +148,7 @@ public class QT3TS_case extends TestCase {
     	
 		DBBroker broker = null;
 	    try {
-	        broker = pool.get(pool.getSecurityManager().getSystemSubject());
+	        broker = db.get(db.getSecurityManager().getSystemSubject());
 	        XQuery xquery = broker.getXQueryService();
 	
 	        broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
@@ -196,7 +192,7 @@ public class QT3TS_case extends TestCase {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			pool.release(broker);
+			db.release(broker);
 		}
 	    return enviroment;
     }
@@ -209,15 +205,13 @@ public class QT3TS_case extends TestCase {
         Sequence result = null;
         XQuery xquery = null;
 
-    	try {
-            XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
-
+//    	try {
             Set<String> extectedError = new HashSet<String>();
             try {
-                broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                broker = db.get(db.getSecurityManager().getSystemSubject());
                 xquery = broker.getXQueryService();
 
-                final XQueryContext context = new XQueryContext(pool, AccessContext.TEST);
+                final XQueryContext context = new XQueryContext(db, AccessContext.TEST);
 
                 broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
@@ -226,11 +220,13 @@ public class QT3TS_case extends TestCase {
 	            "let $tc := $testCases//qt:test-case[@name eq \""+tcName+"\"]\n"+
 	            "return $tc";
 
-	            ResourceSet results = service.query(query);
+	            XQuery xqs = broker.getXQueryService();
+
+	            Sequence results = xqs.execute(query, null, AccessContext.TEST);
 	            
-	            Assert.assertFalse("", results.getSize() != 1);
+	            Assert.assertFalse("", !results.isEmpty());
 	
-	            ElementImpl TC = (ElementImpl) ((XMLResource) results.getResource(0)).getContentAsDOM();
+	            ElementImpl TC = (ElementImpl) results.toNodeSet().get(0).getNode();
 	
 	            Sequence contextSequence = null;
 	            
@@ -357,11 +353,11 @@ public class QT3TS_case extends TestCase {
             	e.printStackTrace();
                 Assert.fail(e.getMessage());
             } finally {
-            	pool.release(broker);
+            	db.release(broker);
             }
-        } catch (XMLDBException e) {
-            Assert.fail(e.toString());
-		} 
+//        } catch (XMLDBException e) {
+//            Assert.fail(e.toString());
+//		} 
     }
     
     private void possibleErrors(ElementImpl el, Set<String> extectedError) {
@@ -601,7 +597,7 @@ public class QT3TS_case extends TestCase {
     private String toString(Item item) throws SAXException {
         StringWriter writer = new StringWriter();
         SAXSerializer serializer = new SAXSerializer(writer, properties);
-        item.toSAX(pool.getActiveBroker(), serializer, properties);
+        item.toSAX(broker, serializer, properties);
         String serialized = writer.toString();
         //System.out.println(serialized);
         return serialized;
@@ -649,7 +645,7 @@ public class QT3TS_case extends TestCase {
 
 
     @Override
-    protected String getCollection() {
-        return QT3_URI.toString();
+    protected XmldbURI getCollection() {
+        return QT3_URI;
     }
 }
