@@ -134,6 +134,9 @@ public class XQTS_To_junit {
         broker.saveCollection(null, current);
             
         File[] files = folder.listFiles();
+        
+        if (files == null) return;
+        
         for (File file : files) {
             if (file.isDirectory()) {
                 if (file.getName().equals("CVS"))
