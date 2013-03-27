@@ -46,4 +46,4 @@ echo
 
 echo "$JAVA_RUN"
 
-"$JAVA_RUN" -Xms512m -Xmx512m $JAVA_OPTS -classpath $LOCALCLASSPATH org.apache.tools.ant.launch.Launcher $*
+"$JAVA_RUN" -Xms512m -Xmx512m "$JAVA_OPTS" -classpath "$LOCALCLASSPATH" org.apache.tools.ant.launch.Launcher $*
