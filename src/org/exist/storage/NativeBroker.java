@@ -2571,10 +2571,20 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException("Account "+getSubject().getName()+" have insufficient privileges on source Collection to move resource " + doc.getFileURI());
         }
         
+        /**
+         * As per the rules of Linux -
+         * 
+         * mv is NOT a copy operation unless we are traversing filesystems.
+         * We consider eXist to be a single filesystem, so we only need
+         * WRITE and EXECUTE access on the source and destination collections
+         * as we are effectively just re-linking the file.
+         * 
+         * - Adam 2013-03-26
+         */
         //must be owner of have execute access for the rename
-        if(!((doc.getPermissions().getOwner().getId() != getSubject().getId()) | (doc.getPermissions().validate(getSubject(), Permission.EXECUTE)))) {
-            throw new PermissionDeniedException("Account "+getSubject().getName()+" have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
-        }
+//        if(!((doc.getPermissions().getOwner().getId() != getSubject().getId()) | (doc.getPermissions().validate(getSubject(), Permission.EXECUTE)))) {
+//            throw new PermissionDeniedException("Account "+getSubject().getName()+" have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
+//        }
         
         if(!destination.getPermissions().validate(getSubject(), Permission.WRITE | Permission.EXECUTE)) {
             throw new PermissionDeniedException("Account "+getSubject().getName()+" have insufficient privileges on destination Collection to move resource " + doc.getFileURI());
