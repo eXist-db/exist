@@ -56,7 +56,10 @@ public class SubjectAccreditedImpl extends AbstractSubject {
 	 */
 	@Override
 	public boolean isAuthenticated() {
-		return (letterOfCredit != null);
+		return (
+			letterOfCredit != null 
+			&& account.getId() != account.getRealm().getSecurityManager().getGuestSubject().getId()
+		);
 	}
 
 	@Override

@@ -109,7 +109,8 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(PermissionsFunctions.FNS_CHGRP, PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.FNS_HAS_ACCESS, PermissionsFunctions.class),
 
-        new FunctionDef(IsExternallyAuthenticated.FNS_IS_EXTERNALLY_AUTHENTICATED, IsExternallyAuthenticated.class)
+        new FunctionDef(IsAuthenticated.FNS_IS_AUTHENTICATED, IsAuthenticated.class),
+        new FunctionDef(IsAuthenticated.FNS_IS_EXTERNALLY_AUTHENTICATED, IsAuthenticated.class)
     };
 
     public SecurityManagerModule(Map<String, List<? extends Object>> parameters) {
