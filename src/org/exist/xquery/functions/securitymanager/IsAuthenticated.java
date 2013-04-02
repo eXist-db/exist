@@ -36,7 +36,14 @@ import org.exist.xquery.value.Type;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class IsExternallyAuthenticated extends BasicFunction {
+public class IsAuthenticated extends BasicFunction {
+
+    public final static FunctionSignature FNS_IS_AUTHENTICATED = new FunctionSignature(
+        new QName("is-authenticated", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX),
+        "Returns the true() if current account is authenticated, false() otherwise.",
+        null,
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise")
+    );
 
     public final static FunctionSignature FNS_IS_EXTERNALLY_AUTHENTICATED = new FunctionSignature(
         new QName("is-externally-authenticated", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX),
@@ -45,12 +52,15 @@ public class IsExternallyAuthenticated extends BasicFunction {
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise")
     );
 
-    public IsExternallyAuthenticated(final XQueryContext context, final FunctionSignature signature) {
+    public IsAuthenticated(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
     public Sequence eval(final Sequence args[], final Sequence contextSequence) throws XPathException {
-        return new BooleanValue(context.getSubject().isExternallyAuthenticated());
+        if (mySignature == FNS_IS_EXTERNALLY_AUTHENTICATED)
+        	return new BooleanValue(context.getSubject().isExternallyAuthenticated());
+        
+    	return new BooleanValue(context.getSubject().isAuthenticated());
     }
 }
