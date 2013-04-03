@@ -68,11 +68,11 @@
         <fileset dir="${lib.user}">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${lib.extensions}">
+        <fileset dir="${lib.extensions}" erroronmissingdir="false">
             <include name="*.jar"/>
         </fileset>
 
-        <fileset dir="extensions">
+        <fileset dir="extensions" erroronmissingdir="false">
             <include name="**/lib/*.jar"/>
         </fileset>
         <fileset dir="${tools.ant}/lib">
