@@ -280,7 +280,7 @@ $Id$
    <target name="clean-3rd-party" description="Remove thirdparty jar files" if="ivyxml.present">
       <echo>Removing 3rd party jar files '${extension.name}'</echo>
       <delete includeemptydirs="true">
-         <fileset dir="${lib.dir}" includes="*.jar"/>
+         <fileset dir="${lib.dir}" includes="*.jar" erroronmissingdir="false"/>
       </delete>
    </target>
 
