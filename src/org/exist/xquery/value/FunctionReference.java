@@ -98,7 +98,7 @@ public class FunctionReference extends AtomicValue {
 
     public void resetState(boolean postOptimization) {
 //        LOG.debug("Resetting state of function item " + functionCall.getSignature().toString());
-//        functionCall.resetState(postOptimization);
+        functionCall.resetState(postOptimization);
     }
 
     /* (non-Javadoc)

@@ -92,4 +92,10 @@ public class InlineFunction extends AbstractExpression {
 		return Type.FUNCTION_REFERENCE;
 	}
 
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        // clear closure variables set on inline function
+        function.setClosureVariables(null);
+    }
 }
