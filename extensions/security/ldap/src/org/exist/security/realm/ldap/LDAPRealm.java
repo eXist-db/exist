@@ -129,6 +129,9 @@ public class LDAPRealm extends AbstractRealm {
 
             final AbstractAccount account = (AbstractAccount) getAccount(ctx, name);
             if (account == null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Account '"+name+"' can not be found.");
+                }
     			throw new AuthenticationException(
     					AuthenticationException.ACCOUNT_NOT_FOUND,
     					"Account '"+name+"' can not be found.");
@@ -486,6 +489,7 @@ public class LDAPRealm extends AbstractRealm {
 
         if(acct != null) {
             LOG.debug("Cached used.");
+            //XXX: synchronize with LDAP
             return acct;
         } else {
             //if the account is not cached, we should try and find it in LDAP and cache it if it exists
@@ -500,7 +504,15 @@ public class LDAPRealm extends AbstractRealm {
                 } else {
                     //found a user from ldap so cache them and return
                     try {
-                        final String primaryGroup = findGroupBySID(ctx, getPrimaryGroupSID(ldapUser));
+                        final String group = getPrimaryGroupSID(ldapUser);
+                        final String primaryGroup = findGroupBySID(ctx, group);
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("LDAP search for primary group '"+group+"' return '"+primaryGroup+"'.");
+                        }
+                        if (primaryGroup == null) {
+                            //or exception?
+                            return null;
+                        }
                         return createAccountInDatabase(ctx, name, ldapUser, ensureCase(primaryGroup));
                         //registerAccount(acct); //TODO do we need this
                     } catch(final AuthenticationException ae) {
