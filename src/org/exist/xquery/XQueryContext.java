@@ -2180,7 +2180,9 @@ public class XQueryContext implements BinaryValueManager, Context
                             LOG.error("User can not be authenticated: " + user.toString());
                         }
                     } else {
-                        return (Subject) req.getSession().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
+                        if (req.getSession() != null) {
+                            return (Subject) req.getSession().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
+                        }
                     }
                 }
             }
