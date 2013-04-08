@@ -102,7 +102,7 @@ public class RootNode extends Step {
             if (!context.inProtectedMode())
                 {ds.unlock(false);}
         }
-        result.updateNoSort();
+//        result.updateNoSort();
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);}
         
