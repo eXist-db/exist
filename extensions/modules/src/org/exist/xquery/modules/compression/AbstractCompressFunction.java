@@ -21,52 +21,31 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Iterator;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.xml.transform.OutputKeys;
-
 import org.apache.commons.io.output.ByteArrayOutputStream;
-
+import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Base64Decoder;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Option;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
 import org.xml.sax.SAXException;
+
+import java.io.*;
+import java.net.URI;
+import java.util.Iterator;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Compresses a sequence of resources and/or collections
@@ -77,7 +56,12 @@ import org.xml.sax.SAXException;
  */
 public abstract class AbstractCompressFunction extends BasicFunction
 {
-    protected final static SequenceType SOURCES_PARAM = new FunctionParameterSequenceType("sources", Type.ANY_TYPE, Cardinality.ONE_OR_MORE, "The sequence of URI's and/or Entrys. If a URI points to a collection then the collection, its resources and sub-collections are zipped recursively. An Entry takes the format <entry name=\"filename.ext\" type=\"collection|uri|binary|xml|text\" method=\"deflate|store\">data</entry>. The method attribute is only effective for the compression:zip function.");
+    private final static Logger logger = Logger.getLogger(AbstractCompressFunction.class);
+
+    protected final static SequenceType SOURCES_PARAM = new FunctionParameterSequenceType("sources", Type.ANY_TYPE, Cardinality.ONE_OR_MORE,
+            "The sequence of URI's and/or Entrys. If an URI points to a collection then the collection, its resources and sub-collections are zipped recursively. " +
+            "If URI points to file (available only to the DBA role.) then file or directory are zipped. " +
+            "An Entry takes the format <entry name=\"filename.ext\" type=\"collection|uri|binary|xml|text\" method=\"deflate|store\">data</entry>. The method attribute is only effective for the compression:zip function.");
     protected final static SequenceType COLLECTION_HIERARCHY_PARAM = new FunctionParameterSequenceType("use-collection-hierarchy", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.");
     protected final static SequenceType STRIP_PREFIX_PARAM = new FunctionParameterSequenceType("strip-prefix", Type.STRING, Cardinality.EXACTLY_ONE, "This prefix is stripped from the Entrys name");
 
@@ -130,7 +114,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                         }
                         else
                         {
-                            compressFromUri(os, ((AnyURIValue)item).toXmldbURI(), useHierarchy, stripOffset, "", null);
+                            compressFromUri(os, ((AnyURIValue)item).toURI(), useHierarchy, stripOffset, "", null);
                         }
 		}
 		try {
@@ -141,65 +125,149 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
 	}
 
-    private void compressFromUri(OutputStream os, XmldbURI uri, boolean useHierarchy, String stripOffset, String method, String resourceName) throws XPathException
+    private void compressFromUri(OutputStream os, URI uri, boolean useHierarchy, String stripOffset, String method, String resourceName) throws XPathException
         {
-            // try for a doc
-            DocumentImpl doc = null;
-            try
-            {
-                doc = context.getBroker().getXMLResource(uri, Lock.READ_LOCK);
+            try {
+                if ("file".equals(uri.getScheme())) {
 
-                if(doc == null)
-                {
-                    // no doc, try for a collection
-                    Collection col = context.getBroker().getCollection(uri);
-
-                    if(col != null)
-                    {
-                        // got a collection
-                        compressCollection(os, col, useHierarchy, stripOffset);
+                    if (!context.getSubject().hasDbaRole()) {
+                        XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
+                        logger.error("Invalid user", xPathException);
+                        throw xPathException;
                     }
-                    else
+
+                    // got a file
+                    File file = new File(uri.getPath());
+                    compressFile(os, file, useHierarchy, stripOffset, method, resourceName);
+
+                } else {
+
+                    // try for a doc
+                    DocumentImpl doc = null;
+                    try
                     {
-                        // no doc or collection
-                        throw new XPathException(this, "Invalid URI: " + uri.toString());
+                        XmldbURI xmldburi = XmldbURI.create(uri);
+                        doc = context.getBroker().getXMLResource(xmldburi, Lock.READ_LOCK);
+
+                        if(doc == null)
+                        {
+                            // no doc, try for a collection
+                            Collection col = context.getBroker().getCollection(xmldburi);
+
+                            if(col != null)
+                            {
+                                // got a collection
+                                compressCollection(os, col, useHierarchy, stripOffset);
+                            }
+                            else
+                            {
+                                // no doc or collection
+                                throw new XPathException(this, "Invalid URI: " + uri.toString());
+                            }
+                        }
+                        else
+                        {
+                            // got a doc
+                            compressResource(os, doc, useHierarchy, stripOffset, method, resourceName);
+                        }
+                    }
+                    catch(PermissionDeniedException pde)
+                    {
+                        throw new XPathException(this, pde.getMessage());
+                    }
+                    catch(IOException ioe)
+                    {
+                        throw new XPathException(this, ioe.getMessage());
+                    }
+                    catch(SAXException saxe)
+                    {
+                        throw new XPathException(this, saxe.getMessage());
+                    }
+                    catch(LockException le)
+                    {
+                        throw new XPathException(this, le.getMessage());
+                    }
+                    finally
+                    {
+                        if(doc != null)
+                            doc.getUpdateLock().release(Lock.READ_LOCK);
                     }
                 }
-                else
-                {
-                    // got a doc
-                    compressResource(os, doc, useHierarchy, stripOffset, method, resourceName);
-                }
+
+            } catch (IOException e) {
+                throw new XPathException(this, e.getMessage());
             }
-            catch(PermissionDeniedException pde)
-            {
-                throw new XPathException(this, pde.getMessage());
-            }
-            catch(IOException ioe)
-            {
-                throw new XPathException(this, ioe.getMessage());
-            }
-            catch(SAXException saxe)
-            {
-                throw new XPathException(this, saxe.getMessage());
-            }
-            catch(LockException le)
-            {
-                throw new XPathException(this, le.getMessage());
-            }
-            finally
-            {
-                if(doc != null)
-                    doc.getUpdateLock().release(Lock.READ_LOCK);
-            }
+
         }
 
-	/**
+    /**
+     * Adds a element to a archive
+     *
+     * @param os
+     *            The Output Stream to add the element to
+     * @param file
+     *            The file to add to the archive
+     * @param useHierarchy
+     *            Whether to use a folder hierarchy in the archive file that
+     *            reflects the collection hierarchy
+     */
+    private void compressFile(OutputStream os, File file, boolean useHierarchy, String stripOffset, String method, String name) throws IOException {
+
+        if (file.isFile()) {
+
+            // create an entry in the Tar for the document
+            Object entry = null;
+            byte[] value = new byte[0];
+            CRC32 chksum = new CRC32();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            if(name != null)
+            {
+                entry = newEntry(name);
+            }
+            else if (useHierarchy) {
+                entry = newEntry(removeLeadingOffset(file.getPath(), stripOffset));
+            } else {
+                entry = newEntry(file.getName());
+            }
+
+            InputStream is = new FileInputStream(file);
+            byte[] data = new byte[16384];
+            int len = 0;
+            while ((len=is.read(data,0,data.length))>0) {
+                baos.write(data,0,len);
+            }
+            is.close();
+            value = baos.toByteArray();
+            // close the entry
+            if (entry instanceof ZipEntry &&
+                    "store".equals(method)) {
+                ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
+                chksum.update(value);
+                ((ZipEntry) entry).setCrc(chksum.getValue());
+                ((ZipEntry) entry).setSize(value.length);
+            }
+
+            putEntry(os, entry);
+            os.write(value);
+            closeEntry(os);
+
+        } else {
+
+            for (String i : file.list()) {
+                compressFile(os, new File(file, i), useHierarchy, stripOffset, method, null);
+            }
+
+        }
+
+    }
+
+    /**
 	 * Adds a element to a archive
 	 * 
 	 * @param os
 	 *            The Output Stream to add the element to
-	 * @param nodeValue
+	 * @param element
 	 *            The element to add to the archive
 	 * @param useHierarchy
 	 *            Whether to use a folder hierarchy in the archive file that
@@ -215,14 +283,14 @@ public abstract class AbstractCompressFunction extends BasicFunction
                 throw new XPathException(this, "Entry content is not valid XML fragment.");
 
             String name = element.getAttribute("name");
-            if(name == null)
-                throw new XPathException(this, "Entry must have name attribute.");
+//            if(name == null)
+//                throw new XPathException(this, "Entry must have name attribute.");
 
             String type = element.getAttribute("type");
 
             if("uri".equals(type))
             {
-                compressFromUri(os, XmldbURI.create(element.getFirstChild().getNodeValue()), useHierarchy, stripOffset, element.getAttribute("method"), name);
+                compressFromUri(os, URI.create(element.getFirstChild().getNodeValue()), useHierarchy, stripOffset, element.getAttribute("method"), name);
                 return;
             }
 
