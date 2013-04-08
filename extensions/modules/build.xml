@@ -73,16 +73,17 @@
     <!-- 
         Special targets for XSLFO module 
     -->
-    <condition property="libs.available.xslfo">
+    <target name="check-xslfo-libs-available"> 
+      <condition property="libs.available.xslfo">
         <and>
-            <available file="${modules.lib}/fop.jar"/>
-            <available file="${modules.lib}/batik-all-1.7.jar"/>
-            <available file="${modules.lib}/xmlgraphics-commons-1.5.jar"/>
-            <available file="${modules.lib}/avalon-framework-4.2.0.jar"/>
+          <available file="${modules.lib}/fop.jar"/>
+          <available file="${modules.lib}/batik-all-1.7.jar"/>
+          <available file="${modules.lib}/xmlgraphics-commons-1.5.jar"/>
+          <available file="${modules.lib}/avalon-framework-4.2.0.jar"/>
         </and>
-    </condition>
-
-    <target name="prepare-xslfo" unless="libs.available.xslfo" if="${include.module.xslfo}">
+      </condition>
+    </target>
+    <target name="prepare-xslfo" depends="check-xslfo-libs-available" unless="libs.available.xslfo" if="${include.module.xslfo}">
         <echo message="Load: ${include.module.xslfo}"/>
         <echo message="------------------------------------------------------"/>
         <echo message="Downloading libraries required by the xsl-fo module"/>
