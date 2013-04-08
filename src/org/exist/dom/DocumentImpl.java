@@ -27,6 +27,7 @@ import org.exist.collections.CollectionConfiguration;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
+import org.exist.security.UnixStylePermission;
 import org.exist.security.SecurityManager;
 import org.exist.security.Account;
 import org.exist.storage.BrokerPool;
@@ -316,6 +317,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         childAddress = null;
         children = 0;
 
+        //XXX: why reusing? better to create new instance? -shabanovd
         metadata = getMetadata();
         if (metadata == null) {
             metadata = new DocumentMetadata();
@@ -331,6 +333,9 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
 
         // reset pageCount: will be updated during storage
         metadata.setPageCount(0);
+        
+        //copy permission
+        permissions = ((UnixStylePermission)other.permissions).copy();        
     }
 
     /**

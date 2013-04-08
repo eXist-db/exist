@@ -54,6 +54,14 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     	this.sm = sm;
     }
     
+    protected UnixStylePermission(SecurityManager sm, long vector) {
+        if(sm == null) {
+            throw new IllegalArgumentException("Security manager can't be null");
+        }
+        this.sm = sm;
+        this.vector = vector;
+    }
+    
     /**
      * Construct a permission with given user, group and permissions
      */
@@ -459,5 +467,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
             }
         }
         return false;
+    }
+    
+    public UnixStylePermission copy() {
+        return new UnixStylePermission(sm, vector);
     }
 }

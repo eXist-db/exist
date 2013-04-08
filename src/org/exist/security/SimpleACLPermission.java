@@ -49,6 +49,10 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     public SimpleACLPermission(SecurityManager sm) {
         super(sm);
     }
+
+    public SimpleACLPermission(SecurityManager sm, long vector) {
+        super(sm, vector);
+    }
     
     public SimpleACLPermission(SecurityManager sm, int ownerId, int groupId, int mode) {
         super(sm, ownerId, groupId, mode);
@@ -364,5 +368,14 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     @Override
     public boolean isCurrentSubjectCanWriteACL() {
         return validate(getCurrentSubject(), WRITE);
+    }
+    
+    public SimpleACLPermission copy() {
+        SimpleACLPermission prm = new SimpleACLPermission(sm, vector);
+        
+        prm.acl = new int[acl.length];
+        System.arraycopy(acl, 0, prm.acl, 0, acl.length);
+        
+        return prm;
     }
 }

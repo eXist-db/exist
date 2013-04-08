@@ -2498,7 +2498,7 @@ public class NativeBroker extends DBBroker {
                     DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
                     newDoc.copyOf(doc);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
-                    newDoc.setPermissions(doc.getPermissions());
+                    //newDoc.setPermissions(doc.getPermissions());
                     newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                     try {
                         copyXMLResource(transaction, doc, newDoc);
