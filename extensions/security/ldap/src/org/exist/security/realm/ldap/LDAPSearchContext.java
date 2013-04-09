@@ -1,5 +1,7 @@
 package org.exist.security.realm.ldap;
 
+import javax.naming.NamingException;
+
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
@@ -38,11 +40,18 @@ public class LDAPSearchContext implements Configurable {
         return base;
     }
     
-    public String getAbsoluteBase() {
-        if(base != null) {
-            return getBase().substring(getBase().indexOf("dc="));
+    public String getAbsoluteBase() throws NamingException {
+        if(getBase() != null) {
+            int index;
+            if ((index = getBase().indexOf("dc=")) >= 0)
+                return getBase().substring(index);
+            
+            if ((index = getBase().indexOf("DC=")) >= 0)
+                return getBase().substring(index);
+        } else {
+            throw new NamingException("no 'base' defined");
         }
-        return null;
+        throw new NamingException("'base' have no 'dc=' or 'DC='");
     }
 
     public String getDefaultUsername() {
