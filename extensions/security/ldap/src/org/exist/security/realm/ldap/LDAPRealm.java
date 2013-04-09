@@ -587,7 +587,11 @@ public class LDAPRealm extends AbstractRealm {
         final Object objSID = ldapUser.getAttributes().get(search.getSearchAccount().getSearchAttribute(LDAPSearchAttributeKey.OBJECT_SID)).get();
         final String strObjectSid;
         if (objSID instanceof String) {
-            strObjectSid = objSID.toString();
+            if (objSID.toString().lastIndexOf('-') == -1) {
+                strObjectSid = decodeSID(((String)objSID).getBytes());
+            } else {
+                strObjectSid = objSID.toString();
+            }
         } else {
             strObjectSid = decodeSID((byte[])objSID);
         }
