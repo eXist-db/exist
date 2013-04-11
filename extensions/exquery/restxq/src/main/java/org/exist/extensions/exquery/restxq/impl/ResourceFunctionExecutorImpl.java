@@ -248,7 +248,8 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             org.exist.xquery.value.Sequence fnArg = null;
             boolean found = false;
             for(final TypedArgumentValue argument : arguments) {
-                if(argument.getArgumentName().equals(fnParameter.getAttributeName())) {
+                final String argumentName = argument.getArgumentName();
+                if(argumentName != null && argumentName.equals(fnParameter.getAttributeName())) {
                     
                     fnArg = convertToExistSequence(xqueryContext, argument, fnParameter.getPrimaryType());
                     
