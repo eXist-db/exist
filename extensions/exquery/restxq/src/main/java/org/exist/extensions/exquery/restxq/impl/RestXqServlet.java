@@ -88,11 +88,14 @@ public class RestXqServlet extends AbstractExistHttpServlet {
                         return (String)configuration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
                     }
                 });
-            
           
             
             final RestXqService service = getRegistry().findService(requestAdapter);
             if(service != null) {
+                
+                if(log.isTraceEnabled()) {
+                    log.trace("Received " + requestAdapter.getMethod().name() + " request for \"" + requestAdapter.getPath() + "\" and found Resource Function \"" + service.getResourceFunction().getFunctionSignature() + "\" in  module \"" + service.getResourceFunction().getXQueryLocation() + "\"");
+                }
                 
                 service.service(
                     requestAdapter,
@@ -101,6 +104,10 @@ public class RestXqServlet extends AbstractExistHttpServlet {
                     new RestXqServiceSerializerImpl(getPool())
                 );
             } else {
+                if(log.isTraceEnabled()) {
+                    log.trace("Received " + requestAdapter.getMethod().name() + " request for \"" + requestAdapter.getPath() + "\" but no suitable Resource Function found!");
+                }
+                
                 super.service(request, response);
             }
         } catch(EXistException ee) {
