@@ -26,9 +26,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import javax.xml.namespace.QName;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
@@ -73,6 +70,20 @@ public class FunctionSignatureAdapter implements FunctionSignature {
             this.annotations = null;
         }
     }
+
+    @Override
+    public String toString() {
+        String str;
+        if(name.getPrefix() != null) {
+            str = name.getPrefix() + ":" + name.getLocalPart();
+        } else {
+            str = name.toString(); //clark-notation
+        }
+        str += "#" + getArgumentCount();
+        
+        return str;
+    }
+    
 
     @Override
     public QName getName() {
