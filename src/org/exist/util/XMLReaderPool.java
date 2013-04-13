@@ -37,14 +37,13 @@ import org.xml.sax.ext.DefaultHandler2;
  * 
  * @author wolf
  */
-public class XMLReaderPool extends StackObjectPool {
+public class XMLReaderPool extends StackObjectPool<XMLReader> {
 
     private final static Logger LOG = Logger.getLogger(XMLReaderPool.class);
 
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
 
-    @SuppressWarnings("unused")
-	private Configuration config;
+	private final Configuration config;
 
     /**
      * 
@@ -53,19 +52,25 @@ public class XMLReaderPool extends StackObjectPool {
      * @param maxIdle 
      * @param initIdleCapacity 
      */
-    public XMLReaderPool(Configuration config, PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {
+    public XMLReaderPool(Configuration config, PoolableObjectFactory<XMLReader> factory, int maxIdle, int initIdleCapacity) {
         super(factory, maxIdle, initIdleCapacity);
         this.config = config;
     }
 
     public synchronized XMLReader borrowXMLReader() {
         try {
-            return (XMLReader) borrowObject();
+            return super.borrowObject();
         } catch (final Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e );
         }
     }
 
+    @Override
+    public synchronized XMLReader borrowObject() throws Exception {
+        return borrowXMLReader();
+    }
+    
+   
     public synchronized void returnXMLReader(XMLReader reader) {
         if (reader == null) {
             return;
@@ -84,11 +89,17 @@ public class XMLReaderPool extends StackObjectPool {
                 grammarPool.clearDTDs();
             }
             
-            returnObject(reader);
+            super.returnObject(reader);
+            
         } catch (final Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public synchronized void returnObject(XMLReader obj) throws Exception {
+        returnXMLReader(obj);
+    }   
 
     private Object getReaderProperty(XMLReader xmlReader, String propertyName){
 
@@ -104,4 +115,7 @@ public class XMLReaderPool extends StackObjectPool {
         }
         return object;
     }
+
+ 
+    
 }

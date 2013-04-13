@@ -94,7 +94,7 @@ public class CollectionConfiguration {
     private String defCollGroup = null;
     private String defResGroup = null;
 
-    private int validationMode=XMLReaderObjectFactory.VALIDATION_UNKNOWN;
+    private XMLReaderObjectFactory.VALIDATION_SETTING validationMode=XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
 
     private BrokerPool pool;
 
@@ -203,6 +203,7 @@ public class CollectionConfiguration {
                                 		"document : " + e.getMessage(), e);}
                         }
                     }
+                    
                 } else if (GROUP_ELEMENT.equals(node.getLocalName())) {
                     final Element elem = (Element) node;
                     String groupOpt = elem.getAttribute(RESOURCE_ATTR);
@@ -233,21 +234,24 @@ public class CollectionConfiguration {
                                 {LOG.warn("Ilegal value for group in configuration document : " + groupOpt);}
                         }
                     }
+                    
                 } else if (VALIDATION_ELEMENT.equals(node.getLocalName())) {
                     final Element elem = (Element) node;
                     final String mode = elem.getAttribute(VALIDATION_MODE_ATTR);
                     if (mode==null) {
                         LOG.debug("Unable to determine validation mode in "+srcCollectionURI);
-                        validationMode=XMLReaderObjectFactory.VALIDATION_UNKNOWN;
+                        validationMode=XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
                     } else {
                         LOG.debug(srcCollectionURI + " : Validation mode="+mode);
                         validationMode=XMLReaderObjectFactory.convertValidationMode(mode);
                     }
+                    
                 } else {
                     throwOrLog("Ignored node '" + node.getLocalName() +
                         "' in configuration document", checkOnly);
                     //TODO : throw an exception like above ? -pb
                 }
+                
             } else if (node.getNodeType() == Node.ELEMENT_NODE) {
                 throwOrLog("Ignored node '" + node.getLocalName() + "' in namespace '" +
                         node.getNamespaceURI() + "' in configuration document", checkOnly);
@@ -290,7 +294,7 @@ public class CollectionConfiguration {
         return (defResGroup != null) ? defResGroup : user.getPrimaryGroup();
     }
 
-    public int getValidationMode() {
+    public XMLReaderObjectFactory.VALIDATION_SETTING getValidationMode() {
         return validationMode;
     }
 

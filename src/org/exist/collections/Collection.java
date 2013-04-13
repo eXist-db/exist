@@ -55,6 +55,7 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.SyntaxException;
 import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.XMLReaderObjectFactory.VALIDATION_SETTING;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
@@ -2066,12 +2067,14 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
         // Get reader from readerpool.
         final XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
+        
         // If Collection configuration exists (try to) get validation mode
         // and setup reader with this information.
         if (!validation) {
-            XMLReaderObjectFactory.setReaderValidationMode(XMLReaderObjectFactory.VALIDATION_DISABLED, reader);
+            XMLReaderObjectFactory.setReaderValidationMode(XMLReaderObjectFactory.VALIDATION_SETTING.DISABLED, reader);
+            
         } else if( colconfig!=null ) {
-            final int mode = colconfig.getValidationMode();
+            final VALIDATION_SETTING mode = colconfig.getValidationMode();
             XMLReaderObjectFactory.setReaderValidationMode(mode, reader);
         }
         // Return configured reader.
@@ -2085,15 +2088,19 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         if(userReader != null){
             return;
         }
+        
         if(info.getIndexer().getDocSize() > POOL_PARSER_THRESHOLD) {
             return;
         }
+        
         // Get validation mode from static configuration
         final Configuration config = broker.getConfiguration();
         final String optionValue = (String) config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);
-        final int validationMode = XMLReaderObjectFactory.convertValidationMode(optionValue);
+        final VALIDATION_SETTING validationMode = XMLReaderObjectFactory.convertValidationMode(optionValue);
+        
         // Restore default validation mode
         XMLReaderObjectFactory.setReaderValidationMode(validationMode, reader);
+        
         // Return reader
         broker.getBrokerPool().getParserPool().returnXMLReader(reader);
     }

@@ -822,6 +822,7 @@ public class BrokerPool extends Observable implements Database {
 
         //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(conf, new XMLReaderObjectFactory(this), 5, 0);
+        
         //REFACTOR : construct then... configure
         int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
         if(bufferSize == -1) {

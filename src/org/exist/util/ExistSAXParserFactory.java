@@ -35,7 +35,7 @@ public class ExistSAXParserFactory {
 
     private final static Logger LOG = Logger.getLogger(ExistSAXParserFactory.class);
 
-    public final static String systemProperty="org.exist.SAXParserFactory";
+    public final static String ORG_EXIST_SAXPARSERFACTORY="org.exist.SAXParserFactory";
 
     /**
      *  Get SAXParserFactory instance specified by factory class name.
@@ -97,7 +97,8 @@ public class ExistSAXParserFactory {
 
         SAXParserFactory factory = null;
 
-        final String config = System.getProperty(systemProperty);
+        // Get SAXParser configuratin from system
+        final String config = System.getProperty(ORG_EXIST_SAXPARSERFACTORY);
 
         // Get SAXparser factory specified by system property
         if (config != null) {
@@ -107,6 +108,7 @@ public class ExistSAXParserFactory {
         // If no factory could be retrieved, create system default property.
         if (factory == null) {
             factory = SAXParserFactory.newInstance();
+            LOG.debug("Fall back to system default SAXParserFactory " + factory.getClass().getSimpleName());
         }
 
         return factory;
