@@ -49,10 +49,9 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 
     private final static Logger LOG = Logger.getLogger(XMLReaderObjectFactory.class);
 
-    public final static int VALIDATION_UNKNOWN = -1;
-    public final static int VALIDATION_ENABLED = 0;
-    public final static int VALIDATION_AUTO = 1;
-    public final static int VALIDATION_DISABLED = 2;
+    public static enum VALIDATION_SETTING {
+        UNKNOWN, ENABLED, AUTO, DISABLED
+    };
 
     public final static String CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME = "entity-resolver";
     public final static String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";
@@ -98,10 +97,11 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 
         // Get validation settings
         final String option = (String) config.getProperty(PROPERTY_VALIDATION_MODE);
-        final int validation = convertValidationMode(option);
+        final VALIDATION_SETTING validation = convertValidationMode(option);
 
         final GrammarPool grammarPool =
                 (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+        
         final eXistXMLCatalogResolver resolver =
                 (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
 
@@ -115,13 +115,13 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     /**
      * Create Xmlreader and setup validation
      */
-    public static XMLReader createXmlReader(int validation, GrammarPool grammarPool,
+    public static XMLReader createXmlReader(VALIDATION_SETTING validation, GrammarPool grammarPool,
             eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException{
 
         // Create a xmlreader
         final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
         
-        if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED){
+        if (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED){
             saxFactory.setValidating(true);
         } else {
             saxFactory.setValidating(false);
@@ -147,28 +147,28 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     /**
      * Convert configuration text (yes,no,true,false,auto) into a magic number.
      */
-    public static int convertValidationMode(String option) {
-        int validation = VALIDATION_AUTO;
+    public static VALIDATION_SETTING convertValidationMode(String option) {
+        VALIDATION_SETTING mode = VALIDATION_SETTING.AUTO;
         if (option != null) {
             if ("true".equals(option) || "yes".equals(option)) {
-                validation = VALIDATION_ENABLED;
+                mode = VALIDATION_SETTING.ENABLED;
 
             } else if ("auto".equals(option)) {
-                validation = VALIDATION_AUTO;
+                mode = VALIDATION_SETTING.AUTO;
 
             } else {
-                validation = VALIDATION_DISABLED;
+                mode = VALIDATION_SETTING.DISABLED;
             }
         }
-        return validation;
+        return mode;
     }
 
     /**
      * Setup validation mode of xml reader.
      */
-    public static void setReaderValidationMode(int validation, XMLReader xmlReader) {
+    public static void setReaderValidationMode(VALIDATION_SETTING validation, XMLReader xmlReader) {
 
-        if (validation == VALIDATION_UNKNOWN) {
+        if (validation == VALIDATION_SETTING.UNKNOWN) {
             return;
         }
 
@@ -176,16 +176,16 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
 
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION,
-                validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
+                validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
 
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC,
-                validation == VALIDATION_AUTO);
+                validation == VALIDATION_SETTING.AUTO);
 
         setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA,
-                (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED) );
+                (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
 
         setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD,
-                (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED) );
+                (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
 
         // Attempt to make validation function equal to insert mode
         //saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
