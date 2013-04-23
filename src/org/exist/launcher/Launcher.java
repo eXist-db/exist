@@ -395,9 +395,9 @@ public class Launcher extends Observable implements Observer {
     @Override
     public void update(Observable observable, Object o) {
         final ExistRepository.Notification notification = (ExistRepository.Notification) o;
-        if (notification.getPackageURI().equals(PACKAGE_DASHBOARD)) {
+        if (notification.getPackageURI().equals(PACKAGE_DASHBOARD) && dashboardItem != null) {
             dashboardItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
-        } else if (notification.getPackageURI().equals(PACKAGE_EXIDE)) {
+        } else if (notification.getPackageURI().equals(PACKAGE_EXIDE) && eXideItem != null) {
             eXideItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
         }
     }
