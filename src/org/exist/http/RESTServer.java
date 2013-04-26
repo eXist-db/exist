@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2001-2013 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -120,7 +120,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
-import static org.exist.http.RESTServer.Parameter.*;
+import static org.exist.http.RESTServerParameter.*;
 /**
  *
  * @author wolf
@@ -207,184 +207,10 @@ public class RESTServer {
         }
     }
     
-    enum Parameter {
-        
-        /**
-         * The results of XPath and XQuery executions
-         * by the REST Server are cached which helps
-         * when you want to retrieve parts of a dataset
-         * i.e. for paging.
-         * 
-         * This can be used in the Query String of a GET request
-         * to release the cached results of a query
-         * 
-         * Contexts: GET
-         */
-        Release,
-        
-        /**
-         * Can be used in the Query String of a GET request
-         * to provide an XPath to execute. The context of the XPath
-         * is the resource or collection indicated in the URI
-         * 
-         * Contexts: GET
-         */
-        XPath,
-        
-        /**
-         * Can be used in either the Query String of a GET request
-         * or in the body of a POST request to provide an XQuery
-         * to execute. The context of the XQuery is the resource or
-         * collection indicated in the URI
-         * 
-         * Contexts: GET, POST
-         * 
-         * The value of this key used in the body of POST requests
-         * has the following format:
-         * 
-         * <exist:query start? = string 
-         *  max? = string
-         *  cache? = ("yes" | "no")
-         *  session-id? = string
-         *  typed = ("yes" | "no")>
-         *      (exist:text,
-         *      exist:variables?,
-         *      exist:properties?)
-         * </exist:query>
-         * 
-         * 
-         * <exist:property>
-         *  (exist:property+)
-         * </exist:property>
-         * 
-         * <exist:property name = string
-         *  value = string/>
-         */
-        Query,
-        
-        /**
-         * Can be used in either the Query String of a GET request
-         * or in the body of a POST request to specify values for
-         * any XQuery external variables that you wish to bind.
-         * 
-         * Contexts: GET, POST
-         * 
-         * The value of this key, is an XML element with the format:
-         * 
-         *  <exist:variables>
-         *      (exist:variable+)
-         *  </exist:variables>
-         */
-        Variables,
-        
-        /**
-         * XML description can be used inside Variables
-         * in either the Query String of a GET request or
-         * in the body of a POST request to specify the name
-         * and value of an external XQuery variable
-         * 
-         * Contexts: GET, POST
-         * 
-         * Format:
-         * 
-         *  <exist:variable>
-         *      (exist:qname,
-         *      sx:sequence)
-         *  </exist:variable>
-         * 
-         *  <exist:qname>
-         *      (exist:prefix?,
-         *       exist:localname,
-         *       exist:namespace?)
-         *  </exist:qname>
-         * 
-         *  <sx:sequence>
-         *      (sx:value+)
-         *  </sx:sequence>
-         * 
-         *  <sx:value type? = string>
-         *      (text() | element())
-         *  </sx:value>
-         */
-        Variable,
-        
-        /**
-         * Can be used in the Query String of a GET request when
-         * supplying an XPath or XQuery to indicate how many
-         * results should be returned (if the query returns a sequence
-         * of items).
-         * 
-         * Contexts: GET
-         * 
-         * See Max for POST requests.
-         */
-        HowMany,
-        
-        /**
-         * Can be used in the body of a POST request when
-         * supplying an XQuery to indicate how many
-         * results should be returned (if the query returns a sequence
-         * of items).
-         * 
-         * Contexts: POST
-         * 
-         * See HowMany for GET requests.
-         */
-        Max,
-        
-        /**
-         * Can be used in either the Query String of a GET request
-         * or in the body of a POST request when supplying an XPath or XQuery
-         * to  indicate where the result sequence should start from
-         * (if the query returns a sequence of items)
-         * 
-         * For GET requests the result subsequence is Start => results <= HowMany
-         * 
-         * For POST requests the result subsequence is Start => results <= Max
-         * 
-         * Contexts: GET, POST
-         */
-        Start,
-        
-        /**
-         * Can be used in either the Query String of a GET request
-         * or in the body of a POST request when supplying an XPath or XQuery,
-         * it causes the results of the query to be annotated with data type
-         * information.
-         * 
-         * Contexts: GET, POST
-         */
-        Typed,
-        
-        Wrap,           //GET (Query String) + POST (XML)   
-        Cache,          //GET (Query String) + POST (XML)
-        Indent,
-        Source,
-        Session,        //GET (Query String) + POST (XML)
-        XSL,
-        Encoding, //GET + HEAD (Query String), POST (XML)
-        
-        //just POST (XML)
-        Enclose,
-        Method,
-        Mime,
-        Text,
-        Properties,
-        Property;
-        
-        public String queryStringKey() {
-            return "_" + xmlKey();
-        }
-        
-        public String xmlKey() {
-            return name().toLowerCase();
-        }
-    }
-    
     /**
      * Retrieves a parameter from the Query String of the request
      */
-    private String getParameter(final HttpServletRequest request, final Parameter parameter) {
+    private String getParameter(final HttpServletRequest request, final RESTServerParameter parameter) {
         return request.getParameter(parameter.queryStringKey());
     }
 
@@ -1593,7 +1419,7 @@ public class RESTServer {
     private void declareExternalAndXQJVariables(XQueryContext context, ElementImpl variables) throws XPathException {
 
         final ValueSequence varSeq = new ValueSequence();
-        variables.selectChildren(new NameTest(Type.ELEMENT, new QName(Parameter.Variable.xmlKey(), Namespaces.EXIST_NS)), varSeq);
+        variables.selectChildren(new NameTest(Type.ELEMENT, new QName(Variable.xmlKey(), Namespaces.EXIST_NS)), varSeq);
         for (final SequenceIterator i = varSeq.iterate(); i.hasNext();) {
             final ElementImpl variable = (ElementImpl) i.nextItem();
             // get the QName of the variable
