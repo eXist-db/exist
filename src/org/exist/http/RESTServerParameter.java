@@ -31,10 +31,7 @@ enum RESTServerParameter {
         
     /**
      * The results of XPath and XQuery executions
-     * by the REST Server are cached which helps
-     * when you want to retrieve parts of a dataset
-     * i.e. for paging.
-     * 
+     * by the REST Server are cached if the Cache Parameter is set.
      * This can be used in the Query String of a GET request
      * to release the cached results of a query.
      * 
