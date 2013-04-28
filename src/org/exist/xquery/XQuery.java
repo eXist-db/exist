@@ -189,8 +189,18 @@ public class XQuery {
             }
             throw new StaticXQueryException(e.getLine(), e.getColumn(), msg);
         } catch(final TokenStreamException e) {
-            LOG.debug("Error compiling query: " + e.getMessage(), e);
-            throw new StaticXQueryException(e.getMessage(), e);
+            final String es = e.toString();
+            if(es.matches("^line \\d+:\\d+:.+")) {
+                LOG.debug("Error compiling query: " + e.getMessage(), e);
+                final int line = Integer.parseInt(es.substring(5, es.indexOf(':')));
+                final String tmpColumn = es.substring(es.indexOf(':') + 1);
+                final int column = Integer.parseInt(tmpColumn.substring(0, tmpColumn.indexOf(':')));
+                throw new StaticXQueryException(line, column, e.getMessage(), e);
+            } else {
+                LOG.debug("Error compiling query: " + e.getMessage(), e);
+                throw new StaticXQueryException(e.getMessage(), e);
+            }
+            
         }
     }
     
