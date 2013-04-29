@@ -79,7 +79,7 @@ public class JFreeCharting extends BasicFunction {
              " Output is directly streamed into the servlet output stream.";
 
     private static final String chartText="The type of chart to render.  Supported chart types: " +
-            "LineChart, LineChart3D, " +
+            "AreaChart, BarChart, BarChart3D, LineChart, LineChart3D, " +
             "MultiplePieChart, MultiplePieChart3D, PieChart, PieChart3D, " +
             "RingChart, StackedAreaChart, StackedBarChart, StackedBarChart3D, " +
             "WaterfallChart.";
