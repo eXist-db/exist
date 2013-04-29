@@ -188,9 +188,9 @@ public class UtilityPanel extends JFrame implements Observer {
     public void update(Observable observable, final Object o) {
         if (o instanceof ExistRepository.Notification) {
             ExistRepository.Notification notification = (ExistRepository.Notification) o;
-            if (notification.getPackageURI().equals(Launcher.PACKAGE_DASHBOARD)) {
+            if (notification.getPackageURI().equals(Launcher.PACKAGE_DASHBOARD) && dashboardButton != null) {
                 dashboardButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
-            } else if (notification.getPackageURI().equals(Launcher.PACKAGE_EXIDE)) {
+            } else if (notification.getPackageURI().equals(Launcher.PACKAGE_EXIDE) && eXideButton != null) {
                 eXideButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
             }
         } else {
