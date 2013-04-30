@@ -108,7 +108,7 @@ public class ExistSAXParserFactory {
         // If no factory could be retrieved, create system default property.
         if (factory == null) {
             factory = SAXParserFactory.newInstance();
-            LOG.debug(String.format("Fall back: using default SAXParserFactory '%s'", factory.getClass().getCanonicalName()));
+            LOG.debug(String.format("Using default SAXParserFactory '%s'", factory.getClass().getCanonicalName()));
         }
 
         return factory;
