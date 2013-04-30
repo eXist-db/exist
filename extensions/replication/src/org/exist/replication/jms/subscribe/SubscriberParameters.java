@@ -61,6 +61,9 @@ public class SubscriberParameters extends ClientParameters {
 
     @Override
     public void processParameters() throws ClientParameterException {
+
+        // Fill defaults when net set
+        fillActiveMQbrokerDefaults();
         
         // java.naming.factory.initial
         String value = props.getProperty( Context.INITIAL_CONTEXT_FACTORY );
@@ -70,7 +73,6 @@ public class SubscriberParameters extends ClientParameters {
         value = props.getProperty( Context.PROVIDER_URL );
         providerUrl=value;
         
-
         // Connection factory
         value = props.getProperty(CONNECTION_FACTORY);
         if (value == null || value.equals("")) {
@@ -89,14 +91,17 @@ public class SubscriberParameters extends ClientParameters {
         }
         topic = value;
 
-        // Client ID
+        // Client ID ; 
+        // for durable subscriptions later an additional check
+        // is performed.
         value = props.getProperty(CLIENT_ID);
-        if (value == null || value.equals("")) {
-            String errorText = "'" + CLIENT_ID + "' is not set.";
-            LOG.error(errorText);
-            throw new ClientParameterException(errorText);
+        if (value != null && !value.equals("")) {
+            clientId = value;
+            LOG.debug(CLIENT_ID + ": " + value);
+        } else {
+            LOG.debug(CLIENT_ID + " is not set.");
         }
-        clientId = value;
+
 
 
         // Get subscribername
@@ -148,7 +153,13 @@ public class SubscriberParameters extends ClientParameters {
                 LOG.error(errorText);
                 throw new ClientParameterException(errorText);
             }
-
+        }
+        
+        // FOr a durable connection (default) a clientId must be set
+        if (durable && clientId == null) {
+            String errorText = "For durable connections the " + CLIENT_ID + " must be set.";
+            LOG.error(errorText);
+            throw new ClientParameterException(errorText);
         }
     }
 

@@ -9,32 +9,39 @@
     -->
     <parameter name="java.naming.factory.initial" 
         value="org.apache.activemq.jndi.ActiveMQInitialContextFactory"/>
+    
     <!-- 
         URL of the message broker, default value for ActiveMQ
         see javax.naming.Context#PROVIDER_URL
     -->
     <parameter name="java.naming.provider.url" 
         value="tcp://myserver.local:61616"/>
+    
     <!-- 
         Lookup connection factory
         see javax.naming.InitialContext#lookup(String) 
     -->
     <parameter name="connectionfactory" value="ConnectionFactory"/>
+    
     <!--
         Lookup destination (topic)
         see javax.naming.InitialContext#lookup(String) 
     -->
     <parameter name="topic" value="dynamicTopics/eXistdb"/>
+    
     <!--
-        Set client identifier for this connection.
+        Set client identifier for this connection. Required for durable
+        subscriptions (default setting)
         see javax.jms.Connection#setClientID(string)
     -->
     <parameter name="client-id" value="SubscriberId"/>
+    
     <!-- 
         Set the name used to identify this subscription
         see JMS javax.jms.TopicSession#createDurableSubscriber(Topic,String) 
     -->
     <parameter name="subscriber-name" value="SubscriptionId"/>
+    
     <!-- 
         Set the subscription is durable. default = yes
         see JMS javax.jms.Session#createDurableSubscriber(Topic,String) 
@@ -43,6 +50,7 @@
         [Optional]
     -->
     <!--<parameter name="durable" value="yes"/>-->
+    
     <!-- 
         A JMS API message selector allows a message consumer to specify 
         the messages it is interested in. The syntax of the expression is based 
@@ -54,6 +62,7 @@
     -->
     <!--<parameter name="messageselector" 
             value="property1 = 'a' OR property2 = 'b'"/>-->
+            
     <!-- 
         If set, inhibits delivery of messages published by its own connection
         default = yes

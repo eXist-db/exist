@@ -29,8 +29,10 @@
             <!--
                 Set client identifier for this connection.
                 see javax.jms.Connection#setClientID(string)
+
+                [Optional] 
             -->
-            <parameter name="client-id" value="PublisherId"/>
+            <!-- <parameter name="client-id" value="PublisherId"/> --> 
 
             <!-- 
                 Set time-to-live in milliseconds, default value is 0 (unlimited) 
@@ -38,7 +40,7 @@
 
                 [Optional]
             -->
-            <!--<parameter name="time-to-live" value="0"/>-->
+            <!-- <parameter name="time-to-live" value="0"/> -->
 
             <!--
                 Sets the producer priority, value 0-9 ; default is 4.

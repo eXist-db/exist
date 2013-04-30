@@ -86,8 +86,8 @@ public class MessageReceiverStartupTrigger implements StartupTrigger {
         Connection connection = null;
         Session session = null;
         try {
+            // Get parameters, fill defaults when needed
             parameters.processParameters();
-            parameters.fillActiveMQbrokerDefaults();
 
             LOG.info("Starting subscription of '" + parameters.getSubscriberName() 
                         + "' to '" + parameters.getTopic() + "'");
