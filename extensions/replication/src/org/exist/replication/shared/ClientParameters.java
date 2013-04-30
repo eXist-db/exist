@@ -39,12 +39,11 @@ public abstract class ClientParameters {
     public static final String TOPIC = "topic";
     public static final String CLIENT_ID = "client-id";
    
-    protected String connectionFactory;
-    protected String clientId;
-    protected String topic;
-    
-    protected String initialContextFactory;
-    protected String providerUrl;
+    protected String connectionFactory = null;
+    protected String clientId = null;
+    protected String topic = null;
+    protected String initialContextFactory = null;
+    protected String providerUrl = null;
 
     protected Properties props = new Properties();
 
@@ -117,7 +116,7 @@ public abstract class ClientParameters {
      * localhost.
      *
      */
-    public void fillActiveMQbrokerDefaults() {
+    protected void fillActiveMQbrokerDefaults() {
 
         if (props.getProperty(Context.INITIAL_CONTEXT_FACTORY) == null) {
             String defaultValue = "org.apache.activemq.jndi.ActiveMQInitialContextFactory";

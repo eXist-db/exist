@@ -1,0 +1,16 @@
+<ivysettings>
+    <properties file="build.properties" />
+    <settings defaultResolver="local-chain"/>
+    <resolvers>
+        <ibiblio name="ibiblio-maven2" m2compatible="true"/>
+        <ibiblio name="java-net-maven2" root="http://download.java.net/maven/2/" m2compatible="true" />
+        <ibiblio name="maven" root="http://mvnrepository.com/artifact/" m2compatible="true" />
+        <ibiblio name="fuse" root="http://repo.fusesource.com/nexus/content/groups/public/" m2compatible="true" />  
+        <chain name="local-chain">
+            <resolver ref="maven"/>
+            <resolver ref="ibiblio-maven2"/>
+            <resolver ref="java-net-maven2"/>
+            <resolver ref="fuse"/>
+        </chain>
+    </resolvers>
+</ivysettings>

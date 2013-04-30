@@ -52,32 +52,47 @@ public class JMSMessageSender implements MessageSender {
     JMSMessageSender(Map<String, List<?>> params) {
         parameters.setMultiValueParameters(params);
     }
-    
+
     /**
      * Helper method to give resources back
      */
-    private void closeSilent(Context context, Connection connection, Session session) {
+    private void closeAll(Context context, Connection connection, Session session) {
+
+        boolean doLog = LOG.isDebugEnabled();
+
         if (session != null) {
+            if (doLog) {
+                LOG.debug("Closing session");
+            }
+
             try {
                 session.close();
             } catch (JMSException ex) {
-                LOG.debug(ex);
+                LOG.error(ex);
             }
         }
-        
+
         if (connection != null) {
+            if (doLog) {
+                LOG.debug("Closing connection");
+            }
+            
             try {
                 connection.close();
             } catch (JMSException ex) {
-                LOG.debug(ex);
+                LOG.error(ex);
             }
         }
-        
+
         if (context != null) {
+            if (doLog) {
+                LOG.debug("Closing context");
+            }
+             
             try {
                 context.close();
             } catch (NamingException ex) {
-                LOG.debug(ex);
+                LOG.error(ex);
             }
         }
     }
@@ -92,14 +107,11 @@ public class JMSMessageSender implements MessageSender {
 
         // Get from .xconf file, fill defaults when needed
         parameters.processParameters();
-        parameters.fillActiveMQbrokerDefaults();
-        
-
 
         Properties contextProps = parameters.getInitialContextProps();
 
         LOG.debug(parameters.getReport());
-        
+
         Context context = null;
         Connection connection = null;
         Session session = null;
@@ -114,12 +126,15 @@ public class JMSMessageSender implements MessageSender {
             // Setup connection
             connection = cf.createConnection();
 
-            // Set clientId
-            connection.setClientID(parameters.getClientId());
+            // Set clientId if present
+            String clientId = parameters.getClientId();
+            if (clientId != null) {
+                connection.setClientID(clientId);
+            }
 
             // TODO DW: should this be configurable?
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            
+
             // Lookup topic
             Destination destination = (Destination) context.lookup(parameters.getTopic());
             if (!(destination instanceof Topic)) {
@@ -190,7 +205,7 @@ public class JMSMessageSender implements MessageSender {
 
             LOG.debug("Message sent with id '" + message.getJMSMessageID() + "'");
 
-        } catch (JMSException ex) {           
+        } catch (JMSException ex) {
             LOG.error(ex.getMessage(), ex);
             throw new TransportException("Problem during communcation: " + ex.getMessage(), ex);
 
@@ -202,10 +217,10 @@ public class JMSMessageSender implements MessageSender {
             // I know, bad coding practice, really need it
             LOG.error(ex.getMessage(), ex);
             throw new TransportException(ex.getMessage(), ex);
-            
+
         } finally {
             // Close all that has been opened. Always.
-            closeSilent(context, connection, session);
+            closeAll(context, connection, session);
         }
     }
 }

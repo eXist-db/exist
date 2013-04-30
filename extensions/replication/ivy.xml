@@ -6,7 +6,22 @@
 <ivy-module version="2.0">
     <info organisation="org.exist" module="replication"/>
     <dependencies>
-        <!--<dependency org="org.apache.activemq" name="activemq-core" rev="5.6.0"  conf="*->*,!sources,!javadoc">
+       
+        <dependency org="org.apache.activemq" name="activemq-all" rev="5.8.0" conf="*->*,!sources,!javadoc">
+            <exclude module="slf4j-api"/>
+            
+            <!-- 
+                Remove the following excludes to enable the new AMQP support
+                http://www.amqp.org
+                http://en.wikipedia.org/wiki/Advanced_Message_Queuing_Protocol
+            -->
+            <exclude module="proton-jms"/>
+            <exclude module="hawtbuf"/>
+            <exclude module="activemq-amqp"/>      
+        </dependency>
+        
+        <!-- Please leave here -->
+        <!-- <dependency org="org.apache.activemq" name="activemq-core" rev="5.6.0"  conf="*->*,!sources,!javadoc">
             
             <exclude module="slf4j-api"/>
             <exclude module="commons-logging"/>
@@ -47,7 +62,6 @@
             <exclude module="geronimo-annotation_1.0_spec"/>
  
         </dependency>-->
-        <dependency org="org.apache.activemq" name="activemq-all" rev="5.7.0" conf="*->*,!sources,!javadoc"/>
         
     </dependencies>
 </ivy-module>
