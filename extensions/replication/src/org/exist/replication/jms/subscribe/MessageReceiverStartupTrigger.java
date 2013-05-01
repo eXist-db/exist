@@ -46,31 +46,43 @@ public class MessageReceiverStartupTrigger implements StartupTrigger {
     /**
      * Helper method to give resources back
      */
-    private void closeSilent(Context context, Connection connection, Session session) {
+    private void closeAll(Context context, Connection connection, Session session) {
         
-        LOG.info("Closing JMS session, connection and context");
-        
+        boolean doLog = LOG.isDebugEnabled();
+
         if (session != null) {
+            if (doLog) {
+                LOG.debug("Closing session");
+            }
+
             try {
                 session.close();
             } catch (JMSException ex) {
-                LOG.debug(ex);
+                LOG.error(ex);
             }
         }
-        
+
         if (connection != null) {
+            if (doLog) {
+                LOG.debug("Closing connection");
+            }
+            
             try {
                 connection.close();
             } catch (JMSException ex) {
-                LOG.debug(ex);
+                LOG.error(ex);
             }
         }
-        
+
         if (context != null) {
+            if (doLog) {
+                LOG.debug("Closing context");
+            }
+             
             try {
                 context.close();
             } catch (NamingException ex) {
-                LOG.debug(ex);
+                LOG.error(ex);
             }
         }
     }
@@ -158,7 +170,7 @@ public class MessageReceiverStartupTrigger implements StartupTrigger {
 
         } catch (final Throwable t) {
             // Close all that has been opened. Always.
-            closeSilent(context, connection, session);
+            closeAll(context, connection, session);
             
             LOG.error("Unable to start subscription: " + t.getMessage() + ";  " + parameters.getReport(), t);
         }

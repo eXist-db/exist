@@ -343,7 +343,7 @@ public class JMSMessageListener implements MessageListener {
 //            collection.setTriggersEnabled(false);
             if (collection == null) {
                 String errorMessage = "Collection " + colURI + " does not exist";
-                LOG.debug(errorMessage);
+                LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
             }
@@ -452,7 +452,7 @@ public class JMSMessageListener implements MessageListener {
             collection = broker.openCollection(colURI, Lock.WRITE_LOCK);
             if (collection == null) {
                 String errorText = "Collection does not exist " + colURI;
-                LOG.debug(errorText);
+                LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
             }
@@ -461,7 +461,7 @@ public class JMSMessageListener implements MessageListener {
             resource = collection.getDocument(broker, docURI);
             if (resource == null) {
                 String errorText = "No resource found for path: " + sourcePath;
-                LOG.debug(errorText);
+                LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
             }
@@ -516,7 +516,7 @@ public class JMSMessageListener implements MessageListener {
             collection = broker.openCollection(colURI, Lock.WRITE_LOCK);
             if (collection == null) {
                 String errorText = "Collection does not exist " + colURI;
-                LOG.debug(errorText);
+                LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
             }
@@ -525,7 +525,7 @@ public class JMSMessageListener implements MessageListener {
             resource = collection.getDocument(broker, docURI);
             if (resource == null) {
                 String errorText = "No resource found for path: " + sourcePath;
-                LOG.debug(errorText);
+                LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
             }
@@ -677,7 +677,7 @@ public class JMSMessageListener implements MessageListener {
             collection = broker.openCollection(sourcePath, Lock.WRITE_LOCK);
             if (collection != null) {
                 String errorText = "Collection " + sourcePath + " already exists";
-                LOG.debug(errorText);
+                LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
             }
@@ -755,7 +755,7 @@ public class JMSMessageListener implements MessageListener {
             srcCollection = broker.openCollection(sourceColURI, Lock.WRITE_LOCK);
             if (srcCollection == null) {
                 String errorMessage = "Collection not found: " + sourceColURI;
-                LOG.debug(errorMessage);
+                LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
             }
@@ -764,7 +764,7 @@ public class JMSMessageListener implements MessageListener {
             srcDocument = srcCollection.getDocument(broker, sourceDocURI);
             if (srcDocument == null) {
                 String errorMessage = "No resource found for path: " + sourcePath;
-                LOG.debug(errorMessage);
+                LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
             }
@@ -773,7 +773,7 @@ public class JMSMessageListener implements MessageListener {
             destCollection = broker.openCollection(destColURI, Lock.WRITE_LOCK);
             if (destCollection == null) {
                 String errorMessage = "Destination collection " + destColURI + " does not exist.";
-                LOG.debug(errorMessage);
+                LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
             }
@@ -842,7 +842,7 @@ public class JMSMessageListener implements MessageListener {
             srcCollection = broker.openCollection(sourcePath, Lock.WRITE_LOCK);
             if (srcCollection == null) {
                 String errorMessage = "Collection " + sourcePath + " does not exist.";
-                LOG.debug(errorMessage);
+                LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
             }
@@ -852,7 +852,7 @@ public class JMSMessageListener implements MessageListener {
             destCollection = broker.openCollection(destColURI, Lock.WRITE_LOCK);
             if (destCollection == null) {
                 String errorMessage = "Destination collection " + destColURI + " does not exist.";
-                LOG.debug(errorMessage);
+                LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
             }
