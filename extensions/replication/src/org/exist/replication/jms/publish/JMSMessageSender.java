@@ -110,7 +110,9 @@ public class JMSMessageSender implements MessageSender {
 
         Properties contextProps = parameters.getInitialContextProps();
 
-        LOG.debug(parameters.getReport());
+        if(LOG.isDebugEnabled()){
+            LOG.debug(parameters.getReport());
+        }
 
         Context context = null;
         Connection connection = null;
@@ -203,7 +205,9 @@ public class JMSMessageSender implements MessageSender {
             // DW: connection could be re-used?
             //connection.close();
 
-            LOG.debug("Message sent with id '" + message.getJMSMessageID() + "'");
+            if(LOG.isDebugEnabled()){
+                LOG.debug("Message sent with id '" + message.getJMSMessageID() + "'");
+            }
 
         } catch (JMSException ex) {
             LOG.error(ex.getMessage(), ex);
