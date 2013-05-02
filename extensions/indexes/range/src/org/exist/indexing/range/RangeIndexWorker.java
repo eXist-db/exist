@@ -1,0 +1,848 @@
+package org.exist.indexing.range;
+
+import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.*;
+import org.apache.lucene.index.*;
+import org.apache.lucene.queries.TermsFilter;
+import org.apache.lucene.search.*;
+import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.NumericUtils;
+import org.exist.collections.Collection;
+import org.exist.dom.*;
+import org.exist.indexing.*;
+import org.exist.indexing.lucene.BinaryTokenStream;
+import org.exist.indexing.lucene.LuceneIndexWorker;
+import org.exist.indexing.lucene.LuceneUtil;
+import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
+import org.exist.storage.ElementValue;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.NodePath;
+import org.exist.storage.txn.Txn;
+import org.exist.util.ByteConversion;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.Occurrences;
+import org.exist.xquery.Expression;
+import org.exist.xquery.QueryRewriter;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.modules.range.RangeQueryRewriter;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.IOException;
+import java.util.*;
+
+public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
+
+    private static final Logger LOG = Logger.getLogger(RangeIndexWorker.class);
+
+    public static final String FIELD_NODE_ID = "nodeId";
+    public static final String FIELD_DOC_ID = "docId";
+    public static final String FIELD_ID = "id";
+
+    private static Set<String> LOAD_FIELDS = new TreeSet<String>();
+    static {
+        LOAD_FIELDS.add(FIELD_DOC_ID);
+        LOAD_FIELDS.add(FIELD_NODE_ID);
+    }
+
+    private final RangeIndex index;
+    private final DBBroker broker;
+    private IndexController controller;
+    private DocumentImpl currentDoc;
+    private int mode = 0;
+    private List<RangeIndexDoc> nodesToWrite;
+    private Set<NodeId> nodesToRemove = null;
+    private RangeIndexConfig config = null;
+    private RangeIndexListener listener = new RangeIndexListener();
+    private Stack<TextCollector> contentStack = null;
+    private int cachedNodesSize = 0;
+
+    private int maxCachedNodesSize = 4096 * 1024;
+
+    private final byte[] buf = new byte[1024];
+
+    public RangeIndexWorker(RangeIndex index, DBBroker broker) {
+        this.index = index;
+        this.broker = broker;
+    }
+
+    @Override
+    public String getIndexId() {
+        return index.getIndexId();
+    }
+
+    @Override
+    public String getIndexName() {
+        return index.getIndexName();
+    }
+
+    @Override
+    public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
+        this.controller = controller;
+        LOG.debug("Configuring lucene index...");
+        return new RangeIndexConfig(configNodes, namespaces);
+    }
+
+    @Override
+    public void setDocument(DocumentImpl document) {
+        setDocument(document, StreamListener.UNKNOWN);
+    }
+
+    @Override
+    public void setDocument(DocumentImpl document, int mode) {
+        this.currentDoc = document;
+        IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
+        if (indexConf != null) {
+            config = (RangeIndexConfig) indexConf.getCustomIndexSpec(RangeIndex.ID);
+            if (config != null)
+                // Create a copy of the original RangeIndexConfig (there's only one per db instance),
+                // so we can safely work with it.
+                config = new RangeIndexConfig(config);
+        }
+        this.mode = mode;
+    }
+
+    @Override
+    public void setMode(int mode) {
+        this.mode = mode;
+        switch (mode) {
+            case StreamListener.STORE:
+                if (nodesToWrite == null)
+                    nodesToWrite = new ArrayList<RangeIndexDoc>();
+                else
+                    nodesToWrite.clear();
+                cachedNodesSize = 0;
+                break;
+            case StreamListener.REMOVE_SOME_NODES:
+                nodesToRemove = new TreeSet<NodeId>();
+                break;
+        }
+    }
+
+    @Override
+    public DocumentImpl getDocument() {
+        return currentDoc;
+    }
+
+    @Override
+    public int getMode() {
+        return mode;
+    }
+
+    @Override
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
+        if (node.getNodeType() == Node.ATTRIBUTE_NODE)
+            return null;
+        if (config == null)
+            return null;
+        NodePath p = new NodePath(path);
+        boolean reindexRequired = false;
+        if (node.getNodeType() == Node.ELEMENT_NODE && !includeSelf)
+            p.removeLastComponent();
+        for (int i = 0; i < p.length(); i++) {
+            if (config.matches(p)) {
+                reindexRequired = true;
+                break;
+            }
+            p.removeLastComponent();
+        }
+        if (reindexRequired) {
+            p = new NodePath(path);
+            StoredNode topMost = null;
+            StoredNode currentNode = node;
+            if (currentNode.getNodeType() != Node.ELEMENT_NODE)
+                currentNode = currentNode.getParentStoredNode();
+            while (currentNode != null) {
+                if (config.matches(p))
+                    topMost = currentNode;
+                currentNode = currentNode.getParentStoredNode();
+                p.removeLastComponent();
+            }
+            return topMost;
+        }
+        return null;
+    }
+
+    @Override
+    public QueryRewriter getQueryRewriter(XQueryContext context) {
+        List<Object> configs = index.getBrokerPool().getConfigurationManager().getCustomIndexSpecs(getIndexId());
+        return new RangeQueryRewriter(this, configs, context);
+    }
+
+    @Override
+    public StreamListener getListener() {
+        return listener;
+    }
+
+    @Override
+    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
+        // range index does not support matches
+        return null;
+    }
+
+    @Override
+    public void flush() {
+        switch (mode) {
+            case StreamListener.STORE:
+                write();
+                break;
+            case StreamListener.REMOVE_SOME_NODES:
+                removeNodes();
+                break;
+            case StreamListener.REMOVE_ALL_NODES:
+                removeDocument(currentDoc.getDocId());
+                break;
+        }
+    }
+
+    @Override
+    public void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException {
+        if (LOG.isDebugEnabled())
+            LOG.debug("Removing collection " + collection.getURI());
+        IndexWriter writer = null;
+        try {
+            writer = index.getWriter();
+            for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                DocumentImpl doc = i.next();
+                BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+                NumericUtils.intToPrefixCoded(doc.getDocId(), 0, bytes);
+                Term dt = new Term(FIELD_DOC_ID, bytes);
+                writer.deleteDocuments(dt);
+            }
+        } catch (IOException e) {
+            LOG.error("Error while removing lucene index: " + e.getMessage(), e);
+        } catch (PermissionDeniedException e) {
+            LOG.error("Error while removing lucene index: " + e.getMessage(), e);
+        } finally {
+            index.releaseWriter(writer);
+            mode = StreamListener.STORE;
+        }
+        if (LOG.isDebugEnabled())
+            LOG.debug("Collection removed.");
+    }
+
+    protected void removeDocument(int docId) {
+        IndexWriter writer = null;
+        try {
+            writer = index.getWriter();
+            BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+            NumericUtils.intToPrefixCoded(docId, 0, bytes);
+            Term dt = new Term(FIELD_DOC_ID, bytes);
+            writer.deleteDocuments(dt);
+        } catch (IOException e) {
+            LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
+        } finally {
+            index.releaseWriter(writer);
+            mode = StreamListener.STORE;
+        }
+    }
+
+    /**
+     * Remove specific nodes from the index. This method is used for node updates
+     * and called from flush() if the worker is in {@link StreamListener#REMOVE_SOME_NODES}
+     * mode.
+     */
+    protected void removeNodes() {
+        if (nodesToRemove == null)
+            return;
+        IndexWriter writer = null;
+        try {
+            writer = index.getWriter();
+
+            for (NodeId nodeId : nodesToRemove) {
+                // build id from nodeId and docId
+                int nodeIdLen = nodeId.size();
+                byte[] data = new byte[nodeIdLen + 4];
+                ByteConversion.intToByteH(currentDoc.getDocId(), data, 0);
+                nodeId.serialize(data, 4);
+
+                Term it = new Term(FIELD_ID, new BytesRef(data));
+                TermQuery iq = new TermQuery(it);
+                writer.deleteDocuments(iq);
+            }
+        } catch (IOException e) {
+            LOG.warn("Error while deleting lucene index entries: " + e.getMessage(), e);
+        } finally {
+            index.releaseWriter(writer);
+        }
+    }
+
+    @Override
+    public boolean checkIndex(DBBroker broker) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    protected void indexText(NodeId nodeId, QName qname, NodePath path, RangeIndexConfigElement config, TextCollector collector) {
+        RangeIndexDoc pending = new RangeIndexDoc(nodeId, qname, path, collector, config);
+        nodesToWrite.add(pending);
+        cachedNodesSize += collector.length();
+        if (cachedNodesSize > maxCachedNodesSize)
+            write();
+    }
+
+    private void write() {
+        if (nodesToWrite == null || nodesToWrite.size() == 0)
+            return;
+        IndexWriter writer = null;
+        try {
+            writer = index.getWriter();
+
+            // docId and nodeId are stored as doc value
+            IntDocValuesField fDocId = new IntDocValuesField(FIELD_DOC_ID, 0);
+            BinaryDocValuesField fNodeId = new BinaryDocValuesField(FIELD_NODE_ID, new BytesRef(8));
+            // docId also needs to be indexed
+            IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, IntField.TYPE_NOT_STORED);
+            for (RangeIndexDoc pending : nodesToWrite) {
+                Document doc = new Document();
+
+                fDocId.setIntValue(currentDoc.getDocId());
+                doc.add(fDocId);
+
+                // store the node id
+                int nodeIdLen = pending.getNodeId().size();
+                byte[] data = new byte[nodeIdLen + 2];
+                ByteConversion.shortToByte((short) pending.getNodeId().units(), data, 0);
+                pending.getNodeId().serialize(data, 2);
+                fNodeId.setBytesValue(data);
+                doc.add(fNodeId);
+
+                // add separate index for node id
+                byte[] idData = new byte[nodeIdLen + 4];
+                ByteConversion.intToByteH(currentDoc.getDocId(), idData, 0);
+                pending.getNodeId().serialize(idData, 4);
+                BinaryTokenStream bts = new BinaryTokenStream(new BytesRef(idData));
+                Field fNodeIdIdx = new Field(FIELD_ID, bts, LuceneIndexWorker.TYPE_NODE_ID);
+                doc.add(fNodeIdIdx);
+
+                for (TextCollector.Field field : pending.getCollector().getFields()) {
+                    String contentField;
+                    if (field.isNamed())
+                        contentField = field.name;
+                    else
+                        contentField = LuceneUtil.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
+                    Field fld = pending.getConfig().convertToField(contentField, field.content.toString());
+                    if (fld != null) {
+                        doc.add(fld);
+                    }
+                }
+                fDocIdIdx.setIntValue(currentDoc.getDocId());
+                doc.add(fDocIdIdx);
+
+                writer.addDocument(doc, config.getAnalyzer());
+            }
+        } catch (IOException e) {
+            LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
+        } finally {
+            index.releaseWriter(writer);
+            nodesToWrite = new ArrayList<RangeIndexDoc>();
+            cachedNodesSize = 0;
+        }
+    }
+
+    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, int axis) throws IOException, XPathException {
+        qnames = getDefinedIndexes(qnames);
+        NodeSet resultSet = NodeSet.EMPTY_SET;
+        IndexSearcher searcher = null;
+        try {
+            searcher = index.getSearcher();
+            for (QName qname : qnames) {
+                Query query;
+                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                if (keys.length > 1) {
+                    BooleanQuery bool = new BooleanQuery();
+                    for (AtomicValue key: keys) {
+                        Term term = RangeIndexConfigElement.convertToTerm(field, key);
+                        bool.add(new TermQuery(term), BooleanClause.Occur.SHOULD);
+                    }
+                    query = bool;
+                } else {
+                    query = new TermQuery(RangeIndexConfigElement.convertToTerm(field, keys[0]));
+                }
+
+                resultSet = doQuery(contextId, docs, contextSet, axis, searcher, qname, query, null);
+            }
+        } finally {
+            index.releaseSearcher(searcher);
+        }
+        return resultSet;
+    }
+
+    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, int axis) throws IOException, XPathException {
+        NodeSet resultSet = NodeSet.EMPTY_SET;
+        IndexSearcher searcher = null;
+        try {
+            searcher = index.getSearcher();
+            BooleanQuery query = new BooleanQuery();
+//            if (contextSet != null && contextSet.getItemCount() == 1) {
+//                NodeProxy node = contextSet.get(0);
+//                BytesRef lowerBound = new BytesRef(LuceneUtil.createId(node.getDoc().getDocId(), node.getNodeId()));
+//                BytesRef upperBound = new BytesRef(LuceneUtil.createId(node.getDoc().getDocId(), node.getNodeId().nextSibling()));
+//                TermRangeQuery rangeQuery = new TermRangeQuery(FIELD_ID, lowerBound, upperBound, true, true);
+//                query.add(rangeQuery, BooleanClause.Occur.MUST);
+//            }
+            int j = 0;
+            for (SequenceIterator i = fields.iterate(); i.hasNext(); j++) {
+                String field = i.nextItem().getStringValue();
+                if (keys[j].getItemCount() > 1) {
+                    BooleanQuery bool = new BooleanQuery();
+                    bool.setMinimumNumberShouldMatch(1);
+                    for (SequenceIterator ki = keys[j].iterate(); ki.hasNext(); ) {
+                        Item key = ki.nextItem();
+                        Term term = RangeIndexConfigElement.convertToTerm(field, key.atomize());
+                        bool.add(new TermQuery(term), BooleanClause.Occur.SHOULD);
+                    }
+                    query.add(bool, BooleanClause.Occur.MUST);
+                } else {
+                    TermQuery tq = new TermQuery(RangeIndexConfigElement.convertToTerm(field, keys[j].itemAt(0).atomize()));
+                    query.add(tq, BooleanClause.Occur.MUST);
+                }
+            }
+            Query qu = query;
+            BooleanClause[] clauses = query.getClauses();
+            if (clauses.length == 1) {
+                qu = clauses[0].getQuery();
+            }
+            if (contextSet != null && contextSet.hasOne()) {
+                //Filter filter = new TermsFilter(FIELD_ID, terms);
+                //Filter filter = new NodesFilter(contextSet);
+
+                resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, qu, null);
+            } else {
+                resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, qu, null);
+            }
+        } finally {
+            index.releaseSearcher(searcher);
+        }
+        return resultSet;
+    }
+
+//    private OpenBitSet getDocs(DocumentSet docs, IndexSearcher searcher) throws IOException {
+//        OpenBitSet bits = new OpenBitSet(searcher.getIndexReader().maxDoc());
+//        for (Iterator i = docs.getDocumentIterator(); i.hasNext(); ) {
+//            DocumentImpl nextDoc = (DocumentImpl) i.next();
+//            Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(nextDoc.getDocId()));
+//            TermDocs td = searcher.getIndexReader().termDocs(dt);
+//            while (td.next()) {
+//                bits.set(td.doc());
+//            }
+//            td.close();
+//        }
+//        return bits;
+//    }
+
+    private NodeSet doQuery(final int contextId, final DocumentSet docs, final NodeSet contextSet, final int axis,
+                            IndexSearcher searcher, final QName qname, Query query, Filter filter) throws IOException {
+        SearchCollector collector = new SearchCollector(docs, contextSet, qname, axis, contextId);
+        searcher.search(query, filter, collector);
+        return collector.getResultSet();
+    }
+
+    private class SearchCollector extends Collector {
+        private final NodeSet resultSet;
+        private final NodeSet contextSet;
+        private final QName qname;
+        private final int axis;
+        private final int contextId;
+        private final DocumentSet docs;
+        private AtomicReader reader;
+        private NumericDocValues docIdValues;
+        private BinaryDocValues nodeIdValues;
+        private final byte[] buf = new byte[1024];
+        private BytesRef lowerBound = null;
+        private BytesRef upperBound = null;
+
+        public SearchCollector(DocumentSet docs, NodeSet contextSet, QName qname, int axis, int contextId) {
+            this.resultSet = new NewArrayNodeSet();
+            this.docs = docs;
+            this.contextSet = contextSet;
+            this.qname = qname;
+            this.axis = axis;
+            this.contextId = contextId;
+            if (contextSet.hasOne()) {
+                NodeProxy node = contextSet.get(0);
+                lowerBound = new BytesRef(LuceneUtil.createId(node.getNodeId()));
+                upperBound = new BytesRef(LuceneUtil.createId(node.getNodeId().nextSibling()));
+            }
+        }
+
+        public NodeSet getResultSet() {
+            return resultSet;
+        }
+
+        @Override
+        public void setScorer(Scorer scorer) throws IOException {
+            // ignore
+        }
+
+        @Override
+        public void collect(int doc) throws IOException {
+            long start = System.currentTimeMillis();
+            int docId = (int) this.docIdValues.get(doc);
+            DocumentImpl storedDocument = docs.getDoc(docId);
+            if (storedDocument == null) {
+                return;
+            }
+            BytesRef ref = new BytesRef(buf);
+            this.nodeIdValues.get(doc, ref);
+            BytesRef currentId = new BytesRef(ref.bytes, ref.offset + 2, ref.length - 2);
+            if (lowerBound != null && (currentId.compareTo(lowerBound) < 0 || currentId.compareTo(upperBound) > 0)) {
+                return;
+            }
+            int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
+            NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+
+            // if a context set is specified, we can directly check if the
+            // matching node is a descendant of one of the nodes
+            // in the context set.
+            if (contextSet != null) {
+                int sizeHint = contextSet.getSizeHint(storedDocument);
+                NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
+                if (parentNode != null) {
+                    NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+                    if (qname != null)
+                        storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+                    if (axis == NodeSet.ANCESTOR) {
+                        resultSet.add(parentNode, sizeHint);
+                        if (Expression.NO_CONTEXT_ID != contextId) {
+                            parentNode.deepCopyContext(storedNode, contextId);
+                        } else
+                            parentNode.copyContext(storedNode);
+                    } else {
+                        resultSet.add(storedNode, sizeHint);
+                    }
+                }
+            } else {
+                NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+                if (qname != null)
+                    storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+                resultSet.add(storedNode);
+            }
+        }
+
+        @Override
+        public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
+            this.reader = atomicReaderContext.reader();
+            this.docIdValues = this.reader.getNumericDocValues(FIELD_DOC_ID);
+            this.nodeIdValues = this.reader.getBinaryDocValues(FIELD_NODE_ID);
+        }
+
+        @Override
+        public boolean acceptsDocsOutOfOrder() {
+            return true;
+        }
+    }
+
+    private class SearchFieldVisitor extends StoredFieldVisitor {
+
+        private int docId;
+        private NodeId nodeId;
+
+        @Override
+        public void intField(FieldInfo fieldInfo, int value) throws IOException {
+            this.docId = value;
+        }
+
+        @Override
+        public void binaryField(FieldInfo fieldInfo, byte[] value) throws IOException {
+            int units = ByteConversion.byteToShort(value, 0);
+            this.nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, value, 2);
+        }
+
+        @Override
+        public Status needsField(FieldInfo fieldInfo) throws IOException {
+            if (fieldInfo.name.equals(FIELD_DOC_ID) || fieldInfo.name.equals(FIELD_NODE_ID))
+                return Status.YES;
+            return Status.STOP;
+        }
+    }
+
+    /**
+     * Check index configurations for all collection in the given DocumentSet and return
+     * a list of QNames, which have indexes defined on them.
+     *
+     * @return List of QName objects on which indexes are defined
+     */
+    private List<QName> getDefinedIndexes(List<QName> qnames) {
+        List<QName> indexes = new ArrayList<QName>(20);
+        if (qnames != null && !qnames.isEmpty()) {
+            for (QName qname : qnames) {
+                if (qname.getLocalName() == null || qname.getNamespaceURI() == null)
+                    getDefinedIndexesFor(qname, indexes);
+                else
+                    indexes.add(qname);
+            }
+            return indexes;
+        }
+        return getDefinedIndexesFor(null, indexes);
+    }
+
+    private List<QName> getDefinedIndexesFor(QName qname, List<QName> indexes) {
+        IndexReader reader = null;
+        try {
+            reader = index.getReader();
+            for (FieldInfo info: MultiFields.getMergedFieldInfos(reader)) {
+                if (!FIELD_DOC_ID.equals(info.name)) {
+                    QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
+                    if (name != null && (qname == null || matchQName(qname, name)))
+                        indexes.add(name);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            index.releaseReader(reader);
+        }
+        return indexes;
+    }
+
+    /**
+     * Return the analyzer to be used for the given field or qname. Either field
+     * or qname should be specified.
+     */
+    private Analyzer getAnalyzer(DBBroker broker, DocumentSet docs) {
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
+            IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            if (idxConf != null) {
+                RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
+                if (config != null) {
+                    Analyzer analyzer = config.getAnalyzer();
+                    if (analyzer != null)
+                        return analyzer;
+                }
+            }
+        }
+        return index.getDefaultAnalyzer();
+    }
+
+    private static boolean matchQName(QName qname, QName candidate) {
+        boolean match = true;
+        if (qname.getLocalName() != null)
+            match = qname.getLocalName().equals(candidate.getLocalName());
+        if (match && qname.getNamespaceURI() != null && qname.getNamespaceURI().length() > 0)
+            match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
+        return match;
+    }
+
+    private class RangeIndexListener extends AbstractStreamListener {
+
+        @Override
+        public void startElement(Txn transaction, ElementImpl element, NodePath path) {
+            if (mode == STORE && config != null) {
+                if (contentStack != null && !contentStack.isEmpty()) {
+                    for (TextCollector extractor : contentStack) {
+                        extractor.startElement(element.getQName(), path);
+                    }
+                }
+                Iterator<RangeIndexConfigElement> configIter = config.getConfig(path);
+                if (configIter != null) {
+                    if (contentStack == null) contentStack = new Stack<TextCollector>();
+                    while (configIter.hasNext()) {
+                        RangeIndexConfigElement configuration = configIter.next();
+                        if (configuration.match(path)) {
+                            contentStack.push(configuration.getCollector());
+                        }
+                    }
+                }
+            }
+            super.startElement(transaction, element, path);
+        }
+
+        @Override
+        public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
+            path.addComponent(attrib.getQName());
+            if (contentStack != null && !contentStack.isEmpty()) {
+                for (TextCollector collector : contentStack) {
+                    collector.attribute(attrib, path);
+                }
+            }
+            Iterator<RangeIndexConfigElement> configIter = null;
+            if (config != null)
+                configIter = config.getConfig(path);
+            if (mode != REMOVE_ALL_NODES && configIter != null) {
+                if (mode == REMOVE_SOME_NODES) {
+                    nodesToRemove.add(attrib.getNodeId());
+                } else {
+                    while (configIter.hasNext()) {
+                        RangeIndexConfigElement configuration = configIter.next();
+                        if (configuration.match(path)) {
+                            SimpleTextCollector collector = new SimpleTextCollector(attrib.getValue());
+                            indexText(attrib.getNodeId(), attrib.getQName(), path, configuration, collector);
+                        }
+                    }
+                }
+            }
+            path.removeLastComponent();
+            super.attribute(transaction, attrib, path);
+        }
+
+        @Override
+        public void endElement(Txn transaction, ElementImpl element, NodePath path) {
+            if (config != null) {
+                if (mode == STORE && contentStack != null && !contentStack.isEmpty()) {
+                    for (TextCollector extractor : contentStack) {
+                        extractor.endElement(element.getQName(), path);
+                    }
+                }
+                Iterator<RangeIndexConfigElement> configIter = config.getConfig(path);
+                if (mode != REMOVE_ALL_NODES && configIter != null) {
+                    if (mode == REMOVE_SOME_NODES) {
+                        nodesToRemove.add(element.getNodeId());
+                    } else {
+                        while (configIter.hasNext()) {
+                            RangeIndexConfigElement configuration = configIter.next();
+                            if (configuration.match(path)) {
+                                TextCollector collector = contentStack.pop();
+                                indexText(element.getNodeId(), element.getQName(), path, configuration, collector);
+                            }
+                        }
+                    }
+                }
+            }
+            super.endElement(transaction, element, path);
+        }
+
+        @Override
+        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
+            if (contentStack != null && !contentStack.isEmpty()) {
+                for (TextCollector collector : contentStack) {
+                    collector.characters(text, path);
+                }
+            }
+            super.characters(transaction, text, path);
+        }
+
+        @Override
+        public IndexWorker getWorker() {
+            return RangeIndexWorker.this;
+        }
+    }
+
+    /**
+     * Optimize the Lucene index by merging all segments into a single one. This
+     * may take a while and write operations will be blocked during the optimize.
+     *
+     * @see org.apache.lucene.index.IndexWriter#forceMerge(int)
+     */
+    public void optimize() {
+        IndexWriter writer = null;
+        try {
+            writer = index.getWriter(true);
+            writer.forceMerge(1, true);
+            writer.commit();
+        } catch (IOException e) {
+            LOG.warn("An exception was caught while optimizing the lucene index: " + e.getMessage(), e);
+        } finally {
+            index.releaseWriter(writer);
+        }
+    }
+
+//    public static class DocIdSelector implements FieldSelector {
+//
+//        private static final long serialVersionUID = -4899170629980829109L;
+//
+//        public FieldSelectorResult accept(String fieldName) {
+//            if (FIELD_DOC_ID.equals(fieldName)) {
+//                return FieldSelectorResult.LOAD;
+//            } else if (FIELD_NODE_ID.equals(fieldName)) {
+//                return FieldSelectorResult.LATENT;
+//            }
+//            return FieldSelectorResult.NO_LOAD;
+//        }
+//    }
+
+    @Override
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map hints) {
+        List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
+        qnames = getDefinedIndexes(qnames);
+        //Expects a StringValue
+        String start = null, end = null;
+        long max = Long.MAX_VALUE;
+        if (hints != null) {
+            Object vstart = hints.get(START_VALUE);
+            Object vend = hints.get(END_VALUE);
+            start = vstart == null ? null : vstart.toString();
+            end = vend == null ? null : vend.toString();
+            IntegerValue vmax = (IntegerValue) hints.get(VALUE_COUNT);
+            max = vmax == null ? Long.MAX_VALUE : vmax.getValue();
+        }
+        return scanIndexByQName(qnames, docs, nodes, start, end, max);
+    }
+
+    private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) {
+        TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
+        IndexReader reader = null;
+        try {
+            reader = index.getReader();
+            for (QName qname : qnames) {
+                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                List<AtomicReaderContext> leaves = reader.leaves();
+                for (AtomicReaderContext context : leaves) {
+                    NumericDocValues docIdValues = context.reader().getNumericDocValues(FIELD_DOC_ID);
+                    BinaryDocValues nodeIdValues = context.reader().getBinaryDocValues(FIELD_NODE_ID);
+                    Bits liveDocs = context.reader().getLiveDocs();
+                    Terms terms = context.reader().terms(field);
+                    if (terms == null)
+                        continue;
+                    TermsEnum termsIter = terms.iterator(null);
+                    if (termsIter.next() == null) {
+                        continue;
+                    }
+                    do {
+                        if (map.size() >= max) {
+                            break;
+                        }
+                        BytesRef ref = termsIter.term();
+                        String term = ref.utf8ToString();
+                        boolean include = true;
+                        if (end != null) {
+                            if (term.compareTo(end) > 0)
+                                include = false;
+                        } else if (start != null && !term.startsWith(start))
+                            include = false;
+                        if (include) {
+                            DocsEnum docsEnum = termsIter.docs(null, null);
+                            while (docsEnum.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+                                if (liveDocs != null && !liveDocs.get(docsEnum.docID())) {
+                                    continue;
+                                }
+                                int docId = (int) docIdValues.get(docsEnum.docID());
+                                DocumentImpl storedDocument = docs.getDoc(docId);
+                                if (storedDocument == null)
+                                    continue;
+                                NodeId nodeId = null;
+                                if (nodes != null) {
+                                    BytesRef nodeIdRef = new BytesRef(buf);
+                                    nodeIdValues.get(docsEnum.docID(), nodeIdRef);
+                                    int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
+                                    nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
+                                }
+                                if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
+                                    Occurrences oc = map.get(term);
+                                    if (oc == null) {
+                                        oc = new Occurrences(term);
+                                        map.put(term, oc);
+                                    }
+                                    oc.addDocument(storedDocument);
+                                    oc.addOccurrences(docsEnum.freq());
+                                }
+                            }
+                        }
+                    } while(termsIter.next() != null);
+                }
+            }
+        } catch (IOException e) {
+            LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
+        } finally {
+            index.releaseReader(reader);
+        }
+        Occurrences[] occur = new Occurrences[map.size()];
+        return map.values().toArray(occur);
+    }
+}
