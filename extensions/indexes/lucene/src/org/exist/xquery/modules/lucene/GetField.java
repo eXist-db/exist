@@ -56,7 +56,7 @@ public class GetField extends BasicFunction {
             }
 			// Get the lucene worker
             LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-            String content = index.getFieldContent(context, doc.getDocId(), field);
+            String content = index.getFieldContent(doc.getDocId(), field);
             return content == null ? Sequence.EMPTY_SEQUENCE : new org.exist.xquery.value.StringValue(content);
 		} catch (PermissionDeniedException e) {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0001, "Permission denied to read document " + args[0].getStringValue());

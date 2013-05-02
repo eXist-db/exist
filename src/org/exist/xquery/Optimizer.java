@@ -56,9 +56,12 @@ public class Optimizer extends DefaultExpressionVisitor {
     private int predicates = 0;
 
     private boolean hasOptimized = false;
-    
+
+    private List<QueryRewriter> rewriters = new ArrayList<QueryRewriter>(5);
+
     public Optimizer(XQueryContext context) {
         this.context = context;
+        this.rewriters = context.getBroker().getIndexController().getQueryRewriters(context);
     }
 
     public boolean hasOptimized() {
@@ -67,6 +70,19 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     public void visitLocationStep(LocationStep locationStep) {
         super.visitLocationStep(locationStep);
+        // check query rewriters if they want to rewrite the location step
+        for (QueryRewriter rewriter : rewriters) {
+            try {
+                if (!rewriter.rewriteLocationStep(locationStep)) {
+                    // expression was rewritten: return
+                    hasOptimized = true;
+                    return;
+                }
+            } catch (XPathException e) {
+                LOG.warn("Exception called while rewriting location step: " + e.getMessage(), e);
+            }
+        }
+
         boolean optimize = false;
         // only location steps with predicates can be optimized:
         if (locationStep.hasPredicates()) {
