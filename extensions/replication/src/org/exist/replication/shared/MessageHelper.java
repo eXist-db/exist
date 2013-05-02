@@ -77,7 +77,7 @@ public class MessageHelper {
      * @return
      * @throws IOException 
      */
-    public static byte[] serialize(DBBroker broker, DocumentImpl document) throws IOException {
+    public static byte[] gzipSerialize(DBBroker broker, DocumentImpl document) throws IOException {
         
         // This is the weak spot, the data is serialized into
         // a byte array. Better to have an overloap to a file,
@@ -104,10 +104,12 @@ public class MessageHelper {
 
 
             } catch (SAXException e) {
+                payload = new byte[0];
                 LOG.error(e);
                 throw new IOException("Error while serializing XML document: " + e.getMessage(), e);
 
             } catch (Throwable e) {
+                payload = new byte[0];
                 System.gc(); // recover from out of memory exception
                 LOG.error(e);
                 throw new IOException("Error while serializing XML document: " + e.getMessage(), e);
@@ -124,10 +126,12 @@ public class MessageHelper {
                 payload = baos.toByteArray();
 
             } catch (IOException e) {
+                payload = new byte[0];
                 LOG.error(e);
                 throw new IOException("Error while serializing binary document: " + e.getMessage(), e);
 
             } catch (Throwable e) {
+                payload = new byte[0];
                 System.gc(); // recover from out of memory exception
                 LOG.error(e);
                 throw new IOException("Error while serializing binary document: " + e.getMessage(), e);
@@ -149,7 +153,6 @@ public class MessageHelper {
     }
     
     public static void retrievePermission(Map<String, Object> props, Permission perm){
-
             if (perm == null) {
                 LOG.error("no permissions supplied");
                 
@@ -163,7 +166,7 @@ public class MessageHelper {
     
     public static void retrieveFromDocument(Map<String, Object> props, DocumentImpl document){
             // We do not differ between DOCUMENT subtypes,
-	    // mime-type is set in document metadata EXIST_RESOURCE_MIMETYPE. /ljo
+	        // mime-type is set in document metadata EXIST_RESOURCE_MIMETYPE. /ljo
             props.put(EXIST_RESOURCE_TYPE, eXistMessage.ResourceType.DOCUMENT); 
             props.put(EXIST_RESOURCE_DOCUMENTID, document.getDocId()); 
             props.put(EXIST_RESOURCE_CONTENTLENGTH, document.getContentLength()); 
