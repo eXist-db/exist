@@ -464,11 +464,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.qname = qname;
             this.axis = axis;
             this.contextId = contextId;
-            if (contextSet.hasOne()) {
-                NodeProxy node = contextSet.get(0);
-                lowerBound = new BytesRef(LuceneUtil.createId(node.getNodeId()));
-                upperBound = new BytesRef(LuceneUtil.createId(node.getNodeId().nextSibling()));
-            }
+//            if (contextSet != null && contextSet.hasOne()) {
+//                NodeProxy node = contextSet.get(0);
+//                lowerBound = new BytesRef(LuceneUtil.createId(node.getNodeId()));
+//                upperBound = new BytesRef(LuceneUtil.createId(node.getNodeId().nextSibling()));
+//            }
         }
 
         public NodeSet getResultSet() {
