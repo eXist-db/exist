@@ -77,7 +77,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
 
         // Serialize document
         try {
-            msg.setPayload(MessageHelper.serialize(broker, document));
+            msg.setPayload(MessageHelper.gzipSerialize(broker, document));
 
         } catch (IOException ex) {
             LOG.error(ex);
