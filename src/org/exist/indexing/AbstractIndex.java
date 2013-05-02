@@ -52,7 +52,7 @@ public abstract class AbstractIndex implements Index {
     }
 
     public String getIndexId() {
-    	return ID;
+    	return getID();
     }
 
     public String getIndexName() {

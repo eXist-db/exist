@@ -73,6 +73,14 @@ public class NodePath implements Comparable<NodePath> {
     	addComponent(qname);
     }
 
+    public void append(NodePath other) {
+        QName[] newComponents = new QName[length() + other.length()];
+        System.arraycopy(components, 0, newComponents, 0, pos);
+        System.arraycopy(other.components, 0, newComponents, pos, other.length());
+        pos = newComponents.length;
+        components = newComponents;
+    }
+
     public void addComponent(QName component) {
         if (pos == components.length) {
             QName[] t = new QName[pos + 1];

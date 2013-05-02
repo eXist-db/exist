@@ -27,9 +27,12 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xquery.QueryRewriter;
+import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -391,5 +394,16 @@ public class IndexController {
             }
         }
         return first;
+    }
+
+    public List<QueryRewriter> getQueryRewriters(XQueryContext context) {
+        List<QueryRewriter> rewriters = new ArrayList<QueryRewriter>(5);
+        for (final IndexWorker indexWorker : indexWorkers.values()) {
+            QueryRewriter rewriter = indexWorker.getQueryRewriter(context);
+            if (rewriter != null) {
+                rewriters.add(rewriter);
+            }
+        }
+        return rewriters;
     }
 }

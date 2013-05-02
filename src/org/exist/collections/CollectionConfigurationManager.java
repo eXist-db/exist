@@ -28,6 +28,7 @@ import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -41,9 +42,7 @@ import org.xml.sax.XMLReader;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages index configurations. Index configurations are stored in a collection
@@ -161,6 +160,22 @@ public class CollectionConfigurationManager {
         } catch (final Exception e) {
             throw new CollectionConfigurationException(e);
         }
+    }
+
+    public List<Object> getCustomIndexSpecs(String customIndexId) {
+        List<Object> configs = new ArrayList<Object>(10);
+        synchronized (latch) {
+            for (CollectionConfiguration config: configurations.values()) {
+                IndexSpec spec = config.getIndexConfiguration();
+                if (spec != null) {
+                    Object customConfig = spec.getCustomIndexSpec(customIndexId);
+                    if (customConfig != null) {
+                        configs.add(customConfig);
+                    }
+                }
+            }
+        }
+        return configs;
     }
 
     /**

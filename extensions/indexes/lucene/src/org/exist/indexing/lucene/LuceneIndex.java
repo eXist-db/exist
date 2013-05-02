@@ -3,8 +3,7 @@ package org.exist.indexing.lucene;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -25,13 +24,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.util.Version;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     
-    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_34;
+    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_42;
 
     private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
 
@@ -42,7 +39,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected Directory directory;
     protected Analyzer defaultAnalyzer;
 
-    protected double bufferSize = IndexWriter.DEFAULT_RAM_BUFFER_SIZE_MB;
+    protected double bufferSize = IndexWriterConfig.DEFAULT_RAM_BUFFER_SIZE_MB;
 
     protected IndexWriter cachedWriter = null;
     protected int writerUseCount = 0;
@@ -57,6 +54,10 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     public LuceneIndex() {
         //Nothing special to do
+    }
+
+    public String getDirName() {
+        return DIR_NAME;
     }
 
     @Override
@@ -90,7 +91,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public void open() throws DatabaseConfigurationException {
-        File dir = new File(getDataDir(), DIR_NAME);
+        File dir = new File(getDataDir(), getDirName());
         if (LOG.isDebugEnabled())
             LOG.debug("Opening Lucene index directory: " + dir.getAbsolutePath());
         if (dir.exists()) {
@@ -161,11 +162,11 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     
     protected boolean needsCommit = false;
 
-    protected IndexWriter getWriter() throws IOException {
+    public IndexWriter getWriter() throws IOException {
         return getWriter(false);
     }
 
-    protected synchronized IndexWriter getWriter(boolean exclusive) throws IOException {
+    public synchronized IndexWriter getWriter(boolean exclusive) throws IOException {
         while (writingReaderUseCount > 0) {
             try {
                 wait();
@@ -200,7 +201,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         return cachedWriter;
     }
 
-    protected synchronized void releaseWriter(IndexWriter writer) {
+    public synchronized void releaseWriter(IndexWriter writer) {
         if (writer == null)
             return;
         if (writer != cachedWriter)
@@ -233,18 +234,18 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         }
     }
     
-    protected synchronized IndexReader getReader() throws IOException {
+    public synchronized IndexReader getReader() throws IOException {
     	commit();
         if (cachedReader != null) {
             readerUseCount++;
         } else {
-            cachedReader = IndexReader.open(directory);
+            cachedReader = DirectoryReader.open(directory);
             readerUseCount = 1;
         }
         return cachedReader;
     }
 
-    protected synchronized void releaseReader(IndexReader reader) {
+    public synchronized void releaseReader(IndexReader reader) {
         if (reader == null)
             return;
         if (reader != cachedReader)
@@ -273,7 +274,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         if (cachedWritingReader != null) {
             writingReaderUseCount++;
         } else {
-            cachedWritingReader = IndexReader.open(directory, false);
+            cachedWritingReader = DirectoryReader.open(directory);
             writingReaderUseCount = 1;
         }
         notifyAll();
@@ -317,15 +318,15 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         try {
         	cachedReader.close();
         	cachedReader = null;
-        	if (cachedSearcher != null)
-        		cachedSearcher.close();
+//        	if (cachedSearcher != null)
+//        		cachedSearcher.close();
         	cachedSearcher = null;
         } catch (IOException e) {
             LOG.warn("Exception while refreshing lucene index: " + e.getMessage(), e);
         }
     }
 
-    protected synchronized IndexSearcher getSearcher() throws IOException {
+    public synchronized IndexSearcher getSearcher() throws IOException {
     	commit();
         if (cachedSearcher != null) {
             searcherUseCount++;
@@ -337,7 +338,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         return cachedSearcher;
     }
 
-    protected synchronized void releaseSearcher(IndexSearcher searcher) {
+    public synchronized void releaseSearcher(IndexSearcher searcher) {
         if (searcher == null)
             return;
         if (searcher != cachedSearcher)
@@ -349,7 +350,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 	@Override
 	public void backupToArchive(RawDataBackup backup) throws IOException {
 		for (String name : directory.listAll()) {
-			String path = DIR_NAME + "/" + name;
+			String path = getDirName() + "/" + name;
 			OutputStream os = backup.newEntry(path);
 			InputStream is = new FileInputStream(new File(getDataDir(), path));
 	        byte[] buf = new byte[4096];
