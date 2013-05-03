@@ -107,16 +107,15 @@
     <list id="c2cbb0af-73e4-419e-a2b6-663e0bbfd989" name="[feature] added ant task to extract XQuery module documentation and store into the db. (Pre-Tested Commit)" comment="[feature] added ant task to extract XQuery module documentation and store into the db." />
     <list id="f5bc3222-24ad-43d3-b9b5-627b42110798" name="local" comment="[feature] optimize compression from the File System" />
     <list id="dee4f116-21e7-4919-8859-4bc3127d8801" name="xproc" comment="xproc" />
-    <list default="true" id="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" name="Revert: [ignore]  update idea project" comment="Revert: [ignore]  update idea project">
+    <list default="true" id="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" name="Revert: [ignore]  update idea project" comment="[ignore]  update idea project">
       <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/WEB-INF/expathrepo" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/tools/ant/lib/ivy-2.2.0.jar" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/util/serializer/DOMStreamer.java" afterPath="$PROJECT_DIR$/src/org/exist/util/serializer/DOMStreamer.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/xmldb/ResourceTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/xmldb/ResourceTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/build.properties" afterPath="$PROJECT_DIR$/extensions/build.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iml" afterPath="$PROJECT_DIR$/eXist.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.ipr" afterPath="$PROJECT_DIR$/eXist.ipr" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
     </list>
+    <list id="2fe5d5c5-3eab-4c67-bc87-1c5a706e8808" name="New changelist" comment="" />
     <ignored path="$USER_HOME$/.grails/" />
     <ignored path="$USER_HOME$/.griffon/" />
     <file path="/AccountManagementFunction.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359905626485" ignored="false" />
@@ -147,7 +146,7 @@
     <file path="/UserAider.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359908008200" ignored="false" />
     <file path="/AbstractSubject.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359908145543" ignored="false" />
     <file path="/AbstractGroup.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359909202582" ignored="false" />
-    <file path="/Dummy.txt" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1367613593836" ignored="false" />
+    <file path="/Dummy.txt" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1367617319022" ignored="false" />
     <file path="/SAXSerializer.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1360487326596" ignored="false" />
     <file path="/MicroXmlWriter.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1360489244679" ignored="false" />
     <file path="/XMLDBSetCollectionPermissions.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1360600213485" ignored="false" />
@@ -402,10 +401,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AbstractExtractFunction.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="AbstractExtractFunction.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractExtractFunction.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="143" column="15" selection-start="5793" selection-end="5793" vertical-scroll-proportion="0.08">
+            <state line="174" column="21" selection-start="7107" selection-end="7107" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="eXist.iws" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/eXist.iws">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="2099" column="30" selection-start="110963" selection-end="110963" vertical-scroll-proportion="0.28384992">
               <folding />
             </state>
           </provider>
@@ -439,7 +447,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupMembershipFunctions.java" />
         <option value="$PROJECT_DIR$/src/org/exist/security/AbstractGroup.java" />
         <option value="/Library/Java/JavaVirtualMachines/1.6.0_29-b11-402.jdk/Contents/Home/src.jar!/src/java/lang/CharSequence.java" />
         <option value="$PROJECT_DIR$/src/org/exist/util/serializer/SAXSerializer.java" />
@@ -455,6 +462,7 @@
         <option value="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractCompressFunction.java" />
         <option value="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractExtractFunction.java" />
         <option value="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/org/xml/sax/ContentHandler.class" />
+        <option value="$PROJECT_DIR$/eXist.iws" />
       </list>
     </option>
   </component>
@@ -494,10 +502,12 @@
           <State>
             <id />
           </State>
-          <State>
-            <id>Android Lint</id>
-          </State>
         </expanded-state>
+        <selected-state>
+          <State>
+            <id>Abstraction issues</id>
+          </State>
+        </selected-state>
       </profile-state>
     </entry>
   </component>
@@ -667,6 +677,7 @@
       <sortByType PackagesPane="true" Favorites="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -685,153 +696,8 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist-2.1dev" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="webapp" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist-2.1dev" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="webapp" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="WEB-INF" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist-2.1dev" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="extensions" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist-2.1dev" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="extensions" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist-2.1dev" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="extensions" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="org" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="exist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="xquery" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist-2.1dev" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="extensions" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="org" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="exist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="xquery" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="modules" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="compression" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
       <pane id="Scope" />
       <pane id="Favorites">
         <subPane subId="eXist">
@@ -1038,22 +904,22 @@
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web3" value="/private/tmp/webExplodedDir6251tmp" />
     <property name="recentsLimit" value="5" />
     <property name="MemberChooser.sorted" value="false" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth2" value="75" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth1" value="75" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth2" value="199" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth1" value="198" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web4" value="/private/tmp/webExplodedDir18349tmp" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth0" value="75" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth0" value="199" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web2" value="/private/tmp/webExplodedDir42908tmp" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth5" value="75" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth4" value="75" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="75" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth5" value="198" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth4" value="199" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth3" value="198" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="cvs_file_history_flatWidth2" value="292" />
-    <property name="FullScreen" value="true" />
-    <property name="cvs_file_history_flatWidth3" value="292" />
     <property name="cvs_file_history_treeOrder0" value="0" />
+    <property name="cvs_file_history_flatWidth3" value="292" />
+    <property name="FullScreen" value="true" />
     <property name="cvs_file_history_flatWidth0" value="292" />
-    <property name="GoToClass.includeLibraries" value="false" />
     <property name="cvs_file_history_flatWidth1" value="291" />
+    <property name="GoToClass.includeLibraries" value="false" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="GoToFile.includeJavaFiles" value="false" />
     <property name="RunManagerConfig.compileBeforeRunning" value="true" />
@@ -1062,13 +928,13 @@
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="TEMP_MODULE_EXPLODED_DIR_FOR_eXist/web/Web" value="/private/tmp/webExplodedDir6263tmp" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth1" value="75" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth1" value="73" />
     <property name="project.structure.last.edited" value="Project" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="75" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="39" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="71" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="37" />
     <property name="OverrideImplement.combined" value="true" />
     <property name="project.structure.proportion" value="0.15" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth2" value="75" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth2" value="76" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder1" value="1" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder0" value="0" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder3" value="3" />
@@ -1085,22 +951,22 @@
     <property name="cvs_file_history_treeWidth2" value="292" />
     <property name="cvs_file_history_treeWidth3" value="292" />
     <property name="MemberChooser.showClasses" value="true" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth4" value="75" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth5" value="75" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth4" value="115" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth5" value="819" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder5" value="5" />
-    <property name="cvs_file_history_flatOrder2" value="2" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
+    <property name="cvs_file_history_flatOrder2" value="2" />
     <property name="cvs_file_history_flatOrder3" value="3" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder1" value="1" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
     <property name="cvs_file_history_flatOrder0" value="0" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder2" value="2" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder1" value="1" />
     <property name="cvs_file_history_flatOrder1" value="1" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder2" value="2" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder0" value="0" />
     <property name="restartRequiresConfirmation" value="true" />
     <property name="GenerateAntBuildDialog.backupFiles" value="true" />
-    <property name="dynamic.classpath" value="false" />
     <property name="options.searchVisible" value="true" />
+    <property name="dynamic.classpath" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -1118,135 +984,6 @@
       <recent name="$PROJECT_DIR$/webapp/repo/packages/json-example" />
       <recent name="$PROJECT_DIR$/webapp/repo/packages/functx-example" />
     </key>
-  </component>
-  <component name="RestoreUpdateTree">
-    <UpdateInfo date="Moments ago" ActionInfo="_Update">
-      <UpdatedFiles>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Updated from server" />
-          <option name="myStatusName" value="Changed on server" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="CHANGED_ON_SERVER" />
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Updated" />
-            <option name="myStatusName" value="Changed" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="false" />
-            <option name="myId" value="UPDATED" />
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/src/org/exist/util/ExistSAXParserFactory.java</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/jfreechart/JFreeCharting.java</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/doc/conf.xml</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/doc/example.xconf</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/ivy.xml</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/src/org/exist/replication/shared/ClientParameters.java</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/src/org/exist/replication/shared/MessageHelper.java</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/src/org/exist/replication/jms/subscribe/MessageReceiverStartupTrigger.java</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/src/org/exist/replication/jms/subscribe/JMSMessageListener.java</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/src/org/exist/replication/jms/subscribe/SubscriberParameters.java</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/src/org/exist/replication/jms/publish/JMSMessageSender.java</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/src/org/exist/replication/jms/publish/PublisherParameters.java</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/src/org/exist/replication/jms/publish/ReplicationTrigger.java</PATH>
-          </FILE-GROUP>
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Created" />
-            <option name="myStatusName" value="Created" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="false" />
-            <option name="myId" value="CREATED" />
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/extensions/replication/ivysettings.xml</PATH>
-          </FILE-GROUP>
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Deleted" />
-            <option name="myStatusName" value="Deleted" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="true" />
-            <option name="myId" value="REMOVED_FROM_REPOSITORY" />
-          </FILE-GROUP>
-          <FILE-GROUP>
-            <option name="myUpdateName" value="Restored" />
-            <option name="myStatusName" value="Will be restored" />
-            <option name="mySupportsDeletion" value="false" />
-            <option name="myCanBeAbsent" value="false" />
-            <option name="myId" value="RESTORED" />
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/lib/endorsed/saxonhe-9.2.1.5.jar</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/webapp/WEB-INF/data/.DO_NOT_DELETE</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/webapp/WEB-INF/data/README</PATH>
-            <PATH vcs="svn" revision="18398">$PROJECT_DIR$/webapp/WEB-INF/data/RECOVERY</PATH>
-          </FILE-GROUP>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Modified" />
-          <option name="myStatusName" value="Modified" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MODIFIED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Skipped" />
-          <option name="myStatusName" value="Skipped" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="SKIPPED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged with conflicts" />
-          <option name="myStatusName" value="Will be merged with conflicts" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED_WITH_CONFLICTS" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged with tree conflicts" />
-          <option name="myStatusName" value="Merged with tree conflicts" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED_WITH_TREE_CONFLICT" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged with property conflicts" />
-          <option name="myStatusName" value="Will be merged with property conflicts" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED_WITH_PROPERTY_CONFLICT" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Merged" />
-          <option name="myStatusName" value="Will be merged" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="MERGED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Not in repository" />
-          <option name="myStatusName" value="Not in repository" />
-          <option name="mySupportsDeletion" value="true" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="UNKNOWN" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Locally added" />
-          <option name="myStatusName" value="Locally added" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="LOCALLY_ADDED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Locally removed" />
-          <option name="myStatusName" value="Locally removed" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="LOCALLY_REMOVED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Switched" />
-          <option name="myStatusName" value="Switched" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="SWITCHED" />
-        </FILE-GROUP>
-      </UpdatedFiles>
-    </UpdateInfo>
   </component>
   <component name="RunManager" selected="Application.Server">
     <configuration default="false" name="CoreTests" type="JUnit" factoryName="JUnit" temporary="true">
@@ -2000,9 +1737,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.49469495" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.494302" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="SBT Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -2011,12 +1748,12 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3443435" sideWeight="0.59375" order="3" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.37464386" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37464386" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42592594" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35135135" sideWeight="0.0" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23176661" sideWeight="0.5740741" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32333875" sideWeight="0.62535614" order="0" side_tool="false" content_ui="combo" x="72" y="49" width="451" height="485" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32333875" sideWeight="0.505698" order="0" side_tool="false" content_ui="combo" x="72" y="49" width="451" height="485" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3803419" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Problems" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="17" side_tool="false" content_ui="tabs" />
@@ -2024,13 +1761,13 @@
       <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Log4jMonitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5105634" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959481" sideWeight="0.6514132" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.102658115" sideWeight="0.28521127" order="9" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="SVN Properties" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33453238" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="SVN Properties" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.33333334" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.334004" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -2038,8 +1775,8 @@
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39780018" sideWeight="0.80755395" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22082585" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="Web Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32570422" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="17" side_tool="false" content_ui="tabs" />
@@ -2328,21 +2065,6 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/exist/util/serializer/SerializerPool.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="13" selection-start="1173" selection-end="1173" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractCompressFunction.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="22" selection-start="2032" selection-end="2032" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/lang/System.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="46" column="30" selection-start="1749" selection-end="1749" vertical-scroll-proportion="0.33333334" />
-      </provider>
-    </entry>
     <entry file="jar://$PROJECT_DIR$/lib/core/xmldb.jar!/org/xmldb/api/base/Resource.class">
       <provider selected="true" editor-type-id="text-editor">
         <state line="13" column="21" selection-start="450" selection-end="450" vertical-scroll-proportion="0.29850745" />
@@ -2397,9 +2119,7 @@
     </entry>
     <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/org/xml/sax/ContentHandler.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="33" selection-start="486" selection-end="486" vertical-scroll-proportion="0.36585367">
-          <folding />
-        </state>
+        <state line="15" column="33" selection-start="486" selection-end="486" vertical-scroll-proportion="0.36585367" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/memtree/MemTreeBuilder.java">
@@ -2418,14 +2138,31 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/src/org/exist/xmldb/SerializationTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="74" column="20" selection-start="2715" selection-end="2715" vertical-scroll-proportion="0.1645768">
+        <state line="74" column="20" selection-start="2715" selection-end="2715" vertical-scroll-proportion="0.1645768" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eXist.ipr">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="393" column="27" selection-start="20774" selection-end="20774" vertical-scroll-proportion="0.106583074" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractExtractFunction.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="143" column="15" selection-start="5793" selection-end="5793" vertical-scroll-proportion="0.08">
+        <state line="174" column="21" selection-start="7107" selection-end="7107" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eXist.iws">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2099" column="30" selection-start="110963" selection-end="110963" vertical-scroll-proportion="0.28384992">
           <folding />
         </state>
       </provider>
