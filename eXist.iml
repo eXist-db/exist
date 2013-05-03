@@ -26,8 +26,6 @@
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/xmlcalabash" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/xmpp" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/xslfo" />
-      <excludeFolder url="file://$MODULE_DIR$/test/junit" />
-      <excludeFolder url="file://$MODULE_DIR$/test/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tools/jetty/logs" />
       <excludeFolder url="file://$MODULE_DIR$/tools/jetty/work" />
       <excludeFolder url="file://$MODULE_DIR$/webapp/WEB-INF/data" />
@@ -35,8 +33,6 @@
     </content>
     <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="optional libs" level="project" />
-    <orderEntry type="library" exported="" name="core libs" level="project" />
     <orderEntry type="library" exported="" name="tools" level="project" />
     <orderEntry type="library" exported="" name="core" level="project" />
     <orderEntry type="library" exported="" name="optional" level="project" />
