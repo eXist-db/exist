@@ -53,7 +53,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     // Document Triggers
     //
     private void afterUpdateCreateDocument(DBBroker broker, Txn transaction,
-            DocumentImpl document, eXistMessage.ResourceOperation operation) throws TriggerException {
+            DocumentImpl document, eXistMessage.ResourceOperation operation) /* throws TriggerException */ {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(document.getURI().toString());
@@ -79,9 +79,10 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
         try {
             msg.setPayload(MessageHelper.gzipSerialize(broker, document));
 
-        } catch (IOException ex) {
-            LOG.error(ex);
-            throw new TriggerException("Unable to retrieve message payload: " + ex.getMessage());
+        } catch (Throwable ex) {
+            LOG.error("Problem while serializing document (contentLength=" 
+                    + document.getContentLength() + ") to compressed message:" +  ex.getMessage(), ex);
+            //throw new TriggerException("Unable to retrieve message payload: " + ex.getMessage());
         }
 
         // Send Message   
@@ -172,6 +173,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     @Override
     public void afterCreateCollection(DBBroker broker, Txn transaction,
             Collection collection) throws TriggerException {
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug(collection.getURI().toString());
         }
@@ -283,7 +285,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
      * Send 'trigger' message with parameters set using
      * {@link #configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)}
      */
-    private void sendMessage(eXistMessage msg) throws TriggerException {
+    private void sendMessage(eXistMessage msg) /* throws TriggerException  */ {
         // Send Message   
         JMSMessageSender sender = new JMSMessageSender(parameters);
         try {
@@ -291,7 +293,11 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
 
         } catch (TransportException ex) {
             LOG.error(ex.getMessage(), ex);
-            throw new TriggerException(ex.getMessage(), ex);
+            //throw new TriggerException(ex.getMessage(), ex);
+            
+        } catch (Throwable ex) {
+            LOG.error(ex.getMessage(), ex);
+            //throw new TriggerException(ex.getMessage(), ex);
         }
     }
 
