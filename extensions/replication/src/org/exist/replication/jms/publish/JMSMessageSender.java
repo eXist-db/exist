@@ -21,6 +21,7 @@
  */
 package org.exist.replication.jms.publish;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -28,6 +29,7 @@ import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.log4j.Logger;
 import org.exist.replication.shared.MessageSender;
 import org.exist.replication.shared.TransportException;
@@ -123,11 +125,14 @@ public class JMSMessageSender implements MessageSender {
             context = new InitialContext(contextProps);
 
             // Lookup connection factory        
-            ConnectionFactory cf = (ConnectionFactory) context.lookup(parameters.getConnectionFactory());
+            ConnectionFactory cf = (ConnectionFactory) context.lookup(parameters.getConnectionFactory()); 
+            
+            // Set specific properties on the connection factory
+            configureConnectionFactory(cf);
 
             // Setup connection
             connection = cf.createConnection();
-
+            
             // Set clientId if present
             String clientId = parameters.getClientId();
             if (clientId != null) {
@@ -197,13 +202,8 @@ public class JMSMessageSender implements MessageSender {
                 }
             }
 
-
             // Send message
             producer.send(message);
-
-            // Close connection
-            // DW: connection could be re-used?
-            //connection.close();
 
             if(LOG.isDebugEnabled()){
                 LOG.debug("Message sent with id '" + message.getJMSMessageID() + "'");
@@ -226,5 +226,33 @@ public class JMSMessageSender implements MessageSender {
             // Close all that has been opened. Always.
             closeAll(context, connection, session);
         }
+    }
+    
+    /**
+     * Set properties on the ConnectionFactory.
+     * 
+     * @param cf The connection factory
+     * @throws NoSuchMethodException if there is no such accessible method
+     * @throws IllegalAccessException  wraps an exception thrown by the method invoked
+     * @throws InvocationTargetException if the requested method is not accessible via reflection
+     */
+    private void configureConnectionFactory(ConnectionFactory cf) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+
+        String group = "connectionfactory";
+        
+        /*
+         * Strings
+         */
+        String[] allMethods = {"setUserName", "setPassword"};
+
+        for (String method : allMethods) {
+            String value = parameters.getParameterValue(group, method);
+            if (value != null) {
+                 MethodUtils.invokeMethod(cf, method, value); //DW: how to force String.xlass as third parameter?
+            }
+        }
+
+        // When required add more non-string invokations
+        // Could be implemented more generic, but that makes no sense yet
     }
 }

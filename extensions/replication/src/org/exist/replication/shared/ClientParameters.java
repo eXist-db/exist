@@ -38,6 +38,7 @@ public abstract class ClientParameters {
     public static final String CONNECTION_FACTORY = "connectionfactory";
     public static final String TOPIC = "topic";
     public static final String CLIENT_ID = "client-id";
+    public static final String PARAMETER_GROUPING = "..";
    
     protected String connectionFactory = null;
     protected String clientId = null;
@@ -138,7 +139,8 @@ public abstract class ClientParameters {
     
     /**
      *  Retrieve initial context properties, e.g. {@link Context.INITIAL_CONTEXT_FACTORY}
-     * and {@link Context.PROVIDER_URL}
+     * and {@link Context.PROVIDER_URL}. Only properties with key starting with
+     * ".java" are added to the result.
      */
     public Properties getInitialContextProps(){
         Properties contextProps = new Properties();
@@ -179,6 +181,14 @@ public abstract class ClientParameters {
 
     public String getProviderUrl() {
         return providerUrl;
+    }
+    
+    public String getParameterValue(String key){
+        return props.getProperty(key);
+    }
+    
+     public String getParameterValue(String group, String key){
+        return props.getProperty(group + PARAMETER_GROUPING + key);
     }
     
 }
