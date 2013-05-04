@@ -21,7 +21,6 @@
  */
 package org.exist.replication.jms.publish;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -29,9 +28,7 @@ import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.log4j.Logger;
-import org.exist.replication.shared.ClientParameters;
 import org.exist.replication.shared.JmsConnectionHelper;
 import org.exist.replication.shared.MessageSender;
 import org.exist.replication.shared.TransportException;
