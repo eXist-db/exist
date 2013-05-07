@@ -30,6 +30,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.exist.replication.shared.JmsConnectionExceptionListener;
+import org.exist.replication.shared.JmsConnectionHelper;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
 
@@ -121,11 +122,14 @@ public class MessageReceiverStartupTrigger implements StartupTrigger {
             if (!(destination instanceof Topic)) {
                 String errorText = "'" + parameters.getTopic() + "' is not a Topic.";
                 LOG.error(errorText);
-                throw new Exception(errorText);
+                throw new Exception(errorText); //TODO better exception?
             }
 
             // Lookup connection factory            
             ConnectionFactory cf = (ConnectionFactory) context.lookup(parameters.getConnectionFactory());
+            
+            // Set specific properties on the connection factory
+            JmsConnectionHelper.configureConnectionFactory(cf, parameters);
 
             // Setup connection
             connection = cf.createConnection();

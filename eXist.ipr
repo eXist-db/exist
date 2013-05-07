@@ -1,30 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AntConfiguration">
-    <defaultAnt bundledAnt="true" />
     <buildFile url="file://$PROJECT_DIR$/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
       <customJdkName value="1.6" />
-      <maximumHeapSize value="128" />
       <maximumStackSize value="32" />
-      <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/test/src/ant/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
       <customJdkName value="1.5" />
-      <maximumHeapSize value="128" />
       <maximumStackSize value="32" />
-      <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/extensions/xprocxq/main/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
       <customJdkName value="1.5" />
-      <maximumHeapSize value="128" />
       <maximumStackSize value="32" />
-      <properties />
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -116,23 +103,8 @@
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
   </component>
-  <component name="FacetAutodetectingManager">
-    <autodetection-disabled>
-      <facet-type id="android" />
-      <facet-type id="JRailsFacetType" />
-      <facet-type id="JRUBY" />
-      <facet-type id="RailsFacetType" />
-      <facet-type id="web">
-        <modules>
-          <module name="eXist">
-            <files>
-              <file url="file://$PROJECT_DIR$/tools/jetty/etc/standalone/WEB-INF/web.xml" />
-              <file url="file://$PROJECT_DIR$/webapp/WEB-INF/web.xml" />
-            </files>
-          </module>
-        </modules>
-      </facet-type>
-    </autodetection-disabled>
+  <component name="GradleSettings">
+    <option name="gradleHome" value="$USER_HOME$/Apps/gradle" />
   </component>
   <component name="IdProvider" IDEtalkID="EDCB317F9C51C9BBC9F54E158B17D480" />
   <component name="JavacSettings">
@@ -354,14 +326,6 @@
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="cocoon">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/lib/cocoon" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-      <jarDirectory url="file://$PROJECT_DIR$/lib/cocoon" recursive="false" />
-    </library>
     <library name="core">
       <CLASSES>
         <root url="file://$PROJECT_DIR$/lib/core" />
@@ -375,9 +339,7 @@
         <root url="file://$PROJECT_DIR$/lib/endorsed" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES>
-        <root url="file://$USER_HOME$/Applications/xerces-2_9_1/src" />
-      </SOURCES>
+      <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/lib/endorsed" recursive="false" />
     </library>
     <library name="exquery-core">
@@ -404,12 +366,14 @@
         <root url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" />
         <root url="file://$PROJECT_DIR$/lib/extensions" />
         <root url="file://$PROJECT_DIR$/extensions/xqdoc/lib" />
+        <root url="file://$PROJECT_DIR$/extensions/webdav/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/webdav/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/xqdoc/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/lib/extensions" recursive="false" />
     </library>
