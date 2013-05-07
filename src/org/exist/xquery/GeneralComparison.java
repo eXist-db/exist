@@ -284,13 +284,18 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      */
     public int getDependencies()
     {
+        final Expression left = getLeft();
+
+        // variable dependencies should be reported to caller, so remember them here
+        final int deps = left.getDependencies() & Dependency.VARS;
+
         // left expression returns node set
-        if( Type.subTypeOf( getLeft().returnsType(), Type.NODE ) &&
+        if( Type.subTypeOf( left.returnsType(), Type.NODE ) &&
                 //  and does not depend on the context item
-                !Dependency.dependsOn( getLeft(), Dependency.CONTEXT_ITEM ) && ( !inWhereClause || !Dependency.dependsOn( getLeft(), Dependency.CONTEXT_VARS ) ) ) {
-            return( Dependency.CONTEXT_SET );
+                !Dependency.dependsOn( left, Dependency.CONTEXT_ITEM ) && ( !inWhereClause || !Dependency.dependsOn( left, Dependency.CONTEXT_VARS ) ) ) {
+            return( deps + Dependency.CONTEXT_SET );
         } else {
-            return( Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM );
+            return ( deps + Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM );
         }
     }
 
