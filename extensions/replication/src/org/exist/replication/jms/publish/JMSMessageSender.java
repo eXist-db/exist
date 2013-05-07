@@ -29,6 +29,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.apache.log4j.Logger;
+import org.exist.replication.shared.JmsConnectionHelper;
 import org.exist.replication.shared.MessageSender;
 import org.exist.replication.shared.TransportException;
 import org.exist.replication.shared.eXistMessage;
@@ -123,11 +124,14 @@ public class JMSMessageSender implements MessageSender {
             context = new InitialContext(contextProps);
 
             // Lookup connection factory        
-            ConnectionFactory cf = (ConnectionFactory) context.lookup(parameters.getConnectionFactory());
+            ConnectionFactory cf = (ConnectionFactory) context.lookup(parameters.getConnectionFactory()); 
+            
+            // Set specific properties on the connection factory
+            JmsConnectionHelper.configureConnectionFactory(cf, parameters);
 
             // Setup connection
             connection = cf.createConnection();
-
+            
             // Set clientId if present
             String clientId = parameters.getClientId();
             if (clientId != null) {
@@ -197,13 +201,8 @@ public class JMSMessageSender implements MessageSender {
                 }
             }
 
-
             // Send message
             producer.send(message);
-
-            // Close connection
-            // DW: connection could be re-used?
-            //connection.close();
 
             if(LOG.isDebugEnabled()){
                 LOG.debug("Message sent with id '" + message.getJMSMessageID() + "'");
