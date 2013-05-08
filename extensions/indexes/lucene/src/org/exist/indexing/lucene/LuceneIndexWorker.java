@@ -744,7 +744,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             List<AtomicReaderContext> leaves = reader.leaves();
             for (AtomicReaderContext context : leaves) {
                 DocsEnum docs = context.reader().termDocsEnum(dt);
-                if (docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+                if (docs != null && docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
                     Document doc = reader.document(docs.docID());
                     return doc.get(field);
                 }
@@ -768,7 +768,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             List<AtomicReaderContext> leaves = reader.leaves();
             for (AtomicReaderContext context : leaves) {
                 DocsEnum docs = context.reader().termDocsEnum(dt);
-                if (docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+                if (docs != null && docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
                     found = true;
                     break;
                 }
