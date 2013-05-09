@@ -51,7 +51,8 @@ import org.junit.runners.Suite;
         StoredModuleTest.class,
         TransformTest.class,
         DeferredFunctionCallTest.class,
-        UnionTest.class
+        UnionTest.class,
+        XQueryBrokenTest.class
 })
 public class AllXqueryTests {
 }

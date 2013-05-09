@@ -65,7 +65,7 @@ public class OpOr extends LogicalOp {
         if (doOptimize) {
             // yes: try to optimize by looking at right operand
             final Sequence rs = right.eval(contextSequence, null);
-            if (rs.isPersistentSet()) {
+            if (rs.isPersistentSet() || rs.isEmpty()) {
                 NodeSet rl = ls.toNodeSet();
                 rl = rl.getContextNodes(contextId);
                 NodeSet rr = rs.toNodeSet();
