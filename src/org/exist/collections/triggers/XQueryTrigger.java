@@ -38,6 +38,7 @@ import org.exist.dom.QName;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
+import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.StringSource;
@@ -468,6 +469,9 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		TriggerStatePerThread.setTransaction(transaction);
 		
 		final XQueryContext context = service.newContext(AccessContext.TRIGGER);
+        if (query instanceof DBSource) {
+            context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + ((DBSource)query).getDocumentPath().removeLastSegment().toString());
+        }
 
         CompiledXQuery compiledQuery;
         try {
@@ -492,10 +496,12 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 
         	return compiledQuery;
         } catch(final XPathException e) {
+            LOG.warn(e.getMessage(), e);
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
 	    } catch(final IOException e) {
+            LOG.warn(e.getMessage(), e);
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
