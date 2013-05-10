@@ -25,7 +25,7 @@ import org.exist.xmldb.XmldbURI;
  * source code. 
  * @author Jason Smith
  */
-public class XQueryBrokenTest extends Assert 
+public class TestXPathOpOrSpecialCase extends Assert
 {
 	/** The local database URI. */
 	private static final String uri = XmldbURI.LOCAL_DB;
