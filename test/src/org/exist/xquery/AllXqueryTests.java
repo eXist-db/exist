@@ -52,7 +52,7 @@ import org.junit.runners.Suite;
         TransformTest.class,
         DeferredFunctionCallTest.class,
         UnionTest.class,
-        XQueryBrokenTest.class
+        TestXPathOpOrSpecialCase.class
 })
 public class AllXqueryTests {
 }
