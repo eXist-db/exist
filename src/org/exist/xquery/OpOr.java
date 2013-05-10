@@ -25,6 +25,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 /**
  * Boolean operator "or".
@@ -65,16 +66,14 @@ public class OpOr extends LogicalOp {
         if (doOptimize) {
             // yes: try to optimize by looking at right operand
             Sequence rs = right.eval(contextSequence, null);
-            if (rs.isPersistentSet()) {
+            if (rs.isPersistentSet() || rs.isEmpty()) {
                 NodeSet rl = ls.toNodeSet();
                 rl = rl.getContextNodes(contextId);
                 NodeSet rr = rs.toNodeSet();
                 rr = rr.getContextNodes(contextId);
                 result = rl.union(rr);
                 //<test>{() or ()}</test> should return <test>false</test>			
-                if (getParent() instanceof EnclosedExpr ||
-                    //First, the intermediate PathExpr
-                    (getParent() != null && getParent().getParent() == null)) {
+                if (returnsType() == Type.BOOLEAN) {
                     result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
                 }
             } else {
