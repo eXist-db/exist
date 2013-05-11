@@ -103,10 +103,12 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
@@ -784,31 +786,45 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // Check if document URI has a full match or if a
                 // document is in a collection
                 if(isDocumentMatch(fDocUri, toBeMatchedURIs)){
-                    
-                    // setup attributes
-                    attribs = new AttributesImpl();
-                    attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
-                    attribs.addAttribute("", "score", "score", "CDATA", ""+score);
 
-                    // write element and attributes
-                    builder.startElement("", "search", "search", attribs);
-                    for (String field : fields) {
-                    	String[] fieldContent = doc.getValues(field);
-                    	attribs.clear();
-                    	attribs.addAttribute("", "name", "name", "CDATA", field);
-                    	for (String content : fieldContent) {
-                    		List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
-                    		if (offsets != null) {
-                    			builder.startElement("", "field", "field", attribs);
-                    			highlighter.highlight(content, offsets, builder);
-                    			builder.endElement();
-                    		}
-                    	}
+                    DocumentImpl storedDoc = null;
+                    try {
+                        // try to read document to check if user is allowed to access it
+                        storedDoc = context.getBroker().getXMLResource(XmldbURI.createInternal(fDocUri), Lock.READ_LOCK);
+                        if (storedDoc == null) {
+                            continue;
+                        }
+                        // setup attributes
+                        attribs = new AttributesImpl();
+                        attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
+                        attribs.addAttribute("", "score", "score", "CDATA", ""+score);
+
+                        // write element and attributes
+                        builder.startElement("", "search", "search", attribs);
+                        for (String field : fields) {
+                            String[] fieldContent = doc.getValues(field);
+                            attribs.clear();
+                            attribs.addAttribute("", "name", "name", "CDATA", field);
+                            for (String content : fieldContent) {
+                                List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
+                                if (offsets != null) {
+                                    builder.startElement("", "field", "field", attribs);
+                                    highlighter.highlight(content, offsets, builder);
+                                    builder.endElement();
+                                }
+                            }
+                        }
+                        builder.endElement();
+
+                        // clean attributes
+                        attribs.clear();
+                    } catch (PermissionDeniedException e) {
+                        // not allowed to read the document: ignore the match.
+                    } finally {
+                        if (storedDoc != null) {
+                            storedDoc.getUpdateLock().release(Lock.READ_LOCK);
+                        }
                     }
-                    builder.endElement();
-
-                    // clean attributes
-                    attribs.clear();
                 }           
             }
             
