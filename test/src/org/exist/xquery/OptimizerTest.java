@@ -161,6 +161,13 @@ public class OptimizerTest {
     }
 
     @Test
+    public void twoPredicatesNPEBug808() {
+        // Bug #808 NPE $docs[ngram:contains(first, "luke")][ngram:contains(last, "sky")]
+        int r = execute("let $sps := collection('/db/test')//SPEECH return $sps[ngram:contains(SPEAKER, 'HAMLET')][ngram:contains(LINE, 'king')]", false);
+        execute("let $sps := collection('/db/test')//SPEECH return $sps[ngram:contains(SPEAKER, 'HAMLET')][ngram:contains(LINE, 'king')]", true, MSG_OPT_ERROR, r);
+    }
+
+    @Test
     public void noOptimization() {
         int r = execute("/root//b[parent::c/b = 'two']", false);
         Assert.assertEquals(1, r);
