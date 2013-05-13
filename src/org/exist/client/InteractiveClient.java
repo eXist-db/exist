@@ -264,7 +264,7 @@ public class InteractiveClient {
         messageln("                     collection.");
         messageln("chmod [resource] permissions");
         messageln("                     change resource permissions. Format:");
-        messageln("                     [user|group|other]=[+|-][read|write|update].");
+        messageln("                     [user|group|other]=[+|-][read|write|execute].");
         messageln("                     chmod without resource changes permissions for");
         messageln("                     the current collection.");
         messageln("lock resource        put a write lock on the specified resource.");
