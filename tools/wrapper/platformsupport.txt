@@ -6,7 +6,7 @@ the following mainstream platforms:
 
 - Windows x86 (32bit/64bit)
 - Linux x86 (32bit/64bit) & IA (64bit)
-- MacOsX x86 (32bit/64bit)
+- Mac OS X x86 (32bit/64bit)
 - Solaris x86 (32bit/64bit) & SPARC (32bit/64bit)
 
 Support for additional platforms can be obtained by downloading the "Delta Pack" 
