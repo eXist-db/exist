@@ -1775,15 +1775,22 @@ public class NativeBroker extends DBBroker {
     public void reindexCollection(Collection collection, int mode) throws PermissionDeniedException {
         final TransactionManager transact = pool.getTransactionManager();
         final Txn transaction = transact.beginTransaction();
+        long start = System.currentTimeMillis();
+        
         try {
+            LOG.info(String.format("Start indexing collection %s", collection.getURI().toString()));
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REINDEX_COLLECTION, collection.getURI());
             reindexCollection(transaction, collection, mode);
             transact.commit(transaction);
+            
         } catch (final TransactionException e) {
             transact.abort(transaction);
             LOG.warn("An error occurred during reindex: " + e.getMessage(), e);
+            
         } finally {
             pool.getProcessMonitor().endJob();
+            LOG.info(String.format("Finished indexing collection %s in %s msec.", 
+                    collection.getURI().toString(), System.currentTimeMillis() - start));
         }
     }
 
