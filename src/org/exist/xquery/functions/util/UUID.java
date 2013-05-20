@@ -56,7 +56,7 @@ public class UUID extends BasicFunction {
 
             new FunctionSignature (
                     new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Generate a version 3 universally unique identifier (UUID) string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",
+                    "Generate a version 3 universally unique identifier (UUID) string, e.g. 2b92ddb6-8e4e-3891-b519-afa1609ced73",
                     new SequenceType[]{
                         new FunctionParameterSequenceType("name", Type.ITEM, Cardinality.EXACTLY_ONE,
                             "The input value for UUID calculation."),
