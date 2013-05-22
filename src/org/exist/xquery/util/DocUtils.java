@@ -149,7 +149,7 @@ public class DocUtils {
 				XmldbURI pathUri = XmldbURI.xmldbUriFor(path, false);
 				
 				final XmldbURI baseURI = context.getBaseURI().toXmldbURI();
-				if (!("".equals(baseURI) || "/db".equals(baseURI))) {
+				if (baseURI != null && !(baseURI.equals("") || baseURI.equals("/db"))) {
 					// relative collection Path: add the current base URI
 					pathUri = baseURI.resolveCollectionPath(pathUri);
 				}
