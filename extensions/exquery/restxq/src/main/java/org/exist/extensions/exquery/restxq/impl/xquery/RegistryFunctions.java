@@ -79,7 +79,7 @@ public class RegistryFunctions extends BasicFunction {
     public final static FunctionSignature signatures[] = {
 		
         new FunctionSignature(
-            new QName("resource-functions", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),
+            new QName(RESOURCE_FUNCTIONS.getLocalName(), RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),
             "Gets a list of all the registered resource functions.",
             FunctionSignature.NO_ARGS,
             new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of registered resource functions.")
