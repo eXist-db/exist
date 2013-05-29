@@ -78,13 +78,14 @@ public class Check extends BasicFunction {
 		try {
 			db = BrokerPool.getInstance();
 			
-			broker = db.get(null);
+			broker = db.get(context.getSubject());
 			
 			Collection col = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
 			
 			checkSub(broker, col);
 			
 		} catch (Exception e) {
+		    //e.printStackTrace();
 			throw new XPathException(this, e);
 		} finally {
 			if (db != null)
@@ -98,9 +99,11 @@ public class Check extends BasicFunction {
 		
         for (Iterator<XmldbURI> i = col.collectionIterator(broker); i.hasNext(); ) {
             XmldbURI childName = i.next();
-            Collection childColl = broker.getOrCreateCollection(null, XmldbURI.ROOT_COLLECTION_URI.append(childName));
+            Collection childColl = broker.getCollection(col.getURI().append(childName));
             
-            checkSub(broker, childColl);
+            if (childColl != null) {
+                checkSub(broker, childColl);
+            }
         }
 		
 		MutableDocumentSet childDocs = new DefaultDocumentSet();
@@ -111,6 +114,6 @@ public class Check extends BasicFunction {
 			DocumentImpl childDoc = itChildDocs.next();
 			
 			MetaData.get().addMetas(childDoc);
-		}
+		} 
 	}
 }
