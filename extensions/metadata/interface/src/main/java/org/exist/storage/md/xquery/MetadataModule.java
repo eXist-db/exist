@@ -39,7 +39,8 @@ public class MetadataModule extends AbstractInternalModule {
     public final static String RELEASED_IN_VERSION = "eXist-2.0";
 
 	public static final FunctionDef[] functions = {
-//		new FunctionDef( Check.signature, Check.class ),
+		new FunctionDef( Check.signature, Check.class ),
+		
 		new FunctionDef( DocumentByPair.signatures[0], DocumentByPair.class ),
 		new FunctionDef( DocumentByUUID.signatures[0], DocumentByUUID.class ),
 		new FunctionDef( Keys.signatures[0], Keys.class ),
