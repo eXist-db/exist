@@ -42,6 +42,7 @@ import org.exist.config.Configurator;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.GroupImpl;
+import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.realm.Realm;
 import org.exist.security.utils.Utils;
 import org.exist.storage.DBBroker;
@@ -177,7 +178,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
             final AbstractRealm r = this;
             
             for(final Iterator<DocumentImpl> i = collectionAccounts.iterator(broker); i.hasNext(); ) {
-                final Configuration conf = Configurator.parse(i.next());
+                final DocumentImpl doc = i.next();
+                final Configuration conf = Configurator.parse(doc);
                 final String name = conf.getProperty("name");
                 
                 usersByName.modifyE(new PrincipalDbModifyE<Account, ConfigurationException>(){
@@ -185,7 +187,13 @@ public abstract class AbstractRealm implements Realm, Configurable {
                     public void execute(final Map<String, Account> principalDb) throws ConfigurationException {
                         if(name != null && !principalDb.containsKey(name)) {
                             //A account = instantiateAccount(this, conf);
-                            final Account account = new AccountImpl(r, conf);
+                            final Account account;
+                            try {
+                                account = new AccountImpl(r, conf);
+                            } catch (Throwable e) {
+                                SecurityManagerImpl.LOG.error("Account object can't build up from '"+doc.getFileURI()+"'", e);
+                                return;
+                            }
 
                             getSecurityManager().addUser(account.getId(), account);
                             principalDb.put(account.getName(), account);
