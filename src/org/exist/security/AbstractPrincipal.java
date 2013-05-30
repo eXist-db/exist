@@ -99,6 +99,10 @@ public abstract class AbstractPrincipal implements Principal {
         this.realm = realm;
 
         configuration = Configurator.configure(this, _config_);
+        
+        if (configuration == null) {
+            throw new ConfigurationException("Configuration can't be NULL ["+_config_+"]");
+        }
 
         this.id = configuration.getPropertyInteger("id");
         this.name = configuration.getProperty("name");

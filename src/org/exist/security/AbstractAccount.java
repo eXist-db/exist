@@ -70,7 +70,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		super(realm, realm.collectionAccounts, id, name);
 	}
 	
-        protected AbstractAccount(DBBroker broker, AbstractRealm realm, int id, String name) throws ConfigurationException {
+    protected AbstractAccount(DBBroker broker, AbstractRealm realm, int id, String name) throws ConfigurationException {
 		super(broker, realm, realm.collectionAccounts, id, name);
 	}
         
