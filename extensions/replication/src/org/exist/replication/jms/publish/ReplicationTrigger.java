@@ -21,10 +21,11 @@
  */
 package org.exist.replication.jms.publish;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.log4j.Logger;
+
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -80,8 +81,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
             msg.setPayload(MessageHelper.gzipSerialize(broker, document));
 
         } catch (Throwable ex) {
-            LOG.error("Problem while serializing document (contentLength=" 
-                    + document.getContentLength() + ") to compressed message:" +  ex.getMessage(), ex);
+            LOG.error(String.format("Problem while serializing document (contentLength=%s) to compressed message:%s", document.getContentLength(), ex.getMessage()), ex);
             //throw new TriggerException("Unable to retrieve message payload: " + ex.getMessage());
         }
 
@@ -116,7 +116,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
             DocumentImpl document, XmldbURI oldUri) throws TriggerException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(document.getURI().toString() + " " + oldUri.toString());
+            LOG.debug(String.format("%s %s", document.getURI().toString(), oldUri.toString()));
         }
 
         // Create Message
@@ -135,7 +135,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
             DocumentImpl document, XmldbURI oldUri) throws TriggerException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(document.getURI().toString() + " " + oldUri.toString());
+            LOG.debug(String.format("%s %s", document.getURI().toString(), oldUri.toString()));
         }
 
         // Create Message
@@ -195,7 +195,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection,
             XmldbURI oldUri) throws TriggerException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug(collection.getURI().toString() + " " + oldUri.toString());
+            LOG.debug(String.format("%s %s", collection.getURI().toString(), oldUri.toString()));
         }
 
         // Create Message
@@ -213,7 +213,7 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection,
             XmldbURI oldUri) throws TriggerException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug(collection.getURI().toString() + " " + oldUri.toString());
+            LOG.debug(String.format("%s %s", collection.getURI().toString(), oldUri.toString()));
         }
 
         // Create Message
