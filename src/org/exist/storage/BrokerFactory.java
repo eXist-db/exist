@@ -23,6 +23,7 @@ package org.exist.storage;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.exist.EXistException;
@@ -34,11 +35,10 @@ public class BrokerFactory {
 
     private static Class<?> constructorArgs[] = { BrokerPool.class, Configuration.class };
 
-    private static Map<String, Class<? extends DBBroker>> objClasses = 
-        new HashMap<String, Class<? extends DBBroker>>();
+    private static Map<String, Class<? extends DBBroker>> objClasses =  new HashMap<String, Class<? extends DBBroker>>();
 
     public static void plug(String id, Class<? extends DBBroker> clazz) {
-        objClasses.put(id.toUpperCase(), clazz);
+        objClasses.put(id.toUpperCase(Locale.ENGLISH), clazz);
     }
 
     static {
@@ -46,17 +46,22 @@ public class BrokerFactory {
     }
 
     public static DBBroker getInstance(BrokerPool database, Configuration conf) throws EXistException {
-            String brokerID = (String) conf.getProperty(PROPERTY_DATABASE);
-        if (brokerID == null)
-            {throw new RuntimeException("no database defined");}
-        brokerID = brokerID.toUpperCase();
+        String brokerID = (String) conf.getProperty(PROPERTY_DATABASE);
+        if (brokerID == null) {
+            throw new RuntimeException("no database defined");
+        }
+        
+        // Repair name ; https://sourceforge.net/p/exist/bugs/810/
+        brokerID = brokerID.toUpperCase(Locale.ENGLISH);
         if (!objClasses.containsKey(brokerID)) {
             throw new RuntimeException("no database backend found for " + brokerID);
         }
+        
         try {
             final Class<? extends DBBroker> clazz = objClasses.get(brokerID);
             final Constructor<? extends DBBroker> constructor = clazz.getConstructor(constructorArgs);
             return constructor.newInstance(database, conf);
+            
         } catch (final Exception e) {
             throw new RuntimeException("can't get database backend " + brokerID, e);
         }
