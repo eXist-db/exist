@@ -144,7 +144,7 @@ public class JMSMessageSender implements MessageSender {
             // Lookup topic
             Destination destination = (Destination) context.lookup(parameters.getTopic());
             if (!(destination instanceof Topic)) {
-                String errorText = "'" + parameters.getTopic() + "' is not a Topic.";
+                String errorText = String.format("'%s' is not a Topic.", parameters.getTopic());
                 LOG.error(errorText);
                 throw new TransportException(errorText);
             }
@@ -205,12 +205,12 @@ public class JMSMessageSender implements MessageSender {
             producer.send(message);
 
             if(LOG.isDebugEnabled()){
-                LOG.debug("Message sent with id '" + message.getJMSMessageID() + "'");
+                LOG.debug(String.format("Message sent with id '%s'", message.getJMSMessageID()));
             }
 
         } catch (JMSException ex) {
             LOG.error(ex.getMessage(), ex);
-            throw new TransportException("Problem during communcation: " + ex.getMessage(), ex);
+            throw new TransportException(String.format("Problem during communcation: %s", ex.getMessage()), ex);
 
         } catch (NamingException ex) {
             LOG.error(ex.getMessage(), ex);
