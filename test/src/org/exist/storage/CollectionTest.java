@@ -58,8 +58,15 @@ public class CollectionTest extends TestCase {
     public static void main(String[] args) {
         TestRunner.run(CollectionTest.class);
     }
-    
-    public void testStore() {
+
+    public void testStoreRead() {
+        store();
+        BrokerPool.stopAll(false);
+        read();
+        BrokerPool.stopAll(false);
+    }
+
+    private void store() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
         DBBroker broker = null;
@@ -88,7 +95,7 @@ public class CollectionTest extends TestCase {
         }
     }
     
-    public void testRead() {
+    public void read() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
         
