@@ -49,7 +49,14 @@ public class MoveResourceTest extends TestCase {
 		TestRunner.run(MoveResourceTest.class);
 	}
 
-	public void testStore() {
+    public void testStore() {
+        store();
+        BrokerPool.stopAll(false);
+        read();
+        BrokerPool.stopAll(false);
+    }
+
+	private void store() {
 		BrokerPool.FORCE_CORRUPTION = true;
 		BrokerPool pool = null;
 		DBBroker broker = null;
@@ -94,7 +101,7 @@ public class MoveResourceTest extends TestCase {
 		}
 	}
 
-	public void testRead() {
+	private void read() {
 	    BrokerPool.FORCE_CORRUPTION = false;
 	    BrokerPool pool = null;
 	    DBBroker broker = null;
@@ -138,7 +145,14 @@ public class MoveResourceTest extends TestCase {
 	    }
 	}
 
-	public void testStoreAborted() throws Exception {
+    public void testAborted() throws Exception {
+        storeAborted();
+        BrokerPool.stopAll(false);
+        readAborted();
+        BrokerPool.stopAll(false);
+    }
+
+	private void storeAborted() throws Exception {
 		BrokerPool.FORCE_CORRUPTION = true;
 		BrokerPool pool = startDB();
 
@@ -182,7 +196,7 @@ public class MoveResourceTest extends TestCase {
 		}
 	}
 
-public void testReadAborted() {
+    private void readAborted() {
 	    BrokerPool.FORCE_CORRUPTION = false;
 	    BrokerPool pool = null;
 	    DBBroker broker = null;
@@ -226,7 +240,14 @@ public void testReadAborted() {
 	    }
 	}
 
-	public void testXMLDBStore() throws XMLDBException {
+    public void testXMLDBStore() throws XMLDBException {
+        xmlDBStore();
+        BrokerPool.stopAll(false);
+        xmlDBRead();
+        BrokerPool.stopAll(false);
+    }
+
+	private void xmlDBStore() throws XMLDBException {
 		BrokerPool.FORCE_CORRUPTION = true;
 	    @SuppressWarnings("unused")
 		BrokerPool pool = startDB();
@@ -253,7 +274,7 @@ public void testReadAborted() {
                 TestConstants.TEST_COLLECTION_URI, XmldbURI.create("new_test3.xml"));
 	}
 
-	public void testXMLDBRead() throws XMLDBException {
+	private void xmlDBRead() throws XMLDBException {
 		BrokerPool.FORCE_CORRUPTION = false;
 	    @SuppressWarnings("unused")
 		BrokerPool pool = startDB();
