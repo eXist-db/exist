@@ -31,7 +31,6 @@ import org.exist.config.annotation.ConfigurationFieldSettings;
 import static org.exist.config.annotation.ConfigurationFieldSettings.OCTAL_STRING_KEY;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.XmldbURI;
 
 @ConfigurationClass("")
 public abstract class AbstractAccount extends AbstractPrincipal implements Account {
