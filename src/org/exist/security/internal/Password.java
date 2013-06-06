@@ -37,6 +37,8 @@ import org.exist.security.MessageDigester;
  */
 public class Password implements Credential {
 
+    //TODO switch over to using jBCrypt
+    
     public enum Hash {
         MD5,
         RIPEMD160;
