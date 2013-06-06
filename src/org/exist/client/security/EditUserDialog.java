@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.DialogWithResponse;
+import org.exist.client.security.UserManagerDialog.Reconnecter;
 import org.exist.security.AXSchemaType;
 import org.exist.security.Account;
 import org.exist.security.EXistSchemaType;
@@ -48,11 +49,13 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
     private final static String HIDDEN_PASSWORD_CONST = "password";
     
     private final Account account;
+    private final Reconnecter reconnecter;
     private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<String>>();
     
-    public EditUserDialog(final UserManagementService userManagementService, final Account account) {
+    public EditUserDialog(final UserManagementService userManagementService, final Account account, final Reconnecter reconnecter) {
         super(userManagementService);
         this.account = account;
+        this.reconnecter = reconnecter;
         setFormPropertiesFromAccount();
     }
     
@@ -102,10 +105,9 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
         updateUser();
         
         //return updated password
-        for(final DialogCompleteWithResponse<String> callback : getDialogCompleteWithResponseCallbacks()) {
-            
-            //only fire if password changed
-            if(isPasswordChanged()) {
+        //only fire if password changed
+        if(isPasswordChanged()) {
+            for(final DialogCompleteWithResponse<String> callback : getDialogCompleteWithResponseCallbacks()) {
                 callback.complete(txtPassword.getText());
             }
         }
@@ -116,8 +118,17 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
             setAccountFromFormProperties();
             getUserManagementService().updateAccount(getAccount());
             
-            //group membership has to be modified seperately
-            modifyAccountGroupMembership();
+            //we must cause the client to reconnect now if we have modified the users password
+            if(isPasswordChanged()) {
+                try {
+                    setUserManagementService(this.reconnecter.reconnect(txtPassword.getText()));
+                    
+                    //group membership has to be modified seperately
+                    modifyAccountGroupMembership();
+                } catch(final XMLDBException xmldbe) {
+                    JOptionPane.showMessageDialog(this, "Could not edit user '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Edit User Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
         } catch(final PermissionDeniedException pde) {
             JOptionPane.showMessageDialog(this, "Could not update user '" + txtUsername.getText() + "': " + pde.getMessage(), "Edit User Error", JOptionPane.ERROR_MESSAGE);
         } catch(final XMLDBException xmldbe) {

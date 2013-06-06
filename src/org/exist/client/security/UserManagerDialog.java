@@ -398,6 +398,20 @@ public class UserManagerDialog extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_miEditUserActionPerformed
 
+    protected interface Reconnecter {
+        public UserManagementService reconnect(final String password) throws XMLDBException;
+    }
+    
+    private UserManagementService reconnectClientAndUserManager(final String password) throws XMLDBException {
+        //get client to reconnect with edited users new password
+        final Properties loginData = new Properties();
+        loginData.setProperty(InteractiveClient.PASSWORD, password);
+        client.reconnectClient(loginData);
+
+        //get reconnected userManagementService
+        return client.getUserManagementService();
+    }
+    
     private void showEditUserDialog(final Account account) {
         
         final UserManagerDialog that = this;
@@ -406,20 +420,20 @@ public class UserManagerDialog extends javax.swing.JFrame {
             @Override
             public void complete(final String response) {
                 //get client to reconnect with edited users new password
-                final Properties loginData = new Properties();
-                loginData.setProperty(InteractiveClient.PASSWORD, response);
-                client.reconnectClient(loginData);
-                
-                //get reconnected userManagementService
                 try {
-                    that.userManagementService = client.getUserManagementService();
+                    that.userManagementService = reconnectClientAndUserManager(response);
                 } catch(final XMLDBException xmldbe) {
                     JOptionPane.showMessageDialog(that, "Could not edit user '" + getSelectedUsername() + "': " + xmldbe.getMessage(), "User Manager Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
         
-        final EditUserDialog userDialog = new EditUserDialog(userManagementService, account);
+        final EditUserDialog userDialog = new EditUserDialog(userManagementService, account, new Reconnecter() {
+            @Override
+            public UserManagementService reconnect(final String password) throws XMLDBException {
+                return reconnectClientAndUserManager(password);
+            }
+        });
         if(getSelectedUsername().equals(currentUser)) {
             //register for password update event, if we are changing the password
             //of the current user
