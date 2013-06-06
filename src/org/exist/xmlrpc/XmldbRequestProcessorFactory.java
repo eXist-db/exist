@@ -54,18 +54,20 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     protected QueryResultCache resultSets = new QueryResultCache();
 
     /** id of the database registred against the BrokerPool */
-    protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
+    protected String databaseId = BrokerPool.DEFAULT_INSTANCE_NAME;
 
-    public XmldbRequestProcessorFactory(String databaseid, boolean useDefaultUser) throws EXistException {
+    public XmldbRequestProcessorFactory(final String databaseId, final boolean useDefaultUser) throws EXistException {
         this.useDefaultUser = useDefaultUser;
-        if (databaseid != null && !"".equals(databaseid))
-            {this.databaseid = databaseid;}
-        brokerPool = BrokerPool.getInstance(this.databaseid);
+        if(databaseId != null &&  !databaseId.isEmpty()) {
+            this.databaseId = databaseId;
+        }
+        brokerPool = BrokerPool.getInstance(this.databaseId);
     }
 
-    public Object getRequestProcessor(XmlRpcRequest pRequest) throws XmlRpcException {
+    @Override
+    public Object getRequestProcessor(final XmlRpcRequest pRequest) throws XmlRpcException {
         checkResultSets();
-        final XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) pRequest.getConfig();
+        final XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig)pRequest.getConfig();
         final Subject user = authenticate(config.getBasicUserName(), config.getBasicPassword());
         return new RpcConnection(this, user);
     }
@@ -86,10 +88,10 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
         // check user
         try {
             return brokerPool.getSecurityManager().authenticate(username, password);
-		} catch (final AuthenticationException e) {
+        } catch (final AuthenticationException e) {
             LOG.debug(e.getMessage());
             throw new XmlRpcException(0, e.getMessage());
-		}
+        }
     }
 
     protected BrokerPool getBrokerPool() {
@@ -97,7 +99,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     }
 
     protected void checkResultSets() {
-        if (System.currentTimeMillis() - lastCheck > CHECK_INTERVAL) {
+        if(System.currentTimeMillis() - lastCheck > CHECK_INTERVAL) {
             resultSets.checkTimestamps();
             lastCheck = System.currentTimeMillis();
         }
