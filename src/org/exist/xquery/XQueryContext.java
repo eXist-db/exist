@@ -3597,13 +3597,13 @@ public class XQueryContext implements BinaryValueManager, Context
         }
 
 
-        public void debug()
-        {
-            LOG.debug( "XQueryContext: " );
-
-            for( int i = 0; i < listeners.size(); i++ ) {
-                ( (UpdateListener)listeners.get( i ) ).debug();
+        public void debug() {
+            
+            LOG.debug(String.format("XQueryContext: %s document update listeners", listeners.size()));
+            for (int i = 0; i < listeners.size(); i++) {
+                ((UpdateListener) listeners.get(i)).debug();
             }
         }
+
     }
 }
