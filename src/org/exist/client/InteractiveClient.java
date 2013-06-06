@@ -65,6 +65,9 @@ import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -2440,6 +2443,12 @@ public class InteractiveClient {
         
         if (cOpt.interactive) {
             if (startGUI) {
+                try {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                } catch(final UnsupportedLookAndFeelException ulafe) {
+                    System.err.println("Warning: Unable to set native look and feel: " + ulafe.getMessage());
+                }
+                
                 frame = new ClientFrame(this, path, properties);
                 frame.setLocation(100, 100);
                 frame.setSize(500, 500);
