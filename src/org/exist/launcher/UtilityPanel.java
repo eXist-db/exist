@@ -119,10 +119,12 @@ public class UtilityPanel extends JFrame implements Observer {
         getContentPane().add(toolbar, c);
 
         statusLabel = new JLabel("", SwingConstants.CENTER);
-        //statusLabel.setPreferredSize(new Dimension(300, 16));
-        statusLabel.setMinimumSize(new Dimension(200, 16));
-        if (!launcher.isSystemTraySupported())
-            {statusLabel.setText("System tray icon not supported.");}
+        statusLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
+        statusLabel.setPreferredSize(new Dimension(200, 16));
+        //statusLabel.setMinimumSize(new Dimension(200, 16));
+        if (!launcher.isSystemTraySupported()) {
+            statusLabel.setText("System tray icon not supported.");
+        }
 
         c.gridy = 1;
         getContentPane().add(statusLabel, c);
@@ -148,7 +150,7 @@ public class UtilityPanel extends JFrame implements Observer {
         Font messagesFont = new Font("Monospaced", Font.PLAIN, 12);
         messages = new TextArea();
         messages.setBackground(new Color(20,20, 20, 255));
-        messages.setPreferredSize(new Dimension(300, 200));
+        messages.setPreferredSize(new Dimension(800, 200));
         messages.setForeground(new Color(255, 255, 255));
         messages.setFont(messagesFont);
 
@@ -159,7 +161,7 @@ public class UtilityPanel extends JFrame implements Observer {
         getContentPane().add(messages, c);
         messages.setVisible(false);
 
-        setMinimumSize(new Dimension(350, 80));
+        setMinimumSize(new Dimension(350, 90));
         pack();
 
         final Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -167,8 +169,10 @@ public class UtilityPanel extends JFrame implements Observer {
 
         launcher.addObserver(this);
 
-        if (!hideOnStart)
-            {setVisible(true);}
+        if (!hideOnStart) {
+            setVisible(true);
+            toFront();
+        }
     }
 
     private JButton createButton(JToolBar toolbar, String image, String title) {
