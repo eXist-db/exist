@@ -228,7 +228,13 @@ public class Launcher extends Observable implements Observer {
         toolbar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                utilityPanel.setVisible(true);
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        utilityPanel.toFront();
+                        utilityPanel.setVisible(true);
+                    }
+                });
             }
         });
 
