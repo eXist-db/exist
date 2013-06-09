@@ -163,9 +163,9 @@ public class Deploy extends BasicFunction {
         } catch (MalformedURLException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY005, "Malformed URL: " + repoURI);
         } catch (PackageException e) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+            throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         } catch (IOException e) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY006, e.getMessage());
+            throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         }
     }
 
