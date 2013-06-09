@@ -21,6 +21,9 @@
  */
 package org.exist.repo;
 
+import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.deps.DependencyVersion;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -55,6 +58,27 @@ public interface PackageLoader {
 
         public String getVersion() {
             return version;
+        }
+
+        public DependencyVersion getDependencyVersion() throws PackageException {
+            return DependencyVersion.makeVersion(version, semVer, min, max);
+        }
+
+        public String toString() {
+            StringBuilder v = new StringBuilder();
+            if (min != null) {
+                v.append("> ").append(min);
+            }
+            if (max != null) {
+                v.append(" < ").append(max);
+            }
+            if (semVer != null) {
+                v.append(semVer);
+            }
+            if (version != null) {
+                v.append(version);
+            }
+            return v.toString();
         }
 
         public Version(String version, boolean semver) {
