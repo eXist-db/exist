@@ -204,6 +204,7 @@ public class Deployment {
                                     LOG.debug("Package " + pkgName + " needs to be upgraded");
                                     if (enforceDeps) {
                                         throw new PackageException("Package requires version " + version.toString() +
+                                            " of package " + pkgName +
                                             ". Installed version is " + latest.getVersion() + ". Please upgrade!");
                                     }
                                 }
