@@ -55,6 +55,10 @@ public class AnalyzerConfig {
         }
     }
 
+    public void setDefaultAnalyzer(Analyzer analyzer) {
+        defaultAnalyzer = analyzer;
+    }
+
     protected static Analyzer configureAnalyzer(Element config) throws DatabaseConfigurationException {
         final String className = config.getAttribute(CLASS_ATTRIBUTE);
         
