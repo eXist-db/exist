@@ -110,8 +110,11 @@ public class FunBaseURI extends BasicFunction {
         if (isCalledAs("static-base-uri")) {
             if (context.isBaseURIDeclared()) {
                 result = context.getBaseURI();
-                if (!((AnyURIValue) result).toURI().isAbsolute() )
-                    {throw new XPathException(this, ErrorCodes.XPST0001, "");}
+                if (!((AnyURIValue) result).toURI().isAbsolute()) {
+//                    throw new XPathException(this, ErrorCodes.XPST0001, "");
+                    LOG.debug("URI is not absolute");
+                    result = Sequence.EMPTY_SEQUENCE;
+                }
             } else {
                 result = Sequence.EMPTY_SEQUENCE;
             }
