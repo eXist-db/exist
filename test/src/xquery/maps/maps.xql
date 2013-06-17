@@ -198,6 +198,37 @@ declare %test:assertTrue function mt:immutability2() {
         map:contains($map, "Fr")
 };
 
+declare %test:assertFalse function mt:immutability3() {
+    let $map := map {
+        "Su" := "Sunday",
+        "Mo" := "Monday",
+        "Tu" := "Tuesday",
+        "We" := "Wednesday",
+        "Th" := "Thursday",
+        "Fr" := "Friday"
+    }
+    let $map2 := map:remove($map, "Fr")
+    return
+        map:contains($map2, "Fr")
+};
+
+(:
+declare %test:assertTrue function mt:immutability4() {
+
+    let $daysOfWeek :=  map {   "Sunday" := 1,
+                                 "Monday" := 2,
+                                 "Tuesday" := 3,
+                                 "Wednesday" := 4,
+                                 "Thursday" := 5,
+                                 "Friday" := 6,
+                                 "Saturday" := 7
+                             }
+    let $workDays := map:remove($daysOfWeek, "Sunday")
+
+    return map:contains($workDays,"Monday")
+};
+:)
+
 declare %test:assertEquals("Sunday") function mt:sequenceType1() {
     let $map := map { 1 := "Sunday" }
     return
@@ -285,3 +316,4 @@ function mt:pathExpr() as element(c)+ {
     return
         ($map("a"), $map("b"))
 };
+
