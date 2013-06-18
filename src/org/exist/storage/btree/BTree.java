@@ -998,6 +998,53 @@ public class BTree extends Paged {
             return prefix;
         }
 
+        /**
+         * Compute where to split a page: tries to split at half the data size
+         *
+         * @return
+         */
+        private int getPivot(int preferred) {
+            if (nKeys == 2) {
+                return 1;
+            }
+            final int totalLen = getKeyDataLen();
+            int currentLen = 0;
+            int pivot = nKeys - 1;
+            for (int i = 0; i < nKeys - 1; i++) {
+                if (pageHeader.getStatus() == LEAF && i > 0) {
+                    // if this is a leaf page, we use prefix compression to store the keys,
+                    // so subtract the size of the prefix
+                    int prefix = keys[i].commonPrefix(keys[i - 1]);
+                    if (prefix < 0 || prefix > Byte.MAX_VALUE)
+                        prefix = 0;
+                    currentLen += keys[i].getLength() - prefix;
+                } else
+                    currentLen += keys[i].getLength();
+                if (currentLen > totalLen / 2 || i + 1 == preferred) {
+                    pivot = currentLen > fileHeader.getWorkSize() ? i : i + 1;
+                    break;
+                }
+            }
+            return pivot;
+        }
+
+        private int getKeyDataLen() {
+            int totalLen = 0;
+            for (int i = 0; i < nKeys; i++) {
+                if (pageHeader.getStatus() == LEAF && i > 0) {
+                    // if this is a leaf page, we use prefix compression to store the keys,
+                    // so subtract the size of the prefix
+                    int prefix = keys[i].commonPrefix(keys[i - 1]);
+                    if (prefix < 0 || prefix > Byte.MAX_VALUE)
+                        prefix = 0;
+                    totalLen += keys[i].getLength() - prefix;
+                } else {
+                    totalLen += keys[i].getLength();
+                }
+            }
+            return totalLen;
+        }
+
         private boolean mustSplit() {
             if (pageHeader.getValueCount() != nKeys)
                 {throw new RuntimeException("Wrong value count");}
@@ -1213,9 +1260,9 @@ public class BTree extends Paged {
                                 // however, if the inserted key is in the upper or lower
                                 // section of the node, we split directly at the key. this
                                 // has advantages if keys are inserted in ascending order
-                                if (splitFactor > 0 && idx > (nKeys * splitFactor))
-                                    {split(transaction, idx == 0 ? 1 : idx);}
-                                else {
+                                if (splitFactor > 0 && idx > (nKeys * splitFactor) && value.getLength() < fileHeader.getWorkSize() / 4) {
+                                    split(transaction, idx == 0 ? 1 : idx);
+                                } else {
                                     split(transaction);
                                 }
                             }
@@ -1275,8 +1322,8 @@ public class BTree extends Paged {
             long[] rightPtrs;
             Value separator;
             final short vc = pageHeader.getValueCount();
-            if (pivot == -1)
-                {pivot = vc / 2;}
+
+            pivot = getPivot(pivot);
             // Split the node into two nodes
             switch (pageHeader.getStatus()) {
                 case BRANCH :
@@ -2411,9 +2458,8 @@ public class BTree extends Paged {
         }
 
         public int getMaxKeySize() {
-            return getWorkSize() - MIN_SPACE_PER_KEY;
+            return (getWorkSize() / 2) - MIN_SPACE_PER_KEY;
         }
-
     }
 
     protected static class BTreePageHeader extends PageHeader {
