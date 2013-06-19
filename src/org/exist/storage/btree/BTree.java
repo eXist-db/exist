@@ -89,10 +89,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.xquery.TerminatedException;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.text.NumberFormat;
 
 /**
@@ -548,7 +545,7 @@ public class BTree extends Paged {
         byte[] data = value.getData();
         writer.write('[');
         for (int i = 0; i < data.length; i++) {
-        	writer.write(Integer.toString(data[i]));
+        	writer.write(Integer.toString((data[i] & 0xFF)));
         	writer.write(' ');
         }
         writer.write(']');
@@ -946,8 +943,55 @@ public class BTree extends Paged {
             }
             return currentDataLen;
 		}
-        
-		/**
+
+        /**
+         * Compute where to split a page: tries to split at half the data size
+         *
+         * @return
+         */
+        private int getPivot() {
+            if (nKeys == 2) {
+                return 1;
+            }
+            final int totalLen = getKeyDataLen();
+            int currentLen = 0;
+            int pivot = nKeys - 1;
+            for (int i = 0; i < nKeys - 1; i++) {
+                if (ph.getStatus() == LEAF && i > 0) {
+                    // if this is a leaf page, we use prefix compression to store the keys,
+                    // so subtract the size of the prefix
+                    int prefix = keys[i].commonPrefix(keys[i - 1]);
+                    if (prefix < 0 || prefix > Byte.MAX_VALUE)
+                        prefix = 0;
+                    currentLen += keys[i].getLength() - prefix;
+                } else
+                    currentLen += keys[i].getLength();
+                if (currentLen > totalLen / 2) {
+                    pivot = currentLen > fileHeader.getWorkSize() ? i : i + 1;
+                    break;
+                }
+            }
+            return pivot;
+        }
+
+        private int getKeyDataLen() {
+            int totalLen = 0;
+            for (int i = 0; i < nKeys; i++) {
+                if (ph.getStatus() == LEAF && i > 0) {
+                    // if this is a leaf page, we use prefix compression to store the keys,
+                    // so subtract the size of the prefix
+                    int prefix = keys[i].commonPrefix(keys[i - 1]);
+                    if (prefix < 0 || prefix > Byte.MAX_VALUE)
+                        prefix = 0;
+                    totalLen += keys[i].getLength() - prefix;
+                } else {
+                    totalLen += keys[i].getLength();
+                }
+            }
+            return totalLen;
+        }
+
+        /**
 		 * Add the raw data size required to store the value to the internal
 		 * data size of this node.
 		 *  
@@ -1251,7 +1295,7 @@ public class BTree extends Paged {
             
             this.saved = false;
             cache.add(this);
-            
+
 //            if (transaction != null && isTransactional) {
 //                Loggable log = new UpdatePageLoggable(transaction, fileId, page.getPageNum(), prefix, keys, nKeys, ptrs, nPtrs);
 //                writeToLog(log, this);
@@ -1276,7 +1320,8 @@ public class BTree extends Paged {
             Value separator;
 
             final short vc = ph.getValueCount();
-            final int pivot = vc / 2;
+            //final int pivot = vc / 2;
+            final int pivot = getPivot();
             // Split the node into two nodes
             switch (ph.getStatus()) {
                 case BRANCH :
@@ -1366,7 +1411,7 @@ public class BTree extends Paged {
                 parent.prefix = separator;
                 parent.setValues(new Value[] { Value.EMPTY_VALUE });
                 parent.setPointers(new long[] { page.getPageNum(), rNode.page.getPageNum()});
-                
+
                 // Log update of the parent node
                 if (isTransactional && transaction != null) {
                     Loggable log =
@@ -1385,7 +1430,7 @@ public class BTree extends Paged {
                 cache.add(rNode);
             } else {
                 final BTreeNode rNode = createBTreeNode(transaction, ph.getStatus(), parent, false);
-                
+
                 rNode.setValues(rightVals);
                 rNode.setPointers(rightPtrs);
                 rNode.setAsParent(transaction);
@@ -1409,7 +1454,7 @@ public class BTree extends Paged {
                                     rNode.nKeys, rightPtrs, rightPtrs.length);
                     writeToLog(log, rNode);
                 }
-                
+
                 rNode.recalculateDataLen();
                 if(rNode.mustSplit()) {
                     LOG.debug(getFile().getName() + " right node requires second split: " + rNode.getDataLen());
@@ -1495,10 +1540,14 @@ public class BTree extends Paged {
             }
         }
 
+        private void dump(Writer writer) throws IOException, BTreeException {
+            dump(writer, true);
+        }
+
         /**
          * Prints out a debug view of the node to the given writer.
          */
-        private void dump(Writer writer) throws IOException, BTreeException {
+        private void dump(Writer writer, boolean recurse) throws IOException, BTreeException {
             if (page.getPageNum() == fileHeader.getRootPage())
                 writer.write("ROOT: ");
             writer.write(page.getPageNum() + ": ");
@@ -1528,10 +1577,10 @@ public class BTree extends Paged {
                 writer.write('\n');
             }
             writer.write("-----------------------------------------------------------------------------------------\n");
-            if (ph.getStatus() == BRANCH) {
+            if (recurse && ph.getStatus() == BRANCH) {
                 for (int i = 0; i < nPtrs; i++) {
                     BTreeNode child = getChildNode(i);
-                    child.dump(writer);
+                    child.dump(writer, false);
                 }
             }
         }
@@ -2456,7 +2505,7 @@ public class BTree extends Paged {
 		}
 
         public int getMaxKeySize() {
-            return getWorkSize() - MIN_SPACE_PER_KEY;
+            return (getWorkSize() / 2) - MIN_SPACE_PER_KEY;
         }
     }
 
