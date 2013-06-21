@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -136,57 +135,50 @@ public class SerializeToFile extends BasicFunction
         };
 	
 	
-	public SerializeToFile( XQueryContext context, FunctionSignature signature )
-	{
-		super( context, signature );
+	public SerializeToFile(final XQueryContext context, final FunctionSignature signature) {
+            super(context, signature);
 	}
 	
-	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
+        @Override
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException
 	{
 	
             if(args[0].isEmpty()) {
                 return Sequence.EMPTY_SEQUENCE;
             }
 
-    		if (!context.getSubject().hasDbaRole()) {
-    			XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
-    			logger.error("Invalid user", xPathException);
-    			throw xPathException;
-    		}
+            if(!context.getSubject().hasDbaRole()) {
+                final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
+                logger.error("Invalid user", xPathException);
+                throw xPathException;
+            }
 
 
             //check the file output path
-            String inputPath = args[1].getStringValue();
-            File file = FileModuleHelper.getFile(inputPath);
+            final String inputPath = args[1].getStringValue();
+            final File file = FileModuleHelper.getFile(inputPath);
 
-            if(file.isDirectory())
-            {
+            if(file.isDirectory()) {
                 logger.debug("Cannot serialize file. Output file is a directory: " + file.getAbsolutePath());
                 return BooleanValue.FALSE;
             }
 
-            if(file.exists() && !file.canWrite())
-            {
+            if(file.exists() && !file.canWrite()) {
                 logger.debug("Cannot serialize file. Cannot write to file " + file.getAbsolutePath() );
                 return BooleanValue.FALSE;
             }
 
-            if(isCalledAs(FN_SERIALIZE_LN))
-            {
+            if(isCalledAs(FN_SERIALIZE_LN)) {
                 //parse serialization options from third argument to function
-                Properties outputProperties = parseXMLSerializationOptions( args[2].iterate() );
-                boolean doAppend = (args.length > 3) && "true".equals(args[3].itemAt(0).getStringValue());
+                final Properties outputProperties = parseXMLSerializationOptions( args[2].iterate() );
+                final boolean doAppend = (args.length > 3) && "true".equals(args[3].itemAt(0).getStringValue());
 
                 //do the serialization
                 serializeXML(args[0].iterate(), outputProperties, file, doAppend);
-            }
-            else if(isCalledAs(FN_SERIALIZE_BINARY_LN))
-            {
-                boolean doAppend = (args.length > 2) && "true".equals(args[2].itemAt(0).getStringValue());
+            } else if(isCalledAs(FN_SERIALIZE_BINARY_LN)) {
+                final boolean doAppend = (args.length > 2) && "true".equals(args[2].itemAt(0).getStringValue());
                 serializeBinary((BinaryValue)args[0].itemAt(0), file, doAppend);
-            }
-            else
-            {
+            } else {
                 throw new XPathException(this, "Unknown function name");
             }
 
@@ -194,80 +186,89 @@ public class SerializeToFile extends BasicFunction
 	}
 	
 	
-	private Properties parseXMLSerializationOptions( SequenceIterator siSerializeParams ) throws XPathException
-	{
-		//parse serialization options
-		Properties outputProperties = new Properties();
-		
-		outputProperties.setProperty( OutputKeys.INDENT, "yes" );
-		outputProperties.setProperty( OutputKeys.OMIT_XML_DECLARATION, "yes" );
-		
-		while(siSerializeParams.hasNext()) {
-                    String serializeParam = siSerializeParams.nextItem().getStringValue();
-                    String opt[] = Option.parseKeyValuePair(serializeParam);
-                    if(opt != null && opt.length == 2) {
-                        outputProperties.setProperty( opt[0], opt[1] );
+	private Properties parseXMLSerializationOptions(final SequenceIterator siSerializeParams) throws XPathException {
+            //parse serialization options
+            final Properties outputProperties = new Properties();
+
+            outputProperties.setProperty( OutputKeys.INDENT, "yes" );
+            outputProperties.setProperty( OutputKeys.OMIT_XML_DECLARATION, "yes" );
+
+            while(siSerializeParams.hasNext()) {
+                final String serializeParam = siSerializeParams.nextItem().getStringValue();
+                final String opt[] = Option.parseKeyValuePair(serializeParam);
+                if(opt != null && opt.length == 2) {
+                    outputProperties.setProperty( opt[0], opt[1] );
+                }
+            }
+
+            return outputProperties;
+	}
+	
+	
+	private void serializeXML(final SequenceIterator siNode, final Properties outputProperties, final File file, final boolean doAppend) throws XPathException {
+            // serialize the node set
+            SAXSerializer sax = null;
+            Writer writer = null;
+            try {
+                sax = (SAXSerializer)SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                final OutputStream os = new FileOutputStream(file, doAppend);
+                final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+                writer = new OutputStreamWriter(os, encoding);
+
+                sax.setOutput(writer, outputProperties);
+                final Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+                serializer.setProperties(outputProperties);
+                serializer.setReceiver(sax);
+
+                sax.startDocument();
+
+                while(siNode.hasNext()) {
+                    final NodeValue next = (NodeValue)siNode.nextItem();
+                    serializer.toSAX(next);	
+                }
+
+                sax.endDocument();
+                
+            } catch(final SAXException e) {
+                throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e);
+            } catch(final IOException e) {
+                throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e);
+            } finally {
+                if(writer != null) {
+                    try {
+                        writer.close();
+                    } catch(final IOException ioe) {
+                        logger.warn("Cannot serialize file '" + file.getAbsolutePath() + " ': " + ioe.getMessage(), ioe);
                     }
-		}
-		
-		return( outputProperties );
-	}
-	
-	
-	private void serializeXML( SequenceIterator siNode, Properties outputProperties, File file, boolean doAppend ) throws XPathException
-	{
-		// serialize the node set
-		SAXSerializer sax = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
-		try {
-                        OutputStream os = new FileOutputStream(file, doAppend);
-			String encoding = outputProperties.getProperty( OutputKeys.ENCODING, "UTF-8" );
-			Writer writer = new OutputStreamWriter( os, encoding );
-			
-			sax.setOutput( writer, outputProperties );
-			Serializer serializer = context.getBroker().getSerializer();
-			serializer.reset();
-			serializer.setProperties( outputProperties );
-			serializer.setReceiver( sax );
-			
-			sax.startDocument();
-			
-			while( siNode.hasNext() ) {
-				NodeValue next = (NodeValue)siNode.nextItem();
-				serializer.toSAX( next );	
-			}
-			
-			sax.endDocument();
-			writer.close();
-		}
-		catch( SAXException e ) {
-			throw( new XPathException( this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e ) );
-		}
-		catch ( IOException e ) {
-			throw( new XPathException(this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e ) );
-		}
-		finally {
-			SerializerPool.getInstance().returnObject( sax );
-		}
+                }
+                
+                if(sax != null) {
+                    SerializerPool.getInstance().returnObject(sax);
+                }
+            }
 	}
 
-    private void serializeBinary(BinaryValue binary, File file, boolean doAppend) throws XPathException
+    private void serializeBinary(final BinaryValue binary, final File file, final boolean doAppend) throws XPathException
     {
-        try
-        {
-            OutputStream fos = new BufferedOutputStream(new FileOutputStream(file, doAppend));
+        OutputStream os = null;
+        try {
+            os = new FileOutputStream(file, doAppend);
 
-            binary.streamBinaryTo(fos);
+            binary.streamBinaryTo(os);
 
-            fos.flush();
-            fos.close();
-        }
-        catch(FileNotFoundException fnfe)
-        {
+        } catch(final FileNotFoundException fnfe) {
             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + fnfe.getMessage(), fnfe);
-        }
-        catch(IOException ioe)
-        {
+        } catch(final IOException ioe) {
             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + ioe.getMessage(), ioe);
+        } finally {
+            if(os != null) {
+                try {
+                    os.close();
+                } catch(final IOException ioe) {
+                    logger.warn("Cannot serialize file '" + file.getAbsolutePath() + " ': " + ioe.getMessage(), ioe);
+                }
+            }
         }
     }
 }
