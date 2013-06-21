@@ -39,6 +39,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.expath.httpclient.HttpClientException;
 import org.expath.httpclient.HttpConnection;
+import org.expath.httpclient.HttpCredentials;
 import org.expath.httpclient.HttpRequest;
 import org.expath.httpclient.HttpResponse;
 import org.expath.httpclient.impl.ApacheHttpConnection;
@@ -100,12 +101,12 @@ public class SendRequestFunction extends BasicFunction {
      * @param context	The Context of the calling XQuery
      * @param signature The actual signature of the function
      */
-    public SendRequestFunction(XQueryContext context, FunctionSignature signature) {
+    public SendRequestFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
     
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         
         Sequence bodies = Sequence.EMPTY_SEQUENCE;
         String href = null;
@@ -131,13 +132,13 @@ public class SendRequestFunction extends BasicFunction {
         return sendRequest(request, href, bodies);
     }
     
-    private Sequence sendRequest(NodeValue request, String href, Sequence bodies) throws XPathException {
+    private Sequence sendRequest(final NodeValue request, final String href, final Sequence bodies) throws XPathException {
         
         HttpRequest req = null;
         try {
-            org.expath.httpclient.model.Sequence b = new EXistSequence(bodies, getContext());
-            Element r = new EXistElement(request, getContext());
-            RequestParser parser = new RequestParser();
+            final org.expath.httpclient.model.Sequence b = new EXistSequence(bodies, getContext());
+            final Element r = new EXistElement(request, getContext());
+            final RequestParser parser = new RequestParser();
             req = parser.parse(r, b, href);
 
             // override anyway it href exists
@@ -145,13 +146,13 @@ public class SendRequestFunction extends BasicFunction {
                 req.setHref(href);
             }
         
-            URI uri = new URI(req.getHref());
-            EXistResult result = sendOnce(uri, req, parser);
+            final URI uri = new URI(req.getHref());
+            final EXistResult result = sendOnce(uri, req, parser);
             return result.getResult();
                 
-        } catch(URISyntaxException ex ) {
+        } catch(final URISyntaxException ex ) {
             throw new XPathException("Href is not valid: " + req != null ? req.getHref() : "" + ". " + ex.getMessage(), ex);
-        } catch(HttpClientException hce) {
+        } catch(final HttpClientException hce) {
             throw new XPathException(hce.getMessage(), hce);
         }
     }
@@ -162,29 +163,71 @@ public class SendRequestFunction extends BasicFunction {
      * Authentication may require to reply to an authentication challenge,
      * by sending again the request, with credentials.
      */
-    private EXistResult sendOnce(URI uri, HttpRequest request, RequestParser parser) throws HttpClientException
+    private EXistResult sendOnce(final URI uri, final HttpRequest request, final RequestParser parser) throws HttpClientException
     {
-        EXistResult result = new EXistResult(getContext());
-        HttpConnection conn = new ApacheHttpConnection(uri);
+        final EXistResult result;
         
-        try {
-            if(parser.getSendAuth()) {
-                request.send(result, conn, parser.getCredentials());
-            }
-            else {
-                HttpResponse response = request.send(result, conn, null);
+        if(parser.getSendAuth()) {
+            result = sendOnceWithAuth(uri, request, parser.getCredentials());        
+        } else {
+            HttpConnection conn = null;
+            try {
+                conn = new ApacheHttpConnection(uri);
+                final EXistResult firstResult = new EXistResult(context);
+                final HttpResponse response = request.send(firstResult, conn, null);
                 if(response.getStatus() == 401) {
                     conn.disconnect();
-                    conn = new ApacheHttpConnection(uri);
-                    // create a new result, and throw the old one away
-                    result = new EXistResult(getContext());
-                    request.send(result, conn, parser.getCredentials());
+                    result = sendOnceWithAuth(uri, request, parser.getCredentials());
+                } else {
+                    result = firstResult;
+                    registerConnectionWithContext(conn);
                 }
+            } catch(final HttpClientException hce) {
+                if(conn != null) {
+                    try {
+                        conn.disconnect();
+                    } catch(final HttpClientException hcee) {
+                        logger.warn(hcee.getMessage(), hcee);
+                    }
+                }
+                throw hce;
             }
-        } finally {
-            conn.disconnect();
         }
         
         return result;
+    }
+    
+    private EXistResult sendOnceWithAuth(final URI uri, final HttpRequest request, final HttpCredentials httpCredentials) throws HttpClientException {
+        final EXistResult result = new EXistResult(getContext());
+        HttpConnection conn = null;
+        try {
+            conn = new ApacheHttpConnection(uri);
+            request.send(result, conn, httpCredentials);
+            registerConnectionWithContext(conn);
+        } catch(final HttpClientException hce) {
+            if(conn != null) {
+                try {
+                    conn.disconnect();
+                } catch(final HttpClientException hcee) {
+                    logger.warn(hcee.getMessage(), hcee);
+                }
+            }
+            throw hce;
+        }
+        
+        return result;
+    }
+    
+    private void registerConnectionWithContext(final HttpConnection conn) {
+        context.registerCleanupTask(new XQueryContext.CleanupTask() {
+            @Override
+            public void cleanup(final XQueryContext context) {
+                try {
+                    conn.disconnect();
+                } catch(final HttpClientException hce) {
+                    logger.warn(hce.getMessage(), hce);
+                }
+            }
+        });
     }
 }
