@@ -1529,7 +1529,7 @@ public class RESTServer {
             writeResults(response, broker, result, -1, 1, false, outputProperties, wrap);
 
         } finally {
-            context.cleanupBinaryValueInstances();
+            context.runCleanupTasks();
             pool.returnCompiledXQuery(source, compiled);
         }
     }

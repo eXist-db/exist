@@ -828,6 +828,6 @@ public interface Context {
 
 	public void registerBinaryValueInstance(BinaryValue binaryValue);
 
-	public void cleanupBinaryValueInstances();
+	public void runCleanupTasks();
 
 }

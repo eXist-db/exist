@@ -229,7 +229,7 @@ public class UserXQueryJob extends UserJob {
         } finally {
 
             if(context != null) {
-                context.cleanupBinaryValueInstances();
+                context.runCleanupTasks();
             }
             
             //return the compiled query to the pool
