@@ -51,6 +51,7 @@ import org.exquery.restxq.annotation.ProducesAnnotation;
 import org.exquery.serialization.annotation.SerializationAnnotation;
 import org.exquery.xquery.Literal;
 import org.exquery.xquery3.Annotation;
+import org.w3c.dom.Document;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -89,18 +90,19 @@ public class RegistryFunctions extends BasicFunction {
     public RegistryFunctions(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
-
-
+    
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         
         final RestXqServiceRegistry registry = RestXqServiceRegistryManager.getRegistry(getContext().getBroker().getBrokerPool());
-        
-        final MemTreeBuilder builder = context.getDocumentBuilder();
+        return (NodeValue)serializeRestXqServices(getContext().getDocumentBuilder(), registry).getDocumentElement();
+    }
+    
+    public static Document serializeRestXqServices(final MemTreeBuilder builder, final Iterable<RestXqService> services) {
         builder.startDocument();
         builder.startElement(RESOURCE_FUNCTIONS, null);
         
-        for(final RestXqService service : registry) {
+        for(final RestXqService service : services) {
             
             final ResourceFunction resourceFn = service.getResourceFunction();
             
@@ -183,6 +185,6 @@ public class RegistryFunctions extends BasicFunction {
         builder.endDocument();
         
         
-        return (NodeValue)builder.getDocument().getDocumentElement();
+        return builder.getDocument();
     }
 }
