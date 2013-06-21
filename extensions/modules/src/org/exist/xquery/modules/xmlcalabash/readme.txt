@@ -21,7 +21,7 @@ To use xmlcalabash uncomment in conf.xml
     <module class="org.exist.xquery.modules.xmlcalabash.XMLCalabashModule"
           uri="http://xmlcalabash.com" />
 
-This has been tested with XML Calabash v0.9.29
+This has been tested with XML Calabash v1.0.9
 
 
 -----
@@ -32,11 +32,11 @@ upload an XProc pipeline somewhere into eXist (ex. /db/test/hello.xproc)
 
 <?xml version="1.0"?>
 <p:declare-step version="1.0" xmlns:p="http://www.w3.org/ns/xproc">
-<p:input port="source">
-  <p:inline><doc>Helloworld</doc></p:inline>
-</p:input>
-<p:output port="result"/>
-<p:identity/>
+    <p:input port="source">
+        <p:inline><doc>Helloworld</doc></p:inline>
+    </p:input>
+    <p:output port="result"/>
+    <p:identity/>
 </p:declare-step>
 
 
