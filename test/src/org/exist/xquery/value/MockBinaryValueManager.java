@@ -20,7 +20,7 @@ public class MockBinaryValueManager implements BinaryValueManager {
     }
 
     @Override
-    public void cleanupBinaryValueInstances() {
+    public void runCleanupTasks() {
         for(BinaryValue value : values) {
             try {
                 value.close();
