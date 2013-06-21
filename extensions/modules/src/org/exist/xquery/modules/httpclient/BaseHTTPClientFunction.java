@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.httpclient;
 
+import java.io.ByteArrayOutputStream;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -43,7 +44,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import org.exist.dom.QName;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
@@ -62,7 +62,6 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -76,6 +75,11 @@ import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.NTCredentials;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.io.input.CloseShieldInputStream;
+import org.exist.util.Configuration;
+import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.FilterInputStreamCache;
+import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 
@@ -111,9 +115,8 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     final static String                                  HTTP_EXCEPTION_STATUS_CODE     = "500";
 
 	
-    public BaseHTTPClientFunction( XQueryContext context, FunctionSignature signature )
-    {
-        super( context, signature );
+    public BaseHTTPClientFunction(final XQueryContext context, final FunctionSignature signature ) {
+        super(context, signature);
     }
 
 	
@@ -125,23 +128,22 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      *
      * @throws  XPathException 
      */
-    protected void setHeaders( HttpMethod method, Node headers ) throws XPathException
-    {
-        if( ( headers.getNodeType() == Node.ELEMENT_NODE ) && headers.getLocalName().equals( "headers" ) ) {
-            NodeList headerList = headers.getChildNodes();
+    protected void setHeaders(final HttpMethod method, final Node headers) throws XPathException {
+        if((headers.getNodeType() == Node.ELEMENT_NODE) && headers.getLocalName().equals("headers")) {
+            final NodeList headerList = headers.getChildNodes();
 
-            for( int i = 0; i < headerList.getLength(); i++ ) {
-                Node header = headerList.item( i );
+            for(int i = 0; i < headerList.getLength(); i++ ) {
+                final Node header = headerList.item( i );
 
-                if( ( header.getNodeType() == Node.ELEMENT_NODE ) && header.getLocalName().equals( "header" ) ) {
-                    String name  = ( ( Element )header ).getAttribute( "name" );
-                    String value = ( ( Element )header ).getAttribute( "value" );
+                if((header.getNodeType() == Node.ELEMENT_NODE ) && header.getLocalName().equals("header")) {
+                    final String name  = ((Element)header).getAttribute("name");
+                    final String value = ((Element)header).getAttribute("value");
 
-                    if( ( name == null ) || ( value == null ) ) {
-                        throw( new XPathException( this, "Name or value attribute missing for request header parameter" ) );
+                    if(name == null || value == null) {
+                        throw new XPathException(this, "Name or value attribute missing for request header parameter");
                     }
 
-                    method.addRequestHeader( new Header( name, value ) );
+                    method.addRequestHeader(new Header(name, value));
                 }
             }
         }
@@ -160,115 +162,129 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * @throws  IOException     
      * @throws  XPathException  
      */
-    protected Sequence doRequest( XQueryContext context, HttpMethod method, boolean persistState, Map<String, Boolean> parserFeatures, Map<String, String> parserProperties) throws IOException, XPathException
-    {
-        int      statusCode      = 0;
+    protected Sequence doRequest(final XQueryContext context, final HttpMethod method, final boolean persistState, final Map<String, Boolean> parserFeatures, final Map<String, String> parserProperties) throws IOException, XPathException {
+        
         Sequence encodedResponse = null;
 
-        HttpClient http = new HttpClient();
+        final HttpClient http = new HttpClient();
 
-		//execute the request
-		
+        //execute the request	
         try {
-			 //use existing state?
-	        if( persistState ) {
-	
-	            //get existing state
-	           HttpState state = (HttpState)context.getXQueryContextVar( HTTP_MODULE_PERSISTENT_STATE );
-	
-	            if( state != null ) {
-					http.setState( state );
-	            }
-	        }
+            
+            //use existing state?
+            if(persistState) {
+                //get existing state
+                final HttpState state = (HttpState)context.getXQueryContextVar(HTTP_MODULE_PERSISTENT_STATE);
+                if(state != null) {
+                    http.setState(state);
+                }
+            }
 			
-            String configFile = System.getProperty("http.configfile");
-            if (configFile != null) {
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug("http.configfile='" + configFile + "'");
-                }
-
-                Properties props = new Properties();       
-                try {
-                    File propsFile = new File(configFile);
-                    
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Loading proxy settings from " + propsFile.getAbsolutePath());
-                    }
-                    props.load(new FileInputStream(propsFile));
-                    
-                } catch (IOException ex) {
-                    logger.error("Failed to read proxy configuration from '" + configFile + "'");
-                }
-
-                // Hostname / port
-                String proxyHost = props.getProperty("proxy.host");
-                int proxyPort = Integer.valueOf(props.getProperty("proxy.port", "8080"));
-
-                // Username / password
-                String proxyUser = props.getProperty("proxy.user");
-                String proxyPassword = props.getProperty("proxy.password");
-
-                // NTLM specifics
-                String proxyDomain = props.getProperty("proxy.ntlm.domain");
-                if ("NONE".equalsIgnoreCase(proxyDomain)) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Forcing removal NTLM");
-                    }
-                    proxyDomain = null;
-                }
-
-                // Set scope       
-                AuthScope authScope = new AuthScope(proxyHost, proxyPort);
-
-                // Setup right credentials
-                Credentials credentials = null;
-                if (proxyDomain == null) {
-                    credentials = new UsernamePasswordCredentials(proxyUser, proxyPassword);
+            final String configFile = System.getProperty("http.configfile");
+            if(configFile != null) {
+                final File f = new File(configFile);
+                if(f.exists()) {
+                    setConfigFromFile(f, http);
                 } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Using NTLM authentication for '" + proxyDomain + "'");
-                    }
-                    credentials = new NTCredentials(proxyUser, proxyPassword, proxyHost, proxyDomain);
-                }
-
-                // Set details
-                HttpState state = http.getState();
-                http.getHostConfiguration().setProxy(proxyHost, proxyPort);
-                state.setProxyCredentials(authScope, credentials);
-
-                if (logger.isDebugEnabled()) {
-                    logger.info("Set proxy: " + proxyUser + "@" + proxyHost + ":" 
-                            + proxyPort + (proxyDomain == null ? "" : " (NTLM:'" 
-                            + proxyDomain + "')"));
+                    logger.warn("http.configfile '" + f.getAbsolutePath() + "' does not exist!");
                 }
             }
             
             // Legacy: set the proxy server (if any)
-            String proxyHost = System.getProperty( "http.proxyHost" );
-            if( proxyHost != null ) {
+            final String proxyHost = System.getProperty("http.proxyHost");
+            if(proxyHost != null) {
                 //TODO: support for http.nonProxyHosts e.g. -Dhttp.nonProxyHosts="*.devonline.gov.uk|*.devon.gov.uk"
-
-                ProxyHost proxy = new ProxyHost( proxyHost, Integer.parseInt( System.getProperty( "http.proxyPort" ) ) );
-                http.getHostConfiguration().setProxyHost( proxy );
+                final ProxyHost proxy = new ProxyHost(proxyHost, Integer.parseInt(System.getProperty("http.proxyPort")));
+                http.getHostConfiguration().setProxyHost(proxy);
             } 
 
             //perform the request
-            statusCode      = http.executeMethod( method );
+            final int statusCode = http.executeMethod(method);
 
-            encodedResponse = encodeResponseAsXML( context, method, statusCode, parserFeatures, parserProperties );
+            encodedResponse = encodeResponseAsXML(context, method, statusCode, parserFeatures, parserProperties);
 
             //persist state?
-            if( persistState ) {
-                context.setXQueryContextVar( HTTP_MODULE_PERSISTENT_STATE, http.getState() );
+            if(persistState) {
+                context.setXQueryContextVar(HTTP_MODULE_PERSISTENT_STATE, http.getState());
             }
-        }
-        catch( Exception e ) {
+        } catch(final Exception e) {
             LOG.error(e.getMessage(), e);
-            encodedResponse = encodeErrorResponse( context, e.getMessage() );
+            encodedResponse = encodeErrorResponse(context, e.getMessage());
         }
 
-        return( encodedResponse );
+        return encodedResponse;
+    }
+    
+    private void setConfigFromFile(final File configFile, final HttpClient http) {
+        
+        if(logger.isDebugEnabled()) {
+            logger.debug("http.configfile='" + configFile.getAbsolutePath() + "'");
+        }
+
+        final Properties props = new Properties();
+        InputStream is = null;
+        try {
+
+            if(logger.isDebugEnabled()) {
+                logger.debug("Loading proxy settings from " + configFile.getAbsolutePath());
+            }
+
+            is = new FileInputStream(configFile);
+            props.load(is);
+        
+
+            // Hostname / port
+            final String proxyHost = props.getProperty("proxy.host");
+            final int proxyPort = Integer.valueOf(props.getProperty("proxy.port", "8080"));
+
+            // Username / password
+            final String proxyUser = props.getProperty("proxy.user");
+            final String proxyPassword = props.getProperty("proxy.password");
+
+            // NTLM specifics
+            String proxyDomain = props.getProperty("proxy.ntlm.domain");
+            if ("NONE".equalsIgnoreCase(proxyDomain)) {
+                if(logger.isDebugEnabled()) {
+                    logger.debug("Forcing removal NTLM");
+                }
+                proxyDomain = null;
+            }
+
+            // Set scope       
+            final AuthScope authScope = new AuthScope(proxyHost, proxyPort);
+
+            // Setup right credentials
+            final Credentials credentials;
+            if (proxyDomain == null) {
+                credentials = new UsernamePasswordCredentials(proxyUser, proxyPassword);
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Using NTLM authentication for '" + proxyDomain + "'");
+                }
+                credentials = new NTCredentials(proxyUser, proxyPassword, proxyHost, proxyDomain);
+            }
+
+            // Set details
+            final HttpState state = http.getState();
+            http.getHostConfiguration().setProxy(proxyHost, proxyPort);
+            state.setProxyCredentials(authScope, credentials);
+
+            if (logger.isDebugEnabled()) {
+                logger.info("Set proxy: " + proxyUser + "@" + proxyHost + ":" 
+                        + proxyPort + (proxyDomain == null ? "" : " (NTLM:'" 
+                        + proxyDomain + "')"));
+            }
+        } catch (final IOException ex) {
+            logger.error("Failed to read proxy configuration from '" + configFile + "'");
+        } finally {
+            if(is != null) {
+                try {
+                    is.close();
+                } catch(final IOException ioe) {
+                    logger.warn(ioe.getMessage(), ioe);
+                }
+            }
+        }
     }
 
 
@@ -284,45 +300,42 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * @throws  XPathException 
      * @throws  IOException     
      */
-    private Sequence encodeResponseAsXML( XQueryContext context, HttpMethod method, int statusCode, Map<String, Boolean> parserFeatures, Map<String, String> parserProperties) throws XPathException, IOException
-    {
-        Sequence       xmlResponse = null;
+    private Sequence encodeResponseAsXML(final XQueryContext context, final HttpMethod method, final int statusCode, final Map<String, Boolean> parserFeatures, final Map<String, String> parserProperties) throws XPathException, IOException {
 
-        MemTreeBuilder builder     = context.getDocumentBuilder();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
 
         builder.startDocument();
-        builder.startElement( new QName( "response", NAMESPACE_URI, PREFIX ), null );
-        builder.addAttribute( new QName( "statusCode", null, null ), String.valueOf( statusCode ) );
+        builder.startElement(new QName("response", NAMESPACE_URI, PREFIX), null );
+        builder.addAttribute(new QName("statusCode", null, null), String.valueOf(statusCode));
 
         //Add all the response headers
-        builder.startElement( new QName( "headers", NAMESPACE_URI, PREFIX ), null );
+        builder.startElement(new QName("headers", NAMESPACE_URI, PREFIX), null);
 
-        NameValuePair[] headers = method.getResponseHeaders();
+        final NameValuePair[] headers = method.getResponseHeaders();
 
-        for( int i = 0; i < headers.length; i++ ) {
-            builder.startElement( new QName( "header", NAMESPACE_URI, PREFIX ), null );
-            builder.addAttribute( new QName( "name", null, null ), headers[i].getName() );
-            builder.addAttribute( new QName( "value", null, null ), headers[i].getValue() );
+        for(final NameValuePair header : headers) {
+            builder.startElement(new QName("header", NAMESPACE_URI, PREFIX), null);
+            builder.addAttribute(new QName("name", null, null), header.getName());
+            builder.addAttribute(new QName("value", null, null), header.getValue());
             builder.endElement();
         }
 
         builder.endElement();
 
-        if( !( ( method instanceof HeadMethod ) || ( method instanceof OptionsMethod ) ) ) { // Head and Options methods never have any response body
+        if(!(method instanceof HeadMethod || method instanceof OptionsMethod)) { // Head and Options methods never have any response body
 
             // Add the response body node
-            builder.startElement( new QName( "body", NAMESPACE_URI, PREFIX ), null );
+            builder.startElement(new QName("body", NAMESPACE_URI, PREFIX), null);
 
-            insertResponseBody( context, method, builder, parserFeatures, parserProperties);
+            insertResponseBody(context, method, builder, parserFeatures, parserProperties);
 
             builder.endElement();
         }
 
         builder.endElement();
 
-        xmlResponse = ( NodeValue )builder.getDocument().getDocumentElement();
-
-        return( xmlResponse );
+        final Sequence xmlResponse = (NodeValue)builder.getDocument().getDocumentElement();
+        return xmlResponse;
     }
 
 
@@ -337,32 +350,29 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * @throws  IOException     
      * @throws  XPathException 
      */
-    private Sequence encodeErrorResponse( XQueryContext context, String message ) throws IOException, XPathException
-    {
-        Sequence       xmlResponse = null;
+    private Sequence encodeErrorResponse(final XQueryContext context, final String message) throws IOException, XPathException {
 
-        MemTreeBuilder builder     = context.getDocumentBuilder();
+        final MemTreeBuilder builder = context.getDocumentBuilder();
 
         builder.startDocument();
-        builder.startElement( new QName( "response", NAMESPACE_URI, PREFIX ), null );
-        builder.addAttribute( new QName( "statusCode", null, null ), HTTP_EXCEPTION_STATUS_CODE );
+        builder.startElement(new QName("response", NAMESPACE_URI, PREFIX), null);
+        builder.addAttribute(new QName("statusCode", null, null), HTTP_EXCEPTION_STATUS_CODE);
 
-        builder.startElement( new QName( "body", NAMESPACE_URI, PREFIX ), null );
+        builder.startElement(new QName("body", NAMESPACE_URI, PREFIX), null);
 
-        builder.addAttribute( new QName( "type", null, null ), "text" );
-        builder.addAttribute( new QName( "encoding", null, null ), "URLEncoded" );
+        builder.addAttribute(new QName("type", null, null), "text");
+        builder.addAttribute(new QName("encoding", null, null), "URLEncoded");
 
-        if( message != null ) {
-            builder.characters( URLEncoder.encode( message, "UTF-8" ) );
+        if(message != null) {
+            builder.characters(URLEncoder.encode(message, "UTF-8"));
         }
 
         builder.endElement();
 
         builder.endElement();
 
-        xmlResponse = ( NodeValue )builder.getDocument().getDocumentElement();
-
-        return( xmlResponse );
+        final Sequence xmlResponse = (NodeValue)builder.getDocument().getDocumentElement();
+        return xmlResponse;
     }
 
 
@@ -379,111 +389,147 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      * @throws  IOException     
      * @throws  XPathException  
      */
-    private void insertResponseBody( XQueryContext context, HttpMethod method, MemTreeBuilder builder, Map<String, Boolean>parserFeatures, Map<String, String>parserProperties) throws IOException, XPathException
-    {
-        @SuppressWarnings( "unused" )
-        boolean     parsed       = false;
-        NodeImpl    responseNode = null;
-        InputStream bodyAsStream = method.getResponseBodyAsStream();
+    private void insertResponseBody(final XQueryContext context, final HttpMethod method, final MemTreeBuilder builder, final Map<String, Boolean>parserFeatures, final Map<String, String>parserProperties) throws IOException, XPathException {
+        NodeImpl responseNode = null;
+        
+        final InputStream bodyAsStream = method.getResponseBodyAsStream();
 
         // check if there is a response body
-        if( bodyAsStream != null ) {
+        if(bodyAsStream != null) {
 
-            long contentLength = ( ( HttpMethodBase )method ).getResponseContentLength();
-
-            if( contentLength > Integer.MAX_VALUE ) { //guard from overflow
-                throw( new XPathException( this, "HTTPClient response too large to be buffered: " + contentLength + " bytes" ) );
-            }
-
-            ByteArrayOutputStream outstream = new ByteArrayOutputStream();
-            byte[]                buffer    = new byte[4096];
-            int                   len;
-
-            while( ( len = bodyAsStream.read( buffer ) ) > 0 ) {
-                outstream.write( buffer, 0, len );
-            }
-            outstream.close();
-            byte[]   body             = outstream.toByteArray();
-            
-            // determine the type of the response document
-            Header responseContentType = method.getResponseHeader( "Content-Type" );
-            MimeType responseMimeType = getResponseMimeType( responseContentType );
-            if (responseContentType != null)
-            	builder.addAttribute( new QName( "mimetype", null, null ), responseContentType.getValue() );
-
-            //try and parse the response as XML
+            CachingFilterInputStream cfis = null;
+            FilterInputStreamCache cache = null;
             try {
-                responseNode = ( NodeImpl )ModuleUtils.streamToXML( context, new ByteArrayInputStream( body ) );
-                builder.addAttribute( new QName( "type", null, null ), "xml" );
-                responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );
-            } catch(SAXException se) {
-                // could not parse to xml
-                // not an error in itself, it will be treated either as HTML,
-                // text or binary here below
-                String msg = "Request for URI '"
-                    + method.getURI().toString()
-                    + "' Could not parse http response content as XML (will try html, text or fallback to binary): "
-                    + se.getMessage();
-                if ( logger.isDebugEnabled() ) {
-                    logger.debug(msg, se);
-                }
-                else {
-                    logger.info(msg);
-                }
-            } catch(IOException ioe) {
-                String msg = "Request for URI '" + method.getURI().toString() + "' Could not read http response content: " + ioe.getMessage();
-                logger.error(msg, ioe);
-                throw new XPathException(msg, ioe);
-            }
-
-            if( responseNode == null ) {
-                //response is NOT parseable as XML
-
-                //is it a html document?
-                if( responseMimeType.getName().equals( MimeType.HTML_TYPE.getName() ) ) {
-
-                    //html document
-                    try {
-
-                        //parse html to xml(html)
-                        responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource(new ByteArrayInputStream(body)), parserFeatures, parserProperties).getDocumentElement();
-                        builder.addAttribute( new QName( "type", null, null ), "xhtml" );
-                        responseNode.copyTo( null, new DocumentBuilderReceiver( builder ) );
+                    
+                //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
+                cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration(){
+                    @Override
+                    public String getCacheClass() {
+                        return (String) context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
                     }
-                    catch( URIException ue ) {
-                        throw( new XPathException( this, ue.getMessage(), ue ) );
+                });
+
+                cfis = new CachingFilterInputStream(cache, bodyAsStream);
+
+                //mark the start of the stream
+                cfis.mark(Integer.MAX_VALUE);
+
+
+                // determine the type of the response document
+                final Header responseContentType = method.getResponseHeader("Content-Type");
+
+                final MimeType responseMimeType = getResponseMimeType(responseContentType);
+                if(responseContentType != null) {
+                    builder.addAttribute(new QName("mimetype", null, null), responseContentType.getValue());
+                }
+
+                //try and parse the response as XML
+                try {
+                    //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
+                    final InputStream shieldedInputStream = new CloseShieldInputStream(cfis);
+                    responseNode = (NodeImpl)ModuleUtils.streamToXML(context, shieldedInputStream);
+                    builder.addAttribute(new QName("type", null, null ), "xml");
+                    responseNode.copyTo(null, new DocumentBuilderReceiver(builder));
+                } catch(final SAXException se) {
+                    // could not parse to xml
+                    // not an error in itself, it will be treated either as HTML,
+                    // text or binary here below
+                    final String msg = "Request for URI '"
+                        + method.getURI().toString()
+                        + "' Could not parse http response content as XML (will try html, text or fallback to binary): "
+                        + se.getMessage();
+                    if(logger.isDebugEnabled()) {
+                        logger.debug(msg, se);
+                    } else {
+                        logger.info(msg);
                     }
-                    catch( SAXException se ) {
-                        //could not parse to xml(html)
-                        logger.debug("Could not parse http response content from HTML to XML: " + se.getMessage(), se);
+                } catch(final IOException ioe) {
+                    final String msg = "Request for URI '" + method.getURI().toString() + "' Could not read http response content: " + ioe.getMessage();
+                    logger.error(msg, ioe);
+                    throw new XPathException(msg, ioe);
+                }
+
+                if(responseNode == null) {
+                    //response is NOT parseable as XML
+
+                    //is it a html document?
+                    if(responseMimeType.getName().equals(MimeType.HTML_TYPE.getName())) {
+
+                        //html document
+                        try {
+
+                            //reset the stream to the start, as we need to reuse since attempting to parse to XML
+                            cfis.reset();
+
+                            //parse html to xml(html)
+                            
+                            //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
+                            final InputStream shieldedInputStream = new CloseShieldInputStream(cfis);
+                            
+                            responseNode = (NodeImpl)ModuleUtils.htmlToXHtml(context, method.getURI().toString(), new InputSource(shieldedInputStream), parserFeatures, parserProperties).getDocumentElement();
+                            builder.addAttribute(new QName("type", null, null), "xhtml" );
+                            responseNode.copyTo(null, new DocumentBuilderReceiver(builder));
+                        } catch(final URIException ue) {
+                            throw new XPathException(this, ue.getMessage(), ue);
+                        } catch(final SAXException se) {
+                            //could not parse to xml(html)
+                            logger.debug("Could not parse http response content from HTML to XML: " + se.getMessage(), se);
+                        }
                     }
                 }
-            }
 
-            if( responseNode == null ) {
+                if(responseNode == null) {
 
-                if( responseMimeType.getName().startsWith( "text/" ) ) {
+                    //reset the stream to the start, as we need to reuse since attempting to parse to HTML->XML
+                    cfis.reset();
 
-                    // Assume it's a text body and URL encode it
-                    builder.addAttribute( new QName( "type", null, null ), "text" );
-                    builder.addAttribute( new QName( "encoding", null, null ), "URLEncoded" );
-                    builder.characters( URLEncoder.encode( EncodingUtil.getString( body, ( ( HttpMethodBase )method ).getResponseCharSet() ), "UTF-8" ) );
-                } else {
+                    if(responseMimeType.getName().startsWith("text/")) {
 
-                    // Assume it's a binary body and Base64 encode it
-                    builder.addAttribute( new QName( "type", null, null ), "binary" );
-                    builder.addAttribute( new QName( "encoding", null, null ), "Base64Encoded" );
+                        // Assume it's a text body and URL encode it
+                        builder.addAttribute(new QName("type", null, null), "text");
+                        builder.addAttribute(new QName("encoding", null, null), "URLEncoded");
+                        
+                        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        final byte buf[] = new byte[4096];
+                        int read = -1;
+                        while((read = cfis.read(buf)) > -1) {
+                            baos.write(buf);
+                        }
+                        
+                        builder.characters(URLEncoder.encode(EncodingUtil.getString(baos.toByteArray(), ((HttpMethodBase)method).getResponseCharSet()), "UTF-8"));
+                        baos.close();
+                    } else {
 
-                    if( body != null ) {
+                        // Assume it's a binary body and Base64 encode it
+                        builder.addAttribute( new QName( "type", null, null ), "binary" );
+                        builder.addAttribute( new QName( "encoding", null, null ), "Base64Encoded" );
+
                         BinaryValue binary = null;
                         try {
-                            binary = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(body));
-                            builder.characters( binary.getStringValue() );
+                            binary = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), cfis);
+                            builder.characters(binary.getStringValue());
                         } finally {
                             // free resources
-                            if (binary != null)
+                            if (binary != null) {
                                 binary.destroy(context, null);
+                            }
                         }
+                    }
+                }
+            } finally {
+                if(cache != null) {
+                    try {
+                        cache.invalidate();
+                    } catch(final IOException ioe) {
+                        LOG.error(ioe.getMessage(), ioe);
+                    }
+                }
+
+                if(cfis != null) {
+                    try {
+                        cfis.close();
+                    } catch(final IOException ioe) {
+                        LOG.error(ioe.getMessage(), ioe);
                     }
                 }
             }
@@ -498,39 +544,37 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
      *
      * @return  The corresponding eXist MimeType
      */
-    protected MimeType getResponseMimeType( Header responseHeaderContentType )
-    {
+    protected MimeType getResponseMimeType(final Header responseHeaderContentType) {
         MimeType returnMimeType = MimeType.BINARY_TYPE;
 
-        if( responseHeaderContentType != null ) {
+        if(responseHeaderContentType != null) {
 
-            if( responseHeaderContentType.getName().equals( "Content-Type" ) ) {
+            if(responseHeaderContentType.getName().equals("Content-Type")) {
 
-                String responseContentType = responseHeaderContentType.getValue();
-                int    contentTypeEnd      = responseContentType.indexOf( ";" );
-
-                if( contentTypeEnd == -1 ) {
+                final String responseContentType = responseHeaderContentType.getValue();
+                int contentTypeEnd = responseContentType.indexOf(";");
+                if(contentTypeEnd == -1) {
                     contentTypeEnd = responseContentType.length();
                 }
 
-                String    responseMimeType = responseContentType.substring( 0, contentTypeEnd );
-                MimeTable mimeTable        = MimeTable.getInstance();
-                MimeType  mimeType         = mimeTable.getContentType( responseMimeType );
+                final String responseMimeType = responseContentType.substring(0, contentTypeEnd);
+                final MimeTable mimeTable = MimeTable.getInstance();
+                final MimeType mimeType = mimeTable.getContentType(responseMimeType);
 
-                if( mimeType != null ) {
+                if(mimeType != null) {
                     returnMimeType = mimeType;
                 }
             }
         }
 
-        return( returnMimeType );
+        return returnMimeType;
     }
 
     protected class FeaturesAndProperties {
-        private Map<String,Boolean> features = new HashMap<String, Boolean>();
-        private Map<String,String> properties = new HashMap<String, String>();
+        private final Map<String,Boolean> features;
+        private final Map<String,String> properties;
 
-        public FeaturesAndProperties(Map<String,Boolean>features, Map<String,String>properties) {
+        public FeaturesAndProperties(final Map<String,Boolean>features, final Map<String,String>properties) {
             this.features = features;
             this.properties = properties;
         }
@@ -542,24 +586,22 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         public Map<String, String> getProperties() {
             return properties;
         }
-
-
     }
 
-    protected FeaturesAndProperties getParserFeaturesAndProperties(Node options) throws XPathException {
+    protected FeaturesAndProperties getParserFeaturesAndProperties(final Node options) throws XPathException {
 
-        Map<String,Boolean> features = new HashMap<String, Boolean>();
-        Map<String,String> properties = new HashMap<String, String>();
+        final Map<String,Boolean> features = new HashMap<String, Boolean>();
+        final Map<String,String> properties = new HashMap<String, String>();
 
         if((options.getNodeType() == Node.ELEMENT_NODE ) && options.getLocalName().equals("options")) {
             NodeList optionList = options.getChildNodes();
 
             for(int i = 0; i < optionList.getLength(); i++) {
-                Node option = optionList.item( i );
+                final Node option = optionList.item( i );
 
                 if((option.getNodeType() == Node.ELEMENT_NODE)) {
-                    String name  = ((Element)option).getAttribute("name");
-                    String value = ((Element)option).getAttribute("value");
+                    final String name  = ((Element)option).getAttribute("name");
+                    final String value = ((Element)option).getAttribute("value");
 
                     if((name == null) || (value == null)) {
                         throw(new XPathException( this, "Name or value attribute missing for parser feature/property"));
