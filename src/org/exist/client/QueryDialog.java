@@ -646,7 +646,7 @@ public class QueryDialog extends JFrame {
 						+ InteractiveClient.getExceptionMessage(e), e);
 			} finally {
                                 if(context != null) {
-                                    context.cleanupBinaryValueInstances();
+                                    context.runCleanupTasks();
                                 }
 				context = null;
                 if (result != null)

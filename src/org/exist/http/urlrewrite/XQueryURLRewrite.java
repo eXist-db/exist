@@ -700,7 +700,7 @@ public class XQueryURLRewrite extends HttpServlet {
         try {
 			return xquery.execute(compiled, null, outputProperties);
 		} finally {
-            queryContext.cleanupBinaryValueInstances();
+            queryContext.runCleanupTasks();
 			xqyPool.returnCompiledXQuery(sourceInfo.source, compiled);
 		}
     }
