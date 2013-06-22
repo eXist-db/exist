@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -81,7 +81,11 @@ public class MetasImpl implements Metas {
 		return uuid;
 	}
 
-	public Meta put(String key, Object value) {
+    public String getURI() {
+        return uri;
+    }
+
+    public Meta put(String key, Object value) {
 		MetaImpl m = (MetaImpl)get(key);
 		if (m == null)
 			return MetaDataImpl._.addMeta(this, key, value);
@@ -91,6 +95,7 @@ public class MetasImpl implements Metas {
 
 			MetaDataImpl._.addMeta(m);
 		}
+		MetaDataImpl._.indexMetas(this);
 		
 		return m;
 	}
