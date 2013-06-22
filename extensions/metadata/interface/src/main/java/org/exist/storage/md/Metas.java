@@ -31,7 +31,9 @@ public interface Metas {
 
 	public String getUUID();
 
-	public Meta get(String key);
+    public String getURI();
+
+    public Meta get(String key);
 
 	public Meta put(String key, Object value);
 

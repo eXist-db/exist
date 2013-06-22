@@ -26,7 +26,6 @@ import org.exist.dom.QName;
 import org.exist.storage.md.Meta;
 import org.exist.storage.md.MetaData;
 import org.exist.storage.md.Metas;
-import org.exist.storage.md.MDStorageManager;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -35,13 +34,15 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
+import static org.exist.storage.md.MDStorageManager.*;
+
 /**
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class PairDelete extends BasicFunction {
 	
-	private static final QName NAME = new QName("delete", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
+	private static final QName NAME = new QName("delete", NAMESPACE_URI, PREFIX);
 	private static final String DESCRIPTION = "Delete document's key/value pair.";
 	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "Key/value pair UUID");
 	

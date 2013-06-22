@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -30,10 +30,13 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
+import org.exist.indexing.lucene.PlugToLucene;
+import org.exist.memtree.NodeImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
 
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
@@ -125,6 +128,10 @@ public class MetaDataImpl extends MetaData {
 				db.release(broker);
 		}
 	}
+
+    private Metas getMetas(String uuid) {
+        return docByUUID.get(uuid);
+    }
 
 	public Collection getCollection(String uuid) throws EXistException, PermissionDeniedException {
 		MetasImpl ms = docByUUID.get(uuid);
@@ -297,22 +304,28 @@ public class MetaDataImpl extends MetaData {
 		}
 
 		docByUUID.delete(d.getUUID());
+		
+        indexRemoveMetas(d);
 	}
 
-	protected MetaImpl addMeta(Metas doc, String key, Object value) {
+    protected MetaImpl addMeta(Metas doc, String key, Object value) {
 		MetaImpl m = new MetaImpl(doc.getUUID(), key, value);
 		metadataByUUID.put(m);
 		
-		return m;
+        indexMetas(doc);
+
+        return m;
 	}
 
 	protected Meta _addMeta(Metas doc, String uuid, String key, String value) {
 		MetaImpl m = new MetaImpl(doc.getUUID(), uuid, key, value);
 		metadataByUUID.put(m);
 		
+		indexMetas(doc);
+		
 		return m;
 	}
-
+	
 	protected MetaImpl setMeta(MetaImpl meta) {
 		metadataByUUID.put(meta);
 		
@@ -358,6 +371,8 @@ public class MetaDataImpl extends MetaData {
         } finally {
             sub.close();
         }
+        
+        indexMetas(getMetas(docUUID));
     }
 
     public List<DocumentImpl> matchDocuments(String key, String value) throws EXistException {
@@ -540,4 +555,19 @@ public class MetaDataImpl extends MetaData {
 		
 		return d.getUUID();
 	}
+	
+	//lucene index methods
+    public void indexMetas(Metas metas) {
+        PlugToLucene plug = new PlugToLucene(this);
+        plug.addMetas(metas);
+    }
+
+    private void indexRemoveMetas(Metas metas) {
+        PlugToLucene plug = new PlugToLucene(this);
+        plug.removeMetas(metas);
+    }
+    
+    public NodeImpl search(String queryText, List<String> toBeMatchedURIs) throws XPathException {
+        return (new PlugToLucene(this)).search(queryText, toBeMatchedURIs);
+    }
 }
