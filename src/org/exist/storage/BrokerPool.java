@@ -806,237 +806,240 @@ public class BrokerPool extends Observable implements Database {
         statusReporter = new StatusReporter(SIGNAL_STARTUP);
         statusReporter.start();
 
-        final boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY, false);
-
-        //create the security manager
-        securityManager = new SecurityManagerImpl(this);
-
-        //REFACTOR : construct then configure
-        cacheManager = new DefaultCacheManager(this);
-
-        //REFACTOR : construct then configure
-        xQueryPool = new XQueryPool(conf);
-        //REFACTOR : construct then... configure
-        processMonitor = new ProcessMonitor(maxShutdownWait);
-        xqueryStats = new PerformanceStats(this);
-
-        //REFACTOR : construct then... configure
-        xmlReaderPool = new XMLReaderPool(conf, new XMLReaderObjectFactory(this), 5, 0);
-        
-        //REFACTOR : construct then... configure
-        int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
-        if(bufferSize == -1) {
-            bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
-        }
-        collectionCache = new CollectionCache(this, bufferSize, 0.0001);
-        collectionCacheMgr = new CollectionCacheManager(this, collectionCache);
-
-        // compute how much memory should be reserved for caches to grow
-        final Runtime rt = Runtime.getRuntime();
-        final long maxMem = rt.maxMemory();
-        final long minFree = maxMem / 5;
-        reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
-        LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
-        
-        notificationService = new NotificationService();
-
-        //REFACTOR : construct then... configure
-        //TODO : journal directory *may* be different from BrokerPool.PROPERTY_DATA_DIR
-        transactionManager = new TransactionManager(this, new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR)), isTransactional());		
         try {
-            transactionManager.initialize();
-        } catch (final ReadOnlyException e) {
-            LOG.warn(e.getMessage() + ". Switching to read-only mode!!!");
-            isReadOnly = true;
-        }
+            final boolean exportOnly = (Boolean) conf.getProperty(PROPERTY_EXPORT_ONLY, false);
 
-        symbols = new SymbolTable(this, conf);
-        isReadOnly = isReadOnly || !symbols.getFile().canWrite();
-        
-        indexManager = new IndexManager(this, conf);
+            //create the security manager
+            securityManager = new SecurityManagerImpl(this);
 
-        //TODO : replace the following code by get()/release() statements ?
-        // WM: I would rather tend to keep this broker reserved as a system broker.
-        // create a first broker to initialize the security manager
-                //createBroker();
-		//TODO : this broker is *not* marked as active and *might* be reused by another process ! Is it intended ?
-        // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
-		//DBBroker broker = inactiveBrokers.peek();
-		// dmitriy: Security issue: better to use proper get()/release() way, because of subprocesses (SecurityManager as example)
-        final DBBroker broker = get(securityManager.getSystemSubject());
-        try {
-       
-            if(isReadOnly()) {
-                transactionManager.setEnabled(false);
+            //REFACTOR : construct then configure
+            cacheManager = new DefaultCacheManager(this);
+
+            //REFACTOR : construct then configure
+            xQueryPool = new XQueryPool(conf);
+            //REFACTOR : construct then... configure
+            processMonitor = new ProcessMonitor(maxShutdownWait);
+            xqueryStats = new PerformanceStats(this);
+
+            //REFACTOR : construct then... configure
+            xmlReaderPool = new XMLReaderPool(conf, new XMLReaderObjectFactory(this), 5, 0);
+
+            //REFACTOR : construct then... configure
+            int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
+            if(bufferSize == -1) {
+                bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
             }
-        
-            //Run the recovery process
-            //TODO : assume 
-            boolean recovered = false;
-            if(isTransactional()) {
-                recovered = transactionManager.runRecovery(broker);
-                //TODO : extract the following from this block ? What if we ware not transactional ? -pb 
-                if(!recovered) {
-                    try {
-                        if(broker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
-                            final Txn txn = transactionManager.beginTransaction();
-                            try {
-                                //TODO : use a root collection final member
-                                broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
-                                transactionManager.commit(txn);
-                            } catch (final IOException e) {
-                                transactionManager.abort(txn);
-                            } catch (final PermissionDeniedException e) {
-                                transactionManager.abort(txn);
-                            } catch (final TriggerException e) {
-                                transactionManager.abort(txn);
+            collectionCache = new CollectionCache(this, bufferSize, 0.0001);
+            collectionCacheMgr = new CollectionCacheManager(this, collectionCache);
+
+            // compute how much memory should be reserved for caches to grow
+            final Runtime rt = Runtime.getRuntime();
+            final long maxMem = rt.maxMemory();
+            final long minFree = maxMem / 5;
+            reservedMem = cacheManager.getTotalMem() + collectionCacheMgr.getMaxTotal() + minFree;
+            LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
+
+            notificationService = new NotificationService();
+
+            //REFACTOR : construct then... configure
+            //TODO : journal directory *may* be different from BrokerPool.PROPERTY_DATA_DIR
+            transactionManager = new TransactionManager(this, new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR)), isTransactional());
+            try {
+                transactionManager.initialize();
+            } catch (final ReadOnlyException e) {
+                LOG.warn(e.getMessage() + ". Switching to read-only mode!!!");
+                isReadOnly = true;
+            }
+
+            symbols = new SymbolTable(this, conf);
+            isReadOnly = isReadOnly || !symbols.getFile().canWrite();
+
+            indexManager = new IndexManager(this, conf);
+
+            //TODO : replace the following code by get()/release() statements ?
+            // WM: I would rather tend to keep this broker reserved as a system broker.
+            // create a first broker to initialize the security manager
+                    //createBroker();
+            //TODO : this broker is *not* marked as active and *might* be reused by another process ! Is it intended ?
+            // at this stage, the database is still single-threaded, so reusing the broker later is not a problem.
+            //DBBroker broker = inactiveBrokers.peek();
+            // dmitriy: Security issue: better to use proper get()/release() way, because of subprocesses (SecurityManager as example)
+            final DBBroker broker = get(securityManager.getSystemSubject());
+            try {
+
+                if(isReadOnly()) {
+                    transactionManager.setEnabled(false);
+                }
+
+                //Run the recovery process
+                //TODO : assume
+                boolean recovered = false;
+                if(isTransactional()) {
+                    recovered = transactionManager.runRecovery(broker);
+                    //TODO : extract the following from this block ? What if we ware not transactional ? -pb
+                    if(!recovered) {
+                        try {
+                            if(broker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
+                                final Txn txn = transactionManager.beginTransaction();
+                                try {
+                                    //TODO : use a root collection final member
+                                    broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
+                                    transactionManager.commit(txn);
+                                } catch (final IOException e) {
+                                    transactionManager.abort(txn);
+                                } catch (final PermissionDeniedException e) {
+                                    transactionManager.abort(txn);
+                                } catch (final TriggerException e) {
+                                    transactionManager.abort(txn);
+                                }
                             }
+                        } catch(final PermissionDeniedException pde) {
+                            LOG.fatal(pde.getMessage(), pde);
                         }
-                    } catch(final PermissionDeniedException pde) {
-                        LOG.fatal(pde.getMessage(), pde);
                     }
                 }
-            }
 
-            /* initialise required collections if they dont exist yet */
-            if(!exportOnly) {
+                /* initialise required collections if they dont exist yet */
+                if(!exportOnly) {
+                    try {
+                        initialiseSystemCollections(broker);
+                    } catch(final PermissionDeniedException pde) {
+                        LOG.error(pde.getMessage(), pde);
+                        throw new EXistException(pde.getMessage(), pde);
+                    }
+                }
+
+                //create the plugin manager
+                pluginManager = new PluginsManagerImpl(this, broker);
+
+                //TODO : from there, rethink the sequence of calls.
+                // WM: attention: a small change in the sequence of calls can break
+                // either normal startup or recovery.
+
+                status = OPERATING;
+
+                statusReporter.setStatus(SIGNAL_READINESS);
+
+                //Get a manager to handle further collections configuration
+                initCollectionConfigurationManager(broker);
+
+                //wake-up the plugins manager
+                pluginManager.start(broker);
+
+                //wake-up the security manager
+                securityManager.attach(this, broker);
+
+                //have to do this after initializing = false
+                // so that the policies collection is saved
+                if(securityManager.isXACMLEnabled()) {
+                    securityManager.getPDP().initializePolicyCollection();
+                }
+
+                //If necessary, launch a task to repair the DB
+                //TODO : merge this with the recovery process ?
+                //XXX: don't do if READONLY mode
+                if(recovered) {
+                    if(!exportOnly) {
+                        try {
+                            broker.repair();
+                        } catch (final PermissionDeniedException e) {
+                            LOG.warn("Error during recovery: " + e.getMessage(), e);
+                        }
+                    }
+
+                    if(((Boolean)conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
+                        final ConsistencyCheckTask task = new ConsistencyCheckTask();
+                        final Properties props = new Properties();
+                        props.setProperty("backup", "no");
+                        props.setProperty("output", "sanity");
+                        task.configure(conf, props);
+                        task.execute(broker);
+                    }
+                }
+
+                //OK : the DB is repaired; let's make a few RW operations
+                statusReporter.setStatus(SIGNAL_WRITABLE);
+
+                //initialize configurations watcher trigger
+                if(!exportOnly) {
+                    try {
+                        initialiseTriggersForCollections(broker, XmldbURI.SYSTEM_COLLECTION_URI);
+                    } catch(final PermissionDeniedException pde) {
+                        //XXX: do not catch exception!
+                        LOG.error(pde.getMessage(), pde);
+                    }
+                }
+
+                // remove temporary docs
                 try {
-                    initialiseSystemCollections(broker);
+                    broker.cleanUpTempResources(true);
                 } catch(final PermissionDeniedException pde) {
                     LOG.error(pde.getMessage(), pde);
-                    throw new EXistException(pde.getMessage(), pde);
                 }
-            }
-        
-            //create the plugin manager
-            pluginManager = new PluginsManagerImpl(this, broker);
 
-            //TODO : from there, rethink the sequence of calls.
-            // WM: attention: a small change in the sequence of calls can break
-            // either normal startup or recovery.
-        
-            status = OPERATING;
+                sync(broker, Sync.MAJOR_SYNC);
 
-            statusReporter.setStatus(SIGNAL_READINESS);
+                //require to allow access by BrokerPool.getInstance();
+                instances.put(instanceName, this);
 
-            //Get a manager to handle further collections configuration
-            initCollectionConfigurationManager(broker);
-
-            //wake-up the plugins manager
-            pluginManager.start(broker);
-
-            //wake-up the security manager
-            securityManager.attach(this, broker);
-
-            //have to do this after initializing = false
-            // so that the policies collection is saved
-            if(securityManager.isXACMLEnabled()) {
-                securityManager.getPDP().initializePolicyCollection();
-            }
-		
-            //If necessary, launch a task to repair the DB
-            //TODO : merge this with the recovery process ?
-            //XXX: don't do if READONLY mode
-            if(recovered) {
-                if(!exportOnly) {
-                	try {
-                    	broker.repair();
-	                } catch (final PermissionDeniedException e) {
-	                    LOG.warn("Error during recovery: " + e.getMessage(), e);
-	                }
+                try {
+                    // initialize expath repository so startup triggers can access it
+                    expathRepo = ExistRepository.getRepository(this.conf);
+                } catch (final PackageException e) {
+                    LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - this is not fatal, but " +
+                        "the package manager may not work.");
                 }
-                
-                if(((Boolean)conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
-                    final ConsistencyCheckTask task = new ConsistencyCheckTask();
-                    final Properties props = new Properties();
-                    props.setProperty("backup", "no");
-                    props.setProperty("output", "sanity");
-                    task.configure(conf, props);
-                    task.execute(broker);
-                }
+
+                callStartupTriggers((List<StartupTriggerConfig>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
+            } finally {
+                release(broker);
             }
 
-            //OK : the DB is repaired; let's make a few RW operations
-            statusReporter.setStatus(SIGNAL_WRITABLE);
+            //Create a default configuration file for the root collection
+            //TODO : why can't we call this from within CollectionConfigurationManager ?
+            //TODO : understand why we get a test suite failure
+            //collectionConfigurationManager.checkRootCollectionConfigCollection(broker);
+            //collectionConfigurationManager.checkRootCollectionConfig(broker);
 
-            //initialize configurations watcher trigger
-            if(!exportOnly) {
-            	try {
-                	initialiseTriggersForCollections(broker, XmldbURI.SYSTEM_COLLECTION_URI);
-	            } catch(final PermissionDeniedException pde) {
-	                //XXX: do not catch exception!
-	                LOG.error(pde.getMessage(), pde);
-	            }
+
+            /* TODO: start adam */
+
+            //Schedule the system tasks
+            /*for (int i = 0; i < systemTasks.size(); i++) {
+                //TODO : remove first argument when SystemTask has a getPeriodicity() method
+                initSystemTask((SingleInstanceConfiguration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
+            }
+            systemTasksPeriods = null;*/
+
+            /* TODO: end adam */
+
+            //Create the minimal number of brokers required by the configuration
+            for(int i = 1; i < minBrokers; i++) {
+                createBroker();
             }
 
-            // remove temporary docs
-            try {
-                broker.cleanUpTempResources(true);
-            } catch(final PermissionDeniedException pde) {
-                LOG.error(pde.getMessage(), pde);
+            // register some MBeans to provide access to this instance
+            AgentFactory.getInstance().initDBInstance(this);
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("database instance '" + instanceName + "' initialized");
             }
 
-            sync(broker, Sync.MAJOR_SYNC);
-        
-            //require to allow access by BrokerPool.getInstance();  
-            instances.put(instanceName, this);
+            //setup any configured jobs
+            //scheduler.setupConfiguredJobs();
 
-            try {
-                // initialize expath repository so startup triggers can access it
-                expathRepo = ExistRepository.getRepository(this.conf);
-            } catch (final PackageException e) {
-                LOG.warn("Failed to initialize expath repository: " + e.getMessage() + " - this is not fatal, but " +
-                    "the package manager may not work.");
-            }
+            //execute any startup jobs
+            //scheduler.executeStartupJobs();
 
-            callStartupTriggers((List<StartupTriggerConfig>)conf.getProperty(BrokerPool.PROPERTY_STARTUP_TRIGGERS), broker);
+            scheduler.run();
+
+            ClasspathHelper.updateClasspath(this);
+
+            statusReporter.setStatus(SIGNAL_STARTED);
         } finally {
-            release(broker);
+            statusReporter.terminate();
+            statusReporter = null;
         }
-        
-        //Create a default configuration file for the root collection
-        //TODO : why can't we call this from within CollectionConfigurationManager ?
-        //TODO : understand why we get a test suite failure
-        //collectionConfigurationManager.checkRootCollectionConfigCollection(broker);
-        //collectionConfigurationManager.checkRootCollectionConfig(broker);		
-
-
-        /* TODO: start adam */
-		
-        //Schedule the system tasks	            
-        /*for (int i = 0; i < systemTasks.size(); i++) {
-            //TODO : remove first argument when SystemTask has a getPeriodicity() method
-            initSystemTask((SingleInstanceConfiguration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
-        }		
-		systemTasksPeriods = null;*/
-		
-        /* TODO: end adam */		
-
-        //Create the minimal number of brokers required by the configuration 
-        for(int i = 1; i < minBrokers; i++) {
-            createBroker();      
-        }
-
-        // register some MBeans to provide access to this instance
-        AgentFactory.getInstance().initDBInstance(this);
-
-        if(LOG.isDebugEnabled()) {
-            LOG.debug("database instance '" + instanceName + "' initialized");
-        }
-
-        //setup any configured jobs
-        //scheduler.setupConfiguredJobs();
-        
-        //execute any startup jobs
-        //scheduler.executeStartupJobs();
-
-        scheduler.run();
-
-        ClasspathHelper.updateClasspath(this);
-
-        statusReporter.setStatus(SIGNAL_STARTED);
-        statusReporter.terminate();
-        statusReporter = null;
     }
 	    
     //TODO : remove the period argument when SystemTask has a getPeriodicity() method
