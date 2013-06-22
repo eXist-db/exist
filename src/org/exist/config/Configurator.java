@@ -483,7 +483,7 @@ public class Configurator {
                                     }
                                     
                                 } else {
-                                    LOG.error("Field must have 'ConfigurationFieldClassMask' annotation ["
+                                    LOG.error("Field '"+field.getName()+"' must have 'ConfigurationFieldClassMask' annotation ["
                                             + conf.getName() + "], skipping instance creation.");
                                 }
                                 
