@@ -113,9 +113,31 @@ public class LauncherWrapper {
 
     protected String getVMOpts() {
         final StringBuilder opts = new StringBuilder();
-        InputStream is = null;
+        Properties vmProperties = getVMProperties();
+        for (final Map.Entry<Object, Object> entry : vmProperties.entrySet())  {
+            final String key = entry.getKey().toString();
+            if (key.startsWith("memory.")) {
+                if ("memory.max".equals(key)) {
+                    opts.append(" -Xmx").append(entry.getValue()).append('m');
+                } else if ("memory.min".equals(key)) {
+                    opts.append(" -Xms").append(entry.getValue()).append('m');
+                }
+            } else if ("vmoptions".equals(key)) {
+                opts.append(' ').append(entry.getValue());
+            } else if (key.startsWith("vmoptions.")) {
+                final String os = key.substring("vmoptions.".length()).toLowerCase();
+                if (OS.contains(os)) {
+                    opts.append(' ').append(entry.getValue());
+                }
+            }
+        }
+        return opts.toString();
+    }
+
+    public static Properties getVMProperties() {
         final Properties vmProperties = new Properties();
         final File propFile = ConfigurationHelper.lookup("vm.properties");
+        InputStream is = null;
         try {
             if (propFile.canRead()) {
                 is = new FileInputStream(propFile);
@@ -130,17 +152,6 @@ public class LauncherWrapper {
         } catch (final IOException e) {
             System.err.println("vm.properties not found");
         }
-        for (final Map.Entry<Object, Object> entry : vmProperties.entrySet())  {
-            final String key = entry.getKey().toString();
-            if ("vmoptions".equals(key)) {
-                opts.append(' ').append(entry.getValue());
-            } else if (key.startsWith("vmoptions.")) {
-                final String os = key.substring("vmoptions.".length()).toLowerCase();
-                if (OS.contains(os)) {
-                    opts.append(' ').append(entry.getValue());
-                }
-            }
-        }
-        return opts.toString();
+        return vmProperties;
     }
 }

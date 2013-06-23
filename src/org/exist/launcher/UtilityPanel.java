@@ -107,7 +107,7 @@ public class UtilityPanel extends JFrame implements Observer {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                launcher.shutdown();
+                launcher.shutdown(false);
             }
         });
         toolbar.add(button);

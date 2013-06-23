@@ -92,8 +92,9 @@ public class Launcher extends Observable implements Observer {
     private boolean initSystemTray = true;
     private SplashScreen splash;
     private JettyStart jetty;
-
+    private String home;
     private UtilityPanel utilityPanel;
+    private ConfigurationDialog configDialog;
 
     public Launcher(final String[] args) {
         if (SystemTray.isSupported()) {
@@ -102,29 +103,24 @@ public class Launcher extends Observable implements Observer {
 
         captureConsole();
 
-        final String home = getJettyHome();
+        home = getJettyHome();
 
         if (isSystemTraySupported())
             {initSystemTray = initSystemTray(home);}
 
+        configDialog = new ConfigurationDialog(Launcher.this);
 
         splash = new SplashScreen(this);
         splash.addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent windowEvent) {
-                new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            jetty = new JettyStart();
-                            jetty.addObserver(splash);
-                            jetty.run(new String[]{home}, splash);
-                        } catch (final Exception e) {
-                            showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check the logs.", true);
-                            System.exit(1);
-                        }
-                    }
-                }.start();
+                if (ConfigurationUtility.isFirstStart()) {
+                    splash.setVisible(false);
+                    configDialog.open(true);
+                    configDialog.requestFocus();
+                } else {
+                    startJetty();
+                }
             }
         });
 
@@ -136,6 +132,22 @@ public class Launcher extends Observable implements Observer {
                 utilityPanel = new UtilityPanel(Launcher.this, systemTrayReady);
             }
         });
+    }
+
+    protected void startJetty() {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    jetty = new JettyStart();
+                    jetty.addObserver(splash);
+                    jetty.run(new String[]{home}, splash);
+                } catch (final Exception e) {
+                    showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check the logs.", true);
+                    System.exit(1);
+                }
+            }
+        }.start();
     }
 
     public boolean isSystemTraySupported() {
@@ -222,6 +234,25 @@ public class Launcher extends Observable implements Observer {
         });
 
         popup.addSeparator();
+        MenuItem configItem = new MenuItem("Server Configuration");
+        popup.add(configItem);
+        configItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        configDialog.open(false);
+                        configDialog.toFront();
+                        configDialog.repaint();
+                        configDialog.requestFocus();
+                    }
+                });
+            }
+        });
+
+        popup.addSeparator();
 
         final MenuItem toolbar = new MenuItem("Show Tool Window");
         popup.add(toolbar);
@@ -284,21 +315,28 @@ public class Launcher extends Observable implements Observer {
             item.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    shutdown();
+                    shutdown(false);
                 }
             });
         }
         return popup;
     }
 
-    protected void shutdown() {
+    protected void shutdown(final boolean restart) {
         utilityPanel.setStatus("Shutting down ...");
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                jetty.shutdown();
-                if (tray != null)
-                    {tray.remove(trayIcon);}
+                if (jetty != null) {
+                    jetty.shutdown();
+                }
+                if (tray != null) {
+                    tray.remove(trayIcon);
+                }
+                if (restart) {
+                    final LauncherWrapper wrapper = new LauncherWrapper(org.exist.launcher.Launcher.class.getName());
+                    wrapper.launch();
+                }
                 System.exit(0);
             }
         });

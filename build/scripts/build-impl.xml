@@ -329,6 +329,8 @@
         <copy todir="${build.classes}/org/exist/launcher">
             <fileset dir="${src}/org/exist/launcher">
                 <include name="**.png"/>
+                <include name="**.xsl"/>
+                <include name="**.properties"/>
             </fileset>
         </copy>
         <copy todir="${build.classes}/org/exist/webstart/resources">
