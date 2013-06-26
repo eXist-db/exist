@@ -78,6 +78,8 @@ public class ConfigurationDialog extends JDialog {
     public void open(boolean firstStart) {
         if (firstStart) {
             beforeStart = true;
+            // always check data dir on first start
+            dataDirChanged = true;
             btnCancel.setVisible(false);
             lbStartupMsg.setVisible(true);
             separator.setVisible(true);
@@ -395,16 +397,30 @@ public class ConfigurationDialog extends JDialog {
             Collection<File> files = FileUtils.listFiles(dir, new String[]{"dbx"}, false);
             if (files.size() > 0) {
                 final int r = JOptionPane.showConfirmDialog(this, "The specified data directory already contains data. " +
-                        "Do you want to use this? Data will not be removed.", "Confirm Data Directory", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (r == JOptionPane.YES_OPTION) {
+                        "Do you want to use this? Data will not be removed.", "Confirm Data Directory", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (r == JOptionPane.OK_OPTION) {
                     return true;
                 }
                 return false;
             }
+        } else {
+            final int r = JOptionPane.showConfirmDialog(this, "The specified data directory does not exist. Do you want to create it?",
+                "Create data directory?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (r == JOptionPane.YES_OPTION) {
+                try {
+                    FileUtils.forceMkdir(dir);
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(this, "Failed to create data directory: " + dir.getAbsolutePath(),
+                            "Failed to create directory", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+                return true;
+            }
+            return false;
         }
         if (!dir.canWrite()) {
-            JOptionPane.showConfirmDialog(this, "The specified data directory is not writable. " +
-                    "Please choose a different one.", "Data Directory Error", JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "The specified data directory is not writable. " +
+                    "Please choose a different one.", "Data Directory Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;
@@ -504,8 +520,10 @@ public class ConfigurationDialog extends JDialog {
             cacheModel.setValue(cacheModel.getMaximum());
         }
         collectionCacheModel.setMaximum(maxCache - (Integer)cacheModel.getValue());
-        System.out.printf("maxCache: %d cacheSize: %d collectionMax: %d mem: %d\n", maxCache, cacheModel.getValue(),
-                collectionCacheModel.getMaximum(), max);
+        lbCurrentUsage.setText(
+            String.format("maxCache: %d cacheSize: %d collectionMax: %d mem: %d\n", maxCache, cacheModel.getValue(),
+                collectionCacheModel.getMaximum(), max)
+        );
         if (collectionCacheModel.getMaximum().compareTo(collectionCacheModel.getValue()) < 0) {
             collectionCacheModel.setValue(collectionCacheModel.getMaximum());
         }
