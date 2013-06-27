@@ -71,10 +71,11 @@ public class DynamicNameCheck extends AbstractExpression {
                     {itemType = seq.getItemType();}
                 //Last chance...
                 if (item instanceof NodeProxy) {
-                    itemType = ((NodeProxy)item).getNodeType();
-                    if (itemType == NodeProxy.UNKNOWN_NODE_TYPE)
+                    itemType = item.getType();
+                    if (itemType == NodeProxy.UNKNOWN_NODE_TYPE) {
                         //Retrieve the actual node
-                        {itemType = ((NodeProxy)item).getNode().getNodeType();}
+                        itemType = NodeProxy.nodeType2XQuery(((NodeProxy) item).getNode().getNodeType());
+                    }
                 }
                 if (!Type.subTypeOf(itemType, test.getType())) {
                     throw new XPathException(expression, "Type error in expression" +
