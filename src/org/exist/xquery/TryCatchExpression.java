@@ -104,6 +104,9 @@ public class TryCatchExpression extends AbstractExpression {
         contextInfo.setFlags(contextInfo.getFlags() & (~IN_PREDICATE));
         contextInfo.setParent(this);
         tryTargetExpr.analyze(contextInfo);
+        for (CatchClause catchClause : catchClauses) {
+            catchClause.getCatchExpr().analyze(contextInfo);
+        }
     }
 
     /* (non-Javadoc)
