@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ======================================================================= -->
+<!-- eXist build file : Mac OS specific app                                  -->
+<!-- Call target "dmg" to create dmg file                                    -->
+<!-- ======================================================================= -->
+<!-- $Id$ -->
+<project basedir="../.." default="dmg" name="Mac OS App">
+    
+    <description>Build installer</description>
+    
+    <!-- import common targets -->
+    <import file="../../build.xml"/>
+    
+    <property name="dist" value="${basedir}/dist"/>
+    <property name="app.dir" value="${dist}/eXist-db.app"/>
+    <property name="app.resources" value="${app.dir}/Contents/Resources"/>
+    <property name="app.exist" value="${app.resources}/eXist-db"/>
+
+    <target name="package" depends="jar,create-skeleton,copy-all"/>
+
+    <target name="prepare" depends="xars">
+        <delete failonerror="false" dir="${app.dir}"/>
+        <mkdir dir="${dist}"/>
+    </target>
+
+    <target name="create-skeleton" depends="prepare">
+        <copy todir="${app.dir}">
+            <fileset dir="installer/scripts/eXist-db.mac">
+                <exclude name=".svn"/>
+                <exclude name="Info.plist.tmpl"/>
+            </fileset>
+        </copy>
+        <copy file="installer/scripts/eXist-db.mac/Contents/Info.plist.tmpl"
+              tofile="${app.dir}/Contents/Info.plist" filtering="true">
+            <filterset>
+                <filter token="vmoptions" value="-Dexist.home=$APP_PACKAGE/Contents/Resources/eXist-db"/>
+                <filter token="classpath" value="$APP_PACKAGE/Contents/Resources/eXist-db/start.jar"/>
+            </filterset>
+        </copy>
+        <mkdir dir="${app.exist}"/>
+    </target>
+
+    <target name="copy-apps">
+        <copy todir="${app.exist}/autodeploy">
+            <fileset dir="${basedir}/installer/apps">
+                <include name="*.xar"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy-all" depends="copy-apps">
+        <filter token="version" value="${project.version}"/>
+        <filter token="database" value="native"/>
+
+        <copy todir="${app.exist}/">
+            <fileset dir="${basedir}">
+                <include name="client.properties.tmpl"/>
+                <include name="client.properties"/>
+                <include name="backup.properties"/>
+                <include name="server.xml.tmpl"/>
+                <include name="server.xml"/>
+                <include name="conf.xml.tmpl"/>
+                <include name="descriptor.xml.tmpl"/>
+                <include name="descriptor.xml"/>
+                <include name="collection.xconf.init"/>
+                <include name="log4j.xml"/>
+                <include name="log4j.dtd"/>
+                <include name="LICENSE"/>
+                <include name="README"/>
+                <include name="VERSION.txt"/>
+                <include name="exist.jar"/>
+                <include name="exist-optional.jar"/>
+                <include name="exist-modules.jar"/>
+                <include name="exist-fluent.jar"/>
+                <include name="start.jar"/>
+                <include name="start.exe"/>
+                <include name="examples.jar"/>
+                <include name="mime-types.xml.tmpl"/>
+                <include name="mime-types.xml"/>
+                <include name="atom-example.xq"/>
+                <include name="atom-services.xml"/>
+                <include name="bin/"/>
+                <include name="lib/"/>
+                <include name="samples/**"/>
+                <include name="schema/"/>
+                <exclude name="**/CVS/"/>
+                <exclude name="**/*~"/>
+                <exclude name="**/*.log*"/>
+                <exclude name="**/.*"/>
+            </fileset>
+        </copy>
+        <copy todir="${app.exist}/extensions">
+            <fileset dir="${basedir}/extensions">
+                <exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
+                <exclude name="**/src/"/>
+                <exclude name="**/classes/"/>
+                <exclude name="**/javadoc/"/>
+                <!-- preferred to have explicit one explicit include but .... -->
+                <exclude name="indexes/**/lib/g*.jar"/>
+                <exclude name="indexes/**/lib/j*.jar"/>
+                <exclude name="indexes/**/lib/v*.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="${app.exist}/extensions/betterform/main/webapp/WEB-INF">
+            <fileset dir="${basedir}/extensions/betterform/main/webapp/WEB-INF">
+                <include name="classes/**"/>
+            </fileset>
+        </copy>
+        <copy todir="${app.exist}/tools">
+            <fileset dir="${basedir}/tools">
+                <include name="**/*.jar"/>
+                <include name="wrapper/**"/>
+                <include name="requestlog/**"/>
+                <include name="rulesets/**"/>
+                <include name="ant/**"/>
+                <include name="Solaris/**"/>
+                <include name="SOAPServer/**"/>
+                <exclude name="ant/lib/javasvn*.jar"/>
+                <include name="jetty/**"/>
+                <exclude name="jetty/logs/*"/>
+                <exclude name="jetty/tmp/*"/>
+                <exclude name="jetty/work/*"/>
+                <exclude name="ircbot/**"/>
+                <include name="aspectj/**"/>
+                <exclude name="izpack/**"/>
+                <exclude name="ant/lib/svnkit*.jar"/>
+                <include name="jmx/**"/>
+                <exclude name="jmx/classes/**"/>
+            </fileset>
+        </copy>
+        <copy todir="${app.exist}/webapp">
+            <fileset dir="${basedir}/webapp">
+                <exclude name="**/*.dbx"/>
+                <exclude name="**/*.log*"/>
+                <exclude name="**/*.lck*"/>
+                <exclude name="**/*.registry*"/>
+                <exclude name="api/**"/>
+                <!--exclude name="xqts/**"/-->
+                <exclude name="**/.svn/"/>
+                <exclude name="**/*~"/>
+                <exclude name="WEB-INF/logs/**"/>
+                <exclude name="WEB-INF/data/export/**"/>
+                <exclude name="WEB-INF/data/fs/**"/>
+                <exclude name="WEB-INF/data/fs.journal/**"/>
+                <exclude name="WEB-INF/data/lucene/**"/>
+                <exclude name="WEB-INF/expathrepo/**"/>
+                <exclude name="WEB-INF/data/expathrepo/**"/>
+            </fileset>
+        </copy>
+        <copy file="${basedir}/conf.xml.tmpl" tofile="${app.exist}/conf.xml" filtering="true">
+            <filterset>
+                <filter token="dataDir" value="webapp/WEB-INF/data"/>
+                <filter token="cacheSize" value="128"/>
+            </filterset>
+        </copy>
+        <chmod perm="+x">
+            <fileset dir="${app.dir}/Contents/MacOS">
+                <include name="JavaApplicationStub"/>
+            </fileset>
+        </chmod>
+    </target>
+
+    <!-- Create a DMG - This only works on MacOSX (requires hdiutil) -->
+    <target name="dmg" depends="package" description="Create a DMG package for MacOSX (only works on MacOSX)">
+
+        <!-- Set this property value to your application name -->
+        <property name="app.name" value="${project.name}"/>
+
+        <!-- Set this property value to a directory where you can
+             mount temporarily your images, for example /tmp -->
+        <property name="mountdir" value="/tmp"/>
+
+        <!-- Delete previously created DMG -->
+        <delete file="${dist}/${app.name}.dmg" quiet="yes" failonerror="false"/>
+
+        <!-- Create a temporary Disk Image -->
+        <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
+            <arg value="create"/>
+            <arg value="-srcfolder"/>
+            <arg value="${app.dir}"/>
+            <arg value="-volname"/>
+            <arg value="${app.name}"/>
+            <arg value="-ov"/>
+            <arg value="${dist}/${app.name}-tmp.dmg"/>
+            <arg value="-format"/>
+            <arg value="UDRW"/>
+        </exec>
+
+        <!-- Attach the temporary image -->
+        <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
+            <arg value="attach"/>
+            <arg value="${dist}/${app.name}-tmp.dmg"/>
+            <arg value="-mountroot"/>
+            <arg value="${mountdir}/"/>
+        </exec>
+
+        <!-- Copy the background, the volume icon and DS_Store files -->
+        <mkdir dir="${mountdir}/${app.name}/.DropDMGBackground"/>
+        <copy file="installer/background.png"
+              tofile="${mountdir}/${app.name}/.DropDMGBackground/background.png"
+              overwrite="true"/>
+        <copy file="installer/VolumeIcon.icns"
+              tofile="${mountdir}/${app.name}/.VolumeIcon.icns"
+              overwrite="true"/>
+        <copy file="installer/App_DS_Store"
+              tofile="${mountdir}/${app.name}/.DS_Store"
+              overwrite="true"/>
+
+        <!-- Indicate that we want a custom icon -->
+        <exec executable="/Applications/Xcode.app/Contents/Developer/Tools/SetFile" os="Mac OS X">
+            <arg value="-a"/>
+            <arg value="C"/>
+            <arg value="${mountdir}/${app.name}"/>
+        </exec>
+
+        <!-- Add a symbolic link to the Applications directory -->
+        <symlink link="${mountdir}/${app.name}" resource="/Applications"/>
+
+        <!-- Detach the temporary image -->
+        <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
+            <arg value="detach"/>
+            <arg value="${mountdir}/${app.name}"/>
+        </exec>
+
+        <!-- Compress it to a new image -->
+        <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
+            <arg value="convert"/>
+            <arg value="${dist}/${app.name}-tmp.dmg"/>
+            <arg value="-format"/>
+            <arg value="UDZO"/>
+            <arg value="-o"/>
+            <arg value="${dist}/${app.name}.dmg"/>
+        </exec>
+
+        <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
+            <arg value="internet-enable"/>
+            <arg value="-yes"/>
+            <arg value="${dist}/${app.name}.dmg"/>
+        </exec>
+
+        <!-- Delete the temporary image -->
+        <delete file="${dist}/${app.name}-tmp.dmg"
+                quiet="yes" failonerror="false"/>
+    </target>
+</project>

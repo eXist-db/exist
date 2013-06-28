@@ -24,12 +24,16 @@
 	<string>icon.icns</string>
 	<key>Java</key>
 	<dict>
+	    <key>VMOptions</key>
+        <string>@vmoptions@</string>
 		<key>MainClass</key>
 		<string>org.exist.start.Main</string>
 		<key>JVMVersion</key>
 		<string>1.6+</string>
 		<key>ClassPath</key>
-			<string>$APP_PACKAGE/../start.jar</string>
+		<string>@classpath@/start.jar</string>
 	</dict>
+	<key>NSHighResolutionCapable</key>
+    <true/>
 </dict>
 </plist>
