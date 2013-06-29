@@ -133,13 +133,18 @@ public class SearchTest {
         	
         	List<String> dbRoot = new ArrayList<String>();
         	dbRoot.add("/db");
+            assertEquals(
+                "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} } } ",
+                md.search("ALL_METAS:value1", dbRoot).toString()
+            );
+
         	assertEquals(
-    	        "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} } } ",
+    	        "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} in-memory#element {field} {in-memory#attribute {name} {key1} in-memory#element {exist:match} {in-memory#text {value1} } } } } ",
     	        md.search("key1:value1", dbRoot).toString()
 	        );
 
             assertEquals(
-                "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} } } ",
+                "in-memory#element {results} {in-memory#element {search} {in-memory#attribute {uri} {/db/test/test_string.xml}  in-memory#attribute {score} {0.30685282} in-memory#element {field} {in-memory#attribute {name} {key1} in-memory#element {exist:match} {in-memory#text {value1} } } } } ",
                 md.search("key1:value*", dbRoot).toString()
             );
 
