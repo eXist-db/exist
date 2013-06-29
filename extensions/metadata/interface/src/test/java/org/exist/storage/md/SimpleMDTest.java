@@ -77,7 +77,7 @@ public class SimpleMDTest {
     /** /db/test/test.binary **/
     private static XmldbURI doc5uri = col1uri.append("test.binary");
     /** /db/moved/test.binary **/
-    private static XmldbURI doc6uri = col3uri.append("test.binary");
+//    private static XmldbURI doc6uri = col3uri.append("test.binary");
     
     private static String XML1 = "<test/>";
     private static String XML2 = "<test2/>";

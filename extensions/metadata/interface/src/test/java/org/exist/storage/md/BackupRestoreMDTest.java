@@ -33,8 +33,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -208,12 +206,12 @@ public class BackupRestoreMDTest extends TestCase {
         }
 	}
 	
-	private DocumentImpl getDoc(DBBroker broker, Collection col, XmldbURI uri) throws PermissionDeniedException {
-        DocumentImpl doc = col.getDocument(broker, uri);
-    	assertNotNull(doc);
-		
-    	return doc;
-	}
+//	private DocumentImpl getDoc(DBBroker broker, Collection col, XmldbURI uri) throws PermissionDeniedException {
+//        DocumentImpl doc = col.getDocument(broker, uri);
+//    	assertNotNull(doc);
+//		
+//    	return doc;
+//	}
     
 	//@BeforeClass
     public static void startDB() {
@@ -250,6 +248,7 @@ public class BackupRestoreMDTest extends TestCase {
 
             System.out.println("store "+doc2uri);
             BinaryDocument doc = root.addBinaryResource(transaction, broker, doc2uri.lastSegment(), BINARY.getBytes(), null);
+            assertNotNull(doc);
 
             transact.commit(transaction);
         } catch (Exception e) {

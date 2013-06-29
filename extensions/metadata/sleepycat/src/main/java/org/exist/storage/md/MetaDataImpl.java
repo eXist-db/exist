@@ -570,4 +570,8 @@ public class MetaDataImpl extends MetaData {
     public NodeImpl search(String queryText, List<String> toBeMatchedURIs) throws XPathException {
         return (new PlugToLucene(this)).search(queryText, toBeMatchedURIs);
     }
+
+    public List<String> searchDocuments(String queryText, List<String> toBeMatchedURIs) throws XPathException {
+        return (new PlugToLucene(this)).searchDocuments(queryText, toBeMatchedURIs);
+    }
 }

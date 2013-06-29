@@ -45,7 +45,6 @@ import org.apache.lucene.util.BitVector;
 import org.apache.lucene.util.Version;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
-import org.exist.indexing.StreamListener;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
@@ -153,6 +152,8 @@ public class PlugToLucene {
         Field fDocUri = new Field(FIELD_META_DOC_URI, uri, Field.Store.YES, Field.Index.NOT_ANALYZED);
         pendingDoc.add(fDocUri);
         
+        StringBuilder sb = new StringBuilder();
+        
         // Iterate over all found fields and write the data.
         for (Meta meta : metas.metas()) {
             Object value = meta.getValue();
@@ -168,7 +169,7 @@ public class PlugToLucene {
 //            if (fieldType != null)
 //                store = fieldType.getStore();
 //            if (store == null)
-                store = Field.Store.NO;//field.getStore();
+                store = Field.Store.YES;//field.getStore();
             
             // Get name from SOLR field
             String contentFieldName = meta.getKey();
@@ -187,8 +188,17 @@ public class PlugToLucene {
             //contentField.setBoost(field.getBoost());
             
             pendingDoc.add(contentField);
+            
+            sb.append(value.toString()).append(" ");
         }
         
+        Field contentField = new Field("ALL_METAS", sb.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
+        
+        // Set boost value from SOLR config
+        //contentField.setBoost(field.getBoost());
+        
+        pendingDoc.add(contentField);
+
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -388,6 +398,65 @@ public class PlugToLucene {
         }
         
         return report;
+    }
+    
+    public List<String> searchDocuments(String queryText, List<String> toBeMatchedURIs) throws XPathException {
+        
+        List<String> uris = new ArrayList<String>();
+        
+        IndexSearcher searcher = null;
+        try {
+            // Get index searcher
+            searcher = index.getSearcher();
+            
+            // Get analyzer : to be retrieved from configuration
+            Analyzer searchAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
+
+            // Setup query Version, default field, analyzer
+            QueryParser parser = new QueryParser(Version.LUCENE_29, "", searchAnalyzer);
+            Query query = parser.parse(queryText);
+                       
+            // Setup collector for results
+            LuceneHitCollector collector = new LuceneHitCollector();
+            
+            // Perform actual search
+            searcher.search(query, collector);
+
+            // Retrieve all documents that match the query
+            List<ScoreDoc> results = collector.getDocsByScore();
+            
+            BitVector processed = new BitVector(searcher.maxDoc());
+            // Process result documents
+            for (ScoreDoc scoreDoc : results) {
+                if (processed.get(scoreDoc.doc))
+                    continue;
+                processed.set(scoreDoc.doc);
+                
+                Document doc = searcher.doc(scoreDoc.doc);
+                
+                // Get URI field of document                
+                String fDocUri = doc.get(FIELD_META_DOC_URI);
+                
+                // Get score
+                float score = scoreDoc.score;
+                
+                // Check if document URI has a full match or if a
+                // document is in a collection
+                if(isDocumentMatch(fDocUri, toBeMatchedURIs)){
+                    uris.add(fDocUri);
+                }
+            }
+            
+        } catch (Exception ex){
+            ex.printStackTrace();
+            //LOG.error(ex);
+            throw new XPathException(ex);
+        
+        } finally {
+            index.releaseSearcher(searcher);
+        }
+        
+        return uris;
     }
     
     private boolean isDocumentMatch(String docUri, List<String> toBeMatchedUris){

@@ -83,4 +83,5 @@ public abstract class MetaData {
     public abstract void indexMetas(Metas metas);
 	
     public abstract NodeImpl search(String queryText, List<String> toBeMatchedURIs) throws XPathException;
+    public abstract List<String> searchDocuments(String queryText, List<String> toBeMatchedURIs) throws XPathException;
 }
