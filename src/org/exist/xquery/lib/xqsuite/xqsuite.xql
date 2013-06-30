@@ -22,6 +22,7 @@ declare variable $test:TEST_NAMESPACE := "http://exist-db.org/xquery/xqsuite";
 
 declare variable $test:UNKNOWN_ASSERTION := QName($test:TEST_NAMESPACE, "no-such-assertion");
 declare variable $test:WRONG_ARG_COUNT := QName($test:TEST_NAMESPACE, "wrong-number-of-arguments");
+declare variable $test:TYPE_ERROR := QName($test:TEST_NAMESPACE, "type-error");
 
 (:~
  : Main entry point into the module. Takes a sequence of function items.
