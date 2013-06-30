@@ -45,16 +45,19 @@ wrapper.java.additional.4=-Djetty.home=../../../@jetty.dir@
 # log4j configuration is read from the conf directory of the wrapper
 wrapper.java.additional.5=-Dlog4j.configuration=file:../conf/log4j.xml
 
+# force headless mode
+wrapper.java.additional.6=-Djava.awt.headless=true
+
 # JMX 
-#wrapper.java.additional.6=-Dcom.sun.management.jmxremote
-#wrapper.java.additional.7=-Dcom.sun.management.jmxremote.port=1099
-#wrapper.java.additional.8=-Dcom.sun.management.jmxremote.authenticate=false
-#wrapper.java.additional.9=-Dcom.sun.management.jmxremote.ssl=false
-#wrapper.java.additional.10=-Dorg.tanukisoftware.wrapper.WrapperManager.mbean=TRUE
-#wrapper.java.additional.11=-Dorg.tanukisoftware.wrapper.WrapperManager.mbean.testing=false
+#wrapper.java.additional.7=-Dcom.sun.management.jmxremote
+#wrapper.java.additional.8=-Dcom.sun.management.jmxremote.port=1099
+#wrapper.java.additional.9=-Dcom.sun.management.jmxremote.authenticate=false
+#wrapper.java.additional.10=-Dcom.sun.management.jmxremote.ssl=false
+#wrapper.java.additional.11=-Dorg.tanukisoftware.wrapper.WrapperManager.mbean=TRUE
+#wrapper.java.additional.12=-Dorg.tanukisoftware.wrapper.WrapperManager.mbean.testing=false
 
 # HTTP proxy
-#wrapper.java.additional.12=-Dhttp.configfile=../../../build.properties
+#wrapper.java.additional.13=-Dhttp.configfile=../../../build.properties
 
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=512
