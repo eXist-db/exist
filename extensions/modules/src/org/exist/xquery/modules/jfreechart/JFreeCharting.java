@@ -80,8 +80,8 @@ public class JFreeCharting extends BasicFunction {
 
     private static final String chartText="The type of chart to render.  Supported chart types: " +
             "AreaChart, BarChart, BarChart3D, LineChart, LineChart3D, " +
-            "MultiplePieChart, MultiplePieChart3D, PieChart, PieChart3D, " +
-            "RingChart, StackedAreaChart, StackedBarChart, StackedBarChart3D, " +
+            "MultiplePieChart, MultiplePieChart3D, PieChart, PieChart3D, RingChart, " +
+            "SpiderWebChart, StackedAreaChart, StackedBarChart, StackedBarChart3D, " +
             "WaterfallChart.";
 
     private static final String parametersText="The configuration for the chart.  The " +
@@ -182,7 +182,7 @@ public class JFreeCharting extends BasicFunction {
     }
 
     /**
-     *  Get HTTP response wrapper which provides access to the servler
+     *  Get HTTP response wrapper which provides access to the servlet
      * outputstream.
      *
      * @throws XPathException Thrown when something bad happens.
