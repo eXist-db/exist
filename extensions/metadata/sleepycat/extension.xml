@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="all" name="metadata-sleepycat">
 
-   <property file="../local.build.properties"/>
-   <property file="../build.properties"/>
+   <property file="../../local.build.properties"/>
+   <property file="../../build.properties"/>
 
    <property name="extension.name" value="${ant.project.name}"/>
    <property name="existhome.dir" location="../../.."/>
