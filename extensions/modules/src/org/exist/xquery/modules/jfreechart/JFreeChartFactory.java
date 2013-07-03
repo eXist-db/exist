@@ -34,19 +34,25 @@ import org.exist.xquery.XPathException;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.labels.CategoryItemLabelGenerator;
+import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
+import org.jfree.chart.plot.SpiderWebPlot;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.data.xml.DatasetReader;
+import org.jfree.ui.RectangleEdge;
 
 /**
  * Wrapper for JFreeChart's ChartFactory.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  * @author Andrzej Taramina (andrzej@chaeron.com)
+ * @author Leif-Jöran Olsson (ljo@exist-db.org)
  */
 public class JFreeChartFactory {
 
@@ -166,6 +172,25 @@ public class JFreeChartFactory {
                     conf.isGenerateLegend(), conf.isGenerateTooltips(), conf.isGenerateUrls());
                     
                      setPieChartParameters( chart, conf );
+        } else if ("SpiderWebChart".equalsIgnoreCase(chartType)) {
+            SpiderWebPlot plot = new SpiderWebPlot(categoryDataset);
+            if (conf.isGenerateTooltips()) {
+                plot.setToolTipGenerator(new StandardCategoryToolTipGenerator());
+            }
+            chart = new JFreeChart(conf.getTitle(), JFreeChart.DEFAULT_TITLE_FONT, plot, false);
+
+            if (conf.isGenerateLegend()) {
+                LegendTitle legend = new LegendTitle(plot);
+                legend.setPosition(RectangleEdge.BOTTOM);
+                chart.addSubtitle(legend);
+            } else {
+                TextTitle subTitle = new TextTitle(" ");
+                subTitle.setPosition(RectangleEdge.BOTTOM);
+                chart.addSubtitle(subTitle);
+            }
+
+
+            setCategoryChartParameters(chart, conf);
 
         } else if ("StackedAreaChart".equalsIgnoreCase(chartType)) {
             chart = ChartFactory.createStackedAreaChart(
@@ -198,7 +223,7 @@ public class JFreeChartFactory {
             logger.error("Illegal chartype. Choose one of " +
                     "AreaChart BarChart BarChart3D LineChart LineChart3D " +
                     "MultiplePieChart MultiplePieChart3D PieChart PieChart3D " +
-                    "RingChart StackedAreaChart StackedBarChart " +
+                    "RingChart SpiderWebChart StackedAreaChart StackedBarChart " +
                     "StackedBarChart3D WaterfallChart");
         }
         
@@ -221,13 +246,18 @@ public class JFreeChartFactory {
     {
         Double rangeLowerBound          = config.getRangeLowerBound();
         Double rangeUpperBound          = config.getRangeUpperBound();
+
+        if( rangeUpperBound != null ) {
+            if (chart.getPlot() instanceof SpiderWebPlot) {
+                ((SpiderWebPlot) chart.getPlot()).setMaxValue(rangeUpperBound.doubleValue());
+                return;
+            } else {
+                ((CategoryPlot)chart.getPlot()).getRangeAxis().setUpperBound( rangeUpperBound.doubleValue() );
+            }
+        } 
         
         if( rangeLowerBound != null ) {
             ((CategoryPlot)chart.getPlot()).getRangeAxis().setLowerBound( rangeLowerBound.doubleValue() );
-        }
-        
-        if( rangeUpperBound != null ) {
-            ((CategoryPlot)chart.getPlot()).getRangeAxis().setUpperBound( rangeUpperBound.doubleValue() );
         }
     }
     
@@ -252,12 +282,16 @@ public class JFreeChartFactory {
             catch( Exception e ) {
                 throw( new XPathException( "Cannot instantiate CategoryItemLabelGeneratorClass: " + className + ", exception: " + e ) );
             }
-            
-            CategoryItemRenderer renderer = ((CategoryPlot)chart.getPlot()).getRenderer();
-            
-            renderer.setBaseItemLabelGenerator( generator );
-            
-            renderer.setItemLabelsVisible( true );
+
+            if (chart.getPlot() instanceof SpiderWebPlot) {
+                ((SpiderWebPlot) chart.getPlot()).setLabelGenerator(generator);
+            } else {
+                CategoryItemRenderer renderer = ((CategoryPlot)chart.getPlot()).getRenderer();
+                
+                renderer.setBaseItemLabelGenerator( generator );
+                
+                renderer.setItemLabelsVisible( true );
+            }
         }
     }
     
@@ -266,26 +300,34 @@ public class JFreeChartFactory {
     {
         String seriesColors          = config.getSeriesColors();
         
-        if( seriesColors != null ) {
+
+        if (chart.getPlot() instanceof SpiderWebPlot) {
+            setSeriesColors((SpiderWebPlot) chart.getPlot(), seriesColors);
+        } else {
             CategoryItemRenderer renderer = ((CategoryPlot)chart.getPlot()).getRenderer();
-            
+            setSeriesColors(renderer, seriesColors);
+        }
+    }
+
+    private static void setSeriesColors(Object renderer, final String seriesColors) {
+        if (seriesColors != null) {
             StringTokenizer st = new StringTokenizer( seriesColors, "," );
-            
+
             int i = 0;
-            
             while( st.hasMoreTokens() ) {
                 String colorName = st.nextToken().trim();
-                
                 Color color = null;
-                
                 try {
                     color = Colour.getColor( colorName );
-                } 
-                catch( XPathException e ) {              
+                } catch( XPathException e ) {              
                 }
                    
                 if( color != null ) {
-                    renderer.setSeriesPaint( i, color );
+                    if (renderer instanceof SpiderWebPlot) {
+                        ((SpiderWebPlot) renderer).setSeriesPaint(i, color);
+                    } else {
+                        ((CategoryItemRenderer) renderer).setSeriesPaint( i, color );
+                    }
                 } else {
                     logger.warn( "Invalid colour name or hex value specified for SeriesColors: " + colorName + ", default colour will be used instead." );
                 }
@@ -293,20 +335,26 @@ public class JFreeChartFactory {
                 i++;
             }
         }
-    }
-	
-	
+    }	
+        
 	private static void setAxisColors( JFreeChart chart, Configuration config )
     {
         Color categoryAxisColor          = config.getCategoryAxisColor();
 		Color valueAxisColor          	 = config.getValueAxisColor();
         
         if( categoryAxisColor != null ) {
-			((CategoryPlot)chart.getPlot()).getDomainAxis().setLabelPaint( categoryAxisColor );  
+            if (chart.getPlot() instanceof SpiderWebPlot) {
+                ((SpiderWebPlot) chart.getPlot()).setAxisLinePaint(categoryAxisColor);
+            } else {
+                ((CategoryPlot)chart.getPlot()).getDomainAxis().setLabelPaint(categoryAxisColor);         }
         }
 		
 		if( valueAxisColor != null ) {
-			((CategoryPlot)chart.getPlot()).getRangeAxis().setLabelPaint( valueAxisColor );  
+            if (chart.getPlot() instanceof SpiderWebPlot) {
+                //((SpiderWebPlot) chart.getPlot()).setAxisLinePaint(valueAxisColor);
+            } else {
+                ((CategoryPlot)chart.getPlot()).getRangeAxis().setLabelPaint( valueAxisColor );  
+            }
         }
     }
     
