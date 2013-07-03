@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2013 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -376,14 +376,14 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
                 .addContainerGap())
         );
 
-        btnClose.setText("Close");
+        btnClose.setText(getLabel("LoginPanel.51"));
         btnClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCloseActionPerformed(evt);
             }
         });
 
-        btnConnect.setText("Connect");
+        btnConnect.setText(getLabel("LoginPanel.50"));
         btnConnect.addKeyListener(new EnterKeyAdapter());
         btnConnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -657,7 +657,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         } catch(final IOException ioe) {
             JOptionPane.showMessageDialog(this, "Unable to write preferences file: " + selectedExportFile.getAbsolutePath() + ": " + ioe.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
         } catch(final BackingStoreException bse) {
-            JOptionPane.showMessageDialog(this, "Bascking store error for export to file: " + selectedExportFile.getAbsolutePath() + ": " + bse.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Backing store error for export to file: " + selectedExportFile.getAbsolutePath() + ": " + bse.getMessage(), "Error Importing Preferences", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miExportFavouritesActionPerformed
 
