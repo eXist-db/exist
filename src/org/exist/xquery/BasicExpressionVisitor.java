@@ -44,6 +44,11 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     @Override
+    public void visitFunctionCall(FunctionCall call) {
+        // Nothing to do
+    }
+
+    @Override
     public void visitGeneralComparison(GeneralComparison comparison) {
         //Nothing to do
     }

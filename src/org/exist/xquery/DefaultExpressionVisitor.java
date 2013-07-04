@@ -49,6 +49,15 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         }
     }
 
+    @Override
+    public void visitFunctionCall(FunctionCall call) {
+        // forward to the called function
+        for(int i = 0; i < call.getArgumentCount(); i++) {
+            call.getArgument(i).accept(this);
+        }
+        call.getFunction().accept(this);
+    }
+
     public void visitForExpression(ForExpr forExpr) {
         forExpr.getInputSequence().accept(this);
         final Expression where = forExpr.getWhereExpression();

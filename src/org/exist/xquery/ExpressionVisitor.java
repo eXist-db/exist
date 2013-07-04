@@ -29,6 +29,8 @@ public interface ExpressionVisitor {
 
     public void visitPredicate(Predicate predicate);
 
+    public void visitFunctionCall(FunctionCall call);
+
     public void visitGeneralComparison(GeneralComparison comparison);
 
     public void visitCastExpr(CastExpression expression);
