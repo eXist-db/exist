@@ -3478,10 +3478,10 @@ public class XQueryContext implements BinaryValueManager, Context
         return( ( debuggeeJoint != null ) && isVarDeclared( Debuggee.SESSION ) );
     }
 
-	public boolean requireDebugMode() 
-	{
-		return isVarDeclared( Debuggee.SESSION );
-	}
+    public boolean requireDebugMode() 
+    {
+        return isVarDeclared( Debuggee.SESSION );
+    }
 
     private List<BinaryValue> binaryValueInstances;
     
@@ -3489,27 +3489,31 @@ public class XQueryContext implements BinaryValueManager, Context
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {
         if(binaryValueInstances == null) {
              binaryValueInstances = new ArrayList<BinaryValue>();
+             
+             cleanupTasks.add(new CleanupTask() {
+                 
+                 @Override
+                 public void cleanup(final XQueryContext context) {
+                    if(context.binaryValueInstances != null) {
+                       for(final BinaryValue bv : context.binaryValueInstances) {
+                           try {
+                               bv.close();
+                           } catch (final IOException ioe) {
+                               LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                           }
+                       }
+                       context.binaryValueInstances.clear();
+                   }
+                 }
+             });
         }
+        
         binaryValueInstances.add(binaryValue);
     }
 
     @Override
     public String getCacheClass() {
         return (String) getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
-    }
-
-    @Override
-    public void cleanupBinaryValueInstances() {
-        if(binaryValueInstances != null) {
-            for(final BinaryValue bv : binaryValueInstances) {
-                try {
-                    bv.close();
-                } catch (final IOException ioe) {
-                    LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
-                }
-            }
-            binaryValueInstances.clear();
-        }
     }
 
     public void destroyBinaryValue(BinaryValue value) {
@@ -3597,12 +3601,33 @@ public class XQueryContext implements BinaryValueManager, Context
         }
 
 
-        public void debug()
-        {
-            LOG.debug( "XQueryContext: " );
+        public void debug() {
+            
+            LOG.debug(String.format("XQueryContext: %s document update listeners", listeners.size()));
+            for (int i = 0; i < listeners.size(); i++) {
+                ((UpdateListener) listeners.get(i)).debug();
+            }
+        }
 
-            for( int i = 0; i < listeners.size(); i++ ) {
-                ( (UpdateListener)listeners.get( i ) ).debug();
+    }
+    
+    private List<CleanupTask> cleanupTasks = new ArrayList<CleanupTask>();
+    
+    public void registerCleanupTask(final CleanupTask cleanupTask) {
+        cleanupTasks.add(cleanupTask);
+    }
+    
+    public interface CleanupTask {
+        public void cleanup(final XQueryContext context);
+    }
+    
+    @Override
+    public void runCleanupTasks() {
+        for(final CleanupTask cleanupTask : cleanupTasks) {
+            try {
+                cleanupTask.cleanup(this);
+            } catch(final Throwable t) {
+                LOG.error("Cleaning up XQueryContext: Ignoring: " + t.getMessage(), t);
             }
         }
     }

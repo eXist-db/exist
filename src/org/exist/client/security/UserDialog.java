@@ -45,7 +45,7 @@ public class UserDialog extends javax.swing.JFrame {
 
     private final Pattern PTN_USERNAME = Pattern.compile("[a-zA-Z0-9\\-\\._@]{3,}");
     private final Pattern PTN_PASSWORD = Pattern.compile(".{3,}");
-    private final UserManagementService userManagementService;
+    private UserManagementService userManagementService;
     private SortedListModel<String> availableGroupsModel = null;
     private SortedListModel<String> memberOfGroupsModel = null;
     private String primaryGroup = null;
@@ -538,6 +538,10 @@ public class UserDialog extends javax.swing.JFrame {
     
     protected String getPrimaryGroup() {
         return primaryGroup;
+    }
+    
+    protected void setUserManagementService(final UserManagementService userManagementService) {
+        this.userManagementService = userManagementService;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

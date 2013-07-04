@@ -11,12 +11,17 @@ import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.DoubleValue;
 import org.junit.After;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
 
 /**
  * Low-level tests on the B+tree.
@@ -70,7 +75,7 @@ public class BTreeTest {
         } catch (IOException e) {
             e.printStackTrace();
             fail(e.getMessage());
-        } catch (TerminatedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -155,6 +160,61 @@ public class BTreeTest {
                 }
         }
         System.out.println("------------------ testStrings: END -------------------------");
+    }
+
+    @Test
+    public void longStrings() {
+        // Test storage of long keys up to half of the page size (4k)
+        System.out.println("------------------ testLongStrings: START -------------------------");
+        Random rand = new Random(System.currentTimeMillis());
+
+        BTree btree = null;
+        try {
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree.setSplitFactor(0.7);
+            btree.create((short) -1);
+
+            Map<String, Integer> keys = new TreeMap<String, Integer>();
+            String prefixStr = "C";
+            for (int i = 1; i <= COUNT; i++) {
+                StringBuilder buf = new StringBuilder();
+                buf.append(prefixStr).append(Integer.toString(i));
+                int nextLen = rand.nextInt(2000);
+                while (nextLen < 512) {
+                    nextLen = rand.nextInt(2000);
+                }
+                for (int j = 0; j < nextLen; j++) {
+                    buf.append('x');
+                }
+                final String key = buf.toString();
+
+                Value value = new Value(key);
+                btree.addValue(value, i);
+                keys.put(key, i);
+            }
+
+            btree.flush();
+            System.out.println("BTree size: " + (file.length() / 1024));
+
+            for (Map.Entry<String, Integer> entry: keys.entrySet()) {
+                long p = btree.findValue(new Value(entry.getKey().toString()));
+                //System.out.println("Checking key " + entry.getKey());
+                assertEquals(p, entry.getValue().intValue());
+            }
+        } catch (DBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (btree != null)
+                try {
+                    btree.close();
+                } catch (DBException e) {
+                }
+        }
+        System.out.println("------------------ testLongStrings: END -------------------------");
     }
 
     @Test

@@ -89,7 +89,12 @@ public class StoreBinaryTest {
     }
 
     private void stopDatabase(Main database) {
-       	database.shutdown();
+        try {
+            database.shutdown();
+        } catch (Exception e) {
+            // do not fail. exceptions may occur at this point.
+            e.printStackTrace();
+        }
     }
 
     private BinaryDocument getBinary(XmldbURI uri) throws EXistException {

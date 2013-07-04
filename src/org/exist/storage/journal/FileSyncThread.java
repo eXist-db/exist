@@ -39,13 +39,15 @@ import java.nio.channels.FileChannel;
  */
 public class FileSyncThread extends Thread {
 
+	// guarded by latch
     private FileChannel endOfLog;
-
+    private Object latch;
+    
+    // guarded by this
     private boolean syncTriggered = false;
 
-    private boolean shutdown = false;
-
-    private Object latch;
+    // used as termination flag, volatile semantics are sufficient
+    private volatile boolean shutdown = false;
 
     /**
      * Create a new FileSyncThread, using the specified latch
@@ -66,7 +68,9 @@ public class FileSyncThread extends Thread {
      * @param channel
      */
     public void setChannel(FileChannel channel) {
-        endOfLog = channel;
+    	synchronized (latch) {
+            endOfLog = channel;			
+		}
     }
 
     /**
@@ -82,7 +86,7 @@ public class FileSyncThread extends Thread {
     /**
      * Shutdown the sync thread.
      */
-    public synchronized void shutdown() {
+    public void shutdown() {
         shutdown = true;
         interrupt();
     }
@@ -92,11 +96,13 @@ public class FileSyncThread extends Thread {
      */
     public void closeChannel() {
         synchronized (latch) {
-            try {
-                endOfLog.close();
-            } catch (final IOException e) {
-                //Nothing to do
-            }
+        	if (endOfLog != null) {
+        		try {
+        			endOfLog.close();
+        		} catch (final IOException e) {
+        			// may occur during shutdown
+        		}
+        	}
         }
     }
 
@@ -124,11 +130,14 @@ public class FileSyncThread extends Thread {
 
     private void sync() {
         synchronized (latch) {
-            try {
-                endOfLog.force(false);
-            } catch (final IOException e) {
-                // may occur during shutdown
-            }
+        	//endOfLog may be null if setChannel wasn't called for some reason.
+        	if (endOfLog != null) {
+        		try {
+        			endOfLog.force(false);
+        		} catch (final IOException e) {
+        			// may occur during shutdown
+        		}
+        	}
             syncTriggered = false;
         }
     }

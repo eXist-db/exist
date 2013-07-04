@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2013 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -268,7 +268,7 @@ public class QueryDialog extends JFrame {
 		});
 		
 		final JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		split.setResizeWeight(0.5);
+		split.setResizeWeight(0.6);
 		
 		final JComponent qbox= createQueryBox();
 		split.setTopComponent(qbox);
@@ -284,11 +284,13 @@ public class QueryDialog extends JFrame {
 		resultDisplay= new ClientTextArea(false, "XML");
 		resultDisplay.setText("");
 		resultDisplay.setPreferredSize(new Dimension(400, 250));
+		resultDisplay.setMinimumSize(new Dimension(400, 100));
 		resultTabs.add(Messages.getString("QueryDialog.XMLtab"), resultDisplay);
 		
 		exprDisplay = new ClientTextArea(false, "Dump");
 		exprDisplay.setText("");
-		exprDisplay.setPreferredSize(new Dimension(400, 250));
+		exprDisplay.setPreferredSize(new Dimension(400, 200));
+		exprDisplay.setMinimumSize(new Dimension(400, 100));
 		resultTabs.add(Messages.getString("QueryDialog.tracetab"), exprDisplay);
 		
         vbox.add(resultTabs, BorderLayout.CENTER);
@@ -313,7 +315,7 @@ public class QueryDialog extends JFrame {
         vbox.add(statusbar, BorderLayout.SOUTH);
         
 		split.setBottomComponent(vbox);
-		split.setDividerLocation(0.4);
+		split.setDividerLocation(0.6);
 		getContentPane().add(toolbar, BorderLayout.NORTH);
         getContentPane().add(split, BorderLayout.CENTER);
 	}
@@ -344,7 +346,8 @@ public class QueryDialog extends JFrame {
         query = new ClientTextArea(true, "XQUERY");
         query.setElectricScroll(1);
 		query.setEditable(true);
-		query.setPreferredSize(new Dimension(350, 200));
+		query.setPreferredSize(new Dimension(400, 250));
+		query.setMinimumSize(new Dimension(400, 100));
         inputVBox.add(query, BorderLayout.CENTER);
         
 		final Box optionsPanel = Box.createHorizontalBox();
@@ -646,7 +649,7 @@ public class QueryDialog extends JFrame {
 						+ InteractiveClient.getExceptionMessage(e), e);
 			} finally {
                                 if(context != null) {
-                                    context.cleanupBinaryValueInstances();
+                                    context.runCleanupTasks();
                                 }
 				context = null;
                 if (result != null)

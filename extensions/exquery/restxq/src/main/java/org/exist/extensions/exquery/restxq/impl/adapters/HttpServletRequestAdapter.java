@@ -160,7 +160,6 @@ public class HttpServletRequestAdapter implements HttpRequest {
                 }
             }
         }
-        
         return null;
     }
     
@@ -171,7 +170,7 @@ public class HttpServletRequestAdapter implements HttpRequest {
 
     //TODO consider moving more of this code into EXQuery impl
     @Override
-    public Object getFormParam(String key) {
+    public Object getFormParam(final String key) {
         if(request.getMethod().equals("GET")) {
             return getGetParameters(key);
         }
@@ -182,7 +181,7 @@ public class HttpServletRequestAdapter implements HttpRequest {
                 try {
                     final InputStream in = getInputStream();
                     formFields = extractFormFields(in);
-                } catch(IOException ioe) {
+                } catch(final IOException ioe) {
                     //TODO log or something?
                     ioe.printStackTrace();
                     return null;
@@ -203,15 +202,15 @@ public class HttpServletRequestAdapter implements HttpRequest {
    
     //TODO consider moving more of this code into EXQuery impl
     @Override
-    public Object getQueryParam(String key) {
-        if(request.getMethod().equals("GET")) {
+    public Object getQueryParam(final String key) {
+        //if(request.getMethod().equals("GET")) {
             return getGetParameters(key);
-        }
-        return null;
+        //}
+        //return null;
     }
     
-    private Object getGetParameters(String key) {
-        final String[] values =  request.getParameterValues(key);
+    private Object getGetParameters(final String key) {
+        final String[] values = request.getParameterValues(key);
         if(values != null) {
             if(values.length == 1) {
                 return values[0];
@@ -231,14 +230,14 @@ public class HttpServletRequestAdapter implements HttpRequest {
         return names;
     }
     
-    private Map<String, List<String>> extractFormFields(InputStream in) throws IOException {
+    private Map<String, List<String>> extractFormFields(final InputStream in) throws IOException {
         final Map<String, List<String>> fields = new Hashtable<String, List<String>>();
         
         final StringBuilder builder = new StringBuilder();
         final Reader reader = new InputStreamReader(in);
         try {
             int read = -1;
-            char[] cbuf = new char[1024];
+            final char[] cbuf = new char[1024];
             while((read = reader.read(cbuf)) > -1) {
                 builder.append(cbuf, 0, read);
             }
@@ -252,8 +251,8 @@ public class HttpServletRequestAdapter implements HttpRequest {
         String val = null;
 
         while(st.hasMoreTokens()) {
-            String pair = st.nextToken();
-            int pos = pair.indexOf('=');
+            final String pair = st.nextToken();
+            final int pos = pair.indexOf('=');
             if(pos == -1) {
                 throw new IllegalArgumentException();
             }
@@ -261,7 +260,7 @@ public class HttpServletRequestAdapter implements HttpRequest {
             try {
                 key = java.net.URLDecoder.decode(pair.substring(0, pos));
                 val = java.net.URLDecoder.decode(pair.substring(pos + 1, pair.length()));
-            } catch (Exception e) {
+            } catch(final Exception e) {
                 throw new IllegalArgumentException(e);
             }
             

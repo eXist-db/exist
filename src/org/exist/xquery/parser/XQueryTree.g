@@ -476,7 +476,12 @@ throws PermissionDeniedException, EXistException, XPathException
 			qname2:OPTION
 			content:STRING_LITERAL
 			{
-				context.addOption(qname2.getText(), content.getText());
+				try {
+					context.addOption(qname2.getText(), content.getText());
+				} catch(XPathException e2) {
+					e2.setLocation(qname2.getLine(), qname2.getColumn());
+                    throw e2;
+				}
 			}
 		)
 		|
@@ -911,41 +916,61 @@ throws XPathException
 		)
 		|
 		#(
-			"element" 
+			lelement:"element" 
 			{ type.setPrimaryType(Type.ELEMENT); }
 			(
 				WILDCARD
 				|
 				qn1:QNAME
-				{ 
-					QName qname= QName.parse(staticContext, qn1.getText());
-					type.setNodeName(qname);
+				{
+					try {
+						QName qname= QName.parse(staticContext, qn1.getText());
+						type.setNodeName(qname);
+					} catch (XPathException e) {
+						e.setLocation(lelement.getLine(), lelement.getColumn());
+                    	throw e;
+					}
 				}
 				( qn12:QNAME
 					{
-                        QName qname12= QName.parse(staticContext, qn12.getText());
-                        TypeTest test = new TypeTest(Type.getType(qname12));
+						try {
+	                        QName qname12= QName.parse(staticContext, qn12.getText());
+	                        TypeTest test = new TypeTest(Type.getType(qname12));
+	                    } catch (XPathException e) {
+							e.setLocation(lelement.getLine(), lelement.getColumn());
+	                    	throw e;
+						}
 					}
 				)?
 			)?
 		)
 		|
 		#(
-			ATTRIBUTE_TEST 
+			lattr:ATTRIBUTE_TEST 
 			{ type.setPrimaryType(Type.ATTRIBUTE); }
 			(
 				qn2:QNAME
 				{
-                    QName qname= QName.parse(staticContext, qn2.getText(), "");
-                    qname.setNameType(ElementValue.ATTRIBUTE);
-					type.setNodeName(qname);
+					try {
+	                    QName qname= QName.parse(staticContext, qn2.getText(), "");
+	                    qname.setNameType(ElementValue.ATTRIBUTE);
+						type.setNodeName(qname);
+					} catch (XPathException e) {
+						e.setLocation(lattr.getLine(), lattr.getColumn());
+                    	throw e;
+					}
 				}
 				|
 				WILDCARD
 				( qn21:QNAME
 					{
-                        QName qname21= QName.parse(staticContext, qn21.getText());
-                        TypeTest test = new TypeTest(Type.getType(qname21));
+						try {
+	                        QName qname21= QName.parse(staticContext, qn21.getText());
+	                        TypeTest test = new TypeTest(Type.getType(qname21));
+	                    } catch (XPathException e) {
+		                    e.setLocation(lattr.getLine(), lattr.getColumn());
+	                    	throw e;
+	                    }
 					}
 				)?
 			)?
@@ -980,13 +1005,18 @@ throws XPathException
 			"document-node"
             { type.setPrimaryType(Type.DOCUMENT); }
             (
-                #( "element"
+                #( lelement2:"element"
                     (
                     dnqn:QNAME
                     {
-					    QName qname= QName.parse(staticContext, dnqn.getText());
-                        type.setNodeName(qname);
-                        NameTest test= new NameTest(Type.DOCUMENT, qname);
+                    	try {
+						    QName qname= QName.parse(staticContext, dnqn.getText());
+	                        type.setNodeName(qname);
+	                        NameTest test= new NameTest(Type.DOCUMENT, qname);
+	                    } catch(XPathException e) {
+	                    	e.setLocation(lelement2.getLine(), lelement2.getColumn());
+	                    	throw e;
+	                    }
                     }
                     | 
                     WILDCARD
@@ -995,8 +1025,13 @@ throws XPathException
                     }
                         ( dnqn2:QNAME
                             {
-                            QName qname = QName.parse(staticContext, dnqn2.getText());
-                            test = new TypeTest(Type.getType(qname));
+                            	try {
+		                            QName qname = QName.parse(staticContext, dnqn2.getText());
+		                            test = new TypeTest(Type.getType(qname));
+		                        } catch(XPathException e) {
+		                        	e.setLocation(lelement2.getLine(), lelement2.getColumn());
+	                    			throw e;
+		                        }
                             }
                         )?
                     )?

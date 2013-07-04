@@ -525,7 +525,7 @@ public class RpcConnection implements RpcAPI {
 
         } finally {
             if(compiled != null) {
-                compiled.getContext().cleanupBinaryValueInstances();
+                compiled.getContext().runCleanupTasks();
                 broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
             }
             factory.getBrokerPool().release(broker);
@@ -2763,7 +2763,7 @@ public class RpcConnection implements RpcAPI {
 
         } finally {
             if(compiled != null) {
-                compiled.getContext().cleanupBinaryValueInstances();
+                compiled.getContext().runCleanupTasks();
                 broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
             }
             factory.getBrokerPool().release(broker);
@@ -2888,7 +2888,7 @@ public class RpcConnection implements RpcAPI {
         } finally {
             
             if(compiled != null) {
-                compiled.getContext().cleanupBinaryValueInstances();
+                compiled.getContext().runCleanupTasks();
                 broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
             }
             
@@ -3002,7 +3002,7 @@ public class RpcConnection implements RpcAPI {
 
         } finally {
             if(compiled != null) {
-                compiled.getContext().cleanupBinaryValueInstances();
+                compiled.getContext().runCleanupTasks();
                 broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
             }
             factory.getBrokerPool().release(broker);
@@ -4552,7 +4552,7 @@ public class RpcConnection implements RpcAPI {
 
         } finally {
             if(compiled != null) {
-                compiled.getContext().cleanupBinaryValueInstances();
+                compiled.getContext().runCleanupTasks();
                 broker.getXQueryService().getXQueryPool().returnCompiledXQuery(source, compiled);
             }
             factory.getBrokerPool().release(broker);

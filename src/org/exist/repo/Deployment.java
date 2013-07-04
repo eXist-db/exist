@@ -55,6 +55,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.deps.DependencyVersion;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
@@ -150,8 +151,12 @@ public class Deployment {
      * Install and deploy a give xar archive. Dependencies are installed from
      * the PackageLoader.
      *
+     * @param xar the .xar file to install
+     * @param loader package loader to use
+     * @param enforceDeps when set to true, the method will throw an exception if a dependency could not be resolved
+     *                    or an older version of the required dependency is installed and needs to be replaced.
      */
-    public String installAndDeploy(File xar, PackageLoader loader, boolean checkVersion) throws PackageException, IOException {
+    public String installAndDeploy(File xar, PackageLoader loader, boolean enforceDeps) throws PackageException, IOException {
         final DocumentImpl document = getDescriptor(xar);
         final ElementImpl root = (ElementImpl) document.getDocumentElement();
         final String name = root.getAttribute("name");
@@ -159,7 +164,7 @@ public class Deployment {
 
         final ExistRepository repo = broker.getBrokerPool().getExpathRepo();
         final Packages packages = repo.getParentRepo().getPackages(name);
-        if (packages != null && (!checkVersion || pkgVersion.equals(packages.latest().getVersion()))) {
+        if (packages != null && (!enforceDeps || pkgVersion.equals(packages.latest().getVersion()))) {
             LOG.info("Application package " + name + " already installed. Skipping.");
             return null;
         }
@@ -186,13 +191,43 @@ public class Deployment {
                     LOG.info("Package " + name + " depends on " + pkgName);
                     if (repo.getParentRepo().getPackages(pkgName) != null) {
                         LOG.debug("Package " + pkgName + " already installed");
-                    } else if (loader != null) {
-                        final File depFile = loader.load(pkgName, version);
-                        if (depFile != null)
-                            {installAndDeploy(depFile, loader);}
-                        else
-                            {LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
-                                "is not fatal, but the package may not work as expected");}
+                        boolean isInstalled = false;
+                        Packages pkgs = repo.getParentRepo().getPackages(pkgName);
+                        // check if installed package matches required version
+                        if (pkgs != null) {
+                            if (version != null) {
+                                Package latest = pkgs.latest();
+                                DependencyVersion depVersion = version.getDependencyVersion();
+                                if (depVersion.isCompatible(latest.getVersion())) {
+                                    isInstalled = true;
+                                } else {
+                                    LOG.debug("Package " + pkgName + " needs to be upgraded");
+                                    if (enforceDeps) {
+                                        throw new PackageException("Package requires version " + version.toString() +
+                                            " of package " + pkgName +
+                                            ". Installed version is " + latest.getVersion() + ". Please upgrade!");
+                                    }
+                                }
+                            } else {
+                                isInstalled = true;
+                            }
+                            if (isInstalled) {
+                                LOG.debug("Package " + pkgName + " already installed");
+                            }
+                        }
+                        if (!isInstalled && loader != null) {
+                            final File depFile = loader.load(pkgName, version);
+                            if (depFile != null) {
+                                installAndDeploy(depFile, loader);
+                            } else {
+                                if (enforceDeps) {
+                                    LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
+                                        "is not fatal, but the package may not work as expected");
+                                } else {
+                                    throw new PackageException("Missing dependency: package " + pkgName + " could not be resolved.");
+                                }
+                            }
+                        }
                     }
                 }
             }

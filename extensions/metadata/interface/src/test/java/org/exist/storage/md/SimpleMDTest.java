@@ -77,7 +77,7 @@ public class SimpleMDTest {
     /** /db/test/test.binary **/
     private static XmldbURI doc5uri = col1uri.append("test.binary");
     /** /db/moved/test.binary **/
-    private static XmldbURI doc6uri = col3uri.append("test.binary");
+//    private static XmldbURI doc6uri = col3uri.append("test.binary");
     
     private static String XML1 = "<test/>";
     private static String XML2 = "<test2/>";
@@ -98,7 +98,6 @@ public class SimpleMDTest {
 
     @Test
 	public void test_00() throws Exception {
-    	System.out.println("test");
     	
     	startDB();
     	
@@ -182,7 +181,6 @@ public class SimpleMDTest {
 
     @Test
 	public void test_01() throws Exception {
-    	System.out.println("test_01");
     	
     	startDB();
     	
@@ -209,7 +207,6 @@ public class SimpleMDTest {
     
     @Test
 	public void test_02() throws Exception {
-    	System.out.println("test_02");
     	
     	startDB();
     	
@@ -245,7 +242,6 @@ public class SimpleMDTest {
 	//keep uuid after restart & store new data
     @Test
 	public void _test_03() throws Exception {
-    	System.out.println("test_03");
     	
     	startDB();
 
@@ -824,7 +820,6 @@ public class SimpleMDTest {
 
 	@Test
 	public void test_08() throws Exception {
-    	System.out.println("test_07");
     	
         DBBroker broker = null;
         TransactionManager txnManager = null;

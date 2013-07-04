@@ -488,7 +488,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 resultSequence = xquery.execute(query, null, outputProperties);
                 
             } finally {
-                context.cleanupBinaryValueInstances();
+                context.runCleanupTasks();
                 xquery.getXQueryPool().returnCompiledXQuery(source, query);
             }
 

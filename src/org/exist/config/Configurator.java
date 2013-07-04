@@ -188,7 +188,9 @@ public class Configurator {
         final Class<?> clazz = instance.getClass();
         instance.getClass().getAnnotations();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
+            System.out.println("Instance '"+instance+"' don't have annotaion 'ConfigurationClass'");
             return null;
+            //XXX: throw new ConfigurationException("Instance '"+instance+"' don't have annotaion 'ConfigurationClass'");
         }
         
         final String configName = clazz.getAnnotation(ConfigurationClass.class).value();
@@ -196,6 +198,7 @@ public class Configurator {
         if (config == null) {
             System.out.println("No configuration [" + configName + "]");
             return null;
+            //XXX: throw new ConfigurationException("No configuration [" + configName + "]");
         }
         
         if (config instanceof ConfigurationImpl) {
@@ -219,10 +222,19 @@ public class Configurator {
             //end (lock issue)
         }
         
-        return configureByCurrent(instance, config);
+        try {
+            return configureByCurrent(instance, config);
+        } catch (Throwable e) {
+            if (config instanceof ConfigurationImpl) {
+                final ConfigurationImpl impl = (ConfigurationImpl) config;
+                impl.configuredObjectReference = null;
+            }
+        }
+        //XXX: must be exception
+        return null;
     }
 
-    private static Configuration configureByCurrent(Configurable instance, Configuration configuration) {
+    private static Configuration configureByCurrent(Configurable instance, Configuration configuration) throws ConfigurationException {
         final AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
         final Set<String> properties = configuration.getProperties();
         if (properties.isEmpty()) {
@@ -257,13 +269,19 @@ public class Configurator {
                         final String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
                         final SettingKey settingKey = SettingKey.forSettings(settings);
 
-                        if (settingKey == SettingKey.RADIX) {
-                            final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
-                            value = Integer.valueOf(configuration.getProperty(property), radix);
-                        } else if (settingKey == SettingKey.OCTAL_STRING) {
-                            value = Integer.valueOf(configuration.getProperty(property), 8);
-                        } else {
-                            value = Integer.valueOf(configuration.getProperty(property));
+                        try {
+                            if (settingKey == SettingKey.RADIX) {
+                                final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
+                                value = Integer.valueOf(configuration.getProperty(property), radix);
+                            } else if (settingKey == SettingKey.OCTAL_STRING) {
+                                value = Integer.valueOf(configuration.getProperty(property), 8);
+                            } else {
+                                value = Integer.valueOf(configuration.getProperty(property));
+                            }
+                        } catch (NumberFormatException e) {
+                            LOG.error(e);
+                            //ignore
+                            continue;
                         }
                         
                     } else {
@@ -316,11 +334,13 @@ public class Configurator {
                 }
                 
             } catch (final IllegalArgumentException e) {
-                LOG.error("Configuration error: " + EOL
+                final String msg = "Configuration error: " + EOL
                         + " config: " + configuration.getName() + EOL
                         + " property: " + property + EOL
-                        + " message: " + e.getMessage());
-                return null; //XXX: throw configuration error
+                        + " message: " + e.getMessage();
+                LOG.error(msg, e);
+                throw new ConfigurationException(msg, e);
+//                return null; //XXX: throw configuration error
                 
             } catch (final IllegalAccessException e) {
                 LOG.error("Security error: " + e.getMessage());
@@ -463,7 +483,7 @@ public class Configurator {
                                     }
                                     
                                 } else {
-                                    LOG.error("Field must have 'ConfigurationFieldClassMask' annotation ["
+                                    LOG.error("Field '"+field.getName()+"' must have 'ConfigurationFieldClassMask' annotation ["
                                             + conf.getName() + "], skipping instance creation.");
                                 }
                                 

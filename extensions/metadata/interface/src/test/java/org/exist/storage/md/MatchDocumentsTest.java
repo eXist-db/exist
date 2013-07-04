@@ -36,7 +36,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
@@ -579,17 +578,18 @@ public class MatchDocumentsTest {
         }
     }
 
-    public Properties contentsOutputProps = new Properties();
+    public Properties contentsOutputProps = new Properties(); 
     {
         contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
         contentsOutputProps.setProperty( EXistOutputKeys.OUTPUT_DOCTYPE, "yes" );
     }
-    private String serializer(DBBroker broker, DocumentImpl document) throws SAXException {
-		Serializer serializer = broker.getSerializer();
-		serializer.setUser(broker.getSubject());
-		serializer.setProperties(contentsOutputProps);
-		return serializer.serialize(document);
-	}
+    
+//    private String serializer(DBBroker broker, DocumentImpl document) throws SAXException {
+//		Serializer serializer = broker.getSerializer();
+//		serializer.setUser(broker.getSubject());
+//		serializer.setProperties(contentsOutputProps);
+//		return serializer.serialize(document);
+//	}
 
 	//@BeforeClass
     public static void startDB() {

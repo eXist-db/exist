@@ -109,7 +109,8 @@ public class Journal {
     //TODO: conf.xml refactoring <recovery size=""> => <journal size="">
     private int journalSizeLimit = DEFAULT_MAX_SIZE;
 
-    /** the current output channel */ 
+    /** the current output channel 
+     * Only valid after switchFiles() was called at least once! */ 
     private FileChannel channel;
 
     /** Synching the journal is done by a background thread */
@@ -283,7 +284,7 @@ public class Journal {
             lastSyncLsn = currentLsn;
         }
         try {
-            if (channel.size() >= journalSizeLimit)
+            if (channel != null && channel.size() >= journalSizeLimit)
                 {pool.triggerCheckpoint();}
         } catch (final IOException e) {
             LOG.warn("Failed to trigger checkpoint!", e);
@@ -294,8 +295,8 @@ public class Journal {
      * 
      */
     private void flushBuffer() {
-        if (currentBuffer == null)
-            {return;} // the db has probably been shut down already
+        if (currentBuffer == null || channel == null)
+            {return;} // the db has probably been shut down already or not fully initialized
         synchronized (latch) {
             try {
                 if (currentBuffer.position() > 0) {
@@ -335,7 +336,7 @@ public class Journal {
         else
             {flushToLog(true, true);}
         try {
-            if (switchLogFiles && channel.position() > MIN_REPLACE) {
+            if (switchLogFiles && channel != null && channel.position() > MIN_REPLACE) {
                 final File oldFile = getFile(currentFile);
                 final RemoveThread rt = new RemoveThread(channel, oldFile);
                 try {
@@ -535,7 +536,8 @@ public class Journal {
         @Override
         public void run() {
             try {
-                channel.close();
+            	if (channel != null)
+            		channel.close();
             } catch (final IOException e) {
                 LOG.warn("Exception while closing journal file: " + e.getMessage(), e);
             }

@@ -647,10 +647,14 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     //	methods of interface Item
 
+    public int getType() {
+        return nodeType2XQuery(nodeType);
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#getType()
      */
-    public int getType() {
+    public static int nodeType2XQuery(short nodeType) {
         switch (nodeType) {
         case Node.ELEMENT_NODE :
             //TODO : return Type.DOCUMENT for some in-memory nodes :

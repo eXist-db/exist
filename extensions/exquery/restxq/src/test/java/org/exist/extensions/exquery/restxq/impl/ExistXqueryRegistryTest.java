@@ -35,12 +35,12 @@ import org.junit.Test;
  * 
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class RestXqTriggerTest {
+public class ExistXqueryRegistryTest {
     
     @Test
     public void getAbsoluteModuleHint_relative() {
         
-        final String absoluteModulePath = new RestXqTrigger().getAbsoluteModuleHint("b.xqm", XmldbURI.create("/db/code/a.xqm"));
+        final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("b.xqm", XmldbURI.create("/db/code/a.xqm"));
         
         assertEquals("/db/code/b.xqm", absoluteModulePath);
     }
@@ -48,7 +48,7 @@ public class RestXqTriggerTest {
     @Test
     public void getAbsoluteModuleHint_relativeParent() {
         
-        final String absoluteModulePath = new RestXqTrigger().getAbsoluteModuleHint("../b.xqm", XmldbURI.create("/db/code/a.xqm"));
+        final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("../b.xqm", XmldbURI.create("/db/code/a.xqm"));
         
         assertEquals("/db/b.xqm", absoluteModulePath);
     }
@@ -56,7 +56,7 @@ public class RestXqTriggerTest {
     @Test
     public void getAbsoluteModuleHint_absoluteEmbedded() {
         
-        final String absoluteModulePath = new RestXqTrigger().getAbsoluteModuleHint("xmldb:exist://embedded-eXist-server/db/code/b.xqm", XmldbURI.create("/db/code/a.xqm"));
+        final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("xmldb:exist://embedded-eXist-server/db/code/b.xqm", XmldbURI.create("/db/code/a.xqm"));
         
         assertEquals("/db/code/b.xqm", absoluteModulePath);
     }
@@ -64,7 +64,7 @@ public class RestXqTriggerTest {
     @Test
     public void getAbsoluteModuleHint_absoluteLocal() {
         
-        final String absoluteModulePath = new RestXqTrigger().getAbsoluteModuleHint("xmldb:exist:///db/code/b.xqm", XmldbURI.create("/db/code/a.xqm"));
+        final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("xmldb:exist:///db/code/b.xqm", XmldbURI.create("/db/code/a.xqm"));
         
         assertEquals("/db/code/b.xqm", absoluteModulePath);
     }
@@ -72,7 +72,7 @@ public class RestXqTriggerTest {
     @Test
     public void getAbsoluteModuleHint_absoluteSimple() {
         
-        final String absoluteModulePath = new RestXqTrigger().getAbsoluteModuleHint("/db/b.xqm", XmldbURI.create("/db/code/a.xqm"));
+        final String absoluteModulePath = ExistXqueryRegistry.getInstance().getAbsoluteModuleHint("/db/b.xqm", XmldbURI.create("/db/code/a.xqm"));
         
         assertEquals("/db/b.xqm", absoluteModulePath);
     }
