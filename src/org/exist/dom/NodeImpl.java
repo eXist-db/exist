@@ -141,8 +141,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      * @see org.w3c.dom.Node#getAttributes()
      */
     public NamedNodeMap getAttributes() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "getAttributes()  not implemented on class " + getClass().getName());
+        return null;
     }
 
     /**

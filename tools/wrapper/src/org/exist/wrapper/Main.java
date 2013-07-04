@@ -28,6 +28,7 @@ import java.util.Observer;
 import java.util.Observable;
 
 import org.exist.start.Classpath;
+
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
@@ -37,11 +38,18 @@ import org.tanukisoftware.wrapper.WrapperManager;
  * @author wolf
  */
 public class Main implements WrapperListener, Observer {
+    
+    public static final int WAIT_HINT_STOP = 60000;
+    public static final int WAIT_HINT_UPDATE = 6000;
 
 	private Class<?> klazz;
 	private Object app;
 
-	private Main() {
+	/**
+     * Private constructor
+     */
+    private Main() {
+        // NOP
 	}
 
 	/**
@@ -56,7 +64,9 @@ public class Main implements WrapperListener, Observer {
 	 */
 	public Integer start(String[] args) {
 		System.setProperty("exist.register-shutdown-hook", "false");
-		System.err.println("jetty.home = " + System.getProperty("jetty.home"));
+        
+		WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_INFO, String.format("jetty.home = %s", System.getProperty("jetty.home")));
+        
 		try {
 			// use the bootstrap loader to autodetect EXIST_HOME and
 			// construct a correct classpath
@@ -84,12 +94,15 @@ public class Main implements WrapperListener, Observer {
             params[1] = this;
 			method.invoke(app, params);
 		
+            // All is Okay
 			return null;
+            
 		} catch (Exception e) {
-			e.printStackTrace();
-			WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_FATAL, 
-					"An error occurred: " + e.getMessage());
+			WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_FATAL, String.format("An error occurred: %s", e.getMessage()));
+            e.printStackTrace();
 		}
+        
+        // An error occurred
 		return new Integer(1);
 	}
 
@@ -97,12 +110,19 @@ public class Main implements WrapperListener, Observer {
 	 * @see org.tanukisoftware.wrapper.WrapperListener#stop(int)
 	 */
 	public int stop(int exitCode) {
+        WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_DEBUG, String.format("Stop with exit code '%s'", exitCode));
+        
 		// wait up to 1 minute
-		WrapperManager.signalStopping(60000);
+		WrapperManager.signalStopping(WAIT_HINT_STOP);
 		try {
 			Method method = klazz.getDeclaredMethod("shutdown", new Class[0]);
 			method.invoke(app, new Object[0]);
+            
 		} catch (Exception e) {
+            // Log message, ignore
+            WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_DEBUG, e.getMessage());
+            
+            // DW: should return code be changed in this case?
 		}
 		return exitCode;
 	}
@@ -111,29 +131,40 @@ public class Main implements WrapperListener, Observer {
 	 * @see org.tanukisoftware.wrapper.WrapperListener#controlEvent(int)
 	 */
 	public void controlEvent(int event) {
+        WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_DEBUG, String.format("Received control event '%s'", event));
+         
 		if (event == WrapperManager.WRAPPER_CTRL_HUP_EVENT) {
 			try {
 				Method method = klazz.getDeclaredMethod("systemInfo", new Class[0]);
 				method.invoke(app, new Object[0]);
 			} catch (Exception e) {
+                WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_DEBUG, e.getMessage());
 				e.printStackTrace();
 			}
+            
 		} else if(WrapperManager.isControlledByNativeWrapper()) {
 			// the wrapper will take care of this event
+            
 		} else {
-			if ((event == WrapperManager.WRAPPER_CTRL_C_EVENT) ||
-					(event == WrapperManager.WRAPPER_CTRL_CLOSE_EVENT) ||
-					(event == WrapperManager.WRAPPER_CTRL_SHUTDOWN_EVENT)) {
+            if ((event == WrapperManager.WRAPPER_CTRL_C_EVENT)
+                    || (event == WrapperManager.WRAPPER_CTRL_CLOSE_EVENT)
+                    || (event == WrapperManager.WRAPPER_CTRL_SHUTDOWN_EVENT)) {
 				WrapperManager.stop(0);
 			}
 		}
 	}
 
+    /* (non-Javadoc)
+	 * @see java.util.Observer#update(Observable, Object)
+	 */
     public void update(Observable o, Object arg) {
+        
+        WrapperManager.log(WrapperManager.WRAPPER_LOG_LEVEL_DEBUG, String.format("Observer update with value '%s'", arg));
+        
         if ("shutdown".equals(arg)) {
-            WrapperManager.signalStopping(6000);
+            WrapperManager.signalStopping(WAIT_HINT_UPDATE);
         } else
-        	WrapperManager.signalStarting(6000);
+        	WrapperManager.signalStarting(WAIT_HINT_UPDATE);
     }
 
 	public static void main(String[] args) throws Exception {

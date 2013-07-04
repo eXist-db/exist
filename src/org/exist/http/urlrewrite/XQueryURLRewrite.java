@@ -88,16 +88,8 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import javax.xml.transform.OutputKeys;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -134,7 +126,8 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private ServletConfig config;
 
-    private final Map<String, ModelAndView> urlCache = new ConcurrentHashMap<String, ModelAndView>();
+    private final Map<String, ModelAndView> urlCache =
+            Collections.synchronizedMap(new TreeMap<String, ModelAndView>());
 
     protected Subject defaultUser = null;
     protected BrokerPool pool;
@@ -220,9 +213,10 @@ public class XQueryURLRewrite extends HttpServlet {
 
                 // check if the request URI is already in the url cache
                 ModelAndView modelView = getFromCache(
-                		modifiedRequest.getHeader("Host") + modifiedRequest.getRequestURI(), 
+                		request.getHeader("Host") + request.getRequestURI(),
                 		user);
-                
+                LOG.debug("Checked cache for URI: " + modifiedRequest.getRequestURI() +
+                    " original: " + request.getRequestURI());
                 // no: create a new model and view configuration
                 if (modelView == null) {
                     modelView = new ModelAndView();
@@ -306,8 +300,10 @@ public class XQueryURLRewrite extends HttpServlet {
                         	return;
 	                    }
 	                    
-	                    if (modelView.useCache())
-                            {urlCache.put(modifiedRequest.getHeader("Host") + request.getRequestURI(), modelView);}
+	                    if (modelView.useCache()) {
+                            LOG.debug("Caching request to " + request.getRequestURI());
+                            urlCache.put(modifiedRequest.getHeader("Host") + request.getRequestURI(), modelView);
+                        }
 
                     } finally {
                         pool.release(broker);
@@ -494,10 +490,10 @@ public class XQueryURLRewrite extends HttpServlet {
 			model.getSourceInfo().source.validate(broker.getSubject(), Permission.EXECUTE);
 			
 			if (model.getSourceInfo().source.isValid(broker) != Source.VALID) {
-				urlCache.remove(url);
+                ModelAndView removed = urlCache.remove(url);
 				return null;
 			}
-			
+			LOG.debug("Using cached entry for " + url);
 			return model;
 		} finally {
 			pool.release(broker);
@@ -704,7 +700,7 @@ public class XQueryURLRewrite extends HttpServlet {
         try {
 			return xquery.execute(compiled, null, outputProperties);
 		} finally {
-            queryContext.cleanupBinaryValueInstances();
+            queryContext.runCleanupTasks();
 			xqyPool.returnCompiledXQuery(sourceInfo.source, compiled);
 		}
     }

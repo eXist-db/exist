@@ -438,8 +438,11 @@ public class Resource extends File {
     protected void freeFile() throws IOException {
     	
     	if (isXML()) {
-	    	if (file == null)
-	    		{throw new IOException();}
+	    	if (file == null) {
+	    	    //XXX: understand why can't throw exception
+	    	    //throw new IOException();
+	    	    return;
+    	    }
 	    	
 	    	file.delete();
 	    	

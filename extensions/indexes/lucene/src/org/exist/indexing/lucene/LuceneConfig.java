@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
+import org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
@@ -29,6 +30,7 @@ public class LuceneConfig {
     private static final String INLINE_ELEMENT = "inline";
     private static final String IGNORE_ELEMENT = "ignore";
     private final static String BOOST_ATTRIB = "boost";
+    private static final String DIACRITICS = "diacritics";
 
     private Map<QName, LuceneIndexConfig> paths = new TreeMap<QName, LuceneIndexConfig>();
     private List<LuceneIndexConfig> wildcardPaths = new ArrayList<LuceneIndexConfig>();
@@ -188,6 +190,12 @@ public class LuceneConfig {
 					                "lucene index config: float expected, got " + value);
 					        }
 					    }
+                        if (elem.hasAttribute(DIACRITICS)) {
+                            String value = elem.getAttribute(DIACRITICS);
+                            if (value.equalsIgnoreCase("no")) {
+                                analyzers.setDefaultAnalyzer(new NoDiacriticsStandardAnalyzer(LuceneIndex.LUCENE_VERSION_IN_USE));
+                            }
+                        }
 					    parseConfig(node.getChildNodes(), namespaces);
                         
 					} else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {

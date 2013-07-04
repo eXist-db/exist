@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012-2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -25,7 +25,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.storage.md.MetaData;
 import org.exist.storage.md.Metas;
-import org.exist.storage.md.MDStorageManager;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -35,6 +34,8 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 import org.exist.xquery.value.StringValue;
 
+import static org.exist.storage.md.MDStorageManager.*;
+
 /**
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -42,8 +43,8 @@ import org.exist.xquery.value.StringValue;
  */
 public class UUID extends BasicFunction {
 	
-	private static final QName NAME = new QName("uuid", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
-	private static final QName NAME_URL = new QName("uuid-by-url", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
+	private static final QName NAME = new QName("uuid", NAMESPACE_URI, PREFIX);
+	private static final QName NAME_URL = new QName("uuid-by-url", NAMESPACE_URI, PREFIX);
 	private static final String DESCRIPTION = "Get the UUID of document.";
 	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "UUID of given document.");
 	

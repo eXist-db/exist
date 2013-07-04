@@ -25,12 +25,14 @@ import org.exist.repo.ExistRepository;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
-import java.net.URL;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -42,7 +44,7 @@ public class UtilityPanel extends JFrame implements Observer {
     private JButton eXideButton;
 
     public UtilityPanel(final Launcher launcher, boolean hideOnStart) {
-        this.setAlwaysOnTop(true);
+        this.setAlwaysOnTop(false);
 
         BufferedImage image = null;
         try {
@@ -54,7 +56,8 @@ public class UtilityPanel extends JFrame implements Observer {
         if (!launcher.isSystemTraySupported())
             {setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);}
 
-        getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
+        getContentPane().setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
 
         setBackground(new Color(255, 255, 255, 255));
 
@@ -104,23 +107,27 @@ public class UtilityPanel extends JFrame implements Observer {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                launcher.shutdown();
+                launcher.shutdown(false);
             }
         });
         toolbar.add(button);
 
-        getContentPane().add(toolbar);
-
-        final JPanel msgPanel = new JPanel();
-        msgPanel.setLayout(new BorderLayout());
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 1.0;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        getContentPane().add(toolbar, c);
 
         statusLabel = new JLabel("", SwingConstants.CENTER);
-        statusLabel.setPreferredSize(new Dimension(300, 20));
-        statusLabel.setMinimumSize(new Dimension(200, 20));
-        if (!launcher.isSystemTraySupported())
-            {statusLabel.setText("System tray icon not supported.");}
+        statusLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
+        statusLabel.setPreferredSize(new Dimension(200, 16));
+        //statusLabel.setMinimumSize(new Dimension(200, 16));
+        if (!launcher.isSystemTraySupported()) {
+            statusLabel.setText("System tray icon not supported.");
+        }
 
-        msgPanel.add(statusLabel, BorderLayout.NORTH);
+        c.gridy = 1;
+        getContentPane().add(statusLabel, c);
 
         final JCheckBox showMessages = new JCheckBox("Show console messages");
         showMessages.setHorizontalAlignment(SwingConstants.LEFT);
@@ -131,23 +138,30 @@ public class UtilityPanel extends JFrame implements Observer {
                 final boolean showMessages = itemEvent.getStateChange() == ItemEvent.SELECTED;
                 if (showMessages) {
                     messages.setVisible(true);
-                } else
-                    {messages.setVisible(false);}
+                } else {
+                    messages.setVisible(false);
+                }
                 UtilityPanel.this.pack();
             }
         });
-        msgPanel.add(showMessages, BorderLayout.CENTER);
+        c.gridy = 2;
+        getContentPane().add(showMessages, c);
 
+        Font messagesFont = new Font("Monospaced", Font.PLAIN, 12);
         messages = new TextArea();
         messages.setBackground(new Color(20,20, 20, 255));
-        messages.setPreferredSize(new Dimension(300, 200));
+        messages.setPreferredSize(new Dimension(800, 200));
         messages.setForeground(new Color(255, 255, 255));
-        msgPanel.add(messages, BorderLayout.SOUTH);
+        messages.setFont(messagesFont);
+
+        c.gridy = 3;
+        c.weighty = 1.0;
+        c.fill = GridBagConstraints.BOTH;
+
+        getContentPane().add(messages, c);
         messages.setVisible(false);
 
-        getContentPane().add(msgPanel);
-
-        setMinimumSize(new Dimension(350, 80));
+        setMinimumSize(new Dimension(350, 90));
         pack();
 
         final Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -155,8 +169,10 @@ public class UtilityPanel extends JFrame implements Observer {
 
         launcher.addObserver(this);
 
-        if (!hideOnStart)
-            {setVisible(true);}
+        if (!hideOnStart) {
+            setVisible(true);
+            toFront();
+        }
     }
 
     private JButton createButton(JToolBar toolbar, String image, String title) {

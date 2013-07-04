@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2011-2013 The eXist-db Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * \$Id\$
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.xquery.modules.lucene;
 
@@ -53,12 +53,12 @@ public class Index extends BasicFunction {
     public final static FunctionSignature signatures[] = {
     	new FunctionSignature(
 	            new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-	            "Index an arbitrary chunk of (non-XML) data with lucene. Syntax is inspired by Solar.",
+	            "Index an arbitrary chunk of (non-XML) data with Lucene. Syntax is inspired by Solr.",
 	            new SequenceType[] {
 	                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.ONE,
 	                "URI path of document in database."),
 	                new FunctionParameterSequenceType("solrExression", Type.NODE, Cardinality.EXACTLY_ONE,
-	                "XML syntax expected by Solr' add expression. Element should be called 'doc', e.g."
+	                "XML syntax expected by Solr's add expression. Element should be called 'doc', e.g."
 	                + "<doc> <field name=\"field1\">data1</field> "
 	                + "<field name=\"field2\" boost=\"value\">data2</field> </doc> ")
 	            },
@@ -66,12 +66,12 @@ public class Index extends BasicFunction {
 	        ),
             new FunctionSignature(
 	            new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-	            "Index an arbitrary chunk of (non-XML) data with lucene. Syntax is inspired by Solar.",
+	            "Index an arbitrary chunk of (non-XML) data with Lucene. Syntax is inspired by Solr.",
 	            new SequenceType[]{
 	                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.ONE,
 	                "URI path of document in database."),
 	                new FunctionParameterSequenceType("solrExression", Type.NODE, Cardinality.EXACTLY_ONE,
-	                "XML syntax expected by Solr' add expression. Element should be called 'doc', e.g."
+	                "XML syntax expected by Solr's add expression. Element should be called 'doc', e.g."
 	                + "<doc> <field name=\"field1\">data1</field> "
 	                + "<field name=\"field2\" boost=\"value\">data2</field> </doc> "),
 	                new FunctionParameterSequenceType("close", Type.BOOLEAN, Cardinality.EXACTLY_ONE,

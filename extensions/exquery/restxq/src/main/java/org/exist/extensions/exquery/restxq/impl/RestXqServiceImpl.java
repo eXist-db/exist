@@ -91,7 +91,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             }
 
             @Override
-            public void cleanupBinaryValueInstances() {
+            public void runCleanupTasks() {
                 for(final BinaryValue binaryValue : binaryValues) {
                     try {
                         binaryValue.close();
@@ -116,7 +116,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
     @Override
     public void service(final HttpRequest request, final HttpResponse response, final ResourceFunctionExecuter resourceFunctionExecuter, final RestXqServiceSerializer restXqServiceSerializer) throws RestXqServiceException {
         super.service(request, response, resourceFunctionExecuter, restXqServiceSerializer);
-        binaryValueManager.cleanupBinaryValueInstances();
+        binaryValueManager.runCleanupTasks();
     }
     
     

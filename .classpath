@@ -37,7 +37,7 @@
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/serializer-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.11.0.jar"/>
-	<classpathentry kind="lib" path="lib/endorsed/resolver-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/endorsed/xml-resolver-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="extensions/fluent/lib/hamcrest-core-1.1.jar"/>
 	<classpathentry kind="lib" path="extensions/fluent/lib/hamcrest-library-1.1.jar"/>
@@ -135,7 +135,6 @@
 	<classpathentry kind="lib" path="lib/optional/commons-lang3-3.1.jar"/>
 	<classpathentry kind="lib" path="tools/aspectj/lib/aspectjrt-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/core/quartz-2.1.6.jar"/>
-	<classpathentry kind="lib" path="lib/endorsed/saxonhe-9.2.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/optional/fluent-hc-4.2.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/httpclient-4.2.3.jar"/>
 	<classpathentry kind="lib" path="lib/optional/httpclient-cache-4.2.3.jar"/>

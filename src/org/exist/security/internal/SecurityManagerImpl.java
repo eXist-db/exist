@@ -89,7 +89,7 @@ public class SecurityManagerImpl implements SecurityManager {
     public static final String PROPERTY_PERMISSIONS_COLLECTIONS = "indexer.permissions.collection";
     public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";	
 
-    private final static Logger LOG = Logger.getLogger(SecurityManager.class);
+    public final static Logger LOG = Logger.getLogger(SecurityManager.class);
 
     private Database pool;
 

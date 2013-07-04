@@ -31,7 +31,6 @@ import org.exist.config.annotation.ConfigurationFieldSettings;
 import static org.exist.config.annotation.ConfigurationFieldSettings.OCTAL_STRING_KEY;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.XmldbURI;
 
 @ConfigurationClass("")
 public abstract class AbstractAccount extends AbstractPrincipal implements Account {
@@ -70,7 +69,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 		super(realm, realm.collectionAccounts, id, name);
 	}
 	
-        protected AbstractAccount(DBBroker broker, AbstractRealm realm, int id, String name) throws ConfigurationException {
+    protected AbstractAccount(DBBroker broker, AbstractRealm realm, int id, String name) throws ConfigurationException {
 		super(broker, realm, realm.collectionAccounts, id, name);
 	}
         

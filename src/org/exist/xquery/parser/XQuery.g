@@ -198,8 +198,7 @@ xpath throws XPathException
         // TODO: WM: not sure if we need handleException anymore.
         // we could just throw the exception.
         handleException(
-            new XPathException("err:XPST0003 in line " + e.getLine() +
-            ", column " + e.getColumn() + ": " + e.getMessage())
+	        new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, e.getMessage())
         ); 
     }
 
@@ -1490,6 +1489,9 @@ elementWithoutAttributes throws XPathException
         	if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
             	lexer.wsExplicit = false;
             	throw new XPathException(#q, "err:XPST0003: No closing end tag found for element constructor: " + name);
+            } else if (e.getMessage().contains("unexpected token")) {
+	        	throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, e.getMessage() +
+	        		" (while expecting closing tag for element constructor: " + name + ")");
             } else {
             	throw e;
             }
@@ -1538,6 +1540,9 @@ elementWithAttributes throws XPathException
         	if (e.getMessage().contains("expecting XML end tag") || e.getMessage().contains("<")) {
 	            lexer.wsExplicit = false;
 	            throw new XPathException(#q, "err:XPST0003: Static error: no closing end tag found for element constructor: " + name);
+	        } else if (e.getMessage().contains("unexpected token")) {
+	        	throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, e.getMessage() +
+	        		" (while expecting closing tag for element constructor: " + name + ")");
 	        } else {
 	        	throw e;
 	        }

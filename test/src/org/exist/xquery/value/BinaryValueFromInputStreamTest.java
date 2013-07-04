@@ -43,7 +43,7 @@ public class BinaryValueFromInputStreamTest {
 
             assertArrayEquals(testData, baos.toByteArray());
         } finally {
-            binaryValueManager.cleanupBinaryValueInstances();
+            binaryValueManager.runCleanupTasks();
         }
     }
 }

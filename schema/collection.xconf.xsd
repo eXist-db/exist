@@ -47,13 +47,13 @@
         <xs:choice>
             <xs:sequence>
                 <xs:element ref="fulltext"/>
-                <xs:element ref="lucene" minOccurs="0"/>
+                <xs:element ref="lucene" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:group ref="rangeIndex" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="gml" minOccurs="0"/>
             </xs:sequence>
             <xs:sequence>
-                <xs:element ref="lucene"/>
+                <xs:element ref="lucene" maxOccurs="unbounded"/>
                 <xs:group ref="rangeIndex" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="gml" minOccurs="0"/>
@@ -135,6 +135,22 @@
             <xs:element ref="text" maxOccurs="unbounded"/>
             <xs:group ref="textInstruction" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
+        <xs:attribute name="diacritics" use="optional" default="yes">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Preserve diacritics</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Strip diacritics</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:complexType>
     
     <xs:element name="analyzer" type="analyzerType"/>

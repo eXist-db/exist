@@ -320,7 +320,7 @@ public class Predicate extends PathExpr {
                 if (context.getProfiler().isEnabled())
                     {context.getProfiler().message(this,
                         Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Boolean evaluation");}
-                result = evalBoolean(contextSequence, inner);
+                result = evalBoolean(contextSequence, inner, mode);
                 break;
             case POSITIONAL:
                 if (context.getProfiler().isEnabled())
@@ -348,7 +348,7 @@ public class Predicate extends PathExpr {
      * @return The result of the boolean evaluation of the predicate.
      * @throws XPathException
      */
-    private Sequence evalBoolean(Sequence contextSequence, Expression inner)
+    private Sequence evalBoolean(Sequence contextSequence, Expression inner, int mode)
             throws XPathException {
         final Sequence result = new ValueSequence();
         int p;
@@ -367,6 +367,12 @@ public class Predicate extends PathExpr {
         } else {
             // 0-based
             p = 0;
+
+            final boolean reverseAxis = Type.subTypeOf(contextSequence.getItemType(),
+                    Type.NODE) && (mode == Constants.ANCESTOR_AXIS ||
+                    mode == Constants.ANCESTOR_SELF_AXIS || mode == Constants.PARENT_AXIS ||
+                    mode == Constants.PRECEDING_AXIS || mode == Constants.PRECEDING_SIBLING_AXIS);
+
             // TODO : is this block also accurate in reverse-order processing ?
             // Compute each position in the boolean-like way...
             // ... but grab some context positions ! -<8-P
@@ -386,10 +392,10 @@ public class Predicate extends PathExpr {
                     //XXX: else error or nothing?
                 }
                 for (final NumericValue pos : positions) {
-                    final int position = pos.getInt();
+                    final int position = (reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1);
                     // TODO : move this test above ?
                     if (position <= contextSequence.getItemCount())
-                        {result.add(contextSequence.itemAt(position - 1));}
+                        {result.add(contextSequence.itemAt(position));}
                 }
             } else {
                 final Set<NumericValue> positions = new TreeSet<NumericValue>();
@@ -408,10 +414,10 @@ public class Predicate extends PathExpr {
                         {result.add(item);}
                 }
                 for (final NumericValue pos : positions) {
-                    final int position = pos.getInt();
+                    final int position = (reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1);
                     // TODO : move this test above ?
                     if (position <= contextSequence.getItemCount())
-                        {result.add(contextSequence.itemAt(position - 1));}
+                        {result.add(contextSequence.itemAt(position));}
                 }
             }
         }

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="all" name="metadata-sleepycat">
 
-   <property file="../local.build.properties"/>
-   <property file="../build.properties"/>
+   <property file="../../local.build.properties"/>
+   <property file="../../build.properties"/>
 
    <property name="extension.name" value="${ant.project.name}"/>
    <property name="existhome.dir" location="../../.."/>
-
+   
+   <property name="luceneIndex.dir" location="../../indexes/lucene"/>
+   
    <property name="extension.include" value="${include.feature.metadata.sleepycat}"/>
 
    <!-- specific overrules -->
@@ -17,6 +19,12 @@
    <path id="classpath.extension.custom">
       <fileset dir="${existhome.dir}/lib/extensions">
          <include name="exist-metadata-interface.jar"/>
+         <include name="exist-index-lucene.jar"/>
+      </fileset>
+      <fileset dir="${luceneIndex.dir}/lib">
+         <include name="lucene-analyzers-3.6.1.jar"/>
+         <include name="lucene-core-3.6.1.jar"/>
+         <include name="lucene-queries-3.6.1.jar"/>
       </fileset>
    </path>
 

@@ -370,10 +370,15 @@ else
 fi
 
 # OSX always places Java in the same location so we can reliably set JAVA_HOME
+# It is more reliable however to determine the location with /usr/libexec/java_home
 if [ "$DIST_OS" = "macosx" ]
 then
     if [ -z "$JAVA_HOME" ]; then
-        JAVA_HOME="/Library/Java/Home"; export JAVA_HOME
+        if [ -x /usr/libexec/java_home ]; then
+            JAVA_HOME=`/usr/libexec/java_home`; export JAVA_HOME
+        else    
+            JAVA_HOME="/Library/Java/Home"; export JAVA_HOME
+        fi
     fi
 fi
 

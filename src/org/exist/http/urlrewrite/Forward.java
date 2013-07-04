@@ -28,7 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.w3c.dom.Element;
 
@@ -45,7 +44,6 @@ public abstract class Forward extends URLRewrite {
             {throw new ServletException("Failed to initialize request dispatcher to forward request to " + uri);}
         setHeaders(new HttpResponseWrapper(response));
         dispatcher.forward(request, response);
-        
     }
 
     protected abstract RequestDispatcher getRequestDispatcher(HttpServletRequest request);

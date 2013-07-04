@@ -34,7 +34,11 @@
             <istrue value="${include.module.xslfo}"/>
         </and>
     </condition>
-  
+
+    <condition property="libs.available.calabash">
+        <available file="${modules.lib}/calabash.jar"/>
+    </condition>
+
 	<condition property="include.module.oracle_ext">
 	    <and>
             <istrue value="${include.module.oracle}"/>
@@ -128,18 +132,18 @@
     <!-- 
         Special targets for xmlcalabash module 
     -->
-    <target name="prepare-xmlcalabash" if="${include.module.xmlcalabash}">
+    <target name="prepare-xmlcalabash"
+            unless="libs.available.calabash" if="${include.module.xmlcalabash}" >
         <echo message="------------------------------------------------------"/>
         <echo message="Downloading libraries required by the xmlcalabash module"/>
         <echo message="------------------------------------------------------"/>
-
+        <echo message="Calabash: ${libs.available.calabash}"/>
         <fetch classpathref="classpath.core" dest="${modules.lib}" 
-               url="${include.module.xmlcalabash.url}" classname="com.xmlcalabash.drivers.Main">
+               url="${include.module.xmlcalabash.url}">
             <patternset>
               <include name="**/calabash.jar"/>
             </patternset>
         </fetch>
-
     </target>
 
     <!-- 
@@ -236,7 +240,7 @@
     -->
     <target name="prepare-ivy">
         <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="classpath.core"/>
-        <ivy:retrieve xmlns:ivy="antlib:org.apache.ivy.ant" sync="true"/>
+        <ivy:retrieve xmlns:ivy="antlib:org.apache.ivy.ant" sync="false"/>
     </target>
 
     <target name="prepare" depends="prepare-ivy,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo,prepare-cqlparser">

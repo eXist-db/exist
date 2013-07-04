@@ -22,6 +22,7 @@
 package org.exist.replication.shared;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -82,7 +83,7 @@ public class eXistMessage {
      * @throws IllegalArgumentException When argument cannot be converted to enum value.
      */
     public void setResourceOperation(String type) {
-        resourceOperation = ResourceOperation.valueOf(type.toUpperCase());
+        resourceOperation = ResourceOperation.valueOf(type.toUpperCase(Locale.ENGLISH));
     }
 
     public ResourceOperation getResourceOperation() {
@@ -97,7 +98,7 @@ public class eXistMessage {
      * @throws IllegalArgumentException When argument cannot be converted to enum value.
      */
     public void setResourceType(String type) {
-        resourceType = eXistMessage.ResourceType.valueOf(type.toUpperCase());
+        resourceType = eXistMessage.ResourceType.valueOf(type.toUpperCase(Locale.ENGLISH));
     }
 
     public ResourceType getResourceType() {

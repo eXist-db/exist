@@ -137,6 +137,12 @@ public class AtomServlet extends AbstractExistHttpServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
+        
+        // Get reference to broker pool
+        pool=super.getPool();
+        
+        // Get form encoding
+        formEncoding=super.getFormEncoding();
 
 		// Load all the modules
 		// modules = new HashMap<String,AtomModule>();

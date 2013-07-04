@@ -33,7 +33,7 @@ import org.exist.xquery.value.*;
  * 
  * <p>Here's a short example of how to start up the database, perform a query, and shut down:
  * <pre> Database.startup(new File("conf.xml"));
- * Database db = Database.login("admin", null);
+ * Database db = Database.login("admin", "passwd");
  * for (String name : db.getFolder("/").query().all("//user/@name").values())
  *   System.out.println("user: " + name);
  * Database.shutdown();</pre></p>
@@ -230,6 +230,35 @@ public class Database {
 			throw new DatabaseException(e.getMessage(),e);
 		}
 		return new Database(user);
+	}
+	
+    /**
+     * Get database if was already login in current thread. 
+     *
+     * @return an instance of the database configured for access
+     * @throws DatabaseException if the user could not be logged in
+     */
+	public static Database current() throws DatabaseException {
+	    if (pool == null) {
+            //if (isStarted()) throw new IllegalStateException("database already started");
+	        try {
+    	        pool = BrokerPool.getInstance(dbName);
+                txManager = pool.getTransactionManager();
+                //configureRootCollection(configFile);
+                //defragmenter.start();
+                //QueryService.statistics().reset();
+	        } catch (EXistException e) {
+	            throw new DatabaseException(e);
+	        }
+	    }
+	    DBBroker broker;
+	    try {
+	        broker = pool.getActiveBroker();
+	    } catch (Throwable e) {
+	        throw new DatabaseException(e);
+	    }
+
+        return new Database( broker.getSubject() );
 	}
 	
 	/**

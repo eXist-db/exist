@@ -1,0 +1,15 @@
+eXist-db & Java Service Wrapper
+===============================
+
+Out of the box the by eXist-db provided 'java service wrapper' supports 
+the following mainstream platforms:
+
+- Windows x86 (32bit/64bit)
+- Linux x86 (32bit/64bit) & IA (64bit)
+- Mac OS X x86 (32bit/64bit)
+- Solaris x86 (32bit/64bit) & SPARC (32bit/64bit)
+
+Support for additional platforms can be obtained by downloading the "Delta Pack" 
+from the "Tanuki software" website. (http://wrapper.tanukisoftware.com)
+
+Available platforms are: AIX (PPC), FreeBSD (x86), HPUX and Linux (PPC,ARM).

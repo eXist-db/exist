@@ -1002,8 +1002,12 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     
     private void renameAction(final ActionEvent ev) {
         final ResourceDescriptor[] res = getSelectedResources();
-        
-        final Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.119"), Messages.getString("ClientFrame.120"), JOptionPane.QUESTION_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+        String inputValue = "";
+        try {
+            inputValue = res[0].getName().toString();
+        } catch (Exception npe) {
+        }
+        final Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.119"), Messages.getString("ClientFrame.120"), JOptionPane.QUESTION_MESSAGE, null, null, inputValue); //$NON-NLS-1$ //$NON-NLS-2$
 		
         if(val == null) {
             return;

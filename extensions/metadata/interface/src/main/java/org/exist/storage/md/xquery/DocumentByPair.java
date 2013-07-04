@@ -25,13 +25,14 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.storage.md.MetaData;
-import org.exist.storage.md.MDStorageManager;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
+
+import static org.exist.storage.md.MDStorageManager.*;
 
 /**
  * 
@@ -40,7 +41,7 @@ import org.exist.xquery.value.*;
  */
 public class DocumentByPair extends BasicFunction {
 	
-	private static final QName NAME = new QName("document-by-pair", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX);
+	private static final QName NAME = new QName("document-by-pair", NAMESPACE_URI, PREFIX);
 	private static final String DESCRIPTION = "Get the documents by match key/value pair.";
 	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "Resources which have this key/value pair in their metadata");
 	
