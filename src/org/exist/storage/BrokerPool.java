@@ -903,8 +903,10 @@ public class BrokerPool extends Observable implements Database {
         										transactionManager.abort(txn);
         									} catch (final TriggerException e) {
         										transactionManager.abort(txn);
-        									}
-        								}
+        									} finally {
+                                                transactionManager.close(txn);
+                                            }
+                                        }
         							} catch(final PermissionDeniedException pde) {
         								LOG.fatal(pde.getMessage(), pde);
         							}
@@ -1140,6 +1142,8 @@ public class BrokerPool extends Observable implements Database {
                 final String msg = "Initialisation of system collections failed: " + e.getMessage();
                 LOG.error(msg, e);
                 throw new EXistException(msg, e);
+            } finally {
+                transact.close(txn);
             }
         }
     }

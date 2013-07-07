@@ -182,6 +182,8 @@ public class SecurityManagerImpl implements SecurityManager {
             transaction.abort(txn);
             e.printStackTrace();
             LOG.debug("loading acl failed: " + e.getMessage());
+        } finally {
+            transaction.close(txn);
         }
 
         try {
@@ -204,6 +206,8 @@ public class SecurityManagerImpl implements SecurityManager {
             transaction.abort(txn);
             e.printStackTrace();
             LOG.debug("loading configuration failed: " + e.getMessage());
+        } finally {
+            transaction.close(txn);
         }
 			
         final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);

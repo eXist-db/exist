@@ -603,6 +603,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
 					e);
 		} finally {
+            transact.close(transaction);
 			closeDocument(document, Lock.WRITE_LOCK);
 			pool.release(broker);
 			pool.setSubject(preserveSubject);

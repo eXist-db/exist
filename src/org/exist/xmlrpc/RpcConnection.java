@@ -202,6 +202,7 @@ public class RpcConnection implements RpcAPI {
             handleException(e);
             
         } finally {
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
         return false;
@@ -259,6 +260,7 @@ public class RpcConnection implements RpcAPI {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
         } finally {
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
         return false;
@@ -1234,6 +1236,7 @@ public class RpcConnection implements RpcAPI {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
         } finally {
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
     }
@@ -1306,6 +1309,7 @@ public class RpcConnection implements RpcAPI {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
         } finally {
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
     }
@@ -2267,6 +2271,7 @@ public class RpcConnection implements RpcAPI {
             return false;
             
         } finally {
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
     }
@@ -2472,6 +2477,7 @@ public class RpcConnection implements RpcAPI {
     		handleException(e);
 
     	} finally {
+            transact.close(transaction);
     		factory.getBrokerPool().release(broker);
         	// DWES there are situations the file is not cleaned up
     		if(source!=null)
@@ -2575,6 +2581,7 @@ public class RpcConnection implements RpcAPI {
             return false;
 
         } finally {
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
         return doc != null;
@@ -3082,10 +3089,12 @@ public class RpcConnection implements RpcAPI {
             return true;
 
         } catch (final Throwable e) {
+            transact.abort(transaction);
             handleException(e);
             return false;
             
         } finally {
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
     }
@@ -3135,6 +3144,7 @@ public class RpcConnection implements RpcAPI {
             return false;
 
         } finally {
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
     }
@@ -4360,6 +4370,7 @@ public class RpcConnection implements RpcAPI {
             return false;
 
         } finally {
+            transact.close(transaction);
             if(doc != null)
                 {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
             factory.getBrokerPool().release(broker);
@@ -4433,6 +4444,8 @@ public class RpcConnection implements RpcAPI {
     private boolean unlockResource(XmldbURI docURI) throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
         DocumentImpl doc = null;
+        final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
+        Txn transaction = null;
         try {
             broker = factory.getBrokerPool().get(user);
             doc = broker.getXMLResource(docURI, Lock.WRITE_LOCK);
@@ -4445,21 +4458,21 @@ public class RpcConnection implements RpcAPI {
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 {throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());}
-            //TODO : start the transaction earlier and register the lock within it ?
-            final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-            final Txn transaction = transact.beginTransaction();            
+            transaction = transact.beginTransaction();
             doc.setUserLock(null);
             broker.storeXMLResource(transaction, doc);
             transact.commit(transaction);
             return true;
 
         } catch (final Throwable e) {
+            transact.abort(transaction);
             handleException(e);
             return false;
 
         } finally {
             if(doc != null)
                 {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
     }
@@ -4985,6 +4998,7 @@ public class RpcConnection implements RpcAPI {
                 {collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);}
             if(destination != null)
                 {destination.release(Lock.WRITE_LOCK);}
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
     }
@@ -5058,6 +5072,7 @@ public class RpcConnection implements RpcAPI {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
 		} finally {
+            transact.close(transaction);
             if(collection != null)
                 {collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);}
             if(destination != null)
@@ -5309,6 +5324,7 @@ public class RpcConnection implements RpcAPI {
         } finally {
             if(doc != null)
                 {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
+            transact.close(transaction);
             factory.getBrokerPool().release(broker);
         }
     }

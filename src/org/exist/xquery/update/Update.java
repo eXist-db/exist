@@ -120,11 +120,11 @@ public class Update extends Modification {
         
         if (!inSeq.isEmpty()) {          
         	context.pushInScopeNamespaces();
+            //start a transaction
+            final Txn transaction = getTransaction();
     		try {
     			final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                
-                //start a transaction
-                final Txn transaction = getTransaction();
+
                 final StoredNode ql[] = selectAndLock(transaction, inSeq);
                 final IndexListener listener = new IndexListener(ql);
                 TextImpl text;
@@ -186,15 +186,20 @@ public class Update extends Modification {
                 //commit the transaction
                 commitTransaction(transaction);
             } catch (final LockException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final PermissionDeniedException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final EXistException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final TriggerException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
 			} finally {
                 unlockDocuments();
+                closeTransaction(transaction);
                 context.popInScopeNamespaces();
             }
         }

@@ -159,19 +159,20 @@ public class Delete extends Modification {
                 //commit the transaction
                 commitTransaction(transaction);
             } catch (final EXistException e) {
-                //transact.abort(transaction);
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final PermissionDeniedException e) {
-                //transact.abort(transaction);
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final LockException e) {
-                //transact.abort(transaction);
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final TriggerException e) {
-                //transact.abort(transaction);
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
 			} finally {
                 unlockDocuments();
+                closeTransaction(transaction);
             }
         }
         

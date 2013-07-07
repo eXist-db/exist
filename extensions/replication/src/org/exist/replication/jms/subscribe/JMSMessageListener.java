@@ -418,7 +418,7 @@ public class JMSMessageListener implements MessageListener {
                 collection.release(Lock.WRITE_LOCK);
                 //collection.setTriggersEnabled(true);
             }
-
+            txnManager.close(txn);
             brokerPool.release(broker);
 
         }
@@ -484,7 +484,7 @@ public class JMSMessageListener implements MessageListener {
             if (collection != null) {
                 collection.release(Lock.WRITE_LOCK);
             }
-
+            txnManager.close(txn);
             brokerPool.release(broker);
 
         }
@@ -558,6 +558,7 @@ public class JMSMessageListener implements MessageListener {
                 collection.release(Lock.WRITE_LOCK);
             }
 
+            txnManager.close(txn);
             brokerPool.release(broker);
 
         }
@@ -617,6 +618,7 @@ public class JMSMessageListener implements MessageListener {
                 collection.release(Lock.WRITE_LOCK);
             }
 
+            txnManager.close(txn);
             brokerPool.release(broker);
 
         }
@@ -721,7 +723,7 @@ public class JMSMessageListener implements MessageListener {
             if (collection != null) {
                 collection.release(Lock.WRITE_LOCK);
             }
-
+            txnManager.close(txn);
             brokerPool.release(broker);
         }
     }
@@ -809,7 +811,7 @@ public class JMSMessageListener implements MessageListener {
                 srcCollection.release(Lock.WRITE_LOCK);
             }
 
-
+            txnManager.close(txn);
             brokerPool.release(broker);
 
 
@@ -886,7 +888,7 @@ public class JMSMessageListener implements MessageListener {
                 srcCollection.release(Lock.WRITE_LOCK);
             }
 
-
+            txnManager.close(txn);
             brokerPool.release(broker);
 
 

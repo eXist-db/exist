@@ -132,10 +132,10 @@ public class Insert extends Modification {
             
         	context.pushInScopeNamespaces();
             contentSeq = deepCopy(contentSeq);
-        
+
+            //start a transaction
+            final Txn transaction = getTransaction();
             try {
-                //start a transaction
-                final Txn transaction = getTransaction();
                 final StoredNode[] ql = selectAndLock(transaction, inSeq);
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 final IndexListener listener = new IndexListener(ql);                
@@ -172,15 +172,20 @@ public class Insert extends Modification {
                 //commit the transaction
                 commitTransaction(transaction);
             } catch (final PermissionDeniedException e) {
+                abortTransaction(transaction);
     			throw new XPathException(this, e.getMessage(), e);
     		} catch (final EXistException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final LockException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final TriggerException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
 			} finally {
                 unlockDocuments();
+                closeTransaction(transaction);
                 context.popInScopeNamespaces();
             }
         }

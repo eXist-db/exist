@@ -180,17 +180,20 @@ public class QT3TS_To_junit {
         	TransactionManager txManager = db.getTransactionManager();
         	Txn txn = txManager.beginTransaction();
 
-            FileInputStream is = new FileInputStream(file);
             try {
-            	col.addBinaryResource(txn, broker, 
-                		XmldbURI.create(file.getName()), 
-                		is, 
-                		MimeType.BINARY_TYPE.getName(), file.length());
+                FileInputStream is = new FileInputStream(file);
+                try {
+                    col.addBinaryResource(txn, broker,
+                            XmldbURI.create(file.getName()),
+                            is,
+                            MimeType.BINARY_TYPE.getName(), file.length());
+                } finally {
+                    is.close();
+                }
+                txManager.commit(txn);
             } finally {
-                is.close();
+                txManager.close(txn);
             }
-
-			txManager.commit(txn);
         }
     	//System.out.println(file);
     }

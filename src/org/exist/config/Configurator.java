@@ -1220,6 +1220,7 @@ public class Configurator {
             throw new IOException(e);
             
         } finally {
+            transact.close(txn);
             broker.setSubject(currentUser);
         }
     }

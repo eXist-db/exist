@@ -62,9 +62,15 @@ public class TransactionManager {
     public final static String PROPERTY_RECOVERY_FORCE_RESTART = "db-connection.recovery.force-restart";
 
     /**
+     * Timeout for inactive transactions. A transaction which has not processed
+     * any operations for this time may be considered dead.
+     */
+    public final static long TXN_INACTIVE_TIMEOUT = 60 * 1000;
+
+    /**
      * Logger for this class
      */
-    private static final Logger LOG = Logger .getLogger(TransactionManager.class);
+    private static final Logger LOG = Logger.getLogger(TransactionManager.class);
 
     private long nextTxnId = 0;
 
@@ -171,8 +177,9 @@ public class TransactionManager {
      * @throws TransactionException
      */
     public void commit(final Txn txn) throws TransactionException {
-        if (!enabled)
-            {return;}
+        if (!enabled || txn.getState() != Txn.State.STARTED) {
+            return;
+        }
 
         new RunWithLock<Object>() {
         	public Object execute() {
@@ -196,11 +203,13 @@ public class TransactionManager {
     }
 	
     public void abort(final Txn txn) {
-        if (!enabled || txn == null)
-            {return;}
+        if (!enabled || txn == null || txn.getState() != Txn.State.STARTED) {
+            return;
+        }
 
         new RunWithLock<Object>() {
         	public Object execute() {
+                transactions.remove(txn.getId());
                 try {
                     journal.writeToLog(new TxnAbort(txn.getId()));
                 } catch (final TransactionException e) {
@@ -210,11 +219,25 @@ public class TransactionManager {
                     {journal.flushToLog(true);}
                 txn.signalAbort();
                 txn.releaseAll();
-                transactions.remove(txn.getId());
                 processSystemTasks();
                 return null;
         	}
         }.run();
+    }
+
+    /**
+     * Make sure the transaction has either been committed or aborted.
+     *
+     * @param txn
+     */
+    public void close(final Txn txn) {
+        if (!enabled || txn == null) {
+            return;
+        }
+        if (txn.getState() == Txn.State.STARTED) {
+            LOG.warn("Transaction was not committed or aborted!", new Throwable());
+            abort(txn);
+        }
     }
 
     /**

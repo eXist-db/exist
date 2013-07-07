@@ -116,6 +116,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
         } catch(final TriggerException te) {
             transact.abort(txn);
             throw new EXistException(te);
+        } finally {
+            transact.close(txn);
         }
     }
     
