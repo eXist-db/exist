@@ -24,7 +24,6 @@ package org.exist.util;
 import org.apache.log4j.Logger;
 
 import org.exist.repo.Deployment;
-import org.quartz.SimpleTrigger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -43,7 +42,6 @@ import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.JobConfig;
 import org.exist.scheduler.JobException;
-import org.exist.scheduler.Scheduler;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerFactory;
@@ -80,6 +78,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -666,7 +665,7 @@ public class Configuration implements ErrorHandler
             if(strJobType == null) {
                 jobType = JobType.USER; //default to user if unspecified
             } else {
-                jobType = JobType.valueOf(strJobType.toUpperCase());
+                jobType = JobType.valueOf(strJobType.toUpperCase(Locale.ENGLISH));
             }
 
             final String jobName = getConfigAttributeValue(job, JobConfig.JOB_NAME_ATTRIBUTE);

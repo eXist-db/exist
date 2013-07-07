@@ -108,10 +108,6 @@
         <Set name="contexts">
           <Ref id="Contexts"/>
         </Set>
-        <Call name="setContextAttribute">
-          <Arg>org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern</Arg>
-          <Arg>.*/servlet-api-[^/]*\.jar$</Arg>
-        </Call>
 
         <!-- Add a customize step to the deployment lifecycle -->
         <!-- uncomment and replace DebugBinding with your extended AppLifeCycle.Binding class 
@@ -128,6 +124,10 @@
             </Arg>
           </Call>
           -->
+          <Call name="setContextAttribute">
+            <Arg>org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern</Arg>
+            <Arg>.*/servlet-api-[^/]*\.jar$|.*/content/.*\.jar$</Arg>
+          </Call>
       </New>
     </Arg>
   </Call>
@@ -280,4 +280,17 @@
     <Arg><SystemProperty name="jetty.home" default="."/>/tmp</Arg>
   </Call>
 
+  <Call name="setAttribute">
+      <Arg>org.eclipse.jetty.webapp.configuration</Arg>
+      <Arg>
+          <Array type="java.lang.String">
+               <Item>org.eclipse.jetty.webapp.WebInfConfiguration</Item>
+               <Item>org.eclipse.jetty.webapp.WebXmlConfiguration</Item>
+               <Item>org.eclipse.jetty.webapp.MetaInfConfiguration</Item>
+               <Item>org.eclipse.jetty.webapp.FragmentConfiguration</Item>
+               <Item>org.eclipse.jetty.annotations.AnnotationConfiguration</Item>
+               <Item>org.eclipse.jetty.webapp.JettyWebXmlConfiguration</Item>
+          </Array>
+      </Arg>
+    </Call>
 </Configure>

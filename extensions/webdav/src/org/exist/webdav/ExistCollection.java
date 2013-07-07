@@ -276,6 +276,7 @@ public class ExistCollection extends ExistResource {
                 collection.release(Lock.WRITE_LOCK);
             }
 
+            txnManager.close(txn);
             brokerPool.release(broker);
 
             if(LOG.isDebugEnabled())
@@ -349,6 +350,7 @@ public class ExistCollection extends ExistResource {
             if (collection != null) {
                 collection.release(Lock.WRITE_LOCK);
             }
+            txnManager.close(txn);
 
             brokerPool.release(broker);
 
@@ -490,7 +492,7 @@ public class ExistCollection extends ExistResource {
             if (collection != null) {
                 collection.release(Lock.WRITE_LOCK);
             }
-
+            txnManager.close(txn);
             brokerPool.release(broker);
 
             if(LOG.isDebugEnabled())
@@ -597,7 +599,7 @@ public class ExistCollection extends ExistResource {
                 srcCollection.release(Lock.WRITE_LOCK);
             }
 
-
+            txnManager.close(txn);
             brokerPool.release(broker);
 
             if(LOG.isDebugEnabled())

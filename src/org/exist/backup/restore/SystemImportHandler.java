@@ -212,7 +212,9 @@ public class SystemImportHandler extends DefaultHandler {
         	} catch (final Exception e) {
         		txnManager.abort(txn);
         		throw new SAXException(e);
-    		}
+    		} finally {
+                txnManager.close(txn);
+            }
 
             currentCollection = mkcol(collUri, getDateFromXSDateTimeStringForItem(created, name));
 
@@ -423,6 +425,7 @@ public class SystemImportHandler extends DefaultHandler {
 				txnManager.abort(txn);
 				throw new IOException(e);
 			} finally {
+                txnManager.close(txn);
 //				if (resource != null)
 //					resource.getUpdateLock().release(Lock.READ_LOCK);
 			}
@@ -455,7 +458,9 @@ public class SystemImportHandler extends DefaultHandler {
 		        		txnManager.abort(txn);
 		        		
 		                listener.warn("Failed to remove deleted collection: " + name + ": " + e.getMessage());
-					}
+					} finally {
+                        txnManager.close(txn);
+                    }
 		        }
         	} catch (final Exception e) {
                 listener.warn("Failed to remove deleted collection: " + name + ": " + e.getMessage());
@@ -483,8 +488,10 @@ public class SystemImportHandler extends DefaultHandler {
 		            	txnManager.abort(txn);
 		            	
 		                listener.warn("Failed to remove deleted resource: " + name + ": " + e.getMessage());
-		            }
-	        	}
+		            } finally {
+                        txnManager.close(txn);
+                    }
+                }
         	} catch (final Exception e) {
                 listener.warn("Failed to remove deleted resource: " + name + ": " + e.getMessage());
 			}
@@ -541,7 +548,9 @@ public class SystemImportHandler extends DefaultHandler {
     	} catch (final Exception e) {
     		txnManager.abort(txn);
     		throw new SAXException(e);
-		}
+		} finally {
+            txnManager.close(txn);
+        }
     }
     
     class CollectionDeferredPermission extends AbstractDeferredPermission<Collection> {
@@ -579,6 +588,7 @@ public class SystemImportHandler extends DefaultHandler {
                 	throw xe;
 
             	} finally {
+                    txnManager.close(txn);
                 	getTarget().release(Lock.WRITE_LOCK);
                 }
                 
@@ -626,6 +636,7 @@ public class SystemImportHandler extends DefaultHandler {
 	            	throw xe;
 	            	
 	            } finally {
+                    txnManager.close(txn);
 	                getTarget().getUpdateLock().release(Lock.WRITE_LOCK);
 	            }
             

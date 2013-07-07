@@ -342,7 +342,9 @@ public class CollectionConfigurationManager {
     	} catch (final Exception e) {
     		transact.abort(txn);
     		throw new EXistException("Failed to initialize '" + uri + "' : " + e.getMessage());
-		}
+		} finally {
+            transact.close(txn);
+        }
     }
 
     /** Create a stored default configuration document for the root collection 
@@ -392,7 +394,9 @@ public class CollectionConfigurationManager {
         } catch (final CollectionConfigurationException e) {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
-        } 
+        } finally {
+            transact.close(transaction);
+        }
     }
 
     /*

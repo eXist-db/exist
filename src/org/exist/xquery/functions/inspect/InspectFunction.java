@@ -1,7 +1,6 @@
 package org.exist.xquery.functions.inspect;
 
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.functions.util.UtilModule;
 import org.exist.xquery.xqdoc.XQDocHelper;
@@ -10,6 +9,7 @@ import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.Map;
+import java.util.Set;
 
 public class InspectFunction extends BasicFunction {
 
@@ -40,6 +40,7 @@ public class InspectFunction extends BasicFunction {
     protected final static QName ANNOTATION_VALUE_QNAME = new QName("value");
     protected static final QName VERSION_QNAME = new QName("version");
     protected static final QName AUTHOR_QNAME = new QName("author");
+    protected static final QName CALLS_QNAME = new QName("calls");
 
     public InspectFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -50,11 +51,21 @@ public class InspectFunction extends BasicFunction {
         final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
         final FunctionSignature sig = ref.getSignature();
         final MemTreeBuilder builder = context.getDocumentBuilder();
-        final int nodeNr = generateDocs(sig, builder);
+        final int nodeNr = generateDocs(sig, null, builder);
         return builder.getDocument().getNode(nodeNr);
     }
 
-    public static int generateDocs(FunctionSignature sig, MemTreeBuilder builder) throws XPathException {
+    /**
+     * Generate an XML fragment containing information about the function identified by its signature.
+     *
+     * @param sig the signature of the function to describe
+     * @param func the function implementation. If provided, the method will also inspect the function body
+     *             and list all functions called from the current function.
+     * @param builder builder used to create the XML
+     * @return nodeNr of the generated element
+     * @throws XPathException
+     */
+    public static int generateDocs(FunctionSignature sig, UserDefinedFunction func, MemTreeBuilder builder) throws XPathException {
         XQDocHelper.parse(sig);
 
         final AttributesImpl attribs = new AttributesImpl();
@@ -92,6 +103,9 @@ public class InspectFunction extends BasicFunction {
             builder.startElement(DEPRECATED_QNAME, null);
             builder.characters(sig.getDeprecated());
             builder.endElement();
+        }
+        if (func != null) {
+            generateDependencies(func, builder);
         }
         builder.endElement();
         return nodeNr;
@@ -136,5 +150,33 @@ public class InspectFunction extends BasicFunction {
                 builder.endElement();
             }
         }
+    }
+
+    /**
+     * Inspect the provided function implementation and return an XML fragment listing all
+     * functions called from the function.
+     *
+     * @param function
+     * @param builder
+     */
+    public static void generateDependencies(UserDefinedFunction function, MemTreeBuilder builder) {
+        FunctionCallVisitor visitor = new FunctionCallVisitor();
+        function.getFunctionBody().accept(visitor);
+        Set<FunctionSignature> signatures = visitor.getFunctionCalls();
+        if (signatures.size() == 0) {
+            return;
+        }
+        builder.startElement(CALLS_QNAME, null);
+        final AttributesImpl attribs = new AttributesImpl();
+        for (FunctionSignature signature : signatures) {
+            attribs.clear();
+            attribs.addAttribute(null, "name", "name", "CDATA", signature.getName().toString());
+            attribs.addAttribute("", "module", "module", "CDATA", signature.getName().getNamespaceURI());
+            attribs.addAttribute("", "arity", "arity", "CDATA", Integer.toString(signature.getArgumentCount()));
+
+            builder.startElement(FUNCTION_QNAME, attribs);
+            builder.endElement();
+        }
+        builder.endElement();
     }
 }

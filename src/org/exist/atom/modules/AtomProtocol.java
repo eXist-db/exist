@@ -249,7 +249,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 				} catch (final LockException ex) {
 					transact.abort(transaction);
 					throw new EXistException("Cannot acquire write lock.", ex);
-				}
+				} finally {
+                    transact.close(transaction);
+                }
 			} else if ("entry".equals(root.getLocalName())) {
 
 				if (collection == null) {
@@ -361,6 +363,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					 * EXistException("Serialization error.",ex);
 					 */
 				} finally {
+                    transact.close(transaction);
 					if (feedDoc != null)
 						{feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);}
 				}
@@ -483,6 +486,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					transact.abort(transaction);
 					throw new EXistException("Cannot acquire write lock.", ex);
 				} finally {
+                    transact.close(transaction);
 					if (feedDoc != null)
 						{feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);}
 				}
@@ -509,7 +513,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			} catch (final LockException e) {
 				transact.abort(transaction);
 				throw new PermissionDeniedException(e.getMessage());
-			}
+			} finally {
+                transact.close(transaction);
+            }
 		}
 	}
 
@@ -620,6 +626,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					transact.abort(transaction);
 					throw ex;
 				} finally {
+                    transact.close(transaction);
 					if (feedDoc != null)
 						{feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);}
 				}
@@ -701,6 +708,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 					 * EXistException("Serialization error.",ex);
 					 */
 				} finally {
+                    transact.close(transaction);
 					if (feedDoc != null)
 						{feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);}
 
@@ -794,7 +802,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			} catch (final LockException e) {
 				transact.abort(transaction);
 				throw new PermissionDeniedException(e.getMessage());
-			}
+			} finally {
+                transact.close(transaction);
+            }
 		}
 	}
 
@@ -820,7 +830,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 				transact.commit(transaction);
 				response.setStatusCode(204);
 			} finally {
-				transact.abort(transaction);
+				transact.close(transaction);
 			}
 			return;
 		}
@@ -892,6 +902,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 			transact.abort(transaction);
 			throw new EXistException("Cannot acquire write lock.", ex);
 		} finally {
+            transact.close(transaction);
 			if (feedDoc != null) {
 				feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
 			}

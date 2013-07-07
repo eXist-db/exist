@@ -264,8 +264,10 @@ public class XACMLUtil implements UpdateListener
 				transact.abort(txn);
 				LOG.error("Error creating policy collection", e);
 				return null;
-			}
-		}
+			} finally {
+                transact.close(txn);
+            }
+        }
 		
 		return policyCollection;
             } catch (final PermissionDeniedException e) {
@@ -615,8 +617,10 @@ public class XACMLUtil implements UpdateListener
 			if(e instanceof EXistException)
 				{throw (EXistException)e;}
 			throw new EXistException("Error storing policy '" + docPath + "'", e);
-		}
-	}
+		} finally {
+            transact.close(txn);
+        }
+    }
 
 	/** Reads an <code>InputStream</code> into a string.
 	 * @param in The stream to read into a string.

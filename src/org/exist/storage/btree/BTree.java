@@ -2257,7 +2257,11 @@ public class BTree extends Paged {
          * @param idx
          */
         private void removeKey(int idx) {
-            System.arraycopy(keys, idx + 1, keys, idx, nKeys - idx - 1);
+            try {
+                System.arraycopy(keys, idx + 1, keys, idx, nKeys - idx - 1);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.err.println("keys: " + nKeys + " idx: " + idx);
+            }
             pageHeader.setValueCount((short) --nKeys);
             saved = false;
         }

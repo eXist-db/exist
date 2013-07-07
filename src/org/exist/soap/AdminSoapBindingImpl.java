@@ -123,6 +123,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             LOG.debug(e.getMessage(), e);
             throw new RemoteException(e.getMessage());
         } finally {
+            transact.close(txn);
             pool.release(broker);
         }
     }
@@ -155,6 +156,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             LOG.debug(e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
         } finally {
+            transact.close(txn);
             pool.release(broker);
         }
     }
@@ -202,6 +204,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             LOG.debug(e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
         } finally {
+            transact.close(txn);
             pool.release(broker);
         }
     }
@@ -257,6 +260,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             LOG.debug(e.getMessage(), e);
             throw new RemoteException(e.getMessage(), e);
         } finally {
+            transact.close(txn);
             pool.release(broker);
         }
     }
@@ -325,6 +329,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
         } finally {
+            transact.close(transaction);
             pool.release(broker);
         }
     }
@@ -387,6 +392,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage(), e);
         } finally {
+            transact.close(transaction);
             pool.release(broker);
         }
         
@@ -437,6 +443,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             transact.abort(txn);
             throw new RemoteException(e.getMessage(), e);
         } finally {
+            transact.close(txn);
             if(collection != null)
                 {collection.release(Lock.WRITE_LOCK);}
             pool.release(broker);
@@ -625,6 +632,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
 		} finally {
+            transact.close(transaction);
             if(doc != null)
                 {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
             pool.release(broker);
@@ -704,6 +712,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
 		} finally {
+            transact.close(transaction);
             if(destination != null)
                 {destination.release(Lock.WRITE_LOCK);}
             if(doc != null)
@@ -765,6 +774,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         	transact.abort(transaction);
             throw new RemoteException(e.getMessage());            
 		} finally {
+            transact.close(transaction);
             if(collection != null)
                 {collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);}
             if(destination != null)
@@ -994,6 +1004,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
         } finally {
+            transact.close(transaction);
             if(doc != null)
                 {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
             pool.release(broker);
@@ -1013,6 +1024,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         final Session session = getSession(sessionId);
         final Subject user = session.getUser();
         DocumentImpl doc = null;
+        final TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = null;
         try {
             broker = pool.get(user);
             // TODO check XML/Binary resource
@@ -1027,8 +1040,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 {throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());}
-            final TransactionManager transact = pool.getTransactionManager();
-            final Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             doc.setUserLock(null);
 // TODO check XML/Binary resource
 //            broker.storeDocument(transaction, doc);
@@ -1036,8 +1048,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             transact.commit(transaction);
             return;
         } catch (final Exception ex){
+            transact.abort(transaction);
             throw new RemoteException(ex.getMessage());
         } finally {
+            transact.close(transaction);
             if(doc != null)
                 {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
             pool.release(broker);

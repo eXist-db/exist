@@ -1788,6 +1788,7 @@ public class NativeBroker extends DBBroker {
             LOG.warn("An error occurred during reindex: " + e.getMessage(), e);
             
         } finally {
+            transact.close(transaction);
             pool.getProcessMonitor().endJob();
             LOG.info(String.format("Finished indexing collection %s in %s msec.", 
                     collection.getURI().toString(), System.currentTimeMillis() - start));
@@ -1922,6 +1923,7 @@ public class NativeBroker extends DBBroker {
             transact.abort(transaction);
         }
         finally {
+            transact.close(transaction);
             //restore the user
             setUser(currentUser);
         }
@@ -1945,7 +1947,9 @@ public class NativeBroker extends DBBroker {
 		} catch(final Exception e) {
 			transact.abort(transaction);
 			LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
-		}
+		} finally {
+            transact.close(transaction);
+        }
     }
 
     @Override
