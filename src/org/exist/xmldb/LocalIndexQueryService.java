@@ -132,8 +132,10 @@ public class LocalIndexQueryService implements IndexQueryService {
             transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (final EXistException e) {
+            transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
+            transact.close(txn);
             pool.release(broker);
 			pool.setSubject(preserveSubject);
         }

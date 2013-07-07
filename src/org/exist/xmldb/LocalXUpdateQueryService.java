@@ -124,6 +124,7 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 			e.printStackTrace();
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
+            transact.close(transaction);
 			if(processor != null)
 				{processor.reset();}
 			pool.release(broker);

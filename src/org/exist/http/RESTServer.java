@@ -924,6 +924,8 @@ public class RESTServer {
             } catch (final LockException e) {
                 transact.abort(transaction);
                 throw new PermissionDeniedException(e.getMessage());
+            } finally {
+                transact.close(transaction);
             }
 
             // content type = application/x-www-form-urlencoded
@@ -1126,6 +1128,7 @@ public class RESTServer {
             transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
         } finally {
+            transact.close(transaction);
             if (vtempFile != null) {
                 vtempFile.delete();
             }
@@ -1186,6 +1189,8 @@ public class RESTServer {
         } catch (final TransactionException e) {
             transact.abort(txn);
             LOG.warn("Transaction aborted: " + e.getMessage(), e);
+        } finally {
+            transact.close(txn);
         }
     }
 

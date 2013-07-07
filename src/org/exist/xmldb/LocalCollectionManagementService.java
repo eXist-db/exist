@@ -126,6 +126,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                 "not allowed to create collection", e );
 		} finally {
+            transact.close(transaction);
             brokerPool.release( broker );
             brokerPool.setSubject(preserveSubject);
         }
@@ -212,6 +213,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
 		} finally {
         	if(collection != null)
         		{collection.release(Lock.WRITE_LOCK);}
+            transact.close(transaction);
             brokerPool.release( broker );
             brokerPool.setSubject(preserveSubject);
         }
@@ -286,6 +288,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         		{destination.release(Lock.WRITE_LOCK);}
         	if(collection != null)
         		{collection.release(Lock.WRITE_LOCK);}
+            transact.close(transaction);
             brokerPool.release( broker );
             brokerPool.setSubject(preserveSubject);
         }
@@ -365,6 +368,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         		{source.release(Lock.WRITE_LOCK);}
         	if(destination != null)
         		{destination.release(Lock.WRITE_LOCK);}
+            transact.close(transaction);
             brokerPool.release( broker );
             brokerPool.setSubject(preserveSubject);
         }
@@ -439,6 +443,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
 		} finally {
         	if(collection != null) {collection.release(Lock.READ_LOCK);}
         	if(destination != null) {destination.release(Lock.WRITE_LOCK);}
+            transact.close(transaction);
             brokerPool.release( broker );
             brokerPool.setSubject(preserveSubject);
         }
@@ -509,6 +514,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         } finally {
         	if(source != null) {source.release(Lock.WRITE_LOCK);}
         	if(destination != null) {destination.release(Lock.WRITE_LOCK);}
+            transact.close(transaction);
             brokerPool.release( broker );
             brokerPool.setSubject(preserveSubject);
         }

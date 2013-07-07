@@ -309,7 +309,7 @@ public class ExistDocument extends ExistResource {
             if (collection != null) {
                 collection.release(Lock.WRITE_LOCK);
             }
-
+            txnManager.close(txn);
             brokerPool.release(broker);
 
             if (LOG.isDebugEnabled()) {
@@ -503,6 +503,7 @@ public class ExistDocument extends ExistResource {
                 document.getUpdateLock().release(Lock.WRITE_LOCK);
             }
 
+            txnManager.close(txn);
             brokerPool.release(broker);
 
             if (LOG.isDebugEnabled()) {
@@ -581,7 +582,7 @@ public class ExistDocument extends ExistResource {
             if (document != null) {
                 document.getUpdateLock().release(Lock.WRITE_LOCK);
             }
-
+            txnManager.close(txn);
             brokerPool.release(broker);
 
             if (LOG.isDebugEnabled()) {
@@ -700,7 +701,7 @@ public class ExistDocument extends ExistResource {
                 srcCollection.release(Lock.WRITE_LOCK);
             }
 
-
+            txnManager.close(txn);
             brokerPool.release(broker);
 
             if (LOG.isDebugEnabled()) {
@@ -809,7 +810,7 @@ public class ExistDocument extends ExistResource {
             if (document != null) {
                 document.getUpdateLock().release(Lock.WRITE_LOCK);
             }
-
+            txnManager.close(txn);
             if(broker != null) {
                 brokerPool.release(broker);
             }

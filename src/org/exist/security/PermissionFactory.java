@@ -159,6 +159,7 @@ public class PermissionFactory {
             transact.abort(transaction);
             throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + te.getMessage(), te);
         } finally {
+            transact.close(transaction);
             if(doc != null) {
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
             }

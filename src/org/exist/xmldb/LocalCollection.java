@@ -198,6 +198,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
         } finally {
+            transact.close(transaction);
             if(collection != null) {
                 collection.release(Lock.WRITE_LOCK);
             }
@@ -733,6 +734,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
+            transact.close(transaction);
             if(collection != null) {
                 collection.getLock().release(Lock.WRITE_LOCK);
             }
@@ -811,6 +813,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             transact.abort(txn);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Exception while storing binary resource: " + e.getMessage(), e);
         } finally {
+            transact.close(txn);
             if(collection != null) {
                 collection.getLock().release(Lock.WRITE_LOCK);
             }
@@ -889,6 +892,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             LOG.error(e);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
+            transact.close(txn);
             brokerPool.release(broker);
             brokerPool.setSubject(subject);
         }

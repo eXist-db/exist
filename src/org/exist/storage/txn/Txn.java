@@ -33,16 +33,29 @@ import org.exist.util.LockException;
  */
 public class Txn {
 
+    public enum State { STARTED, ABORTED, COMMITTED };
+
     private long id;
-    
+
+    private State state;
+
     private List<LockInfo> locksHeld = new ArrayList<LockInfo>();
 
     private List<TxnListener> listeners = new ArrayList<TxnListener>();
 
     public Txn(long transactionId) {
         this.id = transactionId;
+        this.state = State.STARTED;
     }
-    
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
     public long getId() {
         return id;
     }
@@ -69,12 +82,14 @@ public class Txn {
     }
 
     public void signalAbort() {
+        state = State.ABORTED;
         for (int i = 0; i < listeners.size(); i++) {
             listeners.get(i).abort();
         }
     }
 
     public void signalCommit() {
+        state = State.COMMITTED;
         for (int i = 0; i < listeners.size(); i++) {
             listeners.get(i).commit();
         }

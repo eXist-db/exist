@@ -202,6 +202,8 @@ public class XQTS_To_junit {
             }
             System.out.println("fail to load file "+file.getName());
             e.printStackTrace();
+        } finally {
+            txManager.close(txn);
         }
         //System.out.println(file);
     }

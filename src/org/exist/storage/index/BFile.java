@@ -1119,7 +1119,7 @@ public class BFile extends BTree {
     }
 
     protected void undoRemovePage(RemoveEmptyPageLoggable loggable) {
-        createPageHelper(null, loggable.page);
+        createPageHelper(loggable, loggable.page);
     }
 
     protected void redoCreateOverflow(OverflowCreateLoggable loggable) {
@@ -1314,7 +1314,7 @@ public class BFile extends BTree {
     }
 
     protected void undoRemoveOverflow(OverflowRemoveLoggable loggable) {
-        final DataPage page = createPageHelper(null, loggable.pageNum);
+        final DataPage page = createPageHelper(loggable, loggable.pageNum);
         final BFilePageHeader ph = page.getPageHeader();
         ph.setStatus(loggable.status);
         ph.setDataLength(loggable.length);
@@ -1398,7 +1398,7 @@ public class BFile extends BTree {
             if (dp == null) {
                 final Page page = getPage(newPage);
                 byte[] data = page.read();
-                if (page.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, page)) {
+                if (page.getPageHeader().getLsn() == Lsn.LSN_INVALID || (loggable != null && requiresRedo(loggable, page)) ) {
                     reuseDeleted(page);
                     final BFilePageHeader ph = (BFilePageHeader) page.getPageHeader();
                     ph.setStatus(RECORD);
@@ -1411,7 +1411,7 @@ public class BFile extends BTree {
                     dp = new SinglePage(page, data, true);
                 }
             }
-            if (loggable.getLsn() > dp.getPageHeader().getLsn())
+            if (loggable != null && loggable.getLsn() > dp.getPageHeader().getLsn())
                 {dp.getPageHeader().setLsn(loggable.getLsn());}
             dp.setDirty(true);
             dataCache.add(dp);

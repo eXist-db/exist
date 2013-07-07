@@ -466,6 +466,8 @@ public class Deployment {
         } catch (final Exception e) {
             LOG.error("Exception occurred while removing package.", e);
             mgr.abort(txn);
+        } finally {
+            mgr.close(txn);
         }
     }
 
@@ -505,6 +507,8 @@ public class Deployment {
             mgr.commit(txn);
         } catch (final Exception e) {
             mgr.abort(txn);
+        } finally {
+            mgr.close(txn);
         }
     }
 
@@ -581,6 +585,8 @@ public class Deployment {
             mgr.commit(txn);
         } catch (final Exception e) {
             mgr.abort(txn);
+        } finally {
+            mgr.close(txn);
         }
 
         try {
@@ -648,6 +654,8 @@ public class Deployment {
                 } catch (final Exception e) {
                     mgr.abort(txn);
                     e.printStackTrace();
+                } finally {
+                    mgr.close(txn);
                 }
             }
         }
