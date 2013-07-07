@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.exist.util.io.HexOutputStream;
@@ -62,6 +63,6 @@ public class HexBinaryValueType extends BinaryValueType<HexOutputStream> {
 
     @Override
     protected String formatString(String str) {
-        return str.toUpperCase();
+        return str.toUpperCase(Locale.ENGLISH);
     }
 }

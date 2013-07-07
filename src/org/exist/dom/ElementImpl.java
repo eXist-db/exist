@@ -425,6 +425,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             transact.abort(transaction);
             throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
         } finally {
+            transact.close(transaction);
             ownerDocument.getBrokerPool().release(broker);
         }
     }
@@ -1179,6 +1180,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             transact.abort(transaction);
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
+            transact.close(transaction);
             ownerDocument.getBrokerPool().release(broker);
         }
         return null;

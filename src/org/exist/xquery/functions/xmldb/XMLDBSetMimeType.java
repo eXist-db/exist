@@ -165,6 +165,7 @@ public class XMLDBSetMimeType extends BasicFunction {
             if (doc != null) {
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
             }
+            txnManager.close(txn);
         }
 
         return Sequence.EMPTY_SEQUENCE;

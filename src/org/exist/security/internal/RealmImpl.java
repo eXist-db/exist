@@ -213,6 +213,8 @@ public class RealmImpl extends AbstractRealm {
                         transaction.abort(txn);
                         e.printStackTrace();
                         LOG.debug("loading configuration failed: " + e.getMessage());
+                    } finally {
+                        transaction.close(txn);
                     }
 
                     getSecurityManager().addUser(remove_account.getId(), remove_account);
@@ -258,8 +260,10 @@ public class RealmImpl extends AbstractRealm {
                 } catch (final Exception e) {
                     transaction.abort(txn);
                     LOG.debug(e);
+                } finally {
+                    transaction.close(txn);
                 }
-		
+
                 getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);
                 principalDb.remove(remove_group.getName());
             }

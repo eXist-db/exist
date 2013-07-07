@@ -128,10 +128,10 @@ public class Rename extends Modification {
             } else {
                 newQName = QName.parse(context, item.getStringValue());
             }
-    
+
+            //start a transaction
+            final Txn transaction = getTransaction();
     		try {
-                //start a transaction
-                final Txn transaction = getTransaction();
                 final StoredNode[] ql = selectAndLock(transaction, inSeq);
                 NodeImpl parent;
                 final IndexListener listener = new IndexListener(ql);
@@ -172,15 +172,20 @@ public class Rename extends Modification {
                 //commit the transaction
                 commitTransaction(transaction);
             } catch (final PermissionDeniedException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final EXistException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final LockException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
     		} catch (final TriggerException e) {
+                abortTransaction(transaction);
                 throw new XPathException(this, e.getMessage(), e);
 			} finally {
                 unlockDocuments();
+                closeTransaction(transaction);
             }
         }
 

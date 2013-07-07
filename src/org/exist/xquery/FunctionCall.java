@@ -76,8 +76,7 @@ public class FunctionCall extends Function {
         this.expression = other.expression;
         this.mySignature = other.mySignature;
     }
-	
-	
+
     private void setFunction(UserDefinedFunction functionDef) {
         this.functionDef = (UserDefinedFunction) functionDef.clone();
         this.mySignature = this.functionDef.getSignature();
@@ -100,7 +99,11 @@ public class FunctionCall extends Function {
                 expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
         }
     }
-	
+
+    public UserDefinedFunction getFunction() {
+        return functionDef;
+    }
+
 	/**
 	 * For calls to functions in external modules, check that the instance of the function we were
 	 * bound to matches the current implementation of the module bound to our context.  If not,
@@ -378,11 +381,7 @@ public class FunctionCall extends Function {
 
     @Override
     public void accept(ExpressionVisitor visitor) {
-        // forward to the called function
-        for(int i = 0; i < getArgumentCount(); i++) {
-            getArgument(i).accept(visitor);
-        }
-        functionDef.accept(visitor);
+        visitor.visitFunctionCall(this);
     }
 
     private class DeferredFunctionCallImpl extends DeferredFunctionCall {

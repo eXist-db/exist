@@ -175,15 +175,20 @@ public class Replace extends Modification {
             //commit the transaction
             commitTransaction(transaction);
         } catch (final LockException e) {
+            abortTransaction(transaction);
             throw new XPathException(this, e.getMessage(), e);
 		} catch (final PermissionDeniedException e) {
+            abortTransaction(transaction);
             throw new XPathException(this, e.getMessage(), e);
 		} catch (final EXistException e) {
+            abortTransaction(transaction);
             throw new XPathException(this, e.getMessage(), e);
         } catch (final TriggerException e) {
+            abortTransaction(transaction);
             throw new XPathException(this, e.getMessage(), e);
 		} finally {
             unlockDocuments();
+            closeTransaction(transaction);
             context.popInScopeNamespaces();
         }
 

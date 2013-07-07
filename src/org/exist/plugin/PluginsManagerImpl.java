@@ -112,7 +112,9 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 			transaction.abort(txn);
 			e.printStackTrace();
 			LOG.debug("loading configuration failed: " + e.getMessage());
-		}
+		} finally {
+            transaction.close(txn);
+        }
 
         final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
 		configuration = Configurator.configure(this, _config_);

@@ -207,8 +207,10 @@ public class Resource extends File {
 			} catch (final Exception e) {
 	    		tm.abort(transaction);
 				return false;
-			}
-		} catch (final Exception e) {
+			} finally {
+                tm.close(transaction);
+            }
+        } catch (final Exception e) {
 			return false;
 			
 		} finally {
@@ -245,7 +247,9 @@ public class Resource extends File {
 			} catch (final Exception e) {
 	    		tm.abort(transaction);
 				return false;
-			}
+			} finally {
+                tm.close(transaction);
+            }
 
 		} catch (final Exception e) {
 			return false;
@@ -336,6 +340,7 @@ public class Resource extends File {
 	        	if (transaction != null) {tm.abort(transaction);}
 	        	return false;
 	        } finally {
+                tm.close(transaction);
 	        	if(source != null) {source.release(Lock.WRITE_LOCK);}
 	        	if(destination != null) {destination.release(Lock.WRITE_LOCK);}
 	        }
@@ -401,6 +406,7 @@ public class Resource extends File {
                 if (transaction != null) {tm.abort(transaction);}
                 return false;
             } finally {
+                tm.close(transaction);
                 if(source != null) {source.release(Lock.WRITE_LOCK);}
                 if(destination != null) {destination.release(Lock.WRITE_LOCK);}
             }
@@ -484,6 +490,7 @@ public class Resource extends File {
             e.printStackTrace();
             if (txn != null) {tm.abort(txn);}
 	    } finally {
+            tm.close(txn);
 	        if (db != null)
 	            {db.release( broker );}
 	    }
@@ -615,7 +622,9 @@ public class Resource extends File {
 	        } catch (final Exception e) {
 	        	if (txn != null) {tm.abort(txn);}
 	            return false;
-	        }	            
+	        } finally {
+                tm.close(txn);
+            }
         } finally {
         	if (db != null)
         		{db.release(broker);}
@@ -718,6 +727,7 @@ public class Resource extends File {
 				tm.abort(transaction);
 				throw new IOException(e);
 			} finally {
+                tm.close(transaction);
 				closeFile(is);
 	
 				if (resource != null)
@@ -1314,6 +1324,7 @@ public class Resource extends File {
 				}
 				throw new IOException(e);
 			} finally {
+                tm.close(txn);
 				if (resource != null)
 					{resource.getUpdateLock().release(Lock.READ_LOCK);}
 			}

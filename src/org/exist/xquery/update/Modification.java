@@ -276,6 +276,8 @@ public abstract class Modification extends AbstractExpression
             txnMgr.commit(transaction);
         } catch (final Exception e) {
             txnMgr.abort(transaction);
+        } finally {
+            txnMgr.close(transaction);
         }
     }
 	
@@ -334,7 +336,17 @@ public abstract class Modification extends AbstractExpression
             final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
             txnMgr.commit(transaction);
 	}
-	
+
+    public void abortTransaction(Txn transaction) {
+        final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+        txnMgr.abort(transaction);
+    }
+
+    public void closeTransaction(Txn transaction) {
+        final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+        txnMgr.close(transaction);
+    }
+
     final static class IndexListener implements NodeIndexListener {
 
 		StoredNode[] nodes;

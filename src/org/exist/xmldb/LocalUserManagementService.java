@@ -1030,6 +1030,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
             transact.abort(transaction);
             throw se;
         } finally {
+            transact.close(transaction);
             if(document != null) {
                 ((AbstractEXistResource)resource).closeDocument(document, Lock.WRITE_LOCK);
             }
@@ -1078,6 +1079,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
             transact.abort(transaction);
             throw se;
         } finally {
+            transact.close(transaction);
             if(coll != null) {
                 coll.release(Lock.WRITE_LOCK);
             }

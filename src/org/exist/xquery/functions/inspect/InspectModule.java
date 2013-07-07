@@ -109,7 +109,11 @@ public class InspectModule extends BasicFunction {
         // functions
         for (final FunctionSignature sig : module.listFunctions()) {
             if (!sig.isPrivate()) {
-                InspectFunction.generateDocs(sig, builder);
+                UserDefinedFunction func = null;
+                if (!module.isInternalModule()) {
+                    func = ((ExternalModule) module).getFunction(sig.getName(), sig.getArgumentCount(), null);
+                }
+                InspectFunction.generateDocs(sig, func, builder);
             }
         }
         builder.endElement();
