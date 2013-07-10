@@ -1805,6 +1805,8 @@ reservedKeywords returns [String name]
 	|
 	"order" { name = "order"; }
 	|
+	"stable" { name = "stable"; }
+	|
 	"by" { name = "by"; }
 	|
     "group" { name = "group"; } 
