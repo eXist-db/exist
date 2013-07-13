@@ -103,13 +103,12 @@ public class JMSMessageListener implements MessageListener {
             em.setPayload(payload);
 
         } catch (JMSException ex) {
-            String errorMessage = "Unable to convert incoming message. ("
-                    + ex.getErrorCode() + "):  " + ex.getMessage();
+            String errorMessage = String.format("Unable to convert incoming message. (%s):  %s", ex.getErrorCode(), ex.getMessage());
             LOG.error(errorMessage, ex);
             throw new MessageReceiveException(errorMessage);
 
         } catch (IllegalArgumentException ex) {
-            String errorMessage = "Unable to convert incoming message. " + ex.getMessage();
+            String errorMessage = String.format("Unable to convert incoming message. %s", ex.getMessage());
             LOG.error(errorMessage, ex);
             throw new MessageReceiveException(errorMessage);
         }
@@ -149,7 +148,7 @@ public class JMSMessageListener implements MessageListener {
                         handleCollection(em);
                         break;
                     default:
-                        String errorMessage = "Unknown resource type " + em.getResourceType();
+                        String errorMessage = String.format("Unknown resource type %s", em.getResourceType());
                         LOG.error(errorMessage);
                         throw new MessageReceiveException(errorMessage);
                 }
@@ -158,20 +157,18 @@ public class JMSMessageListener implements MessageListener {
 
             } else {
                 // Only ByteMessage objects supported. 
-                throw new MessageReceiveException("Could not handle message type "
-                        + msg.getClass().getSimpleName());
+                throw new MessageReceiveException(String.format("Could not handle message type %s", msg.getClass().getSimpleName()));
             }
 
         } catch (MessageReceiveException ex) {
             // Thrown by local code. Just make it pass
-            LOG.error("Could not handle received message: " + ex.getMessage(), ex);
+            LOG.error(String.format("Could not handle received message: %s", ex.getMessage()), ex);
             throw ex;
 
         } catch (Throwable t) {
             // Something really unexpected happened. Report
             LOG.error(t.getMessage(), t);
-            throw new MessageReceiveException("Could not handle received message: "
-                    + t.getMessage(), t);
+            throw new MessageReceiveException(String.format("Could not handle received message: %s", t.getMessage()), t);
         }
     }
 
@@ -205,7 +202,7 @@ public class JMSMessageListener implements MessageListener {
                 break;
 
             default:
-                String errorMessage = "Unknown resource type " + em.getResourceOperation();
+                String errorMessage = String.format("Unknown resource type %s", em.getResourceOperation());
                 LOG.error(errorMessage);
                 throw new MessageReceiveException(errorMessage);
         }
@@ -276,7 +273,7 @@ public class JMSMessageListener implements MessageListener {
 
         Account account = securityManager.getAccount(userName);
         if (account == null) {
-            String errorText = "Username " + userName + " does not exist.";
+            String errorText = String.format("Username %s does not exist.", userName);
             LOG.error(errorText);
             throw new MessageReceiveException(errorText);
         }
@@ -290,7 +287,7 @@ public class JMSMessageListener implements MessageListener {
 
         Group group = securityManager.getGroup(groupName);
         if (group == null) {
-            String errorText = "Group " + groupName + " does not exist.";
+            String errorText = String.format("Group %s does not exist.", groupName);
             LOG.error(errorText);
             throw new MessageReceiveException(errorText);
         }
@@ -342,7 +339,7 @@ public class JMSMessageListener implements MessageListener {
             collection = broker.openCollection(colURI, Lock.WRITE_LOCK);
 //            collection.setTriggersEnabled(false);
             if (collection == null) {
-                String errorMessage = "Collection " + colURI + " does not exist";
+                String errorMessage = String.format("Collection %s does not exist", colURI);
                 LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
@@ -409,7 +406,7 @@ public class JMSMessageListener implements MessageListener {
             }
             
             txnManager.abort(txn);
-            throw new MessageReceiveException("Unable to write document into database: " + ex.getMessage());
+            throw new MessageReceiveException(String.format("Unable to write document into database: %s", ex.getMessage()));
 
         } finally {
 
@@ -451,7 +448,7 @@ public class JMSMessageListener implements MessageListener {
             // Open collection if possible, else abort
             collection = broker.openCollection(colURI, Lock.WRITE_LOCK);
             if (collection == null) {
-                String errorText = "Collection does not exist " + colURI;
+                String errorText = String.format("Collection does not exist %s", colURI);
                 LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
@@ -460,7 +457,7 @@ public class JMSMessageListener implements MessageListener {
             // Open document if possible, else abort
             resource = collection.getDocument(broker, docURI);
             if (resource == null) {
-                String errorText = "No resource found for path: " + sourcePath;
+                String errorText = String.format("No resource found for path: %s", sourcePath);
                 LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
@@ -515,7 +512,7 @@ public class JMSMessageListener implements MessageListener {
             // Open collection if possible, else abort
             collection = broker.openCollection(colURI, Lock.WRITE_LOCK);
             if (collection == null) {
-                String errorText = "Collection does not exist " + colURI;
+                String errorText = String.format("Collection does not exist %s", colURI);
                 LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
@@ -524,7 +521,7 @@ public class JMSMessageListener implements MessageListener {
             // Open document if possible, else abort
             resource = collection.getDocument(broker, docURI);
             if (resource == null) {
-                String errorText = "No resource found for path: " + sourcePath;
+                String errorText = String.format("No resource found for path: %s", sourcePath);
                 LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
@@ -645,7 +642,7 @@ public class JMSMessageListener implements MessageListener {
 
         Account account = securityManager.getAccount(userName);
         if (account == null) {
-            String errorText = "Username " + userName + " does not exist.";
+            String errorText = String.format("Username %s does not exist.", userName);
             LOG.error(errorText);
             throw new MessageReceiveException(errorText);
         }
@@ -678,7 +675,7 @@ public class JMSMessageListener implements MessageListener {
             // TODO ... consider to swallow situation transparently
             collection = broker.openCollection(sourcePath, Lock.WRITE_LOCK);
             if (collection != null) {
-                String errorText = "Collection " + sourcePath + " already exists";
+                String errorText = String.format("Collection %s already exists", sourcePath);
                 LOG.error(errorText);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorText);
@@ -756,7 +753,7 @@ public class JMSMessageListener implements MessageListener {
             // Open collection if possible, else abort
             srcCollection = broker.openCollection(sourceColURI, Lock.WRITE_LOCK);
             if (srcCollection == null) {
-                String errorMessage = "Collection not found: " + sourceColURI;
+                String errorMessage = String.format("Collection not found: %s", sourceColURI);
                 LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
@@ -765,7 +762,7 @@ public class JMSMessageListener implements MessageListener {
             // Open document if possible, else abort
             srcDocument = srcCollection.getDocument(broker, sourceDocURI);
             if (srcDocument == null) {
-                String errorMessage = "No resource found for path: " + sourcePath;
+                String errorMessage = String.format("No resource found for path: %s", sourcePath);
                 LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
@@ -774,7 +771,7 @@ public class JMSMessageListener implements MessageListener {
             // Open collection if possible, else abort
             destCollection = broker.openCollection(destColURI, Lock.WRITE_LOCK);
             if (destCollection == null) {
-                String errorMessage = "Destination collection " + destColURI + " does not exist.";
+                String errorMessage = String.format("Destination collection %s does not exist.", destColURI);
                 LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
@@ -843,7 +840,7 @@ public class JMSMessageListener implements MessageListener {
             // Open collection if possible, else abort
             srcCollection = broker.openCollection(sourcePath, Lock.WRITE_LOCK);
             if (srcCollection == null) {
-                String errorMessage = "Collection " + sourcePath + " does not exist.";
+                String errorMessage = String.format("Collection %s does not exist.", sourcePath);
                 LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
@@ -853,7 +850,7 @@ public class JMSMessageListener implements MessageListener {
             // Open collection if possible, else abort
             destCollection = broker.openCollection(destColURI, Lock.WRITE_LOCK);
             if (destCollection == null) {
-                String errorMessage = "Destination collection " + destColURI + " does not exist.";
+                String errorMessage = String.format("Destination collection %s does not exist.", destColURI);
                 LOG.error(errorMessage);
                 txnManager.abort(txn);
                 throw new MessageReceiveException(errorMessage);
