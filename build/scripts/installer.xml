@@ -40,10 +40,11 @@
         <touch file="webapp/WEB-INF/logs/xmldb.log"/>
 
         <copy file="installer/scripts/eXist-db.mac/Contents/Info.plist.tmpl"
-              tofile="installer/scripts/eXist-db.mac/Contents/Info.plist" filtering="true">
+              tofile="installer/scripts/eXist-db.mac/Contents/Info.plist" filtering="true"
+                overwrite="true">
             <filterset>
                 <filter token="vmoptions" value=""/>
-                <filter token="classpath" value="$APP_PACKAGE/../start.jar"/>
+                <filter token="classpath" value="$APP_PACKAGE/.."/>
             </filterset>
         </copy>
     </target>
@@ -56,6 +57,13 @@
         <mkdir dir="${apps.dir}"/>
         <echo message="Downloading xar packages to include in installer ..."/>
         <foreach list="${apps}" target="download-xar" param="xar"></foreach>
+
+        <move todir="${apps.dir}">
+            <fileset dir="${apps.dir}">
+                <include name="shared*.xar"/>
+            </fileset>
+            <mapper type="glob" from="*" to="00*"/>
+        </move>
     </target>
     
     <target name="download-xar">
