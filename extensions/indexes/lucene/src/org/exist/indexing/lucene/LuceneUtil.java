@@ -22,6 +22,7 @@ import org.exist.util.ByteConversion;
 public class LuceneUtil {
 
     public static final String FIELD_NODE_ID = "nodeId";
+    public static final String FIELD_NODE_IDS = "nodeIds";
 
     public static byte[] createId(int docId, NodeId nodeId) {
         // build id from nodeId and docId

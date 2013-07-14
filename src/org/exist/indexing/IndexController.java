@@ -24,6 +24,8 @@ package org.exist.indexing;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
 import org.exist.storage.DBBroker;
+import org.exist.storage.MetaStorage;
+import org.exist.storage.MetaStreamListener;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
@@ -405,5 +407,11 @@ public class IndexController {
             }
         }
         return rewriters;
+    }
+    
+    public void streamMetas(MetaStreamListener listener) {
+        MetaStorage ms = broker.getDatabase().getMetaStorage();
+        if (ms != null)
+            ms.streamMetas(currentDoc, listener);
     }
 }

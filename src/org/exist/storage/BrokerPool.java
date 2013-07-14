@@ -2178,4 +2178,10 @@ public class BrokerPool extends Observable implements Database {
 	public PluginsManager getPluginsManager() {
 		return pluginManager;
 	}
+	
+	protected MetaStorage metaStorage = null;
+	
+	public MetaStorage getMetaStorage() {
+	    return metaStorage;
+	}
 }
