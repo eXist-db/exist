@@ -39,7 +39,7 @@ public class OrderSpec {
 	public static final int EMPTY_LEAST = 4;
 	
 	private final XQueryContext context;
-	private final Expression expression;
+	private Expression expression;
 	private int modifiers = 0;
 	private Collator collator = null;
 	
@@ -87,4 +87,10 @@ public class OrderSpec {
 	public void resetState(boolean postOptimization) {
 	    expression.resetState(postOptimization);
 	}
+
+    public void replace(Expression oldExpr, Expression newExpr) {
+        if (expression == oldExpr) {
+            expression = newExpr;
+        }
+    }
 }

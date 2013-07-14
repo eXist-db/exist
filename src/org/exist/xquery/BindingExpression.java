@@ -121,10 +121,18 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 		this.orderSpecs = specs;
 	}
 
+    public OrderSpec[] getOrderSpecs() {
+        return orderSpecs == null ? new OrderSpec[0] : orderSpecs;
+    }
+
 	public void setGroupSpecs(GroupSpec specs[]) {
 		this.groupSpecs = specs;
 	}
-	
+
+    public GroupSpec[] getGroupSpecs() {
+        return groupSpecs == null ? new GroupSpec[0] : groupSpecs;
+    }
+
 	public void setGroupReturnExpr(Expression expr) {
 		this.groupReturnExpr = expr;
 	}	
@@ -337,6 +345,14 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 			{whereExpr = newExpr;}
 		else if (returnExpr == oldExpr)
 			{returnExpr = newExpr;}
+        else {
+            for (OrderSpec orderSpec: getOrderSpecs()) {
+                orderSpec.replace(oldExpr, newExpr);
+            }
+            for (GroupSpec groupSpec: getGroupSpecs()) {
+                groupSpec.replace(oldExpr, newExpr);
+            }
+        }
 	}
 	
 	@Override

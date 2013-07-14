@@ -39,7 +39,7 @@ public class GroupSpec {
  
     @SuppressWarnings("unused")
 	private final XQueryContext context; 
-    private final Expression expression; 
+    private Expression expression;
     private String keyVarName = null;
     private String collation = Collations.CODEPOINT;
      
@@ -79,5 +79,11 @@ public class GroupSpec {
      
     public void resetState(boolean postOptimization) {
         expression.resetState(postOptimization);
-    } 
+    }
+
+    public void replace(Expression oldExpr, Expression newExpr) {
+        if (expression == oldExpr) {
+            expression = newExpr;
+        }
+    }
 } 
