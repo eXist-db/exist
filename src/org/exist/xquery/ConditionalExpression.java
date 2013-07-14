@@ -77,11 +77,15 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        contextInfo.setFlags(contextInfo.getFlags() & (~IN_PREDICATE));
-        contextInfo.setParent(this);
-        testExpr.analyze(contextInfo);
-        thenExpr.analyze(contextInfo);
-        elseExpr.analyze(contextInfo);
+        AnalyzeContextInfo myContextInfo = new AnalyzeContextInfo(contextInfo);
+        myContextInfo.setFlags(myContextInfo.getFlags() & (~IN_PREDICATE));
+        myContextInfo.setParent(this);
+        testExpr.analyze(myContextInfo);
+        // parent may have been modified by testExpr: set it again
+        myContextInfo.setParent(this);
+        thenExpr.analyze(myContextInfo);
+        myContextInfo.setParent(this);
+        elseExpr.analyze(myContextInfo);
     }
 
     /* (non-Javadoc)
