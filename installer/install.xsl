@@ -36,9 +36,15 @@
         <xsl:variable name="name" select="substring-before($file, '.xar')"/>
         <xsl:variable name="package" select="document($file)//expath:package"/>
         <pack name="{$package/@abbrev}" required="no" preselected="yes" parent="Apps">
+            <xsl:attribute name="required">
+                <xsl:choose>
+                    <xsl:when test="$package/@abbrev = 'shared'">yes</xsl:when>
+                    <xsl:otherwise>no</xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
             <description><xsl:value-of select="$package/expath:title"/></description>
             <fileset targetdir="$INSTALL_PATH/autodeploy" dir="installer/apps">
-                <include name="{$package/@abbrev}*.xar"/>
+                <include name="*{$package/@abbrev}*.xar"/>
             </fileset>
         </pack>
     </xsl:template>
