@@ -140,7 +140,6 @@ public class Launcher extends Observable implements Observer {
             public void run() {
                 try {
                     jetty = new JettyStart();
-                    jetty.addObserver(splash);
                     jetty.run(new String[]{home}, splash);
                 } catch (final Exception e) {
                     showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check the logs.", true);
