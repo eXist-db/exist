@@ -28,16 +28,15 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
-import org.exist.memtree.NodeImpl;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.MetaStorage;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.XPathException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public abstract class MetaData {
+public abstract class MetaData implements MetaStorage {
 
 	protected static MetaData _ = null;
 	
@@ -80,8 +79,8 @@ public abstract class MetaData {
 	public abstract XmldbURI UUIDtoURI(String uuid);
 	public abstract String URItoUUID(XmldbURI uri);
 	
-    public abstract void indexMetas(Metas metas);
+//    public abstract void indexMetas(Metas metas);
 	
-    public abstract NodeImpl search(String queryText, List<String> toBeMatchedURIs) throws XPathException;
-    public abstract List<String> searchDocuments(String queryText, List<String> toBeMatchedURIs) throws XPathException;
+//    public abstract NodeImpl search(String queryText, List<String> toBeMatchedURIs) throws XPathException;
+//    public abstract List<String> searchDocuments(String queryText, List<String> toBeMatchedURIs) throws XPathException;
 }

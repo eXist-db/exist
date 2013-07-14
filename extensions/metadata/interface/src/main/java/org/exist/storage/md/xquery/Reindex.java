@@ -124,8 +124,10 @@ public class Reindex extends BasicFunction {
 			
 			Metas metas = md.addMetas(childDoc);
 			
-			if (metas != null)
-			    md.indexMetas(metas);
+			if (metas != null) {
+			    //XXX: md.indexMetas(metas);
+			    ;
+			}
 		}
 	}
 }

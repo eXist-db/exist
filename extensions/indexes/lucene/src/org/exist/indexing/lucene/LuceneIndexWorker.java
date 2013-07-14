@@ -59,7 +59,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- *   Class for handling all Lucene operations.
+ * Class for handling all Lucene operations.
  *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  * @author Dannes Wessels (dannes@exist-db.org)
@@ -85,7 +85,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     
     private LuceneIndex index;
     
-    @SuppressWarnings("unused")
 	private IndexController controller;
 
     private LuceneMatchListener matchListener = null;
@@ -587,8 +586,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Analyzer fieldAnalyzer = (fieldType == null) ? null : fieldType.getAnalyzer();
             
             // Actual field content ; Store flag can be set in solrField
-            Field contentField = new Field(contentFieldName, field.getData().toString(), 
-                    store, Field.Index.ANALYZED, Field.TermVector.YES);
+            Field contentField = new Field(contentFieldName, field.getData().toString(),  store, Field.Index.ANALYZED, Field.TermVector.YES);
 
             // Extract (document) Boost factor
             if (field.getBoost() > 0) {
@@ -998,7 +996,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map hints) {
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map<?,?> hints) {
         List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
         qnames = getDefinedIndexes(qnames);
         //Expects a StringValue
@@ -1133,14 +1131,28 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             writer = index.getWriter();
             // docId and nodeId are stored as doc value
-            IntDocValuesField fDocId = new IntDocValuesField(FIELD_DOC_ID, 0);
+            NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, 0);
             BinaryDocValuesField fNodeId = new BinaryDocValuesField(LuceneUtil.FIELD_NODE_ID, new BytesRef(8));
             // docId also needs to be indexed
             IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, IntField.TYPE_NOT_STORED);
 
+            final List<Field> metas = new ArrayList<Field>();
+            //XXX: optimize  - put outside 'for'
+            controller.streamMetas(new MetaStreamListener() {
+                @Override
+                public void metadata(QName key, Object value) {
+                    if (value instanceof String) {
+                        String name = key.getLocalName();//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
+                        Field fld = new Field(name, value.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
+                        metas.add(fld);
+                        //System.out.println(" "+name+" = "+value.toString());
+                    }
+                }
+            });
+
             for (PendingDoc pending : nodesToWrite) {
-                Document doc = new Document();
-                fDocId.setIntValue(currentDoc.getDocId());
+                final Document doc = new Document();
+                fDocId.setLongValue(currentDoc.getDocId());
                 doc.add(fDocId);
 
                 // store the node id
@@ -1165,8 +1177,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 else
                 	contentField = LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
 
-                Field fld = new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED,
-                        Field.TermVector.YES);
+                Field fld = new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
                 if (pending.idxConf.getBoost() > 0)
                     fld.setBoost(pending.idxConf.getBoost());
 
@@ -1177,7 +1188,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
                 fDocIdIdx.setIntValue(currentDoc.getDocId());
                 doc.add(fDocIdIdx);
-
+                
+                for (Field meta : metas) {
+                    doc.add(meta);
+                }
+                
                 if (pending.idxConf.getAnalyzer() == null)
                     writer.addDocument(doc);
                 else {
