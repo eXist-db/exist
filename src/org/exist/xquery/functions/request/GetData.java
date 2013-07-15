@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.log4j.Logger;
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.RequestWrapper;
@@ -218,6 +219,7 @@ public class GetData extends BasicFunction {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
             reader.setContentHandler(receiver);
+            reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, receiver);
             reader.parse(src);
             final Document doc = receiver.getDocument();
 
