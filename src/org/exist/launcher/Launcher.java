@@ -177,15 +177,19 @@ public class Launcher extends Observable implements Observer {
             }
         });
 
-        trayIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-                if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
-                    hiddenFrame.add(popup);
-                    popup.show(hiddenFrame, mouseEvent.getXOnScreen(), mouseEvent.getYOnScreen());
+        // add listener for left click on system tray icon. doesn't work well on linux though.
+        final String os = System.getProperty("os.name", "");
+        if (!os.equals("Linux")) {
+            trayIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+                    if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
+                        hiddenFrame.add(popup);
+                        popup.show(hiddenFrame, mouseEvent.getXOnScreen(), mouseEvent.getYOnScreen());
+                    }
                 }
-            }
-        });
+            });
+        }
 
         try {
             hiddenFrame.setResizable(false);
