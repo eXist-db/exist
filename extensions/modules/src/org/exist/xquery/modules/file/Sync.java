@@ -183,8 +183,8 @@ public class Sync extends BasicFunction {
 			Serializer serializer = context.getBroker().getSerializer();
 			serializer.reset();
 			serializer.setProperties(DEFAULT_PROPERTIES);
-			serializer.setReceiver( sax );
-			
+
+			serializer.setSAXHandlers(sax, sax);
 			serializer.toSAX( doc );	
 			
 			writer.close();
