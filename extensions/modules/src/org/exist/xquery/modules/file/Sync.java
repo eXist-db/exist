@@ -22,6 +22,7 @@ import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -63,6 +64,7 @@ public class Sync extends BasicFunction {
 	static {
 		DEFAULT_PROPERTIES.put(OutputKeys.INDENT, "yes");
 		DEFAULT_PROPERTIES.put(OutputKeys.OMIT_XML_DECLARATION, "no");
+        DEFAULT_PROPERTIES.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 	}
 	
 	public Sync(XQueryContext context) {
