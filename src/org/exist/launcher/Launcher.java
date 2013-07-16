@@ -142,7 +142,7 @@ public class Launcher extends Observable implements Observer {
                     jetty = new JettyStart();
                     jetty.run(new String[]{home}, splash);
                 } catch (final Exception e) {
-                    showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check the logs.", true);
+                    showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check console output and logs.", true);
                     System.exit(1);
                 }
             }
@@ -237,7 +237,7 @@ public class Launcher extends Observable implements Observer {
         });
 
         popup.addSeparator();
-        MenuItem configItem = new MenuItem("Server Configuration");
+        MenuItem configItem = new MenuItem("System Configuration");
         popup.add(configItem);
         configItem.addActionListener(new ActionListener() {
 
@@ -474,8 +474,13 @@ public class Launcher extends Observable implements Observer {
             label.setHorizontalAlignment(SwingConstants.CENTER);
             panel.add(displayLogs, BorderLayout.SOUTH);
         }
+
+        utilityPanel.showMessages();
+        utilityPanel.toFront();
+        utilityPanel.setVisible(true);
+
         JOptionPane.showMessageDialog(splash, panel, title, JOptionPane.WARNING_MESSAGE);
-        System.exit(1);
+        //System.exit(1);
     }
 
     /**
