@@ -38,7 +38,7 @@ public class ConfigurationDialog extends JDialog {
      */
     public ConfigurationDialog(Launcher launcher) {
         setModal(true);
-        setTitle("eXist-db Configuration");
+        setTitle("eXist-db System Configuration");
 
         initComponents();
 
@@ -520,10 +520,6 @@ public class ConfigurationDialog extends JDialog {
             cacheModel.setValue(cacheModel.getMaximum());
         }
         collectionCacheModel.setMaximum(maxCache - (Integer)cacheModel.getValue());
-        lbCurrentUsage.setText(
-            String.format("maxCache: %d cacheSize: %d collectionMax: %d mem: %d\n", maxCache, cacheModel.getValue(),
-                collectionCacheModel.getMaximum(), max)
-        );
         if (collectionCacheModel.getMaximum().compareTo(collectionCacheModel.getValue()) < 0) {
             collectionCacheModel.setValue(collectionCacheModel.getMaximum());
         }
