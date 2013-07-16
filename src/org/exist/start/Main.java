@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.exist.storage.BrokerPool;
 
 /**
  * @author Jan Hlavaty (hlavac@code.cz)
@@ -654,6 +653,19 @@ public class Main {
     }
 
     public void shutdown() {
-        BrokerPool.stopAll(false);
+        // only used in test suite
+        try {
+            Class brokerPool = Class.forName("org.exist.storage.BrokerPool");
+            Method stopAll = brokerPool.getDeclaredMethod("stopAll", boolean.class);
+            stopAll.invoke(null, false);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 }
