@@ -269,7 +269,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         chkSsl.setSelected(getDefaultConnectionSettings().isSsl());
         chkSsl.setText(getLabel("LoginPanel.47"));
 
-        final javax.swing.GroupLayout panRemoteLayout = new javax.swing.GroupLayout(panRemote);
+        javax.swing.GroupLayout panRemoteLayout = new javax.swing.GroupLayout(panRemote);
         panRemote.setLayout(panRemoteLayout);
         panRemoteLayout.setHorizontalGroup(
             panRemoteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -310,7 +310,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
             }
         });
 
-        final javax.swing.GroupLayout panEmbeddedLayout = new javax.swing.GroupLayout(panEmbedded);
+        javax.swing.GroupLayout panEmbeddedLayout = new javax.swing.GroupLayout(panEmbedded);
         panEmbedded.setLayout(panEmbeddedLayout);
         panEmbeddedLayout.setHorizontalGroup(
             panEmbeddedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -318,7 +318,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
                 .addContainerGap()
                 .addComponent(lblConfiguration)
                 .addGap(33, 33, 33)
-                .addComponent(txtConfiguration, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                .addComponent(txtConfiguration, javax.swing.GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSelectConfiguration, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -331,7 +331,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
                     .addComponent(lblConfiguration)
                     .addComponent(txtConfiguration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnSelectConfiguration, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(30, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         tpConnectionType.addTab("tab2", panEmbedded);
@@ -354,7 +354,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
             }
         });
 
-        final javax.swing.GroupLayout panFavouritesLayout = new javax.swing.GroupLayout(panFavourites);
+        javax.swing.GroupLayout panFavouritesLayout = new javax.swing.GroupLayout(panFavourites);
         panFavourites.setLayout(panFavouritesLayout);
         panFavouritesLayout.setHorizontalGroup(
             panFavouritesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -391,7 +391,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
             }
         });
 
-        final javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -412,16 +412,16 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(panFavourites, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(tpConnectionType, javax.swing.GroupLayout.PREFERRED_SIZE, 527, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(lblUsername)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(lblConnectionType)
-                                            .addComponent(lblPassword))
-                                        .addGap(18, 18, 18)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(cmbConnectionType, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(txtUsername)
-                                            .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                            .addComponent(lblPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+                                            .addComponent(lblConnectionType, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addGap(6, 6, 6)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(cmbConnectionType, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(lblUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 666, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
