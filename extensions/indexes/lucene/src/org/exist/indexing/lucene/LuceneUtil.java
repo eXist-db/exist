@@ -6,10 +6,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.BytesRef;
@@ -22,7 +20,9 @@ import org.exist.util.ByteConversion;
 public class LuceneUtil {
 
     public static final String FIELD_NODE_ID = "nodeId";
-    public static final String FIELD_NODE_IDS = "nodeIds";
+
+    public static final String FIELD_DOC_ID = "docId";
+    public static final String FIELD_DOC_URI = "docUri";
 
     public static byte[] createId(int docId, NodeId nodeId) {
         // build id from nodeId and docId
