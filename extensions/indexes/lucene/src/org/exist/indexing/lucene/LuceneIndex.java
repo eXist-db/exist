@@ -3,6 +3,10 @@ package org.exist.indexing.lucene;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.facet.taxonomy.TaxonomyReader;
+import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
@@ -49,8 +53,17 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected int writingReaderUseCount = 0;
     protected IndexSearcher cachedSearcher = null;
     protected int searcherUseCount = 0;
-
+    
     protected boolean singleWriter = false;
+
+    //Taxonomy staff
+    protected Directory taxonomyDirectory;
+
+    protected TaxonomyWriter cachedTaxonomyWriter = null;
+    protected int taxonomyWriterUseCount = 0;
+
+    protected TaxonomyReader cachedTaxonomyReader = null;
+    protected int taxonomyReaderUseCount = 0;
 
     public LuceneIndex() {
         //Nothing special to do
@@ -103,7 +116,10 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         IndexWriter writer = null;
         try {
             directory = FSDirectory.open(dir);
+            taxonomyDirectory = FSDirectory.open(new File(dir, "taxonomy"));
+
             writer = getWriter();
+            
         } catch (IOException e) {
             throw new DatabaseConfigurationException("Exception while reading lucene index directory: " +
                 e.getMessage(), e);
@@ -117,9 +133,14 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         try {
             if (cachedWriter != null) {
             	commit();
+            	
+            	cachedTaxonomyWriter.close();
                 cachedWriter.close();
+                
+                cachedTaxonomyWriter = null;
                 cachedWriter = null;
             }
+            taxonomyDirectory.close();
             directory.close();
         } catch (IOException e) {
             throw new DBException("Caught exception while closing lucene indexes: " + e.getMessage());
@@ -195,6 +216,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
              now we have to commit ourselves, this is done manually in releaseWriter()
              */
             cachedWriter = new IndexWriter(directory, idxWriterConfig);
+            cachedTaxonomyWriter = new DirectoryTaxonomyWriter(taxonomyDirectory);
             writerUseCount = 1;
         }
         notifyAll();
@@ -224,6 +246,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             }
             
         	if (cachedWriter != null) {
+        	    cachedTaxonomyWriter.commit();
                 cachedWriter.commit();
             }
             needsCommit = false;
@@ -240,6 +263,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             readerUseCount++;
         } else {
             cachedReader = DirectoryReader.open(directory);
+            cachedTaxonomyReader = new DirectoryTaxonomyReader(taxonomyDirectory);
             readerUseCount = 1;
         }
         return cachedReader;
@@ -316,8 +340,13 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         if (cachedReader == null)
             return;
         try {
+            cachedTaxonomyReader.close();
         	cachedReader.close();
+        	
+        	cachedTaxonomyReader = null;
         	cachedReader = null;
+  
+        	//XXX: understand - is it right to comment close out? ... Closed by "cachedReader.close();"?
 //        	if (cachedSearcher != null)
 //        		cachedSearcher.close();
         	cachedSearcher = null;
@@ -345,6 +374,16 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             throw new IllegalStateException("IndexSearcher was not obtained from getWritingReader().");
         searcherUseCount--;
         notifyAll();
+    }
+    
+    //DirectoryTaxonomyWriter taxoWriter = new DirectoryTaxonomyWriter(taxoDir);
+    
+    public synchronized TaxonomyWriter getTaxonomyWriter() throws IOException {
+        return cachedTaxonomyWriter;
+    }
+
+    public synchronized TaxonomyReader getTaxonomyReader() throws IOException {
+        return cachedTaxonomyReader;
     }
 
 	@Override
