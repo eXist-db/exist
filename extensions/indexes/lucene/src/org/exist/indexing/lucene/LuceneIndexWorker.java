@@ -1375,7 +1375,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return score;
         }
 
-        private void setScore(float score) {
+        protected void setScore(float score) {
             this.score = score;
         }
 
