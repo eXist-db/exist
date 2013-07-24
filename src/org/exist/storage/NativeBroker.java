@@ -1783,7 +1783,7 @@ public class NativeBroker extends DBBroker {
             reindexCollection(transaction, collection, mode);
             transact.commit(transaction);
             
-        } catch (final TransactionException e) {
+        } catch (final Exception e) {
             transact.abort(transaction);
             LOG.warn("An error occurred during reindex: " + e.getMessage(), e);
             

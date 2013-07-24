@@ -88,8 +88,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     
     protected LuceneIndex index;
     
-	private IndexController controller;
-
     private LuceneMatchListener matchListener = null;
 
     private XMLToQuery queryTranslator;
@@ -135,7 +133,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
-        this.controller = controller;
         LOG.debug("Configuring lucene index...");
         config = new LuceneConfig(configNodes, namespaces);
         return config;
@@ -1142,7 +1139,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final List<Field> metas = new ArrayList<Field>();
             final List<CategoryPath> paths = new ArrayList<CategoryPath>();
 
-            controller.streamMetas(new MetaStreamListener() {
+            broker.getIndexController().streamMetas(new MetaStreamListener() {
                 @Override
                 public void metadata(QName key, Object value) {
                     if (value instanceof String) {
