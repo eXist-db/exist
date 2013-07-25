@@ -1198,7 +1198,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 for (Field meta : metas) {
                     doc.add(meta);
                 }
-                facetFields.addFields(doc, paths);
+                if (!paths.isEmpty()) {
+                    facetFields.addFields(doc, paths);
+                }
                 
                 if (pending.idxConf.getAnalyzer() == null)
                     writer.addDocument(doc);
