@@ -108,7 +108,13 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
             Field field = db.getClass().getDeclaredField("metaStorage");
             field.setAccessible(true);
             field.set(db, md);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
 	    
