@@ -59,13 +59,14 @@ If you do not know GitFlow, there are several good tutorials linked from the [Ge
 If you wish to contribute the general approach is:
 
 - Fork the Repo to your own GitHub
-- Checkout your Fork
+- Clone your Fork
 - Make sure you have [GitFlow AVH Edition](https://github.com/petervanderdoes/gitflow) installed
-- Use Git Flow to *start* a hotfix or feature i.e. git flow feature start my-magic-feature
+- Run git flow init on the cloned repo using these [settings](#our-git-flow-init-settings).
+- Use Git Flow to *start* a hotfix or feature i.e. git flow feature start *my-magic-feature*
 - Do your stuff :-)
-- Commit(s) to your repo. We like small atomic commits that do not mix concerns
-- Do **NOT** *finish() the hotfix or feature, we want to review before it is merged to the *develop* branch.
-- Push your hotfix or feature branch to your GitHub
+- Commit(s) to your repo. We like small atomic commits that do not mix concerns!
+- Do **NOT** *finish* the hotfix or feature, we want to review before it is merged to the *develop* branch.
+- Push your hotfix or feature branch to your GitHub using GitFlow, i.e. git flow feature publish *my-magic-feature*
 - Send us a Pull Request
 
 All Pull Requests are reviewed and tested before they are merged by the core development team.
@@ -98,9 +99,31 @@ Support branches? [support/]
 Version tag prefix? [] eXist-
 ```
 
-You can then see that a new 'develop' branch was created and you were switched to it:
+We can then see that a new 'develop' branch was created that we were switched to it:
 
 ```bash
 $ git status
 # On branch develop
+```
+
+As we have already started with GitFlow, when you run *git flow* init, you will get slightly different prompts, but the same answers apply, and you **must** use the following settings:
+
+```bash
+$ git flow init
+
+Which branch should be used for bringing forth production releases?
+   - develop
+Branch name for production releases: [] master
+
+Which branch should be used for integration of the "next release"?
+   - develop
+Branch name for "next release" development: [develop] 
+
+How to name your supporting branch prefixes?
+Feature branches? [feature/] 
+Release branches? [release/] 
+Hotfix branches? [hotfix/] 
+Support branches? [support/] 
+Version tag prefix? [] eXist-
+
 ```
