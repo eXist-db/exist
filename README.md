@@ -79,6 +79,17 @@ Although the following are taken from our [Developer Manifesto](http://www.exist
 - Make sure the approriate licence header appears at the top of your source code file. We use [LGPL v2.1](http://opensource.org/licenses/LGPL-2.1 "The GNU Lesser General Public License, version 2.1") for eXist and *strongly* encourage that, but ultimately any compatible [OSI approved license](http://opensource.org/licenses "Open Source Licenses") without further restrictions may be used.
 - Run the full eXist test suite. We do not accept code that causes regressions.
 
+Is a bug-fix a feature of hotfix?
+---------------------------------
+If you want to contribute a *bug-fix*, you need to consider whether this is a *feature* or a *hotfix* in Git Flow parlance.
+
+The choice as to whether a bug-fix is a feature or a hotfix is concerned with where the bug-fix is to be applied and how it is to be applied. First you should carefully read the "Feature branches" and "Hotfix branches" sections from [A successful Git branching model](http://nvie.com/posts/a-successful-git-branching-model/). However, if you are still unsure, then consider the following advice: 
+
+- The bug-fix is a hotfix if it is **critical** and needs to go into a very soon to be released revision version i.e. 2.1.n to address an immediate production issue.
+- Otherwise it is a feature, i.e. its just standard development towards the next release of eXist.
+
+More than likely, for a bug-fix you should use a *feature*. If you are certain you want to create a hotfix, please consider discussing first via the exist-development mailing list.
+
 Our git-flow init settings
 --------------------------
 When we started working with the eXist repo we needed to configure it for GitFlow by running:
