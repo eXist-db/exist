@@ -78,4 +78,29 @@ Although the following are taken from our [Developer Manifesto](http://www.exist
 - Make sure the approriate licence header appears at the top of your source code file. We use [LGPL v2.1](http://opensource.org/licenses/LGPL-2.1 "The GNU Lesser General Public License, version 2.1") for eXist and *strongly* encourage that, but ultimately any compatible [OSI approved license](http://opensource.org/licenses "Open Source Licenses") without further restrictions may be used.
 - Run the full eXist test suite. We do not accept code that causes regressions.
 
+Our git-flow init settings
+--------------------------
+When we started working with the eXist repo we needed to configure it for GitFlow by running:
 
+```bash
+$ git flow init
+
+Which branch should be used for bringing forth production releases?
+   - master
+Branch name for production releases: [master] 
+Branch name for "next release" development: [develop] 
+
+How to name your supporting branch prefixes?
+Feature branches? [feature/] 
+Release branches? [release/] 
+Hotfix branches? [hotfix/] 
+Support branches? [support/] 
+Version tag prefix? [] eXist-
+```
+
+You can then see that a new 'develop' branch was created and you were switched to it:
+
+```bash
+$ git status
+# On branch develop
+```
