@@ -74,7 +74,7 @@ Although the following are taken from our [Developer Manifesto](http://www.exist
 
 - Only change what you need to. If you must reformat code, keep it in a seperate commit to any syntax or functionality changes.
 - Test. If you fix something prove it, write a test that illustrates the issue before you fix the issue and validate the test. If you add a new feature it needs tests, so that we can understand its intent and try to avoid regressions in future as much as possible.
-- Make sure the approriate licence header appears at the top of your source code file. We use LGPL v2.1 for eXist and *strongly* encourage that, but ultimately any compatible license without further restrictions may be used.
+- Make sure the approriate licence header appears at the top of your source code file. We use [LGPL v2.1](http://opensource.org/licenses/LGPL-2.1 "The GNU Lesser General Public License, version 2.1") for eXist and *strongly* encourage that, but ultimately any compatible [OSI approved license](http://opensource.org/licenses "Open Source Licenses") without further restrictions may be used.
 - Run the full eXist test suite. We do not accept code that causes regressions.
 
 
