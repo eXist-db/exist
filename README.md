@@ -65,7 +65,7 @@ If you wish to contribute the general approach is:
 - Use Git Flow to *start* a hotfix or feature i.e. git flow feature start *my-magic-feature*
 - Do your stuff :-)
 - Commit(s) to your repo. We like small atomic commits that do not mix concerns!
-- Do **NOT** *finish* the hotfix or feature, we want to review before it is merged to the *develop* branch.
+- Use Git Flow to finish the hotfix or feature. *WARN* - If you are using a hotfix, the current advice is not to tag it, as there is no way to send an unknown branch from your fork to upstream using a Pull Request on GitHub.
 - Push your hotfix or feature branch to your GitHub using GitFlow, i.e. git flow feature publish *my-magic-feature*
 - Send us a Pull Request
 
