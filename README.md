@@ -24,7 +24,7 @@ $ git checkout master
 $ ./build.sh
 ```
 
-**Note** In the above example, we switch the checked out branch of eXist from "develop" to "master". We are making use of [GitFlow for eXist](#contributing), and as such "develop" is our current stable work in progress which will eventually become the next release version, whereas "master" is always the last released version. The choice of which to use is entirely yours.
+**Note** In the above example, we switch the checked out branch of eXist from "develop" to "master". We are making use of [GitFlow for eXist](#contributing-to-exist), and as such "develop" is our current stable work in progress which will eventually become the next release version, whereas "master" is always the last released version. The choice of which to use is entirely yours.
 
 **Hint** In the above example, we use the SSH form of the GitHub repo URL to clone eXist, however if you are behind a HTTP Proxy Server and your organisation does not permit outgoing SSH connections (which is true of many larger organisations) then you should instead try the HTTPS URL for our GitHub repo, i.e. https://github.com/eXist-db/exist.git.
 
@@ -33,7 +33,7 @@ From here, you now have a compiled version of eXist that you may use just as you
 $ ./build.sh dist-zip
 ```
 
-Likewise, you may also wish to optionally build a full Installer for eXist, note that this requires the installation of IzPack, and setting your path to IzPack in exist/build.properties before you run:
+Likewise, you may also wish to optionally build a full Installer for eXist, note that this requires the installation of IzPack, and setting your path to IzPack in *exist/build.properties* before you run:
 
 ```bash
 $ ./build.sh installer
@@ -49,12 +49,12 @@ For further build options see the [eXist Build Documentation](http://www.exist-d
 
 Contributing to eXist
 ---------------------
-We welecome all contributions to eXist.
+We welcome all contributions to eXist.
 
 We strongly suggest that you join the [eXist-development mailing](https://lists.sourceforge.net/lists/listinfo/exist-development "eXist Development Mailing List") list and also subscribe to the [eXist-commits mailing list](https://lists.sourceforge.net/lists/listinfo/exist-commits "eXist SCM Commits Mailing List"), so that you can collaborate with the eXist team and be kept up to date with changes to the codebase.
 
 eXist uses [GitFlow](http://nvie.com/git-model) as it's code management methodology. Specifically we are using the [AVH Edition of GitFlow tools](https://github.com/petervanderdoes/gitflow) version.
-If you do not know GitFlow, there are several good tutorials linked from the [Getting Started part)(https://github.com/petervanderdoes/gitflow#getting-started) of the GitFlow AVH Edition page. Also there is a very good [git-flow cheatsheet](http://danielkummer.github.io/git-flow-cheatsheet/).
+If you do not know GitFlow, there are several good tutorials linked from the [Getting Started part](https://github.com/petervanderdoes/gitflow#getting-started) of the GitFlow AVH Edition page. Also there is a very good [git-flow cheatsheet](http://danielkummer.github.io/git-flow-cheatsheet/).
 
 If you wish to contribute the general approach is:
 
@@ -67,8 +67,14 @@ If you wish to contribute the general approach is:
 - Push to your GitHub
 - Send us a Pull Request
 
+All Pull Requests are reviewed and tested before they are merged by the core development team.
+However we have one golden rule, even within the core team, **no developer may ever merge his own pull request**. This simple but important rule ensures that at least two people have consisered the change. 
+
 Although the following are taken from our [Developer Manifesto](http://www.exist-db.org/exist/apps/doc/devguide_manifesto.xml "eXist Project Developer Manifesto") and [Code Review Guide](http://www.exist-db.org/exist/apps/doc/devguide_codereview.xml "eXist Project Code Review Guide"), the main things that will help us to merge your Pull Request:
 
-- Only change what you need to. If you must reformat code, keep it in a seperate commit to any sytax or functionality changes.
-- Test. If you fix something prove it, write a test that illustrates the issue before you fix the issue and validate the test.
+- Only change what you need to. If you must reformat code, keep it in a seperate commit to any syntax or functionality changes.
+- Test. If you fix something prove it, write a test that illustrates the issue before you fix the issue and validate the test. If you add a new feature it needs tests, so that we can understand its intent and try to avoid regressions in future as much as possible.
+- Make sure the approriate licence header appears at the top of your source code file. We use LGPL v2.1 for eXist and *strongly* encourage that, but ultimately any compatible license without further restrictions may be used.
 - Run the full eXist test suite. We do not accept code that causes regressions.
+
+
