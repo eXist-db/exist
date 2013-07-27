@@ -61,10 +61,11 @@ If you wish to contribute the general approach is:
 - Fork the Repo to your own GitHub
 - Checkout your Fork
 - Make sure you have [GitFlow AVH Edition](https://github.com/petervanderdoes/gitflow) installed
-- Create a hotfix or feature branch with GitFlow
+- Use Git Flow to *start* a hotfix or feature i.e. git flow feature start my-magic-feature
 - Do your stuff :-)
 - Commit(s) to your repo. We like small atomic commits that do not mix concerns
-- Push to your GitHub
+- Do **NOT** *finish() the hotfix or feature, we want to review before it is merged to the *develop* branch.
+- Push your hotfix or feature branch to your GitHub
 - Send us a Pull Request
 
 All Pull Requests are reviewed and tested before they are merged by the core development team.
