@@ -25,3 +25,7 @@ webapp/WEB-INF/dwr.xml
 webapp/WEB-INF/dwr20.dtd
 webapp/WEB-INF/web.xml
 webapp/xqts/config.xml
+webapp/WEB-INF/logs/*.log
+tools/jetty/logs/
+tools/jetty/tmp/
+tools/wrapper/logs/
