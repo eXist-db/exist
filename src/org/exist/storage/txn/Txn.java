@@ -42,6 +42,8 @@ public class Txn {
     private List<LockInfo> locksHeld = new ArrayList<LockInfo>();
 
     private List<TxnListener> listeners = new ArrayList<TxnListener>();
+    
+    private String originId;
 
     public Txn(long transactionId) {
         this.id = transactionId;
@@ -103,5 +105,23 @@ public class Txn {
             this.lock = lock;
             this.lockMode = lockMode;
         }
+    }
+    
+    /**
+     * Get origin of transaction
+     * @return Id
+     */
+    public String getOriginId() {
+        return originId;
+    }
+
+    /**
+     *  Set origin of transaction. Purpose is to be able to 
+     * see the origin of the transaction.
+     * 
+     * @param id  Identifier of origin, FQN or URI.
+     */
+    public void setOriginId(String id) {
+        originId = id;
     }
 }
