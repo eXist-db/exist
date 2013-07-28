@@ -90,6 +90,15 @@ The choice as to whether a bug-fix is a feature or a hotfix is concerned with wh
 
 More than likely, for a bug-fix you should use a *feature*. If you are certain you want to create a hotfix, please consider discussing first via the exist-development mailing list.
 
+Help! I am a human, what does this all mean?
+-------------------------------------------
+
+- You work in features using GitFlow in your own fork of our repo.
+- If you want to push your feature to your fork before you have finished it locally, i.e. for the purposes of backup or collaboration, you can use *git flow feature publish my-magic-feature*.
+- You will only ever send Pull Requests between your 'develop' branch and our 'develop' branch. i.e. finished features.
+- If you follow the details above and make it easy for us to accept your Pull Requests, they will get accepted and merged quickly!
+- Your fork will eventually become out of sync with the upstream repo as others contribute to eXist. To pull upstream changes into your fork, see: [Syncing a Fork](https://help.github.com/articles/syncing-a-fork). It is usually a good idea to do this at least before you start working on a new feature, and probably before you send us a Pull Request, as it will make merging for us much simpler!
+
 Our git-flow init settings
 --------------------------
 When we started working with the eXist repo we needed to configure it for GitFlow by running:
