@@ -29,3 +29,6 @@ webapp/WEB-INF/logs/*.log
 tools/jetty/logs/
 tools/jetty/tmp/
 tools/wrapper/logs/
+backup/
+test/junit/
+test/temp/
