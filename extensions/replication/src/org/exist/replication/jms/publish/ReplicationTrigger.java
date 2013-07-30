@@ -48,16 +48,25 @@ import org.exist.xmldb.XmldbURI;
 public class ReplicationTrigger extends FilteringTrigger implements DocumentTrigger, CollectionTrigger {
 
     private final static Logger LOG = Logger.getLogger(ReplicationTrigger.class);
+    
+    private static final String BLOCKED_MESSAGE = "Blocked replication trigger for %s: was received by replication extension.";
+    public static final String JMS_EXTENSION_PKG = "org.exist.replication.jms";
+    
     private Map<String, List<?>> parameters;
 
     //
     // Document Triggers
     //
-    private void afterUpdateCreateDocument(DBBroker broker, Txn transaction,
-            DocumentImpl document, eXistMessage.ResourceOperation operation) /* throws TriggerException */ {
+    private void afterUpdateCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document, 
+                                           eXistMessage.ResourceOperation operation) /* throws TriggerException */ {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(document.getURI().toString());
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, document.getURI().toString()));
+            return;
         }
 
         // Create Message
@@ -81,7 +90,8 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
             msg.setPayload(MessageHelper.gzipSerialize(broker, document));
 
         } catch (Throwable ex) {
-            LOG.error(String.format("Problem while serializing document (contentLength=%s) to compressed message:%s", document.getContentLength(), ex.getMessage()), ex);
+            LOG.error(String.format("Problem while serializing document (contentLength=%s) to compressed message:%s", 
+                                    document.getContentLength(), ex.getMessage()), ex);
             //throw new TriggerException("Unable to retrieve message payload: " + ex.getMessage());
         }
 
@@ -90,33 +100,45 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     }
     
     @Override
-    public void afterCreateDocument(DBBroker broker, Txn transaction,
-            DocumentImpl document) throws TriggerException {
+    public void afterCreateDocument(DBBroker broker, Txn transaction,  DocumentImpl document) throws TriggerException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(document.getURI().toString());
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, document.getURI().toString()));
+            return;
         }
 
         this.afterUpdateCreateDocument(broker, transaction, document, eXistMessage.ResourceOperation.CREATE);
     }
 
     @Override
-    public void afterUpdateDocument(DBBroker broker, Txn transaction,
-            DocumentImpl document) throws TriggerException {
+    public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(document.getURI().toString());
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, document.getURI().toString()));
+            return;
         }
 
         this.afterUpdateCreateDocument(broker, transaction, document, eXistMessage.ResourceOperation.UPDATE);
     }
 
     @Override
-    public void afterCopyDocument(DBBroker broker, Txn transaction,
-            DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+    public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("%s %s", document.getURI().toString(), oldUri.toString()));
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, document.getURI().toString()));
+            return;
         }
 
         // Create Message
@@ -131,11 +153,15 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     }
 
     @Override
-    public void afterMoveDocument(DBBroker broker, Txn transaction,
-            DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+    public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("%s %s", document.getURI().toString(), oldUri.toString()));
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, document.getURI().toString()));
+            return;
         }
 
         // Create Message
@@ -150,11 +176,15 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     }
 
     @Override
-    public void afterDeleteDocument(DBBroker broker, Txn transaction,
-            XmldbURI uri) throws TriggerException {
+    public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(uri.toString());
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, uri.toString()));
+            return;
         }
 
         // Create Message
@@ -171,11 +201,14 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     // Collection Triggers
     //
     @Override
-    public void afterCreateCollection(DBBroker broker, Txn transaction,
-            Collection collection) throws TriggerException {
+    public void afterCreateCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
         
         if (LOG.isDebugEnabled()) {
             LOG.debug(collection.getURI().toString());
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, collection.getURI().toString()));
         }
 
         // Create Message
@@ -192,10 +225,14 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     }
 
     @Override
-    public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection,
-            XmldbURI oldUri) throws TriggerException {
+    public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI oldUri) throws TriggerException {
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("%s %s", collection.getURI().toString(), oldUri.toString()));
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, collection.getURI().toString()));
         }
 
         // Create Message
@@ -210,10 +247,15 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     }
 
     @Override
-    public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection,
-            XmldbURI oldUri) throws TriggerException {
+    public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI oldUri) throws TriggerException {
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("%s %s", collection.getURI().toString(), oldUri.toString()));
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, collection.getURI().toString()));
+            return;
         }
 
         // Create Message
@@ -228,10 +270,14 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     }
 
     @Override
-    public void afterDeleteCollection(DBBroker broker, Txn transaction,
-            XmldbURI uri) throws TriggerException {
+    public void afterDeleteCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
         if (LOG.isDebugEnabled()) {
             LOG.debug(uri.toString());
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, uri.toString()));
+            return;
         }
 
         // Create Message
@@ -249,10 +295,15 @@ public class ReplicationTrigger extends FilteringTrigger implements DocumentTrig
     //    
 
     @Override
-    public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+    public void afterUpdateDocumentMetadata(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
         
         if (LOG.isDebugEnabled()) {
             LOG.debug(document.getURI().toString());
+        }
+        
+        if(transaction.getOriginId()!=null && transaction.getOriginId().startsWith(JMS_EXTENSION_PKG)){
+            LOG.info(String.format(BLOCKED_MESSAGE, document.getURI().toString()));
+            return;
         }
 
         // Create Message

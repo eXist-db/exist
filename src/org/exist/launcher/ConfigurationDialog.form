@@ -160,7 +160,7 @@
     <Component class="javax.swing.JSpinner" name="collectionCache">
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-          <SpinnerModel initial="48" maximum="256" minimum="16" numberType="java.lang.Integer" stepSize="16" type="number"/>
+          <SpinnerModel initial="48" maximum="256" minimum="48" numberType="java.lang.Integer" stepSize="16" type="number"/>
         </Property>
       </Properties>
       <Events>
@@ -187,7 +187,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lbCurrentUsage">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Memory usage:"/>
+        <Property name="text" type="java.lang.String" value="Memory usage (in MB):"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -264,7 +264,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel11">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;p&gt;Total cache size should not exceed 1/3 of max memory unless you have more than 2gb available.&lt;/p&gt;&lt;/html&gt;"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;p&gt;Total cache size should not exceed 1/3 of max memory unless you have more than 2GB available. These sizes are in megabytes.&lt;/p&gt;&lt;/html&gt;"/>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[280, 48]"/>
         </Property>
