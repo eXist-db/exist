@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 <project basedir="../.." default="dist" name="dist">
     
-  <description>Create eXist distribution</description>
+  <description>Create eXist-db distribution</description>
     
     <!-- import common targets -->
     <import file="../../build.xml"/>
@@ -31,8 +31,8 @@
     <!-- ================================================================== -->
     <!-- Create .war file                                                   -->
     <!-- ================================================================== -->
-    <target name="dist-war" depends="webapps,svn-prepare" description="Create war file">
-        <war destfile="${dist}/exist-${project.version}-rev${svn.revision}.war" webxml="webapp/WEB-INF/web.xml">
+    <target name="dist-war" depends="webapps" description="Create war file">
+        <war destfile="${dist}/exist-${project.version}-rev${git.commit}.war" webxml="webapp/WEB-INF/web.xml">
                 
             <!-- Add files to WEB-INF/lib -->
             <lib dir=".">
@@ -101,10 +101,6 @@
             <lib dir="extensions/modules/lib">
                 <include name="*.jar"/>
             </lib>
-            <!-- Include content extraction jars if present  -->
-            <lib dir="extensions/contentextraction/lib">
-                <include name="*.jar"/>
-            </lib>
             
 
             <!-- Add configuration files to WEB-INF -->
@@ -161,7 +157,7 @@
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
-                <attribute name="SVN-Revision" value="${svn.revision}"/>
+                <attribute name="GIT-Revision" value="${git.commit}"/>
             </manifest>
 
         </war>
