@@ -1,5 +1,6 @@
 eXist Native XML Database
 =========================
+[![Build Status](https://travis-ci.org/eXist-db/exist.png?branch=develop)](https://travis-ci.org/eXist-db/exist)
 [![Build Status](http://build.exist-db.se/buildStatus/icon?job=github-eXist-db-develop-rebuild-test)](http://build.exist-db.se/view/github/job/github-eXist-db-develop-rebuild-test/)
 
 This is the GitHub for the [eXist](http://www.exist-db.org "eXist") Native XML Database. 
