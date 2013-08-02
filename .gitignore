@@ -17,7 +17,12 @@ start.jar
 test/external/
 test/src/org/exist/xquery/xqts/
 tools/wrapper/bin/exist.sh
-tools/wrapper/conf/
+tools/wrapper/conf/log4j.xml
+tools/wrapper/conf/wrapper.conf
+tools/wrapper/conf/wrapper.conf.install
+tools/wrapper/bin/eXist-db.java.status
+tools/wrapper/bin/eXist-db.pid
+tools/wrapper/bin/eXist-db.status
 uninstall/
 webapp/WEB-INF/betterform-config.xml
 webapp/WEB-INF/betterform-version.info
@@ -26,6 +31,7 @@ webapp/WEB-INF/dwr20.dtd
 webapp/WEB-INF/web.xml
 webapp/xqts/config.xml
 webapp/WEB-INF/logs/*.log
+webapp/WEB-INF/logs/*.log.*
 tools/jetty/logs/
 tools/jetty/tmp/
 tools/wrapper/logs/

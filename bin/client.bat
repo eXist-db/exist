@@ -46,7 +46,7 @@ goto :eof
 set MX=1024
 rem @WINDOWS_INSTALLER_3@
 
-set JAVA_ENDORSED_DIRS="%EXIST_HOME%"\lib\endorsed
+set JAVA_ENDORSED_DIRS="%EXIST_HOME%\lib\endorsed"
 set JAVA_OPTS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
 
 set BATCH.D="%EXIST_HOME%\bin\batch.d"
