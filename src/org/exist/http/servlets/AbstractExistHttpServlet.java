@@ -34,6 +34,7 @@ import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.security.AuthenticationException;
 import java.security.Principal;
 import org.exist.security.Subject;
+import org.exist.security.internal.web.HttpAccount;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -218,7 +219,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
             return null;
         }
         
-        Principal principal = AccountImpl.getUserFromServletRequest(request);
+        Principal principal = HttpAccount.getUserFromServletRequest(request);
         if (principal != null) {return (Subject) principal;}
 
         // Try to validate the principal if passed from the Servlet engine
