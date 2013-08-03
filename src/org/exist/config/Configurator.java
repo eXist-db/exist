@@ -121,74 +121,91 @@ public class Configurator {
         }
     }
 
-    public static Method searchForGetMethod(Class<?> clazz, String property) {
+    /**
+     * Finds the Getter Method for the named property of a class
+     *
+     * @param clazz The class of methods to search
+     * @param property The named property in the class to find a getter method for
+     *
+     * @return The Getter method for the property or null
+     */
+    public static Method searchForGetMethod(final Class<?> clazz, final String property) {
         try {
-            String methodName = "get" + property;
-            methodName = methodName.toLowerCase();
+            final String methodName = ("get" + property).toLowerCase();
             for (final Method method : clazz.getMethods()) {
                 if (method.getName().toLowerCase().equals(methodName)) {
                     return method;
                 }
             }
-            
-        } catch (final SecurityException e) {
-            //Nothing to do
-        } catch (final NoClassDefFoundError e) {
-            //Nothing to do
+        } catch (final SecurityException se) {
+            LOG.error(se.getMessage(), se);
+        } catch (final NoClassDefFoundError ncdfe) {
+            LOG.error(ncdfe.getMessage(), ncdfe);
         }
         
         return null;
     }
 
-    public static Method searchForSetMethod(Class<?> clazz, Field field) {
+    /**
+     * Finds the Setter Method for a class field
+     *
+     * @param clazz The class of methods to search
+     * @param field The field in the class to find a setter method for
+     *
+     * @return The Setter method for the field or null
+     */
+    public static Method searchForSetMethod(final Class<?> clazz, final Field field) {
         try {
-            String methodName = "set" + field.getName();
-            methodName = methodName.toLowerCase();
+            final String methodName = ("set" + field.getName()).toLowerCase();
             for (final Method method : clazz.getMethods()) {
                 if (method.getName().toLowerCase().equals(methodName)) {
                     return method;
                 }
             }
-            
-        } catch (final SecurityException e) {
-            //Nothing to do
-        } catch (final NoClassDefFoundError e) {
-            //Nothing to do
+        } catch (final SecurityException se) {
+            LOG.error(se.getMessage(), se);
+        } catch (final NoClassDefFoundError ncdfe) {
+            LOG.error(ncdfe.getMessage(), ncdfe);
         }
         
         return null;
     }
 
-    public static Method searchForAddMethod(Class<?> clazz, String property) {
+    /**
+     * Finds the Adder Method for the named property of a class
+     *
+     * @param clazz The class of methods to search
+     * @param property The named property in the class to find an adder method for. e.g. if the property is "cog" then we find the method "void addCog(Cog cog)"
+     *
+     * @return The Adder method for the property or null
+     */
+    public static Method searchForAddMethod(final Class<?> clazz, final String property) {
         try {
-            String methodName = "add" + property;
-            methodName = methodName.toLowerCase();
+            final String methodName = ("add" + property).toLowerCase();
             for (final Method method : clazz.getMethods()) {
                 if (method.getName().toLowerCase().equals(methodName)
                         && method.getParameterTypes().length == 1
-                        && "java.lang.String".equals(method.getParameterTypes()[0].getName())) {
+                        && String.class.getName().equals(method.getParameterTypes()[0].getName())) {
                     return method;
                 }
             }
-            
-        } catch (final SecurityException e) {
-            //Nothing to do
-        } catch (final NoClassDefFoundError e) {
-            //Nothing to do
+        } catch (final SecurityException se) {
+            LOG.error(se.getMessage(), se);
+        } catch (final NoClassDefFoundError ncdfe) {
+            LOG.error(ncdfe.getMessage(), ncdfe);
         }
         
         return null;
     }
 
-    public static Configuration configure(Configurable instance, Configuration configuration) {
+    public static Configuration configure(final Configurable instance, final Configuration configuration) {
         if (configuration == null) {
             return null;
         }
         
         final Class<?> clazz = instance.getClass();
-        instance.getClass().getAnnotations();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
-            System.out.println("Instance '"+instance+"' don't have annotaion 'ConfigurationClass'");
+            LOG.warn("Instance '" + instance + "' is missing annotation '@org.exist.config.annotation.ConfigurationClass'");
             return null;
             //XXX: throw new ConfigurationException("Instance '"+instance+"' don't have annotaion 'ConfigurationClass'");
         }
@@ -196,7 +213,7 @@ public class Configurator {
         final String configName = clazz.getAnnotation(ConfigurationClass.class).value();
         final Configuration config = configuration.getConfiguration(configName);
         if (config == null) {
-            System.out.println("No configuration [" + configName + "]");
+            LOG.warn("No configuration [" + configName + "] found for [" + clazz.getName() + "]");
             return null;
             //XXX: throw new ConfigurationException("No configuration [" + configName + "]");
         }
@@ -224,7 +241,8 @@ public class Configurator {
         
         try {
             return configureByCurrent(instance, config);
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
+            LOG.error(e.getMessage(), e);
             if (config instanceof ConfigurationImpl) {
                 final ConfigurationImpl impl = (ConfigurationImpl) config;
                 impl.configuredObjectReference = null;
@@ -234,7 +252,7 @@ public class Configurator {
         return null;
     }
 
-    private static Configuration configureByCurrent(Configurable instance, Configuration configuration) throws ConfigurationException {
+    private static Configuration configureByCurrent(final Configurable instance, final Configuration configuration) throws ConfigurationException {
         final AFields annotatedFields = getConfigurationAnnotatedFields(instance.getClass());
         final Set<String> properties = configuration.getProperties();
         if (properties.isEmpty()) {
@@ -245,14 +263,14 @@ public class Configurator {
         for (final String property : properties) {
             final AField annotatedField = annotatedFields.findByAnnotationValue(property);
             if (annotatedField == null) {
-                System.out.println("Unused property " + property + " @" + configuration.getName());
+                LOG.warn("Unused property " + property + " @" + configuration.getName());
                 continue;
             }
             
             final Field field = annotatedField.getField();
             field.setAccessible(true);
             Object value = null;
-            final String typeName = field.getType().getName();
+            final Class<?> fieldType = field.getType();
             
             try {
                 final NewClass newClass = getAnnotation(field, NewClass.class);
@@ -260,11 +278,13 @@ public class Configurator {
                     value = org.exist.config.mapper.Constructor.load(newClass,
                             instance, configuration.getConfiguration(property));
                     
-                } else if ("java.lang.String".equals(typeName)) {
+                } else if (String.class == fieldType) {
+                    //String
                     value = configuration.getProperty(property);
                     
-                } else if ("int".equals(typeName) || "java.lang.Integer".equals(typeName)) {
-                    
+                } else if (int.class == fieldType || Integer.class == fieldType) {
+                    //int or Integer
+
                     if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
                         final String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
                         final SettingKey settingKey = SettingKey.forSettings(settings);
@@ -278,8 +298,8 @@ public class Configurator {
                             } else {
                                 value = Integer.valueOf(configuration.getProperty(property));
                             }
-                        } catch (NumberFormatException e) {
-                            LOG.error(e);
+                        } catch (final NumberFormatException e) {
+                            LOG.error(e.getMessage(), e);
                             //ignore
                             continue;
                         }
@@ -288,32 +308,35 @@ public class Configurator {
                         value = configuration.getPropertyInteger(property);
                     }
                     
-                } else if ("long".equals(typeName) || "java.lang.Long".equals(typeName)) {
+                } else if (long.class == fieldType || Long.class == fieldType) {
+                    //long or Long
                     value = configuration.getPropertyLong(property);
                     
-                } else if ("boolean".equals(typeName) || "java.lang.Boolean".equals(typeName)) {
+                } else if (boolean.class == fieldType || Boolean.class == fieldType) {
+                    //boolean or Boolean
                     value = configuration.getPropertyBoolean(property);
                     
-                } else if ("java.util.Map".equals(typeName)) {
+                } else if (Map.class == fieldType) {
+                    //Map
+                    //skip contents, they will be processed as structure in the next loop on ConfigurationFieldAsElement
                     value = configuration.getPropertyMap(property);
-                    //TODO: skip, it will be processed as structure
-                    
-                } else if ("java.util.List".equals(typeName)) {
-                    //skip, it will be processed as structure
+
+                } else if(List.class == fieldType) {
+                    //List
+                    //skip, will be processed as structure in the next loop on ConfigurationFieldAsElement
                     //TODO what about simple generic types?
-                    
-                } else if ("org.exist.xmldb.XmldbURI".equals(typeName)) {
+
+                } else if (XmldbURI.class ==  fieldType) {
                     //use annotation ConfigurationFieldClassMask
                     value = org.exist.xmldb.XmldbURI.create(configuration.getProperty(property));
                     
                 } else {
-                    
                     Configuration conf = configuration.getConfiguration(property);
                     if (conf == null) {
                         conf = configuration;
                     }
                     
-                    value = create(conf, instance, typeName);
+                    value = create(conf, instance, fieldType);
                     if (value == null) {
                         value = configuration.getProperty(property);
                     }
@@ -333,17 +356,17 @@ public class Configurator {
                     }
                 }
                 
-            } catch (final IllegalArgumentException e) {
+            } catch (final IllegalArgumentException iae) {
                 final String msg = "Configuration error: " + EOL
                         + " config: " + configuration.getName() + EOL
                         + " property: " + property + EOL
-                        + " message: " + e.getMessage();
-                LOG.error(msg, e);
-                throw new ConfigurationException(msg, e);
+                        + " message: " + iae.getMessage();
+                LOG.error(msg, iae);
+                throw new ConfigurationException(msg, iae);
 //                return null; //XXX: throw configuration error
                 
-            } catch (final IllegalAccessException e) {
-                LOG.error("Security error: " + e.getMessage());
+            } catch (final IllegalAccessException iae) {
+                LOG.error("Security error: " + iae.getMessage(), iae);
                 return null; //XXX: throw configuration error
             }
         }
@@ -353,19 +376,19 @@ public class Configurator {
             for (final AField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
                 
                 final Field field = element.getField();
-                final String typeName = field.getType().getName();
+                final Class<?> fieldType = field.getType();
                 
-                if ("java.util.List".equals(typeName)) {
+                if (List.class == fieldType) {
+                    //List
                     final String confName = element.getAnnotation().value();
                     field.setAccessible(true);
                     List list = (List) field.get(instance);
                     String referenceBy;
                     
-                    List<Configuration> confs;
+                    final List<Configuration> confs;
                     if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
                         confs = configuration.getConfigurations(confName);
                         referenceBy = field.getAnnotation(ConfigurationReferenceBy.class).value();
-                        
                     } else {
                         confs = configuration.getConfigurations(confName);
                         referenceBy = null;
@@ -396,7 +419,7 @@ public class Configurator {
                                     continue;
                                 }
                                 
-                                LOG.debug("Unconfigured instance [" + obj + "], remove the object.");
+                                LOG.debug("Unconfigured instance [" + obj + "], removing the object.");
                                 //XXX: remove by method call
                                 iterator.remove();
                                 continue;
@@ -420,7 +443,7 @@ public class Configurator {
                             }
                             
                             if (!found) {
-                                LOG.debug("Configuration was removed, remove the object [" + obj + "].");
+                                LOG.debug("Configuration was removed, removing the object [" + obj + "].");
                                 //XXX: remove by method call
                                 iterator.remove();
                             }
@@ -461,6 +484,7 @@ public class Configurator {
                                                     continue;
                                                     
                                                 } catch (final Exception e) {
+                                                    LOG.debug("Found method " + method.getName() + " on " + instance.getClass().getName() + ", however invoke failed with: " + e.getMessage(), e);
                                                     method = null;
                                                 }
                                             }
@@ -481,10 +505,8 @@ public class Configurator {
                                     if (obj != null) {
                                         list.add(obj);
                                     }
-                                    
                                 } else {
-                                    LOG.error("Field '"+field.getName()+"' must have 'ConfigurationFieldClassMask' annotation ["
-                                            + conf.getName() + "], skipping instance creation.");
+                                    LOG.error("Field '" + field.getName() + "' must have '@org.exist.config.annotation.ConfigurationFieldClassMask' annotation [" + conf.getName() + "], skipping instance creation.");
                                 }
                                 
                                 continue;
@@ -511,25 +533,40 @@ public class Configurator {
                 }
             }
             
-        } catch (final IllegalArgumentException e) {
-            LOG.error(e);
-            e.printStackTrace();
+        } catch (final IllegalArgumentException iae) {
+            LOG.error(iae.getMessage(), iae);
             return null;
             
-        } catch (final IllegalAccessException e) {
-            LOG.error(e);
-            e.printStackTrace();
+        } catch (final IllegalAccessException iae) {
+            LOG.error(iae.getMessage(), iae);
             return null;
-            
         }
+
         return configuration;
     }
 
-    private static Configurable create(Configuration conf, Configurable instance, String clazzName) {
-        Class<?> clazz;
+    /**
+     * @return The Configurable or null
+     */
+    private static Configurable create(final Configuration conf, final Configurable instance, final String clazzName) {
+
+        Configurable configurable;
+        try {
+            final Class<?> clazz = Class.forName(clazzName);
+            configurable =  create(conf, instance, clazz);
+        } catch (final ClassNotFoundException cnfe) {
+            LOG.error("Class [" + clazzName + "] not found, skip instance creation.");
+            configurable = null;
+        }
+        return configurable;
+    }
+
+    /**
+     * @return The Configurable or null
+     */
+    private static Configurable create(final Configuration conf, final Configurable instance, final Class<?> clazz) {
         
         try {
-            clazz = Class.forName(clazzName);
 
             Configurable obj = null;
             try {
@@ -537,6 +574,7 @@ public class Configurator {
                 obj = constructor.newInstance(instance, conf);
                 
             } catch (final NoSuchMethodException e) {
+                LOG.debug("Unable to invoke Constructor on Configurable instance '" + e.getMessage() + "', so creating new Constructor...");
                 final Constructor<Configurable> constructor = (Constructor<Configurable>) clazz.getConstructor(Configuration.class);
                 obj = constructor.newInstance(conf);
             }
@@ -568,51 +606,52 @@ public class Configurator {
                 
             }
             return obj;
+
+        } catch (final SecurityException se) {
+            LOG.warn("Security exception on class [" + clazz
+                    + "] creation '" + se.getMessage() + "' ,skipping instance creation.");
+            LOG.debug(se.getMessage(), se);
             
-        } catch (final ClassNotFoundException e) {
-            LOG.error("Class [" + clazzName + "] not found, "
-                    + "skip instance creation.");
-            
-        } catch (final SecurityException e) {
-            LOG.error("Security exception on class [" + clazzName
-                    + "] creation, skip instance creation.");
-            
-        } catch (final NoSuchMethodException e) {
-            LOG.error("Class [" + clazzName + "] constructor "
+        } catch (final NoSuchMethodException nsme) {
+            LOG.warn(clazz + " constructor "
                     + "(" + instance.getClass().getName() + ", " + Configuration.class.getName() + ")"
                     + " or "
                     + "(" + Configuration.class.getName() + ")"
-                    + "not found, skip instance creation.");
+                    + "not found '" + nsme.getMessage() + "', skipping instance creation.");
+            LOG.debug(nsme.getMessage(), nsme);
             
-        } catch (final InstantiationException e) {
-            LOG.error("Instantiation exception on class [" + clazzName
-                    + "] creation, skip instance creation.");
+        } catch (final InstantiationException ie) {
+            LOG.warn("Instantiation exception on " + clazz
+                    + " creation '" + ie.getMessage() + "', skipping instance creation.");
+            LOG.debug(ie.getMessage(), ie);
             
-        } catch (final InvocationTargetException e) {
-            LOG.error("Invocation target exception on class ["
-                    + clazzName + "] creation, skip instance creation.");
+        } catch (final InvocationTargetException ite) {
+            LOG.warn("Invocation target exception on "
+                    + clazz + " creation '" + ite.getMessage() + "', skipping instance creation.");
+            LOG.debug(ite.getMessage(), ite);
             
-        } catch (final EXistException e) {
-            LOG.error("Databasse exception on class [" + clazzName
-                    + "] startup, skip instance creation.");
+        } catch (final EXistException ee) {
+            LOG.warn("Database exception on " + clazz
+                    + " startup '" + ee.getMessage() + "', skipping instance creation.");
+            LOG.debug(ee.getMessage(), ee);
             
-        } catch (final IllegalAccessException e) {
-            LOG.error(e);
+        } catch (final IllegalAccessException iae) {
+            LOG.warn(iae.getMessage());
+            LOG.debug(iae.getMessage(), iae);
         }
         
         return null;
     }
 
-    public static Configuration parse(File file) throws ConfigurationException {
+    public static Configuration parse(final File file) throws ConfigurationException {
         try {
             return parse(new FileInputStream(file));
-            
         } catch (final FileNotFoundException e) {
             throw new ConfigurationException(e);
         }
     }
 
-    public static Configuration parse(InputStream is) throws ConfigurationException {
+    public static Configuration parse(final InputStream is) throws ConfigurationException {
         try {
             final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -626,16 +665,14 @@ public class Configurator {
             return new ConfigurationImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
         } catch (final ParserConfigurationException e) {
             throw new ConfigurationException(e);
-            
         } catch (final SAXException e) {
             throw new ConfigurationException(e);
-            
         } catch (final IOException e) {
             throw new ConfigurationException(e);
         }
-        
     }
 
+    /*
     public static Configuration parseDefault() throws ConfigurationException {
         try {
             return parse(new FileInputStream(ConfigurationHelper.lookup("conf.xml")));
@@ -643,21 +680,20 @@ public class Configurator {
         } catch (final FileNotFoundException e) {
             throw new ConfigurationException(e);
         }
-    }
+    }*/
 
-    private static Boolean implementsInterface(Class<?> object, Class<?> interf) {
+    private static Boolean implementsInterface(final Class<?> object, final Class<?> iface) {
         for (final Class<?> c : object.getInterfaces()) {
-            if (c.equals(interf)) {
+            if (c.equals(iface)) {
                 return true;
             }
         }
-        
         return false;
     }
 
-    protected static void serializeByReference(Configurable instance,
-            SAXSerializer serializer, String fieldAsElementName,
-            String referenceBy) throws SAXException {
+    protected static void serializeByReference(final Configurable instance,
+            final SAXSerializer serializer, final String fieldAsElementName,
+            final String referenceBy) throws SAXException {
         final Configurable resolved = ((ReferenceImpl) instance).resolve();
         final Method getMethod = searchForGetMethod(resolved.getClass(), referenceBy);
         Object value;
@@ -666,17 +702,17 @@ public class Configurator {
             value = getMethod.invoke(resolved);
             
         } catch (final IllegalArgumentException iae) {
-            LOG.error(iae);
+            LOG.error(iae.getMessage(), iae);
             //TODO : throw exception ? -pb
             return;
             
         } catch (final IllegalAccessException iae) {
-            LOG.error(iae);
+            LOG.error(iae.getMessage(), iae);
             //TODO : throw exception ? -pb
             return;
             
         } catch (final InvocationTargetException ite) {
-            LOG.error(ite);
+            LOG.error(ite.getMessage(), ite);
             //TODO : throw exception ? -pb
             return;
         }
@@ -696,8 +732,8 @@ public class Configurator {
         }
     }
 
-    protected static void serialize(Configurable instance, SAXSerializer serializer,
-            String fieldAsElementName, String referenceBy) throws SAXException {
+    protected static void serialize(final Configurable instance, final SAXSerializer serializer,
+            final String fieldAsElementName, final String referenceBy) throws SAXException {
         
         if (instance instanceof ReferenceImpl) {
             serializeByReference(instance, serializer, fieldAsElementName, referenceBy);
@@ -728,13 +764,13 @@ public class Configurator {
         try {
             value = extractFieldValue(field, instance);
             
-        } catch (final IllegalArgumentException e) {
-            LOG.error(e);
+        } catch (final IllegalArgumentException iae) {
+            LOG.error(iae.getMessage(), iae);
             //TODO : throw exception , -pb
             return;
             
-        } catch (final IllegalAccessException e) {
-            LOG.error(e);
+        } catch (final IllegalAccessException iae) {
+            LOG.error(iae.getMessage(), iae);
             //TODO : throw exception ? -pb
             return;
         }
@@ -753,13 +789,13 @@ public class Configurator {
         }
     }
 
-    private static String extractFieldValue(Field field, Configurable instance) throws IllegalArgumentException, IllegalAccessException {
-        final String typeName = field.getType().getName();
+    private static String extractFieldValue(final Field field, final Configurable instance) throws IllegalArgumentException, IllegalAccessException {
+        final Class<?> fieldType = field.getType();
         
-        if ("java.lang.String".equals(typeName)) {
+        if (String.class == fieldType) {
             return field.get(instance).toString();
             
-        } else if ("int".equals(typeName) || "java.lang.Integer".equals(typeName)) {
+        } else if (int.class == fieldType || Integer.class == fieldType) {
             
             if (field.isAnnotationPresent(ConfigurationFieldSettings.class)) {
                 final String settings = field.getAnnotation(ConfigurationFieldSettings.class).value();
@@ -784,13 +820,13 @@ public class Configurator {
                 return field.get(instance).toString();
             }
             
-        } else if ("long".equals(typeName) || "java.lang.Long".equals(typeName)) {
+        } else if (long.class == fieldType || Long.class == fieldType) {
             return field.get(instance).toString();
             
-        } else if ("boolean".equals(typeName) || "java.lang.Boolean".equals(typeName)) {
+        } else if (boolean.class == fieldType || Boolean.class == fieldType) {
             return Boolean.valueOf(field.get(instance).toString()).toString();
             
-        } else if ("org.exist.xmldb.XmldbURI".equals(typeName)) {
+        } else if (XmldbURI.class == fieldType) {
             return field.get(instance).toString();
         }
         
@@ -894,7 +930,7 @@ public class Configurator {
                     } else {
                         value = extractFieldValue(field, instance);
                         if (value == null) {
-                            LOG.error("field '" + field.getName() + "' has unsupported type [" + typeName + "] - skiped");
+                            LOG.error("field '" + field.getName() + "' has unsupported type [" + typeName + "] - skipped");
                             //TODO : throw exception ? -pb
                         }
                     }
@@ -940,9 +976,9 @@ public class Configurator {
         }
     }
 
-    private static void serializeList(Configurable instance,
-            AField<ConfigurationFieldAsElement> element,
-            SAXSerializer serializer) throws ConfigurationException,
+    private static void serializeList(final Configurable instance,
+           final AField<ConfigurationFieldAsElement> element,
+           final SAXSerializer serializer) throws ConfigurationException,
             IllegalArgumentException, IllegalAccessException, SAXException {
         
         final Field field = element.getField();
@@ -969,9 +1005,9 @@ public class Configurator {
         }
     }
 
-    private static void serializeStringList(List<String> list,
-            AField<ConfigurationFieldAsElement> element,
-            SAXSerializer serializer) throws SAXException {
+    private static void serializeStringList(final List<String> list,
+            final AField<ConfigurationFieldAsElement> element,
+            final SAXSerializer serializer) throws SAXException {
         final String fieldAsElementName = element.getAnnotation().value();
         final QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
         
@@ -982,9 +1018,9 @@ public class Configurator {
         }
     }
 
-    private static void serializeConfigurableList(List<Configurable> list,
-            Field field, AField<ConfigurationFieldAsElement> element,
-            SAXSerializer serializer) throws ConfigurationException, SAXException {
+    private static void serializeConfigurableList(final List<Configurable> list,
+            final Field field, final AField<ConfigurationFieldAsElement> element,
+            final SAXSerializer serializer) throws ConfigurationException, SAXException {
         
         String referenceBy = null;
         if (field.isAnnotationPresent(ConfigurationReferenceBy.class)) {
@@ -1001,8 +1037,8 @@ public class Configurator {
         }
     }
 
-    private static void serializeMap(String mapName, Map<String, String> map,
-            SAXSerializer serializer) throws SAXException {
+    private static void serializeMap(final String mapName, final Map<String, String> map,
+            final SAXSerializer serializer) throws SAXException {
         
         if (map != null) {
             final QName mapQName = new QName(mapName, Configuration.NS);
@@ -1017,7 +1053,7 @@ public class Configurator {
         }
     }
 
-    public static FullXmldbURI getFullURI(Database db, XmldbURI uri) {
+    public static FullXmldbURI getFullURI(final Database db, final XmldbURI uri) {
         if (uri instanceof FullXmldbURI) {
             return (FullXmldbURI) uri;
         }
@@ -1030,8 +1066,8 @@ public class Configurator {
         return (FullXmldbURI) XmldbURI.create(accessor.toString(), uri.toString());
     }
 
-    public static Configuration parse(Configurable instance, DBBroker broker,
-            Collection collection, XmldbURI fileURL) throws ConfigurationException {
+    public static Configuration parse(final Configurable instance, final DBBroker broker,
+            final Collection collection, final XmldbURI fileURL) throws ConfigurationException {
         
         Configuration conf = null;
         final FullXmldbURI key = getFullURI(broker.getBrokerPool(), collection.getURI().append(fileURL));
@@ -1068,7 +1104,8 @@ public class Configurator {
                 } catch (final SAXException saxe) {
                     throw new ConfigurationException(saxe.getMessage(), saxe);
                     
-                } catch (final UnsupportedEncodingException e) {
+                } catch (final UnsupportedEncodingException uee) {
+                    LOG.warn(uee.getMessage());
                     return null;
                 }
             }
@@ -1097,7 +1134,7 @@ public class Configurator {
         return conf;
     }
 
-    public static Configuration parse(DocumentAtExist document) {
+    public static Configuration parse(final DocumentAtExist document) {
         if (document == null) {
             return null;
         }
@@ -1120,7 +1157,7 @@ public class Configurator {
         return conf;
     }
 
-    public static DocumentAtExist save(Configurable instance, XmldbURI uri) throws IOException {
+    public static DocumentAtExist save(final Configurable instance, final XmldbURI uri) throws IOException {
         BrokerPool database;
         try {
             database = BrokerPool.getInstance();
@@ -1143,7 +1180,7 @@ public class Configurator {
         }
     }
 
-    public static DocumentAtExist save(DBBroker broker, Configurable instance, XmldbURI uri) throws IOException {
+    public static DocumentAtExist save(final DBBroker broker, final Configurable instance, final XmldbURI uri) throws IOException {
         try {
             final Collection collection = broker.getCollection(uri.removeLastSegment());
             if (collection == null) {
@@ -1161,7 +1198,7 @@ public class Configurator {
     
     protected static Set<FullXmldbURI> saving = new HashSet<FullXmldbURI>();
 
-    public static DocumentAtExist save(Configurable instance, DBBroker broker, Collection collection, XmldbURI uri) throws IOException, ConfigurationException {
+    public static DocumentAtExist save(final Configurable instance, final DBBroker broker, final Collection collection, final XmldbURI uri) throws IOException, ConfigurationException {
         
         final StringWriter writer = new StringWriter();
         final SAXSerializer serializer = new SAXSerializer(writer, null);
@@ -1208,6 +1245,8 @@ public class Configurator {
             
         } catch (final Exception e) {
 
+            LOG.error(e);
+
             if (fullURI != null) {
                 saving.remove(fullURI);
             }
@@ -1216,7 +1255,6 @@ public class Configurator {
                 transact.abort(txn);
             }
 
-            LOG.error(e);
             throw new IOException(e);
             
         } finally {
@@ -1225,7 +1263,7 @@ public class Configurator {
         }
     }
 
-    public static synchronized void clear(Database db) {
+    public static synchronized void clear(final Database db) {
         for (final Entry<FullXmldbURI, Configuration> entry : hotConfigs.entrySet()) {
             final FullXmldbURI uri = entry.getKey();
             if (uri.getInstanceName().equals(db.getId())) {
@@ -1238,7 +1276,7 @@ public class Configurator {
         }
     }
 
-    public static void unregister(Configuration configuration) {
+    public static void unregister(final Configuration configuration) {
         if (configuration == null) {
             return;
         }
@@ -1253,7 +1291,8 @@ public class Configurator {
         }
     }
 
-    private static Object instantiateObject(String className, Configuration configuration) throws ConfigurationException {
+    /*
+    private static Object instantiateObject(final String className, final Configuration configuration) throws ConfigurationException {
         try {
             final Class<?> clazz = Class.forName(className);
             final Constructor<?> cstr = clazz.getConstructor(Configuration.class);
@@ -1262,7 +1301,7 @@ public class Configurator {
         } catch (final Exception e) {
             throw new ConfigurationException(e.getMessage(), e);
         }
-    }
+    }*/
 
     private static class AFields implements Iterable<AField> {
 
@@ -1272,19 +1311,19 @@ public class Configurator {
         private List<AField<ConfigurationFieldAsElement>> elements =
                 new ArrayList<AField<ConfigurationFieldAsElement>>();
 
-        public void addAttribute(AField<ConfigurationFieldAsAttribute> attribute) {
+        public void addAttribute(final AField<ConfigurationFieldAsAttribute> attribute) {
             this.attributes.add(attribute);
         }
 
-        public void addAllAttributes(List<AField<ConfigurationFieldAsAttribute>> attributes) {
+        public void addAllAttributes(final List<AField<ConfigurationFieldAsAttribute>> attributes) {
             this.attributes.addAll(attributes);
         }
 
-        public void addElement(AField<ConfigurationFieldAsElement> element) {
+        public void addElement(final AField<ConfigurationFieldAsElement> element) {
             this.elements.add(element);
         }
 
-        public void addAllElements(List<AField<ConfigurationFieldAsElement>> elements) {
+        public void addAllElements(final List<AField<ConfigurationFieldAsElement>> elements) {
             this.elements.addAll(elements);
         }
 
@@ -1296,7 +1335,7 @@ public class Configurator {
             return elements;
         }
 
-        public AField findByAnnotationValue(String value) {
+        public AField findByAnnotationValue(final String value) {
             for (final AField<ConfigurationFieldAsAttribute> attr : attributes) {
                 if (attr.getAnnotation().value().equals(value)) {
                     return attr;
@@ -1315,9 +1354,8 @@ public class Configurator {
         public Iterator<AField> iterator() {
             return new Iterator<AField>() {
                 
-                private Iterator<AField<ConfigurationFieldAsAttribute>> itAttributes = attributes.iterator();
-                
-                private Iterator<AField<ConfigurationFieldAsElement>> itElements = elements.iterator();
+                private final Iterator<AField<ConfigurationFieldAsAttribute>> itAttributes = attributes.iterator();
+                private final Iterator<AField<ConfigurationFieldAsElement>> itElements = elements.iterator();
 
                 @Override
                 public boolean hasNext() {
@@ -1350,7 +1388,7 @@ public class Configurator {
         private final T annotation;
         private final Field field;
 
-        public AField(T annotation, Field field) {
+        public AField(final T annotation, final Field field) {
             this.annotation = annotation;
             this.field = field;
         }
@@ -1364,7 +1402,7 @@ public class Configurator {
         }
     }
 
-    public static Configuration getConfigurtion(BrokerPool db, XmldbURI uri) {
+    public static Configuration getConfigurtion(final BrokerPool db, final XmldbURI uri) {
         return hotConfigs.get(Configurator.getFullURI(db, uri));
     }
 }
