@@ -31,6 +31,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.AccountImpl;
+import org.exist.security.internal.web.HttpAccount;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -171,7 +172,7 @@ public class XSLTServlet extends HttpServlet {
 
 		Subject user = pool.getSecurityManager().getGuestSubject();
 
-		Subject requestUser = AccountImpl.getUserFromServletRequest(request);
+		Subject requestUser = HttpAccount.getUserFromServletRequest(request);
         if (requestUser != null)
         	{user = requestUser;}
 
