@@ -24,7 +24,7 @@ public class Lookup extends Function implements Optimizable {
                 new SequenceType[] {
                     new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                         "The node set to search using a range index which is defined on those nodes"),
-                    new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.ONE_OR_MORE,
+                    new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
                         "The key to look up.")
                 },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
@@ -50,7 +50,7 @@ public class Lookup extends Function implements Optimizable {
 
         Expression arg = arguments.get(1).simplify();
         arg = new Atomize(context, arg);
-        arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
+        arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_MORE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
         steps.add(arg);
     }
@@ -113,6 +113,9 @@ public class Lookup extends Function implements Optimizable {
 
         DocumentSet docs = contextSequence.getDocumentSet();
         AtomicValue[] keys = getKeys(contextSequence);
+        if (keys.length == 0) {
+            return NodeSet.EMPTY_SET;
+        }
 
         List<QName> qnames = null;
         if (contextQName != null) {
@@ -128,7 +131,7 @@ public class Lookup extends Function implements Optimizable {
         LOG.info("preselect for " + Arrays.toString(keys) + " on " + contextSequence.getItemCount() + "returned " + preselectResult.getItemCount() +
                 " and took " + (System.currentTimeMillis() - start));
         if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
         }
         return preselectResult;
     }
@@ -160,6 +163,9 @@ public class Lookup extends Function implements Optimizable {
             else {
                 RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
                 AtomicValue[] keys = getKeys(contextSequence);
+                if (keys.length == 0) {
+                    return NodeSet.EMPTY_SET;
+                }
                 List<QName> qnames = null;
                 if (contextQName != null) {
                     qnames = new ArrayList<QName>(1);
@@ -175,7 +181,7 @@ public class Lookup extends Function implements Optimizable {
                 }
             }
             if( context.getProfiler().traceFunctions() ) {
-                context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
+                context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
