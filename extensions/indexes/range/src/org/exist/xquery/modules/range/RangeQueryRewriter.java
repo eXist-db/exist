@@ -72,37 +72,41 @@ public class RangeQueryRewriter extends QueryRewriter {
                     path.append(innerPath);
                 }
 
-                // find a range index configuration matching the full path to the predicate expression
-                RangeIndexConfigElement rice = findConfiguration(path);
-                if (rice != null) {
-                    // found index configuration with sub-fields
-                    if (rice.isComplex() && rewriteAll && rice.getNodePath().match(contextPath)) {
-                        // check for a matching sub-path and retrieve field information
-                        RangeIndexConfigField field = ((ComplexRangeIndexConfigElement) rice).getField(path);
-                        if (field != null) {
-                            if (args == null) {
-                                // initialize args
-                                args = new ArrayList<Expression>(4);
-                                arg0 = new SequenceConstructor(getContext());
-                                args.add(arg0);
+                if (path.length() > 0) {
+                    // find a range index configuration matching the full path to the predicate expression
+                    RangeIndexConfigElement rice = findConfiguration(path);
+                    if (rice != null) {
+                        // found index configuration with sub-fields
+                        if (rice.isComplex() && rewriteAll && rice.getNodePath().match(contextPath)) {
+                            // check for a matching sub-path and retrieve field information
+                            RangeIndexConfigField field = ((ComplexRangeIndexConfigElement) rice).getField(path);
+                            if (field != null) {
+                                if (args == null) {
+                                    // initialize args
+                                    args = new ArrayList<Expression>(4);
+                                    arg0 = new SequenceConstructor(getContext());
+                                    args.add(arg0);
+                                }
+                                // field is added to the sequence in first parameter
+                                arg0.add(new LiteralValue(getContext(), new StringValue(field.getName())));
+                                // append right hand expression as additional parameter
+                                args.add(comparison.getRight());
+                            } else {
+                                rewriteAll = false;
                             }
-                            // field is added to the sequence in first parameter
-                            arg0.add(new LiteralValue(getContext(), new StringValue(field.getName())));
-                            // append right hand expression as additional parameter
-                            args.add(comparison.getRight());
                         } else {
+                            // found simple index configuration: replace with call to range:equals
+                            if (comparison.getRelation() == Constants.EQ) {
+                                ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
+                                eqArgs.add(comparison.getLeft());
+                                eqArgs.add(comparison.getRight());
+                                Lookup func = new Lookup(getContext(), Lookup.signatures[0]);
+                                func.setArguments(eqArgs);
+                                pred.replace(comparison, new InternalFunctionCall(func));
+                            }
                             rewriteAll = false;
                         }
                     } else {
-                        // found simple index configuration: replace with call to range:equals
-                        if (comparison.getRelation() == Constants.EQ) {
-                            ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
-                            eqArgs.add(comparison.getLeft());
-                            eqArgs.add(comparison.getRight());
-                            Lookup func = new Lookup(getContext(), Lookup.signatures[0]);
-                            func.setArguments(eqArgs);
-                            pred.replace(comparison, new InternalFunctionCall(func));
-                        }
                         rewriteAll = false;
                     }
                 } else {
