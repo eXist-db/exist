@@ -45,6 +45,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.AccountImpl;
+import org.exist.security.internal.web.HttpAccount;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
@@ -317,7 +318,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         }
         
         if (user == getDefaultUser()) {
-        	Subject requestUser = AccountImpl.getUserFromServletRequest(request);
+        	Subject requestUser = HttpAccount.getUserFromServletRequest(request);
         	if (requestUser != null) {
         		user = requestUser;
         	} else {
