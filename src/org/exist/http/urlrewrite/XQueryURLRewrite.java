@@ -332,7 +332,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 modifiedRequest.allowCaching(!modelView.hasViews());
                 doRewrite(modelView.getModel(), modifiedRequest, wrappedResponse);
 
-                final int status = wrappedResponse.getStatus();
+                int status = ((CachingResponseWrapper) wrappedResponse).getStatus();
                 if (status == HttpServletResponse.SC_NOT_MODIFIED) {
                 	response.flushBuffer();
                 } else if (status < 400) {
