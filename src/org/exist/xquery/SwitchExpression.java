@@ -163,6 +163,7 @@ public class SwitchExpression extends AbstractExpression {
         for (final Case next : cases) {
             next.returnClause.accept(visitor);
         }
+        defaultClause.returnClause.accept(visitor);
     }
 
     public void resetState(boolean postOptimization) {
