@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2003-2011 The eXist Project
+ *  Copyright (C) 2003-2013 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -33,19 +33,14 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SchemaType;
 import org.exist.security.SecurityManager;
-import org.exist.security.Subject;
 import org.exist.security.Account;
 import org.exist.security.internal.aider.UserAider;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
 import org.exist.storage.DBBroker;
 
 /**
@@ -53,6 +48,7 @@ import org.exist.storage.DBBroker;
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  * @author {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+ * @author Adam retter <adam@exist-db.org>
  */
 @ConfigurationClass("account")
 public class AccountImpl extends AbstractAccount {
@@ -98,34 +94,6 @@ public class AccountImpl extends AbstractAccount {
         }
     }*/
 
-    static public Subject getUserFromServletRequest(HttpServletRequest request) {
-        final Principal principal = request.getUserPrincipal();
-        if(principal instanceof Subject) {
-            return (Subject) principal;
-
-            //workaroud strange jetty authentication method, why encapsulate user object??? -shabanovd
-        } else if(principal != null && "org.eclipse.jetty.plus.jaas.JAASUserPrincipal".equals(principal.getClass().getName())) {
-            try {
-                final Method method = principal.getClass().getMethod("getSubject");
-                final Object obj = method.invoke(principal);
-                if(obj instanceof javax.security.auth.Subject) {
-                    final javax.security.auth.Subject subject = (javax.security.auth.Subject) obj;
-                    for(final Principal _principal_ : subject.getPrincipals()) {
-                        if(_principal_ instanceof Subject) {
-                            return (Subject) _principal_;
-                        }
-                    }
-                }
-            } catch(final SecurityException e) {
-            } catch(final IllegalArgumentException e) {
-            } catch(final IllegalAccessException e) {
-            } catch(final NoSuchMethodException e) {
-            } catch(final InvocationTargetException e) {
-            }
-        }
-
-        return null;
-    }
     @ConfigurationFieldAsElement("password")
     private String password = null;
     @ConfigurationFieldAsElement("digestPassword")
