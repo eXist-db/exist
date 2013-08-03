@@ -181,4 +181,9 @@ public class AttributeConstructor extends NodeConstructor {
     public Iterator<Object> contentIterator() {
         return contents.iterator();
     }
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitAttribConstructor(this);
+    }
 }

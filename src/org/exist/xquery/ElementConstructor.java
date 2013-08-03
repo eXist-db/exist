@@ -70,6 +70,10 @@ public class ElementConstructor extends NodeConstructor {
     public PathExpr getContent() {
         return content;
     }
+
+    public AttributeConstructor[] getAttributes() {
+        return attributes;
+    }
     
     public void setNameExpr(Expression expr) {
 		//Deferred atomization (we could have a QNameValue)
