@@ -52,6 +52,15 @@ public class MapExpr extends AbstractExpression {
         return Type.MAP;
     }
 
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        super.accept(visitor);
+        for (final Mapping mapping: this.mappings) {
+            mapping.key.accept(visitor);
+            mapping.value.accept(visitor);
+        }
+    }
+
     public void dump(ExpressionDumper dumper) {
         dumper.display("map {");
         for (final Mapping mapping : this.mappings) {
