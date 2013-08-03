@@ -4,6 +4,8 @@ import org.apache.lucene.document.*;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
+import org.exist.dom.QName;
+import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
@@ -17,13 +19,14 @@ public class RangeIndexConfigElement {
     protected NodePath path = null;
     private int type = Type.STRING;
     private RangeIndexConfigElement nextConfig = null;
+    private boolean isQNameIndex = false;
 
     public RangeIndexConfigElement() {
     }
 
     public RangeIndexConfigElement(Element node, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String match = node.getAttribute("match");
-        if (match != null) {
+        if (match != null && match.length() > 0) {
             try {
                 path = new NodePath(namespaces, match);
                 if (path.length() == 0)
@@ -31,6 +34,10 @@ public class RangeIndexConfigElement {
             } catch (IllegalArgumentException e) {
                 throw new DatabaseConfigurationException("Range index module: invalid qname in configuration: " + e.getMessage());
             }
+        } else if (node.hasAttribute("qname")) {
+            QName qname = LuceneIndexConfig.parseQName(node, namespaces);
+            path = new NodePath(qname);
+            isQNameIndex = true;
         }
         String typeStr = node.getAttribute("type");
         if (typeStr != null && typeStr.length() > 0) {
@@ -179,6 +186,8 @@ public class RangeIndexConfigElement {
     }
 
     public boolean match(NodePath other) {
+        if (isQNameIndex)
+            return other.getLastComponent().equalsSimple(path.getLastComponent());
         return path.match(other);
     }
 

@@ -21,28 +21,29 @@ declare variable $rt:COLLECTION_CONFIG :=
                 <create match="/test/address/name"/>
                 <create match="/test/address/city" type="xs:string"/>
                 <create match="/test/address/city/@code" type="xs:integer"/>
+                <create qname="@id" type="xs:string"/>
             </range>
         </index>
     </collection>;
 
 declare variable $rt:DATA :=
     <test>
-        <address>
+        <address id="muh">
             <name>Berta Muh</name>
             <street>Wiesenweg 14</street>
             <city code="65463">Almweide</city>
         </address>
-        <address>
+        <address id="rüssel">
             <name>Rudi Rüssel</name>
             <street>Elefantenweg 67</street>
             <city code="65428">Rüsselsheim</city>
         </address>
-        <address>
+        <address id="amsel">
             <name>Albert Amsel</name>
             <street>Birkenstraße 77</street>
             <city code="76878">Waldstadt</city>
         </address>
-        <address>
+        <address id="reh">
             <name>Pü Reh</name>
             <street>Am Waldrand 4</street>
             <city code="89283">Wiesental</city>
@@ -97,6 +98,13 @@ declare
 function rt:equality-int-attribute($code as xs:integer) {
     //address/city[range:equals(@code, $code)]/text(),
     //address[range:equals(city/@code, $code)]/city/text()
+};
+
+declare
+    %test:args("muh")
+    %test:assertEquals("Berta Muh")
+function rt:equality-qname-string-attribute($id as xs:string) {
+    //address[range:equals(@id, $id)]/name/text()
 };
 
 declare 
