@@ -2,12 +2,17 @@ package org.exist.indexing.range;
 
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
@@ -79,6 +84,53 @@ public class RangeIndexConfigElement {
             // wrong type: ignore
         }
         return null;
+    }
+
+    public static Query toQuery(String field, AtomicValue content, int operator) throws XPathException {
+        if (operator == Constants.EQ) {
+            return new TermQuery(new Term(field, convertToBytes(content)));
+        }
+        final int type = content.getType();
+        final boolean includeUpper = operator == Constants.LTEQ;
+        final boolean includeLower = operator == Constants.GTEQ;
+        switch (type) {
+            case Type.INTEGER:
+            case Type.LONG:
+            case Type.UNSIGNED_LONG:
+                if (operator == Constants.LT || operator == Constants.LTEQ) {
+                    return NumericRangeQuery.newLongRange(field, null, ((NumericValue)content).getLong(), includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newLongRange(field, ((NumericValue)content).getLong(), null, includeLower, includeUpper);
+                }
+            case Type.INT:
+            case Type.UNSIGNED_INT:
+            case Type.SHORT:
+            case Type.UNSIGNED_SHORT:
+                if (operator == Constants.LT || operator == Constants.LTEQ) {
+                    return NumericRangeQuery.newIntRange(field, null, ((NumericValue) content).getInt(), includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newIntRange(field, ((NumericValue) content).getInt(), null, includeLower, includeUpper);
+                }
+            case Type.DECIMAL:
+            case Type.DOUBLE:
+                if (operator == Constants.LT || operator == Constants.LTEQ) {
+                    return NumericRangeQuery.newDoubleRange(field, null, ((NumericValue) content).getDouble(), includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newDoubleRange(field, ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
+                }
+            case Type.FLOAT:
+                if (operator == Constants.LT || operator == Constants.LTEQ) {
+                    return NumericRangeQuery.newFloatRange(field, null, (float) ((NumericValue) content).getDouble(), includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
+                }
+            default:
+                if (operator == Constants.LT || operator == Constants.LTEQ) {
+                    return new TermRangeQuery(field, null, convertToBytes(content), includeLower, includeUpper);
+                } else {
+                    return new TermRangeQuery(field, convertToBytes(content), null, includeLower, includeUpper);
+                }
+        }
     }
 
     public static BytesRef convertToBytes(AtomicValue content) throws XPathException {

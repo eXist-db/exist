@@ -80,7 +80,7 @@ declare
     %test:args("Berta Muh")
     %test:assertEquals("Almweide")
 function rt:equality-string($name as xs:string) {
-    //address[range:equals(name, $name)]/city/text()
+    //address[range:eq(name, $name)]/city/text()
 };
 
 declare
@@ -89,22 +89,22 @@ declare
     %test:args("Berta Muh")
     %test:assertEquals("Berta Muh")
 function rt:equality-string-self($name as xs:string) {
-    //address/name[range:equals(., $name)]/text()
+    //address/name[range:eq(., $name)]/text()
 };
 
 declare
     %test:args(65428)
     %test:assertEquals("Rüsselsheim", "Rüsselsheim")
 function rt:equality-int-attribute($code as xs:integer) {
-    //address/city[range:equals(@code, $code)]/text(),
-    //address[range:equals(city/@code, $code)]/city/text()
+    //address/city[range:eq(@code, $code)]/text(),
+    //address[range:eq(city/@code, $code)]/city/text()
 };
 
 declare
     %test:args("muh")
     %test:assertEquals("Berta Muh")
 function rt:equality-qname-string-attribute($id as xs:string) {
-    //address[range:equals(@id, $id)]/name/text()
+    //address[range:eq(@id, $id)]/name/text()
 };
 
 declare 
@@ -148,6 +148,90 @@ function rt:equality-fields-multi($name as xs:string, $city as xs:string) {
 (:    count(/test[range:field-equals(("address-name", "address-city"), $name, $city)]):)
 (:};:)
 
+declare
+    %test:args("Berta Muh")
+    %test:assertEquals(2)
+    %test:args("Albert Amsel")
+    %test:assertEquals(3)
+    %test:args("Pü Reh")
+    %test:assertEquals(1)
+function rt:gt-string($name as xs:string) {
+    count(//address[range:gt(name, $name)])
+};
+
+declare
+    %test:args("Berta Muh")
+    %test:assertEquals(3)
+    %test:args("Albert Amsel")
+    %test:assertEquals(4)
+    %test:args("Pü Reh")
+    %test:assertEquals(2)
+function rt:ge-string($name as xs:string) {
+    count(//address[range:ge(name, $name)])
+};
+
+declare
+    %test:args("Berta Muh")
+    %test:assertEquals(1)
+    %test:args("Albert Amsel")
+    %test:assertEquals(0)
+    %test:args("Pü Reh")
+    %test:assertEquals(2)
+function rt:lt-string($name as xs:string) {
+    count(//address[range:lt(name, $name)])
+};
+
+declare
+    %test:args("Berta Muh")
+    %test:assertEquals(2)
+    %test:args("Albert Amsel")
+    %test:assertEquals(1)
+    %test:args("Pü Reh")
+    %test:assertEquals(3)
+function rt:le-string($name as xs:string) {
+    count(//address[range:le(name, $name)])
+};
+
+declare
+    %test:args(76878)
+    %test:assertEquals(1)
+    %test:args(89283)
+    %test:assertEquals(0)
+    %test:args(65463)
+    %test:assertEquals(2)
+function rt:gt-integer($code as xs:integer) {
+    count(//address[range:gt(city/@code, $code)])
+};
+
+declare
+    %test:args(76878)
+    %test:assertEquals(2)
+    %test:args(89283)
+    %test:assertEquals(1)
+    %test:args(65463)
+    %test:assertEquals(3)
+function rt:ge-integer($code as xs:integer) {
+    count(//address[range:ge(city/@code, $code)])
+};
+
+declare
+    %test:args(76878)
+    %test:assertEquals(2)
+    %test:args(65463)
+    %test:assertEquals(1)
+function rt:lt-integer($code as xs:integer) {
+    count(//address[range:lt(city/@code, $code)])
+};
+
+declare
+    %test:args(76878)
+    %test:assertEquals(3)
+    %test:args(65463)
+    %test:assertEquals(2)
+function rt:le-integer($code as xs:integer) {
+    count(//address[range:le(city/@code, $code)])
+};
+
 declare 
     %test:assertEquals("Almweide")
 function rt:remove-document() {
@@ -170,39 +254,39 @@ function rt:update-insert() {
         </address>
     into doc("/db/rangetest/test.xml")/test,
     range:field-equals("address-name", "Willi Wiesel")/street/text(),
-    //address[range:equals(name, "Willi Wiesel")]/city/text()
+    //address[range:eq(name, "Willi Wiesel")]/city/text()
 };
 
 declare 
     %test:assertEmpty
 function rt:update-delete() {
-    update delete /test/address[range:equals(name, "Berta Muh")],
-    //address[range:equals(name, "Berta Muh")],
+    update delete /test/address[range:eq(name, "Berta Muh")],
+    //address[range:eq(name, "Berta Muh")],
     range:field-equals("address-name", "Berta Muh")
 };
 
 declare
     %test:assertEquals("Am Staudamm 3", "Bach")
 function rt:update-replace() {
-    update replace /test/address[range:equals(name, "Albert Amsel")]
+    update replace /test/address[range:eq(name, "Albert Amsel")]
     with
         <address>
             <name>Berta Bieber</name>
             <street>Am Staudamm 3</street>
             <city code="77777">Bach</city>
         </address>,
-    //address[range:equals(name, "Albert Amsel")],
+    //address[range:eq(name, "Albert Amsel")],
     range:field-equals("address-name", "Albert Amsel"),
-    //address[range:equals(name, "Berta Bieber")]/street/text(),
+    //address[range:eq(name, "Berta Bieber")]/street/text(),
     range:field-equals("address-name", "Berta Bieber")/city/text()
 };
 
 declare
     %test:assertEquals("Am Waldrand 4", "Wiesental")
 function rt:update-value() {
-    update value /test/address/name[range:equals(., "Pü Reh")] with "Rita Rebhuhn",
-    //address[range:equals(name, "Pü Reh")],
+    update value /test/address/name[range:eq(., "Pü Reh")] with "Rita Rebhuhn",
+    //address[range:eq(name, "Pü Reh")],
     range:field-equals("address-name", "Pü Reh"),
-    //address[range:equals(name, "Rita Rebhuhn")]/street/text(),
+    //address[range:eq(name, "Rita Rebhuhn")]/street/text(),
     range:field-equals("address-name", "Rita Rebhuhn")/city/text()
 };

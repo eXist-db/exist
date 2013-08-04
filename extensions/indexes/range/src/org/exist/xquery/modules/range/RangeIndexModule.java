@@ -10,10 +10,14 @@ public class RangeIndexModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/range";
     public final static String PREFIX = "range";
-    public final static String RELEASED_IN_VERSION = "eXist-2.0.1";
+    public final static String RELEASED_IN_VERSION = "eXist-2.2";
 
     public final static FunctionDef[] functions = {
         new FunctionDef(Lookup.signatures[0], Lookup.class),
+        new FunctionDef(Lookup.signatures[1], Lookup.class),
+        new FunctionDef(Lookup.signatures[2], Lookup.class),
+        new FunctionDef(Lookup.signatures[3], Lookup.class),
+        new FunctionDef(Lookup.signatures[4], Lookup.class),
         new FunctionDef(FieldLookup.signatures[0], FieldLookup.class),
         new FunctionDef(Optimize.signature, Optimize.class)
     };

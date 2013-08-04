@@ -25,10 +25,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
-import org.exist.xquery.Expression;
-import org.exist.xquery.QueryRewriter;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
@@ -345,7 +342,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, int axis) throws IOException, XPathException {
+    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, int operator, int axis) throws IOException, XPathException {
         qnames = getDefinedIndexes(qnames);
         NodeSet resultSet = NodeSet.EMPTY_SET;
         IndexSearcher searcher = null;
@@ -357,12 +354,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (keys.length > 1) {
                     BooleanQuery bool = new BooleanQuery();
                     for (AtomicValue key: keys) {
-                        Term term = RangeIndexConfigElement.convertToTerm(field, key);
-                        bool.add(new TermQuery(term), BooleanClause.Occur.SHOULD);
+                        bool.add(RangeIndexConfigElement.toQuery(field, key, operator), BooleanClause.Occur.SHOULD);
                     }
                     query = bool;
                 } else {
-                    query = new TermQuery(RangeIndexConfigElement.convertToTerm(field, keys[0]));
+                    query = RangeIndexConfigElement.toQuery(field, keys[0], operator);
                 }
 
                 resultSet = doQuery(contextId, docs, contextSet, axis, searcher, qname, query, null);
