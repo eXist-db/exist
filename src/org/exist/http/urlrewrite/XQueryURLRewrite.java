@@ -33,6 +33,7 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.log4j.Logger;
 
+import org.exist.security.internal.web.HttpAccount;
 import org.exist.source.Source;
 import org.exist.source.DBSource;
 import org.exist.source.SourceFactory;
@@ -187,7 +188,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
         Subject user = defaultUser;
     	
-        Subject requestUser = AccountImpl.getUserFromServletRequest(request);
+        Subject requestUser = HttpAccount.getUserFromServletRequest(request);
         if (requestUser != null)
         	{user = requestUser;}
 
@@ -331,7 +332,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 modifiedRequest.allowCaching(!modelView.hasViews());
                 doRewrite(modelView.getModel(), modifiedRequest, wrappedResponse);
 
-                final int status = wrappedResponse.getStatus();
+                int status = ((CachingResponseWrapper) wrappedResponse).getStatus();
                 if (status == HttpServletResponse.SC_NOT_MODIFIED) {
                 	response.flushBuffer();
                 } else if (status < 400) {

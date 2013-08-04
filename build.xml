@@ -2,7 +2,7 @@
 <!-- ======================================================================= -->
 <!-- eXist 2.x build file                                                    -->
 <!-- ======================================================================= -->
-<!-- $Id$ -->
+
 <project basedir="." default="all" name="eXist-DB">
     
     <description>eXist Open Source Native XML Database</description>
@@ -32,6 +32,4 @@
     <import file="build/scripts/performance.xml"/>
     <import file="build/scripts/quality.xml"/>
     <import file="build/scripts/static-docs.xml"/>
-    <import file="build/scripts/subversion.xml"/>
-    
 </project>

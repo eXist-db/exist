@@ -43,6 +43,7 @@
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -77,19 +78,19 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="panFavourites" min="-2" max="-2" attributes="0"/>
                                   <Component id="tpConnectionType" min="-2" pref="527" max="-2" attributes="0"/>
-                                  <Component id="lblUsername" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="lblConnectionType" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="lblPassword" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                          <Component id="cmbConnectionType" min="-2" pref="122" max="-2" attributes="0"/>
-                                          <Component id="txtUsername" alignment="0" max="32767" attributes="0"/>
-                                          <Component id="txtPassword" alignment="0" min="-2" pref="300" max="-2" attributes="0"/>
+                                          <Component id="lblPassword" pref="110" max="32767" attributes="0"/>
+                                          <Component id="lblConnectionType" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="txtPassword" alignment="0" min="-2" pref="270" max="-2" attributes="0"/>
+                                          <Component id="txtUsername" min="-2" pref="270" max="-2" attributes="0"/>
+                                          <Component id="cmbConnectionType" alignment="0" min="-2" pref="100" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
+                                  <Component id="lblUsername" alignment="0" min="-2" pref="115" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <Component id="jSeparator1" alignment="0" min="-2" pref="666" max="-2" attributes="0"/>
@@ -283,7 +284,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lblConfiguration" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
-                      <Component id="txtConfiguration" pref="313" max="32767" attributes="0"/>
+                      <Component id="txtConfiguration" pref="279" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnSelectConfiguration" min="-2" pref="33" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -299,7 +300,7 @@
                           <Component id="txtConfiguration" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnSelectConfiguration" alignment="3" min="-2" pref="28" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="30" max="32767" attributes="0"/>
+                      <EmptySpace pref="38" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -409,7 +410,9 @@
     </Container>
     <Component class="javax.swing.JButton" name="btnClose">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Close"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="getLabel(&quot;LoginPanel.51&quot;)" type="code"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCloseActionPerformed"/>
@@ -417,11 +420,16 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnConnect">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Connect"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="getLabel(&quot;LoginPanel.50&quot;)" type="code"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnConnectActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="btnConnect.addKeyListener(new EnterKeyAdapter());"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator1">
     </Component>

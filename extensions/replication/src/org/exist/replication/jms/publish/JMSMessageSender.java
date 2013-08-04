@@ -210,7 +210,7 @@ public class JMSMessageSender implements MessageSender {
 
         } catch (JMSException ex) {
             LOG.error(ex.getMessage(), ex);
-            throw new TransportException(String.format("Problem during communcation: %s", ex.getMessage()), ex);
+            throw new TransportException(String.format("Problem during communication: %s", ex.getMessage()), ex);
 
         } catch (NamingException ex) {
             LOG.error(ex.getMessage(), ex);

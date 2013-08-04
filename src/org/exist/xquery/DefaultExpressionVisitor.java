@@ -61,16 +61,30 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     public void visitForExpression(ForExpr forExpr) {
         forExpr.getInputSequence().accept(this);
         final Expression where = forExpr.getWhereExpression();
-        if (where != null)
-            {where.accept(this);}
+        if (where != null) {
+            where.accept(this);
+        }
+        for (OrderSpec orderSpec: forExpr.getOrderSpecs()) {
+            orderSpec.getSortExpression().accept(this);
+        }
+        for (GroupSpec groupSpec: forExpr.getGroupSpecs()) {
+            groupSpec.getGroupExpression().accept(this);
+        }
         forExpr.getReturnExpression().accept(this);
     }
 
     public void visitLetExpression(LetExpr letExpr) {
         letExpr.getInputSequence().accept(this);
         final Expression where = letExpr.getWhereExpression();
-        if (where != null)
-            {where.accept(this);}
+        if (where != null) {
+            where.accept(this);
+        }
+        for (OrderSpec orderSpec: letExpr.getOrderSpecs()) {
+            orderSpec.getSortExpression().accept(this);
+        }
+        for (GroupSpec groupSpec: letExpr.getGroupSpecs()) {
+            groupSpec.getGroupExpression().accept(this);
+        }
         letExpr.getReturnExpression().accept(this);
     }
 
@@ -97,6 +111,11 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     
     public void visitElementConstructor(ElementConstructor constructor) {
         constructor.getNameExpr().accept(this);
+        if (constructor.getAttributes() != null) {
+            for (AttributeConstructor attrConstr: constructor.getAttributes()) {
+                attrConstr.accept(this);
+            }
+        }
         if (constructor.getContent() != null)
             {constructor.getContent().accept(this);}
     }
@@ -132,5 +151,13 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     @Override
     public void visitVariableDeclaration(VariableDeclaration decl) {
     	decl.getExpression().accept(this);
+    }
+
+    @Override
+    public void visitTryCatch(TryCatchExpression tryCatch) {
+        tryCatch.getTryTargetExpr().accept(this);
+        for (TryCatchExpression.CatchClause clause : tryCatch.getCatchClauses()) {
+            clause.getCatchExpr().accept(this);
+        }
     }
 }

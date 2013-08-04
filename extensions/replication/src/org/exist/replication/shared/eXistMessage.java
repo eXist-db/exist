@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Container class for clustering messages.
@@ -55,6 +56,8 @@ public class eXistMessage {
     
     private ResourceOperation resourceOperation;
     private ResourceType resourceType;
+    private DocumentType documentType;
+    
     private String path;
     private String destination;
     private byte[] payload;
@@ -73,6 +76,13 @@ public class eXistMessage {
      */
     public enum ResourceType {
         DOCUMENT, COLLECTION
+    }
+    
+    /**
+     * Types of exist-db resources
+     */
+    public enum DocumentType {
+        XML, BINARY
     }
 
     public void setResourceOperation(ResourceOperation type) {
@@ -137,6 +147,14 @@ public class eXistMessage {
         return metaData;
     }
     
+    public DocumentType getDocumentType() {
+        return documentType;
+    }
+    
+    public void setDocumentType(DocumentType documentType) {
+        this.documentType = documentType;
+    }
+    
     /**
      * Get one-liner report of message, including the JMS properties.
      */
@@ -171,5 +189,10 @@ public class eXistMessage {
         }
         
         return sb.toString();
+    }
+    
+    @Override
+    public String toString(){
+        return ToStringBuilder.reflectionToString(this);
     }
 }

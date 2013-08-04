@@ -187,6 +187,7 @@ public class TypeswitchExpression extends AbstractExpression {
         for (final Case next : cases) {
             next.returnClause.accept(visitor);
         }
+        defaultClause.returnClause.accept(visitor);
     }
 
     public void setContextDocSet(DocumentSet contextSet) {

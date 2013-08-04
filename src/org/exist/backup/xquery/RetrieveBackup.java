@@ -54,6 +54,8 @@ public class RetrieveBackup extends BasicFunction
             new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the file to retrieve." )
         }, new SequenceType( Type.ITEM, Cardinality.EMPTY ) );
 
+    private final static int CHUNK_SIZE = 512 * 1024;
+
     public RetrieveBackup( XQueryContext context )
     {
         super( context, signature );
@@ -111,7 +113,7 @@ public class RetrieveBackup extends BasicFunction
         final ResponseWrapper response = (ResponseWrapper)respValue.getObject();
 
         response.setContentType( "application/zip" );
-
+        response.setHeader("Content-Length", String.valueOf(backupFile.length()));
         try {
             final InputStream  is  = new FileInputStream( backupFile );
             final OutputStream os  = response.getOutputStream();
