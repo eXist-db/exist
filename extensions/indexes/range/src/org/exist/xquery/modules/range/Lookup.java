@@ -17,17 +17,46 @@ import java.util.List;
 
 public class Lookup extends Function implements Optimizable {
 
+    private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
+            new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "The node set to search using a range index which is defined on those nodes"),
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                    "The key to look up.")
+    };
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
-            new QName("equals", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            new QName("eq", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
                 "",
-                new SequenceType[] {
-                    new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
-                        "The node set to search using a range index which is defined on those nodes"),
-                    new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
-                        "The key to look up.")
-                },
+                PARAMETER_TYPE,
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the input node set whose node value is equal to the key.")
+        ),
+        new FunctionSignature(
+            new QName("gt", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "all nodes from the input node set whose node value is equal to the key.")
+        ),
+        new FunctionSignature(
+            new QName("lt", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the input node set whose node value is equal to the key.")
+        ),
+        new FunctionSignature(
+            new QName("le", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the input node set whose node value is equal to the key.")
+        ),
+        new FunctionSignature(
+            new QName("ge", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the input node set whose node value is equal to the key.")
         )
     };
@@ -123,17 +152,37 @@ public class Lookup extends Function implements Optimizable {
             qnames.add(contextQName);
         }
 
+        final int operator = getOperator();
+
         try {
-            preselectResult = index.query(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null, qnames, keys, NodeSet.DESCENDANT);
+            preselectResult = index.query(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null, qnames, keys, operator, NodeSet.DESCENDANT);
         } catch (IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
-        LOG.info("preselect for " + Arrays.toString(keys) + " on " + contextSequence.getItemCount() + "returned " + preselectResult.getItemCount() +
-                " and took " + (System.currentTimeMillis() - start));
+        //LOG.info("preselect for " + Arrays.toString(keys) + " on " + contextSequence.getItemCount() + "returned " + preselectResult.getItemCount() +
+        //        " and took " + (System.currentTimeMillis() - start));
         if( context.getProfiler().traceFunctions() ) {
             context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
         }
+        if (preselectResult == null) {
+            preselectResult = NodeSet.EMPTY_SET;
+        }
         return preselectResult;
+    }
+
+    private int getOperator() {
+        int operator = Constants.EQ;
+        final String calledAs = mySignature.getName().getLocalName();
+        if ("gt".equals(calledAs)) {
+            operator = Constants.GT;
+        } else if ("ge".equals(calledAs)) {
+            operator = Constants.GTEQ;
+        } else if ("lt".equals(calledAs)) {
+            operator = Constants.LT;
+        } else if ("le".equals(calledAs)) {
+            operator = Constants.LTEQ;
+        }
+        return operator;
     }
 
     private AtomicValue[] getKeys(Sequence contextSequence) throws XPathException {
@@ -171,11 +220,12 @@ public class Lookup extends Function implements Optimizable {
                     qnames = new ArrayList<QName>(1);
                     qnames.add(contextQName);
                 }
+                final int operator = getOperator();
 
                 try {
                     NodeSet inNodes = input.toNodeSet();
                     DocumentSet docs = inNodes.getDocumentSet();
-                    result = index.query(getExpressionId(), docs, inNodes, qnames, keys, NodeSet.ANCESTOR);
+                    result = index.query(getExpressionId(), docs, inNodes, qnames, keys, operator, NodeSet.ANCESTOR);
                 } catch (IOException e) {
                     throw new XPathException(this, e.getMessage());
                 }
@@ -188,7 +238,7 @@ public class Lookup extends Function implements Optimizable {
             long start = System.currentTimeMillis();
             contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
             result = getArgument(0).eval(contextSequence).toNodeSet();
-            LOG.info("eval took " + (System.currentTimeMillis() - start));
+            //LOG.info("eval took " + (System.currentTimeMillis() - start));
         }
         return result;
     }
