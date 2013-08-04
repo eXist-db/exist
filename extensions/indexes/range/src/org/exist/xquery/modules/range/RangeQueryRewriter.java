@@ -100,7 +100,8 @@ public class RangeQueryRewriter extends QueryRewriter {
                                 ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
                                 eqArgs.add(comparison.getLeft());
                                 eqArgs.add(comparison.getRight());
-                                Lookup func = new Lookup(getContext(), Lookup.signatures[0]);
+                                Lookup func = new Lookup(comparison.getContext(), Lookup.signatures[0]);
+                                func.setLocation(comparison.getLine(), comparison.getColumn());
                                 func.setArguments(eqArgs);
                                 pred.replace(comparison, new InternalFunctionCall(func));
                             }
@@ -118,7 +119,8 @@ public class RangeQueryRewriter extends QueryRewriter {
                 // the entire filter expression can be replaced
                 RewritableExpression parent = (RewritableExpression) parentExpr;
                 // create range:field-equals function
-                FieldLookup func = new FieldLookup(getContext(), FieldLookup.signatures[0]);
+                FieldLookup func = new FieldLookup(locationStep.getContext(), FieldLookup.signatures[0]);
+                func.setLocation(locationStep.getLine(), locationStep.getColumn());
                 func.setArguments(args);
                 parent.replace(locationStep, new InternalFunctionCall(func));
 
