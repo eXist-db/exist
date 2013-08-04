@@ -90,7 +90,7 @@ public class ExistResourceFactory implements ResourceFactory {
             }
 
             if(LOG.isDebugEnabled()) {
-                LOG.debug("host='" + host + "' path='" + path + "'");
+                LOG.debug(String.format("host='%s' path='%s'", host, path));
             }
 
             // Create uri inside database
@@ -99,11 +99,11 @@ public class ExistResourceFactory implements ResourceFactory {
             // MacOsX finder specific files
             String documentSeqment = xmldbUri.lastSegment().toString();
             if(documentSeqment.startsWith("._") || documentSeqment.equals(".DS_Store")){
-                LOG.debug("skipping MacOsX file '"+xmldbUri.lastSegment().toString()+"'");
+                LOG.debug(String.format("skipping MacOsX file '%s'", xmldbUri.lastSegment().toString()));
             }
 
         } catch (URISyntaxException e) {
-            LOG.error("Unable to convert path '" + path + "'into a XmldbURI representation.");
+            LOG.error(String.format("Unable to convert path '%s'into a XmldbURI representation.", path));
             return null;
         }
 
@@ -123,12 +123,12 @@ public class ExistResourceFactory implements ResourceFactory {
 
             case NOT_EXISTING:
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Resource does not exist: '" + xmldbUri + "'");
+                    LOG.debug(String.format("Resource does not exist: '%s'", xmldbUri));
                 }
                 return null;
 
             default:
-                LOG.error("Unkown resource type for " + xmldbUri);
+                LOG.error(String.format("Unkown resource type for %s", xmldbUri));
                 return null;
         }
     }
@@ -145,7 +145,7 @@ public class ExistResourceFactory implements ResourceFactory {
 
         try {
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Path: " + xmldbUri.toString());
+                LOG.debug(String.format("Path: %s", xmldbUri.toString()));
             }
             
             // Try to read as system user. Note that the actual user is not know
@@ -179,7 +179,7 @@ public class ExistResourceFactory implements ResourceFactory {
            
 
         } catch (Exception ex) {
-            LOG.error("Error determining nature of resource " + xmldbUri.toString(), ex);
+            LOG.error(String.format("Error determining nature of resource %s", xmldbUri.toString()), ex);
             type = ResourceType.NOT_EXISTING;
 
         } finally {
@@ -201,7 +201,7 @@ public class ExistResourceFactory implements ResourceFactory {
         }
 
         if(LOG.isDebugEnabled()) {
-            LOG.debug("Resource type=" + type.toString());
+            LOG.debug(String.format("Resource type=%s", type.toString()));
         }
         
         return type;
