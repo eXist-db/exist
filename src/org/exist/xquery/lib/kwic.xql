@@ -24,27 +24,6 @@ declare variable $kwic:CHARS_SUMMARY := 120;
 declare variable $kwic:CHARS_KWIC := 40;
 
 (:~
-	Retrieve the following and preceding text chunks for a given match.
-
-	@param $match the text node containing the match
-	@param $mode the selection mode: either "previous" or "following"
-:)
-declare function kwic:get-context($root as element(), $match as element(exist:match), $mode as xs:string) as node()* {
-	let $sibs :=
-		if ($mode eq 'previous') then 
-			$match/preceding::text()
-		else
-			$match/text()/following::text()
-	for $sib in $sibs
-	where exists($root[.//$sib])
-	return
-		if ($sib/parent::exist:match) then
-			<span class="hi">{$sib}</span>
-		else
-			$sib
-};
-
-(:~
 	Like fn:substring, but takes a node argument. If the node is an element,
 	a new element is created with the same node-name as the old one and the
 	shortened text content.
@@ -67,7 +46,7 @@ declare function kwic:display-text($text as text()?) as node()? {
 
 declare function kwic:callback($callback as function?, $node as node(), $mode as xs:string) as xs:string? {
     if (exists($callback)) then
-        util:call($callback, $node, $mode)
+        $callback($node, $mode)
     else
         $node
 };
@@ -80,11 +59,11 @@ declare function kwic:callback($callback as function?, $node as node(), $mode as
 	the returned sequence has the desired total string length.
 :)
 declare function kwic:truncate-previous($root as node(), $node as node()?, $truncated as item()*, 
-	$max as xs:int, $chars as xs:int, $callback as function?) {
+	$max as xs:int, $chars as xs:int, $callback as (function(node(), xs:string) as xs:string?)?) {
 	if ($node) then
-		let $next := $node/preceding::text()[1]
+		let $next := $node/preceding::text()[1] intersect $root//text()
 		return
-			if (empty($root//$next)) then
+			if (empty($next)) then
 				$truncated
 			else if ($chars + string-length($next) gt $max) then
 			    let $str := kwic:callback($callback, $next, "before")
@@ -114,11 +93,11 @@ declare function kwic:truncate-previous($root as node(), $node as node()?, $trun
 	the returned sequence has the desired total string length.
 :)
 declare function kwic:truncate-following($root as node(), $node as node()?, $truncated as item()*, 
-	$max as xs:int, $chars as xs:int, $callback as function?) {
+	$max as xs:int, $chars as xs:int, $callback as (function(node(), xs:string) as xs:string?)?) {
 	if ($node) then
-		let $next := $node/following::text()[1]
+		let $next := $node/following::text()[1] intersect $root//text()
 		return
-			if (empty($root//$next)) then
+			if (empty($next)) then
 				$truncated
 			else if ($chars + string-length($next) gt $max) then
 			    let $str := kwic:callback($callback, $next, "after")
@@ -148,7 +127,7 @@ declare function kwic:string-length($nodes as item()*) as xs:integer {
 };
 
 declare function kwic:get-summary($root as node(), $node as element(exist:match), 
-	$config as element(config)) as element() {
+	$config as element(config)?) as element() {
 	kwic:get-summary($root, $node, $config, ())
 };
 
@@ -169,8 +148,10 @@ declare function kwic:get-summary($root as node(), $node as element(exist:match)
 	string.
 :)
 declare function kwic:get-summary($root as node(), $node as element(exist:match), 
-	$config as element(config), $callback as function?) as element() {
-	let $chars := xs:int($config/@width)
+	$config as element(config)?, 
+    $callback as (function(node(), xs:string) as xs:string?)?
+) as element() {
+	let $chars := xs:int(($config/@width, $kwic:CHARS_KWIC)[1])
 	let $table := $config/@table = ('yes', 'true')
 	let $prevTrunc := kwic:truncate-previous($root, $node, (), $chars, 0, $callback)
 	let $remain := 
@@ -229,7 +210,7 @@ declare function kwic:get-matches($hit as element()) as element(exist:match)* {
 	return $expanded//exist:match
 };
 
-declare function kwic:summarize($hit as element(), $config as element(config)) as element()* {
+declare function kwic:summarize($hit as element(), $config as element(config)?) as element()* {
     kwic:summarize($hit, $config, ())
 };
 
@@ -257,10 +238,24 @@ declare function kwic:summarize($hit as element(), $config as element(config)) a
 		operations or an ngram search.
 	@param $config configuration element to configure the behaviour of the function
 :)
-declare function kwic:summarize($hit as element(), $config as element(config), 
-    $callback as function?) as element()* {
+declare function kwic:summarize($hit as element(), $config as element(config)?, 
+    $callback as (function(node(), xs:string) as xs:string?)?) as element()* {
     let $expanded := util:expand($hit, "expand-xincludes=no")
 	for $match in $expanded//exist:match
 	return
 		kwic:get-summary($expanded, $match, $config, $callback)
 };
+
+(:
+declare function kwic:summarize-all($hits as element()*, $config as element(config),
+    $wrap as function(node(), function(node()) as element()) as element()) {
+    let $hits := util:expand($hits, "expand-xincludes=no")
+    for $hit in $hits
+    return
+        $wrap($hit, function($node) {
+            for $match in $node//exist:match
+            return
+        		kwic:get-summary($node, $match, $config, ())
+        })
+};
+:)

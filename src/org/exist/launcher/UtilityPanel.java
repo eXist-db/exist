@@ -191,6 +191,11 @@ public class UtilityPanel extends JFrame implements Observer {
         return button;
     }
 
+    protected void showMessages() {
+        messages.setVisible(true);
+        UtilityPanel.this.pack();
+    }
+
     protected void setStatus(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override

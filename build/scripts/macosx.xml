@@ -31,10 +31,10 @@
             </fileset>
         </copy>
         <copy file="installer/scripts/eXist-db.mac/Contents/Info.plist.tmpl"
-              tofile="${app.dir}/Contents/Info.plist" filtering="true">
+              tofile="${app.dir}/Contents/Info.plist" filtering="true" overwrite="true">
             <filterset>
                 <filter token="vmoptions" value="-Dexist.home=$APP_PACKAGE/Contents/Resources/eXist-db"/>
-                <filter token="classpath" value="$APP_PACKAGE/Contents/Resources/eXist-db/start.jar"/>
+                <filter token="classpath" value="$APP_PACKAGE/Contents/Resources/eXist-db"/>
             </filterset>
         </copy>
         <mkdir dir="${app.exist}"/>

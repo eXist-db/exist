@@ -38,7 +38,7 @@ public class ConfigurationDialog extends JDialog {
      */
     public ConfigurationDialog(Launcher launcher) {
         setModal(true);
-        setTitle("eXist-db Configuration");
+        setTitle("eXist-db System Configuration");
 
         initComponents();
 
@@ -267,7 +267,7 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 13, 0, 22);
         getContentPane().add(jLabel8, gridBagConstraints);
 
-        lbCurrentUsage.setText("Memory usage:");
+        lbCurrentUsage.setText("Memory usage (in MB):");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -326,7 +326,7 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
         getContentPane().add(dataDir, gridBagConstraints);
 
-        jLabel11.setText("<html><p>Total cache size should not exceed 1/3 of max memory unless you have more than 2gb available.</p></html>");
+        jLabel11.setText("<html><p>Total cache size should not exceed 1/3 of max memory unless you have more than 2GB available. These sizes are in megabytes.</p></html>");
         jLabel11.setPreferredSize(new java.awt.Dimension(280, 48));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -520,10 +520,6 @@ public class ConfigurationDialog extends JDialog {
             cacheModel.setValue(cacheModel.getMaximum());
         }
         collectionCacheModel.setMaximum(maxCache - (Integer)cacheModel.getValue());
-        lbCurrentUsage.setText(
-            String.format("maxCache: %d cacheSize: %d collectionMax: %d mem: %d\n", maxCache, cacheModel.getValue(),
-                collectionCacheModel.getMaximum(), max)
-        );
         if (collectionCacheModel.getMaximum().compareTo(collectionCacheModel.getValue()) < 0) {
             collectionCacheModel.setValue(collectionCacheModel.getMaximum());
         }

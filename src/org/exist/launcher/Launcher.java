@@ -140,10 +140,9 @@ public class Launcher extends Observable implements Observer {
             public void run() {
                 try {
                     jetty = new JettyStart();
-                    jetty.addObserver(splash);
                     jetty.run(new String[]{home}, splash);
                 } catch (final Exception e) {
-                    showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check the logs.", true);
+                    showMessageAndExit("Error Occurred", "An error occurred during eXist-db startup. Please check console output and logs.", true);
                     System.exit(1);
                 }
             }
@@ -178,15 +177,19 @@ public class Launcher extends Observable implements Observer {
             }
         });
 
-        trayIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-                if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
-                    hiddenFrame.add(popup);
-                    popup.show(hiddenFrame, mouseEvent.getXOnScreen(), mouseEvent.getYOnScreen());
+        // add listener for left click on system tray icon. doesn't work well on linux though.
+        final String os = System.getProperty("os.name", "");
+        if (!os.equals("Linux")) {
+            trayIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+                    if (mouseEvent.getButton() == MouseEvent.BUTTON1) {
+                        hiddenFrame.add(popup);
+                        popup.show(hiddenFrame, mouseEvent.getXOnScreen(), mouseEvent.getYOnScreen());
+                    }
                 }
-            }
-        });
+            });
+        }
 
         try {
             hiddenFrame.setResizable(false);
@@ -234,7 +237,7 @@ public class Launcher extends Observable implements Observer {
         });
 
         popup.addSeparator();
-        MenuItem configItem = new MenuItem("Server Configuration");
+        MenuItem configItem = new MenuItem("System Configuration");
         popup.add(configItem);
         configItem.addActionListener(new ActionListener() {
 
@@ -471,8 +474,13 @@ public class Launcher extends Observable implements Observer {
             label.setHorizontalAlignment(SwingConstants.CENTER);
             panel.add(displayLogs, BorderLayout.SOUTH);
         }
+
+        utilityPanel.showMessages();
+        utilityPanel.toFront();
+        utilityPanel.setVisible(true);
+
         JOptionPane.showMessageDialog(splash, panel, title, JOptionPane.WARNING_MESSAGE);
-        System.exit(1);
+        //System.exit(1);
     }
 
     /**

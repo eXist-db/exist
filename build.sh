@@ -30,7 +30,7 @@ fi
 
 ANT_HOME="$EXIST_HOME/tools/ant"
 
-LOCALCLASSPATH="$ANT_HOME/lib/ant-launcher.jar:$EXIST_HOME/lib/user/svnkit.jar:$EXIST_HOME/lib/user/svnkit-cli.jar"
+LOCALCLASSPATH="$ANT_HOME/lib/ant-launcher.jar"
 
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 

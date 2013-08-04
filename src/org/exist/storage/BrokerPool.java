@@ -1745,6 +1745,7 @@ public class BrokerPool extends Observable implements Database {
         if (statusReporter != null)
             {statusReporter.setStatus(message);}
     }
+
 	public long getMajorSyncPeriod()
 	{
 		return majorSyncPeriod;
@@ -2094,7 +2095,8 @@ public class BrokerPool extends Observable implements Database {
 
         public synchronized void setStatus(String status) {
             this.status = status;
-            notify();
+            BrokerPool.this.setChanged();
+            BrokerPool.this.notifyObservers(status);
         }
 
         public void terminate() {
@@ -2104,9 +2106,6 @@ public class BrokerPool extends Observable implements Database {
 
         public void run() {
             while (!terminate) {
-                BrokerPool.this.setChanged();
-                BrokerPool.this.notifyObservers(status);
-
                 synchronized (this) {
                     try {
                         wait(300);

@@ -3,9 +3,8 @@ package org.exist.repo;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.apache.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
@@ -40,7 +39,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         final File[] xars = autodeployDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-            return file.getName().endsWith(".xar");
+                return file.getName().endsWith(".xar");
             }
         });
 
@@ -51,6 +50,13 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         } else {
             LOG.info("Scanning autodeploy directory. Found " + xars.length + " app packages.");
         }
+
+        Arrays.sort(xars, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
 
         final Deployment deployment = new Deployment(broker);
         // build a map with uri -> file so we can resolve dependencies
@@ -74,7 +80,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             }
         };
 
-        for (final File xar : packages.values()) {
+        for (final File xar : xars) {
             try {
                 deployment.installAndDeploy(xar, loader, false);
             } catch (final PackageException e) {
