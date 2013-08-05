@@ -240,7 +240,7 @@ public class RangeIndexConfigElement {
     public boolean match(NodePath other) {
         if (isQNameIndex)
             return other.getLastComponent().equalsSimple(path.getLastComponent());
-        return path.match(other);
+        return other.match(path);
     }
 
     public boolean find(NodePath other) {

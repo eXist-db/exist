@@ -23,6 +23,7 @@ public class Lookup extends Function implements Optimizable {
             new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
                     "The key to look up.")
     };
+
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("eq", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
@@ -61,15 +62,42 @@ public class Lookup extends Function implements Optimizable {
         )
     };
 
+    public static Lookup create(XQueryContext context, int operator) {
+        FunctionSignature signature;
+        switch (operator) {
+            case Constants.GT:
+                signature = signatures[1];
+                break;
+            case Constants.LT:
+                signature = signatures[2];
+                break;
+            case Constants.LTEQ:
+                signature = signatures[3];
+                break;
+            case Constants.GTEQ:
+                signature = signatures[4];
+                break;
+            default:
+                signature = signatures[0];
+                break;
+        }
+        return new Lookup(context, signature);
+    }
+
     private LocationStep contextStep = null;
     protected QName contextQName = null;
     protected int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
     protected boolean optimizeSelf = false;
     protected boolean optimizeChild = false;
+    protected Expression fallback = null;
 
     public Lookup(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
+    }
+
+    public void setFallback(Expression expression) {
+        this.fallback = expression;
     }
 
     public void setArguments(List<Expression> arguments) throws XPathException {
@@ -125,6 +153,9 @@ public class Lookup extends Function implements Optimizable {
                 contextStep = lastStep;
             }
         }
+        if (fallback != null) {
+            fallback.analyze(new AnalyzeContextInfo(contextInfo));
+        }
     }
 
     @Override
@@ -172,7 +203,7 @@ public class Lookup extends Function implements Optimizable {
 
     private int getOperator() {
         int operator = Constants.EQ;
-        final String calledAs = mySignature.getName().getLocalName();
+        final String calledAs = getSignature().getName().getLocalName();
         if ("gt".equals(calledAs)) {
             operator = Constants.GT;
         } else if ("ge".equals(calledAs)) {
@@ -199,10 +230,14 @@ public class Lookup extends Function implements Optimizable {
         if (contextItem != null)
             contextSequence = contextItem.toSequence();
 
-        if (contextSequence != null && !contextSequence.isPersistentSet())
+        if (contextSequence != null && !contextSequence.isPersistentSet()) {
             // in-memory docs won't have an index
-            return Sequence.EMPTY_SEQUENCE;
-
+            if (fallback == null) {
+                return Sequence.EMPTY_SEQUENCE;
+            } else {
+                return fallback.eval(contextSequence, contextItem);
+            }
+        }
         NodeSet result = NodeSet.EMPTY_SET;
         if (preselectResult == null) {
             long start = System.currentTimeMillis();

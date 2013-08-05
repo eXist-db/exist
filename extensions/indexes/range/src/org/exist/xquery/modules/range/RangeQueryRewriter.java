@@ -32,12 +32,13 @@ public class RangeQueryRewriter extends QueryRewriter {
             }
             final List<Predicate> preds = locationStep.getPredicates();
 
-            // flag to indicate if entire expression can be rewritten
+            // flag to indicate if entire expression can be rewritten into a field lookup
             boolean rewriteAll = true;
 
             // get path of path expression before the predicates
             NodePath contextPath = toNodePath(getPrecedingSteps(locationStep));
 
+            int operator = -1;
             List<Expression> args = null;
             SequenceConstructor arg0 = null;
 
@@ -51,6 +52,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                 Expression innerExpr = pred.getExpression(0);
                 if (!(innerExpr instanceof GeneralComparison)) {
                     // can only optimize comparisons
+                    rewriteAll = false;
                     continue;
                 }
                 GeneralComparison comparison = (GeneralComparison) innerExpr;
@@ -81,6 +83,17 @@ public class RangeQueryRewriter extends QueryRewriter {
                             // check for a matching sub-path and retrieve field information
                             RangeIndexConfigField field = ((ComplexRangeIndexConfigElement) rice).getField(path);
                             if (field != null) {
+                                if (comparison.getRelation() != operator) {
+                                    if (operator > -1) {
+                                        // wrong operator: cannot optimize. break out.
+                                        operator = -1;
+                                        args = null;
+                                        rewriteAll = false;
+                                        continue;
+                                    } else {
+                                        operator = comparison.getRelation();
+                                    }
+                                }
                                 if (args == null) {
                                     // initialize args
                                     args = new ArrayList<Expression>(4);
@@ -95,16 +108,19 @@ public class RangeQueryRewriter extends QueryRewriter {
                                 rewriteAll = false;
                             }
                         } else {
-                            // found simple index configuration: replace with call to range:equals
-                            if (comparison.getRelation() == Constants.EQ) {
-                                ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
-                                eqArgs.add(comparison.getLeft());
-                                eqArgs.add(comparison.getRight());
-                                Lookup func = new Lookup(comparison.getContext(), Lookup.signatures[0]);
-                                func.setLocation(comparison.getLine(), comparison.getColumn());
-                                func.setArguments(eqArgs);
-                                pred.replace(comparison, new InternalFunctionCall(func));
-                            }
+                            // found simple index configuration: replace with call to lookup function
+                            // collect arguments
+                            ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
+                            eqArgs.add(comparison.getLeft());
+                            eqArgs.add(comparison.getRight());
+                            Lookup func = Lookup.create(comparison.getContext(), comparison.getRelation());
+                            // preserve original comparison: may need it for in-memory lookups
+                            func.setFallback(comparison);
+                            func.setLocation(comparison.getLine(), comparison.getColumn());
+                            func.setArguments(eqArgs);
+                            // replace comparison with range:eq
+                            pred.replace(comparison, new InternalFunctionCall(func));
+
                             rewriteAll = false;
                         }
                     } else {
@@ -119,7 +135,8 @@ public class RangeQueryRewriter extends QueryRewriter {
                 // the entire filter expression can be replaced
                 RewritableExpression parent = (RewritableExpression) parentExpr;
                 // create range:field-equals function
-                FieldLookup func = new FieldLookup(locationStep.getContext(), FieldLookup.signatures[0]);
+                FieldLookup func = FieldLookup.create(locationStep.getContext(), operator);
+                func.setFallback(locationStep);
                 func.setLocation(locationStep.getLine(), locationStep.getColumn());
                 func.setArguments(args);
                 parent.replace(locationStep, new InternalFunctionCall(func));
