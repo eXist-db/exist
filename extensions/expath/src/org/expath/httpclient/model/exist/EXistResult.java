@@ -1,6 +1,6 @@
 /*
  *  eXist EXPath
- *  Copyright (C) 2011 Adam Retter <adam@existsolutions.com>
+ *  Copyright (C) 2013 Adam Retter <adam@existsolutions.com>
  *  www.existsolutions.com
  *  
  *  This program is free software; you can redistribute it and/or
@@ -21,9 +21,11 @@
  */
 package org.expath.httpclient.model.exist;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import javax.xml.transform.Source;
+import org.apache.log4j.Logger;
 import org.exist.memtree.DocumentImpl;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.TypeTest;
@@ -47,67 +49,83 @@ import org.xml.sax.SAXException;
  */
 public class EXistResult implements Result {
 
-    private Sequence result = new ValueSequence();
+    private static final Logger logger = Logger.getLogger(EXistResult.class);
+    
+    ValueSequence result = new ValueSequence();
+    
     private final XQueryContext context;
 
-    public EXistResult(XQueryContext context) {
+    public EXistResult(final XQueryContext context) {
         this.context = context;
     }
     
     @Override
-    public void add(String string) throws HttpClientException {
+    public void add(final Reader reader) throws HttpClientException {
+        
+        // START TEMP - replace with a defferred StingReader when eXist has this soon.
+        final StringBuilder builder = new StringBuilder();
         try {
-            result.add(new StringValue(string));
-        } catch (XPathException xpe) {
-           throw new HttpClientException("Unable to add string value to result:" + xpe.getMessage(), xpe);
+            final char cbuf[] = new char[4096];
+            int read = -1;
+            while((read = reader.read(cbuf)) > -1) {
+                builder.append(cbuf, 0, read);
+            }
+        } catch(final IOException ioe) {
+            throw new HttpClientException("Unable to add string value to result: " + ioe.getMessage(), ioe);
+        } finally {
+            try {
+                reader.close();
+            } catch(final IOException ioe) {
+                logger.warn(ioe.getMessage(), ioe);
+            }
         }
+        // END TEMP
+        
+        result.add(new StringValue(builder.toString()));
+        
     }
 
-    //TODO would be better if the EXPath API provided a stream!
     @Override
-    public void add(byte[] bytes) throws HttpClientException {
+    public void add(final InputStream is) throws HttpClientException {
         try {
-            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(bytes)));
-        } catch(XPathException xpe) {
+            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), is));
+        } catch(final XPathException xpe) {
             throw new HttpClientException("Unable to add binary value to result:" + xpe.getMessage(), xpe);
         }
     }
 
     @Override
-    public void add(Source src) throws HttpClientException {
+    public void add(final Source src) throws HttpClientException {
         try {
-            NodeValue nodeValue = ModuleUtils.sourceToXML(context, src);
+            final NodeValue nodeValue = ModuleUtils.sourceToXML(context, src);
             result.add(nodeValue);
-        } catch(SAXException saxe) {
+        } catch(final SAXException saxe) {
             throw new HttpClientException("Unable to add Source to result:" + saxe.getMessage(), saxe);
-        } catch(IOException ioe) {
+        } catch(final IOException ioe) {
             throw new HttpClientException("Unable to add Source to result:" + ioe.getMessage(), ioe);
-        } catch(XPathException xpe) {
-            throw new HttpClientException("Unable to add Source to result:" + xpe.getMessage(), xpe);
         }
     }
 
     @Override
-    public void add(HttpResponse response) throws HttpClientException {
-        EXistTreeBuilder builder = new EXistTreeBuilder(context);
+    public void add(final HttpResponse response) throws HttpClientException {
+        final EXistTreeBuilder builder = new EXistTreeBuilder(context);
         response.outputResponseElement(builder);
-        DocumentImpl doc = builder.close();
+        final DocumentImpl doc = builder.close();
         try {
             // we add the root *element* to the result sequence
             NodeTest kind = new TypeTest(Type.ELEMENT);
             // the elem must always be added at the front, so if there are
             // already other items, we create a new one, add the elem, then
             // add the original items after
-            if ( result.isEmpty() ) {
+            if(result.isEmpty()) {
                 doc.selectChildren(kind, result);
+            } else {
+                final ValueSequence newResult = new ValueSequence();                
+                doc.selectChildren(kind, newResult);
+                newResult.addAll(result);
+                result = newResult;
             }
-            else {
-                Sequence buf = result;
-                result = new ValueSequence();
-                doc.selectChildren(kind, result);
-                result.addAll(buf);
-            }
-        } catch (XPathException xpe) {
+        } catch (final XPathException xpe) {
             throw new HttpClientException("Unable to add HttpResponse to result:" + xpe.getMessage(), xpe);
         }
     }
