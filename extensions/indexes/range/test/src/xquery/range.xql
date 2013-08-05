@@ -113,14 +113,14 @@ declare
     %test:args("Pü Reh")
     %test:assertEquals("Wiesental")
 function rt:equality-fields($name as xs:string) {
-    range:field-equals("address-name", $name)/city/text()
+    range:field-eq("address-name", $name)/city/text()
 };
 
 declare 
     %test:args(65428)
     %test:assertEquals("Rudi Rüssel")
 function rt:equality-field-integer($code as xs:integer) {
-    range:field-equals("address-code", $code)/name/text()
+    range:field-eq("address-code", $code)/name/text()
 };
 
 declare 
@@ -129,7 +129,7 @@ declare
     %test:args("Pü Reh")
     %test:assertEquals("Wiesental")
 function rt:equality-fields-with-context($name as xs:string) {
-    doc("/db/rangetest/test.xml")/range:field-equals("address-name", $name)/city/text()
+    doc("/db/rangetest/test.xml")/range:field-eq("address-name", $name)/city/text()
 };
 
 declare 
@@ -138,14 +138,14 @@ declare
     %test:args("Pü Reh", "Wiesental")
     %test:assertEquals("Wiesental")
 function rt:equality-fields-multi($name as xs:string, $city as xs:string) {
-    range:field-equals(("address-name", "address-city"), $name, $city)/city/text()
+    range:field-eq(("address-name", "address-city"), $name, $city)/city/text()
 };
 
 (:declare :)
 (:    %test:args("Berta Muh", "Almweide"):)
 (:    %test:assertEquals(1):)
 (:function rt:equality-fields-multi($name as xs:string, $city as xs:string) {:)
-(:    count(/test[range:field-equals(("address-name", "address-city"), $name, $city)]):)
+(:    count(/test[range:field-eq(("address-name", "address-city"), $name, $city)]):)
 (:};:)
 
 declare
@@ -237,9 +237,9 @@ declare
 function rt:remove-document() {
     let $stored := xmldb:store("/db/rangetest", "test2.xml", $rt:DATA)
     return (
-        doc("/db/rangetest/test2.xml")/range:field-equals("address-name", "Berta Muh")/city/string(),
+        doc("/db/rangetest/test2.xml")/range:field-eq("address-name", "Berta Muh")/city/string(),
         let $null := xmldb:remove("/db/rangetest", "test2.xml") return $null,
-        doc("/db/rangetest/test2.xml")/range:field-equals("address-name", "Berta Muh")/city/string()
+        doc("/db/rangetest/test2.xml")/range:field-eq("address-name", "Berta Muh")/city/string()
     )
 };
 
@@ -253,7 +253,7 @@ function rt:update-insert() {
             <city code="77777">Bach</city>
         </address>
     into doc("/db/rangetest/test.xml")/test,
-    range:field-equals("address-name", "Willi Wiesel")/street/text(),
+    range:field-eq("address-name", "Willi Wiesel")/street/text(),
     //address[range:eq(name, "Willi Wiesel")]/city/text()
 };
 
@@ -262,7 +262,7 @@ declare
 function rt:update-delete() {
     update delete /test/address[range:eq(name, "Berta Muh")],
     //address[range:eq(name, "Berta Muh")],
-    range:field-equals("address-name", "Berta Muh")
+    range:field-eq("address-name", "Berta Muh")
 };
 
 declare
@@ -276,9 +276,9 @@ function rt:update-replace() {
             <city code="77777">Bach</city>
         </address>,
     //address[range:eq(name, "Albert Amsel")],
-    range:field-equals("address-name", "Albert Amsel"),
+    range:field-eq("address-name", "Albert Amsel"),
     //address[range:eq(name, "Berta Bieber")]/street/text(),
-    range:field-equals("address-name", "Berta Bieber")/city/text()
+    range:field-eq("address-name", "Berta Bieber")/city/text()
 };
 
 declare
@@ -286,7 +286,7 @@ declare
 function rt:update-value() {
     update value /test/address/name[range:eq(., "Pü Reh")] with "Rita Rebhuhn",
     //address[range:eq(name, "Pü Reh")],
-    range:field-equals("address-name", "Pü Reh"),
+    range:field-eq("address-name", "Pü Reh"),
     //address[range:eq(name, "Rita Rebhuhn")]/street/text(),
-    range:field-equals("address-name", "Rita Rebhuhn")/city/text()
+    range:field-eq("address-name", "Rita Rebhuhn")/city/text()
 };
