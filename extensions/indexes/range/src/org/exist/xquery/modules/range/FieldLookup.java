@@ -19,26 +19,87 @@ import java.util.List;
 
 public class FieldLookup extends Function implements Optimizable {
 
-    public final static FunctionSignature[] signatures = {
-            new FunctionSignature(
-                new QName("field-equals", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-                "",
-                new SequenceType[] {
-                        new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ONE_OR_MORE,
-                                "The name of the field(s) to search"),
-                        new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.ONE_OR_MORE,
-                                "The keys to look up for each field.")
-                },
-                new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
-                        "all nodes from the field set whose node value is equal to the key."),
-                true
-            )
+    private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
+        new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ONE_OR_MORE,
+                "The name of the field(s) to search"),
+        new FunctionParameterSequenceType("keys", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                "The keys to look up for each field.")
     };
 
+    public final static FunctionSignature[] signatures = {
+        new FunctionSignature(
+            new QName("field-eq", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "all nodes from the field set whose node value is equal to the key."),
+            true
+        ),
+        new FunctionSignature(
+            new QName("field-gt", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the field set whose node value is equal to the key."),
+            true
+        ),
+        new FunctionSignature(
+            new QName("field-lt", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the field set whose node value is equal to the key."),
+            true
+        ),
+        new FunctionSignature(
+            new QName("field-le", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the field set whose node value is equal to the key."),
+            true
+        ),
+        new FunctionSignature(
+            new QName("field-ge", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the field set whose node value is equal to the key."),
+            true
+        )
+    };
+
+    public static FieldLookup create(XQueryContext context, int operator) {
+        FunctionSignature signature;
+        switch (operator) {
+            case Constants.GT:
+                signature = signatures[1];
+                break;
+            case Constants.LT:
+                signature = signatures[2];
+                break;
+            case Constants.LTEQ:
+                signature = signatures[3];
+                break;
+            case Constants.GTEQ:
+                signature = signatures[4];
+                break;
+            default:
+                signature = signatures[0];
+                break;
+        }
+        return new FieldLookup(context, signature);
+    }
+
     private NodeSet preselectResult = null;
+    protected Expression fallback = null;
 
     public FieldLookup(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
+    }
+
+    public void setFallback(Expression expression) {
+        this.fallback = expression;
     }
 
     public void setArguments(List<Expression> arguments) throws XPathException {
@@ -79,18 +140,19 @@ public class FieldLookup extends Function implements Optimizable {
             keys[i - 1] = getArgument(i).eval(contextSequence);
         }
         DocumentSet docs = contextSequence.getDocumentSet();
+        final int operator = getOperator();
 
         RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
 
         try {
-            preselectResult = index.queryField(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null, fieldSeq, keys, NodeSet.DESCENDANT);
+            preselectResult = index.queryField(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null, fieldSeq, keys, operator, NodeSet.DESCENDANT);
         } catch (IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
         LOG.info("preselect for " + Arrays.toString(keys) + " on " + contextSequence.getItemCount() + "returned " + preselectResult.getItemCount() +
                 " and took " + (System.currentTimeMillis() - start));
         if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
         }
         return preselectResult;
     }
@@ -102,7 +164,11 @@ public class FieldLookup extends Function implements Optimizable {
 
         if (contextSequence != null && !contextSequence.isPersistentSet())
             // in-memory docs won't have an index
-            return Sequence.EMPTY_SEQUENCE;
+            if (fallback == null) {
+                return Sequence.EMPTY_SEQUENCE;
+            } else {
+                return fallback.eval(contextSequence, contextItem);
+            }
 
         NodeSet result;
         if (preselectResult == null) {
@@ -122,17 +188,18 @@ public class FieldLookup extends Function implements Optimizable {
             for (int i = 1; i < getArgumentCount(); i++) {
                 keys[i - 1] = getArgument(i).eval(contextSequence);
             }
+            final int operator = getOperator();
 
             RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
 
             try {
-                result = index.queryField(getExpressionId(), docs, contextSet, fields, keys, NodeSet.DESCENDANT);
+                result = index.queryField(getExpressionId(), docs, contextSet, fields, keys, operator, NodeSet.DESCENDANT);
             } catch (IOException e) {
                 throw new XPathException(this, e.getMessage());
             }
 
             if( context.getProfiler().traceFunctions() ) {
-                context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
+                context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
@@ -141,6 +208,21 @@ public class FieldLookup extends Function implements Optimizable {
             LOG.info("eval took " + (System.currentTimeMillis() - start));
         }
         return result;
+    }
+
+    protected int getOperator() {
+        int operator = Constants.EQ;
+        final String calledAs = getSignature().getName().getLocalName();
+        if ("field-gt".equals(calledAs)) {
+            operator = Constants.GT;
+        } else if ("field-ge".equals(calledAs)) {
+            operator = Constants.GTEQ;
+        } else if ("field-lt".equals(calledAs)) {
+            operator = Constants.LT;
+        } else if ("field-le".equals(calledAs)) {
+            operator = Constants.LTEQ;
+        }
+        return operator;
     }
 
     @Override

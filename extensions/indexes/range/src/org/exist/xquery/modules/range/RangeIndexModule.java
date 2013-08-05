@@ -19,6 +19,10 @@ public class RangeIndexModule extends AbstractInternalModule {
         new FunctionDef(Lookup.signatures[3], Lookup.class),
         new FunctionDef(Lookup.signatures[4], Lookup.class),
         new FunctionDef(FieldLookup.signatures[0], FieldLookup.class),
+        new FunctionDef(FieldLookup.signatures[1], FieldLookup.class),
+        new FunctionDef(FieldLookup.signatures[2], FieldLookup.class),
+        new FunctionDef(FieldLookup.signatures[3], FieldLookup.class),
+        new FunctionDef(FieldLookup.signatures[4], FieldLookup.class),
         new FunctionDef(Optimize.signature, Optimize.class)
     };
 

@@ -369,7 +369,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return resultSet;
     }
 
-    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, int axis) throws IOException, XPathException {
+    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, int operator, int axis) throws IOException, XPathException {
         NodeSet resultSet = NodeSet.EMPTY_SET;
         IndexSearcher searcher = null;
         try {
@@ -390,13 +390,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     bool.setMinimumNumberShouldMatch(1);
                     for (SequenceIterator ki = keys[j].iterate(); ki.hasNext(); ) {
                         Item key = ki.nextItem();
-                        Term term = RangeIndexConfigElement.convertToTerm(field, key.atomize());
-                        bool.add(new TermQuery(term), BooleanClause.Occur.SHOULD);
+                        Query q = RangeIndexConfigElement.toQuery(field, key.atomize(), operator);
+                        bool.add(q, BooleanClause.Occur.SHOULD);
                     }
                     query.add(bool, BooleanClause.Occur.MUST);
                 } else {
-                    TermQuery tq = new TermQuery(RangeIndexConfigElement.convertToTerm(field, keys[j].itemAt(0).atomize()));
-                    query.add(tq, BooleanClause.Occur.MUST);
+                    Query q = RangeIndexConfigElement.toQuery(field, keys[j].itemAt(0).atomize(), operator);
+                    query.add(q, BooleanClause.Occur.MUST);
                 }
             }
             Query qu = query;
