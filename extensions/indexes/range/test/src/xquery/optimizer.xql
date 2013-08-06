@@ -24,6 +24,7 @@ declare variable $ot:COLLECTION_CONFIG :=
                 <create match="//address">
                     <field name="address-city" match="city" type="xs:string"/>
                     <field name="address-street" match="street" type="xs:string"/>
+                    <field name="address-email" match="contact/email" type="xs:string"/>
                 </create>
                 <create match="/test/address/name"/>
                 <create match="/test/address/city/@code" type="xs:integer"/>
@@ -38,21 +39,33 @@ declare variable $ot:DATA :=
             <name>Berta Muh</name>
             <street>Wiesenweg 14</street>
             <city code="65463">Almweide</city>
+            <contact>
+                <email>berta@milchvieh.org</email>
+            </contact>
         </address>
         <address id="rüssel">
             <name>Rudi Rüssel</name>
             <street>Elefantenweg 67</street>
             <city code="65428">Rüsselsheim</city>
+            <contact>
+                <email>rudi@trompeter.de</email>
+            </contact>
         </address>
         <address id="amsel">
             <name>Albert Amsel</name>
             <street>Birkenstraße 77</street>
             <city code="76878">Waldstadt</city>
+            <contact>
+                <email>albert@zwitschern.de</email>
+            </contact>
         </address>
         <address id="reh">
             <name>Pü Reh</name>
             <street>Am Waldrand 4</street>
             <city code="89283">Wiesental</city>
+            <contact>
+                <email>pü@wildsau.net</email>
+            </contact>
         </address>
     </test>;
 
@@ -277,4 +290,27 @@ declare
     %test:assertXPath("empty($result//stats:index[@type = 'new-range'][@optimization = 2])")
 function ot:no-optimize-field-multi($city as xs:string, $street as xs:string) {
     collection($ot:COLLECTION)//address[street = $street][1]
+};
+
+declare
+    %test:stats
+    %test:args("berta@milchview.org")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-eq-field-nested($email as xs:string) {
+    collection($ot:COLLECTION)//address[contact/email = $email]
+};
+
+declare
+    %test:stats
+    %test:args("berta@milchview.org")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-lt-field-nested($email as xs:string) {
+    collection($ot:COLLECTION)//address[contact/email < $email]
+};
+
+declare
+    %test:args("berta@milchview.org")
+    %test:assertEquals(1)
+function ot:optimize-lt-field-nested($email as xs:string) {
+    count(collection($ot:COLLECTION)//address[contact/email < $email])
 };
