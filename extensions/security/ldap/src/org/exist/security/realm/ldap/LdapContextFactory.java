@@ -22,6 +22,7 @@
 package org.exist.security.realm.ldap;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import javax.naming.Context;
@@ -88,12 +89,13 @@ public class LdapContextFactory implements Configurable {
     public LdapContext getSystemLdapContext() throws NamingException {
             return getLdapContext(systemUsername, systemPassword);
     }
-
+    
     public LdapContext getLdapContext(final String username, final String password) throws NamingException {
         return getLdapContext(username, password, null);
     }
         
     public LdapContext getLdapContext(String username, final String password, final Map<String, Object>additionalEnv) throws NamingException {
+        
         if (url == null) {
             throw new IllegalStateException("An LDAP URL must be specified of the form ldap://<hostname>:<port>");
         }
@@ -120,6 +122,9 @@ public class LdapContextFactory implements Configurable {
         env.put(Context.INITIAL_CONTEXT_FACTORY, contextFactoryClassName);
         env.put(Context.PROVIDER_URL, url);
 
+        //Absolutely nessecary for working with Active Directory
+        env.put("java.naming.ldap.attributes.binary", "objectSid");
+        
         // the following is helpful in debugging errors
         //env.put("com.sun.jndi.ldap.trace.ber", System.err);
 
