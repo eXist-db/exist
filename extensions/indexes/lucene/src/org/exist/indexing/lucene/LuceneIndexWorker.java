@@ -926,7 +926,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @return List of QName objects on which indexes are defined
      */
-    protected List<QName> getDefinedIndexes(List<QName> qnames) {
+    public List<QName> getDefinedIndexes(List<QName> qnames) {
         List<QName> indexes = new ArrayList<QName>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
