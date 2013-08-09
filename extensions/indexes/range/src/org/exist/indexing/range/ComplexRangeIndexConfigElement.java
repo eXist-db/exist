@@ -1,6 +1,7 @@
 package org.exist.indexing.range;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
@@ -69,6 +70,15 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
     @Override
     public TextCollector getCollector() {
         return new ComplexTextCollector(this);
+    }
+
+    @Override
+    public Analyzer getAnalyzer(String fieldName) {
+        RangeIndexConfigField field = fields.get(fieldName);
+        if (field != null) {
+            return field.getAnalyzer();
+        }
+        return null;
     }
 
     public RangeIndexConfigField getField(NodePath path) {

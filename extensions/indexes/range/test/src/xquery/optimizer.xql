@@ -98,6 +98,30 @@ function ot:optimize-eq-string($name as xs:string) {
 
 declare
     %test:stats
+    %test:args("Rudi")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-starts-with-string($name as xs:string) {
+    collection($ot:COLLECTION)//address[starts-with(name, $name)]
+};
+
+declare
+    %test:stats
+    %test:args("Rüssel")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-ends-with-string($name as xs:string) {
+    collection($ot:COLLECTION)//address[ends-with(name, $name)]
+};
+
+declare
+    %test:stats
+    %test:args("udi ")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-contains-string($name as xs:string) {
+    collection($ot:COLLECTION)//address[contains(name, $name)]
+};
+
+declare
+    %test:stats
     %test:args("Rudi Rüssel")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-eq-string-self($name as xs:string) {
@@ -245,6 +269,30 @@ declare
     %test:assertEquals(2)
 function ot:le-field($city as xs:string) {
     count(collection($ot:COLLECTION)//address[city <= $city])
+};
+
+declare
+    %test:stats
+    %test:args("Rüssel")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-starts-with-field($city as xs:string) {
+    collection($ot:COLLECTION)//address[starts-with(city, $city)]
+};
+
+declare
+    %test:stats
+    %test:args("heim")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-ends-with-field($city as xs:string) {
+    collection($ot:COLLECTION)//address[ends-with(city, $city)]
+};
+
+declare
+    %test:stats
+    %test:args("üssel")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-contains-field($city as xs:string) {
+    collection($ot:COLLECTION)//address[contains(city, $city)]
 };
 
 declare

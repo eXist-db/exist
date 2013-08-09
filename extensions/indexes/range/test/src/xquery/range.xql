@@ -232,6 +232,60 @@ function rt:le-integer($code as xs:integer) {
     count(//address[range:le(city/@code, $code)])
 };
 
+declare
+    %test:args("Rudi")
+    %test:assertEquals("Rüsselsheim")
+    %test:args("Berta")
+    %test:assertEquals("Almweide")
+function rt:starts-with-string($name as xs:string) {
+    //address[range:starts-with(name, $name)]/city/text()
+};
+
+declare
+    %test:args("Rüssel")
+    %test:assertEquals("Rüsselsheim")
+    %test:args("Muh")
+    %test:assertEquals("Almweide")
+function rt:ends-with-string($name as xs:string) {
+    //address[range:ends-with(name, $name)]/city/text()
+};
+
+declare
+    %test:args("üss")
+    %test:assertEquals("Rüsselsheim")
+    %test:args("ta M")
+    %test:assertEquals("Almweide")
+function rt:contains-string($name as xs:string) {
+    //address[range:contains(name, $name)]/city/text()
+};
+
+declare
+    %test:args("Rudi")
+    %test:assertEquals("Rüsselsheim")
+    %test:args("Berta")
+    %test:assertEquals("Almweide")
+function rt:field-starts-with-string($name as xs:string) {
+    range:field-starts-with("address-name", $name)/city/text()
+};
+
+declare
+    %test:args("Rüssel")
+    %test:assertEquals("Rüsselsheim")
+    %test:args("Muh")
+    %test:assertEquals("Almweide")
+function rt:field-ends-with-string($name as xs:string) {
+    range:field-ends-with("address-name", $name)/city/text()
+};
+
+declare
+    %test:args("üss")
+    %test:assertEquals("Rüsselsheim")
+    %test:args("ta M")
+    %test:assertEquals("Almweide")
+function rt:field-contains-string($name as xs:string) {
+    range:field-contains("address-name", $name)/city/text()
+};
+
 declare 
     %test:assertEquals("Almweide")
 function rt:remove-document() {

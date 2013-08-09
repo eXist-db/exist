@@ -283,7 +283,6 @@ public class XMLToQuery {
     }
     
     private Query wildcardQuery(String field, Element node, Analyzer analyzer, Properties options) throws XPathException {
-        String termStr = getTerm(field, getText(node), analyzer);
         WildcardQuery query = new WildcardQuery(new Term(field, getText(node)));
         setRewriteMethod(query, node, options);
         return query;

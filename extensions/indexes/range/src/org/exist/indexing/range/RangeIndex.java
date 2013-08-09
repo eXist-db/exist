@@ -13,6 +13,17 @@ public class RangeIndex extends LuceneIndex {
 
     public final static String ID = RangeIndex.class.getName();
 
+    public enum Operator {
+        GT,
+        LT,
+        EQ,
+        GE,
+        LE,
+        ENDS_WITH,
+        STARTS_WITH,
+        CONTAINS
+    };
+
     private static final String DIR_NAME = "range";
 
     private Analyzer defaultAnalyzer = new KeywordAnalyzer();

@@ -66,23 +66,56 @@ public class FieldLookup extends Function implements Optimizable {
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the field set whose node value is equal to the key."),
             true
+        ),
+        new FunctionSignature(
+                new QName("field-starts-with", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+                "",
+                PARAMETER_TYPE,
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                        "all nodes from the field set whose node value is equal to the key."),
+                true
+        ),
+        new FunctionSignature(
+                new QName("field-ends-with", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+                "",
+                PARAMETER_TYPE,
+                new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                        "all nodes from the field set whose node value is equal to the key."),
+                true
+        ),
+        new FunctionSignature(
+            new QName("field-contains", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the field set whose node value is equal to the key."),
+            true
         )
     };
 
-    public static FieldLookup create(XQueryContext context, int operator) {
+    public static FieldLookup create(XQueryContext context, RangeIndex.Operator operator) {
         FunctionSignature signature;
         switch (operator) {
-            case Constants.GT:
+            case GT:
                 signature = signatures[1];
                 break;
-            case Constants.LT:
+            case LT:
                 signature = signatures[2];
                 break;
-            case Constants.LTEQ:
+            case LE:
                 signature = signatures[3];
                 break;
-            case Constants.GTEQ:
+            case GE:
                 signature = signatures[4];
+                break;
+            case STARTS_WITH:
+                signature = signatures[5];
+                break;
+            case ENDS_WITH:
+                signature = signatures[6];
+                break;
+            case CONTAINS:
+                signature = signatures[7];
                 break;
             default:
                 signature = signatures[0];
@@ -140,7 +173,7 @@ public class FieldLookup extends Function implements Optimizable {
             keys[i - 1] = getArgument(i).eval(contextSequence);
         }
         DocumentSet docs = contextSequence.getDocumentSet();
-        final int operator = getOperator();
+        final RangeIndex.Operator operator = getOperator();
 
         RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
 
@@ -188,7 +221,7 @@ public class FieldLookup extends Function implements Optimizable {
             for (int i = 1; i < getArgumentCount(); i++) {
                 keys[i - 1] = getArgument(i).eval(contextSequence);
             }
-            final int operator = getOperator();
+            final RangeIndex.Operator operator = getOperator();
 
             RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
 
@@ -210,19 +243,9 @@ public class FieldLookup extends Function implements Optimizable {
         return result;
     }
 
-    protected int getOperator() {
-        int operator = Constants.EQ;
+    private RangeIndex.Operator getOperator() {
         final String calledAs = getSignature().getName().getLocalName();
-        if ("field-gt".equals(calledAs)) {
-            operator = Constants.GT;
-        } else if ("field-ge".equals(calledAs)) {
-            operator = Constants.GTEQ;
-        } else if ("field-lt".equals(calledAs)) {
-            operator = Constants.LT;
-        } else if ("field-le".equals(calledAs)) {
-            operator = Constants.LTEQ;
-        }
-        return operator;
+        return RangeIndexModule.OPERATOR_MAP.get(calledAs.substring("field-".length()));
     }
 
     @Override

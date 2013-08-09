@@ -1,8 +1,10 @@
 package org.exist.xquery.modules.range;
 
+import org.exist.indexing.range.RangeIndex;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,13 +20,31 @@ public class RangeIndexModule extends AbstractInternalModule {
         new FunctionDef(Lookup.signatures[2], Lookup.class),
         new FunctionDef(Lookup.signatures[3], Lookup.class),
         new FunctionDef(Lookup.signatures[4], Lookup.class),
+        new FunctionDef(Lookup.signatures[5], Lookup.class),
+        new FunctionDef(Lookup.signatures[6], Lookup.class),
+        new FunctionDef(Lookup.signatures[7], Lookup.class),
         new FunctionDef(FieldLookup.signatures[0], FieldLookup.class),
         new FunctionDef(FieldLookup.signatures[1], FieldLookup.class),
         new FunctionDef(FieldLookup.signatures[2], FieldLookup.class),
         new FunctionDef(FieldLookup.signatures[3], FieldLookup.class),
         new FunctionDef(FieldLookup.signatures[4], FieldLookup.class),
+        new FunctionDef(FieldLookup.signatures[5], FieldLookup.class),
+        new FunctionDef(FieldLookup.signatures[6], FieldLookup.class),
+        new FunctionDef(FieldLookup.signatures[7], FieldLookup.class),
         new FunctionDef(Optimize.signature, Optimize.class)
     };
+
+    public final static Map<String, RangeIndex.Operator> OPERATOR_MAP = new HashMap<String, RangeIndex.Operator>();
+    static {
+        OPERATOR_MAP.put("eq", RangeIndex.Operator.EQ);
+        OPERATOR_MAP.put("lt", RangeIndex.Operator.LT);
+        OPERATOR_MAP.put("gt", RangeIndex.Operator.GT);
+        OPERATOR_MAP.put("ge", RangeIndex.Operator.GE);
+        OPERATOR_MAP.put("le", RangeIndex.Operator.LE);
+        OPERATOR_MAP.put("starts-with", RangeIndex.Operator.STARTS_WITH);
+        OPERATOR_MAP.put("ends-with", RangeIndex.Operator.ENDS_WITH);
+        OPERATOR_MAP.put("contains", RangeIndex.Operator.CONTAINS);
+    }
 
     public RangeIndexModule(Map<String, List<? extends Object>> parameters) {
         super(functions, parameters, false);
