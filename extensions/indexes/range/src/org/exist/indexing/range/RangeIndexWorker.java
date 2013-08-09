@@ -2,6 +2,10 @@ package org.exist.indexing.range;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
+import org.apache.lucene.collation.tokenattributes.CollatedTermAttributeImpl;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queries.TermsFilter;
@@ -32,6 +36,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 
 public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
@@ -342,7 +347,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, int operator, int axis) throws IOException, XPathException {
+    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
         qnames = getDefinedIndexes(qnames);
         NodeSet resultSet = NodeSet.EMPTY_SET;
         IndexSearcher searcher = null;
@@ -354,11 +359,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (keys.length > 1) {
                     BooleanQuery bool = new BooleanQuery();
                     for (AtomicValue key: keys) {
-                        bool.add(RangeIndexConfigElement.toQuery(field, key, operator), BooleanClause.Occur.SHOULD);
+                        bool.add(RangeIndexConfigElement.toQuery(field, key, operator, docs, this), BooleanClause.Occur.SHOULD);
                     }
                     query = bool;
                 } else {
-                    query = RangeIndexConfigElement.toQuery(field, keys[0], operator);
+                    query = RangeIndexConfigElement.toQuery(field, keys[0], operator, docs, this);
                 }
 
                 resultSet = doQuery(contextId, docs, contextSet, axis, searcher, qname, query, null);
@@ -369,7 +374,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return resultSet;
     }
 
-    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, int operator, int axis) throws IOException, XPathException {
+    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
         NodeSet resultSet = NodeSet.EMPTY_SET;
         IndexSearcher searcher = null;
         try {
@@ -390,12 +395,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     bool.setMinimumNumberShouldMatch(1);
                     for (SequenceIterator ki = keys[j].iterate(); ki.hasNext(); ) {
                         Item key = ki.nextItem();
-                        Query q = RangeIndexConfigElement.toQuery(field, key.atomize(), operator);
+                        Query q = RangeIndexConfigElement.toQuery(field, key.atomize(), operator, docs, this);
                         bool.add(q, BooleanClause.Occur.SHOULD);
                     }
                     query.add(bool, BooleanClause.Occur.MUST);
                 } else {
-                    Query q = RangeIndexConfigElement.toQuery(field, keys[j].itemAt(0).atomize(), operator);
+                    Query q = RangeIndexConfigElement.toQuery(field, keys[j].itemAt(0).atomize(), operator, docs, this);
                     query.add(q, BooleanClause.Occur.MUST);
                 }
             }
@@ -597,11 +602,32 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return indexes;
     }
 
+    protected BytesRef analyzeContent(String field, AtomicValue content, DocumentSet docs) throws XPathException {
+        try {
+            TokenStream stream = getAnalyzer(docs).tokenStream(field, new StringReader(content.getStringValue()));
+            TermToBytesRefAttribute termAttr = stream.addAttribute(TermToBytesRefAttribute.class);
+            BytesRef token = null;
+            try {
+                stream.reset();
+                if (stream.incrementToken()) {
+                    termAttr.fillBytesRef();
+                    token = termAttr.getBytesRef();
+                }
+                stream.end();
+            } finally {
+                stream.close();
+            }
+            return token;
+        } catch (IOException e) {
+            throw new XPathException("Error analyzing the query string: " + e.getMessage(), e);
+        }
+    }
+
     /**
      * Return the analyzer to be used for the given field or qname. Either field
      * or qname should be specified.
      */
-    private Analyzer getAnalyzer(DBBroker broker, DocumentSet docs) {
+    private Analyzer getAnalyzer(DocumentSet docs) {
         for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);

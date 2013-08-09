@@ -305,6 +305,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         return( this.relation );
     }
 
+    public int getTruncation() {
+        return truncation;
+    }
 
     public NodeSet preSelect( Sequence contextSequence, boolean useContext ) throws XPathException
     {

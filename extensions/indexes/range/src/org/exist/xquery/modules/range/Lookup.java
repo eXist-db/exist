@@ -59,23 +59,53 @@ public class Lookup extends Function implements Optimizable {
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the input node set whose node value is equal to the key.")
+        ),
+        new FunctionSignature(
+            new QName("starts-with", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the input node set whose node value is equal to the key.")
+        ),
+        new FunctionSignature(
+            new QName("ends-with", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the input node set whose node value is equal to the key.")
+        ),
+        new FunctionSignature(
+            new QName("contains", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "all nodes from the input node set whose node value is equal to the key.")
         )
     };
 
-    public static Lookup create(XQueryContext context, int operator) {
+    public static Lookup create(XQueryContext context, RangeIndex.Operator operator) {
         FunctionSignature signature;
         switch (operator) {
-            case Constants.GT:
+            case GT:
                 signature = signatures[1];
                 break;
-            case Constants.LT:
+            case LT:
                 signature = signatures[2];
                 break;
-            case Constants.LTEQ:
+            case LE:
                 signature = signatures[3];
                 break;
-            case Constants.GTEQ:
+            case GE:
                 signature = signatures[4];
+                break;
+            case STARTS_WITH:
+                signature = signatures[5];
+                break;
+            case ENDS_WITH:
+                signature = signatures[6];
+                break;
+            case CONTAINS:
+                signature = signatures[7];
                 break;
             default:
                 signature = signatures[0];
@@ -183,7 +213,7 @@ public class Lookup extends Function implements Optimizable {
             qnames.add(contextQName);
         }
 
-        final int operator = getOperator();
+        final RangeIndex.Operator operator = getOperator();
 
         try {
             preselectResult = index.query(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null, qnames, keys, operator, NodeSet.DESCENDANT);
@@ -201,19 +231,9 @@ public class Lookup extends Function implements Optimizable {
         return preselectResult;
     }
 
-    private int getOperator() {
-        int operator = Constants.EQ;
+    private RangeIndex.Operator getOperator() {
         final String calledAs = getSignature().getName().getLocalName();
-        if ("gt".equals(calledAs)) {
-            operator = Constants.GT;
-        } else if ("ge".equals(calledAs)) {
-            operator = Constants.GTEQ;
-        } else if ("lt".equals(calledAs)) {
-            operator = Constants.LT;
-        } else if ("le".equals(calledAs)) {
-            operator = Constants.LTEQ;
-        }
-        return operator;
+        return RangeIndexModule.OPERATOR_MAP.get(calledAs);
     }
 
     private AtomicValue[] getKeys(Sequence contextSequence) throws XPathException {
@@ -255,7 +275,7 @@ public class Lookup extends Function implements Optimizable {
                     qnames = new ArrayList<QName>(1);
                     qnames.add(contextQName);
                 }
-                final int operator = getOperator();
+                final RangeIndex.Operator operator = getOperator();
 
                 try {
                     NodeSet inNodes = input.toNodeSet();

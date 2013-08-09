@@ -45,13 +45,13 @@ public class RangeQueryRewriter extends QueryRewriter {
                     // can only optimize predicates with one expression
                     break;
                 }
+
                 Expression innerExpr = pred.getExpression(0);
-                if (!(innerExpr instanceof GeneralComparison)) {
+                List<LocationStep> steps = getStepsToOptimize(innerExpr);
+                if (steps == null) {
+                    // no optimizable steps found
                     break;
                 }
-                GeneralComparison comparison = (GeneralComparison) innerExpr;
-                List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(comparison.getLeft());
-
                 // compute left hand path
                 NodePath innerPath = toNodePath(steps);
                 if (innerPath == null) {
@@ -71,16 +71,12 @@ public class RangeQueryRewriter extends QueryRewriter {
                     if (rice != null && !rice.isComplex()) {
                         // found simple index configuration: replace with call to lookup function
                         // collect arguments
-                        ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
-                        eqArgs.add(comparison.getLeft());
-                        eqArgs.add(comparison.getRight());
-                        Lookup func = Lookup.create(comparison.getContext(), comparison.getRelation());
+                        Lookup func = rewrite(innerExpr);
                         // preserve original comparison: may need it for in-memory lookups
-                        func.setFallback(comparison);
-                        func.setLocation(comparison.getLine(), comparison.getColumn());
-                        func.setArguments(eqArgs);
+                        func.setFallback(innerExpr);
+                        func.setLocation(innerExpr.getLine(), innerExpr.getColumn());
                         // replace comparison with range:eq
-                        pred.replace(comparison, new InternalFunctionCall(func));
+                        pred.replace(innerExpr, new InternalFunctionCall(func));
                     }
                 }
             }
@@ -91,7 +87,7 @@ public class RangeQueryRewriter extends QueryRewriter {
     private boolean tryRewriteToFields(LocationStep locationStep, RewritableExpression parentExpr, List<Predicate> preds, NodePath contextPath) throws XPathException {
         // without context path, we cannot rewrite the entire query
         if (contextPath != null) {
-            int operator = -1;
+            RangeIndex.Operator operator = null;
             List<Expression> args = null;
             SequenceConstructor arg0 = null;
 
@@ -103,11 +99,10 @@ public class RangeQueryRewriter extends QueryRewriter {
                     return false;
                 }
                 Expression innerExpr = pred.getExpression(0);
-                if (!(innerExpr instanceof GeneralComparison)) {
+                List<LocationStep> steps = getStepsToOptimize(innerExpr);
+                if (steps == null) {
                     return false;
                 }
-                GeneralComparison comparison = (GeneralComparison) innerExpr;
-                List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(comparison.getLeft());
                 // compute left hand path
                 NodePath innerPath = toNodePath(steps);
                 if (innerPath == null) {
@@ -124,14 +119,15 @@ public class RangeQueryRewriter extends QueryRewriter {
                         // check for a matching sub-path and retrieve field information
                         RangeIndexConfigField field = ((ComplexRangeIndexConfigElement) rice).getField(path);
                         if (field != null) {
-                            if (comparison.getRelation() != operator) {
-                                if (operator > -1) {
+                            RangeIndex.Operator currentOperator = getOperator(innerExpr);
+                            if (currentOperator != operator) {
+                                if (operator != null) {
                                     // wrong operator: cannot optimize. break out.
-                                    operator = -1;
+                                    operator = null;
                                     args = null;
                                     return false;
                                 } else {
-                                    operator = comparison.getRelation();
+                                    operator = currentOperator;
                                 }
                             }
                             if (args == null) {
@@ -143,7 +139,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                             // field is added to the sequence in first parameter
                             arg0.add(new LiteralValue(getContext(), new StringValue(field.getName())));
                             // append right hand expression as additional parameter
-                            args.add(comparison.getRight());
+                            args.add(getKeyArg(innerExpr));
                         } else {
                             return false;
                         }
@@ -170,6 +166,72 @@ public class RangeQueryRewriter extends QueryRewriter {
         return false;
     }
 
+    private Lookup rewrite(Expression expression) throws XPathException {
+        ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
+        if (expression instanceof GeneralComparison) {
+            GeneralComparison comparison = (GeneralComparison) expression;
+            eqArgs.add(comparison.getLeft());
+            eqArgs.add(comparison.getRight());
+            Lookup func = Lookup.create(comparison.getContext(), getOperator(expression));
+            func.setArguments(eqArgs);
+            return func;
+        }
+        return null;
+    }
+
+    private Expression getKeyArg(Expression expression) {
+        if (expression instanceof GeneralComparison) {
+            return ((GeneralComparison)expression).getRight();
+        }
+        return null;
+    }
+
+    private List<LocationStep> getStepsToOptimize(Expression expr) {
+        if (expr instanceof GeneralComparison) {
+            GeneralComparison comparison = (GeneralComparison) expr;
+            return BasicExpressionVisitor.findLocationSteps(comparison.getLeft());
+        }
+        return null;
+    }
+
+    private RangeIndex.Operator getOperator(Expression expr) {
+        RangeIndex.Operator operator = RangeIndex.Operator.EQ;
+        if (expr instanceof GeneralComparison) {
+            GeneralComparison comparison = (GeneralComparison) expr;
+            int relation = comparison.getRelation();
+            switch(relation) {
+                case Constants.LT:
+                    operator = RangeIndex.Operator.LT;
+                    break;
+                case Constants.GT:
+                    operator = RangeIndex.Operator.GT;
+                    break;
+                case Constants.LTEQ:
+                    operator = RangeIndex.Operator.LE;
+                    break;
+                case Constants.GTEQ:
+                    operator = RangeIndex.Operator.GE;
+                    break;
+                case Constants.EQ:
+                    switch (comparison.getTruncation()) {
+                        case Constants.TRUNC_BOTH:
+                            operator = RangeIndex.Operator.CONTAINS;
+                            break;
+                        case Constants.TRUNC_LEFT:
+                            operator = RangeIndex.Operator.ENDS_WITH;
+                            break;
+                        case Constants.TRUNC_RIGHT:
+                            operator = RangeIndex.Operator.STARTS_WITH;
+                            break;
+                        default:
+                            operator = RangeIndex.Operator.EQ;
+                            break;
+                    }
+                    break;
+            }
+        }
+        return operator;
+    }
     /**
      * Scan all index configurations to find one matching path.
      */

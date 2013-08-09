@@ -1,6 +1,10 @@
 package org.exist.indexing.range;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.collation.CollationKeyAnalyzer;
+import org.apache.lucene.util.Version;
 import org.exist.storage.NodePath;
+import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Type;
@@ -13,6 +17,7 @@ public class RangeIndexConfigField {
     private String name;
     private NodePath path = null;
     private int type = Type.STRING;
+    private Analyzer analyzer = null;
 
     public RangeIndexConfigField(NodePath parentPath, Element elem, Map<String, String> namespaces) throws DatabaseConfigurationException {
         name = elem.getAttribute("name");
@@ -39,6 +44,14 @@ public class RangeIndexConfigField {
                 throw new DatabaseConfigurationException("Invalid type declared for range index on " + match + ": " + typeStr);
             }
         }
+        String collation = elem.getAttribute("collation");
+        if (collation != null && collation.length() > 0) {
+            try {
+                analyzer = new CollationKeyAnalyzer(Version.LUCENE_43, Collations.getCollationFromURI(null, collation));
+            } catch (XPathException e) {
+                throw new DatabaseConfigurationException(e.getMessage(), e);
+            }
+        }
     }
 
     public String getName() {
@@ -51,6 +64,10 @@ public class RangeIndexConfigField {
 
     public int getType() {
         return type;
+    }
+
+    public Analyzer getAnalyzer() {
+        return analyzer;
     }
 
     public boolean match(NodePath other) {
