@@ -92,7 +92,7 @@ import org.expath.pkg.repo.PackageException;
  */
 //TODO : in the future, separate the design between the Map of DBInstances and their non static implementation
 @ConfigurationClass("pool")
-public class BrokerPool extends Observable implements Database {
+public class BrokerPool implements Database {
 
     private final static Logger LOG = Logger.getLogger(BrokerPool.class);
 
@@ -617,9 +617,6 @@ public class BrokerPool extends Observable implements Database {
 		Boolean aBoolean;
 		final NumberFormat nf = NumberFormat.getNumberInstance();
 
-        if (statusObserver != null)
-            {addObserver(statusObserver);}
-
         this.classLoader = Thread.currentThread().getContextClassLoader();
 
 		//TODO : ensure that the instance name is unique ?
@@ -813,7 +810,11 @@ public class BrokerPool extends Observable implements Database {
         synchronized (this) {
         	try {
         		statusReporter = new StatusReporter(SIGNAL_STARTUP);
-        		statusReporter.start();
+                if (statusObserver != null) {
+                    statusReporter.addObserver(statusObserver);
+                }
+                Thread statusThread = new Thread(statusReporter);
+        		statusThread.start();
 
         		// statusReporter may have to be terminated or the thread can/will hang.
         		try {
@@ -1886,7 +1887,11 @@ public class BrokerPool extends Observable implements Database {
             	// these may be used and set by other threads for the same or some other purpose
             	// (unlikely). Take no chances.
                 statusReporter = new StatusReporter(SIGNAL_SHUTDOWN);
-                statusReporter.start();
+                if (statusObserver != null) {
+                    statusReporter.addObserver(statusObserver);
+                }
+                Thread statusThread = new Thread(statusReporter);
+                statusThread.start();
 
                 // release transaction log to allow remaining brokers to complete
                 // their job
@@ -2084,7 +2089,7 @@ public class BrokerPool extends Observable implements Database {
     	System.err.println(s);
     }
 
-    private class StatusReporter extends Thread {
+    private class StatusReporter extends Observable implements Runnable {
 
         private String status;
         private volatile boolean terminate = false;
@@ -2095,27 +2100,27 @@ public class BrokerPool extends Observable implements Database {
 
         public synchronized void setStatus(String status) {
             this.status = status;
-            BrokerPool.this.setChanged();
-            BrokerPool.this.notifyObservers(status);
+            this.setChanged();
+            this.notifyObservers(status);
         }
 
-        public void terminate() {
+        public synchronized void terminate() {
             this.terminate = true;
-            interrupt();
+            this.notifyAll();
         }
 
         public void run() {
             while (!terminate) {
                 synchronized (this) {
                     try {
-                        wait(300);
+                        wait(500);
                     } catch (final InterruptedException e) {
                         // nothing to do
                     }
                 }
+                this.setChanged();
+                this.notifyObservers(status);
             }
-            BrokerPool.this.setChanged();
-            BrokerPool.this.notifyObservers(status);
         }
     }
 
