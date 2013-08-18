@@ -63,6 +63,12 @@ import org.xml.sax.SAXException;
  */
 public class ExistCollection extends ExistResource {
 	
+    /**
+     *  Constructor.
+     * 
+     * @param uri   URI of document
+     * @param pool  Reference to brokerpool
+     */
     public ExistCollection(XmldbURI uri, BrokerPool pool) {
 
         if(LOG.isTraceEnabled()) {
@@ -602,8 +608,9 @@ public class ExistCollection extends ExistResource {
             txnManager.close(txn);
             brokerPool.release(broker);
 
-            if(LOG.isDebugEnabled())
-                LOG.debug("Finished " + mode);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Finished %s", mode));
+            }
         }
     }
 }

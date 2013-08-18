@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -568,6 +569,12 @@ public class MiltonDocument extends MiltonResource
      * StAX serializer
      * ================ */
     
+    /**
+     *  Serialize document properties
+     * 
+     * @param writer STAX writer
+     * @throws XMLStreamException Thrown when writing data failed
+     */
     public void writeXML(XMLStreamWriter writer) throws XMLStreamException {
         writer.writeStartElement("exist", "document", "http://exist.sourceforge.net/NS/exist");
         writer.writeAttribute("name", resourceXmldbUri.lastSegment().toString());
@@ -578,5 +585,14 @@ public class MiltonDocument extends MiltonResource
         writer.writeAttribute("permissions", "" + existDocument.getPermissions().toString());
         writer.writeAttribute("size", "" + existDocument.getContentLength());
         writer.writeEndElement();
+    }
+    
+    /**
+     * Set specific WebDAV serialization options
+     * 
+     * @param config XML serialization options
+     */
+    public void setConfiguration(Properties config){
+        existDocument.setConfiguration(config);
     }
 }
