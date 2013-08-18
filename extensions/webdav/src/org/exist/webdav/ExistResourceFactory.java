@@ -26,8 +26,12 @@ import org.apache.log4j.Logger;
 
 import com.bradmcevoy.http.Resource;
 import com.bradmcevoy.http.ResourceFactory;
+import java.io.File;
+import java.io.FileInputStream;
 
 import java.net.URISyntaxException;
+import java.util.Properties;
+import javax.xml.transform.OutputKeys;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -35,6 +39,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -46,13 +51,30 @@ public class ExistResourceFactory implements ResourceFactory {
 
     private final static Logger LOG = Logger.getLogger(ExistResourceFactory.class);
     private BrokerPool brokerPool = null;
+    
+    //	default output properties for the XML serialization
+    public final static Properties DEFAULT_WEBDAV_OPTIONS = new Properties();
+    
+    /** XML serialization options */
+    private Properties webDavOptions = new Properties(); 
+
+    /**
+     * Default serialization options
+     */
+    static {
+        DEFAULT_WEBDAV_OPTIONS.setProperty(OutputKeys.INDENT, "yes");
+        DEFAULT_WEBDAV_OPTIONS.setProperty(OutputKeys.ENCODING, "UTF-8");
+        DEFAULT_WEBDAV_OPTIONS.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        DEFAULT_WEBDAV_OPTIONS.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        DEFAULT_WEBDAV_OPTIONS.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
+    }
 
     private enum ResourceType {
         DOCUMENT, COLLECTION, IGNORABLE, NOT_EXISTING
     };
 
     /**
-     * Default constructor. Get access to instance of exist-db brokerpool.
+     * Default constructor. Get access to instance of exist-db broker pool.
      */
     public ExistResourceFactory() {
 
@@ -62,7 +84,31 @@ public class ExistResourceFactory implements ResourceFactory {
         } catch (EXistException e) {
             LOG.error("Unable to initialize WebDAV interface.", e);
         }
-
+        
+        // Set default values
+        webDavOptions.putAll(DEFAULT_WEBDAV_OPTIONS);
+        
+        // load specific options
+        try {
+            // Find right file
+            File eXistHome = brokerPool.getConfiguration().getExistHome();
+            File config = new File(eXistHome, "webdav.properties");
+            
+            // Read from file if existent
+            if(config.canRead()){
+                LOG.info(String.format("Read WebDAV configuration from %s", config.getCanonicalPath()));
+                FileInputStream fis = new FileInputStream(config);
+                webDavOptions.load(fis);
+                fis.close();
+                
+            } else {
+                LOG.info("Using WebDAV default serialization options.");
+            }
+            
+        } catch (Throwable ex) {
+            LOG.error(ex.getMessage());
+        }
+        
     }
 
     /*
@@ -96,12 +142,6 @@ public class ExistResourceFactory implements ResourceFactory {
             // Create uri inside database
             xmldbUri = XmldbURI.xmldbUriFor(path);
 
-            // MacOsX finder specific files
-            String documentSeqment = xmldbUri.lastSegment().toString();
-            if(documentSeqment.startsWith("._") || documentSeqment.equals(".DS_Store")){
-                LOG.debug(String.format("skipping MacOsX file '%s'", xmldbUri.lastSegment().toString()));
-            }
-
         } catch (URISyntaxException e) {
             LOG.error(String.format("Unable to convert path '%s'into a XmldbURI representation.", path));
             return null;
@@ -110,7 +150,9 @@ public class ExistResourceFactory implements ResourceFactory {
         // Return appropriate resource
         switch (getResourceType(brokerPool, xmldbUri)) {
             case DOCUMENT:
-                return new MiltonDocument(host, xmldbUri, brokerPool);
+                MiltonDocument doc = new MiltonDocument(host, xmldbUri, brokerPool);
+                doc.setConfiguration(webDavOptions);
+                return doc;
 
             case COLLECTION:
                 return new MiltonCollection(host, xmldbUri, brokerPool);
@@ -142,6 +184,19 @@ public class ExistResourceFactory implements ResourceFactory {
         Collection collection = null;
         DocumentImpl document = null;
         ResourceType type = ResourceType.NOT_EXISTING;
+        
+        // MacOsX finder specific files
+        String documentSeqment = xmldbUri.lastSegment().toString();
+        if(documentSeqment.startsWith("._") || documentSeqment.equals(".DS_Store")){
+            //LOG.debug(String.format("Ignoring MacOSX file '%s'", xmldbUri.lastSegment().toString()));
+            //return ResourceType.IGNORABLE;
+        }
+        
+        // Documents that start with a dot 
+        if(documentSeqment.startsWith(".")){
+            //LOG.debug(String.format("Ignoring '.' file '%s'", xmldbUri.lastSegment().toString()));
+            //return ResourceType.IGNORABLE;
+        }
 
         try {
             if(LOG.isDebugEnabled()) {

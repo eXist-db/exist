@@ -26,9 +26,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -42,7 +39,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -61,17 +57,12 @@ import org.xml.sax.SAXException;
  */
 public class ExistDocument extends ExistResource {
 
-    //	default output properties for the XML serialization
-    public final static Properties WEBDAV_OUTPUT_PROPERTIES = new Properties();
-
-    static {
-        WEBDAV_OUTPUT_PROPERTIES.setProperty(OutputKeys.INDENT, "yes");
-        WEBDAV_OUTPUT_PROPERTIES.setProperty(OutputKeys.ENCODING, "UTF-8");
-        WEBDAV_OUTPUT_PROPERTIES.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-        WEBDAV_OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
-        WEBDAV_OUTPUT_PROPERTIES.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
-    }
-
+    /**
+     *  Constructor.
+     * 
+     * @param uri   URI of document
+     * @param pool  Reference to brokerpool
+     */
     public ExistDocument(XmldbURI uri, BrokerPool pool) {
 
         if (LOG.isTraceEnabled()) {
@@ -191,8 +182,10 @@ public class ExistDocument extends ExistResource {
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
                 try {
-                    serializer.setProperties(WEBDAV_OUTPUT_PROPERTIES);
+                    // Set serialization options
+                    serializer.setProperties(configuration);
 
+                    // Serialize document
                     Writer w = new OutputStreamWriter(os, "UTF-8");
                     serializer.serialize(document, w);
                     w.flush();
