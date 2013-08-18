@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -128,7 +129,7 @@ public class MiltonDocument extends MiltonResource
         }
 
         if(LOG.isTraceEnabled()) {
-            LOG.trace("DOCUMENT:" + uri.toString());
+            LOG.trace(String.format("DOCUMENT:%s", uri.toString()));
         }
         
         resourceXmldbUri = uri;
@@ -287,8 +288,8 @@ public class MiltonDocument extends MiltonResource
                     // or when set by a system property
                     
                     if(LOG.isDebugEnabled()){
-                        LOG.debug("Serializing XML to /dev/null to determine size"
-                                + " (" + resourceXmldbUri + ") MacFinder="+isMacFinder );
+                        LOG.debug(String.format("Serializing XML to /dev/null to determine size (%s) MacFinder=%s", 
+                                resourceXmldbUri, isMacFinder));
                     }
 
                     // Stream document to '/dev/null' and count bytes
@@ -331,7 +332,7 @@ public class MiltonDocument extends MiltonResource
 
                     try {
                         if(LOG.isDebugEnabled()) {
-                            LOG.debug("Serializing XML to virtual file" + " (" + resourceXmldbUri + ")");
+                            LOG.debug(String.format("Serializing XML to virtual file (%s)", resourceXmldbUri));
                         }
 
                         vtf = new VirtualTempFile();
@@ -369,7 +370,7 @@ public class MiltonDocument extends MiltonResource
         }
         
         if(LOG.isDebugEnabled()) {
-            LOG.debug("Size=" + size + " (" + resourceXmldbUri + ")");
+            LOG.debug(String.format("Size=%s (%s)", size, resourceXmldbUri));
         }
         return size;
         
@@ -412,7 +413,7 @@ public class MiltonDocument extends MiltonResource
         org.exist.dom.LockToken inputToken = convertToken(timeout, lockInfo);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Lock: " + resourceXmldbUri);
+            LOG.debug(String.format("Lock: %s", resourceXmldbUri));
         }
         
         LockResult lr = null;
@@ -444,7 +445,7 @@ public class MiltonDocument extends MiltonResource
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
         
         if(LOG.isDebugEnabled()) {
-            LOG.debug("Refresh: " + resourceXmldbUri + " token=" + token);
+            LOG.debug(String.format("Refresh: %s token=%s", resourceXmldbUri, token));
         }
 
         LockResult lr = null;
@@ -480,7 +481,7 @@ public class MiltonDocument extends MiltonResource
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
 
         if(LOG.isDebugEnabled()) {
-            LOG.debug("Unlock: " + resourceXmldbUri);
+            LOG.debug(String.format("Unlock: %s", resourceXmldbUri));
         }
         
         try {
@@ -503,7 +504,7 @@ public class MiltonDocument extends MiltonResource
     public LockToken getCurrentLock() {
 
         if(LOG.isDebugEnabled()) {
-            LOG.debug("getLock: " + resourceXmldbUri);
+            LOG.debug(String.format("getCurrentLock: %s", resourceXmldbUri));
         }
         
         org.exist.dom.LockToken existLT = existDocument.getCurrentLock();
@@ -529,7 +530,7 @@ public class MiltonDocument extends MiltonResource
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
 
         if(LOG.isDebugEnabled()) {
-            LOG.debug("moveTo: " + resourceXmldbUri + " newName=" + newName);
+            LOG.debug(String.format("moveTo: %s newName=%s", resourceXmldbUri, newName));
         }
 
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
@@ -550,7 +551,7 @@ public class MiltonDocument extends MiltonResource
     public void copyTo(CollectionResource rDest, String newName) {
 
         if(LOG.isDebugEnabled()) {
-            LOG.debug("copyTo: " + resourceXmldbUri + " newName=" + newName);
+            LOG.debug(String.format("copyTo: %s newName=%s", resourceXmldbUri, newName));
         }
         
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
@@ -568,6 +569,12 @@ public class MiltonDocument extends MiltonResource
      * StAX serializer
      * ================ */
     
+    /**
+     *  Serialize document properties
+     * 
+     * @param writer STAX writer
+     * @throws XMLStreamException Thrown when writing data failed
+     */
     public void writeXML(XMLStreamWriter writer) throws XMLStreamException {
         writer.writeStartElement("exist", "document", "http://exist.sourceforge.net/NS/exist");
         writer.writeAttribute("name", resourceXmldbUri.lastSegment().toString());
@@ -578,5 +585,14 @@ public class MiltonDocument extends MiltonResource
         writer.writeAttribute("permissions", "" + existDocument.getPermissions().toString());
         writer.writeAttribute("size", "" + existDocument.getContentLength());
         writer.writeEndElement();
+    }
+    
+    /**
+     * Set specific WebDAV serialization options
+     * 
+     * @param config XML serialization options
+     */
+    public void setConfiguration(Properties config){
+        existDocument.setConfiguration(config);
     }
 }
