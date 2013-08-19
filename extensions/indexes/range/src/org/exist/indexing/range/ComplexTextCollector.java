@@ -10,21 +10,23 @@ import java.util.*;
 
 public class ComplexTextCollector implements TextCollector {
 
+    private NodePath parentPath;
     private ComplexRangeIndexConfigElement config;
     private List<Field> fields = new LinkedList<Field>();
     private RangeIndexConfigField currentField = null;
     private int length = 0;
 
-    public ComplexTextCollector(ComplexRangeIndexConfigElement configuration) {
-        config = configuration;
+    public ComplexTextCollector(ComplexRangeIndexConfigElement configuration, NodePath parentPath) {
+        this.config = configuration;
+        this.parentPath = new NodePath(parentPath);
     }
 
     @Override
     public void startElement(QName qname, NodePath path) {
-        RangeIndexConfigField fieldConf = config.getField(path);
+        RangeIndexConfigField fieldConf = config.getField(parentPath, path);
         if (fieldConf != null) {
             currentField = fieldConf;
-            Field field = new Field(currentField.getName(), false);
+            Field field = new Field(currentField.getName(), false, fieldConf.whitespaceTreatment());
             fields.add(field);
         }
 
@@ -39,9 +41,9 @@ public class ComplexTextCollector implements TextCollector {
 
     @Override
     public void attribute(AttrImpl attribute, NodePath path) {
-        RangeIndexConfigField fieldConf = config.getField(path);
+        RangeIndexConfigField fieldConf = config.getField(parentPath, path);
         if (fieldConf != null) {
-            Field field = new Field(fieldConf.getName(), true);
+            Field field = new Field(fieldConf.getName(), true, fieldConf.whitespaceTreatment());
             field.content.append(attribute.getValue());
             fields.add(0, field);
         }
@@ -51,7 +53,7 @@ public class ComplexTextCollector implements TextCollector {
     public void characters(CharacterDataImpl text, NodePath path) {
         if (currentField != null) {
             Field field = fields.get(fields.size() - 1);
-            if (!field.isAttribute()) {
+            if (!field.isAttribute() && (currentField.includeNested() || currentField.match(path))) {
                 field.content.append(text.getXMLString());
                 length += text.getXMLString().length();
             }
@@ -65,5 +67,9 @@ public class ComplexTextCollector implements TextCollector {
 
     public List<Field> getFields() {
         return fields;
+    }
+
+    public ComplexRangeIndexConfigElement getConfig() {
+        return config;
     }
 }

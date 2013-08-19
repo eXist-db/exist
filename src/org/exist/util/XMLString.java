@@ -32,7 +32,9 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 	public final static int SUPPRESS_NONE = 0;
 	public final static int SUPPRESS_LEADING_WS = 0x01;
 	public final static int SUPPRESS_TRAILING_WS = 0x02;
+    public final static int COLLAPSE_WS = 0x04;
 	public final static int SUPPRESS_BOTH = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS;
+    public final static int NORMALIZE = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS | COLLAPSE_WS;
 
 	public final static int DEFAULT_CAPACITY = 16;
 
@@ -118,6 +120,30 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 				--length_;
 			}
 		}
+        if ((mode & COLLAPSE_WS) != 0) {
+            XMLString copy = new XMLString(length_);
+            boolean inWhitespace = true;
+            for (int i = start_; i < start_ + length_; i++) {
+                switch (value_[i]) {
+                    case '\n':
+                    case '\r':
+                    case '\t':
+                    case ' ':
+                        if (inWhitespace) {
+                            // remove the whitespace
+                        } else {
+                            copy.append(' ');
+                            inWhitespace = true;
+                        }
+                        break;
+                    default:
+                        copy.append(value_[i]);
+                        inWhitespace = false;
+                        break;
+                }
+            }
+            return copy;
+        }
 		return this;
 	}
 

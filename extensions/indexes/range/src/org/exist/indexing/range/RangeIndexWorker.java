@@ -3,12 +3,9 @@ package org.exist.indexing.range;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
-import org.apache.lucene.collation.tokenattributes.CollatedTermAttributeImpl;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
-import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
@@ -72,6 +69,77 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public RangeIndexWorker(RangeIndex index, DBBroker broker) {
         this.index = index;
         this.broker = broker;
+    }
+
+    public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs) throws XPathException {
+        final int type = content.getType();
+        BytesRef bytes;
+        if (Type.subTypeOf(type, Type.STRING)) {
+            BytesRef key = analyzeContent(field, qname, content, docs);
+            WildcardQuery query;
+            switch (operator) {
+                case EQ:
+                    return new TermQuery(new Term(field, key));
+                case STARTS_WITH:
+                    return new PrefixQuery(new Term(field, key));
+                case ENDS_WITH:
+                    bytes = new BytesRef("*");
+                    bytes.append(key);
+                    query = new WildcardQuery(new Term(field, bytes));
+                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    return query;
+                case CONTAINS:
+                    bytes = new BytesRef("*");
+                    bytes.append(key);
+                    bytes.append(new BytesRef("*"));
+                    query = new WildcardQuery(new Term(field, bytes));
+                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    return query;
+            }
+        }
+        if (operator == RangeIndex.Operator.EQ) {
+            return new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+        }
+        final boolean includeUpper = operator == RangeIndex.Operator.LE;
+        final boolean includeLower = operator == RangeIndex.Operator.GE;
+        switch (type) {
+            case Type.INTEGER:
+            case Type.LONG:
+            case Type.UNSIGNED_LONG:
+                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                    return NumericRangeQuery.newLongRange(field, null, ((NumericValue)content).getLong(), includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newLongRange(field, ((NumericValue)content).getLong(), null, includeLower, includeUpper);
+                }
+            case Type.INT:
+            case Type.UNSIGNED_INT:
+            case Type.SHORT:
+            case Type.UNSIGNED_SHORT:
+                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                    return NumericRangeQuery.newIntRange(field, null, ((NumericValue) content).getInt(), includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newIntRange(field, ((NumericValue) content).getInt(), null, includeLower, includeUpper);
+                }
+            case Type.DECIMAL:
+            case Type.DOUBLE:
+                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                    return NumericRangeQuery.newDoubleRange(field, null, ((NumericValue) content).getDouble(), includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newDoubleRange(field, ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
+                }
+            case Type.FLOAT:
+                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                    return NumericRangeQuery.newFloatRange(field, null, (float) ((NumericValue) content).getDouble(), includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
+                }
+            default:
+                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                    return new TermRangeQuery(field, null, RangeIndexConfigElement.convertToBytes(content), includeLower, includeUpper);
+                } else {
+                    return new TermRangeQuery(field, RangeIndexConfigElement.convertToBytes(content), null, includeLower, includeUpper);
+                }
+        }
     }
 
     @Override
@@ -325,10 +393,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 for (TextCollector.Field field : pending.getCollector().getFields()) {
                     String contentField;
                     if (field.isNamed())
-                        contentField = field.name;
+                        contentField = field.getName();
                     else
                         contentField = LuceneUtil.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
-                    Field fld = pending.getConfig().convertToField(contentField, field.content.toString());
+                    Field fld = pending.getConfig().convertToField(contentField, field.getContent().toString());
                     if (fld != null) {
                         doc.add(fld);
                     }
@@ -336,7 +404,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 fDocIdIdx.setIntValue(currentDoc.getDocId());
                 doc.add(fDocIdIdx);
 
-                writer.addDocument(doc, config.getAnalyzer());
+                Analyzer analyzer = pending.getConfig().getAnalyzer();
+                if (analyzer == null) {
+                    analyzer = config.getDefaultAnalyzer();
+                }
+                writer.addDocument(doc, analyzer);
             }
         } catch (IOException e) {
             LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
@@ -359,11 +431,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (keys.length > 1) {
                     BooleanQuery bool = new BooleanQuery();
                     for (AtomicValue key: keys) {
-                        bool.add(RangeIndexConfigElement.toQuery(field, key, operator, docs, this), BooleanClause.Occur.SHOULD);
+                        bool.add(toQuery(field, qname, key, operator, docs), BooleanClause.Occur.SHOULD);
                     }
                     query = bool;
                 } else {
-                    query = RangeIndexConfigElement.toQuery(field, keys[0], operator, docs, this);
+                    query = toQuery(field, qname, keys[0], operator, docs);
                 }
 
                 resultSet = doQuery(contextId, docs, contextSet, axis, searcher, qname, query, null);
@@ -395,12 +467,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     bool.setMinimumNumberShouldMatch(1);
                     for (SequenceIterator ki = keys[j].iterate(); ki.hasNext(); ) {
                         Item key = ki.nextItem();
-                        Query q = RangeIndexConfigElement.toQuery(field, key.atomize(), operator, docs, this);
+                        Query q = toQuery(field, null, key.atomize(), operator, docs);
                         bool.add(q, BooleanClause.Occur.SHOULD);
                     }
                     query.add(bool, BooleanClause.Occur.MUST);
                 } else {
-                    Query q = RangeIndexConfigElement.toQuery(field, keys[j].itemAt(0).atomize(), operator, docs, this);
+                    Query q = toQuery(field, null, keys[j].itemAt(0).atomize(), operator, docs);
                     query.add(q, BooleanClause.Occur.MUST);
                 }
             }
@@ -602,9 +674,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return indexes;
     }
 
-    protected BytesRef analyzeContent(String field, AtomicValue content, DocumentSet docs) throws XPathException {
+    protected BytesRef analyzeContent(String field, QName qname, AtomicValue content, DocumentSet docs) throws XPathException {
+        Analyzer analyzer = getAnalyzer(qname, field, docs);
+        if (analyzer == null) {
+            return new BytesRef(content.getStringValue());
+        }
         try {
-            TokenStream stream = getAnalyzer(docs).tokenStream(field, new StringReader(content.getStringValue()));
+            TokenStream stream = analyzer.tokenStream(field, new StringReader(content.getStringValue()));
             TermToBytesRefAttribute termAttr = stream.addAttribute(TermToBytesRefAttribute.class);
             BytesRef token = null;
             try {
@@ -627,20 +703,20 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * Return the analyzer to be used for the given field or qname. Either field
      * or qname should be specified.
      */
-    private Analyzer getAnalyzer(DocumentSet docs) {
+    private Analyzer getAnalyzer(QName qname, String fieldName, DocumentSet docs) {
         for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
                 RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
                 if (config != null) {
-                    Analyzer analyzer = config.getAnalyzer();
+                    Analyzer analyzer = config.getAnalyzer(qname, fieldName);
                     if (analyzer != null)
                         return analyzer;
                 }
             }
         }
-        return index.getDefaultAnalyzer();
+        return null;
     }
 
     private static boolean matchQName(QName qname, QName candidate) {
@@ -668,7 +744,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     while (configIter.hasNext()) {
                         RangeIndexConfigElement configuration = configIter.next();
                         if (configuration.match(path)) {
-                            contentStack.push(configuration.getCollector());
+                            contentStack.push(configuration.getCollector(path));
                         }
                     }
                 }

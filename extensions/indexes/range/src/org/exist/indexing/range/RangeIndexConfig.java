@@ -88,10 +88,31 @@ public class RangeIndexConfig {
                 }
             }
         }
+        // default analyzer
         analyzer = new KeywordAnalyzer();
     }
 
-    public Analyzer getAnalyzer() {
+    public Analyzer getDefaultAnalyzer() {
+        return analyzer;
+    }
+
+    public Analyzer getAnalyzer(QName qname, String fieldName) {
+        Analyzer analyzer = null;
+        if (qname != null) {
+            RangeIndexConfigElement idxConf = paths.get(qname);
+            if (idxConf != null) {
+                analyzer = idxConf.getAnalyzer(null);
+            }
+        } else {
+            for (RangeIndexConfigElement idxConf: paths.values()) {
+                if (idxConf.isComplex()) {
+                    analyzer = idxConf.getAnalyzer(fieldName);
+                    if (analyzer != null) {
+                        break;
+                    }
+                }
+            }
+        }
         return analyzer;
     }
 

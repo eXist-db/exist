@@ -1,30 +1,21 @@
 package org.exist.indexing.range;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute;
 import org.apache.lucene.collation.CollationKeyAnalyzer;
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.*;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
-import org.apache.lucene.util.Version;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.storage.NodePath;
 import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.xquery.Constants;
+import org.exist.util.XMLString;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Map;
 
 public class RangeIndexConfigElement {
@@ -41,11 +32,10 @@ public class RangeIndexConfigElement {
     protected NodePath path = null;
     private int type = Type.STRING;
     private RangeIndexConfigElement nextConfig = null;
-    private boolean isQNameIndex = false;
+    protected boolean isQNameIndex = false;
     protected Analyzer analyzer = null;
-
-    public RangeIndexConfigElement() {
-    }
+    protected boolean includeNested = false;
+    protected int wsTreatment = XMLString.SUPPRESS_NONE;
 
     public RangeIndexConfigElement(Element node, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String match = node.getAttribute("match");
@@ -59,7 +49,8 @@ public class RangeIndexConfigElement {
             }
         } else if (node.hasAttribute("qname")) {
             QName qname = LuceneIndexConfig.parseQName(node, namespaces);
-            path = new NodePath(qname);
+            path = new NodePath(NodePath.SKIP);
+            path.addComponent(qname);
             isQNameIndex = true;
         }
         String typeStr = node.getAttribute("type");
@@ -73,16 +64,27 @@ public class RangeIndexConfigElement {
         String collation = node.getAttribute("collation");
         if (collation != null && collation.length() > 0) {
             try {
-                analyzer = new CollationKeyAnalyzer(Version.LUCENE_43, Collations.getCollationFromURI(null, collation));
+                analyzer = new CollationKeyAnalyzer(RangeIndex.LUCENE_VERSION_IN_USE, Collations.getCollationFromURI(null, collation));
             } catch (XPathException e) {
                 throw new DatabaseConfigurationException(e.getMessage(), e);
+            }
+        }
+        String nested = node.getAttribute("nested");
+        includeNested = (nested == null || nested.equalsIgnoreCase("yes"));
+
+        // normalize whitespace if whitespace="normalize"
+        String whitespace = node.getAttribute("whitespace");
+        if (whitespace != null) {
+            if ("trim".equalsIgnoreCase(whitespace)) {
+                wsTreatment = XMLString.SUPPRESS_BOTH;
+            } else if ("normalize".equalsIgnoreCase(whitespace)) {
+                wsTreatment = XMLString.NORMALIZE;
             }
         }
     }
 
     public Field convertToField(String fieldName, String content) throws IOException {
         int fieldType = getType(fieldName);
-        Analyzer analyzer = getAnalyzer(fieldName);
         try {
             switch (fieldType) {
                 case Type.INTEGER:
@@ -104,84 +106,12 @@ public class RangeIndexConfigElement {
                     float fvalue = Float.parseFloat(content);
                     return new FloatField(fieldName, fvalue, FloatField.TYPE_NOT_STORED);
                 default:
-                    // default: treat as text string
-                    if (analyzer != null) {
-                        TokenStream stream = analyzer.tokenStream(fieldName, new StringReader(content));
-                        return new TextField(fieldName, stream);
-                    }
                     return new TextField(fieldName, content, Field.Store.NO);
             }
         } catch (NumberFormatException e) {
             // wrong type: ignore
         }
         return null;
-    }
-
-    public static Query toQuery(String field, AtomicValue content, RangeIndex.Operator operator,
-                                DocumentSet docs, RangeIndexWorker worker) throws XPathException {
-        final int type = content.getType();
-        BytesRef bytes;
-        if (Type.subTypeOf(type, Type.STRING)) {
-            BytesRef key = worker.analyzeContent(field, content, docs);
-            switch (operator) {
-                case EQ:
-                    return new TermQuery(new Term(field, key));
-                case STARTS_WITH:
-                    return new PrefixQuery(new Term(field, key));
-                case ENDS_WITH:
-                    bytes = new BytesRef("*");
-                    bytes.append(key);
-                    return new WildcardQuery(new Term(field, bytes));
-                case CONTAINS:
-                    bytes = new BytesRef("*");
-                    bytes.append(key);
-                    bytes.append(new BytesRef("*"));
-                    return new WildcardQuery(new Term(field, bytes));
-            }
-        }
-        if (operator == RangeIndex.Operator.EQ) {
-            return new TermQuery(new Term(field, convertToBytes(content)));
-        }
-        final boolean includeUpper = operator == RangeIndex.Operator.LE;
-        final boolean includeLower = operator == RangeIndex.Operator.GE;
-        switch (type) {
-            case Type.INTEGER:
-            case Type.LONG:
-            case Type.UNSIGNED_LONG:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newLongRange(field, null, ((NumericValue)content).getLong(), includeLower, includeUpper);
-                } else {
-                    return NumericRangeQuery.newLongRange(field, ((NumericValue)content).getLong(), null, includeLower, includeUpper);
-                }
-            case Type.INT:
-            case Type.UNSIGNED_INT:
-            case Type.SHORT:
-            case Type.UNSIGNED_SHORT:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newIntRange(field, null, ((NumericValue) content).getInt(), includeLower, includeUpper);
-                } else {
-                    return NumericRangeQuery.newIntRange(field, ((NumericValue) content).getInt(), null, includeLower, includeUpper);
-                }
-            case Type.DECIMAL:
-            case Type.DOUBLE:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newDoubleRange(field, null, ((NumericValue) content).getDouble(), includeLower, includeUpper);
-                } else {
-                    return NumericRangeQuery.newDoubleRange(field, ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
-                }
-            case Type.FLOAT:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newFloatRange(field, null, (float) ((NumericValue) content).getDouble(), includeLower, includeUpper);
-                } else {
-                    return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
-                }
-            default:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return new TermRangeQuery(field, null, convertToBytes(content), includeLower, includeUpper);
-                } else {
-                    return new TermRangeQuery(field, convertToBytes(content), null, includeLower, includeUpper);
-                }
-        }
     }
 
     public static BytesRef convertToBytes(AtomicValue content) throws XPathException {
@@ -220,44 +150,12 @@ public class RangeIndexConfigElement {
         }
     }
 
-    public static Term convertToTerm(String fieldName, AtomicValue content) throws XPathException {
-        BytesRef bytes;
-        switch(content.getType()) {
-            case Type.INTEGER:
-            case Type.LONG:
-            case Type.UNSIGNED_LONG:
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
-                NumericUtils.longToPrefixCoded(((IntegerValue)content).getLong(), 0, bytes);
-                return new Term(fieldName, bytes);
-            case Type.SHORT:
-            case Type.UNSIGNED_SHORT:
-            case Type.INT:
-            case Type.UNSIGNED_INT:
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
-                NumericUtils.intToPrefixCoded(((IntegerValue)content).getInt(), 0, bytes);
-                return new Term(fieldName, bytes);
-            case Type.DECIMAL:
-                long dv = NumericUtils.doubleToSortableLong(((DecimalValue)content).getDouble());
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
-                NumericUtils.longToPrefixCoded(dv, 0, bytes);
-                return new Term(fieldName, bytes);
-            case Type.DOUBLE:
-                long lv = NumericUtils.doubleToSortableLong(((DoubleValue)content).getDouble());
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
-                NumericUtils.longToPrefixCoded(lv, 0, bytes);
-                return new Term(fieldName, bytes);
-            case Type.FLOAT:
-                int iv = NumericUtils.floatToSortableInt(((FloatValue)content).getValue());
-                bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
-                NumericUtils.longToPrefixCoded(iv, 0, bytes);
-                return new Term(fieldName, bytes);
-            default:
-                return new Term(fieldName, content.getStringValue());
-        }
+    public TextCollector getCollector(NodePath path) {
+        return new SimpleTextCollector(this, includeNested, wsTreatment);
     }
 
-    public TextCollector getCollector() {
-        return new SimpleTextCollector();
+    public Analyzer getAnalyzer() {
+        return analyzer;
     }
 
     public Analyzer getAnalyzer(String field) {

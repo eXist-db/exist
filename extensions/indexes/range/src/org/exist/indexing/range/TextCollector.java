@@ -24,20 +24,34 @@ public interface TextCollector {
     public List<Field> getFields();
 
     public static class Field {
-        final boolean attribute;
-        final String name;
-        final XMLString content;
+        protected final boolean attribute;
+        protected final String name;
+        protected final XMLString content;
+        protected final int wsTreatment;
 
-        public Field(XMLString content) {
+        public Field(XMLString content, int wsTreatment) {
             this.content = content;
             this.attribute = false;
             this.name = null;
+            this.wsTreatment = wsTreatment;
         }
 
-        public Field(String name, boolean isAttribute) {
+        public Field(String name, boolean isAttribute, int wsTreatment) {
             this.name = name;
             this.attribute = isAttribute;
+            this.wsTreatment = wsTreatment;
             this.content = new XMLString();
+        }
+
+        public String getContent() {
+            if (wsTreatment != XMLString.SUPPRESS_NONE) {
+                return content.normalize(wsTreatment).toString();
+            }
+            return content.toString();
+        }
+
+        public String getName() {
+            return name;
         }
 
         public boolean isNamed() {
