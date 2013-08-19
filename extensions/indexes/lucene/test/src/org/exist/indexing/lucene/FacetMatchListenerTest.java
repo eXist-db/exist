@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * $Id: LuceneMatchListenerTest.java 12494 2010-08-21 12:40:10Z shabanovd $
+ *  $Id$
  */
 package org.exist.indexing.lucene;
 
@@ -32,15 +32,11 @@ import org.exist.dom.NewArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -70,15 +66,6 @@ public class FacetMatchListenerTest extends FacetAbstractTest {
             "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
             "</article>";
 
-    private static String CONF1 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "	<index>" +
-            "		<fulltext default=\"none\">" +
-            "		</fulltext>" +
-            "   <text qname=\"para\"/>" +
-            "	</index>" +
-            "</collection>";
-
     private static String CONF2 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "	<index>" +
@@ -88,30 +75,6 @@ public class FacetMatchListenerTest extends FacetAbstractTest {
         "       <text qname=\"term\"/>" +
         "	</index>" +
         "</collection>";
-
-    private static String CONF3 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "	<index>" +
-            "		<fulltext default=\"none\">" +
-            "		</fulltext>" +
-            "   <text qname=\"hi\"/>" +
-            "	</index>" +
-            "</collection>";
-
-    private static String CONF4 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
-            "       <fulltext default=\"none\" attributes=\"no\">" +
-            "       </fulltext>" +
-            "       <lucene>" +
-            "           <text qname=\"p\">" +
-            "               <ignore qname=\"note\"/>" +
-            "           </text>" +
-            "           <text qname=\"head\"/>" +
-            "           <inline qname=\"s\"/>" +
-            "       </lucene>" +
-            "   </index>" +
-            "</collection>";
 
     private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
     private static String MATCH_END = "</exist:match>";
