@@ -39,6 +39,14 @@ public class NodePathTest {
         assertTrue(path.match(new NodePath(null, "/a/b/c")));
         assertTrue(path.match(new NodePath(null, "/a/b/c/d")));
         assertTrue(path.match(new NodePath(null, "/a/b/c/d/e")));
+
+        path = new NodePath(null, "/a/a/b");
+        assertTrue(path.match(new NodePath(null, "/a/a/b")));
+        assertFalse(path.match(new NodePath(null, "/a/b/c")));
+
+        path = new NodePath(null, "/a/b/c/c");
+        assertTrue(path.match(new NodePath(null, "/a/b/c/c")));
+        assertFalse(path.match(new NodePath(null, "/a/b/c/d")));
     }
 
     @Test
@@ -49,6 +57,11 @@ public class NodePathTest {
         assertFalse(path.match(new NodePath(null, "/a/b")));
         assertFalse(path.match(new NodePath(null, "/a/b/c/d")));
         assertTrue(path.match(new NodePath(null, "/a/c")));
+
+        path = new NodePath(null, "//c");
+        assertTrue(path.match(new NodePath(null, "/a/b/c")));
+        assertTrue(path.match(new NodePath(null, "/a/b/c/c/c")));
+        assertFalse(path.match(new NodePath(null, "/a/b/b")));
 
         path = new NodePath(null, "/a/b/*", true);
         assertTrue(path.match(new NodePath(null, "/a/b/c")));
@@ -62,5 +75,8 @@ public class NodePathTest {
         path = new NodePath(null, "/a/b//*", true);
         assertTrue(path.match(new NodePath(null, "/a/b/c")));
         assertTrue(path.match(new NodePath(null, "/a/b/c/d")));
+
+        path = new NodePath(null, "//c/d");
+        assertTrue(path.match(new NodePath(null, "/a/b/c/c/d")));
     }
 }

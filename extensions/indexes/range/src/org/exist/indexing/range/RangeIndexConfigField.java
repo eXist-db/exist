@@ -3,9 +3,12 @@ package org.exist.indexing.range;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.collation.CollationKeyAnalyzer;
 import org.apache.lucene.util.Version;
+import org.exist.dom.QName;
+import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.storage.NodePath;
 import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.XMLString;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
@@ -16,18 +19,22 @@ public class RangeIndexConfigField {
 
     private String name;
     private NodePath path = null;
+    private NodePath relPath = null;
     private int type = Type.STRING;
-    private Analyzer analyzer = null;
+    protected boolean includeNested = false;
+    protected int wsTreatment = XMLString.SUPPRESS_NONE;
+    protected boolean isQNameIndex = false;
 
     public RangeIndexConfigField(NodePath parentPath, Element elem, Map<String, String> namespaces) throws DatabaseConfigurationException {
         name = elem.getAttribute("name");
+        path = parentPath;
         if (name == null || name.length() == 0) {
             throw new DatabaseConfigurationException("Range index module: field element requires a name attribute");
         }
         String match = elem.getAttribute("match");
-        if (match != null) {
+        if (match != null && match.length() > 0) {
             try {
-                NodePath relPath = new NodePath(namespaces, match);
+                relPath = new NodePath(namespaces, match);
                 if (relPath.length() == 0)
                     throw new DatabaseConfigurationException("Range index module: Invalid match path in collection config: " + match);
                 path = new NodePath(parentPath);
@@ -35,6 +42,11 @@ public class RangeIndexConfigField {
             } catch (IllegalArgumentException e) {
                 throw new DatabaseConfigurationException("Range index module: invalid qname in configuration: " + e.getMessage());
             }
+        } else if (elem.hasAttribute("qname")) {
+            QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
+            path = new NodePath(qname);
+            relPath = path;
+            isQNameIndex = true;
         }
         String typeStr = elem.getAttribute("type");
         if (typeStr != null && typeStr.length() > 0) {
@@ -44,12 +56,16 @@ public class RangeIndexConfigField {
                 throw new DatabaseConfigurationException("Invalid type declared for range index on " + match + ": " + typeStr);
             }
         }
-        String collation = elem.getAttribute("collation");
-        if (collation != null && collation.length() > 0) {
-            try {
-                analyzer = new CollationKeyAnalyzer(Version.LUCENE_43, Collations.getCollationFromURI(null, collation));
-            } catch (XPathException e) {
-                throw new DatabaseConfigurationException(e.getMessage(), e);
+        String nested = elem.getAttribute("nested");
+        includeNested = (nested == null || nested.equalsIgnoreCase("yes"));
+
+        // normalize whitespace if whitespace="normalize"
+        String whitespace = elem.getAttribute("whitespace");
+        if (whitespace != null) {
+            if ("trim".equalsIgnoreCase(whitespace)) {
+                wsTreatment = XMLString.SUPPRESS_BOTH;
+            } else if ("normalize".equalsIgnoreCase(whitespace)) {
+                wsTreatment = XMLString.NORMALIZE;
             }
         }
     }
@@ -62,15 +78,29 @@ public class RangeIndexConfigField {
         return path;
     }
 
+    public NodePath getRelPath() {
+        return relPath;
+    }
+
     public int getType() {
         return type;
     }
 
-    public Analyzer getAnalyzer() {
-        return analyzer;
-    }
-
     public boolean match(NodePath other) {
         return path.match(other);
+    }
+
+    public boolean match(NodePath parentPath, NodePath other) {
+        NodePath absPath = new NodePath(parentPath);
+        absPath.append(relPath);
+        return absPath.match(other);
+    }
+
+    public int whitespaceTreatment() {
+        return wsTreatment;
+    }
+
+    public boolean includeNested() {
+        return includeNested;
     }
 }

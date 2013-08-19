@@ -2,7 +2,6 @@ package org.exist.indexing.range;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.value.Type;
@@ -10,10 +9,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
@@ -25,17 +21,7 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     public ComplexRangeIndexConfigElement(Element node, NodeList children, Map<String, String> namespaces)
             throws DatabaseConfigurationException {
-        super();
-        String match = node.getAttribute("match");
-        if (match != null) {
-            try {
-                path = new NodePath(namespaces, match, false);
-                if (path.length() == 0)
-                    throw new DatabaseConfigurationException("Range index module: Invalid match path in collection config: " + match);
-            } catch (IllegalArgumentException e) {
-                throw new DatabaseConfigurationException("Range index module: invalid qname in configuration: " + e.getMessage());
-            }
-        }
+        super(node, namespaces);
 
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
@@ -57,9 +43,9 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     @Override
     public boolean match(NodePath other) {
-        if (path.match(other))
-            return true;
-        return false;
+        if (isQNameIndex)
+            return other.getLastComponent().equalsSimple(path.getLastComponent());
+        return path.match(other);
     }
 
     @Override
@@ -68,15 +54,14 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
     }
 
     @Override
-    public TextCollector getCollector() {
-        return new ComplexTextCollector(this);
+    public TextCollector getCollector(NodePath path) {
+        return new ComplexTextCollector(this, path);
     }
 
     @Override
     public Analyzer getAnalyzer(String fieldName) {
-        RangeIndexConfigField field = fields.get(fieldName);
-        if (field != null) {
-            return field.getAnalyzer();
+        if (fields.containsKey(fieldName)) {
+            return analyzer;
         }
         return null;
     }
@@ -84,6 +69,14 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
     public RangeIndexConfigField getField(NodePath path) {
         for (RangeIndexConfigField field: fields.values()) {
             if (field.match(path))
+                return field;
+        }
+        return null;
+    }
+
+    public RangeIndexConfigField getField(NodePath parentPath, NodePath path) {
+        for (RangeIndexConfigField field: fields.values()) {
+            if (field.match(parentPath, path))
                 return field;
         }
         return null;

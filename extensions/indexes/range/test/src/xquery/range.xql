@@ -19,7 +19,7 @@ declare variable $rt:COLLECTION_CONFIG :=
                     <field name="address-code" match="city/@code" type="xs:integer"/>
                 </create>
                 <create match="/test/address/name"/>
-                <create match="/test/address/city" type="xs:string"/>
+                <create match="/test/address/city" type="xs:string" collation="?lang=de-DE&amp;strength=primary"/>
                 <create match="/test/address/city/@code" type="xs:integer"/>
                 <create qname="@id" type="xs:string"/>
             </range>
@@ -105,6 +105,15 @@ declare
     %test:assertEquals("Berta Muh")
 function rt:equality-qname-string-attribute($id as xs:string) {
     //address[range:eq(@id, $id)]/name/text()
+};
+
+declare
+    %test:args("russelsheim")
+    %test:assertEquals("Rüsselsheim")
+    %test:args("almweide")
+    %test:assertEquals("Almweide")
+function rt:equality-string-collation($name as xs:string) {
+    //address[range:eq(city, $name)]/city/text()
 };
 
 declare 

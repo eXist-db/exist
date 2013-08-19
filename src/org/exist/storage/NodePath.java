@@ -158,7 +158,7 @@ public class NodePath implements Comparable<NodePath> {
                 skip = true;
             }
             if((components[i] == WILDCARD || other.components[j].compareTo(components[i]) == 0) &&
-                    (j + 1 == other.pos || other.components[j + 1].compareTo(components[i]) != 0)) {
+                    (!skip || j + 1 == other.pos || other.components[j + 1].compareTo(components[i]) != 0)) {
                 ++i;
                 skip = false;
             } else if(skip) {
