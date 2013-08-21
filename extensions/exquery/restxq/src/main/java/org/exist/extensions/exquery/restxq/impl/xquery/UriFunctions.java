@@ -28,6 +28,7 @@ package org.exist.extensions.exquery.restxq.impl.xquery;
 
 import org.exist.dom.QName;
 import org.exist.extensions.exquery.restxq.impl.ResourceFunctionExecutorImpl;
+import org.exist.extensions.exquery.restxq.impl.adapters.EXQueryErrorCode;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -37,6 +38,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.exquery.restxq.RestXqErrorCodes;
 
 /**
  *
@@ -75,7 +77,11 @@ public class UriFunctions extends BasicFunction {
         } else {
             var = context.resolveVariable(ResourceFunctionExecutorImpl.XQ_VAR_URI);
         }
-        
-        return var.getValue();
+
+        if(var == null) {
+            throw new XPathException(new EXQueryErrorCode(RestXqErrorCodes.RQDY0101), getLine(), getColumn());
+        } else {
+            return var.getValue();
+        }
     }
 }
