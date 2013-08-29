@@ -1,12 +1,8 @@
 package org.exist.indexing.range;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.collation.CollationKeyAnalyzer;
-import org.apache.lucene.util.Version;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.storage.NodePath;
-import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
 import org.exist.xquery.XPathException;
@@ -24,6 +20,7 @@ public class RangeIndexConfigField {
     protected boolean includeNested = false;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
     protected boolean isQNameIndex = false;
+    protected boolean caseSensitive = true;
 
     public RangeIndexConfigField(NodePath parentPath, Element elem, Map<String, String> namespaces) throws DatabaseConfigurationException {
         name = elem.getAttribute("name");
@@ -47,6 +44,8 @@ public class RangeIndexConfigField {
             path = new NodePath(qname);
             relPath = path;
             isQNameIndex = true;
+        } else {
+            path = parentPath;
         }
         String typeStr = elem.getAttribute("type");
         if (typeStr != null && typeStr.length() > 0) {
@@ -58,6 +57,7 @@ public class RangeIndexConfigField {
         }
         String nested = elem.getAttribute("nested");
         includeNested = (nested == null || nested.equalsIgnoreCase("yes"));
+        path.setIncludeDescendants(includeNested);
 
         // normalize whitespace if whitespace="normalize"
         String whitespace = elem.getAttribute("whitespace");
@@ -67,6 +67,11 @@ public class RangeIndexConfigField {
             } else if ("normalize".equalsIgnoreCase(whitespace)) {
                 wsTreatment = XMLString.NORMALIZE;
             }
+        }
+
+        String caseStr = elem.getAttribute("case");
+        if (caseStr != null && caseStr.length() > 0) {
+            caseSensitive = caseStr.equalsIgnoreCase("yes");
         }
     }
 
@@ -78,10 +83,6 @@ public class RangeIndexConfigField {
         return path;
     }
 
-    public NodePath getRelPath() {
-        return relPath;
-    }
-
     public int getType() {
         return type;
     }
@@ -91,13 +92,21 @@ public class RangeIndexConfigField {
     }
 
     public boolean match(NodePath parentPath, NodePath other) {
-        NodePath absPath = new NodePath(parentPath);
-        absPath.append(relPath);
-        return absPath.match(other);
+        if (relPath == null) {
+            return parentPath.match(other);
+        } else {
+            NodePath absPath = new NodePath(parentPath);
+            absPath.append(relPath);
+            return absPath.match(other);
+        }
     }
 
     public int whitespaceTreatment() {
         return wsTreatment;
+    }
+
+    public boolean isCaseSensitive() {
+        return caseSensitive;
     }
 
     public boolean includeNested() {

@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2013 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.xquery.modules.range;
 
 import org.exist.indexing.range.*;
@@ -10,7 +31,7 @@ import java.util.List;
 
 /**
  * Query rewriter for the range index. May replace path expressions like a[b = "c"] or a[b = "c"][d = "e"]
- * with either a[range:equals(b, "c")] or range:field-equals("
+ * with either a[range:equals(b, "c")] or range:field-equals(...).
  */
 public class RangeQueryRewriter extends QueryRewriter {
 
@@ -67,7 +88,7 @@ public class RangeQueryRewriter extends QueryRewriter {
 
                 if (path.length() > 0) {
                     // find a range index configuration matching the full path to the predicate expression
-                    RangeIndexConfigElement rice = findConfiguration(path);
+                    RangeIndexConfigElement rice = findConfiguration(path, false);
                     if (rice != null && !rice.isComplex()) {
                         // found simple index configuration: replace with call to lookup function
                         // collect arguments
@@ -90,6 +111,7 @@ public class RangeQueryRewriter extends QueryRewriter {
             RangeIndex.Operator operator = null;
             List<Expression> args = null;
             SequenceConstructor arg0 = null;
+            SequenceConstructor arg1 = null;
 
             // walk through the predicates attached to the current location step
             // check if expression can be optimized
@@ -113,31 +135,24 @@ public class RangeQueryRewriter extends QueryRewriter {
 
                 if (path.length() > 0) {
                     // find a range index configuration matching the full path to the predicate expression
-                    RangeIndexConfigElement rice = findConfiguration(path);
+                    RangeIndexConfigElement rice = findConfiguration(path, true);
                     // found index configuration with sub-fields
                     if (rice != null && rice.isComplex() && rice.getNodePath().match(contextPath)) {
                         // check for a matching sub-path and retrieve field information
                         RangeIndexConfigField field = ((ComplexRangeIndexConfigElement) rice).getField(path);
                         if (field != null) {
-                            RangeIndex.Operator currentOperator = getOperator(innerExpr);
-                            if (currentOperator != operator) {
-                                if (operator != null) {
-                                    // wrong operator: cannot optimize. break out.
-                                    operator = null;
-                                    args = null;
-                                    return false;
-                                } else {
-                                    operator = currentOperator;
-                                }
-                            }
                             if (args == null) {
                                 // initialize args
                                 args = new ArrayList<Expression>(4);
                                 arg0 = new SequenceConstructor(getContext());
                                 args.add(arg0);
+                                arg1 = new SequenceConstructor(getContext());
+                                args.add(arg1);
                             }
                             // field is added to the sequence in first parameter
                             arg0.add(new LiteralValue(getContext(), new StringValue(field.getName())));
+                            // operator
+                            arg1.add(new LiteralValue(getContext(), new StringValue(getOperator(innerExpr).toString())));
                             // append right hand expression as additional parameter
                             args.add(getKeyArg(innerExpr));
                         } else {
@@ -154,7 +169,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                 // the entire filter expression can be replaced
                 RewritableExpression parent = parentExpr;
                 // create range:field-equals function
-                FieldLookup func = FieldLookup.create(locationStep.getContext(), operator);
+                FieldLookup func = new FieldLookup(getContext(), FieldLookup.signatures[0]);
                 func.setFallback(locationStep);
                 func.setLocation(locationStep.getLine(), locationStep.getColumn());
                 func.setArguments(args);
@@ -232,14 +247,15 @@ public class RangeQueryRewriter extends QueryRewriter {
         }
         return operator;
     }
+
     /**
      * Scan all index configurations to find one matching path.
      */
-    private RangeIndexConfigElement findConfiguration(NodePath path) {
+    private RangeIndexConfigElement findConfiguration(NodePath path, boolean complex) {
         for (Object configObj : configs) {
             final RangeIndexConfig config = (RangeIndexConfig) configObj;
             final RangeIndexConfigElement rice = config.find(path);
-            if (rice != null) {
+            if (rice != null && (!complex || rice.isComplex())) {
                 return rice;
             }
         }
@@ -253,6 +269,9 @@ public class RangeQueryRewriter extends QueryRewriter {
                 return null;
             }
             NodeTest test = step.getTest();
+            if (test.isWildcardTest() && step.getAxis() == Constants.SELF_AXIS) {
+                return path;
+            }
             if (!test.isWildcardTest() && test.getName() != null) {
                 int axis = step.getAxis();
                 if (axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS) {

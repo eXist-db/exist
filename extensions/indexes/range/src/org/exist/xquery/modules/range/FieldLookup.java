@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2013 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.xquery.modules.range;
 
 import org.exist.dom.DocumentSet;
@@ -28,8 +49,23 @@ public class FieldLookup extends Function implements Optimizable {
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
+            new QName("field", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "General field lookup function. Normally this will be used by the query optimizer.",
+            new SequenceType[] {
+                    new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ONE_OR_MORE,
+                            "The name of the field(s) to search"),
+                    new FunctionParameterSequenceType("operators", Type.STRING, Cardinality.ONE_OR_MORE,
+                            "The operators to use as strings: eq, lt, gt, contains ..."),
+                    new FunctionParameterSequenceType("keys", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                            "The keys to look up for each field.")
+            },
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "all nodes from the field set whose node value is equal to the key."),
+            true
+        ),
+        new FunctionSignature(
             new QName("field-eq", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+            "General field lookup function based on equality comparison. Normally this will be used by the query optimizer.",
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "all nodes from the field set whose node value is equal to the key."),
@@ -37,7 +73,7 @@ public class FieldLookup extends Function implements Optimizable {
         ),
         new FunctionSignature(
             new QName("field-gt", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+                "General field lookup function based on greater-than comparison. Normally this will be used by the query optimizer.",
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the field set whose node value is equal to the key."),
@@ -45,7 +81,7 @@ public class FieldLookup extends Function implements Optimizable {
         ),
         new FunctionSignature(
             new QName("field-lt", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+            "General field lookup function based on less-than comparison. Normally this will be used by the query optimizer.",
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the field set whose node value is equal to the key."),
@@ -53,7 +89,7 @@ public class FieldLookup extends Function implements Optimizable {
         ),
         new FunctionSignature(
             new QName("field-le", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+            "General field lookup function based on less-than-equal comparison. Normally this will be used by the query optimizer.",
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the field set whose node value is equal to the key."),
@@ -61,7 +97,7 @@ public class FieldLookup extends Function implements Optimizable {
         ),
         new FunctionSignature(
             new QName("field-ge", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+            "General field lookup function based on greater-than-equal comparison. Normally this will be used by the query optimizer.",
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the field set whose node value is equal to the key."),
@@ -69,7 +105,7 @@ public class FieldLookup extends Function implements Optimizable {
         ),
         new FunctionSignature(
                 new QName("field-starts-with", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-                "",
+                "Used by optimizer to optimize a starts-with() function call",
                 PARAMETER_TYPE,
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                         "all nodes from the field set whose node value is equal to the key."),
@@ -77,7 +113,7 @@ public class FieldLookup extends Function implements Optimizable {
         ),
         new FunctionSignature(
                 new QName("field-ends-with", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-                "",
+                "Used by optimizer to optimize a ends-with() function call",
                 PARAMETER_TYPE,
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                         "all nodes from the field set whose node value is equal to the key."),
@@ -85,44 +121,13 @@ public class FieldLookup extends Function implements Optimizable {
         ),
         new FunctionSignature(
             new QName("field-contains", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+                "Used by optimizer to optimize a contains() function call",
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the field set whose node value is equal to the key."),
             true
         )
     };
-
-    public static FieldLookup create(XQueryContext context, RangeIndex.Operator operator) {
-        FunctionSignature signature;
-        switch (operator) {
-            case GT:
-                signature = signatures[1];
-                break;
-            case LT:
-                signature = signatures[2];
-                break;
-            case LE:
-                signature = signatures[3];
-                break;
-            case GE:
-                signature = signatures[4];
-                break;
-            case STARTS_WITH:
-                signature = signatures[5];
-                break;
-            case ENDS_WITH:
-                signature = signatures[6];
-                break;
-            case CONTAINS:
-                signature = signatures[7];
-                break;
-            default:
-                signature = signatures[0];
-                break;
-        }
-        return new FieldLookup(context, signature);
-    }
 
     private NodeSet preselectResult = null;
     protected Expression fallback = null;
@@ -142,7 +147,15 @@ public class FieldLookup extends Function implements Optimizable {
                 new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
         steps.add(path);
 
-        for (int i = 1; i < arguments.size(); i++) {
+        int j = 1;
+        if (isCalledAs("field")) {
+            Expression fields = arguments.get(1);
+            fields = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, fields,
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
+            steps.add(fields);
+            j++;
+        }
+        for (int i = j; i < arguments.size(); i++) {
             Expression arg = arguments.get(i).simplify();
             arg = new Atomize(context, arg);
             arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
@@ -168,17 +181,34 @@ public class FieldLookup extends Function implements Optimizable {
         preselectResult = null;
 
         Sequence fieldSeq = getArgument(0).eval(contextSequence);
-        Sequence[] keys = new Sequence[getArgumentCount() - 1];
-        for (int i = 1; i < getArgumentCount(); i++) {
-            keys[i - 1] = getArgument(i).eval(contextSequence);
+        RangeIndex.Operator[] operators = null;
+        int j = 1;
+        if (isCalledAs("field")) {
+            Sequence operatorSeq = getArgument(1).eval(contextSequence);
+            operators = new RangeIndex.Operator[operatorSeq.getItemCount()];
+            int i = 0;
+            for (SequenceIterator si = operatorSeq.iterate(); si.hasNext(); i++) {
+                operators[i] = RangeIndexModule.OPERATOR_MAP.get(si.nextItem().getStringValue());
+            }
+            j++;
+        } else {
+            RangeIndex.Operator operator = getOperator();
+            operators = new RangeIndex.Operator[fieldSeq.getItemCount()];
+            for (int i = 0; i < operators.length; i++) {
+                operators[i] = operator;
+            }
+        }
+
+        Sequence[] keys = new Sequence[getArgumentCount() - j];
+        for (int i = j; i < getArgumentCount(); i++) {
+            keys[i - j] = getArgument(i).eval(contextSequence);
         }
         DocumentSet docs = contextSequence.getDocumentSet();
-        final RangeIndex.Operator operator = getOperator();
 
         RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
 
         try {
-            preselectResult = index.queryField(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null, fieldSeq, keys, operator, NodeSet.DESCENDANT);
+            preselectResult = index.queryField(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null, fieldSeq, keys, operators, NodeSet.DESCENDANT);
         } catch (IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
@@ -217,16 +247,32 @@ public class FieldLookup extends Function implements Optimizable {
                 contextSet = contextSequence.toNodeSet();
 
             Sequence fields = getArgument(0).eval(contextSequence);
-            Sequence[] keys = new Sequence[getArgumentCount() - 1];
-            for (int i = 1; i < getArgumentCount(); i++) {
-                keys[i - 1] = getArgument(i).eval(contextSequence);
+            RangeIndex.Operator[] operators = null;
+            int j = 1;
+            if (isCalledAs("field")) {
+                Sequence operatorSeq = getArgument(1).eval(contextSequence);
+                operators = new RangeIndex.Operator[operatorSeq.getItemCount()];
+                int i = 0;
+                for (SequenceIterator si = operatorSeq.iterate(); si.hasNext(); i++) {
+                    operators[i] = RangeIndexModule.OPERATOR_MAP.get(si.nextItem().getStringValue());
+                }
+                j++;
+            } else {
+                RangeIndex.Operator operator = getOperator();
+                operators = new RangeIndex.Operator[fields.getItemCount()];
+                for (int i = 0; i < operators.length; i++) {
+                    operators[i] = operator;
+                }
             }
-            final RangeIndex.Operator operator = getOperator();
+            Sequence[] keys = new Sequence[getArgumentCount() - j];
+            for (int i = j; i < getArgumentCount(); i++) {
+                keys[i - j] = getArgument(i).eval(contextSequence);
+            }
 
             RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
 
             try {
-                result = index.queryField(getExpressionId(), docs, contextSet, fields, keys, operator, NodeSet.DESCENDANT);
+                result = index.queryField(getExpressionId(), docs, contextSet, fields, keys, operators, NodeSet.DESCENDANT);
             } catch (IOException e) {
                 throw new XPathException(this, e.getMessage());
             }

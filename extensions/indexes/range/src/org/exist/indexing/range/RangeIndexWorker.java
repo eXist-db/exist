@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2013 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.indexing.range;
 
 import org.apache.log4j.Logger;
@@ -36,6 +57,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
+/**
+ * The main worker class for the range index.
+ *
+ * @author Wolfgang Meier
+ */
 public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static final Logger LOG = Logger.getLogger(RangeIndexWorker.class);
@@ -95,6 +121,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query = new WildcardQuery(new Term(field, bytes));
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     return query;
+                case MATCH:
+                    return new RegexpQuery(new Term(field, key));
             }
         }
         if (operator == RangeIndex.Operator.EQ) {
@@ -446,7 +474,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return resultSet;
     }
 
-    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
+    public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, RangeIndex.Operator[] operators, int axis) throws IOException, XPathException {
         NodeSet resultSet = NodeSet.EMPTY_SET;
         IndexSearcher searcher = null;
         try {
@@ -467,12 +495,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     bool.setMinimumNumberShouldMatch(1);
                     for (SequenceIterator ki = keys[j].iterate(); ki.hasNext(); ) {
                         Item key = ki.nextItem();
-                        Query q = toQuery(field, null, key.atomize(), operator, docs);
+                        Query q = toQuery(field, null, key.atomize(), operators[j], docs);
                         bool.add(q, BooleanClause.Occur.SHOULD);
                     }
                     query.add(bool, BooleanClause.Occur.MUST);
                 } else {
-                    Query q = toQuery(field, null, keys[j].itemAt(0).atomize(), operator, docs);
+                    Query q = toQuery(field, null, keys[j].itemAt(0).atomize(), operators[j], docs);
                     query.add(q, BooleanClause.Occur.MUST);
                 }
             }
@@ -744,7 +772,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     while (configIter.hasNext()) {
                         RangeIndexConfigElement configuration = configIter.next();
                         if (configuration.match(path)) {
-                            contentStack.push(configuration.getCollector(path));
+                            TextCollector collector = configuration.getCollector(path);
+                            collector.startElement(element.getQName(), path);
+                            contentStack.push(collector);
                         }
                     }
                 }

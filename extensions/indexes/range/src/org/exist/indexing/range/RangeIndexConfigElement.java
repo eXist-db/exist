@@ -20,21 +20,13 @@ import java.util.Map;
 
 public class RangeIndexConfigElement {
 
-    public static final org.apache.lucene.document.FieldType TYPE_CONTENT = new org.apache.lucene.document.FieldType();
-    static {
-        TYPE_CONTENT.setIndexed(true);
-        TYPE_CONTENT.setStored(false);
-        TYPE_CONTENT.setOmitNorms(true);
-        TYPE_CONTENT.setStoreTermVectors(false);
-        TYPE_CONTENT.setTokenized(true);
-    }
-
     protected NodePath path = null;
     private int type = Type.STRING;
     private RangeIndexConfigElement nextConfig = null;
     protected boolean isQNameIndex = false;
     protected Analyzer analyzer = null;
     protected boolean includeNested = false;
+    protected boolean caseSensitive = true;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
 
     public RangeIndexConfigElement(Element node, Map<String, String> namespaces) throws DatabaseConfigurationException {
@@ -80,6 +72,11 @@ public class RangeIndexConfigElement {
             } else if ("normalize".equalsIgnoreCase(whitespace)) {
                 wsTreatment = XMLString.NORMALIZE;
             }
+        }
+
+        String caseStr = node.getAttribute("case");
+        if (caseStr != null && caseStr.length() > 0) {
+            caseSensitive = caseStr.equalsIgnoreCase("yes");
         }
     }
 
@@ -151,7 +148,7 @@ public class RangeIndexConfigElement {
     }
 
     public TextCollector getCollector(NodePath path) {
-        return new SimpleTextCollector(this, includeNested, wsTreatment);
+        return new SimpleTextCollector(this, includeNested, wsTreatment, caseSensitive);
     }
 
     public Analyzer getAnalyzer() {
