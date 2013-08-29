@@ -533,6 +533,24 @@ return
     $ff(5, 3)]]></code>
     	<expected>13</expected>
     </test>
+    <test output="text" id="partial4">
+        <task>Partial function application on dynamic call with function parameter</task>
+        <code><![CDATA[xquery version "3.0";
+
+declare variable $a := function($x as item()*, $f as function(item()*) as
+xs:boolean) as xs:boolean {
+   $f($x)
+};
+
+let $list := (
+   <test/>
+)
+
+let $f := $a(?, function($x){ true() })
+
+return $f($list)]]></code>
+        <expected>true</expected>
+    </test>
     <test output="text" id="partiald1">
     	<task>Partial function application: dynamic call with partial application</task>
     	<code><![CDATA[xquery version "1.0";
