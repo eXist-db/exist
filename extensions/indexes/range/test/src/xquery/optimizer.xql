@@ -11,16 +11,24 @@ module namespace ot="http://exist-db.org/xquery/range/optimizer/test";
 import module namespace range="http://exist-db.org/xquery/range" at "java:org.exist.xquery.modules.range.RangeIndexModule";
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
+
+declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace stats="http://exist-db.org/xquery/profiling";
 
 declare variable $ot:COLLECTION_CONFIG := 
     <collection xmlns="http://exist-db.org/collection-config/1.0">
-        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            xmlns:tei="http://www.tei-c.org/ns/1.0">
             <fulltext default="none" attributes="false"/>
             <lucene>
                 <text field="lucene-name" qname="name"/>
             </lucene>
             <range>
+                <create match="//tei:placeName">
+                    <field name="name" type="xs:string" nested="no"/>
+                    <field name="type" match="@type" type="xs:string"/>
+                    <field name="subtype" match="@subtype" type="xs:string"/>
+                </create>
                 <create match="//address">
                     <field name="address-city" match="city" type="xs:string"/>
                     <field name="address-street" match="street" type="xs:string"/>
@@ -33,6 +41,26 @@ declare variable $ot:COLLECTION_CONFIG :=
         </index>
     </collection>;
 
+declare variable $ot:DATA_NESTED := 
+    <place xmlns="http://www.tei-c.org/ns/1.0">
+        <placeName xml:id="ODB_S00004004_NAM001" xml:lang="de-DE" type="ref" subtype="inofficial">Hofthiergarten<note type="source">
+                <date ana="#notBefore">1750</date>
+                <date ana="#notAfter">1820</date>
+            </note>
+        </placeName>
+        <placeName xml:id="ODB_S00004004_NAM002" xml:lang="de-DE" type="main" subtype="official">Hofthiergarten<note type="source">
+                <date ana="#when">2011-08-24</date>
+            </note>
+        </placeName>
+        <placeName xml:id="ODB_A00000393_NAM001" xml:lang="de-DE" type="main" subtype="official">Dorfprozelten<note type="source">
+                <date ana="#when">2001-04-07</date>
+                <bibl>
+                    <ptr target="#HAB/Laube"/>
+                </bibl>
+            </note>
+        </placeName>
+    </place>;
+    
 declare variable $ot:DATA :=
     <test>
         <address id="muh">
@@ -78,7 +106,8 @@ function ot:setup() {
     xmldb:create-collection("/db/system/config/db", $ot:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $ot:COLLECTION_NAME, "collection.xconf", $ot:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $ot:COLLECTION_NAME),
-    xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA)
+    xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA),
+    xmldb:store($ot:COLLECTION, "nested.xml", $ot:DATA_NESTED)
 };
 
 declare
@@ -361,4 +390,23 @@ declare
     %test:assertEquals(1)
 function ot:optimize-lt-field-nested($email as xs:string) {
     count(collection($ot:COLLECTION)//address[contact/email < $email])
+};
+
+declare 
+    %test:args("main", "official", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten")
+    %test:args("ref", "inofficial", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten")
+    %test:args("main", "official", "Dorfprozelten")
+    %test:assertEquals("Dorfprozelten")
+function ot:equality-field-nested($type as xs:string, $subtype as xs:string, $name as xs:string) {
+    //tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+};
+
+declare 
+    %test:stats
+    %test:args("main", "official", "Hofthiergarten")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-field-self($type as xs:string, $subtype as xs:string, $name as xs:string) {
+    //tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
 };

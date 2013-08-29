@@ -7,7 +7,8 @@ import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:o
 
 declare variable $rt:COLLECTION_CONFIG := 
     <collection xmlns="http://exist-db.org/collection-config/1.0">
-        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            xmlns:tei="http://www.tei-c.org/ns/1.0">
             <fulltext default="none" attributes="false"/>
             <lucene>
                 <text field="lucene-name" qname="name"/>
@@ -18,6 +19,11 @@ declare variable $rt:COLLECTION_CONFIG :=
                     <field name="address-city" match="city" type="xs:string"/>
                     <field name="address-code" match="city/@code" type="xs:integer"/>
                 </create>
+                <create match="//tei:placeName">
+                    <field name="name" type="xs:string" nested="no"/>
+                    <field name="type" match="@type" type="xs:string"/>
+                    <field name="subtype" match="@subtype" type="xs:string"/>
+                </create>
                 <create match="/test/address/name"/>
                 <create match="/test/address/city" type="xs:string" collation="?lang=de-DE&amp;strength=primary"/>
                 <create match="/test/address/city/@code" type="xs:integer"/>
@@ -25,6 +31,26 @@ declare variable $rt:COLLECTION_CONFIG :=
             </range>
         </index>
     </collection>;
+
+declare variable $rt:DATA_NESTED := 
+    <place xmlns="http://www.tei-c.org/ns/1.0">
+        <placeName xml:id="ODB_S00004004_NAM001" xml:lang="de-DE" type="ref" subtype="inofficial">Hofthiergarten<note type="source">
+                <date ana="#notBefore">1750</date>
+                <date ana="#notAfter">1820</date>
+            </note>
+        </placeName>
+        <placeName xml:id="ODB_S00004004_NAM002" xml:lang="de-DE" type="main" subtype="official">Hofthiergarten<note type="source">
+                <date ana="#when">2011-08-24</date>
+            </note>
+        </placeName>
+        <placeName xml:id="ODB_A00000393_NAM001" xml:lang="de-DE" type="main" subtype="official">Dorfprozelten<note type="source">
+                <date ana="#when">2001-04-07</date>
+                <bibl>
+                    <ptr target="#HAB/Laube"/>
+                </bibl>
+            </note>
+        </placeName>
+    </place>;
 
 declare variable $rt:DATA :=
     <test>
@@ -64,7 +90,8 @@ function rt:setup() {
     xmldb:create-collection("/db/system/config/db", "rangetest"),
     xmldb:store("/db/system/config/db/rangetest", "collection.xconf", $rt:COLLECTION_CONFIG),
     xmldb:create-collection("/db", "rangetest"),
-    xmldb:store("/db/rangetest", "test.xml", $rt:DATA)
+    xmldb:store("/db/rangetest", "test.xml", $rt:DATA),
+    xmldb:store("/db/rangetest", "nested.xml", $rt:DATA_NESTED)
 };
 
 declare
@@ -293,6 +320,17 @@ declare
     %test:assertEquals("Almweide")
 function rt:field-contains-string($name as xs:string) {
     range:field-contains("address-name", $name)/city/text()
+};
+
+declare 
+    %test:args("main", "official", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten")
+    %test:args("ref", "inofficial", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten")
+    %test:args("main", "official", "Dorfprozelten")
+    %test:assertEquals("Dorfprozelten")
+function rt:equality-field-nested($type as xs:string, $subtype as xs:string, $name as xs:string) {
+    range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
 };
 
 declare 

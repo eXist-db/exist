@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2013 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.xquery.modules.range;
 
 import org.exist.dom.DocumentSet;
@@ -24,59 +45,62 @@ public class Lookup extends Function implements Optimizable {
                     "The key to look up.")
     };
 
+    private final static String DESCRIPTION = "Search for nodes matching the given keys in the range " +
+        "index. Normally this function will be called by the query optimizer.";
+
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("eq", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-                "",
+                DESCRIPTION,
                 PARAMETER_TYPE,
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the input node set whose node value is equal to the key.")
         ),
         new FunctionSignature(
             new QName("gt", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+                DESCRIPTION,
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "all nodes from the input node set whose node value is equal to the key.")
         ),
         new FunctionSignature(
             new QName("lt", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+                DESCRIPTION,
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the input node set whose node value is equal to the key.")
         ),
         new FunctionSignature(
             new QName("le", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+            DESCRIPTION,
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the input node set whose node value is equal to the key.")
         ),
         new FunctionSignature(
             new QName("ge", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+            DESCRIPTION,
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the input node set whose node value is equal to the key.")
         ),
         new FunctionSignature(
             new QName("starts-with", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+            DESCRIPTION,
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the input node set whose node value is equal to the key.")
         ),
         new FunctionSignature(
             new QName("ends-with", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+            DESCRIPTION,
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the input node set whose node value is equal to the key.")
         ),
         new FunctionSignature(
             new QName("contains", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
-            "",
+            DESCRIPTION,
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "all nodes from the input node set whose node value is equal to the key.")
@@ -84,34 +108,12 @@ public class Lookup extends Function implements Optimizable {
     };
 
     public static Lookup create(XQueryContext context, RangeIndex.Operator operator) {
-        FunctionSignature signature;
-        switch (operator) {
-            case GT:
-                signature = signatures[1];
-                break;
-            case LT:
-                signature = signatures[2];
-                break;
-            case LE:
-                signature = signatures[3];
-                break;
-            case GE:
-                signature = signatures[4];
-                break;
-            case STARTS_WITH:
-                signature = signatures[5];
-                break;
-            case ENDS_WITH:
-                signature = signatures[6];
-                break;
-            case CONTAINS:
-                signature = signatures[7];
-                break;
-            default:
-                signature = signatures[0];
-                break;
+        for (FunctionSignature sig: signatures) {
+            if (sig.getName().getLocalName().equals(operator.toString())) {
+                return new Lookup(context, sig);
+            }
         }
-        return new Lookup(context, signature);
+        return null;
     }
 
     private LocationStep contextStep = null;

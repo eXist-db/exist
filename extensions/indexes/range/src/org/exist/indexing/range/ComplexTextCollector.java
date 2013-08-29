@@ -18,7 +18,7 @@ public class ComplexTextCollector implements TextCollector {
 
     public ComplexTextCollector(ComplexRangeIndexConfigElement configuration, NodePath parentPath) {
         this.config = configuration;
-        this.parentPath = new NodePath(parentPath);
+        this.parentPath = new NodePath(parentPath, false);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class ComplexTextCollector implements TextCollector {
         RangeIndexConfigField fieldConf = config.getField(parentPath, path);
         if (fieldConf != null) {
             currentField = fieldConf;
-            Field field = new Field(currentField.getName(), false, fieldConf.whitespaceTreatment());
+            Field field = new Field(currentField.getName(), false, fieldConf.whitespaceTreatment(), fieldConf.isCaseSensitive());
             fields.add(field);
         }
 
@@ -43,7 +43,7 @@ public class ComplexTextCollector implements TextCollector {
     public void attribute(AttrImpl attribute, NodePath path) {
         RangeIndexConfigField fieldConf = config.getField(parentPath, path);
         if (fieldConf != null) {
-            Field field = new Field(fieldConf.getName(), true, fieldConf.whitespaceTreatment());
+            Field field = new Field(fieldConf.getName(), true, fieldConf.whitespaceTreatment(), fieldConf.isCaseSensitive());
             field.content.append(attribute.getValue());
             fields.add(0, field);
         }

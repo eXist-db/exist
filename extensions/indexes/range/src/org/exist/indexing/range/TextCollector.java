@@ -26,24 +26,30 @@ public interface TextCollector {
     public static class Field {
         protected final boolean attribute;
         protected final String name;
-        protected final XMLString content;
         protected final int wsTreatment;
+        protected final boolean caseSensitive;
+        protected XMLString content;
 
-        public Field(XMLString content, int wsTreatment) {
+        public Field(XMLString content, int wsTreatment, boolean caseSensitive) {
             this.content = content;
             this.attribute = false;
             this.name = null;
             this.wsTreatment = wsTreatment;
+            this.caseSensitive = caseSensitive;
         }
 
-        public Field(String name, boolean isAttribute, int wsTreatment) {
+        public Field(String name, boolean isAttribute, int wsTreatment, boolean caseSensitive) {
             this.name = name;
             this.attribute = isAttribute;
             this.wsTreatment = wsTreatment;
             this.content = new XMLString();
+            this.caseSensitive = caseSensitive;
         }
 
         public String getContent() {
+            if (!caseSensitive) {
+                content = content.transformToLower();
+            }
             if (wsTreatment != XMLString.SUPPRESS_NONE) {
                 return content.normalize(wsTreatment).toString();
             }
