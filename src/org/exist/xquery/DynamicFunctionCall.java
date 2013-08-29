@@ -59,6 +59,7 @@ public class DynamicFunctionCall extends AbstractExpression {
 	        	final FunctionCall call = ref.getCall();
 	        	call.setArguments(arguments);
 	        	final PartialFunctionApplication partialApp = new PartialFunctionApplication(context, call);
+                partialApp.analyze(new AnalyzeContextInfo(cachedContextInfo));
 	        	return partialApp.eval(contextSequence, contextItem);
         	} catch (final XPathException e) {
 				e.setLocation(line, column, getSource());
