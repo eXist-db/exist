@@ -56,9 +56,7 @@ public interface Database {
 
 	//TODO: javadocs
 	
-	public String getId(); 
-
-	public void addObserver(Observer o);
+	public String getId();
 	
 	/**
 	 * 

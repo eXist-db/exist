@@ -9,7 +9,8 @@ dist/
 exist.jar
 exist-optional.jar
 extensions/**/build/
-extensions/**/lib/
+extensions/lib/
+extensions/modules/lib/
 lib/extensions/
 local.*
 mime-types.xml
@@ -38,3 +39,5 @@ tools/wrapper/logs/
 backup/
 test/junit/
 test/temp/
+nbproject/build/
+nbproject/private/
