@@ -16,7 +16,8 @@ public class PartialFunctionApplication extends AbstractExpression {
 	public final static String PARTIAL_FUN_PREFIX = "partial";
 	
 	protected FunctionCall function;
-	
+	protected AnalyzeContextInfo cachedContextInfo;
+
 	public PartialFunctionApplication(XQueryContext context, FunctionCall call) {
 		super(context);
 		this.function = call;
@@ -24,6 +25,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 	
 	@Override
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        this.cachedContextInfo = contextInfo;
 	}
 
 	@Override
@@ -79,6 +81,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 			} else {
 				// fixed argument: just compute the argument value
 				try {
+                    param.analyze(cachedContextInfo);
 					final Sequence seq = param.eval(contextSequence, contextItem);
 					callArgs.add(new PrecomputedValue(context, seq));
 				} catch (final XPathException e) {
