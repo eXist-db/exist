@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.exist.xquery.XPathException;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.labels.CategoryItemLabelGenerator;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
@@ -238,6 +239,7 @@ public class JFreeChartFactory {
     {
         setCategoryRange( chart, config );
         setCategoryItemLabelGenerator( chart, config );
+	setCategoryLabelPositions( chart, config );
         setSeriesColors( chart, config );
 	setAxisColors( chart, config );
     }
@@ -295,8 +297,15 @@ public class JFreeChartFactory {
             }
         }
     }
-
-        
+    
+    private static void setCategoryLabelPositions( JFreeChart chart, Configuration config )
+    {
+        CategoryLabelPositions positions  = config.getCategoryLabelPositions();
+	if (chart.getPlot() instanceof CategoryPlot) {
+	    ((CategoryPlot)chart.getPlot()).getDomainAxis().setCategoryLabelPositions(positions);
+	}
+    }
+    
     private static void setSeriesColors( JFreeChart chart, Configuration config )
     {
         String seriesColors          = config.getSeriesColors();
