@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2009-2013 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -38,6 +38,7 @@ import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
+import org.jfree.chart.plot.MultiplePiePlot;
 import org.jfree.chart.plot.SpiderWebPlot;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.title.LegendTitle;
@@ -238,7 +239,7 @@ public class JFreeChartFactory {
         setCategoryRange( chart, config );
         setCategoryItemLabelGenerator( chart, config );
         setSeriesColors( chart, config );
-		setAxisColors( chart, config );
+	setAxisColors( chart, config );
     }
     
     
@@ -294,8 +295,8 @@ public class JFreeChartFactory {
             }
         }
     }
-    
-    
+
+        
     private static void setSeriesColors( JFreeChart chart, Configuration config )
     {
         String seriesColors          = config.getSeriesColors();
@@ -373,7 +374,11 @@ public class JFreeChartFactory {
         String pieSectionPercentFormat  = config.getPieSectionPercentFormat();
         
         if( pieSectionLabel != null ) {
+	    if (chart.getPlot() instanceof MultiplePiePlot) {
+		((PiePlot) ((MultiplePiePlot)chart.getPlot()).getPieChart().getPlot()).setLabelGenerator( new StandardPieSectionLabelGenerator( pieSectionLabel, new DecimalFormat( pieSectionNumberFormat ), new DecimalFormat( pieSectionPercentFormat ) ) );
+	    } else {
             ((PiePlot)chart.getPlot()).setLabelGenerator( new StandardPieSectionLabelGenerator( pieSectionLabel, new DecimalFormat( pieSectionNumberFormat ), new DecimalFormat( pieSectionPercentFormat ) ) );
+	    }
         }
     }
     
