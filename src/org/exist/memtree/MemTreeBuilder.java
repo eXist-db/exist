@@ -452,7 +452,7 @@ public class MemTreeBuilder
             if (elemQN != null) {
                 final String elemPrefix = ( elemQN.getPrefix() == null ) ? "" : elemQN.getPrefix();
 
-                if( elemPrefix.equals( qn.getLocalName() ) && ( elemQN.getNamespaceURI() != null ) && !elemQN.getNamespaceURI().equals( qn.getNamespaceURI() ) ) {
+                if( elemPrefix.equals( qn.getLocalName() ) && ( elemQN.getNamespaceURI() != null ) ) {
                     addNode = false;
                 }
             }

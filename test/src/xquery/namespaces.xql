@@ -2,6 +2,8 @@ xquery version "3.0";
 
 module namespace nt="http://exist-db.org/xquery/test/namespaces";
 
+declare namespace z="http://www.zorba-xquery.com/";
+
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
 declare 
@@ -47,9 +49,187 @@ declare %private function nt:copy-ns($node) {
 };
 
 declare 
+    %test:assertEquals('<h:html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://www.w3.org/1999/xhtml"/>')
+function nt:dynamicNSConstrEmptyNS() {
+    <h:html xmlns:h="http://www.w3.org/1999/xhtml">
+        { namespace { "" } { "http://www.w3.org/1999/xhtml" } }
+    </h:html>
+};
+
+declare 
+    %test:assertEquals("<age xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:type='xs:integer'>23</age>")
+function nt:dynamicNSConstrAttrib1() {
+    <age xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> {
+      namespace xs {"http://www.w3.org/2001/XMLSchema"},
+      attribute xsi:type {"xs:integer"},
+      23
+    }</age>
+};
+
+declare 
+    %test:assertEquals("<age xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:type='xs:integer'>23</age>")
+function nt:dynamicNSConstrAttrib2() {
+    element age {
+        namespace xsi { "http://www.w3.org/2001/XMLSchema-instance" },
+        namespace xs {"http://www.w3.org/2001/XMLSchema"},
+        attribute xsi:type {"xs:integer"},
+        23
+    }
+};
+
+declare 
+    %test:assertEquals('<e xmlns:saxon="http://saxon.sf.net/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" a="23"/>')
+function nt:nscons-001() {
+    let $s := "http://saxon.sf.net/"
+    let $xsl := "http://www.w3.org/1999/XSL/Transform"
+    return
+        <e>{ namespace saxon {$s}, attribute a {23}, namespace xsl {$xsl} }</e>
+};
+
+declare
+    %test:assertEquals('<out><t:e xmlns:t="http://www.example.com/" xmlns="http://saxon.sf.net/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" a="23"><f xmlns=""/></t:e></out>')
+function nt:nscons-002() {
+    let $s := "saxon"
+    let $xsl := "xsl"
+    return
+        <out> 
+            <t:e xmlns:t="http://www.example.com/">{ 
+            namespace {""} {"http://saxon.sf.net/"}, 
+            attribute a {23}, 
+            namespace {$xsl} {"http://www.w3.org/1999/XSL/Transform"}, <f/>
+            }</t:e>
+        </out>
+};
+
+declare 
+    %test:assertEquals('<out><t:e xmlns:t="http://www.example.com/" xmlns="http://saxon.sf.net/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" a="23"><f xmlns=""/></t:e></out>')
+function nt:nscons-003() {
+    let $s := "saxon"
+    let $xsl := "xsl"
+    return
+        <out> 
+            <t:e xmlns:t="http://www.example.com/">{ 
+            namespace {""} {"http://saxon.sf.net/"}, 
+            attribute a {23}, 
+            namespace {$xsl} {"http://www.w3.org/1999/XSL/Transform"}, <f/> }</t:e>
+        </out>
+};
+
+declare
+    %test:assertEquals('<out><t:e xmlns:t="http://www.example.com/" xml:space="preserve" a="23"><f/></t:e></out>')
+function nt:nscons-004() {
+    let $s := "saxon"
+    let $xml := "http://www.w3.org/XML/1998/namespace"
+    return
+        <out> <t:e xmlns:t="http://www.example.com/" xml:space="preserve">{ 
+            namespace xml {"http://www.w3.org/XML/1998/namespace"}, 
+            attribute a {23}, <f/> }</t:e> </out>
+};
+
+declare 
+    %test:assertEquals('<saxon:extension xmlns:saxon="http://saxon.sf.net/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" a="23"><f>42</f></saxon:extension>')
+function nt:nscons-005() {
+    let $s := "http://saxon.sf.net/"
+    let $xsl := "http://www.w3.org/1999/XSL/Transform"
+    return
+        element {QName("http://saxon.sf.net/", "saxon:extension")} { namespace saxon {$s}, attribute a {23}, namespace xsl {$xsl}, element f {42} }
+};
+
+declare
+    %test:assertEquals('<saxon:extension xmlns:saxon="http://saxon.sf.net/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" a="23"><f>42</f></saxon:extension>')
+function nt:nscons-006() {
+    let $s := "http://saxon.sf.net/"
+    let $xsl := "http://www.w3.org/1999/XSL/Transform"
+    return
+        element {QName("http://saxon.sf.net/", "saxon:extension")} 
+        { namespace saxon {$s}, attribute a {23}, namespace xsl {$xsl}, namespace saxon {$s}, element f {42} }
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:nscons-007() {
+    let $s := "http://saxon.sf.net/"
+    let $xsl := "http://www.w3.org/1999/XSL/Transform"
+    let $xmlns := "xmlns"
+    return
+        <e> { namespace saxon {$s}, attribute a {23}, namespace xsl {$xsl}, namespace xmlns {$s}, element f {42} }</e>
+};
+
+declare
+    %test:assertError("XQDY0101")
+function nt:nscons-008() {
+    let $s := "http://saxon.sf.net/"
+    let $xsl := "http://www.w3.org/1999/XSL/Transform"
+    let $xmlns := "xml"
+    return
+        <e> { namespace saxon {$s}, attribute a {23}, namespace xsl {$xsl}, namespace {$xmlns} {$s}, element f {42} }</e>
+};
+
+declare function nt:nscons-015() {
+    <z:e>{ namespace { <a/>/* } { "http://www.w3.org/" } }</z:e>
+};
+
+declare 
     %test:assertError
 function nt:dynamicNSConstrError() {
     <test>
     { namespace { (1, 2) } { "http://foo.com" } }
     </test>
+};
+
+declare 
+    %test:assertEquals('<e xmlns:z="http://www.zorba-xquery.com/"/>')
+function nt:ns-cons013() {
+    let $pre := <prefix>z</prefix>,
+        $uri := "http://www.zorba-xquery.com/"
+    return
+      <e>{ namespace { $pre } { $uri } }</e>
+};
+
+declare
+    %test:assertEquals('<e xmlns:z="http://www.zorba-xquery.com/"/>')
+function nt:ns-cons014() {
+    let $pre := "z",
+        $uri := "http://www.zorba-xquery.com/"
+    return
+      <e>{ namespace { $pre } { $uri } }</e>
+};
+
+declare 
+    %test:assertError("XQDY0074")
+function nt:ns-cons016() {
+    let $pre := <prefix>z:z</prefix>,
+        $uri := "http://www.zorba-xquery.com/"
+    return
+      <e>{ namespace { $pre } { $uri } }</e>
+};
+
+declare 
+    %test:assertError("XQDY0074")
+function nt:ns-cons17() {
+    let $pre := "z z",
+        $uri := "http://www.zorba-xquery.com/"
+    return
+      <e>{ namespace { $pre } { $uri } }</e>
+};
+
+declare 
+    %test:assertError("XPTY0004")
+function nt:ns-cons18() {
+    let $pre := 1,
+        $uri := "http://www.zorba-xquery.com/"
+    return
+      <e>{ namespace { $pre } { $uri } }</e>
+};
+
+declare 
+    %test:assertEquals('<test xmlns:foo="http://foo.com"></test>')
+function nt:dynamicNSNodeFromFunc() {
+    <test>
+    { nt:getNSNode() }
+    </test>
+};
+
+declare function nt:getNSNode() {
+    namespace { "foo" } { "http://foo.com" }
 };
