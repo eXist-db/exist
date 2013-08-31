@@ -325,7 +325,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (nodeKind == null) {
             init();
         }
-        if ((nodeNum > 0 ) && (nodeKind[nodeNum] != Node.ELEMENT_NODE)) {
+        if ((nodeNum > 0 ) && !(nodeKind[nodeNum] == Node.ELEMENT_NODE || nodeKind[nodeNum] == NodeImpl.NAMESPACE_NODE)) {
             throw( new DOMException( DOMException.INUSE_ATTRIBUTE_ERR,
                 "err:XQTY0024: An attribute node cannot follow a node that is not an attribute node."));
         }
@@ -1103,6 +1103,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             final QName qn   = document.nodeName[nr];
             final String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
             receiver.processingInstruction(qn.getLocalName(), data);
+            break;
+        case NodeImpl.NAMESPACE_NODE:
+            receiver.addNamespaceNode(document.namespaceCode[nr]);
             break;
         case NodeImpl.REFERENCE_NODE:
             if (expandRefs) {
