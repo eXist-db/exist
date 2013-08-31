@@ -22,42 +22,60 @@
  */
 package org.exist.xquery;
 
+import org.exist.Namespaces;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
+import org.exist.util.XMLChar;
+import org.exist.xquery.util.*;
+import org.exist.xquery.util.Error;
+import org.exist.xquery.value.*;
+
+import java.util.Iterator;
 
 
 /**
- * Implements a dynamic namespace constructor.
+ * XQuery 3.0 computed namespace constructor.
  * 
  * @author wolf
  */
 public class NamespaceConstructor extends NodeConstructor {
 
-    final private String prefix;
-    private Expression uri = null;
+    private Expression qnameExpr;
+    private Expression content = null;
     
     /**
      * @param context
      */
-    public NamespaceConstructor(XQueryContext context, String prefix) {
+    public NamespaceConstructor(XQueryContext context) {
         super(context);
-        this.prefix = prefix;
     }
 
-    public void setURIExpression(Expression uriExpr) {
-        this.uri = new Atomize(context, uriExpr);
+    public void setContentExpr(PathExpr path) {
+        path.setUseStaticContext(true);
+        final Expression expr = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, path,
+                new Error(Error.FUNC_PARAM_CARDINALITY));
+        this.content = expr;
+    }
+
+    public void setNameExpr(Expression expr) {
+        expr = new Atomize(context, expr);
+        expr = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, expr,
+                new Error(Error.FUNC_PARAM_CARDINALITY));
+        this.qnameExpr = expr;
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
-        uri.analyze(contextInfo);
+    	super.analyze(contextInfo);
+        final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        newContextInfo.setParent(this);
+        newContextInfo.addFlag(IN_NODE_CONSTRUCTOR);
+        qnameExpr.analyze(newContextInfo);
+        if (content != null) {
+            content.analyze(newContextInfo);
+        }
     }
     
     /* (non-Javadoc)
@@ -75,23 +93,34 @@ public class NamespaceConstructor extends NodeConstructor {
         
         final MemTreeBuilder builder = context.getDocumentBuilder();
 		context.proceed(this, builder);
-        
-        final Sequence uriSeq = uri.eval(contextSequence, contextItem);
-        String value;
-        if(uriSeq.isEmpty())
-            {value = "";}
-        else {
-            final StringBuilder buf = new StringBuilder();
-            for(final SequenceIterator i = uriSeq.iterate(); i.hasNext(); ) {
-                context.proceed(this, builder);
-                final Item next = i.nextItem();
-                if(buf.length() > 0)
-                    {buf.append(' ');}
-                buf.append(next.toString());
-            }
-            value = buf.toString();
+
+        final Sequence prefixSeq = qnameExpr.eval(contextSequence, contextItem);
+        if (!(Type.subTypeOf(prefixSeq.getItemType(), Type.STRING) || prefixSeq.getItemType() == Type.UNTYPED_ATOMIC)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004, "Prefix needs to be xs:string or xs:untypedAtomic");
         }
-        context.declareInScopeNamespace(prefix, value);
+        String prefix = "";
+        if (!prefixSeq.isEmpty()) {
+            prefix = prefixSeq.getStringValue();
+            if (!(prefix.length() == 0 || XMLChar.isValidNCName(prefix))) {
+                throw new XPathException(this, ErrorCodes.XQDY0074, "Prefix cannot be cast to xs:NCName");
+            }
+        }
+        final Sequence uriSeq = content.eval(contextSequence, contextItem);
+        final String value = uriSeq.getStringValue();
+
+        if (prefix.equals("xmlns")) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind xmlns prefix");
+        } else if (prefix.equals("xml") && !value.equals(Namespaces.XML_NS)) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind xml prefix to another namespace");
+        } else if (value.equals(Namespaces.XML_NS) && !prefix.equals("xml")) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to XML namespace");
+        } else if (value.equals(Namespaces.XMLNS_NS)) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to xmlns namespace");
+        } else if (value.length() == 0) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to empty or zero-length namespace");
+        }
+
+        //context.declareInScopeNamespace(prefix, value);
         final int nodeNr = builder.namespaceNode(prefix, value);
         final Sequence result = ((DocumentImpl)builder.getDocument()).getNamespaceNode(nodeNr);
         
@@ -105,23 +134,40 @@ public class NamespaceConstructor extends NodeConstructor {
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
-        dumper.display("namespace ").display(prefix);
+        dumper.display("namespace ");
+        //TODO : remove curly braces if Qname
         dumper.display("{");
-        uri.dump(dumper);
-        dumper.display("}");
+        qnameExpr.dump(dumper);
+        dumper.display("} ");
+        dumper.display("{");
+        dumper.startIndent();
+        if(content != null) {
+            content.dump(dumper);
+        }
+        dumper.endIndent().nl();
+        dumper.display("} ");
     }
     
     public String toString() {
-    	final StringBuilder result = new StringBuilder();
-    	result.append("namespace ").append(prefix);
-    	result.append("{");
-    	result.append(uri.toString());
-    	result.append("}");
-    	return result.toString();
+        final StringBuilder result = new StringBuilder();
+        result.append("namespace ");
+        //TODO : remove curly braces if Qname
+        result.append("{");
+        result.append(qnameExpr.toString());
+        result.append("} ");
+        result.append("{");
+        if (content != null) {
+            result.append(content.toString());
+        }
+        result.append("} ");
+        return result.toString();
     }   
     
     public void resetState(boolean postOptimization) {
     	super.resetState(postOptimization);
-    	uri.resetState(postOptimization);
+    	qnameExpr.resetState(postOptimization);
+        if(content != null) {
+            content.resetState(postOptimization);
+        }
     }
 }
