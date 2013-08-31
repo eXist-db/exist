@@ -1104,6 +1104,9 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             final String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
             receiver.processingInstruction(qn.getLocalName(), data);
             break;
+        case NodeImpl.NAMESPACE_NODE:
+            receiver.addNamespaceNode(document.namespaceCode[nr]);
+            break;
         case NodeImpl.REFERENCE_NODE:
             if (expandRefs) {
                 DBBroker broker = null;
