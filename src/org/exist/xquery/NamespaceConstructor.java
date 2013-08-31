@@ -22,13 +22,13 @@
  */
 package org.exist.xquery;
 
+import org.exist.Namespaces;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.util.XMLChar;
 import org.exist.xquery.util.*;
 import org.exist.xquery.util.Error;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.*;
 
 import java.util.Iterator;
 
@@ -95,13 +95,32 @@ public class NamespaceConstructor extends NodeConstructor {
 		context.proceed(this, builder);
 
         final Sequence prefixSeq = qnameExpr.eval(contextSequence, contextItem);
+        if (!(Type.subTypeOf(prefixSeq.getItemType(), Type.STRING) || prefixSeq.getItemType() == Type.UNTYPED_ATOMIC)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004, "Prefix needs to be xs:string or xs:untypedAtomic");
+        }
         String prefix = "";
         if (!prefixSeq.isEmpty()) {
             prefix = prefixSeq.getStringValue();
+            if (!(prefix.length() == 0 || XMLChar.isValidNCName(prefix))) {
+                throw new XPathException(this, ErrorCodes.XQDY0074, "Prefix cannot be cast to xs:NCName");
+            }
         }
         final Sequence uriSeq = content.eval(contextSequence, contextItem);
         final String value = uriSeq.getStringValue();
-        context.declareInScopeNamespace(prefix, value);
+
+        if (prefix.equals("xmlns")) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind xmlns prefix");
+        } else if (prefix.equals("xml") && !value.equals(Namespaces.XML_NS)) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind xml prefix to another namespace");
+        } else if (value.equals(Namespaces.XML_NS) && !prefix.equals("xml")) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to XML namespace");
+        } else if (value.equals(Namespaces.XMLNS_NS)) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to xmlns namespace");
+        } else if (value.length() == 0) {
+            throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to empty or zero-length namespace");
+        }
+
+        //context.declareInScopeNamespace(prefix, value);
         final int nodeNr = builder.namespaceNode(prefix, value);
         final Sequence result = ((DocumentImpl)builder.getDocument()).getNamespaceNode(nodeNr);
         
