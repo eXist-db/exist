@@ -7,12 +7,21 @@
 -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
+    
+    <!-- Shared types -->
     <xs:simpleType name="yes_no">
         <xs:restriction base="xs:string">
             <xs:enumeration value="yes"/>
             <xs:enumeration value="no"/>
         </xs:restriction>
     </xs:simpleType>
+    
+    <xs:complexType name="parameterType">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
+    </xs:complexType>
+    
+    <!-- Root element -->
     <xs:element name="exist">
         <xs:complexType>
             <xs:sequence>
@@ -28,12 +37,14 @@
                             <xs:element name="startup" minOccurs="0">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <!-- TODO commonise with collection.xconf.xsd -->
                                         <xs:element name="triggers" minOccurs="0">
                                             <xs:complexType>
                                                 <xs:sequence>
                                                     <xs:element name="trigger" minOccurs="0" maxOccurs="unbounded">
                                                         <xs:complexType>
+                                                            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                                                                <xs:element name="parameter" type="parameterType"/>
+                                                            </xs:sequence>
                                                             <xs:attribute name="class" type="xs:string"/>
                                                         </xs:complexType>
                                                     </xs:element>
@@ -150,7 +161,8 @@
                                                 <xs:attribute name="flushAfter" type="xs:integer"
                                                   default="300"/>
                                                 <xs:attribute name="n" type="xs:integer" default="3"/>
-                                                <xs:attribute name="buffer" type="xs:integer" default="32"/>
+                                                <xs:attribute name="buffer" type="xs:integer"
+                                                  default="32"/>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
@@ -343,12 +355,13 @@
                                         <xs:element name="module" maxOccurs="unbounded">
                                             <xs:complexType>
                                                 <xs:sequence>
-                                                    <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
-                                                        <xs:complexType>
-                                                            <xs:attribute name="name" type="xs:string"/>
-                                                            <xs:attribute name="value" type="xs:string"/>
-                                                        </xs:complexType>
-                                                    </xs:element>
+                                                  <xs:element name="parameter" minOccurs="0"
+                                                  maxOccurs="unbounded">
+                                                  <xs:complexType>
+                                                  <xs:attribute name="name" type="xs:string"/>
+                                                  <xs:attribute name="value" type="xs:string"/>
+                                                  </xs:complexType>
+                                                  </xs:element>
                                                 </xs:sequence>
                                                 <xs:attribute name="class" type="xs:string"/>
                                                 <xs:attribute name="uri" type="xs:anyURI"/>
@@ -385,4 +398,5 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+
 </xs:schema>
