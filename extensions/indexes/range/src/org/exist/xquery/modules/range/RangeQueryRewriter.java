@@ -71,7 +71,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                 List<LocationStep> steps = getStepsToOptimize(innerExpr);
                 if (steps == null) {
                     // no optimizable steps found
-                    break;
+                    continue;
                 }
                 // compute left hand path
                 NodePath innerPath = toNodePath(steps);
@@ -137,7 +137,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                     // find a range index configuration matching the full path to the predicate expression
                     RangeIndexConfigElement rice = findConfiguration(path, true);
                     // found index configuration with sub-fields
-                    if (rice != null && rice.isComplex() && rice.getNodePath().match(contextPath)) {
+                    if (rice != null && rice.isComplex() && rice.getNodePath().match(contextPath) && findConfiguration(path, false) == null) {
                         // check for a matching sub-path and retrieve field information
                         RangeIndexConfigField field = ((ComplexRangeIndexConfigElement) rice).getField(path);
                         if (field != null) {
@@ -255,7 +255,8 @@ public class RangeQueryRewriter extends QueryRewriter {
         for (Object configObj : configs) {
             final RangeIndexConfig config = (RangeIndexConfig) configObj;
             final RangeIndexConfigElement rice = config.find(path);
-            if (rice != null && (!complex || rice.isComplex())) {
+            if (rice != null && ((complex && rice.isComplex()) ||
+                    (!complex && !rice.isComplex()))) {
                 return rice;
             }
         }

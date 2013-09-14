@@ -342,8 +342,8 @@ function ot:eq-field-multi($city as xs:string, $street as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim", "Elefantenweg 67")
-    %test:assertXPath("empty($result//stats:index[@type = 'new-range'][@optimization = 2])")
-function ot:no-optimize-mixed-op-field($city as xs:string, $street as xs:string) {
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-mixed-op-field($city as xs:string, $street as xs:string) {
     collection($ot:COLLECTION)//address[city > $city][street = $street]
 };
 
@@ -383,13 +383,6 @@ declare
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-lt-field-nested($email as xs:string) {
     collection($ot:COLLECTION)//address[contact/email < $email]
-};
-
-declare
-    %test:args("berta@milchview.org")
-    %test:assertEquals(1)
-function ot:optimize-lt-field-nested($email as xs:string) {
-    count(collection($ot:COLLECTION)//address[contact/email < $email])
 };
 
 declare 

@@ -167,6 +167,8 @@ public class FieldLookup extends Function implements Optimizable {
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(new AnalyzeContextInfo(contextInfo));
+
+        this.contextId = contextInfo.getContextId();
     }
 
     @Override
@@ -206,7 +208,6 @@ public class FieldLookup extends Function implements Optimizable {
         DocumentSet docs = contextSequence.getDocumentSet();
 
         RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
-
         try {
             preselectResult = index.queryField(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null, fieldSeq, keys, operators, NodeSet.DESCENDANT);
         } catch (IOException e) {
@@ -217,6 +218,7 @@ public class FieldLookup extends Function implements Optimizable {
         if( context.getProfiler().traceFunctions() ) {
             context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
         }
+        //preselectResult.setSelfAsContext(getContextId());
         return preselectResult;
     }
 
@@ -273,6 +275,9 @@ public class FieldLookup extends Function implements Optimizable {
 
             try {
                 result = index.queryField(getExpressionId(), docs, contextSet, fields, keys, operators, NodeSet.DESCENDANT);
+                if (contextSet != null) {
+                    result = result.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, true, getContextId(), true);
+                }
             } catch (IOException e) {
                 throw new XPathException(this, e.getMessage());
             }
@@ -283,7 +288,7 @@ public class FieldLookup extends Function implements Optimizable {
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
             long start = System.currentTimeMillis();
-            result = preselectResult.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR, true, getExpressionId(), true);
+            result = preselectResult.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, getContextId(), true);
             LOG.info("eval took " + (System.currentTimeMillis() - start));
         }
         return result;

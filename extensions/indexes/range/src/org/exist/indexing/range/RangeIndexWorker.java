@@ -639,30 +639,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    private class SearchFieldVisitor extends StoredFieldVisitor {
-
-        private int docId;
-        private NodeId nodeId;
-
-        @Override
-        public void intField(FieldInfo fieldInfo, int value) throws IOException {
-            this.docId = value;
-        }
-
-        @Override
-        public void binaryField(FieldInfo fieldInfo, byte[] value) throws IOException {
-            int units = ByteConversion.byteToShort(value, 0);
-            this.nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, value, 2);
-        }
-
-        @Override
-        public Status needsField(FieldInfo fieldInfo) throws IOException {
-            if (fieldInfo.name.equals(FIELD_DOC_ID) || fieldInfo.name.equals(FIELD_NODE_ID))
-                return Status.YES;
-            return Status.STOP;
-        }
-    }
-
     /**
      * Check index configurations for all collection in the given DocumentSet and return
      * a list of QNames, which have indexes defined on them.
