@@ -1862,7 +1862,7 @@ public class XQueryTest extends XMLTestCase {
                     "XPathQueryService", "1.0");
             ResourceSet result = service.query(query);
             assertEquals(1, result.getSize());
-            assertEquals("<c:C xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">" + "ccc" + "</c:C>", result.getResource(0).getContent().toString());
+            assertEquals("<c:C xmlns:d=\"http://d\" xmlns:c=\"http://c\" d:d=\"ddd\">" + "ccc" + "</c:C>", result.getResource(0).getContent().toString());
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
@@ -3336,7 +3336,7 @@ public class XQueryTest extends XMLTestCase {
             ResourceSet result = service.query(query);
 
             assertEquals(1, result.getSize());
-            assertEquals(query, "<c:C xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">ccc</c:C>",
+            assertEquals(query, "<c:C xmlns:d=\"http://d\" xmlns:c=\"http://c\" d:d=\"ddd\">ccc</c:C>",
                     result.getResource(0).getContent().toString());
 
         } catch (XMLDBException ex) {
