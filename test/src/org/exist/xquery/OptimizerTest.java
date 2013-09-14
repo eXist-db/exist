@@ -66,10 +66,10 @@ public class OptimizerTest {
     private final static String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index xmlns:mods=\"http://www.loc.gov/mods/v3\">" +
-    	"		<fulltext default=\"none\">" +
-        "           <create qname=\"LINE\"/>" +
-        "           <create qname=\"SPEAKER\"/>" +
-        "		</fulltext>" +
+    	"		<lucene>" +
+        "           <text qname=\"LINE\"/>" +
+        "           <text qname=\"SPEAKER\"/>" +
+        "		</lucene>" +
     	"		<create qname=\"b\" type=\"xs:string\"/>" +
         "        <create qname=\"SPEAKER\" type=\"xs:string\"/>" +
         "        <create qname=\"mods:internetMediaType\" type=\"xs:string\"/>" +
@@ -86,8 +86,8 @@ public class OptimizerTest {
 
     @Test
     public void simplePredicates() {
-        int r = execute("//SPEECH[LINE &= 'king']", false);
-        execute("//SPEECH[LINE &= 'king']", true, MSG_OPT_ERROR, r);
+        int r = execute("//SPEECH[ft:query(LINE, 'king')]", false);
+        execute("//SPEECH[ft:query(LINE, 'king')]", true, MSG_OPT_ERROR, r);
 
         r = execute("//SPEECH[SPEAKER = 'HAMLET']", false);
         execute("//SPEECH[SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
@@ -95,11 +95,11 @@ public class OptimizerTest {
         r = execute("//SPEECH[descendant::SPEAKER = 'HAMLET']", false);
         execute("//SPEECH[descendant::SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
         
-        r = execute("//SCENE[descendant::LINE &= 'king']", false);
-        execute("//SCENE[descendant::LINE &= 'king']", true, MSG_OPT_ERROR, r);
+        r = execute("//SCENE[ft:query(descendant::LINE, 'king')]", false);
+        execute("//SCENE[ft:query(descendant::LINE, 'king')]", true, MSG_OPT_ERROR, r);
 
-        r = execute("//LINE[. &= 'king']", false);
-        execute("//LINE[. &= 'king']", true, MSG_OPT_ERROR, r);
+        r = execute("//LINE[ft:query(., 'king')]", false);
+        execute("//LINE[ft:query(., 'king')]", true, MSG_OPT_ERROR, r);
 
         r = execute("//SPEAKER[. = 'HAMLET']", false);
         execute("//SPEAKER[. = 'HAMLET']", true, MSG_OPT_ERROR, r);
@@ -110,11 +110,11 @@ public class OptimizerTest {
         r = execute("//SPEAKER[descendant-or-self::SPEAKER = 'HAMLET']", false);
         execute("//SPEAKER[descendant-or-self::SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
 
-        r = execute("//SPEECH/LINE[. &= 'king']", false);
-        execute("//SPEECH/LINE[. &= 'king']", true, MSG_OPT_ERROR, r);
+        r = execute("//SPEECH/LINE[ft:query(., 'king')]", false);
+        execute("//SPEECH/LINE[ft:query(., 'king')]", true, MSG_OPT_ERROR, r);
         
-        r = execute("//*[LINE &= 'king']", false);
-        execute("//*[LINE &= 'king']", true, MSG_OPT_ERROR, r);
+        r = execute("//*[ft:query(LINE, 'king')]", false);
+        execute("//*[ft:query(LINE, 'king')]", true, MSG_OPT_ERROR, r);
 
         r = execute("//*[SPEAKER = 'HAMLET']", false);
         execute("//*[SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
@@ -122,27 +122,7 @@ public class OptimizerTest {
 
     @Test
     public void simplePredicatesRegex() {
-        int r = execute("//SPEECH[LINE &= 'nor*']", false);
-        execute("//SPEECH[LINE &= 'nor*']", true, MSG_OPT_ERROR, r);
-        r = execute("//SPEECH[LINE &= 'skirts nor*']", false);
-        execute("//SPEECH[LINE &= 'skirts nor*']", true, MSG_OPT_ERROR, r);
-        r = execute("//SPEECH[near(LINE, 'skirts nor*', 2)]", false);
-        execute("//SPEECH[near(LINE, 'skirts nor*', 2)]", true, MSG_OPT_ERROR, r);
-
-        //Test old and new functions
-        r = execute("//SPEECH[text:match-all(LINE, ('skirts', 'nor.*'))]", false);
-        execute("//SPEECH[text:match-all(LINE, ('skirts', 'nor.*'))]", true, MSG_OPT_ERROR, r);
-        execute("//SPEECH[text:match-all(LINE, ('skirts', 'nor.*'))]", false, "Query should return same number of results.", r);
-
-        //Test old and new functions
-        r = execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", false);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'))]", true, MSG_OPT_ERROR, r);
-        
-        r = execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", false);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", true, MSG_OPT_ERROR, r);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', '^nor.*$'))]", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", false);
+        int r = execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", false);
         execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[starts-with(SPEAKER, 'HAML')]", false);
         execute("//SPEECH[starts-with(SPEAKER, 'HAML')]", true, MSG_OPT_ERROR, r);
@@ -154,10 +134,10 @@ public class OptimizerTest {
 
     @Test
     public void twoPredicates() {
-        int r = execute("//SPEECH[LINE &= 'king'][SPEAKER='HAMLET']", false);
-        execute("//SPEECH[LINE &= 'king'][SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
-        r = execute("//SPEECH[SPEAKER='HAMLET'][LINE &= 'king']", false);
-        execute("//SPEECH[SPEAKER='HAMLET'][LINE &= 'king']", true, MSG_OPT_ERROR, r);
+        int r = execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", false);
+        execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+        r = execute("//SPEECH[SPEAKER='HAMLET'][ft:query(LINE, 'king')]", false);
+        execute("//SPEECH[SPEAKER='HAMLET'][ft:query(LINE, 'king')]", true, MSG_OPT_ERROR, r);
     }
 
     @Test
@@ -208,29 +188,22 @@ public class OptimizerTest {
 
     @Test
     public void booleanOperator() {
-        int r = execute("//SPEECH[LINE &= 'king'][SPEAKER='HAMLET']", false);
-        execute("//SPEECH[LINE &= 'king' and SPEAKER='HAMLET']", false, MSG_OPT_ERROR, r);
-        execute("//SPEECH[LINE &= 'king' and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
-        r = execute("//SPEECH[LINE &= 'king' or SPEAKER='HAMLET']", false);
-        execute("//SPEECH[LINE &= 'king' or SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+        int r = execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", false);
+        execute("//SPEECH[ft:query(LINE, 'king') and SPEAKER='HAMLET']", false, MSG_OPT_ERROR, r);
+        execute("//SPEECH[ft:query(LINE, 'king') and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+        r = execute("//SPEECH[ft:query(LINE, 'king') or SPEAKER='HAMLET']", false);
+        execute("//SPEECH[ft:query(LINE, 'king') or SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
 
-        r = execute("//SPEECH[LINE &= 'love' and LINE &= \"woman's\" and SPEAKER='HAMLET']", false);
-        execute("//SPEECH[LINE &= 'love' and LINE &= \"woman's\" and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+        r = execute("//SPEECH[ft:query(LINE, 'love') and ft:query(LINE, \"woman's\") and SPEAKER='HAMLET']", false);
+        execute("//SPEECH[ft:query(LINE, 'love') and ft:query(LINE, \"woman's\") and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
 
-        r = execute("//SPEECH[(LINE &= 'king' or LINE &= 'love') and SPEAKER='HAMLET']", false);
-        execute("//SPEECH[(LINE &= 'king' or LINE &= 'love') and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+        r = execute("//SPEECH[(ft:query(LINE, 'king') or ft:query(LINE, 'love')) and SPEAKER='HAMLET']", false);
+        execute("//SPEECH[(ft:query(LINE, 'king') or ft:query(LINE, 'love')) and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
 
-        r = execute("//SPEECH[(LINE &= 'juliet' and LINE &= 'romeo') or SPEAKER='HAMLET']", false);
+        r = execute("//SPEECH[(ft:query(LINE, 'juliet') and ft:query(LINE, 'romeo')) or SPEAKER='HAMLET']", false);
         Assert.assertEquals(368, r);
-        execute("//SPEECH[(LINE &= 'juliet' and LINE &= 'romeo') or SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+        execute("//SPEECH[(ft:query(LINE, 'juliet') and ft:query(LINE, 'romeo')) or SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
 
-        r = execute("//SPEECH[(LINE &= 'juliet' and LINE &= 'romeo') and SPEAKER='HAMLET']", false);
-        Assert.assertEquals(0, r);
-        execute("//SPEECH[(LINE &= 'juliet' and LINE &= 'romeo') and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEECH[LINE &= 'juliet' or (LINE &= 'king' and SPEAKER='HAMLET')]", false);
-        Assert.assertEquals(65, r);
-        execute("//SPEECH[LINE &= 'juliet' or (LINE &= 'king' and SPEAKER='HAMLET')]", true, MSG_OPT_ERROR, r);
 
         execute("//SPEECH[true() and false()]", true, MSG_OPT_ERROR, 0);
         execute("//SPEECH[true() and true()]", true, MSG_OPT_ERROR, 2628);
