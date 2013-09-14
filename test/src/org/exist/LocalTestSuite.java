@@ -1,7 +1,6 @@
 package org.exist;
 
 import org.exist.collections.triggers.AllTriggerTests;
-import org.exist.fulltext.AllFulltextTests;
 import org.exist.xmldb.XmldbLocalTests;
 import org.exist.xquery.AllXqueryTests;
 import org.exist.xquery.OptimizerTest;
@@ -17,8 +16,7 @@ import org.junit.runners.Suite;
 //        AllXupdateTests.class,
         AllXqueryTests.class,
         OptimizerTest.class,
-        AllTriggerTests.class,
-        AllFulltextTests.class
+        AllTriggerTests.class
 })
 public class LocalTestSuite {
 }
