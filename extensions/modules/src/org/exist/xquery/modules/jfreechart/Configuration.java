@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2009 The eXist Project
+ *  Copyright (C) 2009-2013 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -23,6 +23,7 @@ package org.exist.xquery.modules.jfreechart;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.XPathException;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.util.TableOrder;
 import org.w3c.dom.Node;
@@ -34,6 +35,7 @@ import java.awt.Color;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  * @author Andrzej Taramina (andrzej@chaeron.com)
+ * @author Leif-Jöran Olsson (ljo@exist-db.org)
  */
 public class Configuration {
 
@@ -63,6 +65,7 @@ public class Configuration {
     private String categoryItemLabelGeneratorClass;
     private String categoryItemLabelGeneratorParameter      = "{2}";
     private String categoryItemLabelGeneratorNumberFormat   = "0";
+    private CategoryLabelPositions categoryLabelPositions = CategoryLabelPositions.STANDARD;
     
     // Orientation and Order
     private TableOrder order = TableOrder.BY_COLUMN;
@@ -206,6 +209,10 @@ public class Configuration {
     
     public String getCategoryItemLabelGeneratorNumberFormat() {
         return categoryItemLabelGeneratorNumberFormat;
+    }
+
+    public CategoryLabelPositions getCategoryLabelPositions() {
+        return categoryLabelPositions;
     }
     
     public String getSeriesColors() {
@@ -489,7 +496,25 @@ public class Configuration {
                         } else {
                             categoryItemLabelGeneratorNumberFormat = value;
                         }
-                        
+
+                   } else if (child.getLocalName().equals("categoryLabelPositions")) {
+                        String value = getValue(child);
+                        if (value == null) {
+                            throw new XPathException("Value for 'categoryLabelPostions' cannot be parsed");
+                        } else if ("UP_45".equalsIgnoreCase(value)) {
+                            categoryLabelPositions = CategoryLabelPositions.UP_45;
+                        } else if ("UP_90".equalsIgnoreCase(value)) {
+                            categoryLabelPositions = CategoryLabelPositions.UP_90;
+                        } else if ("DOWN_45".equalsIgnoreCase(value)) {
+                            categoryLabelPositions = CategoryLabelPositions.DOWN_45;
+
+                        } else if ("DOWN_90".equalsIgnoreCase(value)) {
+                            categoryLabelPositions = CategoryLabelPositions.DOWN_90;
+
+                        } else {
+                            throw new XPathException("Wrong value for 'categoryLabelPositions'");
+                        }
+                      
                     } else if (child.getLocalName().equals("imageType")) {
                         String value = getValue(child);
                         if (value == null) {

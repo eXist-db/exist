@@ -2,18 +2,52 @@
 # Configuration files must begin with a line specifying the encoding
 #  of the the file.
 
-# $Id$
+#********************************************************************
+# Wrapper License Properties (Ignored by Community Edition)
+#********************************************************************
+# Professional and Standard Editions of the Wrapper require a valid
+#  License Key to start.  Licenses can be purchased or a trial license
+#  requested on the following pages:
+# http://wrapper.tanukisoftware.com/purchase
+# http://wrapper.tanukisoftware.com/trial
 
 # Include file problems can be debugged by removing the first '#'
 #  from the following line:
 ##include.debug
 
+# The Wrapper will look for either of the following optional files for a
+#  valid License Key.  License Key properties can optionally be included
+#  directly in this configuration file.
+#include ../conf/wrapper-license.conf
+#include ../conf/wrapper-license-%WRAPPER_HOST_NAME%.conf
+
+# The following property will output information about which License Key(s)
+#  are being found, and can aid in resolving any licensing problems.
+#wrapper.license.debug=TRUE
+
 #********************************************************************
-# Wrapper Properties
+# Wrapper Localization
+#********************************************************************
+# Specify the locale which the Wrapper should use.  By default the system
+#  locale is used.
+#wrapper.lang=en_US # en_US or ja_JP
+
+# Specify the location of the Wrapper's language resources.  If these are
+#  missing, the Wrapper will default to the en_US locale.
+wrapper.lang.folder=../lang
+
+#********************************************************************
+# Wrapper Java Properties
 #********************************************************************
 
 # Java Application
 wrapper.java.command=@java.vm@
+#  Specify a specific java binary:
+#set.JAVA_HOME=/java/path
+#wrapper.java.command=%JAVA_HOME%/bin/java
+
+# Tell the Wrapper to log the full generated Java command line.
+#wrapper.java.command.loglevel=INFO
 
 # EXIST_HOME
 set.EXIST_HOME=$INSTALL_PATH
@@ -72,6 +106,9 @@ wrapper.app.parameter.2=../../../@jetty.dir@/etc/jetty.xml
 #********************************************************************
 # Wrapper Logging Properties
 #********************************************************************
+# Enables Debug output from the Wrapper.
+# wrapper.debug=TRUE
+
 # Format of output for the console.  (See docs for formats)
 wrapper.console.format=PM
 
@@ -106,29 +143,74 @@ wrapper.syslog.loglevel=NONE
 # Allow for the use of non-contiguous numbered properties
 wrapper.ignore_sequence_gaps=TRUE
 
+# Do not start if the pid file already exists.
+wrapper.pidfile.strict=TRUE
+
 # Title to use when running as a console
-##wrapper.console.title=@app.long.name@
 wrapper.console.title=eXist-db Server with Jetty
 
 #********************************************************************
 # Wrapper JVM Checks
 #********************************************************************
+# Detect DeadLocked Threads in the JVM. (Requires Standard Edition)
+##wrapper.check.deadlock=TRUE
+##wrapper.check.deadlock.interval=60
+##wrapper.check.deadlock.action=RESTART
+##wrapper.check.deadlock.output=FULL
+
 # Out Of Memory detection.
+#  Ignore -verbose:class output to avoid false positives.
+wrapper.filter.trigger.1000=[Loaded java.lang.OutOfMemoryError
+wrapper.filter.action.1000=NONE
 # (Simple match)
-wrapper.filter.trigger.1000=java.lang.OutOfMemoryError
+wrapper.filter.trigger.1001=java.lang.OutOfMemoryError
 # (Only match text in stack traces if -XX:+PrintClassHistogram is being used.)
-#wrapper.filter.trigger.1000=Exception in thread "*" java.lang.OutOfMemoryError
-#wrapper.filter.allow_wildcards.1000=TRUE
-wrapper.filter.action.1000=SHUTDOWN
-wrapper.filter.message.1000=The JVM has run out of memory.
+#wrapper.filter.trigger.1001=Exception in thread "*" java.lang.OutOfMemoryError
+#wrapper.filter.allow_wildcards.1001=TRUE
+
+## Note: Original value: RESTART
+wrapper.filter.action.1001=SHUTDOWN
+wrapper.filter.message.1001=The JVM has run out of memory.
 
 # Do not allow the wrapper to restart the JVM.
 # A restart could cause issues if eXist-db wasn't shut down completely.
 wrapper.disable_restarts.automatic=TRUE
 
 #********************************************************************
-# Wrapper Windows Properties
+# Wrapper Email Notifications. (Requires Professional Edition)
 #********************************************************************
+# Common Event Email settings.
+#wrapper.event.default.email.debug=TRUE
+#wrapper.event.default.email.smtp.host=<SMTP_Host>
+#wrapper.event.default.email.smtp.port=25
+#wrapper.event.default.email.subject=[%WRAPPER_HOSTNAME%:%WRAPPER_NAME%:%WRAPPER_EVENT_NAME%] Event Notification
+#wrapper.event.default.email.sender=<Sender email>
+#wrapper.event.default.email.recipient=<Recipient email>
+
+# Configure the log attached to event emails.
+#wrapper.event.default.email.attach_log=TRUE
+#wrapper.event.default.email.maillog.lines=50
+#wrapper.event.default.email.maillog.format=LPTM
+#wrapper.event.default.email.maillog.loglevel=INFO
+
+# Enable specific event emails.
+#wrapper.event.wrapper_start.email=TRUE
+#wrapper.event.jvm_prelaunch.email=TRUE
+#wrapper.event.jvm_start.email=TRUE
+#wrapper.event.jvm_started.email=TRUE
+#wrapper.event.jvm_deadlock.email=TRUE
+#wrapper.event.jvm_stop.email=TRUE
+#wrapper.event.jvm_stopped.email=TRUE
+#wrapper.event.jvm_restart.email=TRUE
+#wrapper.event.jvm_failed_invocation.email=TRUE
+#wrapper.event.jvm_max_failed_invocations.email=TRUE
+#wrapper.event.jvm_kill.email=TRUE
+#wrapper.event.jvm_killed.email=TRUE
+#wrapper.event.jvm_unexpected_exit.email=TRUE
+#wrapper.event.wrapper_stop.email=TRUE
+
+# Specify custom mail content
+wrapper.event.jvm_restart.email.body=The JVM was restarted.\n\nPlease check on its status.\n
 
 #********************************************************************
 # Wrapper Windows NT/2000/XP Service Properties
@@ -159,4 +241,5 @@ wrapper.ntservice.interactive=false
 #********************************************************************
 # Timeouts
 #********************************************************************
+# DWES: still valid?
 wrapper.ping.timeout=120

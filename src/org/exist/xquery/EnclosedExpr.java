@@ -121,7 +121,7 @@ public class EnclosedExpr extends PathExpr {
                         {throw new XPathException(this, ErrorCodes.XQTY0024,
                             "An attribute may not appear after another child node.");}
                     next.copyTo(context.getBroker(), receiver);
-                    allowAttribs = next.getType() == Type.ATTRIBUTE;
+                    allowAttribs = next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE;
                     next = i.nextItem();
                 }
             }

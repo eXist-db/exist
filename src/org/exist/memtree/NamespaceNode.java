@@ -65,7 +65,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
         //XQuery doesn't support namespace nodes
         //so, mapping as an attribute at *serialization tile*  makes sense
         //however, the Query parser should not accept them in constructors !
-        return( Node.ATTRIBUTE_NODE );
+        return( NodeImpl.NAMESPACE_NODE);
     }
 
 
@@ -142,6 +142,15 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
     {
     }
 
+    @Override
+    public Node getFirstChild() {
+        return null;
+    }
+
+    @Override
+    public Node getLastChild() {
+        return null;
+    }
 
     public String getNodeValue() throws DOMException
     {
