@@ -34,10 +34,7 @@ import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XQueryService;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
@@ -187,19 +184,29 @@ public class DBUtils {
 	 * @param root The root collection
 	 * */
 	public static String[] wordList(Collection root) throws XMLDBException {
-		IndexQueryService service = (IndexQueryService)root.getService("IndexQueryService", "1.0");
+        final String query = "util:index-keys(//*, \"\", function($key, $options) {\n" +
+                "    $key\n" +
+                "}, 100, \"lucene-index\")";
+        XQueryService service = getXQueryService(root);
+        ResourceSet result = service.query(query);
+
         ArrayList<String> list = new ArrayList<String>();
-        String alphas = "abcdefghijklmnopqrstuvwxyz";
-        for (int i = 0; i < alphas.length(); i++) {
-            String s = alphas.substring(i, i + 1);
-            Occurrences[] terms = service.scanIndexTerms(s, s + 'z', true);
-            for(int j = 0; j < terms.length; j++) {
-                list.add( terms[j].getTerm().toString());
-            }
+        for (ResourceIterator iter = result.getIterator(); iter.hasMoreResources(); ) {
+            Resource next = iter.nextResource();
+            list.add(next.getContent().toString());
         }
         String[] words = new String[list.size()];
         list.toArray(words);
         System.out.println("Size of the word list: " + words.length);
         return words;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Collection collection = setupDB("xmldb:exist:///db");
+        String[] words = wordList(collection);
+        for (String word : words) {
+            System.out.println(word);
+        }
+        shutdownDB("xmldb:exist:///db");
     }
 }
