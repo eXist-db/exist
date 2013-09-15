@@ -109,7 +109,9 @@ public class DeadlockTest {
     private final static String COLLECTION_CONFIG =
 		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
 		"	<index>" +
-		"		<fulltext default=\"all\" attributes=\"false\"/>" +
+        "		<lucene>" +
+        "           <text match='/*'/>" +
+        "       </lucene>" +
 		"		<create path=\"//section/@id\" type=\"xs:string\"/>" +
 		"	</index>" +
 		"</collection>";
