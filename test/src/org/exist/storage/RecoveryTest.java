@@ -208,7 +208,7 @@ public class RecoveryTest extends TestCase {
             
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//SPEECH[LINE &= 'king']", null, AccessContext.TEST);
+            Sequence seq = xquery.execute("//SPEECH[ft:query(LINE, 'king')]", null, AccessContext.TEST);
             assertNotNull(seq);
             System.out.println("Found: " + seq.getItemCount());
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {

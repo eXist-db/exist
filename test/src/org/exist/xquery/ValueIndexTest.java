@@ -49,11 +49,7 @@ public class ValueIndexTest extends TestCase {
 
     private String CONFIG =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
-    	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" + 
-    	"		<fulltext default=\"none\">" + 
-    	"			<include path=\"//item/name\"/>" + 
-    	"			<include path=\"//item/mixed\"/>" + 
-    	"		</fulltext>" + 
+    	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" +
     	"		<create path=\"//item/itemno\" type=\"xs:integer\"/>" +
     	"		<create path=\"//item/@id\" type=\"xs:string\"/>" +
     	"		<create path=\"//item/name\" type=\"xs:string\"/>" + 
@@ -70,8 +66,6 @@ public class ValueIndexTest extends TestCase {
     private String CONFIG_QNAME =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" +
-    	"		<fulltext default=\"none\">" +
-    	"		</fulltext>" +
         "       <create qname=\"itemno\" type=\"xs:integer\"/>" +
         "       <create qname=\"mixed\" type=\"xs:string\"/>" +
         "       <create qname=\"stock\" type=\"xs:integer\"/>" +
@@ -162,7 +156,7 @@ public class ValueIndexTest extends TestCase {
 
             queryResource(service, "items.xml", "//item[stock > 20]", 1);
             queryResource(service, "items.xml", "declare namespace x=\"http://www.foo.com\"; //item[x:rating > 8.0]", 2);
-            queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test = 123]", 1);            queryResource(service, "items.xml", "//item[name &= 'Racing Bicycle']", 1);
+            queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test = 123]", 1);
             queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test eq 123]", 1);
             queryResource(service, "items.xml", "//item[mixed = 'uneven']", 1);
             queryResource(service, "items.xml", "//item[mixed eq 'uneven']", 1);
