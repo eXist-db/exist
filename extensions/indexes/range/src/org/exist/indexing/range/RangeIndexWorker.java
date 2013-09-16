@@ -879,6 +879,21 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return scanIndexByQName(qnames, docs, nodes, start, end, max);
     }
 
+    public Occurrences[] scanIndexByField(String field, DocumentSet docs, long max) {
+        TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
+        IndexReader reader = null;
+        try {
+            reader = index.getReader();
+            scan(docs, null, null, null, max, map, reader, field);
+        } catch (IOException e) {
+            LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
+        } finally {
+            index.releaseReader(reader);
+        }
+        Occurrences[] occur = new Occurrences[map.size()];
+        return map.values().toArray(occur);
+    }
+
     private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) {
         TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
         IndexReader reader = null;
@@ -886,60 +901,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             reader = index.getReader();
             for (QName qname : qnames) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
-                List<AtomicReaderContext> leaves = reader.leaves();
-                for (AtomicReaderContext context : leaves) {
-                    NumericDocValues docIdValues = context.reader().getNumericDocValues(FIELD_DOC_ID);
-                    BinaryDocValues nodeIdValues = context.reader().getBinaryDocValues(FIELD_NODE_ID);
-                    Bits liveDocs = context.reader().getLiveDocs();
-                    Terms terms = context.reader().terms(field);
-                    if (terms == null)
-                        continue;
-                    TermsEnum termsIter = terms.iterator(null);
-                    if (termsIter.next() == null) {
-                        continue;
-                    }
-                    do {
-                        if (map.size() >= max) {
-                            break;
-                        }
-                        BytesRef ref = termsIter.term();
-                        String term = ref.utf8ToString();
-                        boolean include = true;
-                        if (end != null) {
-                            if (term.compareTo(end) > 0)
-                                include = false;
-                        } else if (start != null && !term.startsWith(start))
-                            include = false;
-                        if (include) {
-                            DocsEnum docsEnum = termsIter.docs(null, null);
-                            while (docsEnum.nextDoc() != DocsEnum.NO_MORE_DOCS) {
-                                if (liveDocs != null && !liveDocs.get(docsEnum.docID())) {
-                                    continue;
-                                }
-                                int docId = (int) docIdValues.get(docsEnum.docID());
-                                DocumentImpl storedDocument = docs.getDoc(docId);
-                                if (storedDocument == null)
-                                    continue;
-                                NodeId nodeId = null;
-                                if (nodes != null) {
-                                    BytesRef nodeIdRef = new BytesRef(buf);
-                                    nodeIdValues.get(docsEnum.docID(), nodeIdRef);
-                                    int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
-                                    nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
-                                }
-                                if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
-                                    Occurrences oc = map.get(term);
-                                    if (oc == null) {
-                                        oc = new Occurrences(term);
-                                        map.put(term, oc);
-                                    }
-                                    oc.addDocument(storedDocument);
-                                    oc.addOccurrences(docsEnum.freq());
-                                }
-                            }
-                        }
-                    } while(termsIter.next() != null);
-                }
+                scan(docs, nodes, start, end, max, map, reader, field);
             }
         } catch (IOException e) {
             LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
@@ -948,5 +910,62 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         Occurrences[] occur = new Occurrences[map.size()];
         return map.values().toArray(occur);
+    }
+
+    private void scan(DocumentSet docs, NodeSet nodes, String start, String end, long max, TreeMap<String, Occurrences> map, IndexReader reader, String field) throws IOException {
+        List<AtomicReaderContext> leaves = reader.leaves();
+        for (AtomicReaderContext context : leaves) {
+            NumericDocValues docIdValues = context.reader().getNumericDocValues(FIELD_DOC_ID);
+            BinaryDocValues nodeIdValues = context.reader().getBinaryDocValues(FIELD_NODE_ID);
+            Bits liveDocs = context.reader().getLiveDocs();
+            Terms terms = context.reader().terms(field);
+            if (terms == null)
+                continue;
+            TermsEnum termsIter = terms.iterator(null);
+            if (termsIter.next() == null) {
+                continue;
+            }
+            do {
+                if (map.size() >= max) {
+                    break;
+                }
+                BytesRef ref = termsIter.term();
+                String term = ref.utf8ToString();
+                boolean include = true;
+                if (end != null) {
+                    if (term.compareTo(end) > 0)
+                        include = false;
+                } else if (start != null && !term.startsWith(start))
+                    include = false;
+                if (include) {
+                    DocsEnum docsEnum = termsIter.docs(null, null);
+                    while (docsEnum.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+                        if (liveDocs != null && !liveDocs.get(docsEnum.docID())) {
+                            continue;
+                        }
+                        int docId = (int) docIdValues.get(docsEnum.docID());
+                        DocumentImpl storedDocument = docs.getDoc(docId);
+                        if (storedDocument == null)
+                            continue;
+                        NodeId nodeId = null;
+                        if (nodes != null) {
+                            BytesRef nodeIdRef = new BytesRef(buf);
+                            nodeIdValues.get(docsEnum.docID(), nodeIdRef);
+                            int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
+                            nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
+                        }
+                        if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
+                            Occurrences oc = map.get(term);
+                            if (oc == null) {
+                                oc = new Occurrences(term);
+                                map.put(term, oc);
+                            }
+                            oc.addDocument(storedDocument);
+                            oc.addOccurrences(docsEnum.freq());
+                        }
+                    }
+                }
+            } while(termsIter.next() != null);
+        }
     }
 }
