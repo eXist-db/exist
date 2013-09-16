@@ -3,4 +3,4 @@ jdk:
  - openjdk6
  - openjdk7
  - oraclejdk7
-script: ./build.sh clean-all all test
+script: ./build.sh clean clean-all all
