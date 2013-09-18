@@ -22,38 +22,29 @@
 
 package org.exist.indexing.lucene;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.*;
+import org.apache.lucene.search.spans.SpanFirstQuery;
+import org.apache.lucene.search.spans.SpanNearQuery;
+import org.apache.lucene.search.spans.SpanQuery;
+import org.apache.lucene.search.spans.SpanTermQuery;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.automaton.Automaton;
+import org.apache.lucene.util.automaton.CompiledAutomaton;
+import org.apache.lucene.util.automaton.LevenshteinAutomata;
+import org.exist.xquery.XPathException;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.FuzzyQuery;
-import org.apache.lucene.search.MultiPhraseQuery;
-import org.apache.lucene.search.MultiTermQuery;
-import org.apache.lucene.search.PhraseQuery;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.search.WildcardTermEnum;
-import org.apache.lucene.search.regex.RegexQuery;
-import org.apache.lucene.search.regex.SpanRegexQuery;
-import org.apache.lucene.search.spans.SpanFirstQuery;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanTermQuery;
-import org.exist.xquery.XPathException;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Parses the XML representation of a Lucene query and transforms
@@ -75,7 +66,7 @@ public class XMLToQuery {
         else if ("term".equals(localName))
             query = termQuery(field, root, analyzer);
         else if ("wildcard".equals(localName))
-            query = wildcardQuery(field, root, options);
+            query = wildcardQuery(field, root, analyzer, options);
         else if ("prefix".equals(localName))
             query = prefixQuery(field, root, options);
         else if ("fuzzy".equals(localName))
@@ -102,12 +93,12 @@ public class XMLToQuery {
         if (termList.getLength() == 0) {
             PhraseQuery query = new PhraseQuery();
             String qstr = getText(node);
-            TokenStream stream = analyzer.tokenStream(field, new StringReader(qstr));
-            TermAttribute termAttr = (TermAttribute) stream.addAttribute(TermAttribute.class);
             try {
+                TokenStream stream = analyzer.tokenStream(field, new StringReader(qstr));
+                CharTermAttribute termAttr = stream.addAttribute(CharTermAttribute.class);
             	stream.reset();
                 while (stream.incrementToken()) {
-                    query.add(new Term(field, termAttr.term()));
+                    query.add(new Term(field, termAttr.toString()));
                 }
                 stream.end();
                 stream.close();
@@ -149,13 +140,13 @@ public class XMLToQuery {
 
         if (!hasElementContent(node)) {
             String qstr = getText(node);
-            TokenStream stream = analyzer.tokenStream(field, new StringReader(qstr));
-            TermAttribute termAttr = (TermAttribute) stream.addAttribute(TermAttribute.class);
             List<SpanTermQuery> list = new ArrayList<SpanTermQuery>(8);
             try {
+                TokenStream stream = analyzer.tokenStream(field, new StringReader(qstr));
+                CharTermAttribute termAttr = stream.addAttribute(CharTermAttribute.class);
             	stream.reset();
                 while (stream.incrementToken()) {
-                    list.add(new SpanTermQuery(new Term(field, termAttr.term())));
+                    list.add(new SpanTermQuery(new Term(field, termAttr.toString())));
                 }
                 stream.end();
                 stream.close();
@@ -179,8 +170,8 @@ public class XMLToQuery {
                     list.add(nearQuery(field, (Element) child, analyzer));
                 else if ("first".equals(child.getLocalName()))
                     list.add(getSpanFirst(field, (Element) child, analyzer));
-                else if ("regex".equals(child.getLocalName()))
-                	list.add(getSpanRegex(field, (Element) child, analyzer));
+//                else if ("regex".equals(child.getLocalName()))
+//                	list.add(getSpanRegex(field, (Element) child, analyzer));
                 else
                     throw new XPathException("Unknown query element: " + child.getNodeName());
             }
@@ -195,10 +186,10 @@ public class XMLToQuery {
     		list.add(new SpanTermQuery(new Term(field, termStr)));
     }
 
-    private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) {
-    	String regex = getText(node);
-    	return new SpanRegexQuery(new Term(field, regex));
-    }
+//    private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) {
+//    	String regex = getText(node);
+//    	return new SpanRegexQuery(new Term(field, regex));
+//    }
     
     private SpanQuery getSpanFirst(String field, Element node, Analyzer analyzer) throws XPathException {
     	int slop = getSlop(node);
@@ -241,26 +232,32 @@ public class XMLToQuery {
     }
 
     private Term[] expandTerms(String field, String queryStr) throws XPathException {
+        List<Term> termList = new ArrayList<Term>(8);
+        Automaton automaton = WildcardQuery.toAutomaton(new Term(field, queryStr));
+        CompiledAutomaton compiled = new CompiledAutomaton(automaton);
         IndexReader reader = null;
         try {
             reader = index.getReader();
-            List<Term> termList = new ArrayList<Term>(8);
-            WildcardTermEnum terms = new WildcardTermEnum(reader, new Term(field, queryStr));
-            Term term;
-            do {
-                term = terms.term();
-                if (term != null && term.field().equals(field)) {
-                    termList.add(term);
+
+            for (AtomicReaderContext atomic : reader.leaves()) {
+                Terms terms = atomic.reader().terms(field);
+                if (terms != null) {
+                    TermsEnum termsEnum = compiled.getTermsEnum(terms);
+                    BytesRef data = termsEnum.next();
+                    while (data != null) {
+                        String term = data.utf8ToString();
+                        termList.add(new Term(field, term));
+                        data = termsEnum.next();
+                    }
                 }
-            } while (terms.next());
-            terms.close();
-            Term[] matchingTerms = new Term[termList.size()];
-            return termList.toArray(matchingTerms);
+            }
         } catch (IOException e) {
             throw new XPathException("Lucene index error while creating query: " + e.getMessage(), e);
         } finally {
             index.releaseReader(reader);
         }
+        Term[] matchingTerms = new Term[termList.size()];
+        return termList.toArray(matchingTerms);
     }
 
     private Query termQuery(String field, Element node, Analyzer analyzer) throws XPathException {
@@ -269,13 +266,13 @@ public class XMLToQuery {
     }
 
     private String getTerm(String field, String text, Analyzer analyzer) throws XPathException {
-    	TokenStream stream = analyzer.tokenStream(field, new StringReader(text));
-    	TermAttribute termAttr = (TermAttribute) stream.addAttribute(TermAttribute.class);
     	String term = null;
     	try {
+            TokenStream stream = analyzer.tokenStream(field, new StringReader(text));
+            CharTermAttribute termAttr = stream.addAttribute(CharTermAttribute.class);
     		stream.reset();
 			if (stream.incrementToken()) {
-				term = termAttr.term();
+				term = termAttr.toString();
 			}
 			stream.end();
 			stream.close();
@@ -285,7 +282,7 @@ public class XMLToQuery {
 		}
     }
     
-    private Query wildcardQuery(String field, Element node, Properties options) {
+    private Query wildcardQuery(String field, Element node, Analyzer analyzer, Properties options) throws XPathException {
         WildcardQuery query = new WildcardQuery(new Term(field, getText(node)));
         setRewriteMethod(query, node, options);
         return query;
@@ -298,20 +295,23 @@ public class XMLToQuery {
     }
 
     private Query fuzzyQuery(String field, Element node) throws XPathException {
-        float minSimilarity = FuzzyQuery.defaultMinSimilarity;
-        String attr = node.getAttribute("min-similarity");
+        int maxEdits = FuzzyQuery.defaultMaxEdits;
+        String attr = node.getAttribute("max-edits");
         if (attr != null && attr.length() > 0) {
             try {
-                minSimilarity = Float.parseFloat(attr);
+                maxEdits = Integer.parseInt(attr);
+                if (maxEdits < 0 || maxEdits > LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE) {
+                    throw new XPathException("Query parameter max-edits must by <= " + LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE);
+                }
             } catch (NumberFormatException e) {
-                throw new XPathException("Query parameter 'min-similarity' should be a float value. Got: " + attr);
+                throw new XPathException("Query parameter 'max-edits' should be an integer value. Got: " + attr);
             }
         }
-        return new FuzzyQuery(new Term(field, getText(node)), minSimilarity);
+        return new FuzzyQuery(new Term(field, getText(node)), maxEdits);
     }
 
     private Query regexQuery(String field, Element node, Properties options) {
-        RegexQuery query = new RegexQuery(new Term(field, getText(node)));
+        RegexpQuery query = new RegexpQuery(new Term(field, getText(node)));
         setRewriteMethod(query, node, options);
         return query;
     }
@@ -343,7 +343,7 @@ public class XMLToQuery {
         if (option.equalsIgnoreCase("yes"))
             query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
         else
-            query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BOOLEAN_QUERY_REWRITE);
+            query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_AUTO_REWRITE_DEFAULT);
     }
 
     private BooleanClause.Occur getOccur(Element elem) {

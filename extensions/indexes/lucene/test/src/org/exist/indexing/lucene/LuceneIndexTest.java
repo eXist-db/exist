@@ -108,7 +108,7 @@ public class LuceneIndexTest {
     	"		<fulltext default=\"none\">" +
         "		</fulltext>" +
         "       <lucene>" +
-        "           <analyzer class=\"org.apache.lucene.analysis.SimpleAnalyzer\"/>" +
+        "           <analyzer class=\"org.apache.lucene.analysis.core.SimpleAnalyzer\"/>" +
         "           <text match=\"/section/p\"/>" +
         "           <text qname=\"head\"/>" +
         "           <text qname=\"@rend\"/>" +
@@ -142,7 +142,7 @@ public class LuceneIndexTest {
         "		<fulltext default=\"none\">" +
         "		</fulltext>" +
         "       <lucene>" +
-        "           <analyzer id=\"whitespace\" class=\"org.apache.lucene.analysis.WhitespaceAnalyzer\"/>" +
+        "           <analyzer id=\"whitespace\" class=\"org.apache.lucene.analysis.core.WhitespaceAnalyzer\"/>" +
         "           <text match=\"/section/head\" analyzer=\"whitespace\"/>" +
         "           <text match=\"//p\"/>" +
         "       </lucene>" +
@@ -487,7 +487,7 @@ public class LuceneIndexTest {
 
             context.declareVariable("q",
                 "<query>" +
-                "   <fuzzy min-similarity='0.5'>selee</fuzzy>" +
+                "   <fuzzy max-edits='2'>selee</fuzzy>" +
                 "</query>");
             seq = xquery.execute(compiled, null);
             assertNotNull(seq);
@@ -496,7 +496,7 @@ public class LuceneIndexTest {
             context.declareVariable("q",
                 "<query>" +
                 "   <bool>" +
-                "       <fuzzy occur='must' min-similarity='0.5'>selee</fuzzy>" +
+                "       <fuzzy occur='must' max-edits='2'>selee</fuzzy>" +
                 "       <wildcard occur='should'>bla*</wildcard>" +
                 "   </bool>" +
                 "</query>");

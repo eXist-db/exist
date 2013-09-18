@@ -110,7 +110,7 @@ public class Search extends BasicFunction {
             else
             	query = args[1].itemAt(0).getStringValue();
             
-            report = MetaData.get().search(query, toBeMatchedURIs);
+            //XXX: report = MetaData.get().search(query, toBeMatchedURIs);
 
         } catch (XPathException ex) {
             // Log and rethrow
