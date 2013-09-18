@@ -309,6 +309,7 @@
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
@@ -366,12 +367,14 @@
         <root url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" />
         <root url="file://$PROJECT_DIR$/lib/extensions" />
         <root url="file://$PROJECT_DIR$/extensions/xqdoc/lib" />
+        <root url="file://$PROJECT_DIR$/extensions/webdav/lib" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/fluent/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/lucene/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/indexes/spatial/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/extensions/webdav/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/extensions/xqdoc/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/lib/extensions" recursive="false" />
     </library>
