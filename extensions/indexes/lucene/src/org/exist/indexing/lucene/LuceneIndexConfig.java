@@ -145,7 +145,7 @@ public class LuceneIndexConfig {
         return specialNodes != null && specialNodes.get(qname) == N_INLINE;
     }
 
-    protected static QName parseQName(Element config, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    public static QName parseQName(Element config, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String name = config.getAttribute(QNAME_ATTR);
         if (name == null || name.length() == 0)
             throw new DatabaseConfigurationException("Lucene index configuration error: element " + config.getNodeName() +

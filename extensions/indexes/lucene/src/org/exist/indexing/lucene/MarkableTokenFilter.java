@@ -2,7 +2,6 @@ package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.Token;
 
 import java.util.List;
 import java.util.LinkedList;
