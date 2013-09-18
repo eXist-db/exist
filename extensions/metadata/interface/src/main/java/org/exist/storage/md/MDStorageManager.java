@@ -22,6 +22,7 @@
 package org.exist.storage.md;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ import org.exist.plugin.Plug;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.MetaStorage;
 import org.exist.storage.md.xquery.MetadataModule;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.XQueryContext;
@@ -87,14 +89,35 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 		}
 
 		_ = this;
-
-		manager.getDatabase().getDocumentTriggers().add(new DocumentEvents());
-		manager.getDatabase().getCollectionTriggers().add(new CollectionEvents());
 		
-		Map<String, Class<?>> map = (Map) manager.getDatabase().getConfiguration().getProperty(XQueryContext.PROPERTY_BUILT_IN_MODULES);
+		Database db = manager.getDatabase();
+		
+		inject(db, md);
+
+		db.getDocumentTriggers().add(new DocumentEvents());
+		db.getCollectionTriggers().add(new CollectionEvents());
+		
+		Map<String, Class<?>> map = (Map<String, Class<?>>) db.getConfiguration().getProperty(XQueryContext.PROPERTY_BUILT_IN_MODULES);
         map.put(
     		NAMESPACE_URI, 
     		MetadataModule.class);
+	}
+	
+	private void inject(Database db, MetaStorage md) {
+	    try {
+            Field field = db.getClass().getDeclaredField("metaStorage");
+            field.setAccessible(true);
+            field.set(db, md);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+	    
 	}
 	
 

@@ -39,6 +39,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.CacheManager;
 import org.exist.storage.DBBroker;
+import org.exist.storage.MetaStorage;
 import org.exist.storage.NotificationService;
 import org.exist.storage.ProcessMonitor;
 import org.exist.storage.txn.TransactionManager;
@@ -174,4 +175,6 @@ public interface Database {
 	public PluginsManager getPluginsManager();
 
 	public SymbolTable getSymbols();
+
+    public MetaStorage getMetaStorage();
 }
