@@ -271,7 +271,8 @@ public class RangeQueryRewriter extends QueryRewriter {
             }
             NodeTest test = step.getTest();
             if (test.isWildcardTest() && step.getAxis() == Constants.SELF_AXIS) {
-                return path;
+                //return path;
+                continue;
             }
             if (!test.isWildcardTest() && test.getName() != null) {
                 int axis = step.getAxis();
