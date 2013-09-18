@@ -38,6 +38,16 @@ public class XMLStringTest extends TestCase {
 		assertEquals(r, "Hello World");
 	}
 
+    public void testCollapse() {
+        XMLString s = new XMLString();
+        char ch[] = "\n	Hello   World\r\n".toCharArray();
+        s.append(ch, 0, ch.length);
+        s = s.normalize(XMLString.NORMALIZE);
+        String r = s.toString();
+        System.out.println('"' + r + '"');
+        assertEquals(r, "Hello World");
+    }
+
 	public void testSubstring() {
 		XMLString s = new XMLString();
 		char ch[] = "\n	Hello World\r\n".toCharArray();
