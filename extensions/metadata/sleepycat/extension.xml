@@ -22,9 +22,9 @@
          <include name="exist-index-lucene.jar"/>
       </fileset>
       <fileset dir="${luceneIndex.dir}/lib">
-         <include name="lucene-analyzers-3.6.1.jar"/>
-         <include name="lucene-core-3.6.1.jar"/>
-         <include name="lucene-queries-3.6.1.jar"/>
+         <include name="lucene-core-4.3.1.jar"/>
+         <include name="lucene-queries-4.3.1.jar"/>
+         <include name="lucene-analyzers-common-4.3.1.jar"/>
       </fileset>
    </path>
 

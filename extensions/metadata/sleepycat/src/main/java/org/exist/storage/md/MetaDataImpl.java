@@ -30,13 +30,12 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
-import org.exist.indexing.lucene.PlugToLucene;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.MetaStreamListener;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.XPathException;
 
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
@@ -104,6 +103,10 @@ public class MetaDataImpl extends MetaData {
 		MetaData._ = this;
 
 		LOG.debug("done.");
+    }
+    
+    public String getId() {
+        return MDStorageManager.PREFIX;
     }
 	
 	public DocumentImpl getDocument(String uuid) throws EXistException, PermissionDeniedException {
@@ -354,7 +357,22 @@ public class MetaDataImpl extends MetaData {
 		return null;
 	}
 
-	public Meta getMeta(String uuid) {
+    public void streamMetas(DocumentImpl doc, MetaStreamListener listener) {
+        Metas metas = getMetas(doc);
+        if (metas == null)
+            return;
+        
+        EntityCursor<MetaImpl> sub = metadata.subIndex(metas.getUUID()).entities();
+        try {
+            for (MetaImpl m : sub)
+                listener.metadata(new QName(m.getKey(), MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX) , m.getValue());
+
+        } finally {
+            sub.close();
+        }
+    }
+
+    public Meta getMeta(String uuid) {
 		return metadataByUUID.get(uuid);
 	}
 
@@ -558,20 +576,22 @@ public class MetaDataImpl extends MetaData {
 	
 	//lucene index methods
     public void indexMetas(Metas metas) {
-        PlugToLucene plug = new PlugToLucene(this);
-        plug.addMetas(metas);
+        //XXX: update lucene!!!
+//        PlugToLucene plug = new PlugToLucene(this);
+//        plug.addMetas(metas);
     }
 
     private void indexRemoveMetas(Metas metas) {
-        PlugToLucene plug = new PlugToLucene(this);
-        plug.removeMetas(metas);
+        //XXX: update lucene!!!
+//        PlugToLucene plug = new PlugToLucene(this);
+//        plug.removeMetas(metas);
     }
     
-    public NodeImpl search(String queryText, List<String> toBeMatchedURIs) throws XPathException {
-        return (new PlugToLucene(this)).search(queryText, toBeMatchedURIs);
-    }
-
-    public List<String> searchDocuments(String queryText, List<String> toBeMatchedURIs) throws XPathException {
-        return (new PlugToLucene(this)).searchDocuments(queryText, toBeMatchedURIs);
-    }
+//    public NodeImpl search(String queryText, List<String> toBeMatchedURIs) throws XPathException {
+//        return (new PlugToLucene(this)).search(queryText, toBeMatchedURIs);
+//    }
+//
+//    public List<String> searchDocuments(String queryText, List<String> toBeMatchedURIs) throws XPathException {
+//        return (new PlugToLucene(this)).searchDocuments(queryText, toBeMatchedURIs);
+//    }
 }

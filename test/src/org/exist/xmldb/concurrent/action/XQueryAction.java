@@ -86,6 +86,6 @@ public class XQueryAction extends Action {
 	}
 	
 	public long avgExecTime() {
-	    return runningTime / called;
+	    return called == 0 ? 0 : runningTime / called;
 	}
 }
