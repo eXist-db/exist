@@ -9,6 +9,7 @@
                 <root id="src.dir" name="Core"/>
                 <root id="src.src2.dir" name="Index NGram"/>
                 <root id="src.src4.dir" name="Index Lucene"/>
+                <root id="src.src18.dir" name="Index Range"/>
                 <root id="src.src9.dir" name="Index Sort"/>
                 <root id="src.src3.dir" name="Index Spatial"/>
                 <root id="src.src16.dir" name="Extensions Contentextraction"/>
@@ -19,7 +20,6 @@
                 <root id="src.java2.dir" name="Extensions EXQuery - Request Module"/>
                 <root id="eXist-1.33.dir" name="Extensions Fluent"/>
                 <root id="src.src.dir" name="Extensions Modules"/>
-                <root id="src.src18.dir" name="Extensions Replication"/>
                 <root id="src.src10.dir" name="Extensions Security - ActiveDirectory"/>
                 <root id="src.src11.dir" name="Extensions Security - LDAP"/>
                 <root id="src.src5.dir" name="Extensions Versioning"/>
@@ -31,6 +31,9 @@
             </source-roots>
             <test-roots>
                 <root id="test.src.dir" name="Core Test"/>
+                <root id="test.src4.dir" name="Index Lucene test"/>
+                <root id="test.src5.dir" name="Index Ngram test"/>
+                <root id="test.src3.dir" name="Index Range Test"/>
                 <root id="test.java.dir" name="Extensions EXQuery - RESTXQ Test"/>
                 <root id="test.test.dir" name="Extensions Debuggee Test"/>
                 <root id="test.eXist-1.32.dir" name="Extensions Fluent Test"/>
