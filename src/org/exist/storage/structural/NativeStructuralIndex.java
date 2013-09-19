@@ -28,9 +28,9 @@ public class NativeStructuralIndex extends AbstractIndex implements RawBackupSup
 
     public static final String  FILE_KEY_IN_CONFIG = "db-connection.elements";
     public static final double DEFAULT_STRUCTURAL_CACHE_GROWTH = 1.25;
-    public static final double DEFAULT_STRUCTURAL_KEY_THRESHOLD = 0.01;
+    public static final double DEFAULT_STRUCTURAL_KEY_THRESHOLD = 0.1;
 
-    public static final double DEFAULT_STRUCTURAL_VALUE_THRESHOLD = 0.04;
+    public static final double DEFAULT_STRUCTURAL_VALUE_THRESHOLD = 0.1;
 
     public static final byte STRUCTURAL_INDEX_ID = 1;
 

@@ -506,6 +506,11 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return new Occurrences[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
+    public QueryRewriter getQueryRewriter(XQueryContext context) {
+        return null;
+    }
+
     private void addNode(QName qname, NodeProxy proxy) {
         if (document.getDocId() != proxy.getDocument().getDocId()) {
     		throw new IllegalArgumentException("Document id ('" + document.getDocId() + "') and proxy id ('" +

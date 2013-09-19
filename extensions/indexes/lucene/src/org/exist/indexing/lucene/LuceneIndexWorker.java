@@ -21,77 +21,21 @@
  */
 package org.exist.indexing.lucene;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
 import org.apache.log4j.Logger;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
-import org.apache.lucene.document.NumericField;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.index.TermFreqVector;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.DocIdSet;
-import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilteredQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MultiTermQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopScoreDocCollector;
-import org.apache.lucene.util.BitVector;
-import org.apache.lucene.util.NumericUtils;
-import org.apache.lucene.util.OpenBitSet;
-import org.apache.lucene.util.ReaderUtil;
-import org.apache.lucene.util.Version;
-
+import org.apache.lucene.document.*;
+import org.apache.lucene.facet.index.FacetFields;
+import org.apache.lucene.facet.taxonomy.CategoryPath;
+import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
+import org.apache.lucene.index.*;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.*;
+import org.apache.lucene.util.*;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.CharacterDataImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.Match;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.indexing.AbstractStreamListener;
-import org.exist.indexing.IndexController;
-import org.exist.indexing.IndexWorker;
-import org.exist.indexing.MatchListener;
-import org.exist.indexing.OrderedValuesIndex;
-import org.exist.indexing.QNamedKeysIndex;
-import org.exist.indexing.StreamListener;
+import org.exist.dom.*;
+import org.exist.indexing.*;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextDoc;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
@@ -99,10 +43,7 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.DBBroker;
-import org.exist.storage.ElementValue;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
+import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
@@ -112,14 +53,16 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.io.IOException;
+import java.util.*;
+
 /**
- *   Class for handling all Lucene operations.
+ * Class for handling all Lucene operations.
  *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  * @author Dannes Wessels (dannes@exist-db.org)
@@ -131,16 +74,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public static final String OPTION_LEADING_WILDCARD = "leading-wildcard";
     public static final String OPTION_FILTER_REWRITE = "filter-rewrite";
     public static final String DEFAULT_OPERATOR_OR = "or";
-    
+
+    public static final org.apache.lucene.document.FieldType TYPE_NODE_ID = new org.apache.lucene.document.FieldType();
+    static {
+        TYPE_NODE_ID.setIndexed(true);
+        TYPE_NODE_ID.setStored(false);
+        TYPE_NODE_ID.setOmitNorms(true);
+        TYPE_NODE_ID.setStoreTermVectors(false);
+        TYPE_NODE_ID.setTokenized(true);
+    }
+
     static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
     
-    private static final FieldSelector NODE_FIELD_SELECTOR = new NodeFieldSelector();
+    protected LuceneIndex index;
     
-    private LuceneIndex index;
-    
-    @SuppressWarnings("unused")
-	private IndexController controller;
-
     private LuceneMatchListener matchListener = null;
 
     private XMLToQuery queryTranslator;
@@ -162,9 +109,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     
     private Analyzer analyzer;
 
-    public static final String FIELD_NODE_ID = "nodeId";
     public static final String FIELD_DOC_ID = "docId";
     public static final String FIELD_DOC_URI = "docUri";
+
+    private final byte[] buf = new byte[1024];
 
     public LuceneIndexWorker(LuceneIndex parent, DBBroker broker) {
         this.index = parent;
@@ -180,8 +128,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.getIndexName();
     }
 
+    public QueryRewriter getQueryRewriter(XQueryContext context) {
+        return null;
+    }
+
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
-        this.controller = controller;
         LOG.debug("Configuring lucene index...");
         config = new LuceneConfig(configNodes, namespaces);
         return config;
@@ -310,7 +261,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     	IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(docId));
+            BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+            NumericUtils.intToPrefixCoded(docId, 0, bytes);
+            Term dt = new Term(FIELD_DOC_ID, bytes);
             writer.deleteDocuments(dt);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
@@ -343,7 +296,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(doc.getDocId()));
+                BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+                NumericUtils.intToPrefixCoded(doc.getDocId(), 0, bytes);
+                Term dt = new Term(FIELD_DOC_ID, bytes);
                 writer.deleteDocuments(dt);
             }
         } catch (IOException e) {
@@ -366,47 +321,42 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     protected void removeNodes() {
     	if (nodesToRemove == null)
             return;
-        IndexReader reader = null;
+        IndexWriter writer = null;
         try {
-            reader = index.getWritingReader();
-            Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(currentDoc.getDocId()));
-            TermDocs docsEnum = reader.termDocs(dt);
-            while (docsEnum.next()) {
-                Document doc = reader.document(docsEnum.doc());
-                NodeId nodeId = readNodeId(doc);
-                if (nodesToRemove.contains(nodeId)) {
-                    reader.deleteDocument(docsEnum.doc());
-                }
+            writer = index.getWriter();
+
+            BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+            NumericUtils.intToPrefixCoded(currentDoc.getDocId(), 0, bytes);
+            Term dt = new Term(FIELD_DOC_ID, bytes);
+            TermQuery tq = new TermQuery(dt);
+            for (NodeId nodeId : nodesToRemove) {
+                // store the node id
+                int nodeIdLen = nodeId.size();
+                byte[] data = new byte[nodeIdLen + 2];
+                ByteConversion.shortToByte((short) nodeId.units(), data, 0);
+                nodeId.serialize(data, 2);
+
+                Term it = new Term(LuceneUtil.FIELD_NODE_ID, new BytesRef(data));
+                TermQuery iq = new TermQuery(it);
+                BooleanQuery q = new BooleanQuery();
+                q.add(tq, BooleanClause.Occur.MUST);
+                q.add(iq, BooleanClause.Occur.MUST);
+                writer.deleteDocuments(q);
             }
-            nodesToRemove = null;
         } catch (IOException e) {
             LOG.warn("Error while deleting lucene index entries: " + e.getMessage(), e);
         } finally {
-            index.releaseWritingReader(reader);
+            index.releaseWriter(writer);
         }
     }
 
-    private class NodeIdFilter extends Filter {
-    	
-		@Override
-		public DocIdSet getDocIdSet(IndexReader reader) throws IOException {
-			LOG.debug("Reader: " + reader.getClass().getName());
-			OpenBitSet bits = new OpenBitSet(reader.maxDoc());
-        	Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(currentDoc.getDocId()));
-			TermDocs docsEnum = reader.termDocs(dt);
-            while (docsEnum.next()) {
-            	LOG.debug("docsEnum: " + docsEnum.doc());
-                Document doc = reader.document(docsEnum.doc());
-                NodeId nodeId = readNodeId(doc);
-                if (nodesToRemove.contains(nodeId)) {
-                	LOG.debug("Removing node " + nodeId);
-                    bits.set(docsEnum.doc());
-                }
-            }
-			return bits;
-		}
+    private NodeId readNodeId(int doc, BinaryDocValues nodeIdValues, BrokerPool pool) {
+        BytesRef ref = new BytesRef(buf);
+        nodeIdValues.get(doc, ref);
+        int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
+        return pool.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
     }
-    
+
     /**
      * Query the index. Returns a node set containing all matching nodes. Each node
      * in the node set has a {@link org.exist.indexing.lucene.LuceneIndexWorker.LuceneMatch}
@@ -435,7 +385,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             searcher = index.getSearcher();
             for (QName qname : qnames) {
-                String field = encodeQName(qname);
+                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 Analyzer analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
                 QueryParser parser = new QueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
                 setOptions(options, parser);
@@ -449,7 +399,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return resultSet;
     }
 
-    private void setOptions(Properties options, QueryParser parser) throws ParseException {
+    protected void setOptions(Properties options, QueryParser parser) throws ParseException {
         if (options == null)
             return;
         String option = options.getProperty(OPTION_DEFAULT_OPERATOR);
@@ -508,7 +458,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             searcher = index.getSearcher();
             for (QName qname : qnames) {
-                String field = encodeQName(qname);
+                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 analyzer = getAnalyzer(null, qname, context.getBroker(), docs);
                 Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
                 if (query != null) {
@@ -545,9 +495,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private void searchAndProcess(int contextId, QName qname, DocumentSet docs,
             NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
             IndexSearcher searcher, Query query, XQueryWatchDog watchDog) throws IOException, TerminatedException {
-        LuceneHitCollector collector = new LuceneHitCollector();
+        LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, watchDog);
         searcher.search(query, collector);
-        processHits(collector.getDocs(), searcher, contextId, qname, docs, contextSet, resultSet, returnAncestor, query, watchDog);
     }
 
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
@@ -569,61 +518,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             index.releaseSearcher(searcher);
         }
         return resultSet;
-    }
-    
-    /**
-     * Process the query results collected from the Lucene index and
-     * map them to the corresponding XML nodes in eXist.
-     */
-    private void processHits(List<ScoreDoc> hits, IndexSearcher searcher, int contextId, QName qname, DocumentSet docs, NodeSet contextSet,
-                             NodeSet resultSet, boolean returnAncestor, Query query, XQueryWatchDog watchDog) throws TerminatedException {
-        for (ScoreDoc scoreDoc : hits) {
-            watchDog.proceed(null);
-            try {
-                Document doc = searcher.doc(scoreDoc.doc, NODE_FIELD_SELECTOR);
-                String fDocId = doc.get(FIELD_DOC_ID);
-                int docId = Integer.parseInt(fDocId);
-                DocumentImpl storedDocument = docs.getDoc(docId);
-                if (storedDocument == null)
-                    continue;
-                NodeId nodeId = readNodeId(doc);
-                NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
-                if (qname != null)
-                	storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
-                // if a context set is specified, we can directly check if the
-                // matching node is a descendant of one of the nodes
-                // in the context set.
-                if (contextSet != null) {
-                    int sizeHint = contextSet.getSizeHint(storedDocument);
-                    if (returnAncestor) {
-                    	NodeProxy parentNode = contextSet.get(storedNode);
-                        // NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                        if (parentNode != null) {
-                            LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
-                            match.setScore(scoreDoc.score);
-                            parentNode.addMatch(match);
-                            resultSet.add(parentNode, sizeHint);
-                            if (Expression.NO_CONTEXT_ID != contextId) {
-                                parentNode.deepCopyContext(storedNode, contextId);
-                            } else
-                                parentNode.copyContext(storedNode);
-                        }
-                    } else {
-                        LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
-                        match.setScore(scoreDoc.score);
-                        storedNode.addMatch(match);
-                        resultSet.add(storedNode, sizeHint);
-                    }
-                } else {
-                    LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
-                    match.setScore(scoreDoc.score);
-                    storedNode.addMatch(match);
-                    resultSet.add(storedNode);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /**
@@ -660,12 +554,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         	pendingDoc = new Document();
         	
         	// Set DocId
-            NumericField fDocId = new NumericField(FIELD_DOC_ID, Field.Store.YES, true);
-            fDocId.setIntValue(currentDoc.getDocId());             
+        	NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId());
+
             pendingDoc.add(fDocId);
-            
+
+            IntField fDocIdIdx = new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO);
+            pendingDoc.add(fDocIdIdx);
+
             // For binary documents the doc path needs to be stored
-            String uri = currentDoc.getURI().toString();  
+            String uri = currentDoc.getURI().toString();
+
             Field fDocUri = new Field(FIELD_DOC_URI, uri, Field.Store.YES, Field.Index.NOT_ANALYZED);
             pendingDoc.add(fDocUri);
         }
@@ -686,19 +584,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             String contentFieldName = field.getName();
             
             Analyzer fieldAnalyzer = (fieldType == null) ? null : fieldType.getAnalyzer();
-               
-            // Extract (document) Boost factor
-            if (field.getBoost() > 0) {
-                pendingDoc.setBoost(field.getBoost());
-            } 
             
             // Actual field content ; Store flag can be set in solrField
-            Field contentField = new Field(contentFieldName, field.getData().toString(), 
-                    store, Field.Index.ANALYZED, Field.TermVector.YES);
-            
-            // Set boost value from SOLR config
-            contentField.setBoost(field.getBoost());
-            
+            Field contentField = new Field(contentFieldName, field.getData().toString(),  store, Field.Index.ANALYZED, Field.TermVector.YES);
+
+            // Extract (document) Boost factor
+            if (field.getBoost() > 0) {
+                contentField.setBoost(field.getBoost());
+            }
+
             pendingDoc.add(contentField);
         }
     }
@@ -707,9 +601,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     	IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            
-            // by default, Lucene only indexes the first 10,000 terms in a field
-            writer.setMaxFieldLength(Integer.MAX_VALUE);
             
             writer.addDocument(pendingDoc);
         } catch (IOException e) {
@@ -729,7 +620,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param queryText
      * @return search report
      */
-    public NodeImpl search(XQueryContext context, List<String> toBeMatchedURIs, String queryText) throws XPathException {
+    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText) throws XPathException {
         
         NodeImpl report = null;
         
@@ -739,95 +630,100 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             searcher = index.getSearcher();
             
             // Get analyzer : to be retrieved from configuration
-            Analyzer searchAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
+            final Analyzer searchAnalyzer = new StandardAnalyzer(Version.LUCENE_43);
 
             // Setup query Version, default field, analyzer
-            QueryParser parser = new QueryParser(Version.LUCENE_29, "", searchAnalyzer);
-            Query query = parser.parse(queryText);
+            final QueryParser parser = new QueryParser(Version.LUCENE_43, "", searchAnalyzer);
+            final Query query = parser.parse(queryText);
                        
             // extract all used fields from query
-            String[] fields = LuceneUtil.extractFields(query, searcher.getIndexReader());
+            final String[] fields = LuceneUtil.extractFields(query, searcher.getIndexReader());
 
-            // Setup collector for results
-            LuceneHitCollector collector = new LuceneHitCollector();
-            
-            // Perform actual search
-            searcher.search(query, collector);
+            final PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.getIndexReader());
 
-            // Retrieve all documents that match the query
-            List<ScoreDoc> results = collector.getDocsByScore();
-            
-            // reusable attributes
-            AttributesImpl attribs = null;
-            
-            PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.getIndexReader());
-            
-            MemTreeBuilder builder = new MemTreeBuilder();
+            final MemTreeBuilder builder = new MemTreeBuilder();
             builder.startDocument();
-            
+
             // start root element
-            int nodeNr = builder.startElement("", "results", "results", null);
-            
-            BitVector processed = new BitVector(searcher.maxDoc());
-            // Process result documents
-            for (ScoreDoc scoreDoc : results) {
-                if (processed.get(scoreDoc.doc))
-                	continue;
-                processed.set(scoreDoc.doc);
-                
-                Document doc = searcher.doc(scoreDoc.doc);
-                
-                // Get URI field of document                
-                String fDocUri = doc.get(FIELD_DOC_URI);
-                
-                // Get score
-                float score = scoreDoc.score;
-                
-                // Check if document URI has a full match or if a
-                // document is in a collection
-                if(isDocumentMatch(fDocUri, toBeMatchedURIs)){
+            final int nodeNr = builder.startElement("", "results", "results", null);
 
-                    DocumentImpl storedDoc = null;
-                    try {
-                        // try to read document to check if user is allowed to access it
-                        storedDoc = context.getBroker().getXMLResource(XmldbURI.createInternal(fDocUri), Lock.READ_LOCK);
-                        if (storedDoc == null) {
-                            continue;
-                        }
-                        // setup attributes
-                        attribs = new AttributesImpl();
-                        attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
-                        attribs.addAttribute("", "score", "score", "CDATA", ""+score);
+            // Perform actual search
+            searcher.search(query, new Collector() {
+                private Scorer scorer;
+                private AtomicReader reader;
 
-                        // write element and attributes
-                        builder.startElement("", "search", "search", attribs);
-                        for (String field : fields) {
-                            String[] fieldContent = doc.getValues(field);
-                            attribs.clear();
-                            attribs.addAttribute("", "name", "name", "CDATA", field);
-                            for (String content : fieldContent) {
-                                List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
-                                if (offsets != null) {
-                                    builder.startElement("", "field", "field", attribs);
-                                    highlighter.highlight(content, offsets, builder);
-                                    builder.endElement();
+                @Override
+                public void setScorer(Scorer scorer) throws IOException {
+                    this.scorer = scorer;
+                }
+
+                @Override
+                public void collect(int docNum) throws IOException {
+                    Document doc = reader.document(docNum);
+
+                    // Get URI field of document
+                    String fDocUri = doc.get(FIELD_DOC_URI);
+
+                    // Get score
+                    float score = scorer.score();
+
+                    // Check if document URI has a full match or if a
+                    // document is in a collection
+                    if(isDocumentMatch(fDocUri, toBeMatchedURIs)){
+                        
+                        DocumentImpl storedDoc = null;
+                        try {
+                            // try to read document to check if user is allowed to access it
+                            storedDoc = context.getBroker().getXMLResource(XmldbURI.createInternal(fDocUri), Lock.READ_LOCK);
+                            if (storedDoc == null) {
+                                return;
+                            }
+
+                            // setup attributes
+                            AttributesImpl attribs = new AttributesImpl();
+                            attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
+                            attribs.addAttribute("", "score", "score", "CDATA", ""+score);
+    
+                            // write element and attributes
+                            builder.startElement("", "search", "search", attribs);
+                            for (String field : fields) {
+                                String[] fieldContent = doc.getValues(field);
+                                attribs.clear();
+                                attribs.addAttribute("", "name", "name", "CDATA", field);
+                                for (String content : fieldContent) {
+                                    List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
+                                    if (offsets != null) {
+                                        builder.startElement("", "field", "field", attribs);
+                                        highlighter.highlight(content, offsets, builder);
+                                        builder.endElement();
+                                    }
                                 }
                             }
-                        }
-                        builder.endElement();
-
-                        // clean attributes
-                        attribs.clear();
-                    } catch (PermissionDeniedException e) {
-                        // not allowed to read the document: ignore the match.
-                    } finally {
-                        if (storedDoc != null) {
-                            storedDoc.getUpdateLock().release(Lock.READ_LOCK);
+                            builder.endElement();
+    
+                            // clean attributes
+                            attribs.clear();
+                        } catch (PermissionDeniedException e) {
+                            // not allowed to read the document: ignore the match.
+                        } finally {
+                            if (storedDoc != null) {
+                                storedDoc.getUpdateLock().release(Lock.READ_LOCK);
+                            }
                         }
                     }
-                }           
-            }
-            
+                }
+
+                @Override
+                public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
+                    this.reader = atomicReaderContext.reader();
+                }
+
+                @Override
+                public boolean acceptsDocsOutOfOrder() {
+                    return true;
+                }
+            });
+
             // finish root element
             builder.endElement();
             
@@ -850,34 +746,50 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return report;
     }
     
-    public String getFieldContent(XQueryContext context, int docId, String field) throws IOException {
-    	Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(docId));
+    public String getFieldContent(int docId, String field) throws IOException {
+        BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+        NumericUtils.intToPrefixCoded(docId, 0, bytes);
+        Term dt = new Term(FIELD_DOC_ID, bytes);
+
     	IndexReader reader = null;
         try {
             reader = index.getReader();
-            TermDocs td = reader.termDocs(dt);
-            if (!td.next())
-            	return null;
-            Document doc = reader.document(td.doc());
-            td.close();
-            return doc.get(field);
-            
+
+            List<AtomicReaderContext> leaves = reader.leaves();
+            for (AtomicReaderContext context : leaves) {
+                DocsEnum docs = context.reader().termDocsEnum(dt);
+                if (docs != null && docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+                    Document doc = reader.document(docs.docID());
+                    return doc.get(field);
+                }
+            }
         } finally {
             index.releaseReader(reader);
         }
+        return null;
     }
     
     public boolean hasIndex(int docId) throws IOException {
-    	Term dt = new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(docId));
-    	IndexReader reader = null;
+        BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
+        NumericUtils.intToPrefixCoded(docId, 0, bytes);
+        Term dt = new Term(FIELD_DOC_ID, bytes);
+
+        IndexReader reader = null;
         try {
             reader = index.getReader();
-            TermDocs td = reader.termDocs(dt);
-            boolean found = td.next();
-            td.close();
+
+            boolean found = false;
+            List<AtomicReaderContext> leaves = reader.leaves();
+            for (AtomicReaderContext context : leaves) {
+                DocsEnum docs = context.reader().termDocsEnum(dt);
+                if (docs != null && docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+                    found = true;
+                    break;
+                }
+            }
             return found;
         } finally {
-        	index.releaseReader(reader);
+            index.releaseReader(reader);
         }
     }
     
@@ -909,46 +821,33 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return false;
     }
 
-    private static class LuceneHitCollector extends Collector {
+    private class LuceneHitCollector extends Collector {
 
-        private List<ScoreDoc> docs = new ArrayList<ScoreDoc>();
-        private int docBase;
         private Scorer scorer;
 
-        private LuceneHitCollector() {
-            //Nothing special to do
-        }
+        private AtomicReader reader;
+        private NumericDocValues docIdValues;
+        private BinaryDocValues nodeIdValues;
+        private final byte[] buf = new byte[1024];
+        private final QName qname;
+        private final DocumentSet docs;
+        private final NodeSet contextSet;
+        private final NodeSet resultSet;
+        private final boolean returnAncestor;
+        private final int contextId;
+        private final Query query;
+        private final XQueryWatchDog watchdog;
 
-        public List<ScoreDoc> getDocs() {
-            Collections.sort(docs, new Comparator<ScoreDoc>() {
-
-                public int compare(ScoreDoc scoreDoc, ScoreDoc scoreDoc1) {
-                    if (scoreDoc.doc == scoreDoc1.doc)
-                        return 0;
-                    else if (scoreDoc.doc < scoreDoc1.doc)
-                        return -1;
-                    return 1;
-                }
-            });
-            return docs;
-        }
-        
-        /**
-         * Get matching lucene documents by descending score
-         * @return
-         */
-        public List<ScoreDoc> getDocsByScore() {
-        	Collections.sort(docs, new Comparator<ScoreDoc>() {
-
-                public int compare(ScoreDoc scoreDoc, ScoreDoc scoreDoc1) {
-                    if (scoreDoc.score == scoreDoc1.score)
-                    	return 0;
-                    else if (scoreDoc.score < scoreDoc1.score)
-                    	return 1;
-                    return -1;
-                }
-            });
-            return docs;
+        private LuceneHitCollector(QName qname, Query query, DocumentSet docs, NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
+                                   int contextId, XQueryWatchDog watchDog) {
+            this.qname = qname;
+            this.docs = docs;
+            this.contextSet = contextSet;
+            this.resultSet = resultSet;
+            this.returnAncestor = returnAncestor;
+            this.contextId = contextId;
+            this.query = query;
+            this.watchdog = watchDog;
         }
 
         @Override
@@ -957,8 +856,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         @Override
-        public void setNextReader(IndexReader indexReader, int docBase) throws IOException {
-            this.docBase = docBase;
+        public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
+            this.reader = atomicReaderContext.reader();
+            this.docIdValues = this.reader.getNumericDocValues(FIELD_DOC_ID);
+            this.nodeIdValues = this.reader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
         }
 
         @Override
@@ -970,18 +871,53 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         public void collect(int doc) {
             try {
                 float score = scorer.score();
-                docs.add(new ScoreDoc(doc + docBase, score));
+                int docId = (int) this.docIdValues.get(doc);
+                DocumentImpl storedDocument = docs.getDoc(docId);
+                if (storedDocument == null)
+                    return;
+                BytesRef ref = new BytesRef(buf);
+                this.nodeIdValues.get(doc, ref);
+                int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
+                NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+                //LOG.info("doc: " + docId + "; node: " + nodeId.toString() + "; units: " + units);
+
+                NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+                if (qname != null)
+                    storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+                // if a context set is specified, we can directly check if the
+                // matching node is a descendant of one of the nodes
+                // in the context set.
+                if (contextSet != null) {
+                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                    if (returnAncestor) {
+                        NodeProxy parentNode = contextSet.get(storedNode);
+                        // NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                        if (parentNode != null) {
+                            LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
+                            match.setScore(score);
+                            parentNode.addMatch(match);
+                            resultSet.add(parentNode, sizeHint);
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                parentNode.deepCopyContext(storedNode, contextId);
+                            } else
+                                parentNode.copyContext(storedNode);
+                        }
+                    } else {
+                        LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
+                        match.setScore(score);
+                        storedNode.addMatch(match);
+                        resultSet.add(storedNode, sizeHint);
+                    }
+                } else {
+                    LuceneMatch match = new LuceneMatch(contextId, nodeId, query);
+                    match.setScore(score);
+                    storedNode.addMatch(match);
+                    resultSet.add(storedNode);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-    }
-
-    private NodeId readNodeId(Document doc) {
-        byte[] temp = doc.getBinaryValue(FIELD_NODE_ID);
-        int units = ByteConversion.byteToShort(temp, 0);
-        return index.getBrokerPool().getNodeFactory()
-                .createFromData(units, temp, 2);
     }
 
     /**
@@ -990,7 +926,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @return List of QName objects on which indexes are defined
      */
-    private List<QName> getDefinedIndexes(List<QName> qnames) {
+    public List<QName> getDefinedIndexes(List<QName> qnames) {
         List<QName> indexes = new ArrayList<QName>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
@@ -1008,9 +944,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getReader();
-            for (FieldInfo info: ReaderUtil.getMergedFieldInfos(reader)) {
-            	if (!FIELD_DOC_ID.equals(info.name)) {
-                    QName name = decodeQName(info.name);
+            for (FieldInfo info: MultiFields.getMergedFieldInfos(reader)) {
+                if (!FIELD_DOC_ID.equals(info.name)) {
+                    QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
                     if (name != null && (qname == null || matchQName(qname, name)))
                         indexes.add(name);
                 }
@@ -1036,7 +972,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * Return the analyzer to be used for the given field or qname. Either field
      * or qname should be specified.
      */
-    private Analyzer getAnalyzer(String field, QName qname, DBBroker broker, DocumentSet docs) {
+    protected Analyzer getAnalyzer(String field, QName qname, DBBroker broker, DocumentSet docs) {
         for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);
@@ -1060,7 +996,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map hints) {
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map<?,?> hints) {
         List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
         qnames = getDefinedIndexes(qnames);
         //Expects a StringValue
@@ -1074,9 +1010,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             IntegerValue vmax = (IntegerValue) hints.get(VALUE_COUNT);
             max = vmax == null ? Long.MAX_VALUE : vmax.getValue();
         }
-        if (nodes == null || max < Long.MAX_VALUE)
-            return scanIndexByQName(qnames, docs, nodes, start, end, max);
-        return scanIndexByNodes(qnames, docs, nodes, start, end, max);
+        return scanIndexByQName(qnames, docs, nodes, start, end, max);
     }
 
     private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) {
@@ -1085,59 +1019,61 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             reader = index.getReader();
             for (QName qname : qnames) {
-                String field = encodeQName(qname);
-                TermEnum terms;
-                if (start == null)
-                    terms = reader.terms(new Term(field, ""));
-                else
-                    terms = reader.terms(new Term(field, start));
-                if (terms == null)
-                    continue;
-                Term term;
-                TermDocs termDocs = reader.termDocs();
-                do {
-                    term = terms.term();
-                    if (term != null && term.field().equals(field)) {
+                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                List<AtomicReaderContext> leaves = reader.leaves();
+                for (AtomicReaderContext context : leaves) {
+                    NumericDocValues docIdValues = context.reader().getNumericDocValues(FIELD_DOC_ID);
+                    BinaryDocValues nodeIdValues = context.reader().getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
+                    Bits liveDocs = context.reader().getLiveDocs();
+                    Terms terms = context.reader().terms(field);
+                    if (terms == null)
+                        continue;
+                    TermsEnum termsIter = terms.iterator(null);
+                    if (termsIter.next() == null) {
+                        continue;
+                    }
+                    do {
+                        if (map.size() >= max) {
+                            break;
+                        }
+                        BytesRef ref = termsIter.term();
+                        String term = ref.utf8ToString();
                         boolean include = true;
                         if (end != null) {
-                            if (term.text().compareTo(start) > 0)
+                            if (term.compareTo(end) > 0)
                                 include = false;
-                        } else if (start != null && !term.text().startsWith(start))
+                        } else if (start != null && !term.startsWith(start))
                             include = false;
                         if (include) {
-                            termDocs.seek(term);
-                            while (termDocs.next()) {
-                                if (reader.isDeleted(termDocs.doc()))
+                            DocsEnum docsEnum = termsIter.docs(null, null);
+                            while (docsEnum.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+                                if (liveDocs != null && !liveDocs.get(docsEnum.docID())) {
                                     continue;
-                                Document doc = reader.document(termDocs.doc());
-                                String fDocId = doc.get(FIELD_DOC_ID);
-                                int docId = Integer.parseInt(fDocId);
+                                }
+                                int docId = (int) docIdValues.get(docsEnum.docID());
                                 DocumentImpl storedDocument = docs.getDoc(docId);
                                 if (storedDocument == null)
                                     continue;
                                 NodeId nodeId = null;
                                 if (nodes != null) {
-                                    // load document to check if the current node is in the passed context set, if any
-                                    nodeId = readNodeId(doc);
+                                    BytesRef nodeIdRef = new BytesRef(buf);
+                                    nodeIdValues.get(docsEnum.docID(), nodeIdRef);
+                                    int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
+                                    nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                                 }
                                 if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
-                                    Occurrences oc = map.get(term.text());
+                                    Occurrences oc = map.get(term);
                                     if (oc == null) {
-                                        oc = new Occurrences(term.text());
-                                        map.put(term.text(), oc);
+                                        oc = new Occurrences(term);
+                                        map.put(term, oc);
                                     }
                                     oc.addDocument(storedDocument);
-                                    oc.addOccurrences(termDocs.freq());
+                                    oc.addOccurrences(docsEnum.freq());
                                 }
                             }
-                            // termDocs.close();
                         }
-                    }
-                    if (map.size() >= max)
-                        break;
-                } while (terms.next());
-                termDocs.close();
-                terms.close();
+                    } while(termsIter.next() != null);
+                }
             }
         } catch (IOException e) {
             LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
@@ -1146,108 +1082,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         Occurrences[] occur = new Occurrences[map.size()];
         return map.values().toArray(occur);
-    }
-
-    private Occurrences[] scanIndexByNodes(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) {
-        TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
-
-        FieldSelector selector = new FieldSelector() {
-            private static final long serialVersionUID = 3270211696620175721L;
-            public FieldSelectorResult accept(String field) {
-                if (field.equals(FIELD_NODE_ID))
-                    return FieldSelectorResult.LOAD_AND_BREAK;
-                return FieldSelectorResult.NO_LOAD;
-            }
-        };
-        IndexSearcher searcher = null;
-        try {
-            searcher = index.getSearcher();
-            IndexReader reader = searcher.getIndexReader();
-            for (Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
-                DocumentImpl doc = i.next();
-                Query query = new TermQuery(new Term(FIELD_DOC_ID, NumericUtils.intToPrefixCoded(doc.getDocId())));
-                DocumentCollector collector = new DocumentCollector(searcher.maxDoc());
-                searcher.search(query, collector);
-
-                DocIdSetIterator iter = collector.docs.iterator();
-                int next;
-                while ((next = iter.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                    NodeId nodeId = null;
-                    if (nodes != null) {
-                        // load document to check if the current node is in the passed context set, if any
-                        Document luceneDoc = searcher.doc(next, selector);
-                        nodeId = readNodeId(luceneDoc);
-                    }
-                    if (nodeId == null || nodes.get(doc, nodeId) != null) {
-                        for (QName qname : qnames) {
-                            String field = encodeQName(qname);
-                            TermFreqVector tfv = reader.getTermFreqVector(next, field);
-                            if (tfv != null) {
-                                String[] terms = tfv.getTerms();
-                                int[] freq = tfv.getTermFrequencies();
-                                for (int j = 0; j < terms.length; j++) {
-                                    boolean include = true;
-                                    if (end != null) {
-                                        if (terms[j].compareTo(start) > 0)
-                                            include = false;
-                                    } else if (start != null && !terms[j].startsWith(start))
-                                        include = false;
-                                    if (include) {
-                                        Occurrences oc = map.get(terms[j]);
-                                        if (oc == null) {
-                                            oc = new Occurrences(terms[j]);
-                                            map.put(terms[j], oc);
-                                        }
-                                        oc.addDocument(doc);
-                                        oc.addOccurrences(freq[j]);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
-        } finally {
-            index.releaseSearcher(searcher);
-        }
-        return occurrencesToArray(map);
-    }
-
-    private Occurrences[] occurrencesToArray(TreeMap<String, Occurrences> map) {
-        Occurrences[] occur = new Occurrences[map.size()];
-        return map.values().toArray(occur);
-    }
-
-    private static class DocumentCollector extends Collector {
-
-        OpenBitSet docs;
-        int base = 0;
-
-        private DocumentCollector(int size) {
-            docs = new OpenBitSet(size);
-        }
-
-        @Override
-        public void setScorer(Scorer scorer) throws IOException {
-            //What to do there ?
-        }
-
-        @Override
-        public void collect(int doc) throws IOException {
-            docs.set(base + doc);
-        }
-
-        @Override
-        public void setNextReader(IndexReader indexReader, int base) throws IOException {
-            this.base = base;
-        }
-
-        @Override
-        public boolean acceptsDocsOutOfOrder() {
-            return true;
-        }
     }
 
     /**
@@ -1296,22 +1130,49 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            // by default, Lucene only indexes the first 10,000 terms in a field
-            writer.setMaxFieldLength(Integer.MAX_VALUE);
-            NumericField fDocId = new NumericField(FIELD_DOC_ID, Field.Store.YES, true);
-            Field fNodeId = new Field(FIELD_NODE_ID, new byte [] { 0 }, Field.Store.YES);
+            // docId and nodeId are stored as doc value
+            NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, 0);
+            BinaryDocValuesField fNodeId = new BinaryDocValuesField(LuceneUtil.FIELD_NODE_ID, new BytesRef(8));
+            // docId also needs to be indexed
+            IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, IntField.TYPE_NOT_STORED);
+
+            final List<Field> metas = new ArrayList<Field>();
+            final List<CategoryPath> paths = new ArrayList<CategoryPath>();
+
+            broker.getIndexController().streamMetas(new MetaStreamListener() {
+                @Override
+                public void metadata(QName key, Object value) {
+                    if (value instanceof String) {
+                        String name = key.getLocalName();//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
+                        Field fld = new Field(name, value.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
+                        metas.add(fld);
+                        //System.out.println(" "+name+" = "+value.toString());
+                        
+                        paths.add(new CategoryPath(name, value.toString()));
+                    }
+                }
+            });
+            
+            TaxonomyWriter taxoWriter = index.getTaxonomyWriter();
+            FacetFields facetFields = new FacetFields(taxoWriter);
+
             for (PendingDoc pending : nodesToWrite) {
-                Document doc = new Document();
-                if (pending.idxConf.getBoost() > 0)
-                    doc.setBoost(pending.idxConf.getBoost());
-                else if (config.getBoost() > 0)
-                    doc.setBoost(config.getBoost());
+                final Document doc = new Document();
+                fDocId.setLongValue(currentDoc.getDocId());
+                doc.add(fDocId);
 
                 // store the node id
                 int nodeIdLen = pending.nodeId.size();
                 byte[] data = new byte[nodeIdLen + 2];
                 ByteConversion.shortToByte((short) pending.nodeId.units(), data, 0);
                 pending.nodeId.serialize(data, 2);
+                fNodeId.setBytesValue(data);
+                doc.add(fNodeId);
+
+                // add separate index for node id
+                BinaryTokenStream bts = new BinaryTokenStream(new BytesRef(data));
+                Field fNodeIdIdx = new Field(LuceneUtil.FIELD_NODE_ID, bts, TYPE_NODE_ID);
+                doc.add(fNodeIdIdx);
 
                 String contentField;
                 // the text content is indexed in a field using either
@@ -1320,15 +1181,27 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (pending.idxConf.isNamed())
                 	contentField = pending.idxConf.getName();
                 else
-                	contentField = encodeQName(pending.qname);
-                fDocId.setIntValue(currentDoc.getDocId());
-                fNodeId.setValue(data);
+                	contentField = LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
 
-                doc.add(fDocId);
-                doc.add(fNodeId);
-                doc.add(new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED,
-                    Field.TermVector.YES));
+                Field fld = new Field(contentField, pending.text.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
+                if (pending.idxConf.getBoost() > 0)
+                    fld.setBoost(pending.idxConf.getBoost());
 
+                else if (config.getBoost() > 0)
+                    fld.setBoost(config.getBoost());
+
+                doc.add(fld);
+
+                fDocIdIdx.setIntValue(currentDoc.getDocId());
+                doc.add(fDocIdIdx);
+                
+                for (Field meta : metas) {
+                    doc.add(meta);
+                }
+                if (!paths.isEmpty()) {
+                    facetFields.addFields(doc, paths);
+                }
+                
                 if (pending.idxConf.getAnalyzer() == null)
                     writer.addDocument(doc);
                 else {
@@ -1347,8 +1220,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     /**
      * Optimize the Lucene index by merging all segments into a single one. This
      * may take a while and write operations will be blocked during the optimize.
-     *
-     * @see org.apache.lucene.index.IndexWriter#optimize()
      */
     public void optimize() {
         IndexWriter writer = null;
@@ -1360,44 +1231,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("An exception was caught while optimizing the lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
-        }
-    }
-
-    /**
-     * Encode an element or attribute qname into a lucene field name using the
-     * internal ids for namespace and local name.
-     * 
-     * @param qname
-     * @return encoded qname
-     */
-    private String encodeQName(QName qname) {
-        SymbolTable symbols = index.getBrokerPool().getSymbols();
-        short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-        short localNameId = symbols.getSymbol(qname.getLocalName());
-        long nameId = qname.getNameType() | (namespaceId & 0xFFFF) << 16 | (localNameId & 0xFFFFFFFFL) << 32;
-        return Long.toHexString(nameId);
-    }
-
-    /**
-     * Decode the lucene field name into an element or attribute qname.
-     * 
-     * @param s
-     * @return the qname
-     */
-    private QName decodeQName(String s) {
-        SymbolTable symbols = index.getBrokerPool().getSymbols();
-        try {
-            long l = Long.parseLong(s, 16);
-            short namespaceId = (short) ((l >>> 16) & 0xFFFFL);
-            short localNameId = (short) ((l >>> 32) & 0xFFFFL);
-            byte type = (byte) (l & 0xFFL);
-            String namespaceURI = symbols.getNamespace(namespaceId);
-            String localName = symbols.getName(localNameId);
-            QName qname = new QName(localName, namespaceURI, "");
-            qname.setNameType(type);
-            return qname;
-        } catch (NumberFormatException e) {
-            return null;
         }
     }
 
@@ -1541,7 +1374,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return score;
         }
 
-        private void setScore(float score) {
+        protected void setScore(float score) {
             this.score = score;
         }
 
@@ -1557,24 +1390,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         @Override
         public boolean matchEquals(Match other) {
             return equals(other);
-        }
-    }
-
-    private static class NodeFieldSelector implements FieldSelector {
-
-        private static final long serialVersionUID = -4899170629980829109L;
-
-        public FieldSelectorResult accept(String fieldName) {
-            if (FIELD_DOC_ID.equals(fieldName)) {
-                return FieldSelectorResult.LOAD;
-            }
-            if (FIELD_NODE_ID.equals(fieldName)) {
-                return FieldSelectorResult.LOAD_AND_BREAK;
-            }
-            if (FIELD_DOC_URI.equals(fieldName)) {
-                return FieldSelectorResult.LOAD; 
-            }
-            return FieldSelectorResult.NO_LOAD;
         }
     }
 }

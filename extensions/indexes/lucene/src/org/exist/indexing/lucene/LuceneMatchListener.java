@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2008-2012 The eXist-db Project
+ * Copyright (C) 2008-2013 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -209,11 +209,12 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
         LOG.debug("Analyzer: " + analyzer + " for path: " + path);
         String str = extractor.getText().toString();
-        TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str));
-        MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
         //Token token;
         try {
 
+            TokenStream tokenStream = analyzer.tokenStream(null, new StringReader(str));
+            tokenStream.reset();
+            MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
             while (stream.incrementToken()) {
                 String text = stream.getAttribute(CharTermAttribute.class).toString();
                 Query query = termMap.get(text);
@@ -325,6 +326,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
                         LuceneUtil.extractTerms(query, termMap, reader, false);
                     } catch (IOException e) {
                         LOG.warn("Error while highlighting lucene query matches: " + e.getMessage(), e);
+                    } catch (UnsupportedOperationException uoe) {
+                        LOG.warn("Error while highlighting lucene query matches: " + uoe.getMessage(), uoe);
                     } finally {
                         index.releaseReader(reader);
                     }

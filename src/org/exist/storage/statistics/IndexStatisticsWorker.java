@@ -24,6 +24,7 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.NodeList;
@@ -57,6 +58,11 @@ public class IndexStatisticsWorker implements IndexWorker {
 
     public String getIndexName() {
         return index.getIndexName();
+    }
+
+    @Override
+    public QueryRewriter getQueryRewriter(XQueryContext context) {
+        return null;
     }
 
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {

@@ -76,10 +76,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.serializer.AttrList;
-import org.exist.xquery.Constants;
-import org.exist.xquery.TerminatedException;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -638,6 +635,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (indexConf != null)
             config = (Map<QName, ?>) indexConf.getCustomIndexSpec(org.exist.indexing.ngram.NGramIndex.ID);
         mode = newMode;
+    }
+
+    @Override
+    public QueryRewriter getQueryRewriter(XQueryContext context) {
+        return null;
     }
 
     private class NGramStreamListener extends AbstractStreamListener {

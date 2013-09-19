@@ -41,6 +41,7 @@ import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -86,6 +87,11 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public TextSearchEngine getEngine() {
         return engine;
+    }
+
+    @Override
+    public QueryRewriter getQueryRewriter(XQueryContext context) {
+        return null;
     }
 
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {

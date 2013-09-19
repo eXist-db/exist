@@ -2182,4 +2182,10 @@ public class BrokerPool implements Database {
 	public PluginsManager getPluginsManager() {
 		return pluginManager;
 	}
+	
+	protected MetaStorage metaStorage = null;
+	
+	public MetaStorage getMetaStorage() {
+	    return metaStorage;
+	}
 }
