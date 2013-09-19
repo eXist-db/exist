@@ -31,17 +31,15 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.NumericField;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Scorer;
-import org.apache.lucene.util.BitVector;
 import org.apache.lucene.util.Version;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
@@ -142,77 +140,77 @@ public class PlugToLucene {
         // create Lucene document
         Document pendingDoc = new Document();
         
-        // Set DocId
-        NumericField fDocId = new NumericField(LuceneIndexWorker.FIELD_DOC_ID, Field.Store.YES, true);
-        fDocId.setIntValue(doc.getDocId());             
-        pendingDoc.add(fDocId);
-        
-        // For binary documents the doc path needs to be stored
-        String uri = metas.getURI();
-        Field fDocUri = new Field(FIELD_META_DOC_URI, uri, Field.Store.YES, Field.Index.NOT_ANALYZED);
-        pendingDoc.add(fDocUri);
-        
-        StringBuilder sb = new StringBuilder();
-        
-        // Iterate over all found fields and write the data.
-        for (Meta meta : metas.metas()) {
-            Object value = meta.getValue();
-            if (! (value instanceof String)) {
-                //ignore non string values
-                continue;
-            }
-            
-            // Get field type configuration
-//            FieldType fieldType = config == null ? null : config.getFieldType(field.getName());
+//        // Set DocId
+//        NumericField fDocId = new NumericField(LuceneIndexWorker.FIELD_DOC_ID, Field.Store.YES, true);
+//        fDocId.setIntValue(doc.getDocId());             
+//        pendingDoc.add(fDocId);
+//        
+//        // For binary documents the doc path needs to be stored
+//        String uri = metas.getURI();
+//        Field fDocUri = new Field(FIELD_META_DOC_URI, uri, Field.Store.YES, Field.Index.NOT_ANALYZED);
+//        pendingDoc.add(fDocUri);
+//        
+//        StringBuilder sb = new StringBuilder();
+//        
+//        // Iterate over all found fields and write the data.
+//        for (Meta meta : metas.metas()) {
+//            Object value = meta.getValue();
+//            if (! (value instanceof String)) {
+//                //ignore non string values
+//                continue;
+//            }
 //            
-            Field.Store store = null;
-//            if (fieldType != null)
-//                store = fieldType.getStore();
-//            if (store == null)
-                store = Field.Store.YES;//field.getStore();
-            
-            // Get name from SOLR field
-            String contentFieldName = meta.getKey();
-            
-            //Analyzer fieldAnalyzer = (fieldType == null) ? null : fieldType.getAnalyzer();
-               
-            // Extract (document) Boost factor
-//            if (field.getBoost() > 0) {
-//                pendingDoc.setBoost(field.getBoost());
-//            } 
-            
-            // Actual field content ; Store flag can be set in solrField
-            Field contentField = new Field(contentFieldName, value.toString(), store, Field.Index.ANALYZED, Field.TermVector.YES);
-            
-            // Set boost value from SOLR config
-            //contentField.setBoost(field.getBoost());
-            
-            pendingDoc.add(contentField);
-            
-            sb.append(value.toString()).append(" ");
-        }
-        
-        Field contentField = new Field("ALL_METAS", sb.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
-        
-        // Set boost value from SOLR config
-        //contentField.setBoost(field.getBoost());
-        
-        pendingDoc.add(contentField);
-
-        IndexWriter writer = null;
-        try {
-            writer = index.getWriter();
-            
-            // by default, Lucene only indexes the first 10,000 terms in a field
-            writer.setMaxFieldLength(Integer.MAX_VALUE);
-            
-            writer.addDocument(pendingDoc);
-        } catch (IOException e) {
-            //LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
-
-        } finally {
-            index.releaseWriter(writer);
-        }
+//            // Get field type configuration
+////            FieldType fieldType = config == null ? null : config.getFieldType(field.getName());
+////            
+//            Field.Store store = null;
+////            if (fieldType != null)
+////                store = fieldType.getStore();
+////            if (store == null)
+//                store = Field.Store.YES;//field.getStore();
+//            
+//            // Get name from SOLR field
+//            String contentFieldName = meta.getKey();
+//            
+//            //Analyzer fieldAnalyzer = (fieldType == null) ? null : fieldType.getAnalyzer();
+//               
+//            // Extract (document) Boost factor
+////            if (field.getBoost() > 0) {
+////                pendingDoc.setBoost(field.getBoost());
+////            } 
+//            
+//            // Actual field content ; Store flag can be set in solrField
+//            Field contentField = new Field(contentFieldName, value.toString(), store, Field.Index.ANALYZED, Field.TermVector.YES);
+//            
+//            // Set boost value from SOLR config
+//            //contentField.setBoost(field.getBoost());
+//            
+//            pendingDoc.add(contentField);
+//            
+//            sb.append(value.toString()).append(" ");
+//        }
+//        
+//        Field contentField = new Field("ALL_METAS", sb.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
+//        
+//        // Set boost value from SOLR config
+//        //contentField.setBoost(field.getBoost());
+//        
+//        pendingDoc.add(contentField);
+//
+//        IndexWriter writer = null;
+//        try {
+//            writer = index.getWriter();
+//            
+//            // by default, Lucene only indexes the first 10,000 terms in a field
+//            writer.setMaxFieldLength(Integer.MAX_VALUE);
+//            
+//            writer.addDocument(pendingDoc);
+//        } catch (IOException e) {
+//            //LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
+//
+//        } finally {
+//            index.releaseWriter(writer);
+//        }
     }
     
     public void removeMetas(Metas metas) {
@@ -298,104 +296,104 @@ public class PlugToLucene {
         
         NodeImpl report = null;
         
-        IndexSearcher searcher = null;
-        try {
-            // Get index searcher
-            searcher = index.getSearcher();
-            
-            // Get analyzer : to be retrieved from configuration
-            Analyzer searchAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
-
-            // Setup query Version, default field, analyzer
-            QueryParser parser = new QueryParser(Version.LUCENE_29, "", searchAnalyzer);
-            Query query = parser.parse(queryText);
-                       
-            // extract all used fields from query
-            String[] fields = LuceneUtil.extractFields(query, searcher.getIndexReader());
-
-            // Setup collector for results
-            LuceneHitCollector collector = new LuceneHitCollector();
-            
-            // Perform actual search
-            searcher.search(query, collector);
-
-            // Retrieve all documents that match the query
-            List<ScoreDoc> results = collector.getDocsByScore();
-            
-            // reusable attributes
-            AttributesImpl attribs = null;
-            
-            PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.getIndexReader());
-            
-            MemTreeBuilder builder = new MemTreeBuilder();
-            builder.startDocument();
-            
-            // start root element
-            int nodeNr = builder.startElement("", "results", "results", null);
-            
-            BitVector processed = new BitVector(searcher.maxDoc());
-            // Process result documents
-            for (ScoreDoc scoreDoc : results) {
-                if (processed.get(scoreDoc.doc))
-                    continue;
-                processed.set(scoreDoc.doc);
-                
-                Document doc = searcher.doc(scoreDoc.doc);
-                
-                // Get URI field of document                
-                String fDocUri = doc.get(FIELD_META_DOC_URI);
-                
-                // Get score
-                float score = scoreDoc.score;
-                
-                // Check if document URI has a full match or if a
-                // document is in a collection
-                if(isDocumentMatch(fDocUri, toBeMatchedURIs)){
-                    
-                    // setup attributes
-                    attribs = new AttributesImpl();
-                    attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
-                    attribs.addAttribute("", "score", "score", "CDATA", ""+score);
-
-                    // write element and attributes
-                    builder.startElement("", "search", "search", attribs);
-                    for (String field : fields) {
-                        String[] fieldContent = doc.getValues(field);
-                        attribs.clear();
-                        attribs.addAttribute("", "name", "name", "CDATA", field);
-                        for (String content : fieldContent) {
-                            List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
-                            if (offsets != null) {
-                                builder.startElement("", "field", "field", attribs);
-                                highlighter.highlight(content, offsets, builder);
-                                builder.endElement();
-                            }
-                        }
-                    }
-                    builder.endElement();
-
-                    // clean attributes
-                    attribs.clear();
-                }           
-            }
-            
-            // finish root element
-            builder.endElement();
-            
-            //System.out.println(builder.getDocument().toString());
-            
-            // TODO check
-            report = ((org.exist.memtree.DocumentImpl) builder.getDocument()).getNode(nodeNr);
-
-
-        } catch (Exception ex){
-            ex.printStackTrace();
-            //LOG.error(ex);
-            throw new XPathException(ex);
-        
-        } finally {
-            index.releaseSearcher(searcher);
-        }
+//        IndexSearcher searcher = null;
+//        try {
+//            // Get index searcher
+//            searcher = index.getSearcher();
+//            
+//            // Get analyzer : to be retrieved from configuration
+//            Analyzer searchAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
+//
+//            // Setup query Version, default field, analyzer
+//            QueryParser parser = new QueryParser(Version.LUCENE_29, "", searchAnalyzer);
+//            Query query = parser.parse(queryText);
+//                       
+//            // extract all used fields from query
+//            String[] fields = LuceneUtil.extractFields(query, searcher.getIndexReader());
+//
+//            // Setup collector for results
+//            LuceneHitCollector collector = new LuceneHitCollector();
+//            
+//            // Perform actual search
+//            searcher.search(query, collector);
+//
+//            // Retrieve all documents that match the query
+//            List<ScoreDoc> results = collector.getDocsByScore();
+//            
+//            // reusable attributes
+//            AttributesImpl attribs = null;
+//            
+//            PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.getIndexReader());
+//            
+//            MemTreeBuilder builder = new MemTreeBuilder();
+//            builder.startDocument();
+//            
+//            // start root element
+//            int nodeNr = builder.startElement("", "results", "results", null);
+//            
+//            BitVector processed = new BitVector(searcher.maxDoc());
+//            // Process result documents
+//            for (ScoreDoc scoreDoc : results) {
+//                if (processed.get(scoreDoc.doc))
+//                    continue;
+//                processed.set(scoreDoc.doc);
+//                
+//                Document doc = searcher.doc(scoreDoc.doc);
+//                
+//                // Get URI field of document                
+//                String fDocUri = doc.get(FIELD_META_DOC_URI);
+//                
+//                // Get score
+//                float score = scoreDoc.score;
+//                
+//                // Check if document URI has a full match or if a
+//                // document is in a collection
+//                if(isDocumentMatch(fDocUri, toBeMatchedURIs)){
+//                    
+//                    // setup attributes
+//                    attribs = new AttributesImpl();
+//                    attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
+//                    attribs.addAttribute("", "score", "score", "CDATA", ""+score);
+//
+//                    // write element and attributes
+//                    builder.startElement("", "search", "search", attribs);
+//                    for (String field : fields) {
+//                        String[] fieldContent = doc.getValues(field);
+//                        attribs.clear();
+//                        attribs.addAttribute("", "name", "name", "CDATA", field);
+//                        for (String content : fieldContent) {
+//                            List<Offset> offsets = highlighter.getOffsets(content, searchAnalyzer);
+//                            if (offsets != null) {
+//                                builder.startElement("", "field", "field", attribs);
+//                                highlighter.highlight(content, offsets, builder);
+//                                builder.endElement();
+//                            }
+//                        }
+//                    }
+//                    builder.endElement();
+//
+//                    // clean attributes
+//                    attribs.clear();
+//                }           
+//            }
+//            
+//            // finish root element
+//            builder.endElement();
+//            
+//            //System.out.println(builder.getDocument().toString());
+//            
+//            // TODO check
+//            report = ((org.exist.memtree.DocumentImpl) builder.getDocument()).getNode(nodeNr);
+//
+//
+//        } catch (Exception ex){
+//            ex.printStackTrace();
+//            //LOG.error(ex);
+//            throw new XPathException(ex);
+//        
+//        } finally {
+//            index.releaseSearcher(searcher);
+//        }
         
         return report;
     }
@@ -404,57 +402,57 @@ public class PlugToLucene {
         
         List<String> uris = new ArrayList<String>();
         
-        IndexSearcher searcher = null;
-        try {
-            // Get index searcher
-            searcher = index.getSearcher();
-            
-            // Get analyzer : to be retrieved from configuration
-            Analyzer searchAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
-
-            // Setup query Version, default field, analyzer
-            QueryParser parser = new QueryParser(Version.LUCENE_29, "", searchAnalyzer);
-            Query query = parser.parse(queryText);
-                       
-            // Setup collector for results
-            LuceneHitCollector collector = new LuceneHitCollector();
-            
-            // Perform actual search
-            searcher.search(query, collector);
-
-            // Retrieve all documents that match the query
-            List<ScoreDoc> results = collector.getDocsByScore();
-            
-            BitVector processed = new BitVector(searcher.maxDoc());
-            // Process result documents
-            for (ScoreDoc scoreDoc : results) {
-                if (processed.get(scoreDoc.doc))
-                    continue;
-                processed.set(scoreDoc.doc);
-                
-                Document doc = searcher.doc(scoreDoc.doc);
-                
-                // Get URI field of document                
-                String fDocUri = doc.get(FIELD_META_DOC_URI);
-                
-                // Get score
-                float score = scoreDoc.score;
-                
-                // Check if document URI has a full match or if a
-                // document is in a collection
-                if(isDocumentMatch(fDocUri, toBeMatchedURIs)){
-                    uris.add(fDocUri);
-                }
-            }
-            
-        } catch (Exception ex){
-            ex.printStackTrace();
-            //LOG.error(ex);
-            throw new XPathException(ex);
-        
-        } finally {
-            index.releaseSearcher(searcher);
-        }
+//        IndexSearcher searcher = null;
+//        try {
+//            // Get index searcher
+//            searcher = index.getSearcher();
+//            
+//            // Get analyzer : to be retrieved from configuration
+//            Analyzer searchAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
+//
+//            // Setup query Version, default field, analyzer
+//            QueryParser parser = new QueryParser(Version.LUCENE_29, "", searchAnalyzer);
+//            Query query = parser.parse(queryText);
+//                       
+//            // Setup collector for results
+//            LuceneHitCollector collector = new LuceneHitCollector();
+//            
+//            // Perform actual search
+//            searcher.search(query, collector);
+//
+//            // Retrieve all documents that match the query
+//            List<ScoreDoc> results = collector.getDocsByScore();
+//            
+//            BitVector processed = new BitVector(searcher.maxDoc());
+//            // Process result documents
+//            for (ScoreDoc scoreDoc : results) {
+//                if (processed.get(scoreDoc.doc))
+//                    continue;
+//                processed.set(scoreDoc.doc);
+//                
+//                Document doc = searcher.doc(scoreDoc.doc);
+//                
+//                // Get URI field of document                
+//                String fDocUri = doc.get(FIELD_META_DOC_URI);
+//                
+//                // Get score
+//                float score = scoreDoc.score;
+//                
+//                // Check if document URI has a full match or if a
+//                // document is in a collection
+//                if(isDocumentMatch(fDocUri, toBeMatchedURIs)){
+//                    uris.add(fDocUri);
+//                }
+//            }
+//            
+//        } catch (Exception ex){
+//            ex.printStackTrace();
+//            //LOG.error(ex);
+//            throw new XPathException(ex);
+//        
+//        } finally {
+//            index.releaseSearcher(searcher);
+//        }
         
         return uris;
     }
@@ -526,10 +524,10 @@ public class PlugToLucene {
             this.scorer = scorer;
         }
 
-        @Override
-        public void setNextReader(IndexReader indexReader, int docBase) throws IOException {
-            this.docBase = docBase;
-        }
+//        @Override
+//        public void setNextReader(IndexReader indexReader, int docBase) throws IOException {
+//            this.docBase = docBase;
+//        }
 
         @Override
         public boolean acceptsDocsOutOfOrder() {
@@ -544,6 +542,13 @@ public class PlugToLucene {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        @Override
+        public void setNextReader(AtomicReaderContext context)
+                throws IOException {
+            // TODO Auto-generated method stub
+            
         }
     }
 }
