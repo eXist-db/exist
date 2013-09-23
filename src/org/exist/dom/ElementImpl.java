@@ -425,8 +425,13 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             transact.abort(transaction);
             throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
         } finally {
-            transact.close(transaction);
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null) {
+	        	try {
+	        		transact.close(transaction);
+	        	} finally {
+	        		broker.release();
+	        	}
+        	}
         }
     }
 
@@ -502,7 +507,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while appending child node: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
     }
 
@@ -658,7 +664,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while appending node: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
         return null;
     }
@@ -737,7 +744,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             } catch (final EXistException e) {
                 LOG.warn("Exception while retrieving attributes: " + e.getMessage());
             } finally {
-                ownerDocument.getBrokerPool().release(broker);
+            	if (broker != null)
+            		broker.release();
             }
         }
         if (declaresNamespacePrefixes()) {
@@ -765,7 +773,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while retrieving attributes: " + e.getMessage());
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
         return null;
     }
@@ -793,7 +802,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while retrieving attributes: " + e.getMessage());
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
         return null;
     }
@@ -866,7 +876,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
         return childList;
     }
@@ -908,7 +919,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while retrieving child node: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
         return null;
     }
@@ -981,7 +993,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while reading node value: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
         return "";
     }
@@ -1180,8 +1193,13 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             transact.abort(transaction);
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            transact.close(transaction);
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null) {
+		    	try {
+		    		transact.close(transaction);
+		    	} finally {
+		    		broker.release();
+		    	}
+        	}
         }
         return null;
     }
@@ -1233,7 +1251,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
     }
 
@@ -1276,7 +1295,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
     }
 
@@ -1336,7 +1356,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
     }
 
@@ -1406,7 +1427,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
         return newNode;
     }
@@ -1449,7 +1471,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
         return oldNode;
     }
@@ -1504,14 +1527,15 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 setDirty(true);
             }
             attributes += appendList.getLength();
+
+            broker.updateNode(transaction, this, true);
+            broker.flush();
+
         } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            if (broker != null) {
-                broker.updateNode(transaction, this, true);
-                broker.flush();
-                ownerDocument.getBrokerPool().release(broker);
-            }
+            if (broker != null)
+        		broker.release();
         }
     }
 
@@ -1586,7 +1610,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            ownerDocument.getBrokerPool().release(broker);
+        	if (broker != null)
+        		broker.release();
         }
         //return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
         return newNode; //returning the newNode is more sensible than returning the oldNode
