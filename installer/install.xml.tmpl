@@ -7,7 +7,7 @@
 		<requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall.vista|izpack.windowsinstall.7"/>
 		<uninstaller name="uninstall.jar" path="$INSTALL_PATH"/>
-        <!--pack200/-->
+        <pack200/>
     </info>
 
     <guiprefs height="510" resizable="yes" width="680">
@@ -150,7 +150,7 @@
                 <exclude name="ant/lib/javasvn*.jar"/>
                 <include name="jetty/**"/>
                 <exclude name="jetty/logs/*"/>
-                <exclude name="jetty/tmp/*"/>
+                <exclude name="jetty/tmp/**"/>
                 <exclude name="jetty/work/*"/>
                 <exclude name="ircbot/**"/>
                 <exclude name="ant/lib/svnkit*.jar"/>
@@ -200,10 +200,10 @@
                 <include name="backup.bat"/>
             </fileset>
 
-            <fileset dir="installer/scripts/eXist-db.mac" targetdir="$INSTALL_PATH/eXist-db.app">
+            <fileset dir="installer/scripts/eXist-db.app" targetdir="$INSTALL_PATH/eXist-db.app">
                 <exclude name="**/.svn/"/>
             </fileset>
-            <executable targetfile="$INSTALL_PATH/eXist-db.app/Contents/MacOS/JavaApplicationStub"
+            <executable targetfile="$INSTALL_PATH/eXist-db.app/Contents/MacOS/JavaAppLauncher"
                 stage="never" os="unix"/>
 
             <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
