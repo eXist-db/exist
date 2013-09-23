@@ -826,4 +826,8 @@ public abstract class DBBroker extends Observable {
     public abstract void backupToArchive(RawDataBackup backup) throws IOException, EXistException;
 
     public abstract void readCollectionEntry(SubCollectionEntry entry);
+
+	public void release() {
+		pool.release(this);
+	}
 }

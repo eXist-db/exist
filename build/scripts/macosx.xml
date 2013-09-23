@@ -4,7 +4,7 @@
 <!-- Call target "dmg" to create dmg file                                    -->
 <!-- ======================================================================= -->
 <!-- $Id$ -->
-<project basedir="../.." default="dmg" name="Mac OS App">
+<project basedir="../.." default="all" name="Mac OS App">
     
     <description>Build installer</description>
     
@@ -15,29 +15,49 @@
     <property name="app.dir" value="${dist}/eXist-db.app"/>
     <property name="app.resources" value="${app.dir}/Contents/Resources"/>
     <property name="app.exist" value="${app.resources}/eXist-db"/>
+    <property name="app.icon" value="installer/scripts/icon.icns"/>
+    <property name="codesign.identity" value="Lars Windauer"/>
+    <property name="appbundler.jar" value="${tools.ant}/lib/appbundler-1.0.jar"/>
+    <property name="appbundler.url" value="http://java.net/downloads/appbundler/appbundler-1.0.jar"/>
 
-    <target name="package" depends="jar,create-skeleton,copy-all"/>
-
-    <target name="prepare" depends="xars">
-        <delete failonerror="false" dir="${app.dir}"/>
-        <mkdir dir="${dist}"/>
+    <available property="appbundler.available" file="${appbundler.jar}"/>
+    
+    <target name="app" description="Build Mac OS X dmg (unsigned)" depends="bundle,copy-all,dmg"/>
+    
+    <target name="app-signed" description="Build Mac OS X dmg (signed)" depends="bundle,copy-all,codesign,dmg"/>
+    
+    <target name="install-appbundler" unless="appbundler.available">
+        <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
+            <classpath>
+                <pathelement location="${tools.ant}/lib/asocat-exist.jar"/>
+            </classpath>
+        </taskdef>
+        
+        <fetch dest="${tools.ant}/lib" url="${appbundler.url}"
+            failonerror="false" maxtime="120"/>
+    </target>
+    
+    <target name="bundle" depends="prepare">
+        <taskdef 
+            name="bundleapp" 
+            classname="com.oracle.appbundler.AppBundlerTask" 
+            classpath="${appbundler.jar}" />
+        <bundleapp
+            outputdirectory="${dist}"
+            name="eXist-db"
+            displayname="eXist-db"
+            identifier="org.exist.start.Main"
+            mainclassname="org.exist.start.Main"
+            shortversion="${project.version.numeric}"
+            icon="${app.icon}">
+            <classpath file="start.jar"/>
+            <option value="-Dexist.home=$APP_ROOT/Contents/Resources/eXist-db"/>
+        </bundleapp>
     </target>
 
-    <target name="create-skeleton" depends="prepare">
-        <copy todir="${app.dir}">
-            <fileset dir="installer/scripts/eXist-db.mac">
-                <exclude name=".svn"/>
-                <exclude name="Info.plist.tmpl"/>
-            </fileset>
-        </copy>
-        <copy file="installer/scripts/eXist-db.mac/Contents/Info.plist.tmpl"
-              tofile="${app.dir}/Contents/Info.plist" filtering="true" overwrite="true">
-            <filterset>
-                <filter token="vmoptions" value="-Dexist.home=$APP_PACKAGE/Contents/Resources/eXist-db"/>
-                <filter token="classpath" value="$APP_PACKAGE/Contents/Resources/eXist-db"/>
-            </filterset>
-        </copy>
-        <mkdir dir="${app.exist}"/>
+    <target name="prepare" depends="install-appbundler,xars">
+        <delete failonerror="false" dir="${app.dir}"/>
+        <mkdir dir="${dist}"/>
     </target>
 
     <target name="copy-apps">
@@ -73,7 +93,6 @@
                 <include name="exist-modules.jar"/>
                 <include name="exist-fluent.jar"/>
                 <include name="start.jar"/>
-                <include name="start.exe"/>
                 <include name="examples.jar"/>
                 <include name="mime-types.xml.tmpl"/>
                 <include name="mime-types.xml"/>
@@ -124,7 +143,7 @@
                 <exclude name="jetty/tmp/*"/>
                 <exclude name="jetty/work/*"/>
                 <exclude name="ircbot/**"/>
-                <include name="aspectj/**"/>
+                <exclude name="aspectj/**"/>
                 <exclude name="izpack/**"/>
                 <exclude name="ant/lib/svnkit*.jar"/>
                 <include name="jmx/**"/>
@@ -163,8 +182,17 @@
         </chmod>
     </target>
 
+    <target name="codesign" description="Codesign .app">
+        <exec executable="/usr/bin/codesign" os="Mac OS X" failonerror="true">
+            <arg value="-f"/>
+            <arg value="-s"/>
+            <arg value="${codesign.identity}"/>
+            <arg value="${app.dir}"/>
+        </exec>
+    </target>
+
     <!-- Create a DMG - This only works on MacOSX (requires hdiutil) -->
-    <target name="dmg" depends="package" description="Create a DMG package for MacOSX (only works on MacOSX)">
+    <target name="dmg" description="Create a DMG package for MacOSX (only works on MacOSX)">
 
         <!-- Set this property value to your application name -->
         <property name="app.name" value="${project.name}"/>
