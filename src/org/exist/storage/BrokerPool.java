@@ -1547,7 +1547,7 @@ public class BrokerPool implements Database {
 						}
 					}
 				});
-                LOG.error(sb.toString());
+                LOG.debug(sb.toString());
 				throw new RuntimeException(sb.toString());
 			}
 			return broker;
