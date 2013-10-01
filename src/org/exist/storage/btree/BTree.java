@@ -95,6 +95,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.text.NumberFormat;
+import java.util.*;
 
 /**
  *  A general purpose B+-tree which stores binary keys as instances of
@@ -441,7 +442,7 @@ public class BTree extends Paged {
     /**
      * Read a node from the given page.
      * 
-     * @param page
+     * @param pageNum
      * @return The BTree node
      */
     private BTreeNode getBTreeNode(long pageNum) {
@@ -566,6 +567,120 @@ public class BTree extends Paged {
                 node.scanRaw(query, callback);
             }
         }
+    }
+
+    /**
+     * Remove all inner (branch) pages and return the first leaf page (in order).
+     * This method is used to rebuild the btree from the leaf pages.
+     *
+     * @return
+     * @throws IOException
+     * @throws TerminatedException
+     * @throws DBException
+     */
+    private long removeInner() throws IOException, TerminatedException, DBException {
+        final Set<Long> pagePointers = new HashSet<Long>();
+        final Set<Long> nextPages = new HashSet<Long>();
+
+        final long pages = getFileHeader().getTotalCount();
+        for (long i = 0; i < pages; i++) {
+            final Page page = getPage(i);
+            page.read();
+            if (page.getPageHeader().getStatus() == LEAF) {
+                final BTreeNode node = new BTreeNode(page, false);
+                node.read();
+                pagePointers.add(node.page.getPageNum());
+                if (node.pageHeader.getNextPage() != Page.NO_PAGE) {
+                    nextPages.add(node.pageHeader.getNextPage());
+                }
+            } else if (page.getPageHeader().getStatus() == BRANCH) {
+                unlinkPages(page);
+            }
+        }
+        pagePointers.removeAll(nextPages);
+        if (pagePointers.size() > 1) {
+            throw new DBException("More than one start page found for btree");
+        }
+        return pagePointers.iterator().next();
+    }
+
+    public void scanSequential(long pageNum, BTreeCallback callback) throws IOException, TerminatedException {
+        Page page;
+        while (pageNum != Page.NO_PAGE) {
+            page = getPage(pageNum);
+            page.read();
+
+            final BTreeNode node = new BTreeNode(page, false);
+            node.read();
+            node.scanRaw(null, callback);
+            pageNum = node.pageHeader.getNextPage();
+        }
+    }
+
+    /**
+     * Rebuild the btree: removes all branches and rebuilds the tree by scanning
+     * through leaf pages.
+     *
+     * @throws TerminatedException
+     * @throws IOException
+     * @throws DBException
+     */
+    public void rebuild() throws TerminatedException, IOException, DBException {
+        long firstPageNum = removeInner();
+        // create a new root node
+        final BTreeNode root = createBTreeNode(null, BRANCH, null, true);
+        setRootNode(root);
+        // insert a pointer to the first page into the root
+        BTreeNode parent = getRootNode();
+        final Page leftPage = getPage(firstPageNum);
+        leftPage.read();
+        final BTreeNode btLeft = new BTreeNode(leftPage, false);
+        btLeft.read();
+        parent.insertPointer(firstPageNum, 0);
+        btLeft.setParent(parent);
+        btLeft.saved = false;
+        cache.add(btLeft);
+
+        // scan through chain of pages and add them to the tree
+        long rightPageNum = btLeft.pageHeader.getNextPage();
+        while (rightPageNum != Page.NO_PAGE) {
+            final Page rightPage = getPage(rightPageNum);
+            rightPage.read();
+            final BTreeNode btRight = new BTreeNode(rightPage, false);
+            btRight.read();
+            // promote first key of page to parent
+            final Value key = btRight.keys[0];
+            parent = findParent(key);
+            parent.promoteValue(null, key, btRight);
+            btRight.saved = false;
+            cache.add(btRight);
+
+            rightPageNum = btRight.pageHeader.getNextPage();
+        }
+    }
+
+    /**
+     * Walk the tree to find the parent page to which key should
+     * be promoted.
+     *
+     * @param key
+     * @return
+     * @throws IOException
+     */
+    private BTreeNode findParent(Value key) throws IOException {
+        BTreeNode node = getRootNode();
+        BTreeNode last = null;
+        while (node.pageHeader.getStatus() != LEAF) {
+            int idx = node.searchKey(key);
+            if (node.pageHeader.getStatus() == BRANCH) {
+                idx = idx < 0 ? - (idx + 1) : idx + 1;
+                last = node;
+                node = node.getChildNode(idx);
+            } else {
+                return last;
+            }
+        }
+        return last;
     }
 
     /* -------------------------------------------------------------------------
@@ -1525,6 +1640,8 @@ public class BTree extends Paged {
          * Prints out a debug view of the node to the given writer.
          */
         private void dump(Writer writer) throws IOException, BTreeException {
+            //if (pageHeader.getStatus() == LEAF)
+            //    return;
             if (page.getPageNum() == fileHeader.getRootPage())
                 {writer.write("ROOT: ");}
             writer.write(page.getPageNum() + ": ");
@@ -1867,7 +1984,7 @@ public class BTree extends Paged {
 
         protected void scanRaw(IndexQuery query, BTreeCallback callback) throws TerminatedException {
             for (int i = 0; i < nKeys; i++) {
-                if (query.testValue(keys[i]))
+                if (query == null || query.testValue(keys[i]))
                     {callback.indexInfo(keys[i], ptrs[i]);}
             }
         }
