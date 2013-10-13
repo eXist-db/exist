@@ -167,11 +167,11 @@ public abstract class BinaryValue extends AtomicValue {
     }
 
     @Override
-    public AtomicValue convertTo(int requiredType) throws XPathException {
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
 
         final AtomicValue result;
 
-        if(requiredType == getType()) {
+        if(requiredType == getType() || requiredType == Type.ITEM || requiredType == Type.ATOMIC) {
             result = this;
         } else {
             switch(requiredType) {
