@@ -62,6 +62,7 @@ import org.exquery.restxq.RestXqServiceSerializer;
 import org.exquery.restxq.impl.AbstractRestXqService;
 import org.exquery.xdm.type.SequenceImpl;
 import org.exquery.xquery.Sequence;
+import org.exquery.xquery.Type;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -236,12 +237,27 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                 }
             }
 
-            //dont close the stream if its a binary value, because we will need it later for serialization
-            if(is != null && !(result instanceof BinaryValue)) {
-                try {
-                    is.close();
-                } catch(final IOException ioe) {
-                    LOG.error(ioe.getMessage(), ioe);
+            if(is != null) {
+                /*
+                 * Do NOT close the stream if its a binary value,
+                 * because we will need it later for serialization
+                 */
+                boolean isBinaryType = false;
+                if(result != null) {
+                    try {
+                        final Type type = result.head().getType();
+                        isBinaryType = (type == Type.BASE64_BINARY || type == Type.HEX_BINARY);
+                    } catch(final IndexOutOfBoundsException ioe) {
+                        LOG.warn("Called head on an empty HTTP Request body sequence", ioe);
+                    }
+                }
+                
+                if(!isBinaryType) {
+                    try {
+                        is.close();
+                    } catch(final IOException ioe) {
+                        LOG.error(ioe.getMessage(), ioe);
+                    }
                 }
             }
         }
