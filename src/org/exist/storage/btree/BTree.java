@@ -672,7 +672,6 @@ public class BTree extends Paged implements Lockable {
         // scan through chain of pages and add them to the tree
         long rightPageNum = node.pageHeader.getNextPage();
         while (rightPageNum != Page.NO_PAGE) {
-//            System.out.print(rightPageNum + " ");
 
             node = getBTreeNode(rightPageNum);
 
@@ -692,19 +691,8 @@ public class BTree extends Paged implements Lockable {
                 throw new IOException("Not a branch page: " + parent.page.getPageNum());
             }
 
-            int idx = parent.searchKey(key);
-            idx = idx < 0 ? - (idx + 1) : idx + 1;
-            parent.insertKey(key, idx);
-            parent.insertPointer(node.page.getPageNum(), idx + 1);
-            parent.saved = false;
-            cache.add(parent);
-
-            final boolean split = parent.recalculateDataLen() > fileHeader.getWorkSize();
-            if (split) {
-                parent.split(null);
-            }
+            parent.promoteValue(null, key, node);
         }
-//        System.out.println();
     }
 
     /**
