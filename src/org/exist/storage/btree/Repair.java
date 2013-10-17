@@ -1,10 +1,14 @@
 package org.exist.storage.btree;
 
 import org.exist.EXistException;
+import org.exist.indexing.StructuralIndex;
 import org.exist.security.internal.SubjectImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.structural.NativeStructuralIndex;
+import org.exist.storage.structural.NativeStructuralIndexWorker;
 import org.exist.storage.sync.Sync;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -19,37 +23,52 @@ import java.io.OutputStreamWriter;
  */
 public class Repair {
 
+    private static final String[] INDEXES = {
+            "collections", "dom", "structure"
+    };
+
     private BrokerPool pool;
 
     public Repair() {
         startDB();
     }
 
-    public void repair(byte id) {
+    public void repair(String id) {
         DBBroker broker = null;
         try {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
-            OutputStreamWriter writer = new OutputStreamWriter(System.out);
+            BTree btree = null;
+            if ("collections".equals(id)) {
+                btree = ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
+            } else if ("dom".equals(id)) {
+                btree = ((NativeBroker)broker).getStorage(NativeBroker.DOM_DBX_ID);
+            } else if ("range".equals(id)) {
+                btree = ((NativeBroker)broker).getStorage(NativeBroker.VALUES_DBX_ID);
+            } else if ("structure".equals(id)) {
+                NativeStructuralIndexWorker index = (NativeStructuralIndexWorker)
+                        broker.getIndexController().getWorkerByIndexName(StructuralIndex.STRUCTURAL_INDEX_ID);
+                btree = index.getStorage();
+            }
+            if (btree == null) {
+                System.console().printf("Unkown index: %s", id);
+                return;
+            }
+            final Lock lock = btree.getLock();
+            try {
+                lock.acquire(Lock.WRITE_LOCK);
 
-            BTree btree = ((NativeBroker)broker).getStorage(id);
-            btree.dump(writer);
-            writer.flush();
-            System.out.println("Rebuilding ...");
-            btree.rebuild();
+//                btree.scanSequential();
+                System.console().printf("Rebuilding %15s ...", btree.getFile().getName());
+                btree.rebuild();
+                System.out.println("Done");
+            } finally {
+                lock.release(Lock.WRITE_LOCK);
+            }
 
-            pool.sync(broker, Sync.MAJOR_SYNC);
-
-            btree.dump(writer);
-            writer.flush();
-        } catch (EXistException e) {
-            System.console().printf("An exception occurred during repair: %s", e.getMessage());
-        } catch (TerminatedException e) {
-            System.console().printf("Process terminated during repair: %s", e.getMessage());
-        } catch (DBException e) {
-            System.console().printf("An exception occurred during repair: %s", e.getMessage());
-        } catch (IOException e) {
-            System.console().printf("An exception occurred during repair: %s", e.getMessage());
+        } catch (Exception e) {
+            System.console().printf("An exception occurred during repair: %s\n", e.getMessage());
+            e.printStackTrace();
         } finally {
             pool.release(broker);
         }
@@ -73,17 +92,15 @@ public class Repair {
     }
 
     public static void main(String[] args) {
-        byte id = NativeBroker.DOM_DBX_ID;
-        String dbx = args[0];
-        if ("collections".equals(dbx)) {
-            id = NativeBroker.COLLECTIONS_DBX_ID;
-        } else if ("dom".equals(dbx)) {
-            id = NativeBroker.DOM_DBX_ID;
-        }
-
         Repair repair = new Repair();
-        repair.repair(id);
 
+        if (args.length == 0) {
+            for (String index : INDEXES) {
+                repair.repair(index);
+            }
+        } else {
+            repair.repair(args[0]);
+        }
         repair.shutdown();
     }
 }

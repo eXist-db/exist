@@ -85,9 +85,11 @@ import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.journal.Loggable;
 import org.exist.storage.journal.Lsn;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
+import org.exist.util.Lockable;
 import org.exist.xquery.TerminatedException;
 
 import java.io.File;
@@ -109,7 +111,7 @@ import java.util.*;
  *  Both, branch and leaf nodes are represented by the inner class 
  *  {@link org.exist.storage.btree.BTree.BTreeNode}.
  */
-public class BTree extends Paged {
+public class BTree extends Paged implements Lockable {
 
     protected final static Logger LOGSTATS = Logger.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
     
@@ -229,6 +231,15 @@ public class BTree extends Paged {
     public void closeAndRemove() {
         super.closeAndRemove();
         cacheManager.deregisterCache(cache);
+    }
+
+    /**
+     * Get the active Lock object for this file.
+     *
+     * @see org.exist.util.Lockable#getLock()
+     */
+    public Lock getLock() {
+        return null;
     }
 
     protected void initCache() {
@@ -578,43 +589,63 @@ public class BTree extends Paged {
      * @throws TerminatedException
      * @throws DBException
      */
-    private long removeInner() throws IOException, TerminatedException, DBException {
+    private long removeInner(boolean remove) throws IOException, TerminatedException, DBException {
         final Set<Long> pagePointers = new HashSet<Long>();
         final Set<Long> nextPages = new HashSet<Long>();
+        final List<Long> branchPages = new ArrayList<Long>();
 
         final long pages = getFileHeader().getTotalCount();
         for (long i = 0; i < pages; i++) {
-            final Page page = getPage(i);
-            page.read();
-            if (page.getPageHeader().getStatus() == LEAF) {
-                final BTreeNode node = new BTreeNode(page, false);
-                node.read();
+            final BTreeNode node = getBTreeNode(i);
+            if (node.pageHeader.getStatus() == LEAF) {
                 pagePointers.add(node.page.getPageNum());
                 if (node.pageHeader.getNextPage() != Page.NO_PAGE) {
                     nextPages.add(node.pageHeader.getNextPage());
                 }
-            } else if (page.getPageHeader().getStatus() == BRANCH) {
-                unlinkPages(page);
+            } else if (node.pageHeader.getStatus() == BRANCH) {
+                branchPages.add(node.page.getPageNum());
             }
         }
         pagePointers.removeAll(nextPages);
         if (pagePointers.size() > 1) {
+            for (long pointer: pagePointers) {
+                System.out.println("Start page: " + pointer);
+            }
             throw new DBException("More than one start page found for btree");
+        }
+        if (remove) {
+            for (long p : branchPages) {
+                Page page = getPage(p);
+                page.read();
+                BTreeNode node = new BTreeNode(page, false);
+                node.read();
+                cache.remove(node);
+                unlinkPages(page);
+                page.getPageHeader().setDirty(true);
+            }
         }
         return pagePointers.iterator().next();
     }
 
     public void scanSequential(long pageNum, BTreeCallback callback) throws IOException, TerminatedException {
-        Page page;
         while (pageNum != Page.NO_PAGE) {
-            page = getPage(pageNum);
-            page.read();
-
-            final BTreeNode node = new BTreeNode(page, false);
-            node.read();
+            System.out.print(pageNum + " ");
+            final BTreeNode node = getBTreeNode(pageNum);
             node.scanRaw(null, callback);
             pageNum = node.pageHeader.getNextPage();
         }
+        System.out.println();
+    }
+
+    public void scanSequential() throws TerminatedException, IOException, DBException {
+        long firstPageNum = removeInner(false);
+        System.out.println("Sequential scan...");
+        scanSequential(firstPageNum, new BTreeCallback() {
+            @Override
+            public boolean indexInfo(Value value, long pointer) throws TerminatedException {
+                return true;
+            }
+        });
     }
 
     /**
@@ -626,37 +657,54 @@ public class BTree extends Paged {
      * @throws DBException
      */
     public void rebuild() throws TerminatedException, IOException, DBException {
-        long firstPageNum = removeInner();
+        long firstPageNum = removeInner(true);
         // create a new root node
-        final BTreeNode root = createBTreeNode(null, BRANCH, null, true);
+        final BTreeNode root = createBTreeNode(null, BRANCH, null, false);
         setRootNode(root);
         // insert a pointer to the first page into the root
-        BTreeNode parent = getRootNode();
-        final Page leftPage = getPage(firstPageNum);
-        leftPage.read();
-        final BTreeNode btLeft = new BTreeNode(leftPage, false);
-        btLeft.read();
-        parent.insertPointer(firstPageNum, 0);
-        btLeft.setParent(parent);
-        btLeft.saved = false;
-        cache.add(btLeft);
+        BTreeNode node = getBTreeNode(firstPageNum);
+        root.insertPointer(firstPageNum, 0);
+        cache.add(root);
+        node.setParent(root);
+        node.saved = false;
+        cache.add(node);
 
         // scan through chain of pages and add them to the tree
-        long rightPageNum = btLeft.pageHeader.getNextPage();
+        long rightPageNum = node.pageHeader.getNextPage();
         while (rightPageNum != Page.NO_PAGE) {
-            final Page rightPage = getPage(rightPageNum);
-            rightPage.read();
-            final BTreeNode btRight = new BTreeNode(rightPage, false);
-            btRight.read();
-            // promote first key of page to parent
-            final Value key = btRight.keys[0];
-            parent = findParent(key);
-            parent.promoteValue(null, key, btRight);
-            btRight.saved = false;
-            cache.add(btRight);
+//            System.out.print(rightPageNum + " ");
 
-            rightPageNum = btRight.pageHeader.getNextPage();
+            node = getBTreeNode(rightPageNum);
+
+            rightPageNum = node.pageHeader.getNextPage();
+
+            // promote first key of page to parent
+            if (node.nKeys < 1) {
+//                throw new IOException("No keys found in page " + node.page.getPageNum());
+                continue;
+            }
+            final Value key = node.keys[0];
+            final BTreeNode parent = findParent(key);
+            if (parent == null) {
+                throw new IOException("Parent is null for page " + node.page.getPageNum());
+            }
+            if (parent.pageHeader.getStatus() != BRANCH) {
+                throw new IOException("Not a branch page: " + parent.page.getPageNum());
+            }
+
+            int idx = parent.searchKey(key);
+            idx = idx < 0 ? - (idx + 1) : idx + 1;
+            parent.insertKey(key, idx);
+            parent.insertPointer(node.page.getPageNum(), idx + 1);
+            parent.saved = false;
+            cache.add(parent);
+
+            final boolean split = parent.recalculateDataLen() > fileHeader.getWorkSize();
+            if (split) {
+                parent.split(null);
+            }
         }
+//        System.out.println();
     }
 
     /**
@@ -669,15 +717,16 @@ public class BTree extends Paged {
      */
     private BTreeNode findParent(Value key) throws IOException {
         BTreeNode node = getRootNode();
-        BTreeNode last = null;
+        BTreeNode last = node;
         while (node.pageHeader.getStatus() != LEAF) {
-            int idx = node.searchKey(key);
-            if (node.pageHeader.getStatus() == BRANCH) {
+            last = node;
+            try {
+                int idx = node.searchKey(key);
                 idx = idx < 0 ? - (idx + 1) : idx + 1;
-                last = node;
                 node = node.getChildNode(idx);
-            } else {
-                return last;
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new IOException("Error while scanning page " + node.page.getPageNum());
             }
         }
         return last;
