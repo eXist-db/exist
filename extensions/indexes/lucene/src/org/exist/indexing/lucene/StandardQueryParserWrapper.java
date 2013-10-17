@@ -1,11 +1,10 @@
-package org.exist.indexing.lucene.analyzers;
+package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.Query;
-import org.exist.indexing.lucene.QueryParserWrapper;
 import org.exist.xquery.XPathException;
 
 /**
