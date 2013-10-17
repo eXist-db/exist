@@ -18,6 +18,7 @@ import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.util.Version;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer;
+import org.exist.indexing.lucene.analyzers.StandardQueryParserWrapper;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
@@ -157,33 +158,32 @@ public class LuceneConfig {
     	return analyzers.getAnalyzerById(id);
     }
 
-    public QueryParserBase getQueryParser(String field, Analyzer analyzer) {
-        QueryParserBase parser = null;
+    /**
+     * Try to instantiate the configured Lucene query parser. Lucene's parsers
+     * do not all have a common base class, so we need to wrap around the implementation
+     * details.
+     *
+     * @param field the default field to query
+     * @param analyzer analyzer to use for query parsing
+     * @return a query wrapper
+     */
+    public QueryParserWrapper getQueryParser(String field, Analyzer analyzer) {
+        QueryParserWrapper parser = null;
         if (queryParser != null) {
             try {
                 Class<?> clazz = Class.forName(queryParser);
                 if (QueryParserBase.class.isAssignableFrom(clazz)) {
-                    final Class<?> cParamClasses[] = new Class<?>[] {
-                        Version.class, String.class, Analyzer.class
-                    };
-                    final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
-                    parser = (QueryParserBase) cstr.newInstance(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
+                    parser = new ClassicQueryParserWrapper(queryParser, field, analyzer);
+                } else {
+                    parser = QueryParserWrapper.create(queryParser, field, analyzer);
                 }
             } catch (ClassNotFoundException e) {
-                LOG.warn("Failed to instantiate lucene query parser class: " + queryParser, e);
-            } catch (NoSuchMethodException e) {
-                LOG.warn("Failed to instantiate lucene query parser class: " + queryParser + ": " + e.getMessage(), e);
-            } catch (InstantiationException e) {
-                LOG.warn("Failed to instantiate lucene query parser class: " + queryParser + ": " + e.getMessage(), e);
-            } catch (IllegalAccessException e) {
-                LOG.warn("Failed to instantiate lucene query parser class: " + queryParser, e);
-            } catch (InvocationTargetException e) {
                 LOG.warn("Failed to instantiate lucene query parser class: " + queryParser, e);
             }
         }
         if (parser == null) {
             // use default parser
-            parser = new QueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
+            parser = new ClassicQueryParserWrapper(field, analyzer);
         }
         return parser;
     }
