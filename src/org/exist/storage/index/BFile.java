@@ -184,6 +184,7 @@ public class BFile extends BTree {
      * 
      * @return Lock
      */
+    @Override
     public Lock getLock() {
         return lock;
     }
