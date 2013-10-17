@@ -11,6 +11,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer;
 import org.exist.storage.NodePath;
@@ -26,6 +27,7 @@ public class LuceneConfig {
     private final static String CONFIG_ROOT = "lucene";
     private final static String INDEX_ELEMENT = "text";
     private final static String ANALYZER_ELEMENT = "analyzer";
+    private final static String PARSER_ELEMENT = "parser";
     protected final static String FIELD_TYPE_ELEMENT = "fieldType";
     private static final String INLINE_ELEMENT = "inline";
     private static final String IGNORE_ELEMENT = "ignore";
@@ -46,6 +48,8 @@ public class LuceneConfig {
     private float boost = -1;
 
     private AnalyzerConfig analyzers = new AnalyzerConfig();
+
+    private String queryParser = null;
 
     public LuceneConfig(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         parseConfig(configNodes, namespaces);
@@ -148,7 +152,37 @@ public class LuceneConfig {
     public Analyzer getAnalyzerById(String id) {
     	return analyzers.getAnalyzerById(id);
     }
-    
+
+    /**
+     * Try to instantiate the configured Lucene query parser. Lucene's parsers
+     * do not all have a common base class, so we need to wrap around the implementation
+     * details.
+     *
+     * @param field the default field to query
+     * @param analyzer analyzer to use for query parsing
+     * @return a query wrapper
+     */
+    public QueryParserWrapper getQueryParser(String field, Analyzer analyzer) {
+        QueryParserWrapper parser = null;
+        if (queryParser != null) {
+            try {
+                Class<?> clazz = Class.forName(queryParser);
+                if (QueryParserBase.class.isAssignableFrom(clazz)) {
+                    parser = new ClassicQueryParserWrapper(queryParser, field, analyzer);
+                } else {
+                    parser = QueryParserWrapper.create(queryParser, field, analyzer);
+                }
+            } catch (ClassNotFoundException e) {
+                LOG.warn("Failed to instantiate lucene query parser class: " + queryParser, e);
+            }
+        }
+        if (parser == null) {
+            // use default parser
+            parser = new ClassicQueryParserWrapper(field, analyzer);
+        }
+        return parser;
+    }
+
     public boolean isInlineNode(QName qname) {
         return inlineNodes != null && inlineNodes.contains(qname);
     }
@@ -200,7 +234,10 @@ public class LuceneConfig {
                         
 					} else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {
 					    analyzers.addAnalyzer((Element) node);
-                        
+
+                    } else if (PARSER_ELEMENT.equals(node.getLocalName())) {
+                        queryParser = ((Element)node).getAttribute("class");
+
 					} else if (FIELD_TYPE_ELEMENT.equals(node.getLocalName())) {
 						FieldType type = new FieldType((Element) node, analyzers);
 						fieldTypes.put(type.getId(), type);
