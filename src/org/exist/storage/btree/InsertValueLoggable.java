@@ -96,6 +96,6 @@ public class InsertValueLoggable extends BTAbstractLoggable {
     }
     
 	public String dump() {
-		return super.dump() + " - insert btree key on page: " + pageNum;
+		return super.dump() + " - insert btree key on page: " + pageNum + ": " + Paged.hexDump(key.data());
 	}
 }

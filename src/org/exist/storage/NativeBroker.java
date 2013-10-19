@@ -3626,6 +3626,34 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
+    public void repairPrimary() {
+        rebuildIndex(DOM_DBX_ID);
+        rebuildIndex(COLLECTIONS_DBX_ID);
+    }
+
+    protected void rebuildIndex(byte indexId) {
+        BTree btree = getStorage(indexId);
+        final Lock lock = btree.getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+
+            LOG.info("Rebuilding index " + btree.getFile().getName());
+            btree.rebuild();
+            LOG.info("Index " + btree.getFile().getName() + " was rebuilt.");
+        } catch (LockException e) {
+            LOG.warn("Caught error while rebuilding core index " + btree.getFile().getName() + ": " + e.getMessage(), e);
+        } catch (DBException e) {
+            LOG.warn("Caught error while rebuilding core index " + btree.getFile().getName() + ": " + e.getMessage(), e);
+        } catch (TerminatedException e) {
+            LOG.warn("Caught error while rebuilding core index " + btree.getFile().getName() + ": " + e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.warn("Caught error while rebuilding core index " + btree.getFile().getName() + ": " + e.getMessage(), e);
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
+    }
+
+    @Override
     public void flush() {
         notifyFlush();
         try {

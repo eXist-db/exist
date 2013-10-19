@@ -479,7 +479,19 @@ public abstract class DBBroker extends Observable {
     public abstract void reindexCollection(XmldbURI collectionName)
         throws PermissionDeniedException;
 
+    /**
+     * Repair indexes. Should delete all secondary indexes and rebuild them.
+     * This method will be called after the recovery run has completed.
+     *
+     * @throws PermissionDeniedException
+     */
     public abstract void repair() throws PermissionDeniedException;
+
+    /**
+     * Repair core indexes (dom, collections ...). This method is called immediately
+     * after recovery and before {@link #repair()}.
+     */
+    public abstract void repairPrimary();
 
     /**
      * Saves the specified collection to storage. Collections are usually cached
