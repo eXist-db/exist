@@ -175,6 +175,7 @@ public class RecoveryManager {
                 cleanDirectory(files);
                 if (recoveryRun) {
                     broker.repairPrimary();
+                    broker.sync(Sync.MAJOR_SYNC);
                 }
             }
 		}
