@@ -123,7 +123,7 @@
         <echo message="-------------------------"/>
         <echo message="eXist ${project.version} build"/>
         <echo message="-------------------------"/>
-        <echo message="GIT revision ${git.commit}"/>
+        <echo message="Git revision ${git.commit}"/>
         <echo message=""/>
         <echo message="${ant.version}"/>
         <echo message="-------------------------"/>
@@ -351,7 +351,7 @@
                 <attribute name="Project-Version" value="${project.version}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="Project-CodeName" value="${project.codename}"/>
-                <attribute name="GIT-Revision" value="${git.commit}"/>
+                <attribute name="Git-Revision" value="${git.commit}"/>
             </manifest>
             <exclude name="org/exist/*.xsl"/>
             <exclude name="org/exist/ant/**"/>
@@ -377,7 +377,7 @@
                 <attribute name="Project-Version" value="${project.version}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="Project-CodeName" value="${project.codename}"/>
-                <attribute name="GIT-Revision" value="${git.commit}"/>
+                <attribute name="Git-Revision" value="${git.commit}"/>
             </manifest>
             <include name="org/exist/start/**"/>
         </jar>
@@ -388,7 +388,7 @@
                 <attribute name="Project-Version" value="${project.version}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="Project-CodeName" value="${project.codename}"/>
-                <attribute name="GIT-Revision" value="${git.commit}"/>
+                <attribute name="Git-Revision" value="${git.commit}"/>
             </manifest>
             <include name="org/exist/*.xsl"/>
             <include name="org/exist/ant/**"/>
