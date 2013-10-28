@@ -217,11 +217,13 @@ mainModule throws XPathException:
 libraryModule throws XPathException: 
     moduleDecl prolog;
 
-moduleDecl throws XPathException: 
-	"module"! "namespace"! prefix:NCNAME EQ! uri:STRING_LITERAL SEMICOLON!
+moduleDecl throws XPathException
+{ String prefix = null; }
+: 
+	"module"! "namespace"! prefix=ncnameOrKeyword EQ! uri:STRING_LITERAL SEMICOLON!
 	{
 		#moduleDecl = 
-			#(#[MODULE_DECL, prefix.getText(), org.exist.xquery.parser.XQueryFunctionAST.class.getName()], uri);
+			#(#[MODULE_DECL, prefix, org.exist.xquery.parser.XQueryFunctionAST.class.getName()], uri);
 		#moduleDecl.setDoc(getXQDoc());
 	}
 	;
