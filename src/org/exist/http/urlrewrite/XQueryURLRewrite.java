@@ -168,9 +168,9 @@ public class XQueryURLRewrite extends HttpServlet {
         final HttpServletRequest request = servletRequest;
         final HttpServletResponse response = servletResponse;
 
-        if (LOG.isTraceEnabled())
+        if (LOG.isTraceEnabled()) {
             LOG.trace(request.getRequestURI());
-        
+        }
         final Descriptor descriptor = Descriptor.getDescriptorSingleton();
         if(descriptor != null && descriptor.requestsFiltered())
         {
@@ -199,15 +199,15 @@ public class XQueryURLRewrite extends HttpServlet {
             if (staticRewrite != null && !staticRewrite.isControllerForward()) {
                 modifiedRequest.setPaths(staticRewrite.resolve(modifiedRequest), staticRewrite.getPrefix());
                 
-                if (LOG.isTraceEnabled())
+                if (LOG.isTraceEnabled()) {
                     LOG.trace("Forwarding to target: " + staticRewrite.getTarget());
-                
+                }
                 staticRewrite.doRewrite(modifiedRequest, response);
             } else {
                 
-            	if (LOG.isTraceEnabled())
+            	if (LOG.isTraceEnabled()) {
                     LOG.trace("Processing request URI: " + request.getRequestURI());
-
+            	}
                 if (staticRewrite != null) {
                     // fix the request URI
                     staticRewrite.updateRequest(modifiedRequest);
@@ -218,12 +218,12 @@ public class XQueryURLRewrite extends HttpServlet {
                 		request.getHeader("Host") + request.getRequestURI(),
                 		user);
                 
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                 	LOG.debug(
             			"Checked cache for URI: " + modifiedRequest.getRequestURI() + 
             			" original: " + request.getRequestURI()
         			);
-                
+                }
                 // no: create a new model and view configuration
                 if (modelView == null) {
                     modelView = new ModelAndView();
@@ -321,9 +321,9 @@ public class XQueryURLRewrite extends HttpServlet {
                     modifiedRequest.setAttribute(RQ_ATTR_SERVLET_PATH, request.getServletPath());
 
                 }
-                if (LOG.isTraceEnabled())
+                if (LOG.isTraceEnabled()) {
                     LOG.trace("URLRewrite took " + (System.currentTimeMillis() - start) + "ms.");
-
+                }
             	final HttpServletResponse wrappedResponse = 
             		new CachingResponseWrapper(response, modelView.hasViews() || modelView.hasErrorHandlers());
                 if (modelView.getModel() == null)
@@ -501,9 +501,9 @@ public class XQueryURLRewrite extends HttpServlet {
 				return null;
 			}
 			
-			if (LOG.isDebugEnabled())
+			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using cached entry for " + url);
-			
+			}
 			return model;
 		} finally {
 			pool.release(broker);
@@ -553,9 +553,9 @@ public class XQueryURLRewrite extends HttpServlet {
                 RequestWrapper modifiedRequest = new RequestWrapper(request);
                 modifiedRequest.setPaths(uri, action.getPrefix());
                 
-                if (LOG.isTraceEnabled())
+                if (LOG.isTraceEnabled()) {
                     LOG.trace("Forwarding to : " + action.toString() + " url: " + action.getURI());
-                
+                }
                 request = modifiedRequest;
             }
         }
@@ -659,10 +659,11 @@ public class XQueryURLRewrite extends HttpServlet {
     private SourceInfo getSourceInfo(DBBroker broker, RequestWrapper request, URLRewrite staticRewrite) throws ServletException {
         final String moduleLoadPath = config.getServletContext().getRealPath(".");
         final String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
-        if (basePath == null)
+        if (basePath == null) {
             return getSource(broker, moduleLoadPath);
-        else
+        } else {
             return findSource(request, broker, basePath);
+        }
     }
 
     private Sequence runQuery(DBBroker broker, RequestWrapper request, HttpServletResponse response,
@@ -672,18 +673,18 @@ public class XQueryURLRewrite extends HttpServlet {
         // Try to find the XQuery
         final SourceInfo sourceInfo = getSourceInfo(broker, request, staticRewrite);
 
-        if (sourceInfo == null)
+        if (sourceInfo == null) {
             return Sequence.EMPTY_SEQUENCE; // no controller found
-
+        }
         final String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
         
         final XQuery xquery = broker.getXQueryService();
         final XQueryPool xqyPool = xquery.getXQueryPool();
 		
         CompiledXQuery compiled = null;
-        if (compiledCache)
+        if (compiledCache) {
 			compiled = xqyPool.borrowCompiledXQuery(broker, sourceInfo.source);
-		
+        }
         XQueryContext queryContext;
         if (compiled == null) {
 			queryContext = xquery.newContext(AccessContext.REST);
@@ -718,9 +719,9 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     protected String adjustPathForSourceLookup(String basePath, String path) {
-    	if (LOG.isTraceEnabled())
+    	if (LOG.isTraceEnabled()) {
     		LOG.trace("request path=" + path);
-        
+    	}
     	if(basePath.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX) && path.startsWith(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""))) {
             path = path.replace(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""), "");
         
@@ -732,9 +733,9 @@ public class XQueryURLRewrite extends HttpServlet {
              path = path.substring(1);
         }
 
-        if (LOG.isTraceEnabled())
+        if (LOG.isTraceEnabled()) {
         	LOG.trace("adjusted request path=" + path);
-
+        }
         return path;
     }
 
@@ -742,16 +743,17 @@ public class XQueryURLRewrite extends HttpServlet {
         final String requestURI = request.getRequestURI();
         String path = requestURI.substring(request.getContextPath().length());
         
-        if (LOG.isTraceEnabled())
+        if (LOG.isTraceEnabled()) {
         	LOG.trace("basePath=" + basePath);
-
+        }
         path = adjustPathForSourceLookup(basePath, path);
 
         final String[] components = path.split("/");
         SourceInfo sourceInfo = null;
         if (basePath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-        	if (LOG.isTraceEnabled())
+        	if (LOG.isTraceEnabled()) {
         		LOG.trace("Looking for controller.xql in the database, starting from: " + basePath);
+        	}
             try {
                 final XmldbURI locationUri = XmldbURI.xmldbUriFor(basePath);
                 final Collection collection = broker.openCollection(locationUri, Lock.READ_LOCK);
@@ -767,22 +769,25 @@ public class XQueryURLRewrite extends HttpServlet {
                     try {
                         if (components[i].length() > 0 && subColl.hasChildCollection(broker, XmldbURI.createInternal(components[i]))) {
                             final XmldbURI newSubCollURI = subColl.getURI().append(components[i]);
-                            if (LOG.isTraceEnabled())
+                            if (LOG.isTraceEnabled()) {
                             	LOG.trace("Inspecting sub-collection: " + newSubCollURI);
+                            }
                             subColl = broker.openCollection(newSubCollURI, Lock.READ_LOCK);
                             if (subColl != null) {
-                                if (LOG.isTraceEnabled())
+                                if (LOG.isTraceEnabled()) {
                                 	LOG.trace("Looking for controller.xql in " + subColl.getURI());
+                                }
                                 final XmldbURI docUri = subColl.getURI().append("controller.xql");
                                 doc = broker.getXMLResource(docUri, Lock.READ_LOCK);
                                 if (doc != null) {
-                                	if (controllerDoc != null)
+                                	if (controllerDoc != null) {
                                 		controllerDoc.getUpdateLock().release(Lock.READ_LOCK);
-                                	
+                                	}
                                     controllerDoc = doc;
                                 }
-                            } else
+                            } else {
                                 break;
+                            }
                         } else {
                             break;
                         }
@@ -795,11 +800,13 @@ public class XQueryURLRewrite extends HttpServlet {
                         break;
                     
                     } finally {
-                        if (doc != null && controllerDoc == null)
+                        if (doc != null && controllerDoc == null) {
                             doc.getUpdateLock().release(Lock.READ_LOCK);
+                        }
                         
-                        if (subColl != null && subColl != collection)
+                        if (subColl != null && subColl != collection) {
                             subColl.getLock().release(Lock.READ_LOCK);
+                        }
                     }
                 }
                 collection.getLock().release(Lock.READ_LOCK);
@@ -817,9 +824,9 @@ public class XQueryURLRewrite extends HttpServlet {
                     return null;
                 }
 
-                if(LOG.isTraceEnabled())
+                if(LOG.isTraceEnabled()) {
                     LOG.trace("Found controller file: " + controllerDoc.getURI());
-
+                }
                 try {
                     if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
                                 !"application/xquery".equals(controllerDoc.getMetadata().getMimeType())) {
@@ -834,8 +841,9 @@ public class XQueryURLRewrite extends HttpServlet {
 
                     return sourceInfo;
                 } finally {
-                    if (controllerDoc != null)
+                    if (controllerDoc != null) {
                         controllerDoc.getUpdateLock().release(Lock.READ_LOCK);
+                    }
                 }
             } catch (final URISyntaxException e) {
                 LOG.warn("Bad URI for base path: " + e.getMessage(), e);
@@ -845,9 +853,9 @@ public class XQueryURLRewrite extends HttpServlet {
               return null;
             }
         } else {
-            if (LOG.isTraceEnabled())
+            if (LOG.isTraceEnabled()) {
             	LOG.trace("Looking for controller.xql in the filesystem, starting from: " + basePath);
-            
+            }
             final String realPath = config.getServletContext().getRealPath(basePath);
             final File baseDir = new File(realPath);
             if (!baseDir.isDirectory()) {
@@ -864,8 +872,9 @@ public class XQueryURLRewrite extends HttpServlet {
                         File cf = new File(subDir, "controller.xql");
                         if (cf.canRead())
                             {controllerFile = cf;}
-                    } else
+                    } else {
                         break;
+                    }
                 }
             }
             if (controllerFile == null) {
@@ -877,9 +886,9 @@ public class XQueryURLRewrite extends HttpServlet {
                 LOG.warn("XQueryURLRewrite controller could not be found");
                 return null;
             }
-            if (LOG.isTraceEnabled())
+            if (LOG.isTraceEnabled()) {
                 LOG.trace("Found controller file: " + controllerFile.getAbsolutePath());
-            
+            }
             final String parentPath = controllerFile.getParentFile().getAbsolutePath();
             
             sourceInfo = new SourceInfo(new FileSource(controllerFile, "UTF-8", true), parentPath);
@@ -968,8 +977,9 @@ public class XQueryURLRewrite extends HttpServlet {
         context.declareVariable("exist:resource", resource);
         request.setAttribute("$exist:resource", resource);
 
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("\nexist:path = " + path + "\nexist:resource = " + resource + "\nexist:controller = " + sourceInfo.controllerPath);
+        }
 	}
 
     private class ModelAndView {
