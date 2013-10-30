@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
+ *  Copyright (C) 2010-2013 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -167,4 +167,9 @@ public interface Configuration {
     public void save(DBBroker broker) throws PermissionDeniedException, ConfigurationException;
 
     public boolean equals(Object obj, String uniqField);
+    
+    /**
+     * Free up memory allocated for cache.
+     */
+    public void clearCache();
 }
