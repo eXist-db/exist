@@ -238,7 +238,7 @@ public class AnalyzerConfig {
 
     private static CharArraySet getConstructorParameterCharArraySetValues(Element param) {
         final Set<String> set = getConstructorParameterSetValues(param);
-        return CharArraySet.copy(Version.LUCENE_44, set);
+        return CharArraySet.copy(LuceneIndex.LUCENE_VERSION_IN_USE, set);
     }
 
     private static class KeyTypedValue {
