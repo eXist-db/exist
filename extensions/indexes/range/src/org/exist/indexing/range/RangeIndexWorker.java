@@ -679,12 +679,16 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     protected BytesRef analyzeContent(String field, QName qname, AtomicValue content, DocumentSet docs) throws XPathException {
-        Analyzer analyzer = getAnalyzer(qname, field, docs);
+        final Analyzer analyzer = getAnalyzer(qname, field, docs);
+        String data = content.getStringValue();
+        if (!isCaseSensitive(qname, field, docs)) {
+            data = data.toLowerCase();
+        }
         if (analyzer == null) {
-            return new BytesRef(content.getStringValue());
+            return new BytesRef(data);
         }
         try {
-            TokenStream stream = analyzer.tokenStream(field, new StringReader(content.getStringValue()));
+            TokenStream stream = analyzer.tokenStream(field, new StringReader(data));
             TermToBytesRefAttribute termAttr = stream.addAttribute(TermToBytesRefAttribute.class);
             BytesRef token = null;
             try {
@@ -721,6 +725,24 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
         return null;
+    }
+
+    /**
+     * Return the analyzer to be used for the given field or qname. Either field
+     * or qname should be specified.
+     */
+    private boolean isCaseSensitive(QName qname, String fieldName, DocumentSet docs) {
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
+            IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            if (idxConf != null) {
+                RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
+                if (config != null && !config.isCaseSensitive(qname, fieldName)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static boolean matchQName(QName qname, QName candidate) {
