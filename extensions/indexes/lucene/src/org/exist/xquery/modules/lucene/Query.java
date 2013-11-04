@@ -305,5 +305,13 @@ public class Query extends Function implements Optimizable {
             throw new XPathException(this, "Error while parsing options to ft:query: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        if (!postOptimization) {
+            preselectResult = null;
+        }
+    }
 }
 
