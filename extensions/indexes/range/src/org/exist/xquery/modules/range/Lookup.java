@@ -301,6 +301,15 @@ public class Lookup extends Function implements Optimizable {
     }
 
     @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        fallback.resetState(postOptimization);
+        if (!postOptimization) {
+            preselectResult = null;
+        }
+    }
+
+    @Override
     public boolean canOptimize(Sequence contextSequence) {
         return contextQName != null;
     }
