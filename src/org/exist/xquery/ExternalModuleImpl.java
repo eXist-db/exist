@@ -67,7 +67,7 @@ public class ExternalModuleImpl implements ExternalModule {
     }
 
     public boolean isReady() {
-        return false;
+        return isReady;
     }
 
     /* (non-Javadoc)
