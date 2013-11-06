@@ -109,7 +109,7 @@ public class ExistCollection extends ExistResource {
             }
 
             // Retrieve some meta data
-            permissions = collection.getPermissions();
+            permissions = collection.getPermissionsNoLock();
             readAllowed = permissions.validate(subject, Permission.READ);
             writeAllowed = permissions.validate(subject, Permission.WRITE);
             executeAllowed = permissions.validate(subject, Permission.EXECUTE);

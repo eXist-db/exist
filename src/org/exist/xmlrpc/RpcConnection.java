@@ -623,7 +623,7 @@ public class RpcConnection implements RpcAPI {
             final HashMap<String, Object> desc = new HashMap<String, Object>();
             final Vector<Map<String, Object>> docs = new Vector<Map<String, Object>>();
             final Vector<String> collections = new Vector<String>();
-            if (collection.getPermissions().validate(user, Permission.READ)) {
+            if (collection.getPermissionsNoLock().validate(user, Permission.READ)) {
                 for(final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                     final DocumentImpl doc = i.next();
                     final Permission perms = doc.getPermissions();
@@ -641,7 +641,7 @@ public class RpcConnection implements RpcAPI {
                 }
             }
             
-            final Permission perms = collection.getPermissions();
+            final Permission perms = collection.getPermissionsNoLock();
             desc.put("collections", collections);
             desc.put("documents", docs);
             desc.put("name", collection.getURI().toString());
@@ -776,12 +776,12 @@ public class RpcConnection implements RpcAPI {
             }
             final HashMap<String, Object> desc = new HashMap<String, Object>();
             final List<String> collections = new ArrayList<String>();
-            if (collection.getPermissions().validate(user, Permission.READ)) {
+            if (collection.getPermissionsNoLock().validate(user, Permission.READ)) {
                 for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
                     collections.add(i.next().toString());
                 }
             }
-            final Permission perms = collection.getPermissions();
+            final Permission perms = collection.getPermissionsNoLock();
             desc.put("collections", collections);
             desc.put("name", collection.getURI().toString());
             desc.put("created", Long.toString(collection.getCreationTime()));
@@ -886,7 +886,7 @@ public class RpcConnection implements RpcAPI {
                 LOG.debug("collection " + docUri.removeLastSegment() + " not found!");
                 return null;
             }
-            if(!collection.getPermissions().validate(user, Permission.READ)) {
+            if(!collection.getPermissionsNoLock().validate(user, Permission.READ)) {
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             }
             doc = collection.getDocumentWithLock(broker, docUri.lastSegment(), Lock.READ_LOCK);
@@ -1628,7 +1628,7 @@ public class RpcConnection implements RpcAPI {
                     }
                 }
             } else {
-                perm = collection.getPermissions();
+                perm = collection.getPermissionsNoLock();
             }
 
             final HashMap<String, Object> result = new HashMap<String, Object>();
@@ -1777,7 +1777,7 @@ public class RpcConnection implements RpcAPI {
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
                 {throw new EXistException("Collection " + collUri + " not found");}
-            if (!collection.getPermissions().validate(user, Permission.READ))
+            if (!collection.getPermissionsNoLock().validate(user, Permission.READ))
                 {throw new PermissionDeniedException(
                         "not allowed to read collection " + collUri);}
             final HashMap<String, List<Object>> result = new HashMap<String, List<Object>>(collection.getDocumentCount(broker));
@@ -1836,14 +1836,14 @@ public class RpcConnection implements RpcAPI {
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
                 {throw new EXistException("Collection " + collUri + " not found");}
-            if (!collection.getPermissions().validate(user, Permission.READ))
+            if (!collection.getPermissionsNoLock().validate(user, Permission.READ))
                 {throw new PermissionDeniedException("not allowed to read collection " + collUri);}
             final HashMap<XmldbURI, List<Object>> result = new HashMap<XmldbURI, List<Object>>(collection.getChildCollectionCount(broker));
             for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
             	final XmldbURI child = i.next();
             	final XmldbURI path = collUri.append(child);
                 final Collection childColl = broker.getCollection(path);
-                final Permission perm = childColl.getPermissions();
+                final Permission perm = childColl.getPermissionsNoLock();
                 final List<Object> tmp = new ArrayList<Object>(3);
                 tmp.add(perm.getOwner().getName());
                 tmp.add(perm.getGroup().getName());

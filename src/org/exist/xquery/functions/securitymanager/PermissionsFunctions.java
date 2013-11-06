@@ -467,7 +467,7 @@ public class PermissionsFunctions extends BasicFunction {
         final Permission permissions;
         final Collection col = context.getBroker().getCollection(pathUri);
         if(col != null) {
-            permissions = col.getPermissions();
+            permissions = col.getPermissionsNoLock();
         } else {
             final DocumentImpl doc = context.getBroker().getResource(pathUri, Permission.READ);
             if(doc != null) {
