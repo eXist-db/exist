@@ -159,6 +159,10 @@ public class RangeIndexConfigElement {
         return analyzer;
     }
 
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
+
     public boolean isComplex() {
         return false;
     }

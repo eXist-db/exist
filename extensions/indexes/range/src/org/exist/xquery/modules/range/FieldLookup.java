@@ -332,4 +332,13 @@ public class FieldLookup extends Function implements Optimizable {
     public int returnsType() {
         return Type.NODE;
     }
+
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        fallback.resetState(postOptimization);
+        if (!postOptimization) {
+            preselectResult = null;
+        }
+    }
 }
