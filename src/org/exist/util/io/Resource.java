@@ -805,7 +805,7 @@ public class Resource extends File {
     	
     	if (resource != null) {return resource.getPermissions();}
 
-    	if (collection != null) {return collection.getPermissions();}
+    	if (collection != null) {return collection.getPermissionsNoLock();}
     	
     	throw new IOException("this never should happen");
     }
@@ -1147,7 +1147,7 @@ public class Resource extends File {
 
 				@Override
 				public void modify(Collection collection) throws IOException {
-					Permission perm = collection.getPermissions();
+					Permission perm = collection.getPermissionsNoLock();
 					try {
                         perm.setMode(perm.getMode() | (READ << 6) & ~(WRITE << 6));
                     } catch (PermissionDeniedException e) {
@@ -1179,7 +1179,7 @@ public class Resource extends File {
 
 				@Override
 				public void modify(Collection collection) throws IOException {
-					Permission perm = collection.getPermissions();
+					Permission perm = collection.getPermissionsNoLock();
 					try {
                         perm.setMode(perm.getMode() | (EXECUTE << 6));
                     } catch (PermissionDeniedException e) {
