@@ -219,7 +219,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             final org.exist.collections.Collection collection = broker.getCollection(path);
             if (collection == null)
                 {throw new RemoteException("collection " + path + " not found");}
-            if (!collection.getPermissions().validate(session.getUser(), Permission.READ))
+            if (!collection.getPermissionsNoLock().validate(session.getUser(), Permission.READ))
                 {throw new RemoteException("permission denied");}
             final Collection c = new Collection();
             

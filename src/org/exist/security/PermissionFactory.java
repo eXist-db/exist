@@ -136,7 +136,7 @@ public class PermissionFactory {
                 // keep the write lock in the transaction
                 transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
 
-                final Permission permissions = collection.getPermissions();
+                final Permission permissions = collection.getPermissionsNoLock();
                 permissionModifier.modify(permissions);
 
                 broker.saveCollection(transaction, collection);
