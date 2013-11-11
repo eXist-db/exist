@@ -244,14 +244,6 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         return separator;
     }
 
-    @Override
-    public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-    }
-
-    @Override
-    public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
-    }
-
     private class NodePath {
         private Stack<QName> pathSegments = new Stack<QName>();
 

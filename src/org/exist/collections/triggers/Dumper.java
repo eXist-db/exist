@@ -52,10 +52,6 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
         }
     }
 	
-    /* (non-Javadoc)
-     * @see org.exist.collections.Trigger#prepare(org.exist.storage.DBBroker, org.exist.collections.Collection, java.lang.String, org.w3c.dom.Document)
-     */
-    @Override
     public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentName, DocumentImpl existingDocument) throws TriggerException {
 
         System.out.println("\nstoring document " + documentName + " into collection " + getCollection().getURI());
@@ -74,10 +70,6 @@ public class Dumper extends FilteringTrigger implements DocumentTrigger {
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
             System.out.println("\t" + i.next().getFileURI());
         }
-    }
-
-    @Override
-    public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
     }
 
     @Override
