@@ -33,7 +33,7 @@ import org.exist.xmldb.XmldbURI;
  *
  * @author aretter
  */
-public class CollectionTriggersVisitor extends AbstractTriggersVisitor<CollectionTrigger, CollectionTriggerProxies> implements CollectionTrigger {
+public class CollectionTriggersVisitor extends AbstractTriggersVisitor<CollectionTrigger> implements CollectionTrigger {
 
     protected Logger LOG = Logger.getLogger(getClass());
     
