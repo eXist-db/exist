@@ -29,14 +29,14 @@ import org.exist.storage.DBBroker;
  *
  * @author aretter
  */
-public abstract class AbstractTriggerProxies<T extends Trigger, P extends AbstractTriggerProxy<T>, D extends TriggersVisitor> implements TriggerProxies<P>{
+public abstract class AbstractTriggerProxies<T extends Trigger> implements TriggerProxies<T> {
 
     //extract signatures to interface
     
-    private List<P> proxies = new ArrayList<P>();
+    private List<TriggerProxy<T>> proxies = new ArrayList<TriggerProxy<T>>();
     
     @Override
-    public void add(P proxy) {
+    public void add(TriggerProxy<T> proxy) {
         proxies.add(proxy);
     }
     
@@ -44,7 +44,7 @@ public abstract class AbstractTriggerProxies<T extends Trigger, P extends Abstra
         
         final List<T> triggers = new ArrayList<T>(proxies.size());
         
-        for(final P proxy : proxies) {
+        for(final TriggerProxy<T> proxy : proxies) {
             triggers.add(proxy.newInstance(broker));
         }
         
@@ -52,5 +52,5 @@ public abstract class AbstractTriggerProxies<T extends Trigger, P extends Abstra
     }
     
     @Override
-    public abstract D instantiateVisitor(DBBroker broker);
+    public abstract TriggersVisitor<T> instantiateVisitor(DBBroker broker);
 }

@@ -24,6 +24,7 @@ package org.exist.collections.triggers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import org.exist.collections.Collection;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -72,7 +73,7 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
         return parameters;
     }
     
-    protected T newInstance(DBBroker broker) throws TriggerException {
+    public T newInstance(DBBroker broker) throws TriggerException {
         try {
             final T trigger = getClazz().newInstance();
 
@@ -94,19 +95,17 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
         }
     }
     
-    public static List<TriggerProxy> newInstance(Class c, XmldbURI collectionConfigurationURI, Map<String, List<? extends Object>> parameters) throws TriggerException {
+    public static List<TriggerProxy<? extends Trigger>> newInstance(Class<? extends Trigger> c, XmldbURI collectionConfigurationURI, Map<String, List<? extends Object>> parameters) throws TriggerException {
         
-        final List<TriggerProxy> proxies = new ArrayList<TriggerProxy>();
+        final List<TriggerProxy<? extends Trigger>> proxies = new ArrayList<TriggerProxy<? extends Trigger>>();
         
         if(DocumentTrigger.class.isAssignableFrom(c)) {
-            proxies.add(new DocumentTriggerProxy((Class<DocumentTrigger>)c, collectionConfigurationURI, parameters));
+            proxies.add(new DocumentTriggerProxy((Class<? extends DocumentTrigger>)c, collectionConfigurationURI, parameters));
         }
         
-        
         if(CollectionTrigger.class.isAssignableFrom(c)) {
-            proxies.add(new CollectionTriggerProxy((Class<CollectionTrigger>)c, collectionConfigurationURI, parameters));
+            proxies.add(new CollectionTriggerProxy((Class<? extends CollectionTrigger>)c, collectionConfigurationURI, parameters));
         } 
-        
         
         if(proxies.isEmpty()) {
             throw new TriggerException("Unknown Trigger class type: " + c.getName());

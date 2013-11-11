@@ -39,14 +39,13 @@ import org.xml.sax.ext.LexicalHandler;
  *
  * @author aretter
  */
-public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTrigger, DocumentTriggerProxies> implements DocumentTrigger {
+public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTrigger> implements DocumentTrigger {
 
     protected Logger LOG = Logger.getLogger(getClass());
     
     public DocumentTriggersVisitor(DBBroker broker, DocumentTriggerProxies proxies) {
         super(broker, proxies);
     }
-    
     
     @Override
     public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
