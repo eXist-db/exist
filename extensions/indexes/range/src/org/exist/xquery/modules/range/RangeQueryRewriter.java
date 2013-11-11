@@ -113,22 +113,27 @@ public class RangeQueryRewriter extends QueryRewriter {
             SequenceConstructor arg0 = null;
             SequenceConstructor arg1 = null;
 
+            List<Predicate> notOptimizable = new ArrayList<Predicate>(preds.size());
+
             // walk through the predicates attached to the current location step
             // check if expression can be optimized
             for (final Predicate pred : preds) {
                 if (pred.getLength() != 1) {
                     // can only optimize predicates with one expression
-                    return false;
+                    notOptimizable.add(pred);
+                    continue;
                 }
                 Expression innerExpr = pred.getExpression(0);
                 List<LocationStep> steps = getStepsToOptimize(innerExpr);
                 if (steps == null) {
-                    return false;
+                    notOptimizable.add(pred);
+                    continue;
                 }
                 // compute left hand path
                 NodePath innerPath = toNodePath(steps);
                 if (innerPath == null) {
-                    return false;
+                    notOptimizable.add(pred);
+                    continue;
                 }
                 NodePath path = new NodePath(contextPath);
                 path.append(innerPath);
@@ -156,13 +161,16 @@ public class RangeQueryRewriter extends QueryRewriter {
                             // append right hand expression as additional parameter
                             args.add(getKeyArg(innerExpr));
                         } else {
-                            return false;
+                            notOptimizable.add(pred);
+                            continue;
                         }
                     } else {
-                        return false;
+                        notOptimizable.add(pred);
+                        continue;
                     }
                 } else {
-                    return false;
+                    notOptimizable.add(pred);
+                    continue;
                 }
             }
             if (args != null) {
@@ -173,7 +181,16 @@ public class RangeQueryRewriter extends QueryRewriter {
                 func.setFallback(locationStep);
                 func.setLocation(locationStep.getLine(), locationStep.getColumn());
                 func.setArguments(args);
-                parent.replace(locationStep, new InternalFunctionCall(func));
+
+                Expression optimizedExpr = new InternalFunctionCall(func);
+                if (notOptimizable.size() > 0) {
+                    final FilteredExpression filtered = new FilteredExpression(getContext(), optimizedExpr);
+                    for (Predicate pred : notOptimizable) {
+                        filtered.addPredicate(pred);
+                    }
+                    optimizedExpr = filtered;
+                }
+                parent.replace(locationStep, optimizedExpr);
 
                 return true;
             }
