@@ -364,7 +364,7 @@ function ot:mixed-op-field2($city as xs:string, $street as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim", "Elefantenweg 67")
-    %test:assertXPath("empty($result//stats:index[@type = 'new-range'][@optimization = 2])")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:no-optimize-field-multi($city as xs:string, $street as xs:string) {
     collection($ot:COLLECTION)//address[street = $street][1]
 };

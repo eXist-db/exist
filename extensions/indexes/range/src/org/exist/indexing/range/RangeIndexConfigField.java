@@ -1,7 +1,26 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2013 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.indexing.range;
 
-import org.exist.dom.QName;
-import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
@@ -11,6 +30,14 @@ import org.w3c.dom.Element;
 
 import java.util.Map;
 
+/**
+ * Handles configuration of a field within an index definition:
+ *
+ * <pre>
+ * &lt;create match="//parent"&gt;
+ *   &lt;field name="field-name" match="@xml:id" type="xs:string"/&gt;
+ * </pre>
+ */
 public class RangeIndexConfigField {
 
     private String name;
@@ -19,7 +46,6 @@ public class RangeIndexConfigField {
     private int type = Type.STRING;
     protected boolean includeNested = false;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
-    protected boolean isQNameIndex = false;
     protected boolean caseSensitive = true;
 
     public RangeIndexConfigField(NodePath parentPath, Element elem, Map<String, String> namespaces) throws DatabaseConfigurationException {
@@ -39,11 +65,6 @@ public class RangeIndexConfigField {
             } catch (IllegalArgumentException e) {
                 throw new DatabaseConfigurationException("Range index module: invalid qname in configuration: " + e.getMessage());
             }
-        } else if (elem.hasAttribute("qname")) {
-            QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
-            path = new NodePath(qname);
-            relPath = path;
-            isQNameIndex = true;
         } else {
             path = parentPath;
         }
