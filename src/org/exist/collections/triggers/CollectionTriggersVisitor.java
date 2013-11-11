@@ -47,24 +47,6 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
     }
 
     @Override
-    public void prepare(int event, DBBroker broker, Txn txn, Collection collection, Collection newCollection) throws TriggerException {
-        for(final CollectionTrigger trigger : getTriggers()) {
-            trigger.prepare(event, broker, txn, collection, newCollection);
-        }
-    }
-
-    @Override
-    public void finish(int event, DBBroker broker, Txn txn, Collection collection, Collection newCollection) {
-        try {
-            for(final CollectionTrigger trigger : getTriggers()) {
-                trigger.finish(event, broker, txn, collection, newCollection);
-            }
-        } catch (final TriggerException te) {
-            LOG.error(te.getMessage(), te);
-        }
-    }
-
-    @Override
     public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
         for(final CollectionTrigger trigger : getTriggers()) {
             trigger.beforeCreateCollection(broker, txn, uri);

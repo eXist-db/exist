@@ -58,17 +58,10 @@ import org.xml.sax.InputSource;
  */
 public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger {
 
-        protected Logger LOG = Logger.getLogger(getClass());
+    protected Logger LOG = Logger.getLogger(getClass());
     
 	private DocumentImpl doc;
 	
-	/* (non-Javadoc)
-	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
-	 */
-	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument)
-		throws TriggerException {
-	}
-
 	/* (non-Javadoc)
 	 * @see org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
 	 */
@@ -108,9 +101,6 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
                 parent.setTriggersEnabled(true);
             }
     }
-
-	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
-	}
 
 	private void addRecord(DBBroker broker, String xupdate) throws TriggerException {
 		LOG.debug(xupdate);

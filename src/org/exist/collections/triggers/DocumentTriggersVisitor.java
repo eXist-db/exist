@@ -54,24 +54,6 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
     }
 
     @Override
-    public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-        for(final DocumentTrigger trigger : getTriggers()) {
-            trigger.prepare(event, broker, txn, documentPath, existingDocument);
-        }
-    }
-
-    @Override
-    public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
-        try {
-            for(final DocumentTrigger trigger : getTriggers()) {
-                trigger.finish(event, broker, txn, documentPath, document);
-            }
-        } catch (final TriggerException te) {
-            LOG.error(te.getMessage(), te);
-        }
-    }
-
-    @Override
     public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
         for(final DocumentTrigger trigger : getTriggers()) {
             trigger.beforeCreateDocument(broker, txn, uri);
