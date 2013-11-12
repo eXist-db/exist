@@ -54,7 +54,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     	this.sm = sm;
     }
     
-    protected UnixStylePermission(SecurityManager sm, long vector) {
+    protected UnixStylePermission(final SecurityManager sm, final long vector) {
         if(sm == null) {
             throw new IllegalArgumentException("Security manager can't be null");
         }
@@ -195,14 +195,19 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Get the mode
+     * Get the mode
      *
-     *@return    The mode
+     * @return The mode
      */
     @Override
     public int getMode() {
-        return (int) ((((vector >>> 31) & 1) << 11) | (((vector >>> 7) & 1) << 10) | (((vector >>> 3) & 1) << 9) | //setUid | setGid | sticky
-                ((((vector >>> 28) & 7) << 6) | (((vector >>> 4) & 7) << 3) | (vector & 7))); //userPerm | groupPerm | otherPerm
+        return (int)
+            ((((vector >>> 31) & 1) << 11) |    //setUid
+            (((vector >>> 7) & 1) << 10) |      //setGid
+            (((vector >>> 3) & 1) << 9) |       //sticky
+            ((((vector >>> 28) & 7) << 6) |     //userPerm
+            (((vector >>> 4) & 7) << 3) |       //groupPerm
+            (vector & 7)));                     //otherPerm
     }
 
     /**
@@ -232,7 +237,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
     public void setSetUid(final boolean setUid) {
-        this.vector = ((vector >>> 32) << 32) | (setUid ? 1 : 0) | (vector & 2147483647);
+        this.vector = (((vector >>> 31) | (setUid ? 1 : 0)) << 31) | (vector & 2147483647);
     }
 
     @Override
@@ -243,7 +248,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
     public void setSetGid(final boolean setGid) {
-        this.vector = ((vector >>> 8) << 8) | (setGid ? 1 : 0) | (vector & 127);
+        this.vector = (((vector >>> 7) | (setGid ? 1 : 0)) << 7) | (vector & 127);
     }
 
     @Override
@@ -254,7 +259,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
     public void setSticky(final boolean sticky) {
-        this.vector = ((vector >>> 4) << 4) | (sticky ? 1 : 0) | (vector & 7);
+        this.vector = (((vector >>> 3) | (sticky ? 1 : 0)) << 3) | (vector & 7);
     }
     
     /**
