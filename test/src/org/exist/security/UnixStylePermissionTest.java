@@ -341,6 +341,10 @@ public class UnixStylePermissionTest {
         assertEquals(0, permission.getMode());
     }
 
+    //TODO need tests for toString() to produce 's' and 'S' where appropriate... big 'S' indicates not 'x'
+    //TODO need tests for set then get uid/gid/sticky
+    
+    
     @Test
     public void permission_setFromModeString_unixSymbolic() throws SyntaxException, PermissionDeniedException {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
@@ -351,6 +355,10 @@ public class UnixStylePermissionTest {
         Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("u+rw-x");
         assertEquals(06, permission.getOwnerMode());
+        
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
+        permission.setMode("+rw-x");
+        assertEquals(0666, permission.getMode());
 
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("u+x,g+x,o+x");
@@ -363,6 +371,44 @@ public class UnixStylePermissionTest {
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0777);
         permission.setMode("u-rwx,g-rwx,o-rwx");
         assertEquals(0, permission.getMode());
+        
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission.setMode("u+w");
+        assertEquals(0755, permission.getMode());
+        
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission.setMode("u+w,g+w");
+        assertEquals(0775, permission.getMode());
+        
+        //setUid
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission.setMode("u+s");
+        assertEquals(04555, permission.getMode());
+        
+        //setGid
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission.setMode("g+s");
+        assertEquals(02555, permission.getMode());
+        
+        //setUid + setGid
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission.setMode("u+s,g+s");
+        assertEquals(06555, permission.getMode());
+        
+        //setUid + setGid (simplified)
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission.setMode("+s");
+        assertEquals(06555, permission.getMode());
+        
+        //sticky
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission.setMode("o+t");
+        assertEquals(01555, permission.getMode());
+        
+        //sticky (simplified)
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission.setMode("+t");
+        assertEquals(01555, permission.getMode());
     }
 
     @Test
