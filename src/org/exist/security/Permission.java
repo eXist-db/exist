@@ -58,8 +58,11 @@ public interface Permission {
     public final static String EXECUTE_STRING = "execute";
 
     public final static char SETUID_CHAR = 's';
+    public final static char SETUID_CHAR_NO_EXEC = 'S';
     public final static char SETGID_CHAR = 's';
+    public final static char SETGID_CHAR_NO_EXEC = 'S';
     public final static char STICKY_CHAR = 't';
+    public final static char STICKY_CHAR_NO_EXEC = 'T';
     public final static char READ_CHAR = 'r';
     public final static char WRITE_CHAR = 'w';
     public final static char EXECUTE_CHAR = 'x';
