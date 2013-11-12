@@ -54,7 +54,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
 
         final String clauses[] = symbolicMode.split(",");
         for(final String clause : clauses) {
-            final String whoPerm[] = clause.split("[+-=]");
+            final String whoPerm[] = clause.split("[+\\-=]");
 
             int perm = 0;
             boolean uidgid = false;
@@ -87,7 +87,15 @@ public abstract class AbstractUnixStylePermission implements Permission {
                 }
             }
 
-            for(final char c: whoPerm[0].toCharArray()) {
+            
+            final char whoose[];
+            if(whoPerm[0].length() > 0) {
+                whoose = whoPerm[0].toCharArray();
+            } else {
+                whoose = new char[]{ ALL_CHAR };
+            }
+            
+            for(final char c: whoose) {
                 switch(c) {
                     case ALL_CHAR:
                         final int newMode = (perm << 6) | (perm << 3) | perm | (sticky ? (STICKY << 9) : 0) | (uidgid ? ((SET_UID | SET_GID) << 9) : 0);
@@ -234,7 +242,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
         setMode(simpleSymbolicModeToInt(simpleSymbolicMode));
     }
 
-    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]+(?:[+-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR +"])+)+),?)+");
+    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]*(?:[+\\-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR +"])+)+),?)+");
     private final static Matcher unixSymbolicModeMatcher = unixSymbolicModePattern.matcher("");
 
     private final static Pattern existSymbolicModePattern = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
