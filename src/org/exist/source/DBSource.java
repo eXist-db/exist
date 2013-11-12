@@ -31,6 +31,7 @@ import java.io.Reader;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
@@ -195,5 +196,9 @@ public class DBSource extends AbstractSource {
             final String modeStr = new UnixStylePermissionAider(mode).toString();
             throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have '" + modeStr + "' access to resource '" + doc.getURI() + "'.");
         }
+    }
+    
+    public Permission getPermissions() {
+        return doc.getPermissions();
     }
 }
