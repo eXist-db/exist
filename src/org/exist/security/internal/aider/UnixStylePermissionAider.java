@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
+ *  Copyright (C) 2013 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -268,15 +268,15 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
         final char ch[] = new char[] {
             (mode & (READ << 6)) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & (WRITE << 6)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (SET_UID << 9)) == 0 ? ((mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETUID_CHAR,
+            (mode & (SET_UID << 9)) == 0 ? ((mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((mode & (EXECUTE << 6)) == 0 ? SETUID_CHAR_NO_EXEC : SETUID_CHAR),
             
             (mode & (READ << 3)) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & (WRITE << 3)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (SET_GID << 9)) == 0 ? ((mode & (EXECUTE << 3)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETGID_CHAR,
+            (mode & (SET_GID << 9)) == 0 ? ((mode & (EXECUTE << 3)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((mode & (EXECUTE << 3)) == 0 ? SETGID_CHAR_NO_EXEC : SETGID_CHAR),
 
             (mode & READ) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (STICKY << 9)) == 0 ? ((mode & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : STICKY_CHAR
+            (mode & (STICKY << 9)) == 0 ? ((mode & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((mode & EXECUTE) == 0 ? STICKY_CHAR_NO_EXEC : STICKY_CHAR)
         };
         return String.valueOf(ch);
     }

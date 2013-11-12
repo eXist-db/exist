@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2013 The eXist-db Project
+ *  Copyright (C) 2013 The eXist-db Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -349,15 +349,15 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         final char ch[] = new char[] {
             (vector & (READ << 28)) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & (WRITE << 28)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (vector & (1L << 31)) == 0 ? ((vector & (EXECUTE << 28)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETUID_CHAR,
+            (vector & (1L << 31)) == 0 ? ((vector & (EXECUTE << 28)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((vector & (EXECUTE << 28)) == 0 ? SETUID_CHAR_NO_EXEC : SETUID_CHAR),
             
             (vector & (READ << 4)) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & (WRITE << 4)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (vector & (1 << 7)) == 0 ? ((vector & (EXECUTE << 4)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETGID_CHAR,
+            (vector & (1 << 7)) == 0 ? ((vector & (EXECUTE << 4)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((vector & (EXECUTE << 4)) == 0 ? SETGID_CHAR_NO_EXEC : SETGID_CHAR),
 
             (vector & READ) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (vector & (1 << 3)) == 0 ? ((vector & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : STICKY_CHAR
+            (vector & (1 << 3)) == 0 ? ((vector & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((vector & EXECUTE) == 0 ? STICKY_CHAR_NO_EXEC : STICKY_CHAR)
         };
         return String.valueOf(ch);
     }
