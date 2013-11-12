@@ -85,9 +85,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Set the owner passed as User object
+     * Set the owner passed as User object
      *
-     *@param  account  The new owner value
+     * @param account The new owner value
      */
     @Override
     public void setOwner(Account account) {
@@ -121,9 +121,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Set the owner
+     * Set the owner
      *
-     *@param  name  The new owner value
+     * @param name The new owner value
      */
     @Override
     public void setOwner(final String name) {
@@ -144,9 +144,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Gets the group 
+     * Gets the group 
      *
-     *@return    The group value
+     * @return The group value
      */
     @Override
     public Group getGroup() {
@@ -158,9 +158,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
     
     /**
-     *  Set the owner group
+     * Set the owner group
      *
-     *@param  groupName  The new group value
+     * @param groupName The new group value
      */
     @Override
     public void setGroup(final String groupName) {
@@ -211,9 +211,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Set the mode
+     * Set the mode
      *
-     *@param  mode  The new mode value
+     * @param mode The new mode value
      */
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
@@ -263,9 +263,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
     
     /**
-     *  Get the active mode for the owner
+     * Get the active mode for the owner
      *
-     *@return    The mode value
+     * @return The mode value
      */
     @Override
     public int getOwnerMode() {
@@ -273,9 +273,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Set mode for the owner
+     * Set mode for the owner
      *
-     *@param  mode  The new owner mode value
+     * @param mode The new owner mode value
      */
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
@@ -289,9 +289,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Get the mode for group
+     * Get the mode for group
      *
-     *@return    The mode value
+     * @return The mode value
      */
     @Override
     public int getGroupMode() {
@@ -299,9 +299,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Sets mode for group
+     * Sets mode for group
      *
-     *@param  mode  The new mode value
+     * @param  mode The new mode value
      */
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
@@ -315,9 +315,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Get the mode for others
+     * Get the mode for others
      *
-     *@return    The mode value
+     * @return The mode value
      */
     @Override
     public int getOtherMode() {
@@ -325,9 +325,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Set mode for others
+     * Set mode for others
      *
-     *@param  mode  The new other mode value
+     * @param mode The new other mode value
      */
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
@@ -340,9 +340,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Format mode
+     * Format mode
      *
-     *@return the mode formatted as a string e.g. 'rwxrwxrwx'
+     * @return the mode formatted as a string e.g. 'rwxrwxrwx'
      */
     @Override
     public String toString() {
@@ -363,11 +363,11 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Check  if user has the requested mode for this resource.
+     * Check if user has the requested mode for this resource.
      *
-     *@param  user  The user
-     *@param  mode  The requested mode
-     *@return       true if user has the requested mode
+     * @param user The user
+     * @param mode The requested mode
+     * @return true if user has the requested mode
      */
     @Override
     public boolean validate(final Subject user, final int mode) {
