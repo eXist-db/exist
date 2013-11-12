@@ -32,14 +32,14 @@ import org.exist.xmldb.XmldbURI;
  * @author gpothier
  */
 public abstract class ResourceDescriptor {
-    private XmldbURI name;
-    private String owner;
-    private String group;
-    private String permissions;
-    private Date date;
+    private final XmldbURI name;
+    private final String owner;
+    private final String group;
+    private final String permissions;
+    private final Date date;
     
-    public ResourceDescriptor(XmldbURI aName, String aOwner, 
-                              String aGroup, String aPermissions, Date date ) {
+    public ResourceDescriptor(final XmldbURI aName, final String aOwner,
+            final String aGroup, final String aPermissions, final Date date ) {
         name = aName;
         owner = aOwner;
         group = aGroup;
@@ -63,31 +63,35 @@ public abstract class ResourceDescriptor {
         return permissions;
     }
     
-	public Date getDate() {
-		return date;
-	}
+    public Date getDate() {
+        return date;
+    }
 	
     public abstract boolean isCollection();
     
     public static class Document extends ResourceDescriptor {
-        public Document(XmldbURI aName, String aOwner, String aGroup, String aPermissions, Date date) {
+        public Document(final XmldbURI aName, final String aOwner,
+                final String aGroup, final String aPermissions, final Date date) {
             super(aName, aOwner, aGroup, aPermissions, date);
         }
         
+        @Override
         public boolean isCollection() {
             return false;
         }
     }
     
     public static class Collection extends ResourceDescriptor {
-        public Collection(XmldbURI aName) {
+        public Collection(final XmldbURI aName) {
             super(aName, null, null, null, null);
         }
         
-        public Collection(XmldbURI aName, String aOwner, String aGroup, String aPermissions, Date date) {
+        public Collection(final XmldbURI aName, final String aOwner,
+                final String aGroup, final String aPermissions, final Date date) {
             super(aName, aOwner, aGroup, aPermissions, date);
         }
         
+        @Override
         public boolean isCollection() {
             return true;
         }
