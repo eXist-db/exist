@@ -47,7 +47,8 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * op           ::= + | - | =
      * perm         ::= r | s | t | w | x
      */
-    private void setUnixSymbolicMode(final String symbolicMode) throws SyntaxException, PermissionDeniedException {
+    private void setUnixSymbolicMode(final String symbolicMode)
+            throws SyntaxException, PermissionDeniedException {
 
         //TODO expand perm to full UNIX chmod i.e. perm ::= r | s | t | w | x | X | u | g | o
 
@@ -186,7 +187,8 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * @deprecated setUnixSymbolicMode should be used instead
      */
     @Deprecated
-    private void setExistSymbolicMode(final String existSymbolicMode) throws SyntaxException, PermissionDeniedException {
+    private void setExistSymbolicMode(final String existSymbolicMode)
+            throws SyntaxException, PermissionDeniedException {
 
         LOG.warn("Permission modes should not be set using this format '" + existSymbolicMode + "', consider using the UNIX symbolic mode instead");
 
@@ -227,7 +229,8 @@ public abstract class AbstractUnixStylePermission implements Permission {
     /**
      * Simple symbolic mode is [rwxs-]{3}[rwxs-]{3}[rwxt-]{3}
      */
-    private void setSimpleSymbolicMode(final String simpleSymbolicMode) throws SyntaxException, PermissionDeniedException {
+    private void setSimpleSymbolicMode(final String simpleSymbolicMode)
+            throws SyntaxException, PermissionDeniedException {
         setMode(simpleSymbolicModeToInt(simpleSymbolicMode));
     }
 
@@ -243,9 +246,19 @@ public abstract class AbstractUnixStylePermission implements Permission {
     /**
      * Note we dont need @PermissionRequired(user = IS_DBA | IS_OWNER) here
      * because all of these methods delegate to the subclass implementation.
+     *
+     * @param modeStr The String representing a mode to set
+     *
+     * @throws org.exist.util.SyntaxException If the string syntax for the mode
+     * is not recognised. The following syntaxes are supported. Simple symbolic,
+     * Unix symbolic, eXist symbolic.
+     * 
+     * @throws org.exist.security.PermissionDeniedException If you do not have
+     * permission to set the mode
      */
     @Override
-    public final void setMode(final String modeStr) throws SyntaxException, PermissionDeniedException {
+    public final void setMode(final String modeStr) 
+            throws SyntaxException, PermissionDeniedException {
         simpleSymbolicModeMatcher.reset(modeStr);
 
         if(simpleSymbolicModeMatcher.matches()) {
@@ -325,8 +338,11 @@ public abstract class AbstractUnixStylePermission implements Permission {
     
     /**
      * Utility function for external use
+     *
+     * @param types Types to convert to a string representation
+     * @return The string representation of the types
      */
-    public static String typesToString(int types) {
+    public static String typesToString(final int types) {
         final StringBuilder builder = new StringBuilder();
         
         if((types >> 8) > 0) {
