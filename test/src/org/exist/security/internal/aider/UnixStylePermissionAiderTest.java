@@ -10,11 +10,11 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Adam Retter <adam@existsolutions.com>
  */
-public class UnixStylePermissionTest {
+public class UnixStylePermissionAiderTest {
 
     public class SecurityTestPair {
 
-        public SecurityTestPair(String permissionString, int permission) {
+        public SecurityTestPair(final String permissionString, final int permission) {
             this.permissionString = permissionString;
             this.permission = permission;
         }
@@ -26,7 +26,7 @@ public class UnixStylePermissionTest {
     @Test
     public void fromString() throws SyntaxException {
 
-        List<SecurityTestPair> securityTestPairs = new ArrayList<SecurityTestPair>();
+        final List<SecurityTestPair> securityTestPairs = new ArrayList<SecurityTestPair>();
         securityTestPairs.add(new SecurityTestPair("rwxrwxrwx", 511));
         securityTestPairs.add(new SecurityTestPair("rwxrwx---", 504));
         securityTestPairs.add(new SecurityTestPair("rwx------", 448));
@@ -39,8 +39,8 @@ public class UnixStylePermissionTest {
         securityTestPairs.add(new SecurityTestPair("-----s---", 1024));
         securityTestPairs.add(new SecurityTestPair("--------t", 512));
 
-        for(SecurityTestPair sec : securityTestPairs) {
-            UnixStylePermissionAider perm = UnixStylePermissionAider.fromString(sec.permissionString);
+        for(final SecurityTestPair sec : securityTestPairs) {
+            final UnixStylePermissionAider perm = UnixStylePermissionAider.fromString(sec.permissionString);
             assertEquals(sec.permission, perm.getMode());
             assertEquals(sec.permissionString, perm.toString());
         }
