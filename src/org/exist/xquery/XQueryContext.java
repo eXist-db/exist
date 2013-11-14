@@ -3016,6 +3016,25 @@ public class XQueryContext implements BinaryValueManager, Context
         return envs;
     }
 
+    /**
+     * Gets the Effective user
+     * i.e. the user that the query is executing as
+     * 
+     * @return The Effective User
+     */
+    public Subject getEffectiveUser() {
+        return getBroker().getSubject();
+    }
+    
+    /**
+     * Gets the Real User
+     * i.e. the user that initiated execution of the query
+     * Note this is not necessarily the same as the user that the
+     * query is executing as
+     * @see org.exist.xquery.XQueryContext#getEffectiveUser()
+     * 
+     * @return The Real User
+     */
     public Subject getRealUser() {
         return realUser;
     }
