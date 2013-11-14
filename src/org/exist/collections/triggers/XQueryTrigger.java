@@ -258,18 +258,6 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
 		return querySource;
 	}
 	
-	/**
-	 * @link org.exist.collections.Trigger#prepareForExecution(java.lang.String, org.w3c.dom.Document)
-	 */
-	public void prepare(int event, DBBroker broker, Txn transaction, 
-			XmldbURI documentPath, 
-			DocumentImpl existingDocument) throws TriggerException {
-		
-//		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document: '" + documentPath + "'");
-//		prepareForExecution(event, broker, transaction, documentPath, (XmldbURI) null);
-		
-	}
-	
 	private void prepare(int event, DBBroker broker, Txn transaction,
 			XmldbURI src, XmldbURI dst, boolean isCollection) throws TriggerException {
 		
@@ -358,18 +346,6 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
         }
     }
-    
-    /**
-     * @link org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
-     */
-    public void finish(int event, DBBroker broker, Txn transaction, 
-    		XmldbURI documentPath, 
-    		DocumentImpl document){
-    	
-//    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for document : '" + documentPath + "'");
-//    	finish(event, broker, transaction, documentPath, (XmldbURI) null);
-    	
-    }	
     
 	private void finish(int event, DBBroker broker, Txn transaction, XmldbURI src, XmldbURI dst, boolean isCollection) {
 		
@@ -640,295 +616,175 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
     
     //Collection's methods
 
-	public void prepare(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) throws TriggerException {
-//		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for collection: '" + collection.getURI() + "'");
-//		
-//		//get the query
-//		Source query = getQuerySource(broker);
-//		if(query == null)
-//			return;        
-//                        
-//		// avoid infinite recursion by allowing just one trigger per thread		
-//		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforePrepare(this, collection.getURI()))
-//		{
-//			return;
-//		}
-//		TriggerStatePerThread.setTransaction(transaction);
-//		
-//		XQueryContext context = service.newContext(AccessContext.TRIGGER);
-//         //TODO : further initialisations ?
-//        CompiledXQuery compiledQuery;
-//        try
-//        {
-//        	//compile the XQuery
-//        	compiledQuery = service.compile(context, query);
-//
-//        	//declare external variables
-//        	context.declareVariable(bindingPrefix + "eventType", EVENT_TYPE_PREPARE);
-//        	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
-//        	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
-//        	
-//        	//declare user defined parameters as external variables
-//        	for(Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
-//        	{
-//        		String varName = (String)itUserVarName.next();
-//        		String varValue = userDefinedVariables.getProperty(varName);
-//        	
-//        		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
-//        	}
-//        	
-//    		//context.declareVariable(bindingPrefix + "collection", Sequence.EMPTY_SEQUENCE);
-//        }
-//        catch(XPathException e)
-//        {
-//    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-//    		TriggerStatePerThread.setTransaction(null);
-//        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-//	    }
-//        catch(IOException e)
-//        {
-//    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-//    		TriggerStatePerThread.setTransaction(null);
-//        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-//	    }
-//
-//        //execute the XQuery
-//        try
-//        {
-//        	//TODO : should we provide another contextSet ?
-//	        NodeSet contextSet = NodeSet.EMPTY_SET;
-//			service.execute(compiledQuery, contextSet);
-//			//TODO : should we have a special processing ?
-//			LOG.debug("Trigger fired for prepareForExecution");
-//        }
-//        catch(XPathException e)
-//        {
-//    		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-//    		TriggerStatePerThread.setTransaction(null);
-//        	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
-//        }
-	}
-
-	public void finish(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) {
-//    	LOG.debug("Finishing " + eventToString(event) + " XQuery trigger for collection : '" + collection.getURI() + "'");
-//    	
-//    	//get the query
-//    	Source query = getQuerySource(broker);
-//		if (query == null)
-//			return;
-//    	
-//		// avoid infinite recursion by allowing just one trigger per thread
-//		if(!TriggerStatePerThread.verifyUniqueTriggerPerThreadBeforeFinish(this, collection.getURI()))
-//		{
-//			return;
-//		}
-//		
-//        XQueryContext context = service.newContext(AccessContext.TRIGGER);
-//        CompiledXQuery compiledQuery = null;
-//        try
-//        {
-//        	//compile the XQuery
-//        	compiledQuery = service.compile(context, query);
-//        	
-//        	//declare external variables
-//        	context.declareVariable(bindingPrefix + "eventType", EVENT_TYPE_FINISH);
-//        	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
-//        	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
-//
-//        	//declare user defined parameters as external variables
-//        	for(Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
-//        	{
-//        		String varName = (String)itUserVarName.next();
-//        		String varValue = userDefinedVariables.getProperty(varName);
-//        	
-//        		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
-//        	}
-//        	
-//    		//context.declareVariable(bindingPrefix + "collection", Sequence.EMPTY_SEQUENCE);
-//        }
-//        catch(XPathException e)
-//        {
-//        	//Should never be reached
-//        	LOG.error(e);
-//	    }
-//        catch(IOException e)
-//        {
-//	    	//Should never be reached
-//        	LOG.error(e);
-//	    }
-//
-//	    //execute the XQuery
-//        try
-//        {
-//        	//TODO : should we provide another contextSet ?
-//	        NodeSet contextSet = NodeSet.EMPTY_SET;	        
-//			service.execute(compiledQuery, contextSet);
-//			//TODO : should we have a special processing ?
-//        }
-//        catch (XPathException e)
-//        {
-//        	//Should never be reached
-//			LOG.error("Error during trigger finish", e);
-//        }
-//        
-//		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
-//		TriggerStatePerThread.setTransaction(null);
-//		LOG.debug("Trigger fired for finish");
-	}
-
 	@Override
-	public void beforeCreateCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.CREATE_COLLECTION)) {
-			prepare(1, broker, transaction, uri, (XmldbURI) null, true);
-		} else
-			{execute(true, broker, transaction, beforeCreateCollection, uri);}
+			prepare(1, broker, txn, uri, (XmldbURI) null, true);
+		} else {
+		    execute(true, broker, txn, beforeCreateCollection, uri);
+	    }
 	}
 
 	@Override
-	public void afterCreateCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
+	public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.CREATE_COLLECTION)) {
-			finish(1, broker, transaction, collection.getURI(), (XmldbURI) null, true);
-		} else
-			{execute(false, broker, transaction, afterCreateCollection, collection.getURI());}
+			finish(1, broker, txn, collection.getURI(), (XmldbURI) null, true);
+		} else {
+		    execute(false, broker, txn, afterCreateCollection, collection.getURI());
+	    }
 
 	}
 
 	@Override
-	public void beforeCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+	public void beforeCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.COPY_COLLECTION)) {
-			prepare(5, broker, transaction, collection.getURI(), newUri, true);
-		} else
-			{execute(true, broker, transaction, beforeCopyCollection, collection.getURI(), newUri);}
+			prepare(5, broker, txn, collection.getURI(), newUri, true);
+		} else {
+		    execute(true, broker, txn, beforeCopyCollection, collection.getURI(), newUri);
+	    }
 	}
 
 	@Override
-	public void afterCopyCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+	public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.COPY_COLLECTION)) {
-			finish(5, broker, transaction, collection.getURI(), newUri, true);
-		} else
-			{execute(false, broker, transaction, afterCopyCollection, collection.getURI(), newUri);}
+			finish(5, broker, txn, collection.getURI(), newUri, true);
+		} else {
+		    execute(false, broker, txn, afterCopyCollection, collection.getURI(), newUri);
+	    }
 	}
 
 	@Override
-	public void beforeMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI newUri) throws TriggerException {
+	public void beforeMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.MOVE_COLLECTION)) {
-			prepare(7, broker, transaction, collection.getURI(), newUri, true);
-		} else
-			{execute(true, broker, transaction, beforeMoveCollection, collection.getURI(), newUri);}
+			prepare(7, broker, txn, collection.getURI(), newUri, true);
+		} else {
+		    execute(true, broker, txn, beforeMoveCollection, collection.getURI(), newUri);
+	    }
 	}
 
 	@Override
-	public void afterMoveCollection(DBBroker broker, Txn transaction, Collection collection, XmldbURI oldUri) throws TriggerException {
+	public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.MOVE_COLLECTION)) {
-			finish(7, broker, transaction, oldUri, collection.getURI(), true);
-		} else
-			{execute(false, broker, transaction, afterMoveCollection, oldUri, collection.getURI());}
+			finish(7, broker, txn, oldUri, collection.getURI(), true);
+		} else {
+		    execute(false, broker, txn, afterMoveCollection, oldUri, collection.getURI());
+	    }
 	}
 
 	@Override
-	public void beforeDeleteCollection(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
+	public void beforeDeleteCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.DELETE_COLLECTION)) {
-			prepare(9, broker, transaction, collection.getURI(), (XmldbURI) null, true);
-		} else
-			{execute(true, broker, transaction, beforeDeleteCollection, collection.getURI());}
+			prepare(9, broker, txn, collection.getURI(), (XmldbURI) null, true);
+		} else {
+		    execute(true, broker, txn, beforeDeleteCollection, collection.getURI());
+	    }
 	}
 
 	@Override
-	public void afterDeleteCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.DELETE_COLLECTION)) {
-			finish(9, broker, transaction, collection.getURI(), (XmldbURI) null, true);
-		} else
-			{execute(false, broker, transaction, afterDeleteCollection, uri);}
+			finish(9, broker, txn, collection.getURI(), (XmldbURI) null, true);
+		} else {
+		    execute(false, broker, txn, afterDeleteCollection, uri);
+	    }
 	}
 
 	@Override
-	public void beforeCreateDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.CREATE_DOCUMENT)) {
-			prepare(0, broker, transaction, uri, (XmldbURI) null, false);
-		} else
-			{execute(true, broker, transaction, beforeCreateDocument, uri);}
+			prepare(0, broker, txn, uri, (XmldbURI) null, false);
+		} else {
+		    execute(true, broker, txn, beforeCreateDocument, uri);
+	    }
 	}
 
 	@Override
-	public void afterCreateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.CREATE_DOCUMENT)) {
-			finish(0, broker, transaction, document.getURI(), (XmldbURI) null, false);
-		} else
-			{execute(false, broker, transaction, afterCreateDocument, document.getURI());}
+			finish(0, broker, txn, document.getURI(), (XmldbURI) null, false);
+		} else {
+		    execute(false, broker, txn, afterCreateDocument, document.getURI());
+	    }
 	}
 
 	@Override
-	public void beforeUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.UPDATE_DOCUMENT)) {
-			prepare(2, broker, transaction, document.getURI(), (XmldbURI) null, false);
-		} else
-			{execute(true, broker, transaction, beforeUpdateDocument, document.getURI());}
+			prepare(2, broker, txn, document.getURI(), (XmldbURI) null, false);
+		} else {
+		    execute(true, broker, txn, beforeUpdateDocument, document.getURI());
+	    }
 	}
 
 	@Override
-	public void afterUpdateDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.UPDATE_DOCUMENT)) {
-			finish(2, broker, transaction, document.getURI(), (XmldbURI) null, false);
-		} else
-			{execute(false, broker, transaction, afterUpdateDocument, document.getURI());}
+			finish(2, broker, txn, document.getURI(), (XmldbURI) null, false);
+		} else {
+		    execute(false, broker, txn, afterUpdateDocument, document.getURI());
+	    }
 	}
 
 	@Override
-	public void beforeCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
-			prepare(4, broker, transaction, document.getURI(), newUri, false);
-		} else
-			{execute(true, broker, transaction, beforeCopyDocument, document.getURI());}
+			prepare(4, broker, txn, document.getURI(), newUri, false);
+		} else {
+		    execute(true, broker, txn, beforeCopyDocument, document.getURI());
+	    }
 	}
 
 	@Override
-	public void afterCopyDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.COPY_DOCUMENT)) {
-			finish(4, broker, transaction, document.getURI(), newUri, false);
-		} else
-			{execute(false, broker, transaction, afterCopyDocument, document.getURI());}
+			finish(4, broker, txn, document.getURI(), newUri, false);
+		} else {
+		    execute(false, broker, txn, afterCopyDocument, document.getURI());
+	    }
 	}
 
 	@Override
-	public void beforeMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI newUri) throws TriggerException {
+	public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
-			prepare(6, broker, transaction, document.getURI(), newUri, false);
-		} else
-			{execute(true, broker, transaction, beforeMoveDocument, document.getURI());}
+			prepare(6, broker, txn, document.getURI(), newUri, false);
+		} else {
+		    execute(true, broker, txn, beforeMoveDocument, document.getURI());
+	    }
 	}
 
 	@Override
-	public void afterMoveDocument(DBBroker broker, Txn transaction, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
+	public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.MOVE_DOCUMENT)) {
-			finish(6, broker, transaction, oldUri, document.getURI(), false);
-		} else
-			{execute(false, broker, transaction, afterMoveDocument, oldUri);}
+			finish(6, broker, txn, oldUri, document.getURI(), false);
+		} else {
+		    execute(false, broker, txn, afterMoveDocument, oldUri);
+	    }
 	}
 
 	@Override
-	public void beforeDeleteDocument(DBBroker broker, Txn transaction, DocumentImpl document) throws TriggerException {
+	public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.DELETE_DOCUMENT)) {
-			prepare(8, broker, transaction, document.getURI(), (XmldbURI) null, false);
-		} else
-			{execute(true, broker, transaction, beforeDeleteDocument, document.getURI());}
+			prepare(8, broker, txn, document.getURI(), (XmldbURI) null, false);
+		} else {
+		    execute(true, broker, txn, beforeDeleteDocument, document.getURI());
+	    }
 	}
 
 	@Override
-	public void afterDeleteDocument(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
+	public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 		if (events.contains(TriggerEvents.EVENTS.DELETE_DOCUMENT)) {
-			finish(8, broker, transaction, uri, (XmldbURI) null, false);
-		} else
-			{execute(false, broker, transaction, afterDeleteDocument, uri);}
+			finish(8, broker, txn, uri, (XmldbURI) null, false);
+		} else {
+		    execute(false, broker, txn, afterDeleteDocument, uri);
+	    }
 	}
 
 	@Override
 	public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-		// TODO Auto-generated method stub
 	}
 
 	/*public String toString() {
