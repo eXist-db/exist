@@ -41,7 +41,7 @@ public abstract class AbstractTriggersVisitor<T extends Trigger> implements Trig
     /**
      * lazy instantiated
      */
-    protected List<T> getTriggers() throws TriggerException {
+    public List<T> getTriggers() throws TriggerException {
         if(triggers == null) {
             triggers = proxies.instantiateTriggers(broker);
         }
