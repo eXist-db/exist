@@ -305,8 +305,20 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
                         } else if(i == 3) {
                             mode |= (SET_GID << 9);
                         }
+                        mode |= (EXECUTE << (6 - i));
+                        break;
+                    case SETUID_CHAR_NO_EXEC | SETGID_CHAR_NO_EXEC:
+                        if(i == 0) {
+                            mode |= (SET_UID << 9);
+                        } else if(i == 3) {
+                            mode |= (SET_GID << 9);
+                        }
                         break;
                     case STICKY_CHAR:
+                        mode |= (STICKY << 9);
+                        mode |= (EXECUTE << (6 - i));
+                        break;
+                    case STICKY_CHAR_NO_EXEC:
                         mode |= (STICKY << 9);
                         break;
                     case UNSET_CHAR:
