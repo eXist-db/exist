@@ -123,20 +123,6 @@ public class STXTransformerTrigger extends FilteringTrigger implements DocumentT
         }
     }
 
-
-    /* (non-Javadoc)
-     * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
-     */
-    @Override
-    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument) throws TriggerException {
-		prepare();
-    }
-
-    @Override
-    public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
-            // TODO Auto-generated method stub
-    }
-    
     private void prepare() {
         final SAXResult result = new SAXResult();
         result.setHandler(getOutputHandler());

@@ -46,16 +46,6 @@ public class RestXqTrigger extends FilteringTrigger {
     protected final static Logger LOG = Logger.getLogger(RestXqTrigger.class);
     
     @Override
-    public void prepare(final int event, final DBBroker broker, final Txn transaction, final XmldbURI documentPath, final DocumentImpl existingDocument) throws TriggerException {
-        
-    }
-
-    @Override
-    public void finish(final int event, final DBBroker broker, final Txn transaction, final XmldbURI documentPath, final DocumentImpl document) {
-        
-    }
-
-    @Override
     public void beforeCreateDocument(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws TriggerException {
     }
 
