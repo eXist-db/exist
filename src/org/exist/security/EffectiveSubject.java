@@ -35,7 +35,7 @@ public class EffectiveSubject implements Subject {
     
     @Override
     public String getName() {
-        return getUsername();
+        return "Effective: " + account.getName();
     }
     
     @Override
