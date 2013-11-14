@@ -41,13 +41,13 @@ public interface Permission {
     
     public final static int DEFAULT_TEMPORARY_DOCUMENT_PERM = 0771;
 
-    public final static int SET_UID = 4;
-    public final static int SET_GID = 2;
-    public final static int STICKY = 1;
+    public final static int SET_UID = 04;
+    public final static int SET_GID = 02;
+    public final static int STICKY = 01;
 
-    public final static int READ = 4;
-    public final static int WRITE = 2;
-    public final static int EXECUTE = 1;
+    public final static int READ = 04;
+    public final static int WRITE = 02;
+    public final static int EXECUTE = 01;
 	
     public final static String USER_STRING = "user";
     public final static String GROUP_STRING = "group";
