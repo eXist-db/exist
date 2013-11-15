@@ -50,10 +50,12 @@ public class JSONWriter extends XMLWriter {
     private final static String ARRAY = "array";
     private final static String LITERAL = "literal";
     private final static String VALUE = "value";
+    private final static String NAME = "name";
     
     private final static String JSON_ARRAY = "json:" + ARRAY;
     private final static String JSON_LITERAL = "json:" + LITERAL;
     private final static String JSON_VALUE = "json:" + VALUE;
+    private final static String JSON_NAME = "json:" + NAME;
     
     public final static String JASON_NS = "http://www.json.org";
 	
@@ -183,6 +185,8 @@ public class JSONWriter extends XMLWriter {
             parent.setSerializationType(JSONNode.SerializationType.AS_ARRAY);
         } else if(qname.equals(JSON_LITERAL)) {
             parent.setSerializationType(JSONNode.SerializationType.AS_LITERAL);
+        } else if(qname.equals(JSON_NAME)) {
+            parent.setName(value);
         } else {
             final String name = prefixAttributes ? "@" + qname : qname;
             final JSONSimpleProperty obj = new JSONSimpleProperty(name, value);
