@@ -568,6 +568,15 @@ public class XMLDBSecurityTest {
         assertEquals("<xquery>3</xquery>", result.getResource(0).getContent());
     }
             
+    /**
+     * 1) Sets '/db' to rwxr-xr-x (0755)
+     * 2) Adds the Group 'users'
+     * 3) Adds the User 'test1' with password 'test1' and set's their primary group to 'users'
+     * 4) Adds the User 'test2' with password 'test2' and set's their primary group to 'users'
+     * 5) Creates the Collection '/db/securityTest1' owned by 'test1':'users' with permissions rwxrwx--- (0770)
+     * 6) Creates the XML resource '/db/securityTest1/test.xml' owned by 'test1':'users' with permissions rwxrwx--- (0770)
+     * 7) Creates the Binary resource '/db/securityTest1/test.bin' owned by 'test1':'users' with permissions rwxrwx--- (0770)
+     */
     @Before
     public void setup() {
         try {
@@ -602,7 +611,7 @@ public class XMLDBSecurityTest {
             user.setPassword("test2");
             ums.addAccount(user);
 
-            // create a collection /db/securityTest as user "test1"
+            // create a collection /db/securityTest1 as user "test1"
             CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
             Collection test = cms.createCollection("securityTest1");
             ums = (UserManagementService) test.getService("UserManagementService", "1.0");
