@@ -101,7 +101,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         final int type = content.getType();
         BytesRef bytes;
         if (Type.subTypeOf(type, Type.STRING)) {
-            BytesRef key = analyzeContent(field, qname, content, docs);
+            BytesRef key = null;
+            if (operator != RangeIndex.Operator.MATCH) {
+                key = analyzeContent(field, qname, content.getStringValue(), docs);
+            }
             WildcardQuery query;
             switch (operator) {
                 case EQ:
@@ -122,7 +125,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     return query;
                 case MATCH:
-                    return new RegexpQuery(new Term(field, key));
+                    RegexpQuery regexQuery = new RegexpQuery(new Term(field, content.getStringValue()));
+                    regexQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    return regexQuery;
             }
         }
         if (operator == RangeIndex.Operator.EQ) {
@@ -678,9 +683,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return indexes;
     }
 
-    protected BytesRef analyzeContent(String field, QName qname, AtomicValue content, DocumentSet docs) throws XPathException {
+    protected BytesRef analyzeContent(String field, QName qname, String data, DocumentSet docs) throws XPathException {
         final Analyzer analyzer = getAnalyzer(qname, field, docs);
-        String data = content.getStringValue();
         if (!isCaseSensitive(qname, field, docs)) {
             data = data.toLowerCase();
         }
