@@ -26,9 +26,9 @@ import org.xmldb.api.modules.XMLResource;
 @RunWith(Parameterized.class)
 public class XMLDBSecurityTest {
 
-    private static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
+    private static final String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-    private String baseUri;
+    private final String baseUri;
 
     private static JettyStart server;
 
@@ -567,6 +567,76 @@ public class XMLDBSecurityTest {
         final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/test.xquery");
         assertEquals("<xquery>3</xquery>", result.getResource(0).getContent());
     }
+    
+    @Test
+    public void setUidXQueryCanWriteRestrictedCollection() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+         
+        final long timestamp = System.currentTimeMillis();
+        final String content = "<setuid>" + timestamp + "</setuid>";
+        
+        //create an XQuery /db/securityTest1/setuid.xquery
+        final String xquery = "xmldb:store('/db/securityTest1/forSetUidWrite', 'setuid.xml', " + content + ")";
+        Resource xqueryResource = test.createResource("setuid.xquery", "BinaryResource");
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
+        
+        //set the xquery to be owned by 'test1' and set it 'setuid', and set it 'rx' by 'users' group so 'test2' can execute it!
+        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+        xqueryResource = test.getResource("setuid.xquery");
+        ums.chmod(xqueryResource, 04750);
+        
+        //create a collection for the XQuery to write into
+        final CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+        final Collection colForSetUid = cms.createCollection("forSetUidWrite");
+        
+        //only allow the user 'test1' to write into the collection
+        ums = (UserManagementService)colForSetUid.getService("UserManagementService", "1.0");
+        ums.chmod(0700);
+        
+        //execute the XQuery as the 'test2' user... it should become 'setuid' of 'test1' and succeed.
+        final Collection test2 = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final XPathQueryServiceImpl queryService = (XPathQueryServiceImpl)test2.getService("XPathQueryService", "1.0");
+        final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/setuid.xquery");
+        assertEquals("/db/securityTest1/forSetUidWrite/setuid.xml", result.getResource(0).getContent());
+        
+        //check the written content
+        final Resource writtenXmlResource = colForSetUid.getResource("setuid.xml");
+        assertEquals(content, writtenXmlResource.getContent());
+    }
+    
+    @Test(expected=XMLDBException.class)
+    public void nonSetUidXQueryCannotWriteRestrictedCollection() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+         
+        final long timestamp = System.currentTimeMillis();
+        final String content = "<not_setuid>" + timestamp + "</not_setuid>";
+        
+        //create an XQuery /db/securityTest1/setuid.xquery
+        final String xquery = "xmldb:store('/db/securityTest1/forSetUidWrite', 'not_setuid.xml', " + content + ")";
+        Resource xqueryResource = test.createResource("not_setuid.xquery", "BinaryResource");
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
+        
+        //set the xquery to be owned by 'test1' and do NOT set it 'setuid', and do set it 'rx' by 'users' group so 'test2' can execute it!
+        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+        xqueryResource = test.getResource("not_setuid.xquery");
+        ums.chmod(xqueryResource, 00750); //NOT SETUID
+        
+        //create a collection for the XQuery to write into
+        final CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+        final Collection colForSetUid = cms.createCollection("forSetUidWrite");
+        
+        //only allow the user 'test1' to write into the collection
+        ums = (UserManagementService)colForSetUid.getService("UserManagementService", "1.0");
+        ums.chmod(0700);
+        
+        //execute the XQuery as the 'test2' user... it should become 'setuid' of 'test1' and succeed.
+        final Collection test2 = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final XPathQueryServiceImpl queryService = (XPathQueryServiceImpl)test2.getService("XPathQueryService", "1.0");
+        final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/not_setuid.xquery");
+        assertFalse("/db/securityTest1/forSetUidWrite/not_setuid.xml".equals(result.getResource(0).getContent()));
+    }
             
     /**
      * 1) Sets '/db' to rwxr-xr-x (0755)
@@ -585,22 +655,24 @@ public class XMLDBSecurityTest {
 
             ums.chmod("rwxr-xr-x"); //ensure /db is always 755
 
-            Account test1 = ums.getAccount("test1");
-            if(test1 != null){
-                ums.removeAccount(test1);
+            //remove accounts 'test1' and 'test2'
+            final Account[] accounts = ums.getAccounts();
+            for(final Account account: accounts) {
+                if(account.getName().equals("test1") || account.getName().equals("test2")) {
+                    ums.removeAccount(account);
+                }
+            }
+            
+            //remove group 'users'
+            final String[] groupNames = ums.getGroups();
+            for(final String groupName: groupNames) {
+                if(groupName.equals("users")) {
+                    final Group group = ums.getGroup(groupName);
+                    ums.removeGroup(group);
+                }
             }
 
-            final Account test2 = ums.getAccount("test2");
-            if(test2 != null){
-                ums.removeAccount(test2);
-            }
-
-            Group group = ums.getGroup("users");
-            if(group != null){
-                ums.removeGroup(group);
-            }
-
-            group = new GroupAider("exist", "users");
+            final Group group = new GroupAider("exist", "users");
             ums.addGroup(group);
 
             UserAider user = new UserAider("test1", group);
@@ -616,7 +688,7 @@ public class XMLDBSecurityTest {
             Collection test = cms.createCollection("securityTest1");
             ums = (UserManagementService) test.getService("UserManagementService", "1.0");
             // pass ownership to test1
-            test1 = ums.getAccount("test1");
+            final Account test1 = ums.getAccount("test1");
             ums.chown(test1, "users");
             // full permissions for user and group, none for world
             ums.chmod(0770);
@@ -690,14 +762,6 @@ public class XMLDBSecurityTest {
 
     @AfterClass
     public static void stopServer() {
-//        try {
-//         Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
-//            DatabaseInstanceManager mgr =
-//                (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-//            mgr.shutdown();
-//        } catch (XMLDBException e) {
-//            e.printStackTrace();
-//        }
         System.out.println("Shutdown standalone server...");
         server.shutdown();
         server = null;
