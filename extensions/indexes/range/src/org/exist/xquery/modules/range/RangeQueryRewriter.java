@@ -108,7 +108,6 @@ public class RangeQueryRewriter extends QueryRewriter {
     private boolean tryRewriteToFields(LocationStep locationStep, RewritableExpression parentExpr, List<Predicate> preds, NodePath contextPath) throws XPathException {
         // without context path, we cannot rewrite the entire query
         if (contextPath != null) {
-            RangeIndex.Operator operator = null;
             List<Expression> args = null;
             SequenceConstructor arg0 = null;
             SequenceConstructor arg1 = null;
@@ -207,6 +206,18 @@ public class RangeQueryRewriter extends QueryRewriter {
             Lookup func = Lookup.create(comparison.getContext(), getOperator(expression));
             func.setArguments(eqArgs);
             return func;
+        } else if (expression instanceof InternalFunctionCall) {
+            InternalFunctionCall fcall = (InternalFunctionCall) expression;
+            Function function = fcall.getFunction();
+            if (function instanceof Lookup) {
+                if (function.isCalledAs("matches")) {
+                    eqArgs.add(function.getArgument(0));
+                    eqArgs.add(function.getArgument(1));
+                    Lookup func = Lookup.create(function.getContext(), RangeIndex.Operator.MATCH);
+                    func.setArguments(eqArgs);
+                    return func;
+                }
+            }
         }
         return null;
     }
@@ -214,6 +225,12 @@ public class RangeQueryRewriter extends QueryRewriter {
     private Expression getKeyArg(Expression expression) {
         if (expression instanceof GeneralComparison) {
             return ((GeneralComparison)expression).getRight();
+        } else if (expression instanceof InternalFunctionCall) {
+            InternalFunctionCall fcall = (InternalFunctionCall) expression;
+            Function function = fcall.getFunction();
+            if (function instanceof Lookup) {
+                return function.getArgument(1);
+            }
         }
         return null;
     }
@@ -222,6 +239,14 @@ public class RangeQueryRewriter extends QueryRewriter {
         if (expr instanceof GeneralComparison) {
             GeneralComparison comparison = (GeneralComparison) expr;
             return BasicExpressionVisitor.findLocationSteps(comparison.getLeft());
+        } else if (expr instanceof InternalFunctionCall) {
+            InternalFunctionCall fcall = (InternalFunctionCall) expr;
+            Function function = fcall.getFunction();
+            if (function instanceof Lookup) {
+                if (function.isCalledAs("matches")) {
+                    return BasicExpressionVisitor.findLocationSteps(function.getArgument(0));
+                }
+            }
         }
         return null;
     }
@@ -260,6 +285,12 @@ public class RangeQueryRewriter extends QueryRewriter {
                             break;
                     }
                     break;
+            }
+        } else if (expr instanceof InternalFunctionCall) {
+            InternalFunctionCall fcall = (InternalFunctionCall) expr;
+            Function function = fcall.getFunction();
+            if (function instanceof Lookup && function.isCalledAs("matches")) {
+                operator = RangeIndex.Operator.MATCH;
             }
         }
         return operator;

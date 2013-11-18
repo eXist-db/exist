@@ -151,6 +151,14 @@ function ot:optimize-contains-string($name as xs:string) {
 
 declare
     %test:stats
+    %test:args("[rR]udi .*")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-matches-string($name as xs:string) {
+    collection($ot:COLLECTION)//address[range:matches(name, $name)]
+};
+
+declare
+    %test:stats
     %test:args("Rudi Rüssel")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-eq-string-self($name as xs:string) {
@@ -322,6 +330,14 @@ declare
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-contains-field($city as xs:string) {
     collection($ot:COLLECTION)//address[contains(city, $city)]
+};
+
+declare
+    %test:stats
+    %test:args("[rR]üssel.*")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-matches-field($city as xs:string) {
+    collection($ot:COLLECTION)//address[range:matches(city, $city)]
 };
 
 declare
