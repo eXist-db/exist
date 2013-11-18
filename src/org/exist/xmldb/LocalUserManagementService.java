@@ -197,7 +197,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return modifyCollection(broker, childUri, new DatabaseItemModifier<org.exist.collections.Collection, Void>() {
                         @Override
                         public Void modify(org.exist.collections.Collection collection) throws PermissionDeniedException, LockException {
-                            final Permission permission = collection.getPermissions();
+                            final Permission permission = collection.getPermissionsNoLock();
                             permission.setOwner(owner);
                             permission.setGroup(group);
                             permission.setMode(mode);
@@ -346,7 +346,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return modifyCollection(broker, collUri, new DatabaseItemModifier<org.exist.collections.Collection, Void>() {
                         @Override
                         public Void modify(org.exist.collections.Collection collection) throws PermissionDeniedException, SyntaxException, LockException {
-                            final Permission permission = collection.getPermissions();
+                            final Permission permission = collection.getPermissionsNoLock();
                             permission.setOwner(u);
                             permission.setGroup(group);
                             return null;
@@ -486,7 +486,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
     @Override
     public Permission getPermissions(Collection coll) throws XMLDBException {
         if(coll instanceof LocalCollection) {
-            return ((LocalCollection) coll).getCollection().getPermissions();
+            return ((LocalCollection) coll).getCollection().getPermissionsNoLock();
         }
         return null;
     }
@@ -576,7 +576,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return readCollection(broker, collectionUri, new DatabaseItemReader<org.exist.collections.Collection, Permission[]>(){
                         @Override
                         public Permission[] read(org.exist.collections.Collection collection) throws PermissionDeniedException {
-                            if(!collection.getPermissions().validate(user, Permission.READ)) {
+                            if(!collection.getPermissionsNoLock().validate(user, Permission.READ)) {
                                     return new Permission[0];
                             }
                             
@@ -609,7 +609,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                     return readCollection(broker, collectionUri, new DatabaseItemReader<org.exist.collections.Collection, Permission[]>(){
                         @Override
                         public Permission[] read(org.exist.collections.Collection collection) throws XMLDBException, PermissionDeniedException {
-                            if(!collection.getPermissions().validate(user, Permission.READ)) {
+                            if(!collection.getPermissionsNoLock().validate(user, Permission.READ)) {
 				return new Permission[0];
                             }
                             
@@ -621,7 +621,7 @@ public class LocalUserManagementService implements EXistUserManagementService {
                                 Permission childPermission = readCollection(broker, childCollectionUri, new DatabaseItemReader<org.exist.collections.Collection, Permission>(){
                                     @Override
                                     public Permission read(org.exist.collections.Collection childCollection) {
-                                        return childCollection.getPermissions();
+                                        return childCollection.getPermissionsNoLock();
                                     }
                                 });
                                 perms[i++] = childPermission;

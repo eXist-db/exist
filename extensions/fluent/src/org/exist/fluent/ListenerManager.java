@@ -256,14 +256,6 @@ public class ListenerManager {
 		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map parameters)  {
 			// nothing to do
 		}
-		public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-			EventKey key = new EventKey(documentPath.getCollectionPath(), event, true);
-			INSTANCE.fire(key, existingDocument);
-		}
-		public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
-			EventKey key = new EventKey(documentPath.getCollectionPath(), event, false);
-			INSTANCE.fire(key, key.trigger == Trigger.AFTER_REMOVE ? null : document);
-		}
 		public boolean isValidating() {
 			return validating;
 		}
@@ -346,12 +338,6 @@ public class ListenerManager {
 			lexicalHandler.startEntity(name);
 		}
 
-		@Override
-		public void prepare(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) throws TriggerException {
-		}
-		@Override
-		public void finish(int event, DBBroker broker, Txn transaction, Collection collection, Collection newCollection) {
-		}
 		@Override
 		public void beforeCreateCollection(DBBroker broker, Txn transaction, XmldbURI uri) throws TriggerException {
 			EventKey key = new EventKey(uri.toString(), Trigger.BEFORE_CREATE);
