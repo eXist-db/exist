@@ -580,7 +580,7 @@ public class Deployment {
         Collection collection = null;
         try {
             collection = broker.getOrCreateCollection(txn, target);
-            setPermissions(true, null, collection.getPermissions());
+            setPermissions(true, null, collection.getPermissionsNoLock());
             broker.saveCollection(txn, collection);
             mgr.commit(txn);
         } catch (final Exception e) {

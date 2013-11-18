@@ -405,7 +405,7 @@ public class RESTServer {
                 // no document: check if path points to a collection
                 final Collection collection = broker.getCollection(pathUri);
                 if (collection != null) {
-                    if (safeMode || !collection.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+                    if (safeMode || !collection.getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
                         throw new PermissionDeniedException("Not allowed to read collection");
                     }
                     // return a listing of the collection contents
@@ -577,7 +577,7 @@ public class RESTServer {
                     return;
                 }
 
-                if (!col.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+                if (!col.getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
                     throw new PermissionDeniedException(
                             "Permission to read resource " + path + " denied");
                 }
@@ -1929,7 +1929,7 @@ public class RESTServer {
                         String.valueOf(collection.getCreationTime()));
             }
 
-            addPermissionAttributes(attrs, collection.getPermissions());
+            addPermissionAttributes(attrs, collection.getPermissionsNoLock());
 
             serializer.startElement(Namespaces.EXIST_NS, "collection",
                     "exist:collection", attrs);
@@ -1939,7 +1939,7 @@ public class RESTServer {
                 final Collection childCollection = broker.getCollection(collection
                         .getURI().append(child));
                 if (childCollection != null
-                        && childCollection.getPermissions().validate(broker.getSubject(), Permission.READ)) {
+                        && childCollection.getPermissionsNoLock().validate(broker.getSubject(), Permission.READ)) {
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA", child.toString());
 
@@ -1954,7 +1954,7 @@ public class RESTServer {
                                 String.valueOf(childCollection.getCreationTime()));
                     }
 
-                    addPermissionAttributes(attrs, childCollection.getPermissions());
+                    addPermissionAttributes(attrs, childCollection.getPermissionsNoLock());
                     serializer.startElement(Namespaces.EXIST_NS, "collection", "exist:collection", attrs);
                     serializer.endElement(Namespaces.EXIST_NS, "collection", "exist:collection");
                 }

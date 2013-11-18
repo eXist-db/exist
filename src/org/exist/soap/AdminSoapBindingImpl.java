@@ -516,7 +516,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             final CollectionDesc desc = new CollectionDesc();
             final List<DocumentDesc> docs = new ArrayList<DocumentDesc>();
             final List<String> collections = new ArrayList<String>();
-            if (collection.getPermissions().validate(session.getUser(), Permission.READ)) {
+            if (collection.getPermissionsNoLock().validate(session.getUser(), Permission.READ)) {
                 DocumentImpl doc;
 //              Hashtable hash;
                 Permission perms;
@@ -538,7 +538,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                     collections.add(i.next().toString());
                 }
             }
-            Permission perms = collection.getPermissions();
+            Permission perms = collection.getPermissionsNoLock();
             desc.setCollections(new Strings(collections.toArray(new String[collections.size()])));
             desc.setDocuments(new DocumentDescs(docs.toArray(new DocumentDesc[docs.size()])));
             desc.setName(collection.getURI().toString());
@@ -602,7 +602,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 throw new PermissionDeniedException("not allowed to change permissions");
             }
             LOG.debug("changing permissions on collection " + resource);
-            final Permission perm = collection.getPermissions();
+            final Permission perm = collection.getPermissionsNoLock();
             if (perm.getOwner().equals(session.getUser())
             || manager.hasAdminPrivileges(session.getUser())) {
                 perm.setMode(permissions);
@@ -1124,7 +1124,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 	            			{doc.getUpdateLock().release(Lock.READ_LOCK);}
 	            	}
 	            } else {
-	                perm = collection.getPermissions();
+	                perm = collection.getPermissionsNoLock();
 	            }
 	            final Permissions p = new Permissions();
 	            p.setOwner(perm.getOwner().getName());
@@ -1160,7 +1160,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
                 {throw new EXistException("Collection " + name + " not found");}
-            if (!collection.getPermissions().validate(user, Permission.READ))
+            if (!collection.getPermissionsNoLock().validate(user, Permission.READ))
                 {throw new PermissionDeniedException(
                         "not allowed to read collection " + name);}
             final EntityPermissions[] result = new EntityPermissions[collection.getChildCollectionCount(broker)];
@@ -1172,7 +1172,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 child = i.next();
                 path = name.append(child);
                 childColl = broker.getCollection(path);
-                perm = childColl.getPermissions();
+                perm = childColl.getPermissionsNoLock();
                 result[cnt] = new EntityPermissions();
                 result[cnt].setName(child.toString());
                 result[cnt].setOwner(perm.getOwner().getName());
@@ -1208,7 +1208,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             collection = broker.openCollection(name, Lock.READ_LOCK);
             if (collection == null)
                 {throw new EXistException("Collection " + name + " not found");}
-            if (!collection.getPermissions().validate(user, Permission.READ))
+            if (!collection.getPermissionsNoLock().validate(user, Permission.READ))
                 {throw new PermissionDeniedException(
                         "not allowed to read collection " + name);}
             final EntityPermissions[] result = new EntityPermissions[collection.getDocumentCount(broker)];
