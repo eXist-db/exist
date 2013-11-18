@@ -166,6 +166,21 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 } else {
                     return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
                 }
+            case Type.DATE:
+                long dl = RangeIndexConfigElement.dateToLong((DateValue) content);
+                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                    return NumericRangeQuery.newLongRange(field, null, dl, includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newLongRange(field, dl, null, includeLower, includeUpper);
+                }
+            case Type.TIME:
+                long tl = RangeIndexConfigElement.timeToLong((TimeValue) content);
+                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                    return NumericRangeQuery.newLongRange(field, null, tl, includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newLongRange(field, tl, null, includeLower, includeUpper);
+                }
+            case Type.DATE_TIME:
             default:
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
                     return new TermRangeQuery(field, null, RangeIndexConfigElement.convertToBytes(content), includeLower, includeUpper);

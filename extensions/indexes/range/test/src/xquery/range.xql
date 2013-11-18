@@ -14,7 +14,7 @@ declare variable $rt:COLLECTION_CONFIG :=
             </lucene>
             <range>
                 <create match="//address">
-                    <field name="address-name" match="name" type="xs:string"/>
+                    <field name="address-name" match="name" type="xs:string" whitespace="normalize"/>
                     <field name="address-city" match="city" type="xs:string"/>
                     <field name="address-code" match="city/@code" type="xs:integer"/>
                 </create>
@@ -23,7 +23,7 @@ declare variable $rt:COLLECTION_CONFIG :=
                     <field name="type" match="@type" type="xs:string"/>
                     <field name="subtype" match="@subtype" type="xs:string"/>
                 </create>
-                <create match="/test/address/name"/>
+                <create match="/test/address/name" whitespace="normalize"/>
                 <create match="/test/address/city" type="xs:string" collation="?lang=de-DE&amp;strength=primary"/>
                 <create match="/test/address/city/@code" type="xs:integer"/>
                 <create qname="@id" type="xs:string"/>
@@ -54,7 +54,8 @@ declare variable $rt:DATA_NESTED :=
 declare variable $rt:DATA :=
     <test>
         <address id="muh">
-            <name>Berta Muh</name>
+            <name>Berta  Muh
+            </name>
             <street>Wiesenweg 14</street>
             <city code="65463">Almweide</city>
         </address>
@@ -115,7 +116,7 @@ declare
     %test:args("Berta Muh")
     %test:assertEquals("Berta Muh")
 function rt:equality-string-self($name as xs:string) {
-    //address/name[range:eq(., $name)]/text()
+    normalize-space(//address/name[range:eq(., $name)]/text())
 };
 
 declare
@@ -130,7 +131,7 @@ declare
     %test:args("muh")
     %test:assertEquals("Berta Muh")
 function rt:equality-qname-string-attribute($id as xs:string) {
-    //address[range:eq(@id, $id)]/name/text()
+    normalize-space(//address[range:eq(@id, $id)]/name/text())
 };
 
 declare
@@ -295,6 +296,13 @@ function rt:contains-string($name as xs:string) {
 };
 
 declare
+    %test:args(".*Rüssel")
+    %test:assertEquals("Rüsselsheim")
+function rt:matches-string($name as xs:string) {
+    //address[range:matches(name, $name)]/city/text()
+};
+
+declare
     %test:args("Rudi")
     %test:assertEquals("Rüsselsheim")
     %test:args("Berta")
@@ -319,6 +327,15 @@ declare
     %test:assertEquals("Almweide")
 function rt:field-contains-string($name as xs:string) {
     range:field-contains("address-name", $name)/city/text()
+};
+
+declare
+    %test:args(".*[rR]üss.*")
+    %test:assertEquals("Rüsselsheim")
+    %test:args(".*ta M.*")
+    %test:assertEquals("Almweide")
+function rt:field-matches-string($name as xs:string) {
+    range:field-matches("address-name", $name)/city/text()
 };
 
 declare 
