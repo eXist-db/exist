@@ -1542,10 +1542,6 @@ public class XQueryContext implements BinaryValueManager, Context
             modules.remove( namespaceURI ); // unbind the module
         } else {
             modules.put( namespaceURI, module );
-
-            if( !module.isInternalModule() && module.isReady() ) {
-                ( (ModuleContext)( (ExternalModule)module ).getContext() ).setParentContext( this );
-            }
         }
         setRootModule( namespaceURI, module );
     }
