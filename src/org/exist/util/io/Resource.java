@@ -1248,10 +1248,11 @@ public class Resource extends File {
     		return resource.getMetadata().getLastModified();
     	}
 
-    	if (collection != null || lastModified != 0) {
+    	if (collection != null) {
 	    	//TODO: need lastModified for collection
 	    	return collection.getCreationTime();
     	}
+
     	return lastModified;
     }
     
