@@ -21,9 +21,14 @@
  */
 package org.exist.security;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.ArrayUtils;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
+import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
 
@@ -34,12 +39,20 @@ import org.exist.storage.DBBroker;
  * to replace the Subject used by DBBroker
  * with a subject which is potentially a composite
  * of a user and/or group
+ * 
+ * @author Adam Retter <adam@existsolutions.com>
  */
 public class EffectiveSubject implements Subject {
     private final Account account;
+    private final Group group;
     
     public EffectiveSubject(final Account account) {
+        this(account, null);
+    }
+    
+    public EffectiveSubject(final Account account, final Group group) {
         this.account = account;
+        this.group = group;
     }
     
     @Override
@@ -122,17 +135,33 @@ public class EffectiveSubject implements Subject {
     //<editor-fold desc="group functions">
     @Override
     public String[] getGroups() {
-        return account.getGroups();
+        if(group != null) {
+            final Set<String> groups = new HashSet<String>(Arrays.asList(account.getGroups()));
+            groups.add(group.getName());
+            return groups.toArray(new String[groups.size()]);
+        } else {
+            return account.getGroups();
+        }
     }
 
     @Override
     public int[] getGroupIds() {
-        return account.getGroupIds();
+        if(group != null) {
+            final Set<Integer> groupIds = new HashSet<Integer>(Arrays.asList(ArrayUtils.toObject(account.getGroupIds())));
+            groupIds.add(group.getId());
+            return ArrayUtils.toPrimitive(groupIds.toArray(new Integer[groupIds.size()]));
+        } else {
+            return account.getGroupIds();
+        }
     }
 
     @Override
     public boolean hasDbaRole() {
-        return account.hasDbaRole();
+        if(group != null) {
+            return account.hasDbaRole() || group.getId() == RealmImpl.DBA_GROUP_ID;
+        } else {
+            return account.hasDbaRole();
+        }
     }
 
     @Override
@@ -147,7 +176,11 @@ public class EffectiveSubject implements Subject {
 
     @Override
     public boolean hasGroup(final String group) {
-        return account.hasGroup(group);
+        if(this.group != null) {
+            return this.group.getName().equals(group);
+        } else {
+            return account.hasGroup(group);
+        }
     }
     
     @Override

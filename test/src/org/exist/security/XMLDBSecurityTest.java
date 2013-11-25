@@ -654,6 +654,7 @@ public class XMLDBSecurityTest {
         //set the xquery to be owned by 'test1':'users' and set it 'setgid', and set it 'rx' by ohers, so 'test3' can execute it!
         UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
         xqueryResource = test.getResource("setgid.xquery");
+        ums.chown(xqueryResource, ums.getAccount("test1"), "users");
         ums.chmod(xqueryResource, 02705); //setgid
 
         //create a collection for the XQuery to write into
@@ -662,7 +663,7 @@ public class XMLDBSecurityTest {
 
         //only allow the group 'users' to write into the collection
         ums = (UserManagementService)colForSetUid.getService("UserManagementService", "1.0");
-        ums.chmod(0070);
+        ums.chmod(0570);
 
         //execute the XQuery as the 'test3' user... it should become 'setgid' of 'users' and succeed.
         final Collection test3 = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");

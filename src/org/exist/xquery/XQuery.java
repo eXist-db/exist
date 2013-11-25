@@ -231,22 +231,6 @@ public class XQuery {
         //check execute permissions
         expression.getContext().getSource().validate(broker.getSubject(), Permission.EXECUTE);
         
-        //if setUid become effective user
-        EffectiveSubject effectiveSubject = null;
-        final Source src = expression.getContext().getSource();
-        if(src instanceof DBSource) {
-            final DBSource dbSrc = (DBSource)src;
-            final Permission perm = dbSrc.getPermissions();
-
-            if(perm.isSetUid()) {
-                effectiveSubject = new EffectiveSubject(perm.getOwner());
-            }            
-            //if(perm.isSetGid()) {
-                
-            //}
-        }
-        
-        
         final long start = System.currentTimeMillis();
     	
         final XQueryContext context = expression.getContext();
@@ -278,8 +262,30 @@ public class XQuery {
         
         //do any preparation before execution
         context.prepareForExecution();
-
+        
         final Subject callingUser = broker.getSubject();
+
+        //if setUid or setGid, become Effective User
+        EffectiveSubject effectiveSubject = null;
+        final Source src = expression.getContext().getSource();
+        if(src instanceof DBSource) {
+            final DBSource dbSrc = (DBSource)src;
+            final Permission perm = dbSrc.getPermissions();
+
+            if(perm.isSetUid()) {
+                if(perm.isSetGid()) {
+                    //setUid and SetGid
+                    effectiveSubject = new EffectiveSubject(perm.getOwner(), perm.getGroup());
+                } else {
+                    //just setUid
+                    effectiveSubject = new EffectiveSubject(perm.getOwner());
+                }
+            } else if(perm.isSetGid()) {
+                //just setGid, so we use the current user as the effective user
+                effectiveSubject = new EffectiveSubject(callingUser, perm.getGroup());
+            }
+        }
+        
         try {
             if(effectiveSubject != null) {
                 broker.setSubject(effectiveSubject); //switch to effective user (e.g. setuid/setgid)
