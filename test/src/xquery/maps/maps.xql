@@ -212,7 +212,6 @@ declare %test:assertFalse function mt:immutability3() {
         map:contains($map2, "Fr")
 };
 
-(:
 declare %test:assertTrue function mt:immutability4() {
 
     let $daysOfWeek :=  map {   "Sunday" := 1,
@@ -227,7 +226,6 @@ declare %test:assertTrue function mt:immutability4() {
 
     return map:contains($workDays,"Monday")
 };
-:)
 
 declare %test:assertEquals("Sunday") function mt:sequenceType1() {
     let $map := map { 1 := "Sunday" }
