@@ -44,9 +44,10 @@ public class MapType extends AbstractMapType {
         this.map = this.map.assoc(key, value);
     }
 
-    protected MapType(XQueryContext context, IPersistentMap<AtomicValue, Sequence> other) {
+    protected MapType(XQueryContext context, IPersistentMap<AtomicValue, Sequence> other, int type) {
         super(context);
         this.map = other;
+        this.type = type;
     }
 
     public void add(AbstractMapType other) {
@@ -98,7 +99,7 @@ public class MapType extends AbstractMapType {
 
     public AbstractMapType remove(AtomicValue key) {
         try {
-            return new MapType(this.context, this.map.without(key));
+            return new MapType(this.context, this.map.without(key), type);
         } catch (final Exception e) {
             return this;
         }
