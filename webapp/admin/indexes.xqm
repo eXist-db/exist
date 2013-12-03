@@ -163,6 +163,8 @@ declare function indexes:show-index-keys() {
                         if ($indexes:start-value castable as xs:float) then xs:float($indexes:start-value) else xs:float(0)
                     else if (util:index-type($indexes:node-set) eq 'xs:decimal') then 
                         if ($indexes:start-value castable as xs:decimal) then xs:decimal($indexes:start-value) else xs:decimal(0)
+                    else if (util:index-type($indexes:node-set) eq 'xs:decimal') then 
+                        if ($indexes:start-value castable as xs:decimal) then xs:decimal($indexes:start-value) else xs:decimal(0)
                     else if (util:index-type($indexes:node-set) eq 'xs:boolean') then 
                         if ($indexes:start-value castable as xs:boolean) then xs:boolean($indexes:start-value) else xs:boolean(0)
                     else if (util:index-type($indexes:node-set) eq 'xs:dateTime') then 
