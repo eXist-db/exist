@@ -5,15 +5,11 @@
     <xsl:param name="dataDir"/>
 
     <xsl:template match="db-connection/@cacheSize">
-        <xsl:attribute name="cacheSize">
-            <xsl:value-of select="$cacheSize"/>
-        </xsl:attribute>
+        <xsl:attribute name="cacheSize"><xsl:value-of select="$cacheSize"/>M</xsl:attribute>
     </xsl:template>
 
     <xsl:template match="db-connection/@collectionCache">
-        <xsl:attribute name="collectionCache">
-            <xsl:value-of select="$collectionCache"/>
-        </xsl:attribute>
+        <xsl:attribute name="collectionCache"><xsl:value-of select="$collectionCache"/>M</xsl:attribute>
     </xsl:template>
 
     <xsl:template match="db-connection/@files">
