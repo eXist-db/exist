@@ -496,9 +496,10 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
             if (mediaType != null) {
                 if (!response.isCommitted())
-                	{if (MimeTable.getInstance().isTextContent(mediaType))
+                	{if (MimeTable.getInstance().isTextContent(mediaType)) {
                 		response.setContentType(mediaType + "; charset=" + getFormEncoding());
-                	else
+                        response.setCharacterEncoding(getFormEncoding());
+                    } else
                 		response.setContentType(mediaType);}
                 
             } else {
