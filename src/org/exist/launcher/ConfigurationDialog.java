@@ -1,7 +1,6 @@
 package org.exist.launcher;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -82,7 +81,7 @@ public class ConfigurationDialog extends JDialog {
             dataDirChanged = true;
             btnCancel.setVisible(false);
             lbStartupMsg.setVisible(true);
-            separator.setVisible(true);
+            lbStartupWarn.setVisible(true);
 
             if (SystemUtils.IS_OS_MAC_OSX) {
                 File dir = new File(System.getProperty("user.home") + "/Library/Application Support/org.exist");
@@ -90,7 +89,7 @@ public class ConfigurationDialog extends JDialog {
             }
         } else {
             lbStartupMsg.setVisible(false);
-            separator.setVisible(false);
+            lbStartupWarn.setVisible(false);
         }
         setVisible(true);
         requestFocus();
@@ -107,7 +106,6 @@ public class ConfigurationDialog extends JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         lbExistLogo = new javax.swing.JLabel();
-        separator = new javax.swing.JSeparator();
         jLabel1 = new javax.swing.JLabel();
         minMemory = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
@@ -129,6 +127,7 @@ public class ConfigurationDialog extends JDialog {
         btnCancel = new javax.swing.JButton();
         btnSave = new javax.swing.JButton();
         btnSelectDir = new javax.swing.JButton();
+        lbStartupWarn = new javax.swing.JLabel();
 
         setTitle("eXist-db Configuration");
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -140,13 +139,6 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.gridheight = 6;
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 6);
         getContentPane().add(lbExistLogo, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 22);
-        getContentPane().add(separator, gridBagConstraints);
 
         jLabel1.setText("Min Memory");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -276,7 +268,7 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(12, 22, 12, 0);
         getContentPane().add(lbCurrentUsage, gridBagConstraints);
 
-        lbStartupMsg.setFont(lbStartupMsg.getFont().deriveFont(lbStartupMsg.getFont().getStyle() | java.awt.Font.BOLD));
+        lbStartupMsg.setFont(lbStartupMsg.getFont().deriveFont(lbStartupMsg.getFont().getStyle() & ~java.awt.Font.BOLD));
         lbStartupMsg.setText("<html><p>It seems you are starting eXist for the first time. Please configure your memory settings below.</p></html>");
         lbStartupMsg.setMinimumSize(new java.awt.Dimension(60, 64));
         lbStartupMsg.setPreferredSize(new java.awt.Dimension(300, 32));
@@ -287,7 +279,7 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(27, 22, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(27, 22, 0, 22);
         getContentPane().add(lbStartupMsg, gridBagConstraints);
 
         jLabel9.setText("<html><p>Changing the data directory will create an empty database in the new location (unless there's already data in it).</p></html>");
@@ -376,6 +368,18 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 10;
         getContentPane().add(btnSelectDir, gridBagConstraints);
+
+        lbStartupWarn.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        lbStartupWarn.setForeground(new java.awt.Color(255, 0, 0));
+        lbStartupWarn.setText("<html><p>After startup, use dashboard or Java client to set a password for admin (empty by default).</p></html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 22, 12, 22);
+        getContentPane().add(lbStartupWarn, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -551,9 +555,9 @@ public class ConfigurationDialog extends JDialog {
     private javax.swing.JLabel lbCurrentUsage;
     private javax.swing.JLabel lbExistLogo;
     private javax.swing.JLabel lbStartupMsg;
+    private javax.swing.JLabel lbStartupWarn;
     private javax.swing.JSpinner maxMemory;
     private javax.swing.JSpinner minMemory;
-    private javax.swing.JSeparator separator;
     // End of variables declaration//GEN-END:variables
 
 }
