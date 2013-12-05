@@ -37,7 +37,7 @@
             failonerror="false" maxtime="120"/>
     </target>
     
-    <target name="bundle" depends="prepare">
+    <target name="bundle" depends="prepare-app">
         <taskdef 
             name="bundleapp" 
             classname="com.oracle.appbundler.AppBundlerTask" 
@@ -55,7 +55,7 @@
         </bundleapp>
     </target>
 
-    <target name="prepare" depends="install-appbundler,xars">
+    <target name="prepare-app" depends="install-appbundler,xars">
         <delete failonerror="false" dir="${app.dir}"/>
         <mkdir dir="${dist}"/>
     </target>
