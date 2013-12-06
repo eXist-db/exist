@@ -38,7 +38,7 @@
         <pack name="{$package/@abbrev}" required="no" preselected="yes" parent="Apps">
             <xsl:attribute name="required">
                 <xsl:choose>
-                    <xsl:when test="$package/@abbrev = 'shared'">yes</xsl:when>
+                    <xsl:when test="$package/@abbrev = 'shared' or $package/@abbrev = 'dashboard'">yes</xsl:when>
                     <xsl:otherwise>no</xsl:otherwise>
                 </xsl:choose>
             </xsl:attribute>
