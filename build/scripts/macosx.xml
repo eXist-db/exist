@@ -143,7 +143,8 @@
                 <exclude name="jetty/tmp/*"/>
                 <exclude name="jetty/work/*"/>
                 <exclude name="ircbot/**"/>
-                <exclude name="aspectj/**"/>
+                <exclude name="aspectj/lib/aspectjtools*.jar"/>
+                <exclude name="aspectj/lib/aspectjweaver*.jar"/>
                 <exclude name="izpack/**"/>
                 <exclude name="ant/lib/svnkit*.jar"/>
                 <include name="jmx/**"/>
