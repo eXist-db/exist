@@ -7,7 +7,7 @@
 		<requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall.vista|izpack.windowsinstall.7"/>
 		<uninstaller name="uninstall.jar" path="$INSTALL_PATH"/>
-        <pack200/>
+        <!--pack200/-->
     </info>
 
     <guiprefs height="510" resizable="yes" width="680">
@@ -80,6 +80,46 @@
     </panels>
 
     <packs>
+        <pack name="Sources" required="no" installGroups="Group1">
+            <description>Java source files and build scripts. Install this package if you want to customize the build, create extensions or contribute to eXist-db.</description>
+            <fileset targetdir="$INSTALL_PATH/src" dir="src">
+                <exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/extensions" dir="extensions">
+                <include name="**/src/"/>
+                <exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/test/src" dir="test/src">
+                <exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/tools/izpack/src" dir="tools/izpack/src">
+                <exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
+            </fileset>
+            <fileset targetdir="$INSTALL_PATH/installer" dir="installer">
+                <exclude name="**/hs_err_pid*.log"/>
+                <exclude name="**/*.exe"/>
+                <exclude name="**/*.jar"/>
+                <exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name="apps/**"/>
+                <exclude name=".*"/>
+            </fileset>
+            <file src="extensions/modules/build.xml" targetdir="$INSTALL_PATH/extensions/modules"/>
+        </pack>
+
         <pack name="Core" required="yes" installGroups="Group1">
             <description>Everything needed for the database core, including Jetty</description>
             <fileset targetdir="$INSTALL_PATH" dir=".">
@@ -182,17 +222,24 @@
             <file src="installer/install.xml.tmpl" targetdir="$INSTALL_PATH/installer"/>
             <file src="tools/izpack/build.xml" targetdir="$INSTALL_PATH/tools/izpack"/>
 
-            <fileset dir="installer/scripts" targetdir="$INSTALL_PATH/bin">
-                <include name="setup.sh"/>
-                <include name="setup.bat"/>
-            </fileset>
+            <file src="installer/scripts/setup.sh" targetdir="$INSTALL_PATH/bin">
+                <os family="unix"/>
+            </file>
+            <file src="installer/scripts/setup.bat" targetdir="$INSTALL_PATH/bin">
+                <os family="windows"/>
+            </file>
 
             <fileset dir="installer/scripts" targetdir="$INSTALL_PATH/bin">
+                <os family="unix"/>
                 <include name="client.sh"/>
                 <include name="startup.sh"/>
                 <include name="server.sh"/>
                 <include name="shutdown.sh"/>
                 <include name="backup.sh"/>
+            </fileset>
+
+            <fileset dir="installer/scripts" targetdir="$INSTALL_PATH/bin">
+                <os family="windows"/>
                 <include name="client.bat"/>
                 <include name="startup.bat"/>
                 <include name="server.bat"/>
@@ -201,10 +248,14 @@
             </fileset>
 
             <fileset dir="installer/scripts/eXist-db.app" targetdir="$INSTALL_PATH/eXist-db.app">
+                <os family="mac"/>
                 <exclude name="**/.svn/"/>
             </fileset>
+
             <executable targetfile="$INSTALL_PATH/eXist-db.app/Contents/MacOS/JavaAppLauncher"
-                stage="never" os="unix"/>
+                stage="never">
+                <os family="mac"/>
+            </executable>
 
             <fileset dir="bin/functions.d" targetdir="$INSTALL_PATH/bin/functions.d">
                 <include name="*.sh"/>
@@ -217,27 +268,35 @@
                 <include name="*.bat"/>
             </fileset>
 
-            <file src="installer/scripts/build.sh" targetdir="$INSTALL_PATH"/>
-            <file src="installer/scripts/build.bat" targetdir="$INSTALL_PATH"/>
+            <file src="installer/scripts/build.sh" targetdir="$INSTALL_PATH">
+                <os family="unix"/>
+            </file>
+            <file src="installer/scripts/build.bat" targetdir="$INSTALL_PATH">
+                <os family="windows"/>
+            </file>
 
             <file src="installer/vm.properties" targetdir="$INSTALL_PATH"/>
 
-            <parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh"/>
-            <parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
-            <parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
-            <parsable type="shell" targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
-            <parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"/>
-            <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"/>
-            <parsable type="shell" targetfile="$INSTALL_PATH/bin/setup.sh"/>
-            <parsable type="shell" targetfile="$INSTALL_PATH/bin/functions.d/eXist-settings.sh"/>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/client.sh">
+                <os family="unix"/>
+            </parsable>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh">
+                <os family="unix"/>
+            </parsable>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"><os family="unix"/></parsable>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/shutdown.sh"><os family="unix"/></parsable>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"><os family="unix"/></parsable>
+            <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"><os family="unix"/></parsable>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/setup.sh"><os family="unix"/></parsable>
+            <parsable type="shell" targetfile="$INSTALL_PATH/bin/functions.d/eXist-settings.sh"><os family="unix"/></parsable>
 
-            <parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
-            <parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
-            <parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
-            <parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"/>
-            <parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
-            <parsable targetfile="$INSTALL_PATH/bin/setup.bat"/>
-            <parsable targetfile="$INSTALL_PATH/build.bat"/>
+            <parsable targetfile="$INSTALL_PATH/bin/client.bat"><os family="windows"/></parsable>
+            <parsable targetfile="$INSTALL_PATH/bin/startup.bat"><os family="windows"/></parsable>
+            <parsable targetfile="$INSTALL_PATH/bin/server.bat"><os family="windows"/></parsable>
+            <parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"><os family="windows"/></parsable>
+            <parsable targetfile="$INSTALL_PATH/bin/backup.bat"><os family="windows"/></parsable>
+            <parsable targetfile="$INSTALL_PATH/bin/setup.bat"><os family="windows"/></parsable>
+            <parsable targetfile="$INSTALL_PATH/build.bat"><os family="windows"/></parsable>
 
             <parsable type="xml" targetfile="$INSTALL_PATH/conf.xml"/>
 
@@ -310,46 +369,6 @@
             <executable targetfile="$INSTALL_PATH/tools/wrapper/bin/exist.sh" stage="never">
                 <os family="unix"/>
             </executable>
-        </pack>
-        
-        <pack name="Sources" required="no" installGroups="Group1">
-            <description>Java source files and build scripts. Install this package if you want to customize the build, create extensions or contribute to eXist-db.</description>
-            <fileset targetdir="$INSTALL_PATH/src" dir="src">
-                <exclude name="**/*~"/>
-                <exclude name="**/.*"/>
-                <exclude name="**/CVS/"/>
-                <exclude name=".*"/>
-            </fileset>
-            <fileset targetdir="$INSTALL_PATH/extensions" dir="extensions">
-                <include name="**/src/"/>
-                <exclude name="**/*~"/>
-                <exclude name="**/.*"/>
-                <exclude name="**/CVS/"/>
-                <exclude name=".*"/>
-            </fileset>
-            <fileset targetdir="$INSTALL_PATH/test/src" dir="test/src">
-                <exclude name="**/*~"/>
-                <exclude name="**/.*"/>
-                <exclude name="**/CVS/"/>
-                <exclude name=".*"/>
-            </fileset>
-            <fileset targetdir="$INSTALL_PATH/tools/izpack/src" dir="tools/izpack/src">
-                <exclude name="**/*~"/>
-                <exclude name="**/.*"/>
-                <exclude name="**/CVS/"/>
-                <exclude name=".*"/>
-            </fileset>
-            <fileset targetdir="$INSTALL_PATH/installer" dir="installer">
-                <exclude name="**/hs_err_pid*.log"/>
-                <exclude name="**/*.exe"/>
-                <exclude name="**/*.jar"/>
-                <exclude name="**/*~"/>
-                <exclude name="**/.*"/>
-                <exclude name="**/CVS/"/>
-                <exclude name="apps/**"/>
-                <exclude name=".*"/>
-            </fileset>
-            <file src="extensions/modules/build.xml" targetdir="$INSTALL_PATH/extensions/modules"/>
         </pack>
 
         <!--pack name="Javadoc" required="no">
