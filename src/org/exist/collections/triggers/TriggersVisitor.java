@@ -21,12 +21,14 @@
  */
 package org.exist.collections.triggers;
 
+import java.util.List;
+
 /**
  *
  * @author aretter
  */
-
-
-public interface TriggersVisitor extends Trigger {
+public interface TriggersVisitor<T extends Trigger> extends Trigger {
     
+    public List<T> getTriggers() throws TriggerException;
+
 }

@@ -101,7 +101,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         final int type = content.getType();
         BytesRef bytes;
         if (Type.subTypeOf(type, Type.STRING)) {
-            BytesRef key = analyzeContent(field, qname, content, docs);
+            BytesRef key = null;
+            if (operator != RangeIndex.Operator.MATCH) {
+                key = analyzeContent(field, qname, content.getStringValue(), docs);
+            }
             WildcardQuery query;
             switch (operator) {
                 case EQ:
@@ -122,7 +125,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
                     return query;
                 case MATCH:
-                    return new RegexpQuery(new Term(field, key));
+                    RegexpQuery regexQuery = new RegexpQuery(new Term(field, content.getStringValue()));
+                    regexQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+                    return regexQuery;
             }
         }
         if (operator == RangeIndex.Operator.EQ) {
@@ -161,6 +166,21 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 } else {
                     return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
                 }
+            case Type.DATE:
+                long dl = RangeIndexConfigElement.dateToLong((DateValue) content);
+                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                    return NumericRangeQuery.newLongRange(field, null, dl, includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newLongRange(field, dl, null, includeLower, includeUpper);
+                }
+            case Type.TIME:
+                long tl = RangeIndexConfigElement.timeToLong((TimeValue) content);
+                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
+                    return NumericRangeQuery.newLongRange(field, null, tl, includeLower, includeUpper);
+                } else {
+                    return NumericRangeQuery.newLongRange(field, tl, null, includeLower, includeUpper);
+                }
+            case Type.DATE_TIME:
             default:
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
                     return new TermRangeQuery(field, null, RangeIndexConfigElement.convertToBytes(content), includeLower, includeUpper);
@@ -678,13 +698,16 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return indexes;
     }
 
-    protected BytesRef analyzeContent(String field, QName qname, AtomicValue content, DocumentSet docs) throws XPathException {
-        Analyzer analyzer = getAnalyzer(qname, field, docs);
+    protected BytesRef analyzeContent(String field, QName qname, String data, DocumentSet docs) throws XPathException {
+        final Analyzer analyzer = getAnalyzer(qname, field, docs);
+        if (!isCaseSensitive(qname, field, docs)) {
+            data = data.toLowerCase();
+        }
         if (analyzer == null) {
-            return new BytesRef(content.getStringValue());
+            return new BytesRef(data);
         }
         try {
-            TokenStream stream = analyzer.tokenStream(field, new StringReader(content.getStringValue()));
+            TokenStream stream = analyzer.tokenStream(field, new StringReader(data));
             TermToBytesRefAttribute termAttr = stream.addAttribute(TermToBytesRefAttribute.class);
             BytesRef token = null;
             try {
@@ -721,6 +744,24 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
         return null;
+    }
+
+    /**
+     * Return the analyzer to be used for the given field or qname. Either field
+     * or qname should be specified.
+     */
+    private boolean isCaseSensitive(QName qname, String fieldName, DocumentSet docs) {
+        for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = i.next();
+            IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            if (idxConf != null) {
+                RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
+                if (config != null && !config.isCaseSensitive(qname, fieldName)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static boolean matchQName(QName qname, QName candidate) {

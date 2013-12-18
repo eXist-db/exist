@@ -1,7 +1,0 @@
-ToDo's
-
-- handle exceptions, stop initialization and report if needed
-- require Topic as destination, else fail
-
-- prevent infinite loop if node is sender and receiver
-    - switch - off triggers when writing documents.

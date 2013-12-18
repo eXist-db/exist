@@ -77,47 +77,26 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler {
 
-	/**
+    /**
      * This method is called once before the database will actually parse the input data. You may take any action
      * here, using the supplied broker instance.
      * 
-     * @param event the type of event that triggered this call (see the constants defined in this interface). The ContentHandler instance for the output.
-     * @param broker the database instance used to process the current action.
-     * @param txn the current transaction context
-     * @param documentPath the full absolute path of the document currently processed.
-     * @param existingDocument optional: if event is a {@link #UPDATE_DOCUMENT_EVENT},
-     *  existingDocument will contain the Document object for the old document, which will be overwritten. Otherwise, the parameter
-     *  is null.
-     * @throws TriggerException throwing a TriggerException will abort the current action.
+     * @param broker
+     * @param txn
+     * @param uri
+     * @throws TriggerException
      */
-    @Deprecated
-    public void prepare(
-        int event,
-        DBBroker broker,
-        Txn txn,
-        XmldbURI documentPath,
-        DocumentImpl existingDocument)
-        throws TriggerException;
-
+    public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
+    
     /**
      * This method is called after the operation completed. At this point, the document has already
      * been stored.
      * 
-     * @param event the type of event that triggered this call (see the constants defined in this interface).
-     * @param broker the database instance used to process the current action.
-     * @param txn the current transaction context
-     * @param documentPath the path of the document, if removed the old path of the document
-     * @param document the stored document or null if the document is removed
-     **/
-    @Deprecated
-    public void finish(
-        int event,
-        DBBroker broker,
-        Txn txn,
-        XmldbURI documentPath,
-        DocumentImpl document);
-    
-    public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
+     * @param broker
+     * @param txn
+     * @param document
+     * @throws TriggerException
+     */
     public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException;
 
     public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException;

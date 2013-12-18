@@ -151,6 +151,14 @@ function ot:optimize-contains-string($name as xs:string) {
 
 declare
     %test:stats
+    %test:args("[rR]udi .*")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-matches-string($name as xs:string) {
+    collection($ot:COLLECTION)//address[range:matches(name, $name)]
+};
+
+declare
+    %test:stats
     %test:args("Rudi Rüssel")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-eq-string-self($name as xs:string) {
@@ -326,6 +334,14 @@ function ot:optimize-contains-field($city as xs:string) {
 
 declare
     %test:stats
+    %test:args("[rR]üssel.*")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function ot:optimize-matches-field($city as xs:string) {
+    collection($ot:COLLECTION)//address[range:matches(city, $city)]
+};
+
+declare
+    %test:stats
     %test:args("Rüsselsheim", "Elefantenweg 67")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:optimize-eq-field-multi($city as xs:string, $street as xs:string) {
@@ -364,7 +380,7 @@ function ot:mixed-op-field2($city as xs:string, $street as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim", "Elefantenweg 67")
-    %test:assertXPath("empty($result//stats:index[@type = 'new-range'][@optimization = 2])")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function ot:no-optimize-field-multi($city as xs:string, $street as xs:string) {
     collection($ot:COLLECTION)//address[street = $street][1]
 };

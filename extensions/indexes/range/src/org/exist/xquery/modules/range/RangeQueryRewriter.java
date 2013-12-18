@@ -108,27 +108,31 @@ public class RangeQueryRewriter extends QueryRewriter {
     private boolean tryRewriteToFields(LocationStep locationStep, RewritableExpression parentExpr, List<Predicate> preds, NodePath contextPath) throws XPathException {
         // without context path, we cannot rewrite the entire query
         if (contextPath != null) {
-            RangeIndex.Operator operator = null;
             List<Expression> args = null;
             SequenceConstructor arg0 = null;
             SequenceConstructor arg1 = null;
+
+            List<Predicate> notOptimizable = new ArrayList<Predicate>(preds.size());
 
             // walk through the predicates attached to the current location step
             // check if expression can be optimized
             for (final Predicate pred : preds) {
                 if (pred.getLength() != 1) {
                     // can only optimize predicates with one expression
-                    return false;
+                    notOptimizable.add(pred);
+                    continue;
                 }
                 Expression innerExpr = pred.getExpression(0);
                 List<LocationStep> steps = getStepsToOptimize(innerExpr);
                 if (steps == null) {
-                    return false;
+                    notOptimizable.add(pred);
+                    continue;
                 }
                 // compute left hand path
                 NodePath innerPath = toNodePath(steps);
                 if (innerPath == null) {
-                    return false;
+                    notOptimizable.add(pred);
+                    continue;
                 }
                 NodePath path = new NodePath(contextPath);
                 path.append(innerPath);
@@ -156,13 +160,16 @@ public class RangeQueryRewriter extends QueryRewriter {
                             // append right hand expression as additional parameter
                             args.add(getKeyArg(innerExpr));
                         } else {
-                            return false;
+                            notOptimizable.add(pred);
+                            continue;
                         }
                     } else {
-                        return false;
+                        notOptimizable.add(pred);
+                        continue;
                     }
                 } else {
-                    return false;
+                    notOptimizable.add(pred);
+                    continue;
                 }
             }
             if (args != null) {
@@ -173,7 +180,16 @@ public class RangeQueryRewriter extends QueryRewriter {
                 func.setFallback(locationStep);
                 func.setLocation(locationStep.getLine(), locationStep.getColumn());
                 func.setArguments(args);
-                parent.replace(locationStep, new InternalFunctionCall(func));
+
+                Expression optimizedExpr = new InternalFunctionCall(func);
+                if (notOptimizable.size() > 0) {
+                    final FilteredExpression filtered = new FilteredExpression(getContext(), optimizedExpr);
+                    for (Predicate pred : notOptimizable) {
+                        filtered.addPredicate(pred);
+                    }
+                    optimizedExpr = filtered;
+                }
+                parent.replace(locationStep, optimizedExpr);
 
                 return true;
             }
@@ -190,6 +206,18 @@ public class RangeQueryRewriter extends QueryRewriter {
             Lookup func = Lookup.create(comparison.getContext(), getOperator(expression));
             func.setArguments(eqArgs);
             return func;
+        } else if (expression instanceof InternalFunctionCall) {
+            InternalFunctionCall fcall = (InternalFunctionCall) expression;
+            Function function = fcall.getFunction();
+            if (function instanceof Lookup) {
+                if (function.isCalledAs("matches")) {
+                    eqArgs.add(function.getArgument(0));
+                    eqArgs.add(function.getArgument(1));
+                    Lookup func = Lookup.create(function.getContext(), RangeIndex.Operator.MATCH);
+                    func.setArguments(eqArgs);
+                    return func;
+                }
+            }
         }
         return null;
     }
@@ -197,6 +225,12 @@ public class RangeQueryRewriter extends QueryRewriter {
     private Expression getKeyArg(Expression expression) {
         if (expression instanceof GeneralComparison) {
             return ((GeneralComparison)expression).getRight();
+        } else if (expression instanceof InternalFunctionCall) {
+            InternalFunctionCall fcall = (InternalFunctionCall) expression;
+            Function function = fcall.getFunction();
+            if (function instanceof Lookup) {
+                return function.getArgument(1);
+            }
         }
         return null;
     }
@@ -205,6 +239,14 @@ public class RangeQueryRewriter extends QueryRewriter {
         if (expr instanceof GeneralComparison) {
             GeneralComparison comparison = (GeneralComparison) expr;
             return BasicExpressionVisitor.findLocationSteps(comparison.getLeft());
+        } else if (expr instanceof InternalFunctionCall) {
+            InternalFunctionCall fcall = (InternalFunctionCall) expr;
+            Function function = fcall.getFunction();
+            if (function instanceof Lookup) {
+                if (function.isCalledAs("matches")) {
+                    return BasicExpressionVisitor.findLocationSteps(function.getArgument(0));
+                }
+            }
         }
         return null;
     }
@@ -243,6 +285,12 @@ public class RangeQueryRewriter extends QueryRewriter {
                             break;
                     }
                     break;
+            }
+        } else if (expr instanceof InternalFunctionCall) {
+            InternalFunctionCall fcall = (InternalFunctionCall) expr;
+            Function function = fcall.getFunction();
+            if (function instanceof Lookup && function.isCalledAs("matches")) {
+                operator = RangeIndex.Operator.MATCH;
             }
         }
         return operator;

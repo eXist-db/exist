@@ -32,10 +32,8 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
     protected K[] keys;
 	protected V[] values;
 	
-    /**
-     * 
-     */
-    public Object2ObjectHashMap() {
+    @SuppressWarnings("unchecked")
+	public Object2ObjectHashMap() {
         super();
 		keys = (K[]) new Object[tabSize];
 		values = (V[]) new Object[tabSize];
@@ -44,11 +42,19 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
     /**
      * @param iSize
      */
-    public Object2ObjectHashMap(int iSize) {
+    @SuppressWarnings("unchecked")
+	public Object2ObjectHashMap(int iSize) {
         super(iSize);
 		keys = (K[]) new Object[tabSize];
 		values = (V[]) new Object[tabSize];
     }
+    
+    @SuppressWarnings("unchecked")
+	public void clean() {
+		keys = (K[]) new Object[tabSize];
+		values = (V[]) new Object[tabSize];
+		items = 0;
+	}
 
     /**
 	 * Puts a new key/value pair into the hashtable.
@@ -58,6 +64,7 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 	 * @param key
 	 * @param value
 	 */
+	@SuppressWarnings("unchecked")
 	public void put(K key, V value) {
 		try {
 			insert(key, value);
@@ -120,6 +127,7 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 		return -1;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public V remove(K key) {
 		int idx = hash(key) % tabSize;
 		if (idx < 0)
@@ -254,6 +262,7 @@ public class Object2ObjectHashMap<K, V> extends AbstractHashtable<K, V> {
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#next()
 		 */
+		@SuppressWarnings("unchecked")
 		public T next() {
 			if (idx == tabSize)
 				{return null;}

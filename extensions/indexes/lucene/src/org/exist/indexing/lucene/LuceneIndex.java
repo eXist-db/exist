@@ -32,7 +32,7 @@ import org.apache.lucene.util.Version;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     
-    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_43;
+    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_44;
 
     private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
 

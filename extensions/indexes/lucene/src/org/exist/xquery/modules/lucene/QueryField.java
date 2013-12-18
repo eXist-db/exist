@@ -153,5 +153,13 @@ public class QueryField extends Query implements Optimizable {
         }
         return result;
     }
+
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        if (!postOptimization) {
+            preselectResult = null;
+        }
+    }
 }
 

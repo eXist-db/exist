@@ -105,8 +105,9 @@ public class LuceneUtil {
      * @param query
      * @param terms
      * @throws IOException in case of an error
+     * @throws UnsupportedOperationException in case of an error
      */
-    public static void extractTerms(Query query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
+    public static void extractTerms(Query query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException, UnsupportedOperationException {
         if (query instanceof BooleanQuery)
             extractTermsFromBoolean((BooleanQuery)query, terms, reader, includeFields);
         else if (query instanceof TermQuery)

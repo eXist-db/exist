@@ -9,6 +9,7 @@ declare variable $analyze:XCONF1 :=
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <fulltext default="none" attributes="false"/>
             <lucene diacritics="no">
+                <parser class="org.apache.lucene.queryparser.analyzing.AnalyzingQueryParser"/>
                 <text qname="p"/>
             </lucene>
         </index>
@@ -92,4 +93,17 @@ declare
     %test:assertEquals(1)
 function analyze:diacrictics($term as xs:string) {
     count(collection("/db/lucenetest/test2")//p[ft:query(., $term)])
+};
+
+declare 
+    %test:args("rüssels*")
+    %test:assertEquals(2)
+    %test:args("russels*")
+    %test:assertEquals(2)
+    %test:args("maor*")
+    %test:assertEquals(2)
+    %test:args("Māor*")
+    %test:assertEquals(2)
+function analyze:query-parser($term as xs:string) {
+    count(collection("/db/lucenetest/test1")//p[ft:query(., $term)])
 };
