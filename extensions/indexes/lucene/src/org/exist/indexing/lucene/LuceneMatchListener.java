@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2008-2012 The eXist-db Project
+ * Copyright (C) 2008-2013 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -326,6 +326,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
                         LuceneUtil.extractTerms(query, termMap, reader, false);
                     } catch (IOException e) {
                         LOG.warn("Error while highlighting lucene query matches: " + e.getMessage(), e);
+                    } catch (UnsupportedOperationException uoe) {
+                        LOG.warn("Error while highlighting lucene query matches: " + uoe.getMessage(), uoe);
                     } finally {
                         index.releaseReader(reader);
                     }

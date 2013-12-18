@@ -83,6 +83,11 @@ public class OpNumeric extends BinaryOp {
         return Type.subTypeOf(x.returnsType(), Type.ATOMIC) ? x : new Atomize(context, x);
     }
 
+    @Override
+    public int getDependencies() {
+        return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+    }
+
     public int returnsType() {
         return returnType;
     }

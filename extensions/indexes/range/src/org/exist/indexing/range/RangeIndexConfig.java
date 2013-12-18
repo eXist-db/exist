@@ -116,6 +116,26 @@ public class RangeIndexConfig {
         return analyzer;
     }
 
+    public boolean isCaseSensitive(QName qname, String fieldName) {
+        boolean caseSensitive = true;
+        if (qname != null) {
+            RangeIndexConfigElement idxConf = paths.get(qname);
+            if (idxConf != null) {
+                caseSensitive = idxConf.isCaseSensitive();
+            }
+        } else {
+            for (RangeIndexConfigElement idxConf: paths.values()) {
+                if (idxConf.isComplex()) {
+                    caseSensitive = idxConf.isCaseSensitive();
+                    if (!caseSensitive) {
+                        break;
+                    }
+                }
+            }
+        }
+        return caseSensitive;
+    }
+
     public Iterator<RangeIndexConfigElement> getConfig(NodePath path) {
         iterator.reset(path);
         return iterator;

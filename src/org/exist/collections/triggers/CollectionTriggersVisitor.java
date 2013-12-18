@@ -33,7 +33,7 @@ import org.exist.xmldb.XmldbURI;
  *
  * @author aretter
  */
-public class CollectionTriggersVisitor extends AbstractTriggersVisitor<CollectionTrigger, CollectionTriggerProxies> implements CollectionTrigger {
+public class CollectionTriggersVisitor extends AbstractTriggersVisitor<CollectionTrigger> implements CollectionTrigger {
 
     protected Logger LOG = Logger.getLogger(getClass());
     
@@ -44,24 +44,6 @@ public class CollectionTriggersVisitor extends AbstractTriggersVisitor<Collectio
     @Override
     public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
         //ignore triggers are already configured by this stage!
-    }
-
-    @Override
-    public void prepare(int event, DBBroker broker, Txn txn, Collection collection, Collection newCollection) throws TriggerException {
-        for(final CollectionTrigger trigger : getTriggers()) {
-            trigger.prepare(event, broker, txn, collection, newCollection);
-        }
-    }
-
-    @Override
-    public void finish(int event, DBBroker broker, Txn txn, Collection collection, Collection newCollection) {
-        try {
-            for(final CollectionTrigger trigger : getTriggers()) {
-                trigger.finish(event, broker, txn, collection, newCollection);
-            }
-        } catch (final TriggerException te) {
-            LOG.error(te.getMessage(), te);
-        }
     }
 
     @Override

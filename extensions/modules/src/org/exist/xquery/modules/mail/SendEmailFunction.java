@@ -22,62 +22,31 @@
 
 package org.exist.xquery.modules.mail;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.TimeZone;
+import org.apache.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.util.Base64Encoder;
+import org.exist.util.MimeTable;
+import org.exist.xquery.*;
+import org.exist.xquery.functions.system.GetVersion;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import javax.activation.DataHandler;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import javax.mail.*;
+import javax.mail.internet.*;
 import javax.mail.util.ByteArrayDataSource;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-
-import org.apache.log4j.Logger;
-import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.system.GetVersion;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.*;
 
 //send-email specific imports
-import org.exist.util.Base64Encoder;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * eXist Mail Module Extension SendEmailFunction
@@ -884,69 +853,69 @@ public class SendEmailFunction extends BasicFunction
      * @return		A mail Object representing the XML mail Node
      */
     private List<Message> parseMessageElement(Session session, List<Element> mailElements)
-    	throws IOException, MessagingException, TransformerException
-    {
+            throws IOException, MessagingException, TransformerException {
         List<Message> mails = new ArrayList<Message>();
 
-        for(Element mailElement : mailElements) {
+        for (Element mailElement : mailElements) {
             //Make sure that message has a Mail node
-            if(mailElement.getLocalName().equals("mail")) {
+            if (mailElement.getLocalName().equals("mail")) {
                 //New message Object
-        	    // create a message
-        	    MimeMessage msg = new MimeMessage(session);
-        	    ArrayList<InternetAddress> replyTo = new ArrayList<InternetAddress>();
-        		boolean fromWasSet=false;
-            	MimeBodyPart body = null;
-            	Multipart multibody = null;
-            	ArrayList<MimeBodyPart> attachments=new ArrayList<MimeBodyPart>();
-		String firstContent = null;
-		String firstContentType = null;
-		String firstCharset = null;
-		String firstEncoding = null;
-        		
+                // create a message
+                MimeMessage msg = new MimeMessage(session);
+
+                ArrayList<InternetAddress> replyTo = new ArrayList<InternetAddress>();
+                boolean fromWasSet = false;
+                MimeBodyPart body = null;
+                Multipart multibody = null;
+                ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>();
+                String firstContent = null;
+                String firstContentType = null;
+                String firstCharset = null;
+                String firstEncoding = null;
+
                 //Get the First Child
                 Node child = mailElement.getFirstChild();
-                while(child != null) {
+                while (child != null) {
                     //Parse each of the child nodes
-                    if(child.getNodeType() == Node.ELEMENT_NODE && child.hasChildNodes()) {
-                        if(child.getLocalName().equals("from")) {
-                    	    // set the from and to address
-                    	    InternetAddress[] addressFrom = { new InternetAddress(child.getFirstChild().getNodeValue()) };
-                    	    msg.addFrom(addressFrom);
-                    	    
-                    	    fromWasSet=true;
-                        } else if(child.getLocalName().equals("reply-to")) {
-                        	// As we can only set the reply-to, not add them, let's keep
-                        	// all of them in a list
-                        	replyTo.add(new InternetAddress(child.getFirstChild().getNodeValue()));
-                        	msg.setReplyTo(replyTo.toArray(new InternetAddress[0]));
-                        } else if(child.getLocalName().equals("to")) {
-                        	    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(child.getFirstChild().getNodeValue()));
-                        } else if(child.getLocalName().equals("cc")) {
-                        	    msg.addRecipient(Message.RecipientType.CC, new InternetAddress(child.getFirstChild().getNodeValue()));
-                        } else if(child.getLocalName().equals("bcc")) {
-                        	    msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(child.getFirstChild().getNodeValue()));
-                        } else if(child.getLocalName().equals("subject")) {
-                        		msg.setSubject(child.getFirstChild().getNodeValue());
-                        } else if(child.getLocalName().equals("header")) {
-                    	    // Optional : You can also set your custom headers in the Email if you Want
-                    	    msg.addHeader(((Element)child).getAttribute("name"), child.getFirstChild().getNodeValue());
-                        } else if(child.getLocalName().equals("message")) {
+                    if (child.getNodeType() == Node.ELEMENT_NODE && child.hasChildNodes()) {
+                        if (child.getLocalName().equals("from")) {
+                            // set the from and to address
+                            InternetAddress[] addressFrom = {new InternetAddress(child.getFirstChild().getNodeValue())};
+                            msg.addFrom(addressFrom);
+
+                            fromWasSet = true;
+                        } else if (child.getLocalName().equals("reply-to")) {
+                            // As we can only set the reply-to, not add them, let's keep
+                            // all of them in a list
+                            replyTo.add(new InternetAddress(child.getFirstChild().getNodeValue()));
+                            msg.setReplyTo(replyTo.toArray(new InternetAddress[0]));
+                        } else if (child.getLocalName().equals("to")) {
+                            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(child.getFirstChild().getNodeValue()));
+                        } else if (child.getLocalName().equals("cc")) {
+                            msg.addRecipient(Message.RecipientType.CC, new InternetAddress(child.getFirstChild().getNodeValue()));
+                        } else if (child.getLocalName().equals("bcc")) {
+                            msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(child.getFirstChild().getNodeValue()));
+                        } else if (child.getLocalName().equals("subject")) {
+                            msg.setSubject(child.getFirstChild().getNodeValue());
+                        } else if (child.getLocalName().equals("header")) {
+                            // Optional : You can also set your custom headers in the Email if you Want
+                            msg.addHeader(((Element) child).getAttribute("name"), child.getFirstChild().getNodeValue());
+                        } else if (child.getLocalName().equals("message")) {
                             //If the message node, then parse the child text and xhtml nodes
                             Node bodyPart = child.getFirstChild();
-                            while(bodyPart != null) {
-                            	if(bodyPart.getNodeType() != Node.ELEMENT_NODE)
-                            			continue;
-                            	
-                            	Element elementBodyPart = (Element)bodyPart;
-                            	String content = null;
-                            	String contentType = null;
-                            	
-                                if(bodyPart.getLocalName().equals("text")) {
-                            	    // Setting the Subject and Content Type
-                               		content = bodyPart.getFirstChild().getNodeValue();
-                               		contentType="plain";
-                                } else if(bodyPart.getLocalName().equals("xhtml")) {
+                            while (bodyPart != null) {
+                                if (bodyPart.getNodeType() != Node.ELEMENT_NODE)
+                                    continue;
+
+                                Element elementBodyPart = (Element) bodyPart;
+                                String content = null;
+                                String contentType = null;
+
+                                if (bodyPart.getLocalName().equals("text")) {
+                                    // Setting the Subject and Content Type
+                                    content = bodyPart.getFirstChild().getNodeValue();
+                                    contentType = "plain";
+                                } else if (bodyPart.getLocalName().equals("xhtml")) {
                                     //Convert everything inside <xhtml></xhtml> to text
                                     TransformerFactory transFactory = TransformerFactory.newInstance();
                                     Transformer transformer = transFactory.newTransformer();
@@ -955,58 +924,65 @@ public class SendEmailFunction extends BasicFunction
                                     StreamResult result = new StreamResult(strWriter);
                                     transformer.transform(source, result);
 
-                               		content = strWriter.toString();
-                               		contentType="html";
-                                } else if(bodyPart.getLocalName().equals("generic")) {
-                            	    // Setting the Subject and Content Type
-                               		content = elementBodyPart.getFirstChild().getNodeValue();
-                               		contentType=elementBodyPart.getAttribute("type");
+                                    content = strWriter.toString();
+                                    contentType = "html";
+                                } else if (bodyPart.getLocalName().equals("generic")) {
+                                    // Setting the Subject and Content Type
+                                    content = elementBodyPart.getFirstChild().getNodeValue();
+                                    contentType = elementBodyPart.getAttribute("type");
                                 }
-                                
+
                                 // Now, time to store it
-                                if(content!=null && contentType!=null && contentType.length()>0) {
+                                if (content != null && contentType != null && contentType.length() > 0) {
                                     String charset = elementBodyPart.getAttribute("charset");
-				    String encoding = elementBodyPart.getAttribute("encoding");
-                                    
-                                    if(body!=null && multibody==null) {
-                                    	multibody=new MimeMultipart("alternative");
-                                    	multibody.addBodyPart(body);
+                                    String encoding = elementBodyPart.getAttribute("encoding");
+
+                                    if (body != null && multibody == null) {
+                                        multibody = new MimeMultipart("alternative");
+                                        multibody.addBodyPart(body);
                                     }
-                                    
-                                	if(charset==null || charset.length()==0) {
-                                		charset="UTF-8";
-                                	}
-					
-					if(encoding==null || encoding.length()==0) {
-						encoding="quoted-printable";
-					}
-					
-					if(body==null) {
-						firstContent = content;
-						firstCharset = charset;
-						firstContentType = contentType;
-						firstEncoding = encoding;
-					}
-                                	body= new MimeBodyPart();
-                            		body.setText(content, charset, contentType);
-					if(encoding!=null) {
-						body.setHeader("Content-Transfer-Encoding",encoding);
-					}
-                            		if(multibody!=null)
-                            			multibody.addBodyPart(body);
+
+                                    if (charset == null || charset.length() == 0) {
+                                        charset = "UTF-8";
+                                    }
+
+                                    if (encoding == null || encoding.length() == 0) {
+                                        encoding = "quoted-printable";
+                                    }
+
+                                    if (body == null) {
+                                        firstContent = content;
+                                        firstCharset = charset;
+                                        firstContentType = contentType;
+                                        firstEncoding = encoding;
+                                    }
+                                    body = new MimeBodyPart();
+                                    body.setText(content, charset, contentType);
+                                    if (encoding != null) {
+                                        body.setHeader("Content-Transfer-Encoding", encoding);
+                                    }
+                                    if (multibody != null)
+                                        multibody.addBodyPart(body);
                                 }
-                                
+
                                 //next body part
                                 bodyPart = bodyPart.getNextSibling();
                             }
 
-                        } else if(child.getLocalName().equals("attachment")) {
-                            Element attachment = (Element)child;
-                            MimeBodyPart part=new MimeBodyPart();
-			    StringBuilder content=new StringBuilder();
-			    Node attachChild=attachment.getFirstChild();
-			    while(attachChild!=null) {
-				if(attachChild.getNodeType() == Node.ELEMENT_NODE) {
+                        } else if (child.getLocalName().equals("attachment")) {
+                            Element attachment = (Element) child;
+                            MimeBodyPart part;
+                            // if mimetype indicates a binary resource, assume the content is base64 encoded
+                            if (MimeTable.getInstance().isTextContent(attachment.getAttribute("mimetype"))) {
+                                part = new MimeBodyPart();
+                            } else {
+                                part = new PreencodedMimeBodyPart("base64");
+                            }
+
+                            StringBuilder content = new StringBuilder();
+                            Node attachChild = attachment.getFirstChild();
+                            while (attachChild != null) {
+                                if (attachChild.getNodeType() == Node.ELEMENT_NODE) {
                                     TransformerFactory transFactory = TransformerFactory.newInstance();
                                     Transformer transformer = transFactory.newTransformer();
                                     DOMSource source = new DOMSource(attachChild);
@@ -1014,14 +990,15 @@ public class SendEmailFunction extends BasicFunction
                                     StreamResult result = new StreamResult(strWriter);
                                     transformer.transform(source, result);
 
-                               		content.append(strWriter.toString());
-				} else {
-					content.append(attachChild.getNodeValue());
-				}
-				attachChild = attachChild.getNextSibling();
-			    }
-                            part.setDataHandler(new DataHandler(new ByteArrayDataSource(content.toString(),attachment.getAttribute("mimetype"))));
+                                    content.append(strWriter.toString());
+                                } else {
+                                    content.append(attachChild.getNodeValue());
+                                }
+                                attachChild = attachChild.getNextSibling();
+                            }
+                            part.setDataHandler(new DataHandler(new ByteArrayDataSource(content.toString(), attachment.getAttribute("mimetype"))));
                             part.setFileName(attachment.getAttribute("filename"));
+//                            part.setHeader("Content-Transfer-Encoding", "base64");
                             attachments.add(part);
                         }
                     }
@@ -1031,40 +1008,46 @@ public class SendEmailFunction extends BasicFunction
 
                 }
                 // Lost from
-                if(!fromWasSet)
-                	msg.setFrom();
-                
+                if (!fromWasSet)
+                    msg.setFrom();
+
                 // Preparing content and attachments
-                if(attachments.size()>0) {
-                	if(multibody==null) {
-                		multibody = new MimeMultipart();
-                		if(body!=null) {
-                			multibody.addBodyPart(body);
-                		}
-                	}
-                	for(MimeBodyPart part: attachments) {
-                		multibody.addBodyPart(part);
-                	}
+                if (attachments.size() > 0) {
+                    if (multibody == null) {
+                        multibody = new MimeMultipart("mixed");
+                        if (body != null) {
+                            multibody.addBodyPart(body);
+                        }
+                    } else {
+                        MimeMultipart container = new MimeMultipart("mixed");
+                        MimeBodyPart containerBody = new MimeBodyPart();
+                        containerBody.setContent(multibody);
+                        container.addBodyPart(containerBody);
+                        multibody = container;
+                    }
+                    for (MimeBodyPart part : attachments) {
+                        multibody.addBodyPart(part);
+                    }
                 }
-                
+
                 // And now setting-up content
-                if(multibody!=null) {
-                	msg.setContent(multibody);
-                } else if(body!=null){
-                	msg.setText(firstContent,firstCharset,firstContentType);
-			if(firstEncoding!=null) {
-				msg.setHeader("Content-Transfer-Encoding",firstEncoding);
-			}
+                if (multibody != null) {
+                    msg.setContent(multibody);
+                } else if (body != null) {
+                    msg.setText(firstContent, firstCharset, firstContentType);
+                    if (firstEncoding != null) {
+                        msg.setHeader("Content-Transfer-Encoding", firstEncoding);
+                    }
                 }
-                
-		msg.saveChanges();
+
+                msg.saveChanges();
                 mails.add(msg);
             }
         }
 
         return mails;
     }
-	
+
     /**
      * Returns the current date and time in an RFC822 format, suitable for an email Date Header
      *

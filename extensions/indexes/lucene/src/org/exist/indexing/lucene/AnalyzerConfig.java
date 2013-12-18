@@ -7,6 +7,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import org.apache.lucene.analysis.util.CharArraySet;
 import org.w3c.dom.Element;
 import org.exist.util.DatabaseConfigurationException;
 import org.apache.log4j.Logger;
@@ -184,7 +186,11 @@ public class AnalyzerConfig {
         } else if(type != null && type.equals("java.util.Set")) {
             final Set s = getConstructorParameterSetValues(param);
             parameter = new KeyTypedValue(name, s, Set.class);
-            
+
+        } else if (type != null && type.equals("org.apache.lucene.analysis.util.CharArraySet")) {
+            final CharArraySet s = getConstructorParameterCharArraySetValues(param);
+            parameter = new KeyTypedValue(name, s, CharArraySet.class);
+
         } else if(type != null && (type.equals("java.lang.Integer") || type.equals("int"))) {
             final Integer n = Integer.parseInt(value);
             parameter = new KeyTypedValue(name, n);
@@ -212,7 +218,7 @@ public class AnalyzerConfig {
         
         return parameter;
     }
-    
+
     private static Set<String> getConstructorParameterSetValues(Element param) {
         final Set<String> set = new HashSet<String>();
         final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_VALUE_ENTRY);
@@ -228,6 +234,11 @@ public class AnalyzerConfig {
         }
         
         return set;
+    }
+
+    private static CharArraySet getConstructorParameterCharArraySetValues(Element param) {
+        final Set<String> set = getConstructorParameterSetValues(param);
+        return CharArraySet.copy(LuceneIndex.LUCENE_VERSION_IN_USE, set);
     }
 
     private static class KeyTypedValue {

@@ -104,6 +104,19 @@ public class Lookup extends Function implements Optimizable {
             PARAMETER_TYPE,
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "all nodes from the input node set whose node value is equal to the key.")
+        ),
+        new FunctionSignature(
+            new QName("matches", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            DESCRIPTION,
+            new SequenceType[] {
+                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
+                    "The node set to search using a range index which is defined on those nodes"),
+                new FunctionParameterSequenceType("regex", Type.STRING, Cardinality.ZERO_OR_MORE,
+                    "The regular expression.")
+            },
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "all nodes from the input node set whose node value matches the regular expression. Regular expression " +
+                "syntax is limited to what Lucene supports. See http://lucene.apache.org/core/4_5_1/core/org/apache/lucene/util/automaton/RegExp.html")
         )
     };
 
@@ -298,6 +311,17 @@ public class Lookup extends Function implements Optimizable {
             //LOG.info("eval took " + (System.currentTimeMillis() - start));
         }
         return result;
+    }
+
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        if (fallback != null) {
+            fallback.resetState(postOptimization);
+        }
+        if (!postOptimization) {
+            preselectResult = null;
+        }
     }
 
     @Override

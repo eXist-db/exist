@@ -59,6 +59,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 	private final static Logger LOG = Logger.getLogger(XQueryPool.class);
 
 	private long lastTimeOutCheck;
+	private long lastTimeOfCleanup;
 
 	@ConfigurationFieldAsAttribute("size")
 	private int maxPoolSize;
@@ -88,7 +89,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 	 */
 	public XQueryPool(Configuration conf) {
 		super(27);
-		lastTimeOutCheck = System.currentTimeMillis();
+		lastTimeOutCheck = lastTimeOfCleanup = System.currentTimeMillis();
 
 		final Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
 		final Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
@@ -97,25 +98,24 @@ public class XQueryPool extends Object2ObjectHashMap {
 		final NumberFormat nf = NumberFormat.getNumberInstance();
 
 		if (maxPoolSz != null)
-			{maxPoolSize = maxPoolSz.intValue();}
+			maxPoolSize = maxPoolSz.intValue();
 		else
-			{maxPoolSize = MAX_POOL_SIZE;}
+			maxPoolSize = MAX_POOL_SIZE;
 
 		if (maxStSz != null)
-			{maxStackSize = maxStSz.intValue();}
+			maxStackSize = maxStSz.intValue();
 		else
-			{maxStackSize = MAX_STACK_SIZE;}
+			maxStackSize = MAX_STACK_SIZE;
 
 		if (t != null)
-			{timeout = t.longValue();}
+			timeout = t.longValue();
 		else
-			{timeout = TIMEOUT;}
+			timeout = TIMEOUT;
 
-		// TODO : check that it is inferior to t
 		if (tci != null)
-			{timeoutCheckInterval = tci.longValue();}
+			timeoutCheckInterval = tci.longValue();
 		else
-			{timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;}
+			timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;
 
 		LOG.info("QueryPool: " +
 			"size = " + nf.format(maxPoolSize) + "; " +
@@ -129,37 +129,41 @@ public class XQueryPool extends Object2ObjectHashMap {
 		returnObject(source, xquery);
 	}
 
-	private void returnModules(XQueryContext context, ExternalModule self) {
-		for (final Iterator<Module> it = context.getRootModules(); it.hasNext();) {
-			final Module module = (Module) it.next();
-			if (module != self && !module.isInternalModule()) {
-				final ExternalModule extModule = (ExternalModule) module;
-				// ((ModuleContext)extModule.getContext()).setParentContext(null);
-				// Don't return recursively, since all modules are listed in the
-				// top-level context
-				returnObject(extModule.getSource(), extModule);
-			}
-		}
-	}
+//	private void returnModules(XQueryContext context, ExternalModule self) {
+//		for (final Iterator<Module> it = context.getRootModules(); it.hasNext();) {
+//			final Module module = (Module) it.next();
+//			if (module != self && !module.isInternalModule()) {
+//				final ExternalModule extModule = (ExternalModule) module;
+//				// ((ModuleContext)extModule.getContext()).setParentContext(null);
+//				// Don't return recursively, since all modules are listed in the
+//				// top-level context
+//				returnObject(extModule.getSource(), extModule);
+//			}
+//		}
+//	}
 
 	private synchronized void returnObject(Source source, Object o) {
-		if (size() >= maxPoolSize)
-			{timeoutCheck();}
-		if (size() < maxPoolSize) {
-			Stack stack = (Stack) get(source);
-			if (stack == null) {
-				stack = new Stack();
-				source.setCacheTimestamp(System.currentTimeMillis());
-				put(source, stack);
-			}
-			if (stack.size() < maxStackSize) {
-				for (int i = 0; i < stack.size(); i++) {
-					if (stack.get(i) == o)
-						// query already in pool. may happen for modules.
-						// don't add it a second time.
-						{return;}
+		long ts = source.getCacheTimestamp();
+		if (ts == 0 || ts > lastTimeOfCleanup) {
+			if (size() >= maxPoolSize)
+				timeoutCheck();
+
+			if (size() < maxPoolSize) {
+				Stack stack = (Stack) get(source);
+				if (stack == null) {
+					stack = new Stack();
+					source.setCacheTimestamp(System.currentTimeMillis());
+					put(source, stack);
 				}
-				stack.push(o);
+				if (stack.size() < maxStackSize) {
+					for (int i = 0; i < stack.size(); i++) {
+						if (stack.get(i) == o)
+							// query already in pool. may happen for modules.
+							// don't add it a second time.
+							return;
+					}
+					stack.push(o);
+				}
 			}
 		}
 	}
@@ -171,21 +175,25 @@ public class XQueryPool extends Object2ObjectHashMap {
 		}
 		final Source key = (Source) keys[idx];
 		int validity = key.isValid(broker);
+		
 		if (validity == Source.UNKNOWN)
-			{validity = key.isValid(source);}
+			validity = key.isValid(source);
+		
 		if (validity == Source.INVALID || validity == Source.UNKNOWN) {
 			keys[idx] = REMOVED;
 			values[idx] = null;
 			LOG.debug(source.getKey() + " is invalid");
 			return null;
 		}
+		
 		final Stack stack = (Stack) values[idx];
 		if (stack == null || stack.isEmpty())
-			{return null;}
+			return null;
+
 		// now check if the compiled expression is valid
 		// it might become invalid if an imported module has changed.
 		final CompiledXQuery query = (CompiledXQuery) stack.pop();
-		final XQueryContext context = query.getContext();
+		//final XQueryContext context = query.getContext();
 		//context.setBroker(broker);
 		if (!query.isValid()) {
 			// the compiled query is no longer valid: one of the imported
@@ -193,20 +201,20 @@ public class XQueryPool extends Object2ObjectHashMap {
 			remove(key);
 			return null;
 		} else
-			{return query;}
+			return query;
 	}
 
 	public synchronized CompiledXQuery borrowCompiledXQuery(DBBroker broker, Source source) throws PermissionDeniedException {
 		final CompiledXQuery query = (CompiledXQuery) borrowObject(broker, source);
 		if (query == null)
-			{return null;}
+			return null;
 		
 		//check execution permission
 		source.validate(broker.getSubject(), Permission.EXECUTE);
 		
 		// now check if the compiled expression is valid
 		// it might become invalid if an imported module has changed.
-		final XQueryContext context = query.getContext();
+		//final XQueryContext context = query.getContext();
 		//context.setBroker(broker);
 		return query;
 		// if (!borrowModules(broker, context)) {
@@ -302,6 +310,8 @@ public class XQueryPool extends Object2ObjectHashMap {
 	}
 
     public synchronized void clear() {
+    	lastTimeOfCleanup = System.currentTimeMillis();
+        
         for (final Iterator i = iterator(); i.hasNext();) {
             final Source next = (Source) i.next();
             remove(next);
@@ -309,13 +319,13 @@ public class XQueryPool extends Object2ObjectHashMap {
     }
 
 	private void timeoutCheck() {
+		if (timeoutCheckInterval < 0L)
+			return;
+
 		final long currentTime = System.currentTimeMillis();
 
-		if (timeoutCheckInterval < 0L)
-			{return;}
-
 		if (currentTime - lastTimeOutCheck < timeoutCheckInterval)
-			{return;}
+			return;
 
 		for (final Iterator i = iterator(); i.hasNext();) {
 			final Source next = (Source) i.next();
@@ -323,5 +333,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 				remove(next);
 			}
 		}
+		
+		lastTimeOutCheck = currentTime;
 	}
 }

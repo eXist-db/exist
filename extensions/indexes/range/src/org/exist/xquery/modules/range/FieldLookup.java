@@ -126,6 +126,14 @@ public class FieldLookup extends Function implements Optimizable {
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                     "all nodes from the field set whose node value is equal to the key."),
             true
+        ),
+        new FunctionSignature(
+            new QName("field-matches", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
+            "Used by optimizer to optimize a matches() function call",
+            PARAMETER_TYPE,
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
+                "all nodes from the field set whose node value matches the regular expression."),
+            true
         )
     };
 
@@ -331,5 +339,16 @@ public class FieldLookup extends Function implements Optimizable {
 
     public int returnsType() {
         return Type.NODE;
+    }
+
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        if (fallback != null) {
+            fallback.resetState(postOptimization);
+        }
+        if (!postOptimization) {
+            preselectResult = null;
+        }
     }
 }

@@ -5,9 +5,12 @@ import org.apache.lucene.collation.CollationKeyAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
+import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
+import org.exist.storage.Indexable;
 import org.exist.storage.NodePath;
+import org.exist.util.ByteConversion;
 import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
@@ -15,6 +18,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
 import java.util.Map;
 
@@ -102,10 +107,24 @@ public class RangeIndexConfigElement {
                 case Type.FLOAT:
                     float fvalue = Float.parseFloat(content);
                     return new FloatField(fieldName, fvalue, FloatField.TYPE_NOT_STORED);
+                case Type.DATE:
+                    DateValue dv = new DateValue(content);
+                    long dl = dateToLong(dv);
+                    return new LongField(fieldName, dl, LongField.TYPE_NOT_STORED);
+                case Type.TIME:
+                    TimeValue tv = new TimeValue(content);
+                    long tl = timeToLong(tv);
+                    return new LongField(fieldName, tl, LongField.TYPE_NOT_STORED);
+                case Type.DATE_TIME:
+                    DateTimeValue dtv = new DateTimeValue(content);
+                    String dateStr = dateTimeToString(dtv);
+                    return new TextField(fieldName, dateStr, Field.Store.NO);
                 default:
                     return new TextField(fieldName, content, Field.Store.NO);
             }
         } catch (NumberFormatException e) {
+            // wrong type: ignore
+        } catch (XPathException e) {
             // wrong type: ignore
         }
         return null;
@@ -142,8 +161,62 @@ public class RangeIndexConfigElement {
                 bytes = new BytesRef(NumericUtils.BUF_SIZE_INT);
                 NumericUtils.longToPrefixCoded(iv, 0, bytes);
                 return bytes;
+            case Type.DATE:
+                long dl = dateToLong((DateValue)content);
+                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
+                NumericUtils.longToPrefixCoded(dl, 0, bytes);
+                return bytes;
+            case Type.TIME:
+                long tl = timeToLong((TimeValue) content);
+                bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
+                NumericUtils.longToPrefixCoded(tl, 0, bytes);
+                return bytes;
+            case Type.DATE_TIME:
+                String dt = dateTimeToString((DateTimeValue) content);
+                return new BytesRef(dt);
             default:
                 return new BytesRef(content.getStringValue());
+        }
+    }
+
+    public static long dateToLong(DateValue date) {
+        final XMLGregorianCalendar utccal = date.calendar.normalize();
+        return ((long)utccal.getYear() << 16) + ((long)utccal.getMonth() << 8) + ((long)utccal.getDay());
+    }
+
+    public static long timeToLong(TimeValue time) {
+        return time.getTimeInMillis();
+    }
+
+    public static String dateTimeToString(DateTimeValue dtv) {
+        final XMLGregorianCalendar utccal = dtv.calendar.normalize();
+        final StringBuilder sb = new StringBuilder();
+        formatNumber(utccal.getMillisecond(), 3, sb);
+        formatNumber(utccal.getSecond(), 2, sb);
+        formatNumber(utccal.getMinute(), 2, sb);
+        formatNumber(utccal.getHour(), 2, sb);
+        formatNumber(utccal.getDay(), 2, sb);
+        formatNumber(utccal.getMonth(), 2, sb);
+        formatNumber(utccal.getYear(), 4, sb);
+        return sb.toString();
+    }
+
+    public static void formatNumber(int number, int digits, StringBuilder sb) {
+        int count = 0;
+        long n = number;
+        while (n > 0) {
+            final int digit = '0' + (int)n % 10;
+            sb.insert(0, (char)digit);
+            count++;
+            if (count == digits) {
+                break;
+            }
+            n = n / 10;
+        }
+        if (count < digits) {
+            for (int i = count; i < digits; i++) {
+                sb.insert(0, '0');
+            }
         }
     }
 
@@ -157,6 +230,10 @@ public class RangeIndexConfigElement {
 
     public Analyzer getAnalyzer(String field) {
         return analyzer;
+    }
+
+    public boolean isCaseSensitive() {
+        return caseSensitive;
     }
 
     public boolean isComplex() {

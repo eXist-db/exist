@@ -22,10 +22,8 @@
  */
 package org.exist.xquery.functions.system;
 
-
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
