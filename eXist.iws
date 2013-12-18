@@ -108,11 +108,7 @@
     <list id="f5bc3222-24ad-43d3-b9b5-627b42110798" name="local" comment="[feature] optimize compression from the File System" />
     <list id="dee4f116-21e7-4919-8859-4bc3127d8801" name="xproc" comment="xproc" />
     <list default="true" id="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" name="Revert: [ignore]  update idea project" comment="[ignore]  update idea project">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/WEB-INF/expathrepo" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tools/ant/lib/ivy-2.2.0.jar" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/util/serializer/DOMStreamer.java" afterPath="$PROJECT_DIR$/src/org/exist/util/serializer/DOMStreamer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/xmldb/ResourceTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/xmldb/ResourceTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/build.properties" afterPath="$PROJECT_DIR$/extensions/build.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/util/io/Resource.java" afterPath="$PROJECT_DIR$/src/org/exist/util/io/Resource.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
     </list>
     <list id="2fe5d5c5-3eab-4c67-bc87-1c5a706e8808" name="New changelist" comment="" />
@@ -146,7 +142,7 @@
     <file path="/UserAider.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359908008200" ignored="false" />
     <file path="/AbstractSubject.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359908145543" ignored="false" />
     <file path="/AbstractGroup.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1359909202582" ignored="false" />
-    <file path="/Dummy.txt" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1367617319022" ignored="false" />
+    <file path="/Dummy.txt" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385457819999" ignored="false" />
     <file path="/SAXSerializer.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1360487326596" ignored="false" />
     <file path="/MicroXmlWriter.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1360489244679" ignored="false" />
     <file path="/XMLDBSetCollectionPermissions.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1360600213485" ignored="false" />
@@ -214,6 +210,186 @@
     <file path="/IDE.js" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1365762580399" ignored="false" />
     <file path="$APPLICATION_HOME_DIR$/lib/jdkAnnotations.jar!/java/lang/annotations.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1365764528111" ignored="false" />
     <file path="$PROJECT_DIR$/lib/extensions/exist-xqdoc.jar!/org/exist/xqdoc/ant/antlib.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1367270481983" ignored="false" />
+    <file path="/Optimize.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385041088336" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Push.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="/Push.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385121884830" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/UsernamePasswordCredentialsProvider.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="/UsernamePasswordCredentialsProvider.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385124608173" ignored="false" />
+    <file path="$MAVEN_REPOSITORY$/org/eclipse/jgit/org.eclipse.jgit/3.2.0-SNAPSHOT/org.eclipse.jgit-3.2.0-SNAPSHOT-sources.jar!/org/eclipse/jgit/transport/UsernamePasswordCredentialsProvider.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385124668836" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/patch" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385200268683" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.ant.test/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.http.server/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.http.test/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.http.test/tst/org/eclipse/jgit/http/test/HttpClientTests.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804894" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Pull.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804894" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.http.test/tst/org/eclipse/jgit/http/test/FileResolverTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Module.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804894" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Merge.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804894" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/BranchCreate.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804894" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.pgm/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Add.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804894" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Cat.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.http.server/about.html" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Log.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.ant/about.html" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Diff.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Commit.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/BranchDelete.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.ant/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Move.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/expath-pkg.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/BranchRename.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Create.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/internal/storage/pack/PackWriterBitmapPreparer.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/BranchList.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Checkout.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.ui/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.junit.http/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/exist.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/repo.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/git/xquery/Clone.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/eclipse/jgit/util/FS_eXistdb.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385239574455" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/build.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238804895" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.junit/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931463" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/internal/storage/file/PackBitmapIndex.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.archive/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.archive/about.html" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.console/about.html" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/internal/storage/file/PackBitmapIndexBuilder.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/about.html" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/CredentialsProvider.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.pgm.test/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/CredentialItem.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.console/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.target/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.pgm.source.feature/feature.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.pgm.source.feature/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.java7/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.java7.test/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/Daemon.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PackedObjectInfo.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/errors/UnsupportedCredentialItem.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931301" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/ReceiveCommand.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportHttp.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/BasePackFetchConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/DaemonService.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/FetchHeadRecord.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/FetchConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/ReceivePack.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/Connection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PushProcess.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/HttpTransport.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/OperationResult.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PushConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/BaseConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.feature/feature.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/RefAdvertiser.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/RefSpec.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/package-info.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportBundle.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/GitProtocolConstants.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/WalkRemoteObjectDatabase.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.feature/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/AbstractAdvertiseRefsHook.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportLocal.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/UploadPackLogger.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PostReceiveHook.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PreUploadHookChain.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PostReceiveHookChain.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/RefFilter.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/UploadPackLoggerChain.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/BundleFetchConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/AdvertiseRefsHook.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TcpTransport.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/ServiceMayNotContinueException.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/URIish.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PreUploadHook.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/AdvertiseRefsHookChain.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportGitSsh.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/SideBandOutputStream.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/BaseReceivePack.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/RequestNotYetReadException.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/RemoteConfig.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931302" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/CredentialsProviderUserInfo.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PacketLineIn.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PackParser.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransferConfig.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportSftp.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/JschConfigSessionFactory.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/SideBandProgressMonitor.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/UploadPackInternalServerErrorException.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportGitAnon.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/RemoteSession.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PushResult.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/DaemonClient.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/UploadPackMayNotContinueException.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/FetchProcess.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PreReceiveHookChain.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportAmazonS3.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/HttpAuthMethod.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PackTransport.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/LongMap.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/BasePackPushConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/BaseFetchConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PreReceiveHook.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/RemoteRefUpdate.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.junit.feature/feature.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TagOpt.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/SshTransport.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/WalkFetchConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TrackingRefUpdate.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/UploadPack.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/WalkTransport.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/DefaultSshSessionFactory.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportProtocol.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/PacketLineOut.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/WalkPushConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportBundleStream.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/FetchResult.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/JschSession.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/BundleWriter.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/AmazonS3.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/OpenSshConfig.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/WalkEncryption.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/SshSessionFactory.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/BasePackConnection.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/Transport.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931303" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/TransportBundleFile.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/src/org/eclipse/jgit/transport/SideBandInputStream.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit/findBugs/FindBugsExcludeFilter.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/ReceivePackAdvertiseRefsHookTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/SpiTransport.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.source.feature/feature.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/tools/eclipse-JGit-Format.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.java7.feature/feature.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/BundleWriterTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/PackParserTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/URIishTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/RemoteConfigTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.java7.feature/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/LongMapTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/RefSpecTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/PushProcessTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/SideBandOutputStreamTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/OpenSshConfigTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/HttpAuthTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/PacketLineInTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/PacketLineOutTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.packaging/org.eclipse.jgit.repository/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931304" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/org.eclipse.jgit.test/tst/org/eclipse/jgit/transport/TransportTest.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385238931460" ignored="false" />
+    <file path="$PROJECT_DIR$/../jgit/.gitignore" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385239002089" ignored="false" />
+    <file path="/.gitignore" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385239153797" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/.gitignore" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385239153796" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/tesr.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385239362952" ignored="false" />
+    <file path="/tesr.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385239440250" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/jgit/transport/tesr.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385239459322" ignored="false" />
+    <file path="$PROJECT_DIR$/../eXgit/src/main/java/org/exist/jgit/transport/eXistCredentialsProvider.java" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385239451984" ignored="false" />
+    <file path="/pom.xml" changelist="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" time="1385239574455" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -233,6 +409,7 @@
     <disable_hints />
   </component>
   <component name="DebuggerManager">
+    <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <breakpoint_any default_suspend_policy="SuspendAll" default_condition_enabled="true">
       <breakpoint>
         <option name="NOTIFY_CAUGHT" value="true" />
@@ -269,54 +446,7 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
-    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
-      <breakpoint url="file://$PROJECT_DIR$/src/org/exist/xquery/functions/securitymanager/GroupMembershipFunctions.java" line="260" class="org.exist.xquery.functions.securitymanager.GroupMembershipFunctions" package="org.exist.xquery.functions.securitymanager">
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBSetResourcePermissions.java" line="121" class="org.exist.xquery.functions.xmldb.XMLDBSetResourcePermissions" package="org.exist.xquery.functions.xmldb">
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/org/exist/util/serializer/DOMStreamer.java" line="155" class="org.exist.util.serializer.DOMStreamer" package="org.exist.util.serializer">
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="false" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-    </line_breakpoints>
-    <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
+    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <breakpoint_rules />
     <ui_properties />
   </component>
@@ -356,82 +486,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="MemTreeBuilder.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/memtree/MemTreeBuilder.java">
+      <file leaf-file-name="Resource.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/org/exist/util/io/Resource.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="43" column="13" selection-start="1386" selection-end="1386" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Serializer.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/storage/serializers/Serializer.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="116" column="22" selection-start="4619" selection-end="4619" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DOMSerializer.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/util/serializer/DOMSerializer.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="48" column="36" selection-start="1747" selection-end="1747" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="UnZipFunction.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/UnZipFunction.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="95" column="129" selection-start="5036" selection-end="5036" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="NativeSerializer.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/storage/serializers/NativeSerializer.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="57" column="13" selection-start="1949" selection-end="1949" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="AbstractExtractFunction.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractExtractFunction.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="174" column="21" selection-start="7107" selection-end="7107" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="eXist.iws" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/eXist.iws">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="2099" column="30" selection-start="110963" selection-end="110963" vertical-scroll-proportion="0.28384992">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DocumentBuilderReceiver.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/memtree/DocumentBuilderReceiver.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="34" selection-start="1494" selection-end="1494" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Transform.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/transform/Transform.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="8" column="13" selection-start="335" selection-end="335" vertical-scroll-proportion="0.0">
+            <state line="1251" column="26" selection-start="35519" selection-end="35519" vertical-scroll-proportion="-1.0423601">
               <folding />
             </state>
           </provider>
@@ -444,11 +502,17 @@
       <setting name="OPEN_NEW_TAB" value="false" />
     </FindUsagesManager>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitLogSettings">
+    <option name="myDateState">
+      <MyDateState />
+    </option>
+  </component>
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/org/exist/security/AbstractGroup.java" />
-        <option value="/Library/Java/JavaVirtualMachines/1.6.0_29-b11-402.jdk/Contents/Home/src.jar!/src/java/lang/CharSequence.java" />
         <option value="$PROJECT_DIR$/src/org/exist/util/serializer/SAXSerializer.java" />
         <option value="$PROJECT_DIR$/src/org/exist/util/serializer/MicroXmlWriter.java" />
         <option value="$PROJECT_DIR$/src/org/exist/xmldb/LocalUserManagementService.java" />
@@ -463,6 +527,8 @@
         <option value="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractExtractFunction.java" />
         <option value="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/org/xml/sax/ContentHandler.class" />
         <option value="$PROJECT_DIR$/eXist.iws" />
+        <option value="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/xquery/modules/lucene/Optimize.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/util/io/Resource.java" />
       </list>
     </option>
   </component>
@@ -665,7 +731,7 @@
     <option name="lastEditedConfigurable" value="eXist" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
+    <navigator proportions="" version="1" splitterProportion="0.5">
       <flattenPackages Favorites="true" />
       <showMembers Favorites="true" />
       <showModules />
@@ -677,28 +743,6 @@
       <sortByType PackagesPane="true" Favorites="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
-      <pane id="ProjectPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist-2.1dev" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scope" />
       <pane id="Favorites">
         <subPane subId="eXist">
           <PATH>
@@ -1676,24 +1720,6 @@
     <myIsUseDefaultProxy>true</myIsUseDefaultProxy>
     <supportedVersion>125</supportedVersion>
   </component>
-  <component name="SvnFileUrlMappingImpl">
-    <option name="myMappingRoots">
-      <list>
-        <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="$PROJECT_DIR$" />
-          <option name="myCopyRoot" value="$PROJECT_DIR$" />
-        </SvnCopyRootSimple>
-      </list>
-    </option>
-    <option name="myMoreRealMappingRoots">
-      <list>
-        <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="$PROJECT_DIR$" />
-          <option name="myCopyRoot" value="$PROJECT_DIR$" />
-        </SvnCopyRootSimple>
-      </list>
-    </option>
-  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="9c94c8a9-f5ba-4ada-96fc-bdc14754ba2b" name="Default" comment="[documentation] adding more testing related doc" />
@@ -1736,29 +1762,29 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1280" height="800" extended-state="0" />
+    <frame x="0" y="0" width="1280" height="800" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.494302" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="SBT Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37037036" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="2" y="25" width="822" height="573" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.32963374" sideWeight="0.5" order="19" side_tool="false" content_ui="tabs" x="4" y="2" width="968" height="391" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3443435" sideWeight="0.59375" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37464386" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42592594" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35135135" sideWeight="0.0" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23176661" sideWeight="0.5740741" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23176661" sideWeight="0.5740741" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32333875" sideWeight="0.505698" order="0" side_tool="false" content_ui="combo" x="72" y="49" width="451" height="485" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39780018" sideWeight="0.80755395" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29902756" sideWeight="0.505698" order="0" side_tool="false" content_ui="combo" x="72" y="49" width="451" height="485" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3803419" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Problems" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="17" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.19141914" sideWeight="0.6141141" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="SBT Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Log4jMonitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5105634" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -1772,9 +1798,9 @@
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.334004" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="TeamCity" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.53518516" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42592594" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39780018" sideWeight="0.80755395" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22082585" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
@@ -2065,56 +2091,14 @@
     <option name="myLastEditedConfigurable" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$PROJECT_DIR$/lib/core/xmldb.jar!/org/xmldb/api/base/Resource.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="21" selection-start="450" selection-end="450" vertical-scroll-proportion="0.29850745" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build/classes/org/exist/collections/triggers/ContentHandlerWrapper.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="27" selection-start="572" selection-end="583" vertical-scroll-proportion="0.29363784" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/util/serializer/DOMStreamer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="61" column="31" selection-start="2156" selection-end="2156" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/storage/serializers/NativeSerializer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="57" column="13" selection-start="1949" selection-end="1949" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/util/serializer/DOMSerializer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="36" selection-start="1747" selection-end="1747" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/UnZipFunction.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="95" column="129" selection-start="5036" selection-end="5036" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/memtree/DocumentBuilderReceiver.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="34" selection-start="1494" selection-end="1494" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="42" column="0" selection-start="1424" selection-end="1424" vertical-scroll-proportion="0.022692889" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/xquery/functions/transform/Transform.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="13" selection-start="335" selection-end="335" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="8" column="13" selection-start="335" selection-end="335" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/org/xml/sax/ContentHandler.class">
@@ -2124,16 +2108,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/memtree/MemTreeBuilder.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="13" selection-start="1386" selection-end="1386" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="43" column="13" selection-start="1325" selection-end="1325" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/exist/storage/serializers/Serializer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="116" column="22" selection-start="4619" selection-end="4619" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="116" column="22" selection-start="4562" selection-end="4562" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/src/org/exist/xmldb/SerializationTest.java">
@@ -2148,21 +2128,49 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractExtractFunction.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="174" column="21" selection-start="7107" selection-end="7107" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="174" column="21" selection-start="7038" selection-end="7038" vertical-scroll-proportion="0.022692889" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/eXist.iws">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2099" column="30" selection-start="110963" selection-end="110963" vertical-scroll-proportion="0.28384992">
+        <state line="2" column="14" selection-start="75" selection-end="75" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndexWorker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="64" column="13" selection-start="2318" selection-end="2318" vertical-scroll-proportion="0.23510972" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/xquery/modules/lucene/Optimize.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="58" column="77" selection-start="2688" selection-end="2688" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/Optimize.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="42" column="44" selection-start="1828" selection-end="1828" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/RangeIndexModule.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="31" column="13" selection-start="1131" selection-end="1131" vertical-scroll-proportion="0.11127596" />
+      </provider>
+    </entry>
+    <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/io/File.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="11" selection-start="825" selection-end="825" vertical-scroll-proportion="0.33282906">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/exist/util/io/Resource.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1251" column="26" selection-start="35519" selection-end="35519" vertical-scroll-proportion="-1.0423601">
           <folding />
         </state>
       </provider>
