@@ -291,7 +291,7 @@ then
     then
         DIST_BITS="32"
     else
-        if [ "X`sysctl -n hw.cpu64bit_capable`" == "X1" ]  
+        if [ "X`/usr/sbin/sysctl -n hw.cpu64bit_capable`" == "X1" ]  
         then
             DIST_BITS="64"
         else
