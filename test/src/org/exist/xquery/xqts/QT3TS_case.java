@@ -54,22 +54,22 @@ import org.xml.sax.SAXException;
  */
 public class QT3TS_case extends TestCase {
 
-	protected static final String FOLDER = "test/external/QT3-test-suite/";
-	protected static final String QT_NS = "http://www.w3.org/2010/09/qt-fots-catalog";
+    protected static final String FOLDER = "test/external/QT3-test-suite/";
+    protected static final String QT_NS = "http://www.w3.org/2010/09/qt-fots-catalog";
     protected static final XmldbURI QT3_URI = XmldbURI.DB.append("QT3");
-    
+
     protected static final String xquery3declaration = "xquery version \"3.0\";\n";
 
     @Override
     public void loadTS() throws Exception {
-    	System.out.println("loading QT3...");
+        System.out.println("loading QT3...");
         QT3TS_To_junit convertor = new QT3TS_To_junit();
         convertor.init();
         try {
-        	convertor.load();
-        	System.out.println("loaded QT3.");
+            convertor.load();
+            System.out.println("loaded QT3.");
         } finally {
-        	convertor.release();
+            convertor.release();
         }
     }
 
@@ -81,425 +81,407 @@ public class QT3TS_case extends TestCase {
             broker = db.get(db.getSecurityManager().getSystemSubject());
             xquery = broker.getXQueryService();
 
-            broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
-            
-            String query = "xmldb:document('"+file+"')";
+            broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+
+            String query = "xmldb:document('" + file + "')";
 
             return xquery.execute(query, null, AccessContext.TEST);
-            
+
         } finally {
-        	db.release(broker);
+            db.release(broker);
         }
     }
-    
+
     private HashMap<String, Sequence> enviroments(String file) {
-    	HashMap<String, Sequence> enviroments = new HashMap<String, Sequence>();
+        HashMap<String, Sequence> enviroments = new HashMap<String, Sequence>();
 
-		DBBroker broker = null;
-	    try {
-	        broker = db.get(db.getSecurityManager().getSystemSubject());
-	        XQuery xquery = broker.getXQueryService();
-	
-	        broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
-	        
-	        String query = "declare namespace qt='"+QT_NS+"';\n"+
-	        "let $testCases := xmldb:document('/db/QT3/"+file+"')\n"+
-	        "let $tc := $testCases//qt:environment\n"+
-	        "return $tc";
+        DBBroker broker = null;
+        try {
+            broker = db.get(db.getSecurityManager().getSystemSubject());
+            XQuery xquery = broker.getXQueryService();
 
-	        Sequence result = xquery.execute(query, null, AccessContext.TEST);
-	        
-	        String col = XmldbURI.create("/db/QT3/"+file).removeLastSegment().toString();
-	
-	        for (NodeProxy node : result.toNodeSet()) {
-	        	ElementImpl el = (ElementImpl) node.getNode();
+            broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+
+            String query = "declare namespace qt='" + QT_NS + "';\n" + "let $testCases := xmldb:document('/db/QT3/" + file + "')\n"
+                    + "let $tc := $testCases//qt:environment\n" + "return $tc";
+
+            Sequence result = xquery.execute(query, null, AccessContext.TEST);
+
+            String col = XmldbURI.create("/db/QT3/" + file).removeLastSegment().toString();
+
+            for (NodeProxy node : result.toNodeSet()) {
+                ElementImpl el = (ElementImpl) node.getNode();
 
                 String name = el.getAttribute("name");
                 if (name == null)
-                	continue;
-                
+                    continue;
+
                 NodeList sources = el.getElementsByTagNameNS(QT_NS, "source");
                 for (int j = 0; j < sources.getLength(); j++) {
-                	ElementImpl source = (ElementImpl) sources.item(j);
-                	
-                	String role = source.getAttribute("role");
+                    ElementImpl source = (ElementImpl) sources.item(j);
+
+                    String role = source.getAttribute("role");
                     Assert.assertEquals(".", role);
 
-                	String url = source.getAttribute("file");
+                    String url = source.getAttribute("file");
                     Assert.assertFalse("".equals(url));
                     Assert.assertFalse(enviroments.containsKey(name));
                     try {
-                    	enviroments.put(name, enviroment(col+"/"+url));
-					} catch (Exception e) {
-		                Assert.fail(e.getMessage());
-					}
+                        enviroments.put(name, enviroment(col + "/" + url));
+                    } catch (Exception e) {
+                        Assert.fail(e.getMessage());
+                    }
                 }
             }
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			db.release(broker);
-		}
-	    return enviroments;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.release(broker);
+        }
+        return enviroments;
     }
-    
-    private String getEnviroment(String file, String name) {
-    	String enviroment = null;
-    	
-		DBBroker broker = null;
-	    try {
-	        broker = db.get(db.getSecurityManager().getSystemSubject());
-	        XQuery xquery = broker.getXQueryService();
-	
-	        broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
-	        
-	        String query = "declare namespace qt='"+QT_NS+"';\n"+
-	        "let $testCases := xmldb:document('/db/QT3/"+file+"')\n"+
-	        "let $tc := $testCases//qt:environment[@name eq '"+name+"']\n"+
-	        "let $catalog := xmldb:document('/db/QT3/catalog.xml')\n"+
-	        "let $cat := $catalog//qt:environment[@name eq '"+name+"']\n"+
-	        "return ($tc, $cat)";
 
-	        Sequence result = xquery.execute(query, null, AccessContext.TEST);
-	        
-	        String col = XmldbURI.create("/db/QT3/"+file).removeLastSegment().toString();
-	
-	        for (NodeProxy node : result.toNodeSet()) {
-	        	ElementImpl el = (ElementImpl) node.getNode();
+    private String getEnviroment(String file, String name) {
+        String enviroment = null;
+
+        DBBroker broker = null;
+        try {
+            broker = db.get(db.getSecurityManager().getSystemSubject());
+            XQuery xquery = broker.getXQueryService();
+
+            broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+
+            String query = "declare namespace qt='" + QT_NS + "';\n" + "let $testCases := xmldb:document('/db/QT3/" + file + "')\n"
+                    + "let $tc := $testCases//qt:environment[@name eq '" + name + "']\n" + "let $catalog := xmldb:document('/db/QT3/catalog.xml')\n"
+                    + "let $cat := $catalog//qt:environment[@name eq '" + name + "']\n" + "return ($tc, $cat)";
+
+            Sequence result = xquery.execute(query, null, AccessContext.TEST);
+
+            String col = XmldbURI.create("/db/QT3/" + file).removeLastSegment().toString();
+
+            for (NodeProxy node : result.toNodeSet()) {
+                ElementImpl el = (ElementImpl) node.getNode();
 
                 String _name = el.getAttribute("name");
                 if (_name == null)
-                	continue;
-                
+                    continue;
+
                 col = el.getDocument().getURI().removeLastSegment().toString();
-                
+
                 NodeList sources = el.getElementsByTagNameNS(QT_NS, "source");
                 for (int j = 0; j < sources.getLength(); j++) {
-                	ElementImpl source = (ElementImpl) sources.item(j);
-                	
-                	String role = source.getAttribute("role");
+                    ElementImpl source = (ElementImpl) sources.item(j);
+
+                    String role = source.getAttribute("role");
                     if (!role.equals("."))
                         continue;
-//                    Assert.assertEquals(".", role);
+                    // Assert.assertEquals(".", role);
 
-                	String url = source.getAttribute("file");
+                    String url = source.getAttribute("file");
                     Assert.assertFalse("".equals(url));
-//                    Assert.assertFalse(enviroments.containsKey(name));
+                    // Assert.assertFalse(enviroments.containsKey(name));
                     Assert.assertNull(enviroment);
                     enviroment = col + "/" + url;
                 }
             }
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			db.release(broker);
-		}
-	    return enviroment;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.release(broker);
+        }
+        return enviroment;
     }
 
-
     protected void testCase(String file, String tcName) {
-    	System.out.println("test "+tcName);
-    	
+        System.out.println("test " + tcName);
+
         DBBroker broker = null;
         Sequence result = null;
         XQuery xquery = null;
 
-//    	try {
-            Set<String> extectedError = new HashSet<String>();
-            try {
-                broker = db.get(db.getSecurityManager().getSystemSubject());
-                xquery = broker.getXQueryService();
+        // try {
+        Set<String> extectedError = new HashSet<String>();
+        try {
+            broker = db.get(db.getSecurityManager().getSystemSubject());
+            xquery = broker.getXQueryService();
 
-                final XQueryContext context = new XQueryContext(db, AccessContext.TEST);
+            final XQueryContext context = new XQueryContext(db, AccessContext.TEST);
 
-                broker.getConfiguration().setProperty( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
+            broker.getConfiguration().setProperty(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, true);
 
-	            String query = "declare namespace qt='"+QT_NS+"';\n"+
-	            "let $testCases := xmldb:document('/db/QT3/"+file+"')\n"+
-	            "let $tc := $testCases//qt:test-case[@name eq \""+tcName+"\"]\n"+
-	            "return $tc";
+            String query = "declare namespace qt='" + QT_NS + "';\n" + "let $testCases := xmldb:document('/db/QT3/" + file + "')\n"
+                    + "let $tc := $testCases//qt:test-case[@name eq \"" + tcName + "\"]\n" + "return $tc";
 
-	            XQuery xqs = broker.getXQueryService();
+            XQuery xqs = broker.getXQueryService();
 
-	            Sequence results = xqs.execute(query, null, AccessContext.TEST);
-	            
-	            Assert.assertFalse("", !results.isEmpty());
-	
-	            ElementImpl TC = (ElementImpl) results.toNodeSet().get(0).getNode();
-	
-	            Sequence contextSequence = null;
-	            
-	            NodeList expected = null;
-	            String nodeName = "";
-	
-	            //compile & evaluate
-	            String caseScript = null;
+            Sequence results = xqs.execute(query, null, AccessContext.TEST);
 
-                List<String> staticDocs = new ArrayList<String>();
-	            NodeList childNodes = TC.getChildNodes();
-	            for (int i = 0; i < childNodes.getLength(); i++) {
-	                Node child = childNodes.item(i);
-	                switch (child.getNodeType()) {
-	                    case Node.ATTRIBUTE_NODE:
-	//                        String name = ((Attr)child).getName();
-	//                        if (name.equals("scenario"))
-	//                            scenario = ((Attr)child).getValue();
-	                        break;
-	                    case Node.ELEMENT_NODE:
-	                    	nodeName = ((ElementImpl) child).getLocalName();
-	                        if (nodeName.equals("test")) {
-	                            ElementImpl el = ((ElementImpl) child);
-	                            caseScript = el.getNodeValue();
-	                        
-	                        } else if (nodeName.equals("environment")) {
-	                            ElementImpl el = ((ElementImpl) child);
-	                            
-	                            String ref = el.getAttribute("ref");
-	                            if (!(ref == null || "empty".equals(ref) || ref.isEmpty())) {
-	                            	Assert.assertNull(contextSequence);
-	                            	String contextDoc = getEnviroment(file, ref);
-                                    staticDocs.add(contextDoc);
-	                            } else {
-	                                NodeList _childNodes = el.getChildNodes();
-	                                for (int j = 0; j < _childNodes.getLength(); j++) {
-	                                    Node _child = _childNodes.item(j);
-	                                    switch (_child.getNodeType()) {
-	                                    case Node.ELEMENT_NODE:
-	                                    	nodeName = ((ElementImpl) _child).getLocalName();
-	                                        if (nodeName.equals("param")) {
-	                                            el = ((ElementImpl) _child);
-	                                        	Variable var = new VariableImpl(QName.parse(context, el.getAttribute("name")));
-	                                        	
-	                                        	String type = el.getAttribute("as");
-	                                        	if ("xs:date".equals(type)) {
-	                                            	var.setStaticType(Type.DATE);
-	                                            	
-	                                            	Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
-	                                            	Assert.assertEquals(1, res.getItemCount());
-	                                            	var.setValue(res);
-	                                        	} else if ("xs:dateTime".equals(type)) {
-	                                            	var.setStaticType(Type.DATE_TIME);
-	                                            	
-	                                            	Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
-	                                            	Assert.assertEquals(1, res.getItemCount());
-	                                            	var.setValue(res);
-                                                } else if ("xs:string".equals(type)) {
-                                                    var.setStaticType(Type.STRING);
-                                                    
-                                                    Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
-                                                    Assert.assertEquals(1, res.getItemCount());
-                                                    var.setValue(res);
-	                                        	} else {
-	                                        		Assert.fail("unknown type '"+type+"'");
-	                                        	}
-	                                        	context.declareGlobalVariable(var);
-	                                        }
-	                                    }
-	                                }
-	                            }
-	                            
-	                        } else if (nodeName.equals("result")) {
-	                            ElementImpl el = ((ElementImpl) child);
-	                            
-	                            possibleErrors(el, extectedError);
-	
-	                            NodeList anyOf = el.getElementsByTagNameNS(QT_NS, "any-of");
-	                            for (int j = 0; j < anyOf.getLength(); j++) {
-	                            	el = (ElementImpl) anyOf.item(j);
-		                            possibleErrors(el, extectedError);
-	                            }
-	
-	                            expected = el.getChildNodes();
-	                        }
-	                        break;
-	                    default :
-	                        ;
-	                }
-	            }
+            Assert.assertFalse("", results.isEmpty());
 
-                if (staticDocs.size() > 0) {
-                    XmldbURI contextDocs[] = new XmldbURI[staticDocs.size()];
-                    int i = 0;
-                    for (String path : staticDocs) {
-                        contextDocs[i++] = XmldbURI.createInternal(path);
+            ElementImpl TC = (ElementImpl) results.toNodeSet().get(0).getNode();
+
+            Sequence contextSequence = null;
+
+            NodeList expected = null;
+            String nodeName = "";
+
+            // compile & evaluate
+            String caseScript = null;
+
+            List<String> staticDocs = new ArrayList<String>();
+            NodeList childNodes = TC.getChildNodes();
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                Node child = childNodes.item(i);
+                switch (child.getNodeType()) {
+                case Node.ATTRIBUTE_NODE:
+                    // String name = ((Attr)child).getName();
+                    // if (name.equals("scenario"))
+                    // scenario = ((Attr)child).getValue();
+                    break;
+                case Node.ELEMENT_NODE:
+                    nodeName = ((ElementImpl) child).getLocalName();
+                    if (nodeName.equals("test")) {
+                        ElementImpl el = ((ElementImpl) child);
+                        caseScript = el.getNodeValue();
+
+                    } else if (nodeName.equals("environment")) {
+                        ElementImpl el = ((ElementImpl) child);
+
+                        String ref = el.getAttribute("ref");
+                        if (!(ref == null || "empty".equals(ref) || ref.isEmpty())) {
+                            Assert.assertNull(contextSequence);
+                            String contextDoc = getEnviroment(file, ref);
+                            staticDocs.add(contextDoc);
+                        } else {
+                            NodeList _childNodes = el.getChildNodes();
+                            for (int j = 0; j < _childNodes.getLength(); j++) {
+                                Node _child = _childNodes.item(j);
+                                switch (_child.getNodeType()) {
+                                case Node.ELEMENT_NODE:
+                                    nodeName = ((ElementImpl) _child).getLocalName();
+                                    if (nodeName.equals("param")) {
+                                        el = ((ElementImpl) _child);
+                                        Variable var = new VariableImpl(QName.parse(context, el.getAttribute("name")));
+
+                                        String type = el.getAttribute("as");
+                                        if ("xs:date".equals(type)) {
+                                            var.setStaticType(Type.DATE);
+
+                                            Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
+                                            Assert.assertEquals(1, res.getItemCount());
+                                            var.setValue(res);
+                                        } else if ("xs:dateTime".equals(type)) {
+                                            var.setStaticType(Type.DATE_TIME);
+
+                                            Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
+                                            Assert.assertEquals(1, res.getItemCount());
+                                            var.setValue(res);
+                                        } else if ("xs:string".equals(type)) {
+                                            var.setStaticType(Type.STRING);
+
+                                            Sequence res = xquery.execute(el.getAttribute("select"), null, AccessContext.TEST);
+                                            Assert.assertEquals(1, res.getItemCount());
+                                            var.setValue(res);
+                                        } else {
+                                            Assert.fail("unknown type '" + type + "'");
+                                        }
+                                        context.declareGlobalVariable(var);
+                                    }
+                                }
+                            }
+                        }
+
+                    } else if (nodeName.equals("result")) {
+                        ElementImpl el = ((ElementImpl) child);
+
+                        possibleErrors(el, extectedError);
+
+                        NodeList anyOf = el.getElementsByTagNameNS(QT_NS, "any-of");
+                        for (int j = 0; j < anyOf.getLength(); j++) {
+                            el = (ElementImpl) anyOf.item(j);
+                            possibleErrors(el, extectedError);
+                        }
+
+                        expected = el.getChildNodes();
                     }
-                    context.setStaticallyKnownDocuments(contextDocs);
+                    break;
+                default:
+                    ;
                 }
-                final CompiledXQuery compiled = xquery.compile(context, xquery3declaration+caseScript);
-                result = xquery.execute(compiled, contextSequence);
-
-                for (int i = 0; i < expected.getLength(); i++) {
-                	Node node = expected.item(i);
-                	checkResults(node.getLocalName(), node.getChildNodes(), result);
-                }
-            } catch (XPathException e) {
-
-            	if (extectedError.contains("*"))
-            	    return;
-
-                String msg = e.getMessage();
-                for (String code : extectedError) {
-                    if (msg.contains(code))
-                        return;
-                }
-
-//                e.printStackTrace();
-//            	ErrorCode errorCode = e.getErrorCode();
-//            	if (errorCode != null && extectedError.contains(errorCode.getErrorQName().getLocalName()))
-//            		return;
-                Assert.fail("expected error code: '" + extectedError + "', but got: '" + e.getMessage() + "'");
-            } catch (Exception e) { 
-            	e.printStackTrace();
-                Assert.fail(e.getMessage());
-            } finally {
-            	db.release(broker);
             }
-//        } catch (XMLDBException e) {
-//            Assert.fail(e.toString());
-//		} 
+
+            if (staticDocs.size() > 0) {
+                XmldbURI contextDocs[] = new XmldbURI[staticDocs.size()];
+                int i = 0;
+                for (String path : staticDocs) {
+                    contextDocs[i++] = XmldbURI.createInternal(path);
+                }
+                context.setStaticallyKnownDocuments(contextDocs);
+            }
+            final CompiledXQuery compiled = xquery.compile(context, xquery3declaration + caseScript);
+            result = xquery.execute(compiled, contextSequence);
+
+            for (int i = 0; i < expected.getLength(); i++) {
+                Node node = expected.item(i);
+                checkResults(node.getLocalName(), node.getChildNodes(), result);
+            }
+        } catch (XPathException e) {
+
+            if (extectedError.contains("*"))
+                return;
+
+            String msg = e.getMessage();
+            for (String code : extectedError) {
+                if (msg.contains(code))
+                    return;
+            }
+
+            // e.printStackTrace();
+            // ErrorCode errorCode = e.getErrorCode();
+            // if (errorCode != null &&
+            // extectedError.contains(errorCode.getErrorQName().getLocalName()))
+            // return;
+            Assert.fail("expected error code: '" + extectedError + "', but got: '" + e.getMessage() + "'");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } finally {
+            db.release(broker);
+        }
+        // } catch (XMLDBException e) {
+        // Assert.fail(e.toString());
+        // }
     }
-    
+
     private void possibleErrors(ElementImpl el, Set<String> extectedError) {
         NodeList errors = el.getElementsByTagNameNS(QT_NS, "error");
         for (int j = 0; j < errors.getLength(); j++) {
-        	ElementImpl error = (ElementImpl) errors.item(j);
+            ElementImpl error = (ElementImpl) errors.item(j);
 
-            //check error for 'code' attribute
-        	String code = error.getAttribute("code");
-        	if (code != null && !code.isEmpty()) {
-            	extectedError.add(code);
+            // check error for 'code' attribute
+            String code = error.getAttribute("code");
+            if (code != null && !code.isEmpty()) {
+                extectedError.add(code);
             }
         }
     }
-    
+
     private void checkResults(String type, NodeList expected, Sequence result) throws Exception {
-    		
-		if ("all-of".equals(type)) {
-	        for (int i = 0; i < expected.getLength(); i++) {
-	        	final Node node = expected.item(i);
-	        	checkResults(node.getLocalName(), node.getChildNodes(), result);
-	        }
-		} else if ("any-of".equals(type)) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("at any-of all failed\n");
-	        for (int i = 0; i < expected.getLength(); i++) {
-	        	final Node node = expected.item(i);
-	        	try {
-	        		checkResults(node.getLocalName(), node.getChildNodes(), result);
-	        		return;
-	        	} catch (Throwable e) {
-	        		e.printStackTrace();
-	        		sb.append(e.getMessage()).append("\n");
-				}
-	        }
-			Assert.assertTrue(sb.toString(), false);
-			
-		} else if ("assert".equals(type)) {
-			Assert.assertTrue("not implemented 'assert'", false);
 
-		} else if ("assert-type".equals(type)) {
-	        for (int i = 0; i < expected.getLength(); i++) {
-	        	final Node node = expected.item(i);
-	        	
-	        	final String expect = node.getNodeValue();
-	        	final int actual = result.itemAt(i).getType();
-	        	
-        		if (Type.subTypeOf(actual, Type.getType(expect)))
-        			return;
+        if ("all-of".equals(type)) {
+            for (int i = 0; i < expected.getLength(); i++) {
+                final Node node = expected.item(i);
+                checkResults(node.getLocalName(), node.getChildNodes(), result);
+            }
+        } else if ("any-of".equals(type)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("at any-of all failed\n");
+            for (int i = 0; i < expected.getLength(); i++) {
+                final Node node = expected.item(i);
+                try {
+                    checkResults(node.getLocalName(), node.getChildNodes(), result);
+                    return;
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    sb.append(e.getMessage()).append("\n");
+                }
+            }
+            Assert.assertTrue(sb.toString(), false);
 
-	        	Assert.assertEquals("expected '"+expect+"' get '"+Type.getTypeName(actual),
-        			Type.getType(expect), 
-        			result.itemAt(i).getType()
-    			); 
-	        }
+        } else if ("assert".equals(type)) {
+            Assert.assertTrue("not implemented 'assert'", false);
 
-		} else if ("assert-eq".equals(type)) {
-	        for (int i = 0; i < expected.getLength(); i++) {
-	        	final Node node = expected.item(i);
-	        	String expect = node.getNodeValue();
-//	        	if ((expect.startsWith("\"") && expect.endsWith("\"")) || (expect.startsWith("'") && expect.endsWith("'"))) {
-//	        		//? check is it xs:string ?
-//		        	Assert.assertEquals(
-//	        			expect.substring(1, expect.length()-1), 
-//	        			result.itemAt(i).getStringValue()
-//	    			); 
-//	        	} else if (expect.startsWith("xs:float(")) {
-//	                final int actual = result.itemAt(i).getType();
-//	                if (Type.subTypeOf(actual, Type.getType("xs:float"))) {
-//	                    
-//	                    Assert.assertEquals(
-//                            expect.substring(10, expect.length()-2), 
-//                            result.itemAt(i).getStringValue()
-//                        ); 
-//	                    return;
-//	                }
-//
-//	                Assert.assertEquals("expected '"+expect+"' get '"+Type.getTypeName(actual),
-//	                        Type.getType(expect), 
-//	                        result.itemAt(i).getType()
-//	                    ); 
-//	                
-//	        	} else 
-		        	Assert.assertEquals(
-	        			expect, 
-	        			itemToString(result.itemAt(i))
-	    			); 
-	        }
+        } else if ("assert-type".equals(type)) {
+            for (int i = 0; i < expected.getLength(); i++) {
+                final Node node = expected.item(i);
 
-		} else if ("assert-deep-eq".equals(type)) {
-		    Assert.assertEquals(1, expected.getLength());
-		    final Node node = expected.item(0);
+                final String expect = node.getNodeValue();
+                final int actual = result.itemAt(i).getType();
+
+                if (Type.subTypeOf(actual, Type.getType(expect)))
+                    return;
+
+                Assert.assertEquals("expected '" + expect + "' get '" + Type.getTypeName(actual), Type.getType(expect), result.itemAt(i).getType());
+            }
+
+        } else if ("assert-eq".equals(type)) {
+            for (int i = 0; i < expected.getLength(); i++) {
+                final Node node = expected.item(i);
+                String expect = node.getNodeValue();
+                // if ((expect.startsWith("\"") && expect.endsWith("\"")) ||
+                // (expect.startsWith("'") && expect.endsWith("'"))) {
+                // //? check is it xs:string ?
+                // Assert.assertEquals(
+                // expect.substring(1, expect.length()-1),
+                // result.itemAt(i).getStringValue()
+                // );
+                // } else if (expect.startsWith("xs:float(")) {
+                // final int actual = result.itemAt(i).getType();
+                // if (Type.subTypeOf(actual, Type.getType("xs:float"))) {
+                //
+                // Assert.assertEquals(
+                // expect.substring(10, expect.length()-2),
+                // result.itemAt(i).getStringValue()
+                // );
+                // return;
+                // }
+                //
+                // Assert.assertEquals("expected '"+expect+"' get '"+Type.getTypeName(actual),
+                // Type.getType(expect),
+                // result.itemAt(i).getType()
+                // );
+                //
+                // } else
+                Assert.assertEquals(expect, itemToString(result.itemAt(i)));
+            }
+
+        } else if ("assert-deep-eq".equals(type)) {
+            Assert.assertEquals(1, expected.getLength());
+            final Node node = expected.item(0);
             String expect = node.getNodeValue();
 
             StringBuilder got = new StringBuilder();
             for (int i = 0; i < result.getItemCount(); i++) {
-                got.append( itemToString( result.itemAt(i) ) );
+                got.append(itemToString(result.itemAt(i)));
                 if (i != result.getItemCount() - 1)
                     got.append(", ");
             }
-            Assert.assertEquals(
-                expect, 
-                got.toString()
-            );
-		
-		} else if ("assert-true".equals(type)) {
-			Assert.assertTrue("expecting true get false", result.effectiveBooleanValue());
+            Assert.assertEquals(expect, got.toString());
 
-		} else if ("assert-false".equals(type)) {
-			Assert.assertFalse("expecting false get true", result.effectiveBooleanValue());
+        } else if ("assert-true".equals(type)) {
+            Assert.assertTrue("expecting true get false", result.effectiveBooleanValue());
 
-		} else if ("assert-string-value".equals(type)) {
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < result.getItemCount(); i++) {
-				sb.append(result.itemAt(i).getStringValue());
-				if (i+1 !=  result.getItemCount())
-					sb.append(" ");
-			}
-	        for (int i = 0; i < expected.getLength(); i++) {
-	        	final Node node = expected.item(i);
-	        	String expect = node.getNodeValue();
+        } else if ("assert-false".equals(type)) {
+            Assert.assertFalse("expecting false get true", result.effectiveBooleanValue());
 
-	        	Assert.assertEquals(
-        			expect, 
-        			sb.toString()
-    			); 
-	        }
+        } else if ("assert-string-value".equals(type)) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < result.getItemCount(); i++) {
+                sb.append(result.itemAt(i).getStringValue());
+                if (i + 1 != result.getItemCount())
+                    sb.append(" ");
+            }
+            for (int i = 0; i < expected.getLength(); i++) {
+                final Node node = expected.item(i);
+                String expect = node.getNodeValue();
 
-		} else if ("assert-serialization-error".equals(type)) {
-			Assert.assertTrue("not implemented 'assert-serialization-error'", false);
+                Assert.assertEquals(expect, sb.toString());
+            }
 
-		} else if ("serialization-matches".equals(type)) {
-			Assert.assertTrue("not implemented 'serialization-matches'", false);
+        } else if ("assert-serialization-error".equals(type)) {
+            Assert.assertTrue("not implemented 'assert-serialization-error'", false);
 
-		} else if ("assert-permutation".equals(type)) {
+        } else if ("serialization-matches".equals(type)) {
+            Assert.assertTrue("not implemented 'serialization-matches'", false);
+
+        } else if ("assert-permutation".equals(type)) {
             Assert.assertEquals(1, expected.getLength());
             final Node node = expected.item(0);
             String[] expect = node.getNodeValue().split(", ");
-            
+
             for (int i = 0; i < result.getItemCount(); i++) {
                 String got = itemToString(result.itemAt(i));
-                
+
                 boolean found = false;
                 for (int j = 0; j < expect.length; j++) {
                     if (expect[j] != null && got.equals(expect[j])) {
@@ -508,77 +490,72 @@ public class QT3TS_case extends TestCase {
                         break;
                     }
                 }
-                
+
                 if (!found) {
-                    Assert.fail("Unexpected '"+got+"'");
+                    Assert.fail("Unexpected '" + got + "'");
                 }
             }
-            
+
             for (int j = 0; j < expect.length; j++) {
                 if (expect[j] != null) {
-                    Assert.fail("Unmatched '"+expect[j]+"'");
+                    Assert.fail("Unmatched '" + expect[j] + "'");
                 }
             }
 
-		} else if ("assert-count".equals(type)) {
-		    if (expected.getLength() == 1 && "1".equals( expected.item(0).getNodeValue()) && result != null) {
-		        return;
-		    }
-	        Assert.assertEquals(
-                expected.item(0).getNodeValue(), 
-                String.valueOf( result.getItemCount() )
-            );
+        } else if ("assert-count".equals(type)) {
+            if (expected.getLength() == 1 && "1".equals(expected.item(0).getNodeValue()) && result != null) {
+                return;
+            }
+            Assert.assertEquals(expected.item(0).getNodeValue(), String.valueOf(result.getItemCount()));
 
-		} else if ("assert-empty".equals(type)) {
+        } else if ("assert-empty".equals(type)) {
             Assert.assertTrue(result.isEmpty());
 
-		} else if ("assert-xml".equals(type)) {
-                    for(int i = 0; i < expected.getLength(); i++) {
-                        final int ic = i;
-                        boolean ignorePrefixes = false;
-                        final Node exNode = expected.item(i);
-                        String exString = null;
-                        if(exNode.getNodeType() == Node.ATTRIBUTE_NODE) {
-                            final Attr attr = (Attr)exNode;
-                            if(attr.getName().equals("file")) {
-                                final Sequence seq = enviroment(XmldbURI.create(attr.getBaseURI()).removeLastSegment()+"/"+attr.getValue());
-                                StringBuilder sb = new StringBuilder();
-                                for(int j = 0; j < seq.getItemCount(); j++) {
-                                    sb.append(toString(seq.itemAt(j)));
-                                }
-                                exString = sb.toString();
-                            } else if(attr.getName().equals("ignore-prefixes")) {
-                                ignorePrefixes = Boolean.parseBoolean(attr.getValue());
-                                exString = expected.item(++i).getNodeValue();
-                            } else {
-                                Assert.fail("eXist XQTS3 Test Suite Error: Unknown Attribute '" +attr.getName() + "'");
-                                return;
-                            }
-                        } else {
-                            exString = exNode.getNodeValue();
+        } else if ("assert-xml".equals(type)) {
+            for (int i = 0; i < expected.getLength(); i++) {
+                final int ic = i;
+                boolean ignorePrefixes = false;
+                final Node exNode = expected.item(i);
+                String exString = null;
+                if (exNode.getNodeType() == Node.ATTRIBUTE_NODE) {
+                    final Attr attr = (Attr) exNode;
+                    if (attr.getName().equals("file")) {
+                        final Sequence seq = enviroment(XmldbURI.create(attr.getBaseURI()).removeLastSegment() + "/" + attr.getValue());
+                        StringBuilder sb = new StringBuilder();
+                        for (int j = 0; j < seq.getItemCount(); j++) {
+                            sb.append(toString(seq.itemAt(j)));
                         }
-
-                        final Item acNode = result.itemAt(ic);
-                        Assert.assertTrue(
-                            diffXML(exString, toString(acNode), ignorePrefixes)
-                        );
+                        exString = sb.toString();
+                    } else if (attr.getName().equals("ignore-prefixes")) {
+                        ignorePrefixes = Boolean.parseBoolean(attr.getValue());
+                        exString = expected.item(++i).getNodeValue();
+                    } else {
+                        Assert.fail("eXist XQTS3 Test Suite Error: Unknown Attribute '" + attr.getName() + "'");
+                        return;
                     }
+                } else {
+                    exString = exNode.getNodeValue();
+                }
 
-		} else if ("error".equals(type)) {
-			Assert.assertTrue("unhandled error "+expected, false);
+                final Item acNode = result.itemAt(ic);
+                Assert.assertTrue(diffXML(exString, toString(acNode), ignorePrefixes));
+            }
 
-		} else {
-			Assert.assertTrue("unknown '"+type+"'", false);
-		}
+        } else if ("error".equals(type)) {
+            Assert.assertTrue("unhandled error " + expected, false);
+
+        } else {
+            Assert.assertTrue("unknown '" + type + "'", false);
+        }
     }
-    
+
     private String itemToString(Item item) throws XPathException {
 
         StringBuilder sb = new StringBuilder();
 
         if (item.getType() == Type.STRING) {
             sb.append('"').append(item.getStringValue()).append('"');
-        
+
         } else if (item.getType() == Type.BOOLEAN) {
             sb.append(item.getStringValue()).append("()");
 
@@ -588,10 +565,10 @@ public class QT3TS_case extends TestCase {
         } else {
             sb.append(item.getStringValue());
         }
-        
+
         return sb.toString();
     }
-    
+
     private static final Properties properties = new Properties();
 
     private String toString(Item item) throws SAXException {
@@ -599,11 +576,10 @@ public class QT3TS_case extends TestCase {
         SAXSerializer serializer = new SAXSerializer(writer, properties);
         item.toSAX(broker, serializer, properties);
         String serialized = writer.toString();
-        //System.out.println(serialized);
+        // System.out.println(serialized);
         return serialized;
     }
-    
-        
+
     private boolean diffXML(final String expectedResult, final String result) throws SAXException, IOException {
         return diffXML(expectedResult, result, false);
     }
@@ -611,38 +587,40 @@ public class QT3TS_case extends TestCase {
     /**
      * @param expectedResult
      * @param result
-     * @param lax When set to false, expectedResult and result must be 'identical', when set to true it is acceptable if they are 'similar'
+     * @param lax
+     *            When set to false, expectedResult and result must be
+     *            'identical', when set to true it is acceptable if they are
+     *            'similar'
      */
     private boolean diffXML(final String expectedResult, final String result, final boolean lax) throws SAXException, IOException {
 
         final Diff diff = new Diff(expectedResult.trim(), result);
-        
+
         boolean match = false;
-        if(lax) {
+        if (lax) {
             match = diff.similar();
         } else {
             match = diff.identical();
         }
-        
-        if(match) {
-            //pass
+
+        if (match) {
+            // pass
             return true;
         }
-        
-        //fail
+
+        // fail
         System.out.println("expected:");
         System.out.println(expectedResult);
         System.out.println("but got:");
         System.out.println(result);
         System.out.println(diff.toString());
-        
+
         return false;
     }
 
     private void diffXML(final Node expectedNode, final Node actualNode) {
-        Assert.assertTrue("expected: " + expectedNode+ "  but got: " +actualNode, expectedNode.isEqualNode(actualNode));
+        Assert.assertTrue("expected: " + expectedNode + "  but got: " + actualNode, expectedNode.isEqualNode(actualNode));
     }
-
 
     @Override
     protected XmldbURI getCollection() {
