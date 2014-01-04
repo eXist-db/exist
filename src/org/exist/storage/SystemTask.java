@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ *  Copyright (C) 2014 The eXist Team
  *
  *  http://exist-db.org
  *  
@@ -37,12 +37,14 @@ import org.exist.util.Configuration;
  * written to the log.
  * 
  * A task can be scheduled for execution 
- * via {@link BrokerPool#triggerSystemTask(SystemTask)}.
+ * via {@link BrokerPool#triggerSystemTask(SystemTask)} or
+ * {@link org.exist.scheduler.Scheduler}.
  *
  * IMPORTANT: SystemTask implementations should avoid to acquire
  * locks on collections! Doing so may lead to a deadlock situation.
- * The system task runs in a privileged mode. Locking a collection is
- * not required since no writing transactions will be allowed.
+ * The system task runs in a privileged mode. Locking collections
+ * and resources is not required as no other transactions will be
+ * taking place.
  * 
  * @author wolf
  */
