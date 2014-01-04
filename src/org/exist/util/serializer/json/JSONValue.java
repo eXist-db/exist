@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2011-2012 The eXist Project
+ * Copyright (C) 2013 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -26,82 +26,91 @@ import java.io.Writer;
 
 public class JSONValue extends JSONNode {
 	
-	public final static String NAME_VALUE = "#text";
-	
-	private String content = null;
+    public final static String NAME_VALUE = "#text";
 
-    public JSONValue(String content) {
+    private String content = null;
+
+    public JSONValue(final String content) {
         this(content, true);
     }
 
-	public JSONValue(String content, boolean escape) {
-		super(Type.VALUE_TYPE, NAME_VALUE);
-        if (escape)
-            {this.content =  escape(content);}
-        else
-            {this.content = content;}
-	}
+    public JSONValue(final String content, final boolean escape) {
+        super(Type.VALUE_TYPE, NAME_VALUE);
+        
+        if(escape) {
+            this.content =  escape(content);
+        } else {
+            this.content = content;
+        }
+    }
 
-	public JSONValue() {
-		super(Type.VALUE_TYPE, NAME_VALUE);
-	}
+    public JSONValue() {
+        super(Type.VALUE_TYPE, NAME_VALUE);
+    }
 
-	public void addContent(String str) {
-		if (content == null)
-			{content = str;}
-		else
-			{content += str;}
-	}
-	
-	@Override
-	public void serialize(Writer writer, boolean isRoot) throws IOException {
-		if (getNextOfSame() != null) {
-			writer.write("[");
-			JSONNode next = this;
-			while (next != null) {
-				next.serializeContent(writer);
-				next = next.getNextOfSame();
-				if (next != null)
-					{writer.write(", ");}
-			}
-			writer.write("]");
-		} else
-			{serializeContent(writer);}		
-	}
+    public void addContent(final String str) {
+        if(content == null){
+            content = str;
+        } else {
+            content += str;
+        }
+    }
 
-	@Override
-	public void serializeContent(Writer writer) throws IOException {
-		if (getSerializationType() != SerializationType.AS_LITERAL)
-			{writer.write('"');}
-		writer.write(content);
-		if (getSerializationType() != SerializationType.AS_LITERAL)
-			{writer.write('"');}
-	}
-	
-	protected static String escape(String str) {
-		final StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < str.length(); i++) {
-			final char ch = str.charAt(i);
-			switch (ch) {
-			case '\n':
-				builder.append("\\n");
-				break;
-			case '\r':
-				break;
-			case '\t':
-				builder.append("\\t");
-				break;
-			case '"':
-				builder.append("\\\"");
-				break;
-			case '\\':
-				builder.append("\\\\");
-				break;
-			default:
-				builder.append(ch);
-				break;
-			}
-		}
-		return builder.toString();
-	}
+    @Override
+    public void serialize(final Writer writer, final boolean isRoot) throws IOException {
+        if(getNextOfSame() != null) {
+            writer.write("[");
+            JSONNode next = this;
+            while(next != null) {
+                next.serializeContent(writer);
+                next = next.getNextOfSame();
+                if(next != null) {
+                    writer.write(", ");
+                }
+            }
+            writer.write("]");
+        } else {
+            serializeContent(writer);
+        }		
+    }
+
+    @Override
+    public void serializeContent(final Writer writer) throws IOException {
+        if(getSerializationType() != SerializationType.AS_LITERAL) {
+            writer.write('"');
+        }
+        
+        writer.write(content);
+        
+        if(getSerializationType() != SerializationType.AS_LITERAL) {
+            writer.write('"');
+        }
+    }
+
+    protected static String escape(final String str) {
+        final StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < str.length(); i++) {
+            final char ch = str.charAt(i);
+            switch (ch) {
+                case '\n':
+                    builder.append("\\n");
+                    break;
+                case '\r':
+                    break;
+                case '\t':
+                    builder.append("\\t");
+                    break;
+                case '"':
+                    builder.append("\\\"");
+                    break;
+                case '\\':
+                    builder.append("\\\\");
+                    break;
+                default:
+                    builder.append(ch);
+                    break;
+            }
+        }
+        return builder.toString();
+    }
 }
