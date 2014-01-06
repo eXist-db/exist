@@ -39,32 +39,31 @@ public class AnalyzerConfig {
      <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
 
      <analyzer id="stdstops" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
-     .<param name="stopwords" type="java.io.File" value="/tmp/stop.txt"/>
+     ..<param name="stopwords" type="java.io.File" value="/tmp/stop.txt"/>
      </analyzer>
 
      <analyzer id="stdstops" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
-     .<param name="stopwords" type="java.util.Set">
-     ..<value>the</value>
-     ..<value>this</value>
-     ..<value>and</value>
-     ..<value>that</value>
-     .</param>
+     ..<param name="stopwords" type="java.util.Set">
+     ....<value>the</value>
+     ....<value>this</value>
+     ....<value>and</value>
+     ....<value>that</value>
+     ..</param>
      </analyzer>
 
      <analyzer id="sbstops" class="org.apache.lucene.analysis.snowball.SnowballAnalyzer">
-     .<param name="name" value="English"/>
-     .<param name="stopwords" type="java.util.Set">
-     ..<value>the</value>
-     ..<value>this</value>
-     ..<value>and</value>
-     ..<value>that</value>
-     .</param>
+     ..<param name="name" value="English"/>
+     ..<param name="stopwords" type="java.util.Set">
+     ....<value>the</value>
+     ....<value>this</value>
+     ....<value>and</value>
+     ....<value>that</value>
+     ..</param>
      </analyzer>
 
      */
-
     private static final Logger LOG = Logger.getLogger(AnalyzerConfig.class);
-	
+
     private static final String ID_ATTRIBUTE = "id";
 
     private static final String NAME_ATTRIBUTE = "name";
@@ -72,7 +71,6 @@ public class AnalyzerConfig {
     private static final String CLASS_ATTRIBUTE = "class";
     private static final String PARAM_VALUE_ENTRY = "value";
     private static final String PARAM_ELEMENT_NAME = "param";
-   
 
     private Map<String, Analyzer> analyzers = new TreeMap<String, Analyzer>();
     private Analyzer defaultAnalyzer = null;
@@ -95,8 +93,8 @@ public class AnalyzerConfig {
     public void addAnalyzer(Element config) throws DatabaseConfigurationException {
 
         // Configure lucene analuzer with configuration
-        final Analyzer analyzer = configureAnalyzer(config);   
-        if(analyzer == null) {
+        final Analyzer analyzer = configureAnalyzer(config);
+        if (analyzer == null) {
             return;
         }
 
@@ -105,7 +103,7 @@ public class AnalyzerConfig {
 
         // If no ID is provided, register as default analyzer
         // else register analyzer
-        if (StringUtils.isBlank(id)) {  
+        if (StringUtils.isBlank(id)) {
             setDefaultAnalyzer(analyzer);
         } else {
             analyzers.put(id, analyzer);
@@ -122,7 +120,8 @@ public class AnalyzerConfig {
     }
 
     /**
-     * Parse <analyzer/> element from xconf and initialize an analyzer with the parameters.
+     * Parse <analyzer/> element from xconf and initialize an analyzer with the
+     * parameters.
      *
      * @param config The analyzer element
      * @return Initialized Analyzer object
@@ -139,13 +138,13 @@ public class AnalyzerConfig {
             LOG.error("Missing class attribute or attribute is empty.");
 
             // DW: throw exception?
-
+            
         } else {
             // Classname is defined.
             try {
                 Class<?> clazz = Class.forName(className);
                 if (!Analyzer.class.isAssignableFrom(clazz)) {
-                    LOG.warn("Lucene index: analyzer class has to be a subclass of " + Analyzer.class.getName());
+                    LOG.warn(String.format("Lucene index: analyzer class has to be a subclass of %s", Analyzer.class.getName()));
                     return null;
                 }
 
@@ -156,25 +155,23 @@ public class AnalyzerConfig {
                 // that can be used in the reflection code
                 final Class<?> cParamClasses[] = new Class<?>[cParams.size()];
                 final Object cParamValues[] = new Object[cParams.size()];
-                for(int i = 0; i < cParams.size(); i++) {
+                for (int i = 0; i < cParams.size(); i++) {
                     KeyTypedValue ktv = cParams.get(i);
                     cParamClasses[i] = ktv.getValueClass();
                     cParamValues[i] = ktv.getValue();
                 }
-                
+
                 //try and get a matching constructor
                 try {
                     final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
-                    cstr.setAccessible(true);                
-                    return (Analyzer)cstr.newInstance(cParamValues);
-                    
+                    cstr.setAccessible(true);
+                    return (Analyzer) cstr.newInstance(cParamValues);
+
                 } catch (NoSuchMethodException nsme) {
 
                     // We could not find a constructor that had a complete match
                     // This makes sense because because a lucene Version class is requires most of the time
-            
-                    //LOG.warn("Could not find matching analyzer class constructor" + className + ": " + nsme.getMessage()
-                    //        + " now looking for similar constructor with Version parameter", nsme);
+
                     
                     //couldnt find a matching constructor,
                     //if a version parameter wasnt already specified
@@ -188,26 +185,26 @@ public class AnalyzerConfig {
                         // Finally invoke again
                         try {
                             final Constructor<?> cstr = clazz.getDeclaredConstructor(vcParamClasses);
-                            cstr.setAccessible(true);        
-                            LOG.warn("Using analyzer " + clazz.getName());
-                            return (Analyzer)cstr.newInstance(vcParamValues);
-                            
+                            cstr.setAccessible(true);
+                            LOG.warn(String.format("Using analyzer %s", clazz.getName()));
+                            return (Analyzer) cstr.newInstance(vcParamValues);
+
                         } catch (NoSuchMethodException vnsme) {
-                            LOG.error("Could not find matching analyzer class constructor" + className + ": " + vnsme.getMessage(), vnsme);
+                            LOG.error(String.format("Could not find matching analyzer class constructor%s: %s", className, vnsme.getMessage()), vnsme);
                         }
                     }
                 }
-                
+
             } catch (ClassNotFoundException e) {
-                LOG.error("Lucene index: analyzer class " + className + " not found.");
+                LOG.error(String.format("Lucene index: analyzer class %s not found.", className));
             } catch (IllegalAccessException e) {
-                LOG.error("Exception while instantiating analyzer class " + className + ": " + e.getMessage(), e);
+                LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
             } catch (InstantiationException e) {
-                LOG.error("Exception while instantiating analyzer class " + className + ": " + e.getMessage(), e);
+                LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
             } catch (InvocationTargetException ite) {
-                LOG.error("Exception while instantiating analyzer class " + className + ": " + ite.getMessage(), ite);
+                LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, ite.getMessage()), ite);
             } catch (ParameterException pe) {
-                LOG.error("Exception while instantiating analyzer class " + className + ": " + pe.getMessage(), pe);
+                LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, pe.getMessage()), pe);
             }
         }
         return null;
@@ -245,17 +242,16 @@ public class AnalyzerConfig {
         final NodeList params = config.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_ELEMENT_NAME);
 
         // iterate over all <param/> elements
-        for(int i = 0; i < params.getLength(); i++) {
-            parameters.add(getConstructorParameter((Element)params.item(i)));
+        for (int i = 0; i < params.getLength(); i++) {
+            parameters.add(getConstructorParameter((Element) params.item(i)));
         }
-        
+
         return parameters;
     }
 
-
     /**
-     * Retrieve configuration information from one <param/> element. Type information is used to construct actual data
-     * containing objects.
+     * Retrieve configuration information from one <param/> element. Type
+     * information is used to construct actual data containing objects.
      *
      * @param param Element that represents <param/>
      * @return Triple key-value-value-type
@@ -266,30 +262,43 @@ public class AnalyzerConfig {
         // Get attributes
         final NamedNodeMap attrs = param.getAttributes();
 
-        // Get name of parameter
-        final String name = attrs.getNamedItem(NAME_ATTRIBUTE).getNodeValue();
+        // Get name of parameter, NULL when no value is present
+        final String name;
+        if (attrs.getNamedItem(NAME_ATTRIBUTE) != null) {
+            name = attrs.getNamedItem(NAME_ATTRIBUTE).getNodeValue();
+        } else {
+            // DW: TODO need to check if the NULL value is safe to use.
+            name = null;
+        }
+        
 
-        // Get value type information of parameter
+        // Get value type information of parameter, NULL when not available
         final String type;
         if (attrs.getNamedItem(TYPE_ATTRIBUTE) != null) {
             type = attrs.getNamedItem(TYPE_ATTRIBUTE).getNodeValue();
         } else {
+            // Safe to use, NULL check done.
             type = null;
         }
 
-        // Get actual value from.... attribute?
+        // Get actual value from attribute, or NULL when not available.
         final String value;
-        if(attrs.getNamedItem(PARAM_VALUE_ENTRY) != null) {
+        if (attrs.getNamedItem(PARAM_VALUE_ENTRY) != null) {
             value = attrs.getNamedItem(PARAM_VALUE_ENTRY).getNodeValue();
         } else {
-            // This is dangerous
+            // DW: TODO need to check if the NULL value is safe to use.
+            // This is dangerous, unless a Set is filled
             value = null;
         }
 
         // Place holder return value
-        KeyTypedValue parameter=null;
-
-        if (type != null && type.equals("java.lang.reflect.Field")) {
+        KeyTypedValue parameter = null;
+        
+        if(StringUtils.isBlank(type)){
+            // No type is provided, assume string.
+            parameter = new KeyTypedValue(name, value);
+            
+        } else if ("java.lang.reflect.Field".equals(type)) {
 
             if (value == null) {
                 throw new ParameterException("The 'value' attribute must exist and must contain a full classname.");
@@ -308,76 +317,74 @@ public class AnalyzerConfig {
                 field.setAccessible(true);
                 final Object fValue = field.get(fieldClazz.newInstance());
                 parameter = new KeyTypedValue(name, fValue);
-                
-            } catch(NoSuchFieldException nsfe) {
+
+            } catch (NoSuchFieldException nsfe) {
                 throw new ParameterException(nsfe.getMessage(), nsfe);
-            } catch(ClassNotFoundException nsfe) {
+            } catch (ClassNotFoundException nsfe) {
                 throw new ParameterException(nsfe.getMessage(), nsfe);
-            } catch(InstantiationException nsfe) {
+            } catch (InstantiationException nsfe) {
                 throw new ParameterException(nsfe.getMessage(), nsfe);
-            } catch(IllegalAccessException nsfe) {
+            } catch (IllegalAccessException nsfe) {
                 throw new ParameterException(nsfe.getMessage(), nsfe);
             }
-            
-        } else if (type != null && type.equals("java.io.File")) {
+
+        } else if ("java.io.File".equals(type)) {
             // This is actually decrecated now, "Reader" must be used
             final File f = new File(value);
             parameter = new KeyTypedValue(name, f, File.class);
-            
-        } else if (type != null && type.equals("java.io.FileReader")) {
+
+        } else if ("java.io.FileReader".equals(type)) {
             // DW: Experimental
             final File f = new File(value);
-            try {     
+            try {
                 final Reader r = new FileReader(f);
                 parameter = new KeyTypedValue(name, r, Reader.class);
             } catch (FileNotFoundException ex) {
                 LOG.error(String.format("File %s could not be found.", f.getAbsolutePath()), ex);
-            }       
-            
-        } else if (type != null && type.equals("java.util.Set")) {
+            }
+
+        } else if ("java.util.Set".equals(type)) {
             // This is actually deprecated now, Lucene4 requires CharArraySet
             final Set s = getConstructorParameterSetValues(param);
             parameter = new KeyTypedValue(name, s, Set.class);
 
-        } else if (type != null && type.equals("org.apache.lucene.analysis.util.CharArraySet")) {
+        } else if ("org.apache.lucene.analysis.util.CharArraySet".equals(type)) {
             // This is mandatory since Lucene4
             final CharArraySet s = getConstructorParameterCharArraySetValues(param);
             parameter = new KeyTypedValue(name, s, CharArraySet.class);
 
-        } else if (type != null && (type.equals("java.lang.Integer") || type.equals("int"))) {
+        } else if ("java.lang.Integer".equals(type) || "int".equals(type)) {
             try {
                 final Integer n = Integer.parseInt(value);
                 parameter = new KeyTypedValue(name, n);
             } catch (NumberFormatException ex) {
                 LOG.error(String.format("Value %s could not be converted to an integer.", value));
             }
-            
-        } else if (type != null && (type.equals("java.lang.Boolean") || type.equals("boolean"))) {
+
+        } else if ("java.lang.Boolean".equals(type) || "boolean".equals(type)) {
             // Straight forward
             final boolean b = Boolean.parseBoolean(value);
             parameter = new KeyTypedValue(name, b);
-            
+
         } else {
-            // FallBack type = null
+            // FallBack type == null or did not match 
             try {
                 //if the type is an Enum then use valueOf()
                 final Class clazz = Class.forName(type);
-                if(clazz.isEnum()) {
+                if (clazz.isEnum()) {
                     parameter = new KeyTypedValue(name, Enum.valueOf(clazz, value), clazz);
-                } else {       
+                } else {
                     //default, assume java.lang.String
                     parameter = new KeyTypedValue(name, value);
                 }
 
-            } catch(ClassNotFoundException cnfe) {
+            } catch (ClassNotFoundException cnfe) {
                 throw new ParameterException(String.format("Class for type: %s not found. %s", type, cnfe.getMessage()), cnfe);
             }
         }
-        
+
         return parameter;
     }
-
-
 
     /**
      * Get parameter configuration data as standard Java (Hash)Set.
@@ -388,17 +395,17 @@ public class AnalyzerConfig {
     private static Set<String> getConstructorParameterSetValues(Element param) {
         final Set<String> set = new HashSet<String>();
         final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_VALUE_ENTRY);
-        for(int i = 0; i < values.getLength(); i++) {
-            final Element value = (Element)values.item(i);
-            
+        for (int i = 0; i < values.getLength(); i++) {
+            final Element value = (Element) values.item(i);
+
             //TODO getNodeValue() on org.exist.dom.ElementImpl should return null according to W3C spec!
-            if(value instanceof org.exist.dom.ElementImpl) {
-               set.add(value.getNodeValue());
+            if (value instanceof org.exist.dom.ElementImpl) {
+                set.add(value.getNodeValue());
             } else {
                 set.add(value.getTextContent());
             }
         }
-        
+
         return set;
     }
 
@@ -414,23 +421,25 @@ public class AnalyzerConfig {
     }
 
     /**
-     * CLass for containing the Triple : key (name), corresponding value and class type of value.
+     * CLass for containing the Triple : key (name), corresponding value and
+     * class type of value.
      */
     private static class KeyTypedValue {
+
         private final String key;
         private final Object value;
         private final Class<?> valueClass;
-        
+
         public KeyTypedValue(String key, Object value) {
             this(key, value, value.getClass());
         }
-        
+
         public KeyTypedValue(String key, Object value, Class<?> valueClass) {
             this.key = key;
             this.value = value;
             this.valueClass = valueClass;
         }
-        
+
         public String getKey() {
             return key;
         }
@@ -438,7 +447,7 @@ public class AnalyzerConfig {
         public Object getValue() {
             return value;
         }
-        
+
         public Class<?> getValueClass() {
             return valueClass;
         }
@@ -452,6 +461,7 @@ public class AnalyzerConfig {
         public ParameterException(String message) {
             super(message);
         }
+
         public ParameterException(String message, Throwable cause) {
             super(message, cause);
         }
