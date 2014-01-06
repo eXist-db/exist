@@ -1,28 +1,67 @@
 package org.exist.indexing.lucene;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-
-import org.apache.lucene.analysis.util.CharArraySet;
-import org.w3c.dom.Element;
-import org.exist.util.DatabaseConfigurationException;
-import org.apache.log4j.Logger;
-import org.apache.lucene.analysis.Analyzer;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.util.Version;
+
 import org.exist.collections.CollectionConfiguration;
+import org.exist.util.DatabaseConfigurationException;
+
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 public class AnalyzerConfig {
+
+    /*
+
+     Supported configurations
+
+     <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+
+     <analyzer id="ws" class="org.apache.lucene.analysis.WhitespaceAnalyzer"/>
+
+     <analyzer id="stdstops" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
+     .<param name="stopwords" type="java.io.File" value="/tmp/stop.txt"/>
+     </analyzer>
+
+     <analyzer id="stdstops" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
+     .<param name="stopwords" type="java.util.Set">
+     ..<value>the</value>
+     ..<value>this</value>
+     ..<value>and</value>
+     ..<value>that</value>
+     .</param>
+     </analyzer>
+
+     <analyzer id="sbstops" class="org.apache.lucene.analysis.snowball.SnowballAnalyzer">
+     .<param name="name" value="English"/>
+     .<param name="stopwords" type="java.util.Set">
+     ..<value>the</value>
+     ..<value>this</value>
+     ..<value>and</value>
+     ..<value>that</value>
+     .</param>
+     </analyzer>
+
+     */
 
     private static final Logger LOG = Logger.getLogger(AnalyzerConfig.class);
 	
@@ -45,31 +84,64 @@ public class AnalyzerConfig {
     public Analyzer getDefaultAnalyzer() {
         return defaultAnalyzer;
     }
-    
+
+    /**
+     * Parse <analyzer/> element and register configured analyzer.
+     *
+     * @param config The analyzer element from .xconf file.
+     *
+     * @throws DatabaseConfigurationException Something unexpected happened.
+     */
     public void addAnalyzer(Element config) throws DatabaseConfigurationException {
-        final String id = config.getAttribute(ID_ATTRIBUTE);
-        final Analyzer analyzer = configureAnalyzer(config);
-        
+
+        // Configure lucene analuzer with configuration
+        final Analyzer analyzer = configureAnalyzer(config);   
         if(analyzer == null) {
             return;
         }
-        
-        if(id == null || id.length() == 0) {
-            defaultAnalyzer = analyzer;
-            
+
+        // Get (optional) id-attribute of analyzer
+        final String id = config.getAttribute(ID_ATTRIBUTE);
+
+        // If no ID is provided, register as default analyzer
+        // else register analyzer
+        if (StringUtils.isBlank(id)) {  
+            setDefaultAnalyzer(analyzer);
         } else {
             analyzers.put(id, analyzer);
         }
     }
 
+    /**
+     * Set default the analyzer.
+     *
+     * @param analyzer Lucene analyzer
+     */
     public void setDefaultAnalyzer(Analyzer analyzer) {
         defaultAnalyzer = analyzer;
     }
 
+    /**
+     * Parse <analyzer/> element from xconf and initialize an analyzer with the parameters.
+     *
+     * @param config The analyzer element
+     * @return Initialized Analyzer object
+     *
+     * @throws DatabaseConfigurationException Something unexpected happened.
+     */
     protected static Analyzer configureAnalyzer(Element config) throws DatabaseConfigurationException {
+
+        // Get classname from attribute
         final String className = config.getAttribute(CLASS_ATTRIBUTE);
-        
-        if(className != null && className.length() != 0) {
+
+        if (StringUtils.isBlank(className)) {
+            // No classname is defined.
+            LOG.error("Missing class attribute or attribute is empty.");
+
+            // DW: throw exception?
+
+        } else {
+            // Classname is defined.
             try {
                 Class<?> clazz = Class.forName(className);
                 if (!Analyzer.class.isAssignableFrom(clazz)) {
@@ -109,15 +181,9 @@ public class AnalyzerConfig {
                     //see if there is one with a Version parameter 
                     if (cParamClasses.length == 0 || (cParamClasses.length > 0 && cParamClasses[0] != Version.class)) {
 
-                        // Extend list of classes, add version-class to front
-                        final Class<?> vcParamClasses[] = new Class<?>[cParamClasses.length + 1];
-                        vcParamClasses[0] = Version.class;
-                        System.arraycopy(cParamClasses, 0, vcParamClasses, 1, cParamClasses.length);
-
-                        // Extend list of values, add version-value to front
-                        final Object vcParamValues[] = new Object[cParamValues.length + 1];
-                        vcParamValues[0] = LuceneIndex.LUCENE_VERSION_IN_USE;
-                        System.arraycopy(cParamValues, 0, vcParamValues, 1, cParamValues.length);
+                        // extend arrays, add to front
+                        Class<?>[] vcParamClasses = addVersionToClasses(cParamClasses);
+                        Object[] vcParamValues = adVersionValueToValues(cParamValues);
 
                         // Finally invoke again
                         try {
@@ -145,6 +211,26 @@ public class AnalyzerConfig {
             }
         }
         return null;
+    }
+
+    /**
+     * Extend list of values, add version-value to front
+     */
+    private static Object[] adVersionValueToValues(final Object[] cParamValues) {
+        final Object vcParamValues[] = new Object[cParamValues.length + 1];
+        vcParamValues[0] = LuceneIndex.LUCENE_VERSION_IN_USE;
+        System.arraycopy(cParamValues, 0, vcParamValues, 1, cParamValues.length);
+        return vcParamValues;
+    }
+
+    /**
+     * Extend list of classes, add version-class to front
+     */
+    private static Class<?>[] addVersionToClasses(final Class<?>[] cParamClasses) {
+        final Class<?> vcParamClasses[] = new Class<?>[cParamClasses.length + 1];
+        vcParamClasses[0] = Version.class;
+        System.arraycopy(cParamClasses, 0, vcParamClasses, 1, cParamClasses.length);
+        return vcParamClasses;
     }
 
     /**
@@ -201,12 +287,12 @@ public class AnalyzerConfig {
         }
 
         // Place holder return value
-        final KeyTypedValue parameter;
+        KeyTypedValue parameter=null;
 
         if (type != null && type.equals("java.lang.reflect.Field")) {
 
             if (value == null) {
-                throw new ParameterException("'value' attribute must exist and must contain a full classname.");
+                throw new ParameterException("The 'value' attribute must exist and must contain a full classname.");
             }
 
             // Use reflection
@@ -238,6 +324,16 @@ public class AnalyzerConfig {
             final File f = new File(value);
             parameter = new KeyTypedValue(name, f, File.class);
             
+        } else if (type != null && type.equals("java.io.FileReader")) {
+            // DW: Experimental
+            final File f = new File(value);
+            try {     
+                final Reader r = new FileReader(f);
+                parameter = new KeyTypedValue(name, r, Reader.class);
+            } catch (FileNotFoundException ex) {
+                LOG.error(String.format("File %s could not be found.", f.getAbsolutePath()), ex);
+            }       
+            
         } else if (type != null && type.equals("java.util.Set")) {
             // This is actually deprecated now, Lucene4 requires CharArraySet
             final Set s = getConstructorParameterSetValues(param);
@@ -249,9 +345,12 @@ public class AnalyzerConfig {
             parameter = new KeyTypedValue(name, s, CharArraySet.class);
 
         } else if (type != null && (type.equals("java.lang.Integer") || type.equals("int"))) {
-            // Straight forward
-            final Integer n = Integer.parseInt(value);
-            parameter = new KeyTypedValue(name, n);
+            try {
+                final Integer n = Integer.parseInt(value);
+                parameter = new KeyTypedValue(name, n);
+            } catch (NumberFormatException ex) {
+                LOG.error(String.format("Value %s could not be converted to an integer.", value));
+            }
             
         } else if (type != null && (type.equals("java.lang.Boolean") || type.equals("boolean"))) {
             // Straight forward
@@ -260,7 +359,6 @@ public class AnalyzerConfig {
             
         } else {
             // FallBack type = null
-
             try {
                 //if the type is an Enum then use valueOf()
                 final Class clazz = Class.forName(type);
@@ -272,7 +370,7 @@ public class AnalyzerConfig {
                 }
 
             } catch(ClassNotFoundException cnfe) {
-                throw new ParameterException("Class for type: " + type + " not found. " + cnfe.getMessage(), cnfe);
+                throw new ParameterException(String.format("Class for type: %s not found. %s", type, cnfe.getMessage()), cnfe);
             }
         }
         
