@@ -30,6 +30,7 @@ public class BTreeStore extends BTree {
         setSplitFactor(0.7);
     }
 
+    @Override
     public Lock getLock() {
         return lock;
     }

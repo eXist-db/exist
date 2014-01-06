@@ -115,7 +115,7 @@ public class RecoveryManager {
 	                try {
 						final ProgressBar progress = new ProgressBar("Scanning journal ", last.length());
 	        			while ((next = reader.nextEntry()) != null) {
-	//                        LOG.debug(next.dump());
+//	                        LOG.debug(next.dump());
 							progress.set(Lsn.getOffset(next.getLsn()));
 							if (next.getLogType() == LogEntryTypes.TXN_START) {
 				                // new transaction starts: add it to the transactions table
@@ -173,11 +173,16 @@ public class RecoveryManager {
                 // Re-applying them on a second start up attempt would definitely damage the db, so we better
                 // delete them before user tries to launch again.
                 cleanDirectory(files);
+                if (recoveryRun) {
+                    broker.repairPrimary();
+                    broker.sync(Sync.MAJOR_SYNC);
+                }
             }
 		}
         logManager.setCurrentFileNum(lastNum);
 		logManager.switchFiles();
         logManager.clearBackupFiles();
+
         return recoveryRun;
 	}
 
