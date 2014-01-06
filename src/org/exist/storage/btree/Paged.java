@@ -1138,12 +1138,10 @@ public abstract class Paged {
 
     public static String hexDump(byte[] data) {
         final StringBuilder buf = new StringBuilder();
-        buf.append("\r\n");
         int columns = 0;
         for (int i = 0; i < data.length; i++, columns++) {
             byteToHex(buf, data[i]);
             if(columns == 16) {
-                buf.append("\r\n");
                 columns = 0;
             } else {
                 buf.append(' ');

@@ -33,14 +33,12 @@ public class CreateBinaryLoggable extends AbstractLoggable {
    public CreateBinaryLoggable(DBBroker broker,Txn txn,File original)
    {
       super(NativeBroker.LOG_CREATE_BINARY,txn.getId());
-      LOG.debug("CreateBinaryLoggable created");
       this.broker = broker;
       this.original = original;
    }
    
    public CreateBinaryLoggable(DBBroker broker,long transactionId) {
       super(NativeBroker.LOG_CREATE_BINARY,transactionId);
-      LOG.debug("CreateBinaryLoggable created");
       this.broker = broker;
    }
    
