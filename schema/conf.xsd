@@ -16,10 +16,12 @@
         </xs:restriction>
     </xs:simpleType>
     
-    <xs:complexType name="parameterType">
-        <xs:attribute name="name" type="xs:string"/>
-        <xs:attribute name="value" type="xs:string"/>
-    </xs:complexType>
+    <xs:element name="parameter">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string"/>
+            <xs:attribute name="value" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
     
     <!-- Root element -->
     <xs:element name="exist">
@@ -42,8 +44,8 @@
                                                 <xs:sequence>
                                                     <xs:element name="trigger" minOccurs="0" maxOccurs="unbounded">
                                                         <xs:complexType>
-                                                            <xs:sequence minOccurs="0" maxOccurs="unbounded">
-                                                                <xs:element name="parameter" type="parameterType"/>
+                                                            <xs:sequence>
+                                                                <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
                                                             </xs:sequence>
                                                             <xs:attribute name="class" type="xs:string"/>
                                                         </xs:complexType>
@@ -246,13 +248,7 @@
                             <xs:element name="job" minOccurs="0" maxOccurs="unbounded">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="parameter" minOccurs="0"
-                                            maxOccurs="unbounded">
-                                            <xs:complexType>
-                                                <xs:attribute name="name" type="xs:string"/>
-                                                <xs:attribute name="value" type="xs:string"/>
-                                            </xs:complexType>
-                                        </xs:element>
+                                        <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
                                     </xs:sequence>
                                     <xs:attribute name="type" use="optional" default="user">
                                         <xs:simpleType>
@@ -355,13 +351,7 @@
                                         <xs:element name="module" maxOccurs="unbounded">
                                             <xs:complexType>
                                                 <xs:sequence>
-                                                  <xs:element name="parameter" minOccurs="0"
-                                                  maxOccurs="unbounded">
-                                                  <xs:complexType>
-                                                  <xs:attribute name="name" type="xs:string"/>
-                                                  <xs:attribute name="value" type="xs:string"/>
-                                                  </xs:complexType>
-                                                  </xs:element>
+                                                    <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
                                                 </xs:sequence>
                                                 <xs:attribute name="class" type="xs:string"/>
                                                 <xs:attribute name="uri" type="xs:anyURI"/>
