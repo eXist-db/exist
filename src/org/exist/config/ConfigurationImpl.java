@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2011 The eXist Project
+ *  Copyright (C) 2008-2013 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -88,66 +88,187 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 
     @Override
     public List<Configuration> getConfigurations(String name) {
-        final NodeList nodes = getElementsByTagNameNS(Configuration.NS, name);
+
         final List<Configuration> list = new ArrayList<Configuration>();
-        if (nodes.getLength() > 0) {
-            for (int i = 0; i < nodes.getLength(); i++) {
-                final Configuration config = new ConfigurationImpl((ElementAtExist) nodes.item(i));
-                list.add(config);
+        
+        Node child = getFirstChild();
+        while (child != null) {
+            
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+
+                final ElementAtExist el = (ElementAtExist) child;
+                
+                if (name.equals( el.getLocalName() ) && NS.equals( el.getNamespaceURI() )) {
+                    
+                    final Configuration config = new ConfigurationImpl(el);
+                    list.add(config);
+                
+                }
+            }
+            
+            child = child.getNextSibling();
+        }
+
+        return list;
+    }
+    
+    private Map<String, String> props = null;
+    
+    private void cache() {
+        
+        if (props != null)
+            return;
+        
+        props = new HashMap<String, String>();
+        Set<String> names = new HashSet<String>();
+        
+        Node child = getFirstChild();
+        while (child != null) {
+            
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                
+                if (NS.equals(child.getNamespaceURI())) {
+                    
+                    String name = child.getLocalName();
+                    
+                    if (names.contains(name)) {
+                        
+                        if (props.containsKey(name)) {
+                            props.remove(name);
+                        }
+                    } else {
+                        props.put(name, child.getNodeValue());
+                    }
+                }
+            }
+            
+            child = child.getNextSibling();
+        }
+        
+        //load attributes values
+        NamedNodeMap attrs = getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            
+            Node attr = attrs.item(i);
+            
+            if ( !"xmlns".equals( attr.getPrefix() ) ) {
+                
+                props.put(attr.getLocalName(), attr.getNodeValue());
             }
         }
-        return list;
+    }
+    
+    public void clearCache() {
+        props = null;
     }
 
     @Override
     public String getProperty(String name) {
-        if (hasAttribute(name))
-            {return getAttribute(name);}
-        final NodeList nodes = getElementsByTagNameNS(NS, name);
-        if (nodes.getLength() == 1) {
-            return nodes.item(0).getNodeValue();
-        }
-        return null;
+        
+        cache();
+        
+        return props.get(name);
+
+//        if (hasAttribute(name))
+//            {return getAttribute(name);}
+//        final NodeList nodes = getElementsByTagNameNS(NS, name);
+//        if (nodes.getLength() == 1) {
+//            return nodes.item(0).getNodeValue();
+//        }
+//        return null;
     }
 
     public String getProperty(String name, String default_property) {
         final String property = getProperty(name);
-        if (property == null)
-            {return default_property;}
+        
+        if (property == null) {
+            return default_property;
+        }
+        
         return property;
     }
 
     @Override
     public Map<String, String> getPropertyMap(String name) {
-        if(hasAttribute(name)) {
+        if (props.containsKey(name))
             return null;
-        }
+
         final Map<String, String> map = new HashMap<String, String>();
-        final NodeList nodes = getElementsByTagNameNS(NS, name);
-        for(int i = 0; i < nodes.getLength(); i++) {
-            final Node item = nodes.item(i);
-            if(!item.hasAttributes()){
-                return null;
+        
+        Node child = getFirstChild();
+        while (child != null) {
+            
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+
+                final ElementAtExist el = (ElementAtExist) child;
+                
+                if (name.equals( el.getLocalName() ) && NS.equals( el.getNamespaceURI() )) {
+                    
+                    if(!el.hasAttributes()){
+                        continue;
+                    }
+                    
+                    final NamedNodeMap attrs = el.getAttributes();
+ 
+                    if (attrs.getLength() != 1) {
+                        continue;
+                    }
+                    
+                    Node attr = attrs.getNamedItem("key");
+                    
+                    if (attr == null)
+                        continue;
+                    
+                    final String key = attr.getNodeValue();
+                    final String value = el.getNodeValue();
+                    
+                    if(key == null || key.isEmpty() || value == null || value.isEmpty()){
+                        ; //skip
+                    } else {
+                        map.put(key, value);
+                    }
+                
+                }
             }
-            final NamedNodeMap attrs = item.getAttributes();
-            if(attrs.getLength() != 1){
-                return null;
-            }
-            final String key = attrs.getNamedItem("key").getNodeValue();
-            final String value = item.getNodeValue();
-            if(value == null || value.isEmpty()){
-                return null;
-            }
-            map.put(key, value);
+            
+            child = child.getNextSibling();
         }
+
         return map;
+        
+//        if(hasAttribute(name)) {
+//            return null;
+//        }
+//        final Map<String, String> map = new HashMap<String, String>();
+//        final NodeList nodes = getElementsByTagNameNS(NS, name);
+//        for(int i = 0; i < nodes.getLength(); i++) {
+//            final Node item = nodes.item(i);
+//            if(!item.hasAttributes()){
+//                return null;
+//            }
+//            final NamedNodeMap attrs = item.getAttributes();
+//            if(attrs.getLength() != 1){
+//                return null;
+//            }
+//            final String key = attrs.getNamedItem("key").getNodeValue();
+//            final String value = item.getNodeValue();
+//            if(value == null || value.isEmpty()){
+//                return null;
+//            }
+//            map.put(key, value);
+//        }
+//        return map;
     }
 
     @Override
     public boolean hasProperty(String name) {
-        if (hasAttribute(name))
-            {return true;}
-        return (getElementsByTagName(name).getLength() == 1);
+        cache();
+        
+        return props.containsKey(name);
+        
+//        if (hasAttribute(name))
+//            {return true;}
+//        return (getElementsByTagName(name).getLength() == 1);
     }
 
     public Object getRuntimeProperty(String name) {
@@ -259,15 +380,21 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     }
 
     //related objects
-    Map<String, Object> objects = new HashMap<String, Object>();
+    Map<String, Object> objects = null;
 
     @Override
-    public Object putObject(String name, Object object) {
+    public synchronized Object putObject(String name, Object object) {
+        if (objects == null)
+            objects = new HashMap<String, Object>();
+        
         return objects.put(name, object);
     }
 
     @Override
-    public Object getObject(String name) {
+    public synchronized Object getObject(String name) {
+        if (objects == null)
+            return null;
+        
         return objects.get(name);
     }
 

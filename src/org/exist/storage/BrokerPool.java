@@ -955,6 +955,7 @@ public class BrokerPool implements Database {
         					//XXX: don't do if READONLY mode
         					if(recovered) {
         						if(!exportOnly) {
+                                    reportStatus("Reindexing database files...");
         							try {
         								broker.repair();
         							} catch (final PermissionDeniedException e) {
