@@ -191,7 +191,7 @@ public class AnalyzerConfig {
                 }
 
                 // A lucene Version object has been provided, so it shall be used
-                newAnalyzer = createInstance(className, clazz, cParamClasses, cParamValues);
+                newAnalyzer = createInstance(clazz, cParamClasses, cParamValues);
 
             } else {
                     // Either no parameters have been provided or more than one parameter
@@ -201,13 +201,13 @@ public class AnalyzerConfig {
                 Object[] vcParamValues = addVersionValueToValues(cParamValues);
 
                 // Finally create Analyzer
-                newAnalyzer = createInstance(className, clazz, vcParamClasses, vcParamValues);
+                newAnalyzer = createInstance(clazz, vcParamClasses, vcParamValues);
 
                 // Fallback scenario: a special (not standard type of) Analyzer has been specified without 
                 // a 'Version' argument on purpose. For this (try) to create the Analyzer with 
                 // the original parameters.
                 if (newAnalyzer == null) {
-                    newAnalyzer = createInstance(className, clazz, cParamClasses, cParamValues);
+                    newAnalyzer = createInstance(clazz, cParamClasses, cParamValues);
                 }
 
             }
@@ -221,13 +221,24 @@ public class AnalyzerConfig {
         return newAnalyzer;
     }
 
-    private static Analyzer createInstance(String className, Class<?> clazz, Class<?>[] vcParamClasses, Object[] vcParamValues)  {
+    /**
+     * Create instance of the lucene analyzer with provided arguments
+     *
+     * @param clazz The analyzer class
+     * @param vcParamClasses The parameter classes
+     * @param vcParamValues The parameter values
+     * @return The lucene analyzer
+     */
+    private static Analyzer createInstance(Class<?> clazz, Class<?>[] vcParamClasses, Object[] vcParamValues) {
+
+        String className = clazz.getName();
+
         try {
             final Constructor<?> cstr = clazz.getDeclaredConstructor(vcParamClasses);
             cstr.setAccessible(true);
             
             if(LOG.isDebugEnabled()){
-                LOG.debug(String.format("Using analyzer %s", clazz.getName()));
+                LOG.debug(String.format("Using analyzer %s", className));
             }
             return (Analyzer) cstr.newInstance(vcParamValues);
             
