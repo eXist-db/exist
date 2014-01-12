@@ -389,7 +389,7 @@ public class CollectionConfigurationManager {
      * 
      * @param collectionPath
      */
-    protected void invalidate(final XmldbURI collectionPath) {
+    public void invalidate(final XmldbURI collectionPath) {
         if (!collectionPath.startsWith(CONFIG_COLLECTION_URI)) {
             return;
         }
