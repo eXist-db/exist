@@ -594,12 +594,31 @@ declare %private function test:assertXPath($annotation as element(annotation), $
             util:expand($output)
         else
             $output
+    let $prolog :=
+        if ($result instance of element()*) then
+            let $namespaces := fold-left(function ($namespaces as map(*), $xml as element()) {
+                map:new(($namespaces,
+            	    for $prefix in in-scope-prefixes($xml)
+            	    where $prefix != "" and $prefix != "xml"
+            	    return
+            	        map:entry($prefix, namespace-uri-for-prefix($prefix, $xml))
+                ))
+            }, map:new(), $result/descendant-or-self::*)
+            return
+                string-join(
+                    for $prefix in map:keys($namespaces)
+                    return
+                        "declare namespace " || $prefix || "='" || $namespaces($prefix) || "';",
+                    " "
+                )
+        else
+            ()
     let $xr :=
         test:checkXPathResult(
             if (matches($expr, "^\s*/")) then
-                util:eval(concat("$result", $expr))
+                util:eval($prolog || "$result" || $expr)
             else
-                util:eval($expr)
+                util:eval($prolog || $expr)
         )
     return
         if ($xr) then
