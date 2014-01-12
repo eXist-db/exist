@@ -27,6 +27,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.Locked;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -38,8 +39,11 @@ import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import java.io.StringReader;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 
 /**
  * Manages index configurations. Index configurations are stored in a collection
@@ -55,10 +59,10 @@ public class CollectionConfigurationManager {
     private static final Logger LOG = Logger.getLogger(CollectionConfigurationManager.class);
 
     public final static String CONFIG_COLLECTION = XmldbURI.SYSTEM_COLLECTION + "/config";
+
     /** /db/system/config **/
     public final static XmldbURI CONFIG_COLLECTION_URI = XmldbURI.create(CONFIG_COLLECTION);
 
-    // TODO : create using resolve()
     /** /db/system/config/db **/
     public final static XmldbURI ROOT_COLLECTION_CONFIG_URI = CONFIG_COLLECTION_URI.append(XmldbURI.ROOT_COLLECTION_NAME);
 
@@ -68,17 +72,17 @@ public class CollectionConfigurationManager {
 
     private Map<CollectionURI, CollectionConfiguration> configurations = new HashMap<CollectionURI, CollectionConfiguration>();
 
-    private Object latch;
+    private Locked latch = new Locked();
 
     private CollectionConfiguration defaultConfig;
 
     public CollectionConfigurationManager(DBBroker broker) throws EXistException, CollectionConfigurationException, PermissionDeniedException, LockException {
-        this.latch = broker.getBrokerPool().getCollectionsCache();
 
         checkCreateCollection(broker, CONFIG_COLLECTION_URI);
         checkCreateCollection(broker, ROOT_COLLECTION_CONFIG_URI);
 
         loadAllConfigurations(broker);
+
         defaultConfig = new CollectionConfiguration(broker.getBrokerPool());
         defaultConfig.setIndexConfiguration(broker.getIndexConfiguration());
     }
@@ -97,7 +101,7 @@ public class CollectionConfigurationManager {
      *            the xconf document as a String.
      * @throws CollectionConfigurationException
      */
-    public void addConfiguration(Txn txn, DBBroker broker, Collection collection, String config) throws CollectionConfigurationException {
+    public void addConfiguration(Txn txn, final DBBroker broker, Collection collection, String config) throws CollectionConfigurationException {
         try {
             final XmldbURI path = CONFIG_COLLECTION_URI.append(collection.getURI());
 
@@ -125,10 +129,17 @@ public class CollectionConfigurationManager {
             confCol.store(txn, broker, info, config, false);
             // broker.sync(Sync.MAJOR_SYNC);
 
-            synchronized (latch) {
-                configurations.remove(new CollectionURI(path.getRawCollectionPath()));
-                loadConfiguration(broker, confCol);
-            }
+            latch.writeE(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+
+                    configurations.remove(new CollectionURI(path.getRawCollectionPath()));
+                    loadConfiguration(broker, confCol);
+
+                    return null;
+                }
+            });
+
         } catch (final CollectionConfigurationException e) {
             throw e;
         } catch (final Exception e) {
@@ -168,20 +179,28 @@ public class CollectionConfigurationManager {
         }
     }
 
-    public List<Object> getCustomIndexSpecs(String customIndexId) {
-        List<Object> configs = new ArrayList<Object>(10);
-        synchronized (latch) {
-            for (CollectionConfiguration config : configurations.values()) {
-                IndexSpec spec = config.getIndexConfiguration();
-                if (spec != null) {
-                    Object customConfig = spec.getCustomIndexSpec(customIndexId);
-                    if (customConfig != null) {
-                        configs.add(customConfig);
+    public List<Object> getCustomIndexSpecs(final String customIndexId) {
+        
+        return latch.read(new Callable<List<Object>>() {
+
+            @Override
+            public List<Object> call() throws Exception {
+
+                List<Object> configs = new ArrayList<Object>(10);
+
+                for (CollectionConfiguration config: configurations.values()) {
+                    IndexSpec spec = config.getIndexConfiguration();
+                    if (spec != null) {
+                        Object customConfig = spec.getCustomIndexSpec(customIndexId);
+                        if (customConfig != null) {
+                            configs.add(customConfig);
+                        }
                     }
                 }
+
+                return configs;
             }
-        }
-        return configs;
+        });
     }
 
     /**
@@ -206,19 +225,25 @@ public class CollectionConfigurationManager {
          * the root, stopping at the first config file it finds. This should be
          * more efficient, and fit more appropriately will the XmldbURI api
          */
-        CollectionConfiguration conf;
+        return latch.read(new Callable<CollectionConfiguration>() {
 
-        synchronized (latch) {
-            while (!path.equals(COLLECTION_CONFIG_PATH)) {
-                conf = configurations.get(path);
-                if (conf != null) {
-                    return conf;
+            @Override
+            public CollectionConfiguration call() throws Exception {
+
+                CollectionConfiguration conf = null;
+
+                while(!path.equals(COLLECTION_CONFIG_PATH)) {
+                    conf = configurations.get(path);
+                    if (conf != null) {
+                        return conf;
+                    }
+                    path.removeLastSegment();
                 }
-                path.removeLastSegment();
+
+                // use default configuration
+                return defaultConfig;
             }
-        }
-        // use default configuration
-        return defaultConfig;
+        });
     }
 
     protected void loadAllConfigurations(DBBroker broker) throws CollectionConfigurationException, PermissionDeniedException, LockException {
@@ -243,7 +268,7 @@ public class CollectionConfigurationManager {
         }
     }
 
-    protected void loadConfiguration(DBBroker broker, Collection configCollection) throws CollectionConfigurationException, PermissionDeniedException,
+    protected void loadConfiguration(DBBroker broker, final Collection configCollection) throws CollectionConfigurationException, PermissionDeniedException,
             LockException {
         if (configCollection != null && configCollection.getDocumentCount(broker) > 0) {
             for (final Iterator<DocumentImpl> i = configCollection.iterator(broker); i.hasNext();) {
@@ -254,9 +279,7 @@ public class CollectionConfigurationManager {
                     }
                     final CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
 
-                    // TODO DWES Temporary workaround for bug
-                    // [ 1807744 ] Invalid collection.xconf causes a non
-                    // startable database
+                    // [ 1807744 ] Invalid collection.xconf causes a non startable database
                     // http://sourceforge.net/tracker/index.php?func=detail&aid=1807744&group_id=17691&atid=117691
                     try {
                         conf.read(broker, confDoc, false, configCollection.getURI(), confDoc.getFileURI());
@@ -266,33 +289,56 @@ public class CollectionConfigurationManager {
                         LOG.error(message);
                         System.out.println(message);
                     }
+                    
+                    latch.write(new Callable<Void>() {
+                        @Override
+                        public Void call() throws Exception {
 
-                    synchronized (latch) {
-                        configurations.put(new CollectionURI(configCollection.getURI().getRawCollectionPath()), conf);
-                    }
+                            configurations.put(new CollectionURI(configCollection.getURI().getRawCollectionPath()), conf);
+
+                            return null;
+                        }
+                    });
+
                     // Allow just one configuration document per collection
-                    // TODO : do not break if a system property allows several
-                    // ones -pb
+                    // TODO : do not break if a system property allows several ones -pb
                     break;
                 }
             }
         }
     }
 
-    public CollectionConfiguration getOrCreateCollectionConfiguration(DBBroker broker, Collection collection) {
+    public CollectionConfiguration getOrCreateCollectionConfiguration(final DBBroker broker, Collection collection) {
         final CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
         path.append(collection.getURI().getRawCollectionPath());
+        
+        CollectionConfiguration conf = latch.read(new Callable<CollectionConfiguration>() {
+            @Override
+            public CollectionConfiguration call() {
+                return configurations.get(path);
+            }
+        });
 
-        CollectionConfiguration conf;
-        synchronized (latch) {
-            conf = configurations.get(path);
-            if (conf == null) {
+        if (conf != null) {
+            return conf;
+        }
+        
+        return latch.write(new Callable<CollectionConfiguration>() {
+            @Override
+            public CollectionConfiguration call() {
+                
+                CollectionConfiguration conf = configurations.get(path);
+                
+                if (conf != null) {
+                    return conf;
+                }
+
                 conf = new CollectionConfiguration(broker.getBrokerPool());
                 configurations.put(path, conf);
-            }
-        }
 
-        return conf;
+                return conf;
+            }
+        });
     }
 
     /**
@@ -302,16 +348,39 @@ public class CollectionConfigurationManager {
      * 
      * @param collectionPath
      */
-    public void invalidateAll(XmldbURI collectionPath) {
-        // TODO : use XmldbURI.resolve !
+    public void invalidateAll(final XmldbURI collectionPath) {
+
         if (!collectionPath.startsWith(CONFIG_COLLECTION_URI)) {
             return;
         }
+        
+        latch.write(new Callable<Void>() {
+            @Override
+            public Void call() {
 
-        synchronized (latch) {
-            LOG.debug("Invalidating collection " + collectionPath);
-            configurations.remove(new CollectionURI(collectionPath.getRawCollectionPath()));
-        }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Invalidating collection " + collectionPath + " and subcollections");
+                }
+
+                CollectionURI uri = new CollectionURI(collectionPath.getRawCollectionPath());
+
+                configurations.remove(uri);
+
+                String str = uri.toString();
+
+                Iterator<Entry<CollectionURI, CollectionConfiguration>> it = configurations.entrySet().iterator();
+
+                while (it.hasNext()) {
+                    Entry<CollectionURI, CollectionConfiguration> entry = it.next();
+
+                    if (entry.getKey().toString().startsWith(str)) {
+                        it.remove();
+                    }
+                }
+
+                return null;
+            }
+        });
     }
 
     /**
@@ -320,21 +389,24 @@ public class CollectionConfigurationManager {
      * 
      * @param collectionPath
      */
-    protected void invalidate(XmldbURI collectionPath) {
-        // TODO : use XmldbURI.resolve !
-        // if (!collectionPath.startsWith(XmldbURI.CONFIG_COLLECTION_URI))
-        // return;
-        // collectionPath =
-        // collectionPath.trimFromBeginning(XmldbURI.CONFIG_COLLECTION_URI);
-        // CollectionCache collectionCache = pool.getCollectionsCache();
-        // synchronized (collectionCache) {
-        // CollectionConfiguration config = (CollectionConfiguration)
-        // cache.get(collectionPath);
-        // if (config != null) {
-        // config.getCollection().invalidateConfiguration();
-        // cache.remove(collectionPath);
-        // }
-        // }
+    protected void invalidate(final XmldbURI collectionPath) {
+        if (!collectionPath.startsWith(CONFIG_COLLECTION_URI)) {
+            return;
+        }
+
+        latch.write(new Callable<Void>() {
+            @Override
+            public Void call() {
+
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Invalidating collection " + collectionPath);
+                }
+
+                configurations.remove(new CollectionURI(collectionPath.getRawCollectionPath()));
+
+                return null;
+            }
+        });
     }
 
     /**
