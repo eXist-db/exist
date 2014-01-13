@@ -84,7 +84,7 @@ public class KWICDisplay extends BasicFunction {
             new SequenceType[]{ TEXT_ARG, WIDTH_ARG, CALLBACK_ARG, PARAMETERS_ARG },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results"),
             "Improved kwic functionality is now provided by a separate XQuery module, see " +
-            "http://exist-db.org/kwic.html."),
+            "http://www.exist-db.org/exist/apps/doc/kwic.xml."),
         new FunctionSignature(
                 new QName("kwic-display", TextModule.NAMESPACE_URI, TextModule.PREFIX),
                 "This function takes a sequence of text nodes in $a, containing matches from a fulltext search. " +
@@ -107,7 +107,7 @@ public class KWICDisplay extends BasicFunction {
                 new SequenceType[]{ TEXT_ARG, WIDTH_ARG, CALLBACK_ARG, RESULT_CALLBACK_ARG, PARAMETERS_ARG },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results"),
                 "Improved kwic functionality is now provided by a separate XQuery module, see " +
-                "http://exist-db.org/kwic.html.")
+                "http://www.exist-db.org/exist/apps/doc/kwic.xml.")
     };
     
     public KWICDisplay(XQueryContext context, FunctionSignature signature) {
