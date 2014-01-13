@@ -62,7 +62,7 @@ public class AsUser extends Function {
 
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
-    	logger.info("Entering the " + SystemModule.PREFIX + ":as-user XQuery function");
+    	logger.debug("Entering the " + SystemModule.PREFIX + ":as-user XQuery function");
 
         final DBBroker broker = context.getBroker();
 
@@ -82,17 +82,17 @@ public class AsUser extends Function {
             user = sm.authenticate(username, password.getStringValue());
         } catch(final AuthenticationException e) {
             final XPathException exception = new XPathException(this, "Authentication failed", e);
-            logger.error("Authentication failed for setting the user to [" + username + "] because of [" + e.getMessage() + "].", exception);
+            logger.error("Authentication failed for [" + username + "] because of [" + e.getMessage() + "].", exception);
             throw exception;
         }
 
-        final Subject oldUser = broker.getSubject();
+        final Subject oldUser = context.getEffectiveUser();
         try {
-            logger.info("Setting the authenticated user to: [" + username + "]");
+            logger.info("Setting the effective user to: [" + username + "]");
             broker.setSubject(user);
             return getArgument(2).eval(contextSequence, contextItem);
         } finally {
-            logger.info("Returning the user to the original user: [" + oldUser.getName() + "]");
+            logger.info("Returning the effective user to: [" + oldUser.getName() + "]");
             broker.setSubject(oldUser);
         }
     }

@@ -58,6 +58,6 @@ public class XMLDBIsAuthenticated extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence args[], final Sequence contextSequence) throws XPathException {
-        return new BooleanValue(context.getSubject().isExternallyAuthenticated());
+        return new BooleanValue(context.getEffectiveUser().isExternallyAuthenticated());
     }
 }

@@ -436,9 +436,9 @@ public class PermissionsFunctions extends BasicFunction {
             mode |= Permission.EXECUTE;
         }
         
-        final Subject currentSubject = context.getBroker().getSubject();
+        final Subject effectiveSubject = context.getEffectiveUser();
         try {
-            final boolean hasAccess = getPermissions(pathUri).validate(currentSubject, mode);
+            final boolean hasAccess = getPermissions(pathUri).validate(effectiveSubject, mode);
             return BooleanValue.valueOf(hasAccess);
         } catch(final XPathException xpe) {
             LOG.error(xpe.getMessage(), xpe);
