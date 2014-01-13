@@ -12,36 +12,39 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ModuleFunctions extends BasicFunction {
-
-    public static final FunctionSignature signatures[] = {
-        new FunctionSignature(
-            new QName("module-functions", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-            "Returns a sequence of function items pointing to each public function in the current module.",
-            new SequenceType[] {},
-            new FunctionReturnSequenceType(
-                Type.FUNCTION_REFERENCE,
-                Cardinality.ZERO_OR_MORE,
-                "Sequence of function items containing all public functions in the current module or the empty sequence " +
-                "if the module is not known in the current context.")),
-        new FunctionSignature(
-            new QName("module-functions", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-            "Returns a sequence of function items pointing to each public function in the specified module.",
-            new SequenceType[] { new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location URI of the module to be loaded.") },
-            new FunctionReturnSequenceType(
-                Type.FUNCTION_REFERENCE,
-                Cardinality.ZERO_OR_MORE,
-                "Sequence of function items containing all public functions in the module or the empty sequence " +
-                "if the module is not known in the current context.")),
-        new FunctionSignature(
-            new QName("module-functions-by-uri", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-            "Returns a sequence of function items pointing to each public function in the specified module.",
-            new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI of the module to be loaded.") },
-            new FunctionReturnSequenceType(
-                Type.FUNCTION_REFERENCE,
-                Cardinality.ZERO_OR_MORE,
-                "Sequence of function items containing all public functions in the module or the empty sequence " +
-                        "if the module is not known in the current context."))
-    };
+        
+    public final static FunctionSignature FNS_MODULE_FUNCTIONS_CURRENT = new FunctionSignature(
+        new QName("module-functions", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
+        "Returns a sequence of function items pointing to each public function in the current module.",
+        new SequenceType[] {},
+        new FunctionReturnSequenceType(
+            Type.FUNCTION_REFERENCE,
+            Cardinality.ZERO_OR_MORE,
+            "Sequence of function items containing all public functions in the current module or the empty sequence " +
+            "if the module is not known in the current context.")
+    );
+    
+    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER = new FunctionSignature(
+        new QName("module-functions", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
+        "Returns a sequence of function items pointing to each public function in the specified module.",
+        new SequenceType[] { new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location URI of the module to be loaded.") },
+        new FunctionReturnSequenceType(
+            Type.FUNCTION_REFERENCE,
+            Cardinality.ZERO_OR_MORE,
+            "Sequence of function items containing all public functions in the module or the empty sequence " +
+            "if the module is not known in the current context.")
+    );
+    
+    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER_URI = new FunctionSignature(
+        new QName("module-functions-by-uri", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
+        "Returns a sequence of function items pointing to each public function in the specified module.",
+        new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI of the module to be loaded.") },
+        new FunctionReturnSequenceType(
+            Type.FUNCTION_REFERENCE,
+            Cardinality.ZERO_OR_MORE,
+            "Sequence of function items containing all public functions in the module or the empty sequence " +
+            "if the module is not known in the current context.")
+    );     
 
     public ModuleFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
