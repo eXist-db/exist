@@ -46,6 +46,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author gvalentino
  *
  */
+@Deprecated
 public class XMLDBPermissions extends XMLDBAbstractCollectionManipulator {
 	protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection-uri");
 	protected static final FunctionParameterSequenceType ARG_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource");

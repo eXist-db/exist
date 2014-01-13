@@ -46,6 +46,7 @@ import org.exist.security.Subject;
  * @author Adam Retter <adam@existsolutions.com>
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
+@Deprecated
 public class XMLDBAddUserToGroup extends BasicFunction {
 
     protected static final Logger logger = Logger.getLogger(XMLDBAddUserToGroup.class);

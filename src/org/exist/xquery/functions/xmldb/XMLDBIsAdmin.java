@@ -46,6 +46,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * @author wolf
  */
+@Deprecated
 public class XMLDBIsAdmin extends BasicFunction {
 	protected static final Logger logger = Logger.getLogger(XMLDBIsAdmin.class);
 	public final static FunctionSignature signature = new FunctionSignature(
