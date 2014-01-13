@@ -52,6 +52,6 @@ public class XMLDBGetCurrentUser extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence args[], final Sequence contextSequence) throws XPathException {
-        return new StringValue(context.getSubject().getName());
+        return new StringValue(context.getEffectiveUser().getName());
     }
 }
