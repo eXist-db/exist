@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2006-2009 The eXist Project
+ * Copyright (C) 2006-2014 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -38,26 +36,22 @@ import org.exist.xquery.value.Type;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  *
  */
-public class XMLDBGetCurrentUser extends BasicFunction
-{
-	protected static final Logger logger = Logger.getLogger(XMLDBGetCurrentUser.class);
-	
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("get-current-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the user-id of the current user from the xquery context.",
-			null,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the user-id of the current user")
-		);
-	
-	public XMLDBGetCurrentUser(XQueryContext context, FunctionSignature signature)
-	{
-		super(context, signature);
-	}
-	
-	public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException
-	{
-		final StringValue stringValue = new StringValue(context.getSubject().getName());
-		return stringValue;
-	}
+public class XMLDBGetCurrentUser extends BasicFunction {
+    
+    public final static FunctionSignature signature =
+        new FunctionSignature(
+            new QName("get-current-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+            "Returns the user-id of the current user from the xquery context.",
+            null,
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the user-id of the current user")
+        );
+
+    public XMLDBGetCurrentUser(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    @Override
+    public Sequence eval(final Sequence args[], final Sequence contextSequence) throws XPathException {
+        return new StringValue(context.getSubject().getName());
+    }
 }
