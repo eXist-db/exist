@@ -3039,8 +3039,8 @@ public class XQueryContext implements BinaryValueManager, Context
         return realUser;
     }
     
-    public void setRealUser(final Subject callingUser) {
-        this.realUser = callingUser;
+    public void setRealUser(final Subject realUser) {
+        this.realUser = realUser;
     }
 
     /* ----------------- Save state ------------------------ */
