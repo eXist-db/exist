@@ -45,6 +45,7 @@ import org.exist.xquery.value.Type;
  * @author Adam Retter <adam@existsolutions.com>
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
+@Deprecated
 public class XMLDBRemoveUserFromGroup extends BasicFunction {
 
     protected static final Logger logger = Logger.getLogger(XMLDBRemoveUserFromGroup.class);

@@ -54,6 +54,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author Luigi P. Bai, finder@users.sf.net, 2004
  *
  */
+@Deprecated
 public class XMLDBUserAccess extends BasicFunction {
 
     protected static final FunctionParameterSequenceType ARG_USER_ID = new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id");

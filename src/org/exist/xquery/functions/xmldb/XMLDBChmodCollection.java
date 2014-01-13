@@ -44,7 +44,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author Luigi P. Bai, finder@users.sf.net, 2004
  *
  */
-
+@Deprecated
 public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator {
     private static final Logger logger = Logger.getLogger(XMLDBChmodCollection.class);
 	public final static FunctionSignature signature = new FunctionSignature(

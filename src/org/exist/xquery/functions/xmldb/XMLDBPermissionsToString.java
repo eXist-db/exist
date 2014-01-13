@@ -45,6 +45,7 @@ import org.exist.xquery.value.Type;
 /**
  * @author wolf
  */
+@Deprecated
 public class XMLDBPermissionsToString extends BasicFunction {
     protected static final Logger logger = Logger.getLogger(XMLDBPermissionsToString.class);
     

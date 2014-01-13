@@ -43,6 +43,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
+@Deprecated
 public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 	protected static final FunctionParameterSequenceType OWNER_COLLECTION_ARG = new FunctionParameterSequenceType("collection-uri", Type.ITEM, Cardinality.EXACTLY_ONE, "The collection URI");
 	protected static final FunctionParameterSequenceType GROUP_COLLECTION_ARG = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");

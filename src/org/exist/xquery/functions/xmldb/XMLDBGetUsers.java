@@ -46,6 +46,7 @@ import org.exist.xquery.value.StringValue;
 /**
  * @author Adam Retter <adam@existsolutions.com>
  */
+@Deprecated
 public class XMLDBGetUsers extends BasicFunction {
 
     protected static final Logger logger = Logger.getLogger(XMLDBGetUsers.class);
