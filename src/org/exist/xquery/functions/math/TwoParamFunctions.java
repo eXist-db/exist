@@ -45,33 +45,33 @@ import org.exist.xquery.value.Type;
  */
 public class TwoParamFunctions extends BasicFunction {
 	
-	@SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(TwoParamFunctions.class);
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(TwoParamFunctions.class);
     
     public static final String ATAN2 = "atan2";
     public static final String POW = "pow";
     
-    public final static FunctionSignature signature[] = {
-        new FunctionSignature(
-                new QName(ATAN2, MathModule.NAMESPACE_URI),
-                "Returns the angle in radians subtended at the origin by the point on a "
-                + "plane with coordinates (x, y) and the positive x-axis, the result being in the range -π to +π.",
-                new SequenceType[] {
-                    new FunctionParameterSequenceType("y", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The y coordinate"),
-                    new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The x coordinate")
-                },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the theta component of the point (r, theta) in polar coordinates that corresponds to the point (x, y) in Cartesian coordinates.")
-                ),
-        new FunctionSignature(
-                new QName(POW, MathModule.NAMESPACE_URI),
-                "Returns the result of raising the first argument to the power of the second.",
-                new SequenceType[] {
-                    new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The value"),
-                    new FunctionParameterSequenceType("power", Type.NUMBER, Cardinality.EXACTLY_ONE, "The power to raise the value to")
-                },
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
-                )
-    };
+    
+    public final static FunctionSignature FNS_ATAN2 = new FunctionSignature(
+        new QName(ATAN2, MathModule.NAMESPACE_URI),
+        "Returns the angle in radians subtended at the origin by the point on a "
+        + "plane with coordinates (x, y) and the positive x-axis, the result being in the range -π to +π.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("y", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The y coordinate"),
+            new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The x coordinate")
+        },
+        new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the theta component of the point (r, theta) in polar coordinates that corresponds to the point (x, y) in Cartesian coordinates.")
+    );
+        
+    public final static FunctionSignature FNS_POW = new FunctionSignature(
+        new QName(POW, MathModule.NAMESPACE_URI),
+        "Returns the result of raising the first argument to the power of the second.",
+        new SequenceType[] {
+            new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The value"),
+            new FunctionParameterSequenceType("power", Type.NUMBER, Cardinality.EXACTLY_ONE, "The power to raise the value to")
+        },
+        new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the result")
+    );
     
     /**
      * @param context
