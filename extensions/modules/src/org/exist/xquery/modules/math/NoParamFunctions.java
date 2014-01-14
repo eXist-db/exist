@@ -55,7 +55,7 @@ public class NoParamFunctions extends BasicFunction {
                 "Returns the value of pi.",
                 null,
                 new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi"), 
-                "Replaced by http://www.w3.org/2005/xpath-functions/math/#pi"
+                org.exist.xquery.functions.math.NoParamFunctions.FNS_PI
                 ),
         new FunctionSignature(
                 new QName("random", MathModule.NAMESPACE_URI),

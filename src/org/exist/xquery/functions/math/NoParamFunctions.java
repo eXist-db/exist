@@ -42,18 +42,16 @@ import org.exist.xquery.value.Type;
  */
 public class NoParamFunctions extends BasicFunction {
     
-	//private static final Logger logger = Logger.getLogger(NoParamFunctions.class);
+    //private static final Logger logger = Logger.getLogger(NoParamFunctions.class);
 
     public static final String PI = "pi";
 
-	public final static FunctionSignature signature[] = {
-        new FunctionSignature(
-                new QName(PI, MathModule.NAMESPACE_URI),
-                "Returns the value of pi.",
-                null,
-                new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi")
-                )
-    };
+    public final static FunctionSignature FNS_PI = new FunctionSignature(
+        new QName(PI, MathModule.NAMESPACE_URI),
+        "Returns the value of pi.",
+        null,
+        new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi")
+    );
     
     /**
      * @param context
