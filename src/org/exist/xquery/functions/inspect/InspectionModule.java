@@ -16,11 +16,11 @@ public class InspectionModule extends AbstractInternalModule {
 
     public final static FunctionDef[] functions = {
         new FunctionDef(InspectFunction.SIGNATURE, InspectFunction.class),
-        new FunctionDef(InspectModule.signatures[0], InspectModule.class),
-        new FunctionDef(InspectModule.signatures[1], InspectModule.class),
-        new FunctionDef(ModuleFunctions.signatures[0], ModuleFunctions.class),
-        new FunctionDef(ModuleFunctions.signatures[1], ModuleFunctions.class),
-        new FunctionDef(ModuleFunctions.signatures[2], ModuleFunctions.class)
+        new FunctionDef(InspectModule.FNS_INSPECT_MODULE, InspectModule.class),
+        new FunctionDef(InspectModule.FNS_INSPECT_MODULE_URI, InspectModule.class),
+        new FunctionDef(ModuleFunctions.FNS_MODULE_FUNCTIONS_CURRENT, ModuleFunctions.class),
+        new FunctionDef(ModuleFunctions.FNS_MODULE_FUNCTIONS_OTHER, ModuleFunctions.class),
+        new FunctionDef(ModuleFunctions.FNS_MODULE_FUNCTIONS_OTHER_URI, ModuleFunctions.class)
     };
 
     public InspectionModule(Map<String, List<? extends Object>> parameters) {

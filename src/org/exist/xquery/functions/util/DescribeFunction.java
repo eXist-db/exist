@@ -36,6 +36,7 @@ import org.exist.xquery.LiteralValue;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.inspect.InspectFunction;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
@@ -62,7 +63,7 @@ public class DescribeFunction extends Function {
 				new FunctionParameterSequenceType("function-name", Type.QNAME, Cardinality.EXACTLY_ONE, "The name of the function to get the signature of"),
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"),
-            "Use inspect:inspect-function instead.");
+            InspectFunction.SIGNATURE);
 	
 	private final static QName ANNOTATION_QNAME = new QName("annotation");
 	private final static QName ANNOTATION_VALUE_QNAME = new QName("value");
