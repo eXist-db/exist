@@ -53,6 +53,7 @@ public abstract class AbstractXMLDBTask extends Task
     protected String  		user           		= "guest";
     protected String  		password       		= "guest";
     protected String  		uri            		= null;
+    protected boolean		ssl					= false;
     protected boolean 	createDatabase 		= false;
     protected String  		configuration  		= null;
     protected boolean 	failonerror    		= true;
@@ -109,6 +110,17 @@ public abstract class AbstractXMLDBTask extends Task
      *
      * @param  create
      */
+    public void setSsl( boolean ssl )
+    {
+        this.ssl = ssl;
+    }
+
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param  create
+     */
     public void setInitdb( boolean create )
     {
         this.createDatabase = create;
@@ -149,6 +161,7 @@ public abstract class AbstractXMLDBTask extends Task
             final Class<?> clazz    = Class.forName( driver );
             final Database database = (Database)clazz.newInstance();
             database.setProperty( "create-database", createDatabase ? "true" : "false" );
+            database.setProperty( "ssl-enable", ssl ? "true" : "false" );
 
             if( configuration != null ) {
                 database.setProperty( "configuration", configuration );
