@@ -108,7 +108,7 @@ public abstract class AbstractXMLDBTask extends Task
     /**
      * DOCUMENT ME!
      *
-     * @param  create
+     * @param  ssl
      */
     public void setSsl( boolean ssl )
     {
