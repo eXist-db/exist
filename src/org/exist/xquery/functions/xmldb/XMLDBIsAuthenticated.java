@@ -29,7 +29,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.securitymanager.IsAuthenticated;
+import org.exist.xquery.functions.securitymanager.IsAuthenticatedFunction;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -49,7 +49,7 @@ public class XMLDBIsAuthenticated extends BasicFunction {
             "Returns the true() if current user from the xquery context is authenticated, false() otherwise.",
             null,
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise"),
-            IsAuthenticated.FNS_IS_AUTHENTICATED
+            IsAuthenticatedFunction.FNS_IS_AUTHENTICATED
         );
 	
     public XMLDBIsAuthenticated(final XQueryContext context, final FunctionSignature signature) {

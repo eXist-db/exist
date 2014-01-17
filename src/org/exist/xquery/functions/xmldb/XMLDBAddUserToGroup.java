@@ -32,7 +32,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.securitymanager.GroupMembershipFunctions;
+import org.exist.xquery.functions.securitymanager.GroupMembershipFunction;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -59,7 +59,7 @@ public class XMLDBAddUserToGroup extends BasicFunction {
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation"),
-            GroupMembershipFunctions.FNS_ADD_GROUP_MEMBER
+            GroupMembershipFunction.FNS_ADD_GROUP_MEMBER
     );
 
     /**
