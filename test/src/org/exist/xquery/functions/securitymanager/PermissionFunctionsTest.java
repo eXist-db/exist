@@ -33,7 +33,7 @@ import org.junit.Test;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class PermissionsFunctionsTest {
+public class PermissionFunctionsTest {
 
     /**
      * Test of eval method, of class PermissionsFunctions.

@@ -20,7 +20,7 @@ import org.exist.xquery.value.*;
  *
  * @author Adam Retter <adam@existsolutions.com>
  */
-public class GroupMembershipFunctions extends BasicFunction {
+public class GroupMembershipFunction extends BasicFunction {
 
     private final static QName qnAddGroupMember = new QName("add-group-member", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnRemoveGroupMember = new QName("remove-group-member", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
@@ -108,7 +108,7 @@ public class GroupMembershipFunctions extends BasicFunction {
         new SequenceType(Type.EMPTY, Cardinality.EMPTY)
     );
 
-    public GroupMembershipFunctions(final XQueryContext context, final FunctionSignature signature) {
+    public GroupMembershipFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

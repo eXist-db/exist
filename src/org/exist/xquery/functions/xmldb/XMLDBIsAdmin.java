@@ -33,7 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.securitymanager.GroupMembershipFunctions;
+import org.exist.xquery.functions.securitymanager.GroupMembershipFunction;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -57,7 +57,7 @@ public class XMLDBIsAdmin extends BasicFunction {
                 new FunctionParameterSequenceType("user-id", Type.STRING, Cardinality.EXACTLY_ONE, "The user-id"),
             },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true() if user has DBA role, false() otherwise"),
-            GroupMembershipFunctions.FNS_IS_DBA
+            GroupMembershipFunction.FNS_IS_DBA
     );
 	
 	public XMLDBIsAdmin(XQueryContext context) {
