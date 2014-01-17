@@ -72,12 +72,12 @@ public class EffectiveSubject implements Subject {
     
     @Override
     public String getUsername() {
-        return "_effective_" + account.getUsername();
+        return account.getUsername();
     }
     
     @Override
     public String getName() {
-        return "Effective: " + account.getName();
+        return account.getName();
     }
     
     @Override
