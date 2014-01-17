@@ -113,7 +113,8 @@ public class SecurityManagerModule extends AbstractInternalModule {
         //<editor-fold desc="Functions on the broker/context current user">
         new FunctionDef(PermissionsFunction.FNS_HAS_ACCESS, PermissionsFunction.class),
         new FunctionDef(IsAuthenticatedFunction.FNS_IS_AUTHENTICATED, IsAuthenticatedFunction.class),
-        new FunctionDef(IsAuthenticatedFunction.FNS_IS_EXTERNALLY_AUTHENTICATED, IsAuthenticatedFunction.class)
+        new FunctionDef(IsAuthenticatedFunction.FNS_IS_EXTERNALLY_AUTHENTICATED, IsAuthenticatedFunction.class),
+        new FunctionDef(IdFunction.FNS_ID, IdFunction.class)
         //</editor-fold>
     };
 
