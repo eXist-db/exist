@@ -107,12 +107,14 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(PermissionsFunctions.FNS_CHMOD, PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.FNS_CHOWN, PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.FNS_CHGRP, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_HAS_ACCESS, PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.FNS_MODE_TO_OCTAL, PermissionsFunctions.class),
         new FunctionDef(PermissionsFunctions.FNS_OCTAL_TO_MODE, PermissionsFunctions.class),
 
+        //<editor-fold desc="Functions on the broker/context current user">
+        new FunctionDef(PermissionsFunctions.FNS_HAS_ACCESS, PermissionsFunctions.class),
         new FunctionDef(IsAuthenticated.FNS_IS_AUTHENTICATED, IsAuthenticated.class),
         new FunctionDef(IsAuthenticated.FNS_IS_EXTERNALLY_AUTHENTICATED, IsAuthenticated.class)
+        //</editor-fold>
     };
 
     public SecurityManagerModule(Map<String, List<? extends Object>> parameters) {
