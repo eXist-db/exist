@@ -27,6 +27,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.securitymanager.IdFunction;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -36,6 +37,7 @@ import org.exist.xquery.value.Type;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  *
  */
+@Deprecated
 public class XMLDBGetCurrentUser extends BasicFunction {
     
     public final static FunctionSignature signature =
@@ -43,7 +45,8 @@ public class XMLDBGetCurrentUser extends BasicFunction {
             new QName("get-current-user", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Returns the user-id of the current user from the xquery context.",
             null,
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the user-id of the current user")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the user-id of the current user"),
+            IdFunction.FNS_ID
         );
 
     public XMLDBGetCurrentUser(final XQueryContext context, final FunctionSignature signature) {
