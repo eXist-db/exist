@@ -317,12 +317,6 @@ public class XQuery {
         } finally {
             if(effectiveSubject != null) {
                 broker.setSubject(callingUser);
-                
-                //we may have not been setUid, but then xmldb:authenticate and
-                //others may have changed the effective user, it is good
-                //practice to change it back
-            } else if(context.getRealUser().equals(broker.getSubject())) {
-                broker.setSubject(context.getRealUser());
             }
         }
     }
