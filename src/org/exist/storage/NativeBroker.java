@@ -1413,7 +1413,10 @@ public class NativeBroker extends DBBroker {
                 final String collName = uri.getRawCollectionPath();
                 
                 // Notify the collection configuration manager
-                pool.getConfigurationManager().invalidateAll(uri);
+                final CollectionConfigurationManager manager = pool.getConfigurationManager();
+                if(manager != null) {
+                    manager.invalidate(uri);
+                }
                 
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("Removing children collections from their parent '" + collName + "'...");
