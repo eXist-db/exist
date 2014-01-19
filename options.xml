@@ -1,0 +1,5 @@
+INSTALL_PATH=/tmp/exist-2.1dev
+dataDir=/tmp/data-2.1dev
+adminPasswd=myAdminPasswd
+MAX_MEMORY=1024
+cacheSize=128
