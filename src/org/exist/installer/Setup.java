@@ -174,7 +174,7 @@ public class Setup {
                         (UserManagementService) root.getService("UserManagementService", "1.0");
                 final Account admin = service.getAccount("admin");
                 admin.setPassword(adminPass);
-                System.out.println("Setting admin user password...");
+                System.out.println("Setting admin user password...["+adminPass+"]");
                 service.updateAccount(admin);
                 root = DatabaseManager.getCollection(URI, "admin", adminPass);
             }
