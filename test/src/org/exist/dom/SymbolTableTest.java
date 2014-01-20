@@ -3,11 +3,13 @@ package org.exist.dom;
 import org.exist.storage.io.VariableByteInput;
 import org.easymock.Capture;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.easymock.classextension.EasyMock;
-import static org.easymock.classextension.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.verify;
-import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.capture;
+import org.easymock.EasyMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.captureByte;
+import static org.easymock.EasyMock.captureInt;
+import static org.easymock.EasyMock.capture;
 import java.io.File;
 import java.io.IOException;
 import org.exist.EXistException;
@@ -118,8 +120,8 @@ public class SymbolTableTest {
         final Capture<String> strCapture = new Capture<String>();
 
         //write expectations
-        mockOs.writeByte(capture(byteCapture));
-        mockOs.writeInt(capture(intCapture));
+        mockOs.writeByte(captureByte(byteCapture));
+        mockOs.writeInt(captureInt(intCapture));
         mockOs.writeUTF(capture(strCapture));
 
         replay(mockOs);
