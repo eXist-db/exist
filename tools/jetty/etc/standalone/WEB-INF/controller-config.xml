@@ -30,5 +30,5 @@
         ++ by the REST servlet.
     -->
     <root pattern="/db.*" path="xmldb:exist:///db"/>
-    <root pattern=".*" path="xmldb:exist:///db/www"/>
+    <root pattern=".*" path="xmldb:exist:///db/apps"/>
 </configuration>
