@@ -685,7 +685,7 @@ public class XMLDBSecurityTest {
 //         Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
 //            DatabaseInstanceManager mgr =
 //                (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-//            mgr.shutdown();
+//            mgr.shutdownDB();
 //        } catch (XMLDBException e) {
 //            e.printStackTrace();
 //        }

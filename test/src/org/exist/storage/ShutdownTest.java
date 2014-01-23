@@ -3,9 +3,6 @@ package org.exist.storage;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.xacml.AccessContext;
@@ -16,10 +13,14 @@ import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class ShutdownTest extends TestCase {
+public class ShutdownTest {
 
 	private static String directory = "samples/shakespeare";
     
@@ -29,12 +30,9 @@ public class ShutdownTest extends TestCase {
        File existDir = existHome==null ? new File(".") : new File(existHome);
        dir = new File(existDir,directory);
     }
-    
-	public ShutdownTest(String name) {
-		super(name);
-	}
-	
-	public void testShutdown() {
+
+    @Test
+	public void shutdown() {
 		for (int i = 0; i < 2; i++) {
 			storeAndShutdown();
 			
@@ -108,7 +106,7 @@ public class ShutdownTest extends TestCase {
 		}
 		
 		// shut down the database
-        shutdown();
+        shutdownDB();
         System.out.println("Database stopped.");
         
         // try to remove the database files
@@ -142,11 +140,7 @@ public class ShutdownTest extends TestCase {
         return null;
     }
 	
-	protected void shutdown() {
+	protected void shutdownDB() {
 		BrokerPool.stopAll(false);
-	}
-	
-	public static void main(String[] args) {
-		TestRunner.run(ShutdownTest.class);
 	}
 }

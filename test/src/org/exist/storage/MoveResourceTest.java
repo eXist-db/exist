@@ -23,9 +23,6 @@ package org.exist.storage;
 
 import java.io.File;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
@@ -37,26 +34,26 @@ import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.junit.After;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-public class MoveResourceTest extends TestCase {
+public class MoveResourceTest {
 
-	public static void main(String[] args) {
-		TestRunner.run(MoveResourceTest.class);
-	}
-
-    public void testStore() {
-        store();
-        BrokerPool.stopAll(false);
-        read();
-        BrokerPool.stopAll(false);
+    @Test
+    public void store() {
+        doStore();
+        tearDown();
+        doRead();
     }
 
-	private void store() {
+	private void doStore() {
 		BrokerPool.FORCE_CORRUPTION = true;
 		BrokerPool pool = null;
 		DBBroker broker = null;
@@ -101,7 +98,7 @@ public class MoveResourceTest extends TestCase {
 		}
 	}
 
-	private void read() {
+	private void doRead() {
 	    BrokerPool.FORCE_CORRUPTION = false;
 	    BrokerPool pool = null;
 	    DBBroker broker = null;
@@ -145,11 +142,11 @@ public class MoveResourceTest extends TestCase {
 	    }
 	}
 
-    public void testAborted() throws Exception {
+    @Test
+    public void aborted() throws Exception {
         storeAborted();
-        BrokerPool.stopAll(false);
+        tearDown();
         readAborted();
-        BrokerPool.stopAll(false);
     }
 
 	private void storeAborted() throws Exception {
@@ -240,14 +237,14 @@ public class MoveResourceTest extends TestCase {
 	    }
 	}
 
-    public void testXMLDBStore() throws XMLDBException {
-        xmlDBStore();
-        BrokerPool.stopAll(false);
-        xmlDBRead();
-        BrokerPool.stopAll(false);
+    @Test
+    public void xmldbStore() throws XMLDBException {
+        doXmldbStore();
+        tearDown();
+        doXmldbRead();
     }
 
-	private void xmlDBStore() throws XMLDBException {
+	private void doXmldbStore() throws XMLDBException {
 		BrokerPool.FORCE_CORRUPTION = true;
 	    @SuppressWarnings("unused")
 		BrokerPool pool = startDB();
@@ -274,7 +271,7 @@ public class MoveResourceTest extends TestCase {
                 TestConstants.TEST_COLLECTION_URI, XmldbURI.create("new_test3.xml"));
 	}
 
-	private void xmlDBRead() throws XMLDBException {
+	private void doXmldbRead() throws XMLDBException {
 		BrokerPool.FORCE_CORRUPTION = false;
 	    @SuppressWarnings("unused")
 		BrokerPool pool = startDB();
@@ -309,7 +306,8 @@ public class MoveResourceTest extends TestCase {
 		return null;
 	}
 
-	protected void tearDown() {
+    @After
+	public void tearDown() {
 		BrokerPool.stopAll(false);
 	}
 }
