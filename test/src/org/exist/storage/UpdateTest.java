@@ -30,17 +30,17 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 
 import java.io.StringReader;
 
 public class UpdateTest extends AbstractUpdateTest {
 
-    public static void main(String[] args) {
-        TestRunner.run(UpdateTest.class);
-    }
-    
-    public void testUpdate() {
+    @Test
+    public void update() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = null;        
         DBBroker broker = null;

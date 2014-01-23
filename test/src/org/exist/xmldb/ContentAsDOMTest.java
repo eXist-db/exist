@@ -121,7 +121,7 @@ public class ContentAsDOMTest {
         CollectionManagementService service = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
         service.removeCollection(TEST_COLLECTION);
 
-        //shutdown the db
+        //shutdownDB the db
         DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
     }
