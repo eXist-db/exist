@@ -402,7 +402,7 @@ public class AnalyzerConfig {
             final Set s = getConstructorParameterSetValues(param);
             parameter = new KeyTypedValue(name, s, Set.class);
 
-        } else if ("org.apache.lucene.analysis.util.CharArraySet".equals(type)) {
+        } else if ("org.apache.lucene.analysis.util.CharArraySet".equals(type) || "set".equals(type)) {
             // This is mandatory to use iso a normal Set since Lucene 4
             final CharArraySet s = getConstructorParameterCharArraySetValues(param);
             parameter = new KeyTypedValue(name, s, CharArraySet.class);
