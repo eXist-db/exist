@@ -399,14 +399,14 @@ public class ValidationFunctions_DTD_Test {
     }
 
     @AfterClass
-    public static void shutdown() throws Exception {
+    public static void shutdownDB() throws Exception {
 
-        logger.info("shutdown");
+        logger.info("shutdownDB");
         
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim =
             (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-        dim.shutdown();
+        dim.shutdownDB();
         
     }*/
     

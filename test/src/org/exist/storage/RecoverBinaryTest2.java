@@ -25,9 +25,6 @@ import java.io.*;
 import java.util.Date;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -42,18 +39,28 @@ import org.exist.util.ConfigurationHelper;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-public class RecoverBinaryTest2 extends TestCase {
-
-    public static void main(String[] args) {
-        TestRunner.run(RecoverBinaryTest2.class);
-    }
+public class RecoverBinaryTest2 {
     
     private static String directory = "webapp/resources";
     
     //private static File dir = new File(directory);
-    
-    public void testStore() {
+
+    @Test
+    public void storeAndRead() {
+        store();
+        tearDown();
+        read();
+        tearDown();
+        read2();
+    }
+
+    //@Test
+    public void store() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = null;        
         DBBroker broker = null;
@@ -86,8 +93,9 @@ public class RecoverBinaryTest2 extends TestCase {
             pool.release(broker);
         }
     }
-    
-    public void testRead() {
+
+    //@Test
+    public void read() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         DBBroker broker = null;
@@ -123,8 +131,9 @@ public class RecoverBinaryTest2 extends TestCase {
                 pool.release(broker);
         }
     }
-    
-    public void testRead2() {
+
+    //@Test
+    public void read2() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         DBBroker broker = null;
@@ -200,7 +209,8 @@ public class RecoverBinaryTest2 extends TestCase {
         return null;
     }
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
     }
 }

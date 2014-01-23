@@ -101,7 +101,7 @@ public class XQTS_To_junit {
         release();
         
         db.shutdown();
-        System.out.println("database was shutdown");
+        System.out.println("database was shutdownDB");
     }
 
     public void load() throws Exception {

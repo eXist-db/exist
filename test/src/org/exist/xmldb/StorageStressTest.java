@@ -78,7 +78,7 @@ public class StorageStressTest extends TestCase {
     }
     
     protected void setUp() {
-    	//Don't worry about closing the server : the shutdown hook will do the job
+    	//Don't worry about closing the server : the shutdownDB hook will do the job
     	initServer();
         setUpRemoteDatabase();
     }
@@ -131,7 +131,7 @@ public class StorageStressTest extends TestCase {
     
     public static void main(String[] args) {
         TestRunner.run(StorageStressTest.class);
-		//Explicit shutdown for the shutdown hook
+		//Explicit shutdownDB for the shutdownDB hook
 		System.exit(0);		
    }
 }
