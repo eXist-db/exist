@@ -119,7 +119,7 @@ public class BinaryResourceUpdateTest  {
         CollectionManagementService service = (CollectionManagementService)testCollection.getParentCollection().getService("CollectionManagementService", "1.0");
         service.removeCollection(TEST_COLLECTION);
 
-        //shutdown the db
+        //shutdownDB the db
         DatabaseManager.deregisterDatabase(database);
         DatabaseInstanceManager dim = (DatabaseInstanceManager) testCollection.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();

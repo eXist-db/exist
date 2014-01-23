@@ -36,7 +36,7 @@ public class DOMTestJUnit extends RemoteDBTest {
 
 	protected void setUp() {
 		try {
-			//Don't worry about closing the server : the shutdown hook will do the job
+			//Don't worry about closing the server : the shutdownDB hook will do the job
 			initServer();
 			System.setProperty("exist.initdb", "true");
 			Class<?> dbc = Class.forName(DB_DRIVER);
@@ -118,7 +118,7 @@ public class DOMTestJUnit extends RemoteDBTest {
 	
 	public static void main(String[] args) {
 		TestRunner.run(DOMTestJUnit.class);
-		//Explicit shutdown for the shutdown hook
+		//Explicit shutdownDB for the shutdownDB hook
 		System.exit(0);		
 	}
 }
