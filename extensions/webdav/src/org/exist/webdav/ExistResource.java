@@ -21,6 +21,7 @@
  */
 package org.exist.webdav;
 
+import java.util.Properties;
 import org.apache.log4j.Logger;
 
 import org.exist.security.SecurityManager;
@@ -48,10 +49,12 @@ public abstract class ExistResource {
     protected boolean readAllowed = false;
     protected boolean writeAllowed = false;
     protected boolean executeAllowed = false;
-    protected ExistResource existResource;
+//    protected ExistResource existResource;
 
     protected String ownerUser;
     protected String ownerGroup;
+    
+    protected Properties configuration = new Properties();
 
     protected enum Mode {
         MOVE, COPY
@@ -98,6 +101,14 @@ public abstract class ExistResource {
     public String getOwnerUser() {
         return ownerUser;
     }
+    
+    public Properties getConfiguration(){
+        return configuration;
+    }
+    
+    public void setConfiguration(Properties config){
+        configuration = config;
+    }
 
     /**
      * Authenticate subject with password. NULL is returned when
@@ -114,7 +125,7 @@ public abstract class ExistResource {
             subject = securityManager.authenticate(username, password);
 
         } catch (AuthenticationException e) {
-            LOG.info("User " + username + " could not be authenticated. " + e.getMessage());
+            LOG.info(String.format("User %s could not be authenticated. %s", username, e.getMessage()));
         }
         return subject;
     }

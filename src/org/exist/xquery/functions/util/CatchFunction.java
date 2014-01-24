@@ -64,7 +64,7 @@ public class CatchFunction extends Function {
                     new FunctionParameterSequenceType("catch-code-blocks", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code blocks that will be will called if the catch matches one of the $java-classnames")
                 },
                 new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the try-catch"),
-                "Use the XQuery 3.0 try/catch expression in stead."
+                "Use the XQuery 3.0 try/catch expression instead."
             );
 
     /**

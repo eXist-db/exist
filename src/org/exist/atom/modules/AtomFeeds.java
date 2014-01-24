@@ -112,7 +112,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
 				// Must be a collection
 				final Collection collection = broker.getCollection(pathUri);
 				if (collection != null) {
-					if (!collection.getPermissions().validate(
+					if (!collection.getPermissionsNoLock().validate(
 							broker.getSubject(), Permission.READ)) {
 						throw new PermissionDeniedException(
 								"Not allowed to read collection");

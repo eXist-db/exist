@@ -9,8 +9,12 @@ dist/
 exist.jar
 exist-optional.jar
 extensions/**/build/
+extensions/contentextraction/lib/
 extensions/lib/
+extensions/modules/lib/
 lib/extensions/
+lib/user/svnkit*.jar
+lib/user/icu4j*.jar
 local.*
 mime-types.xml
 start.jar
@@ -38,3 +42,5 @@ tools/wrapper/logs/
 backup/
 test/junit/
 test/temp/
+nbproject/build/
+nbproject/private/

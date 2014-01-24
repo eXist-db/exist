@@ -42,7 +42,9 @@ public abstract class ConcurrentTestBase extends TestCase {
     private static String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
-    	"		<fulltext default=\"all\"/>" +
+        "       <lucene>" +
+        "           <text match=\"/*\"/>" +
+        "       </lucene>" +
         "	</index>" +
     	"</collection>";
     

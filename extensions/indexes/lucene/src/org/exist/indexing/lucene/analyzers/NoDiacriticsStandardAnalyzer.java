@@ -1,13 +1,19 @@
 package org.exist.indexing.lucene.analyzers;
 
 import org.apache.lucene.analysis.*;
+import org.apache.lucene.analysis.core.LowerCaseFilter;
+import org.apache.lucene.analysis.core.StopAnalyzer;
+import org.apache.lucene.analysis.core.StopFilter;
+import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
+import org.apache.lucene.analysis.util.CharArraySet;
+import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
+import org.apache.lucene.analysis.util.WordlistLoader;
 import org.apache.lucene.util.Version;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Set;
 
 /**
  * A copy of StandardAnalyzer using an additional ASCIIFoldingFilter to
@@ -28,15 +34,15 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
 
     /** An unmodifiable set containing some common English words that are usually not
      useful for searching. */
-    public static final Set<?> STOP_WORDS_SET = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
+    public static final CharArraySet STOP_WORDS_SET = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
 
     /** Builds an analyzer with the given stop words.
      * @param matchVersion Lucene version to match See {@link
      * <a href="#version">above</a>}
      * @param stopWords stop words */
-    public NoDiacriticsStandardAnalyzer(Version matchVersion, Set<?> stopWords) {
+    public NoDiacriticsStandardAnalyzer(Version matchVersion, CharArraySet stopWords) {
         super(matchVersion, stopWords);
-        replaceInvalidAcronym = matchVersion.onOrAfter(Version.LUCENE_24);
+        replaceInvalidAcronym = matchVersion.onOrAfter(Version.LUCENE_43);
     }
 
     /** Builds an analyzer with the default stop words ({@link
@@ -78,17 +84,18 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
     protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
         final StandardTokenizer src = new StandardTokenizer(matchVersion, reader);
         src.setMaxTokenLength(maxTokenLength);
-        src.setReplaceInvalidAcronym(replaceInvalidAcronym);
+//        src.setReplaceInvalidAcronym(replaceInvalidAcronym);
         TokenStream tok = new StandardFilter(matchVersion, src);
         tok = new ASCIIFoldingFilter(tok);
         tok = new LowerCaseFilter(matchVersion, tok);
         tok = new StopFilter(matchVersion, tok, stopwords);
-        return new TokenStreamComponents(src, tok) {
-            @Override
-            protected boolean reset(final Reader reader) throws IOException {
-                src.setMaxTokenLength(NoDiacriticsStandardAnalyzer.this.maxTokenLength);
-                return super.reset(reader);
-            }
-        };
+        return new TokenStreamComponents(src, tok);
+//        {
+//            @Override
+//            protected boolean reset(final Reader reader) throws IOException {
+//                src.setMaxTokenLength(NoDiacriticsStandardAnalyzer.this.maxTokenLength);
+//                return super.reset(reader);
+//            }
+//        };
     }
 }

@@ -72,7 +72,7 @@ public class ScriptRunner implements Runnable, Observer {
 		try {
 			db = BrokerPool.getInstance();
 			
-			db.addObserver(this);
+            BrokerPool.registerStatusObserver(this);
 			
 			broker = db.get(null);
 

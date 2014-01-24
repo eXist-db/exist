@@ -72,6 +72,10 @@ public class Handler extends URLStreamHandler {
             LOG.debug("Parsing xmldb:// URL.");
             super.parseURL(url, spec, XMLDB.length(), limit);
             
+        } else if(spec.startsWith(XMLDB+"/")) {
+            LOG.debug("Parsing xmldb:/ URL.");
+            super.parseURL(url, spec, XMLDB.length(), limit);
+
         } else if(spec.matches(PATTERN)) {
             LOG.debug("Parsing URL with custom exist instance");
             final String splits[] = spec.split(":",3);

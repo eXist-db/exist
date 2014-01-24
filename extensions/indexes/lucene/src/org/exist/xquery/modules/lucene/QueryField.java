@@ -1,31 +1,18 @@
 package org.exist.xquery.modules.lucene;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.VirtualNodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
-import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
+
+import java.io.IOException;
+import java.util.Properties;
 
 public class QueryField extends Query implements Optimizable {
 	
@@ -165,6 +152,14 @@ public class QueryField extends Query implements Optimizable {
             result = preselectResult;
         }
         return result;
+    }
+
+    @Override
+    public void resetState(boolean postOptimization) {
+        super.resetState(postOptimization);
+        if (!postOptimization) {
+            preselectResult = null;
+        }
     }
 }
 

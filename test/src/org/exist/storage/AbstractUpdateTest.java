@@ -21,8 +21,6 @@
  */
 package org.exist.storage;
 
-import junit.framework.TestCase;
-
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
@@ -38,15 +36,20 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import org.junit.After;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-public abstract class AbstractUpdateTest extends TestCase {
+public abstract class AbstractUpdateTest {
 
 	protected static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
     protected static String TEST_XML = 
         "<?xml version=\"1.0\"?>" +
         "<products/>";
 
-    public void testRead() {        
+    @Test
+    public void read() {
     	BrokerPool.FORCE_CORRUPTION = false;         
         
         BrokerPool pool = null;
@@ -121,11 +124,8 @@ public abstract class AbstractUpdateTest extends TestCase {
         return null;
     }
 
-    protected void tearDown() {
-    	try {
-    		BrokerPool.stopAll(false);
-        } catch (Exception e) {            
-            fail(e.getMessage());
-        }
+    @After
+    public void tearDown() {
+        BrokerPool.stopAll(false);
     }    
 }

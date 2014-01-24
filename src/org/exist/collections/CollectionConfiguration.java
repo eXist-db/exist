@@ -144,10 +144,10 @@ public class CollectionConfiguration {
                         node = triggers.item(j);
                         if(node.getNodeType() == Node.ELEMENT_NODE &&
                                 node.getLocalName().equals(TRIGGER_ELEMENT)) {
-                            final List <TriggerProxy> triggerProxys = configureTrigger(
+                            final List <TriggerProxy<? extends Trigger>> triggerProxys = configureTrigger(
                                     (Element)node, srcCollectionURI, checkOnly);
                             if(triggerProxys != null) {
-                                for(final TriggerProxy triggerProxy : triggerProxys) {
+                                for(final TriggerProxy<? extends Trigger> triggerProxy : triggerProxys) {
                                     if(triggerProxy instanceof DocumentTriggerProxy) {
                                         getDocumentTriggerProxies().add((DocumentTriggerProxy)triggerProxy);
                                     }
@@ -316,7 +316,7 @@ public class CollectionConfiguration {
         return collectionTriggerProxies;
     }
     
-    private List<TriggerProxy> configureTrigger(Element triggerElement,
+    private List<TriggerProxy<? extends Trigger>> configureTrigger(Element triggerElement,
         XmldbURI collectionConfigurationURI, boolean testOnly) throws CollectionConfigurationException {
 
         //TODO : rely on schema-driven validation -pb
@@ -331,7 +331,7 @@ public class CollectionConfiguration {
             }
             final NodeList nlParameter = triggerElement.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
             final Map<String, List<? extends Object>> parameters = ParametersExtractor.extract(nlParameter);
-            final List<TriggerProxy> triggerProxys = AbstractTriggerProxy.newInstance(clazz, collectionConfigurationURI, parameters);
+            final List<TriggerProxy<? extends Trigger>> triggerProxys = AbstractTriggerProxy.newInstance(clazz, collectionConfigurationURI, parameters);
             return triggerProxys;
         } catch (final ClassNotFoundException e) {
             if(testOnly) {

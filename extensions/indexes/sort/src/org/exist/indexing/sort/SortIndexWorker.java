@@ -15,6 +15,7 @@ import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
 import org.exist.storage.lock.Lock;
 import org.exist.util.*;
+import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.NodeList;
@@ -49,6 +50,11 @@ public class SortIndexWorker implements IndexWorker {
 
     public String getIndexName() {
         return index.getIndexName();
+    }
+
+    @Override
+    public QueryRewriter getQueryRewriter(XQueryContext context) {
+        return null;
     }
 
     public void flush() {

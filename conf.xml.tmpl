@@ -156,7 +156,7 @@
         you have some more memory to waste. If you deal with lots of 
         collections, you can also increase the collectionCacheSize value 
     -->
-    <db-connection cacheSize="@cacheSize@M" checkMaxCacheSize="true" collectionCache="24M" database="@database@"
+    <db-connection cacheSize="@cacheSize@M" checkMaxCacheSize="true" collectionCache="48M" database="@database@"
         files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
         doc-ids="default" minDiskSpace="128M">
 
@@ -416,12 +416,18 @@
             <module id="sort-index"      class="org.exist.indexing.sort.SortIndex"/>
 
             <!-- 
+                New range index based on Apache Lucene. Replaces the old range index which is
+                hard-wired into eXist core.
+            -->
+            <module id="range-index"    class="org.exist.indexing.range.RangeIndex"/>
+
+            <!-- 
                 The full text index is always required and should
                 not be disabled. We still have some dependencies on
                 this index in the database core. These will be removed
                 once the redesign has been completed. 
             -->
-            <module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/>
+            <!--module id="ft-legacy-index" class="org.exist.fulltext.FTIndex"/-->
 
             <!-- 
                  The following module is not really an index (though it sits 
@@ -723,7 +729,8 @@
             <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />
             <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" />
             <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule" />
-            
+            <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule" />
+
             <!--
             <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
             -->

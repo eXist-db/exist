@@ -125,6 +125,12 @@ public class ErrorCodes {
     public static ErrorCode XQDY0091 = new W3CErrorCode("XQDY0091", "An implementation MAY raise a dynamic error if an xml:id error, as defined in [XML ID], is encountered during construction of an attribute named xml:id.");
     public static ErrorCode XQDY0092 = new W3CErrorCode("XQDY0092", "An implementation MAY raise a dynamic error  if a constructed attribute named xml:space has a value other than preserve or default.");
     public static ErrorCode XQST0093 = new W3CErrorCode("XQST0093", "It is a static error to import a module M1 if there exists a sequence of modules M1 ... Mi ... M1 such that each module directly depends on the next module in the sequence (informally, if M1 depends on itself through some chain of module dependencies.)");
+    public static ErrorCode XQDY0101 = new W3CErrorCode("XQDY0101", "An error is raised if a computed namespace constructor attempts to do any of the following:\n" +
+            "Bind the prefix xml to some namespace URI other than http://www.w3.org/XML/1998/namespace.\n" +
+            "Bind a prefix other than xml to the namespace URI http://www.w3.org/XML/1998/namespace.\n" +
+            "Bind the prefix xmlns to any namespace URI.\n" +
+            "Bind a prefix to the namespace URI http://www.w3.org/2000/xmlns/.\n" +
+            "Bind any prefix (including the empty prefix) to a zero-length namespace URI.");
 
     /* XQuery 1.0 and XPath 2.0 Functions and Operators http://www.w3.org/TR/xpath-functions/#error-summary */
     public static ErrorCode FOER0000 = new W3CErrorCode("FOER0000", "Unidentified error.");

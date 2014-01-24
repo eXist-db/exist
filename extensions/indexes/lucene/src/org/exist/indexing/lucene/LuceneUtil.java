@@ -6,22 +6,82 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.FuzzyQuery;
-import org.apache.lucene.search.MultiTermQuery;
-import org.apache.lucene.search.PhraseQuery;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.search.regex.RegexQuery;
+import org.apache.lucene.search.*;
+import org.apache.lucene.util.BytesRef;
+import org.exist.dom.QName;
+import org.exist.dom.SymbolTable;
+import org.exist.numbering.NodeId;
+import org.exist.storage.BrokerPool;
+import org.exist.util.ByteConversion;
 
 public class LuceneUtil {
+
+    public static final String FIELD_NODE_ID = "nodeId";
+
+    public static final String FIELD_DOC_ID = "docId";
+    public static final String FIELD_DOC_URI = "docUri";
+
+    public static byte[] createId(int docId, NodeId nodeId) {
+        // build id from nodeId and docId
+        byte[] data = new byte[nodeId.size() + 4];
+        ByteConversion.intToByteH(docId, data, 0);
+        nodeId.serialize(data, 4);
+
+        return data;
+    }
+
+    public static byte[] createId(NodeId nodeId) {
+        byte[] data = new byte[nodeId.size()];
+        nodeId.serialize(data, 0);
+        return data;
+    }
+
+    public static NodeId readNodeId(int doc, BinaryDocValues nodeIdValues, BrokerPool pool) {
+        final byte[] buf = new byte[1024];
+        BytesRef ref = new BytesRef(buf);
+        nodeIdValues.get(doc, ref);
+        int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
+        return pool.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+    }
+
+    /**
+     * Encode an element or attribute qname into a lucene field name using the
+     * internal ids for namespace and local name.
+     *
+     * @param qname
+     * @return encoded qname
+     */
+    public static String encodeQName(QName qname, SymbolTable symbols) {
+        short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+        short localNameId = symbols.getSymbol(qname.getLocalName());
+        long nameId = qname.getNameType() | (namespaceId & 0xFFFF) << 16 | (localNameId & 0xFFFFFFFFL) << 32;
+        return Long.toHexString(nameId);
+    }
+
+    /**
+     * Decode the lucene field name into an element or attribute qname.
+     *
+     * @param s
+     * @return the qname
+     */
+    public static QName decodeQName(String s, SymbolTable symbols) {
+        try {
+            long l = Long.parseLong(s, 16);
+            short namespaceId = (short) ((l >>> 16) & 0xFFFFL);
+            short localNameId = (short) ((l >>> 32) & 0xFFFFL);
+            byte type = (byte) (l & 0xFFL);
+            String namespaceURI = symbols.getNamespace(namespaceId);
+            String localName = symbols.getName(localNameId);
+            QName qname = new QName(localName, namespaceURI, "");
+            qname.setNameType(type);
+            return qname;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
 
 	public static String[] extractFields(Query query, IndexReader reader) throws IOException {
 		Map<Object, Query> map = new TreeMap<Object, Query>();
@@ -45,16 +105,17 @@ public class LuceneUtil {
      * @param query
      * @param terms
      * @throws IOException in case of an error
+     * @throws UnsupportedOperationException in case of an error
      */
-    public static void extractTerms(Query query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
+    public static void extractTerms(Query query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException, UnsupportedOperationException {
         if (query instanceof BooleanQuery)
             extractTermsFromBoolean((BooleanQuery)query, terms, reader, includeFields);
         else if (query instanceof TermQuery)
             extractTermsFromTerm((TermQuery) query, terms, includeFields);
         else if (query instanceof WildcardQuery)
             extractTermsFromWildcard((WildcardQuery) query,terms, reader, includeFields);
-        else if (query instanceof RegexQuery)
-        	extractTermsFromRegex((RegexQuery) query, terms, reader, includeFields);
+        else if (query instanceof RegexpQuery)
+        	extractTermsFromRegex((RegexpQuery) query, terms, reader, includeFields);
         else if (query instanceof FuzzyQuery)
             extractTermsFromFuzzy((FuzzyQuery) query, terms, reader, includeFields);
         else if (query instanceof PrefixQuery)
@@ -93,7 +154,7 @@ public class LuceneUtil {
         extractTerms(rewrite(query, reader), terms, reader, includeFields);
     }
 
-    private static void extractTermsFromRegex(RegexQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
+    private static void extractTermsFromRegex(RegexpQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
         extractTerms(rewrite(query, reader), terms, reader, includeFields);
     }
 
@@ -116,7 +177,7 @@ public class LuceneUtil {
     }
 
     private static Query rewrite(MultiTermQuery query, IndexReader reader) throws IOException {
-        query.setRewriteMethod(MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE);
+        query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_AUTO_REWRITE_DEFAULT);
         return query.rewrite(reader);
     }
 }

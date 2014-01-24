@@ -146,7 +146,7 @@ public interface Constants {
       "-", "*", "div", "mod", "idiv", "is", "isnot", "<<", ">>" };
     
     public final static String[] VOPS = 
-    { "lt", "gt", "ge", "lt", "eq", "ne" };    
+    { "lt", "gt", "ge", "le", "eq", "ne" };
 
     public final static int KEEP_UNION = 0;
     public final static int KEEP_INTER = 1;

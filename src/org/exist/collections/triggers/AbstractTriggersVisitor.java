@@ -28,12 +28,12 @@ import org.exist.storage.DBBroker;
  *
  * @author aretter
  */
-public abstract class AbstractTriggersVisitor<T extends Trigger, P extends AbstractTriggerProxies> implements TriggersVisitor {
+public abstract class AbstractTriggersVisitor<T extends Trigger> implements TriggersVisitor<T> {
     private final DBBroker broker;
-    private final P proxies;
+    private final AbstractTriggerProxies<T> proxies;
     private List<T> triggers;
     
-    public AbstractTriggersVisitor(DBBroker broker, P proxies) {
+    public AbstractTriggersVisitor(DBBroker broker, AbstractTriggerProxies<T> proxies) {
         this.broker = broker;
         this.proxies = proxies;
     }
@@ -41,7 +41,7 @@ public abstract class AbstractTriggersVisitor<T extends Trigger, P extends Abstr
     /**
      * lazy instantiated
      */
-    protected List<T> getTriggers() throws TriggerException {
+    public List<T> getTriggers() throws TriggerException {
         if(triggers == null) {
             triggers = proxies.instantiateTriggers(broker);
         }

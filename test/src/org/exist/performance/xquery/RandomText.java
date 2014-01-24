@@ -24,14 +24,14 @@ package org.exist.performance.xquery;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
+import org.exist.indexing.IndexWorker;
+import org.exist.indexing.OrderedValuesIndex;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class RandomText extends BasicFunction {
 
@@ -69,8 +69,13 @@ public class RandomText extends BasicFunction {
 		try {
 			MutableDocumentSet docs = new DefaultDocumentSet();
             docs = context.getBroker().getAllXMLResources(docs);
+            final IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName("lucene-index");
+
+            final Map options = new HashMap();
+            options.put(OrderedValuesIndex.START_VALUE, "");
+
             Occurrences[] occurrences =
-                    context.getBroker().getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(), null, null);
+                    indexWorker.scanIndex(context, docs, null, options);
             List<String> list = new ArrayList<String>();
             for (int i = 0; i < occurrences.length; i++) {
                 list.add(occurrences[i].getTerm().toString());

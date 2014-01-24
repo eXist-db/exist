@@ -64,7 +64,7 @@
                 <include name="*.jar"/>
             </lib>
             <!-- Include spatial jars, when available -->
-            <lib dir="extensions/indexes/spatial/lib">
+            <lib dir="extensions/indexes/spatial/lib" erroronmissingdir="false">
                 <include name="*.jar"/>
             </lib>
             <!-- Include xqdoc jar, needed for xquery function documentation -->
@@ -133,10 +133,7 @@
                 <exclude name="WEB-INF/expathrepo/**"/>
                 <exclude name="**/*.log*"/>
             </fileset>
-            <!-- Betterform -->
-            <zipfileset dir="extensions/betterform/main/xrx/"  prefix="betterform/samples/xrx">
-                <include name="**/*"/>
-            </zipfileset>
+
             <zipfileset dir="samples" prefix="samples">
                 <include name="**"/>
                 <exclude name="**/*~"/>
@@ -157,7 +154,7 @@
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
-                <attribute name="GIT-Revision" value="${git.commit}"/>
+                <attribute name="Git-Revision" value="${git.commit}"/>
             </manifest>
 
         </war>

@@ -1205,23 +1205,39 @@ public class Configuration implements ErrorHandler
     }
 
     private void configureStartup(final Element startup) {
+        // Retrieve <triggers>
         final NodeList nlTriggers = startup.getElementsByTagName("triggers");
+        
+        // If <triggers> exists
         if(nlTriggers != null && nlTriggers.getLength() > 0) {
+            // Get <triggers>
             final Element triggers = (Element)nlTriggers.item(0);
+            
+            // Get <trigger>
             final NodeList nlTrigger = triggers.getElementsByTagName("trigger");
+            
+            // If <trigger> exists and there are more than 0
             if(nlTrigger != null && nlTrigger.getLength() > 0) {
+                
+                // Initialize trigger configuration
+                List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
+                if(startupTriggers == null) {
+                    startupTriggers = new ArrayList<StartupTriggerConfig>();
+                    config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
+                }
+                
+                // Iterate over <trigger> elements
                 for(int i = 0; i < nlTrigger.getLength(); i++) {
-                    final Element trigger = (Element)nlTrigger.item(i);
-                    List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
-                    if(startupTriggers == null) {
-                        startupTriggers = new ArrayList<StartupTriggerConfig>();
-                        config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
-                    }
                     
+                    // Get <trigger> element
+                    final Element trigger = (Element)nlTrigger.item(i);
+                    
+                    // Get @class
                     final String startupTriggerClass = trigger.getAttribute("class");
                     
                     boolean isStartupTrigger = false;
                     try {
+                        // Verify if class is StartupTrigger
                         for(final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
                             if("org.exist.storage.StartupTrigger".equals(iface.getName())) {
                                 isStartupTrigger = true;
@@ -1229,13 +1245,22 @@ public class Configuration implements ErrorHandler
                             }
                         }
 
+                        // if it actually is a StartupTrigger
                         if(isStartupTrigger) {
-                            final Map<String, List<? extends Object>> params = ParametersExtractor.extract(trigger.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME));
+                            // Parse additional parameters
+                            final Map<String, List<? extends Object>> params 
+                                    = ParametersExtractor.extract(trigger.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME));
+                            
+                            // Register trigger
                             startupTriggers.add(new StartupTriggerConfig(startupTriggerClass, params));
-                            LOG.debug("Registered StartupTrigger: " + startupTriggerClass);
+                            
+                            // Done
+                            LOG.info("Registered StartupTrigger: " + startupTriggerClass);
+                            
                         } else {
                             LOG.warn("StartupTrigger: " + startupTriggerClass + " does not implement org.exist.storage.StartupTrigger. IGNORING!");
                         }
+                        
                     } catch(final ClassNotFoundException cnfe) {
                         LOG.error("Could not find StartupTrigger class: " + startupTriggerClass + ". " + cnfe.getMessage(), cnfe);
                     }

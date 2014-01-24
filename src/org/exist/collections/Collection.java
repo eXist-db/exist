@@ -1091,7 +1091,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 // reload the configuration.
                 useTriggers = false;
                 final CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-                confMgr.invalidateAll(getURI());
+                if (confMgr != null) {
+                    confMgr.invalidate(getURI());
+                }
             }
             
             DocumentTriggersVisitor triggersVisitor = null;
@@ -1415,7 +1417,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             final CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
             if(manager != null) {
                 try {
-                    manager.invalidateAll(getURI());
+                    manager.invalidate(getURI());
                     manager.loadConfiguration(broker, this);
                 } catch(final PermissionDeniedException pde) {
                     throw new EXistException(pde.getMessage(), pde);
@@ -1800,7 +1802,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     private void checkPermissionsForAddDocument(final DBBroker broker, final DocumentImpl oldDoc) throws LockException, PermissionDeniedException {
         
         // do we have execute permission on the collection?
-        if(!getPermissions().validate(broker.getSubject(), Permission.EXECUTE)) {
+        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.EXECUTE)) {
             throw new PermissionDeniedException("Execute permission is not granted on the Collection.");
         }
             
@@ -1824,7 +1826,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             
             /* create document */
             
-            if(!getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
+            if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
                 throw new PermissionDeniedException("Write permission is not granted on the Collection.");
             }
         }

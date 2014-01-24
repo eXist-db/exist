@@ -130,6 +130,7 @@
             <!--test fork="yes" name="xquery.xmlcalabash.XMLCalabashTests" todir="${junit.reports.dat}"/-->
             <!--test fork="yes" name="xquery.xproc.XProcTests" todir="${junit.reports.dat}"/-->
             <test fork="yes" name="xquery.xquery3.XQuery3Tests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="xquery.optimizer.OptimizerTests" todir="${junit.reports.dat}"/>
 
             <!--  //-->            
             <test fork="yes" name="org.exist.util.SortTests" todir="${junit.reports.dat}"/>
