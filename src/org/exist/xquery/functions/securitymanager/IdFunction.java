@@ -46,7 +46,7 @@ public class IdFunction extends BasicFunction {
         "and effective account details are returned, otherwise only the real " +
         "account details are returned.",
         null,
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "Example output when an XQuery is running setUid <id xmlns=\"http://exist-db.org/xquery/securitymanager\"><real><username>guest</username><groups><group>guest</group></groups><effective><username>admin</username><groups><group>dba</group></groups></effective></real></id>.")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "Example output when an XQuery is running setUid <id xmlns=\"http://exist-db.org/xquery/securitymanager\"><real><username>guest</username><groups><group>guest</group></groups></real><effective><username>admin</username><groups><group>dba</group></groups></effective></id>.")
     );
 
     public IdFunction(final XQueryContext context, final FunctionSignature signature) {
@@ -75,14 +75,14 @@ public class IdFunction extends BasicFunction {
         
         builder.startElement(new QName("real", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
         subjectToXml(builder, context.getRealUser());
-        
+        builder.endElement();
+
         if(context.getRealUser().getId() != context.getEffectiveUser().getId()) {
             builder.startElement(new QName("effective", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
             subjectToXml(builder, context.getEffectiveUser());
             builder.endElement();
         }
-            
-        builder.endElement();
+
         builder.endElement();
         
         builder.endDocument();
