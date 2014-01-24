@@ -21,7 +21,6 @@
  */
 package org.exist.storage;
 
-import junit.textui.TestRunner;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -36,16 +35,16 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.StringReader;
 
 public class RemoveTest extends AbstractUpdateTest {
-
-    public static void main(String[] args) {
-        TestRunner.run(RemoveTest.class);
-    }
     
-    public void testUpdate() {
+    @Test
+    public void update() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = null;        
         DBBroker broker = null;
