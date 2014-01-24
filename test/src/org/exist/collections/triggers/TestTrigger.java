@@ -83,14 +83,6 @@ public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
         }
     }
 
-    @Deprecated
-    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-    }
-
-    @Deprecated
-	public void finish(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl document) {
-	}
-	
 	private void addRecord(DBBroker broker, String xupdate) throws TriggerException {
         MutableDocumentSet docs = new DefaultDocumentSet();
         docs.add(doc);

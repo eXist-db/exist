@@ -87,7 +87,7 @@ public class ModuleContext extends XQueryContext {
 		parentContext.setModulesChanged();
 	}
 	
-	public void setParentContext(XQueryContext parentContext) {
+	private void setParentContext(XQueryContext parentContext) {
         this.parentContext = parentContext;
         //XXX: raise error on null!
         if (parentContext != null) {
@@ -142,9 +142,6 @@ public class ModuleContext extends XQueryContext {
             modules.remove(namespaceURI);   // unbind the module
         } else {
             modules.put(namespaceURI, module);
-            if (!module.isInternalModule() && module.isReady()) {
-                ((ModuleContext) ((ExternalModule) module).getContext()).setParentContext(parentContext);
-            }
         }
         setRootModule(namespaceURI, module);
     }

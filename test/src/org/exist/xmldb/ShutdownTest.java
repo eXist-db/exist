@@ -33,7 +33,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
- * Check if database shutdown/restart works properly. The test opens
+ * Check if database shutdownDB/restart works properly. The test opens
  * the database, stores a few files and queries them, then shuts down the
  * db.
  *  

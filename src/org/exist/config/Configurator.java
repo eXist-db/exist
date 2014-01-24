@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2008-2012 The eXist Project
+ *  Copyright (C) 2008-2013 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -72,7 +72,6 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ConfigurationHelper;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.FullXmldbURI;
@@ -247,6 +246,8 @@ public class Configurator {
                 final ConfigurationImpl impl = (ConfigurationImpl) config;
                 impl.configuredObjectReference = null;
             }
+        } finally {
+            config.clearCache();
         }
         //XXX: must be exception
         return null;
@@ -366,16 +367,24 @@ public class Configurator {
 //                return null; //XXX: throw configuration error
                 
             } catch (final IllegalAccessException iae) {
-                LOG.error("Security error: " + iae.getMessage(), iae);
-                return null; //XXX: throw configuration error
+                final String msg = "Security error: " + EOL
+                        + " config: " + configuration.getName() + EOL
+                        + " property: " + property + EOL
+                        + " message: " + iae.getMessage();
+                LOG.error(msg, iae);
+                throw new ConfigurationException(msg, iae);
+                
+//                LOG.error("Security error: " + iae.getMessage(), iae);
+//                return null; //XXX: throw configuration error
             }
         }
         
         //process simple structures: List
+        Field field = null;
         try {
             for (final AField<ConfigurationFieldAsElement> element : annotatedFields.getElements()) {
                 
-                final Field field = element.getField();
+                field = element.getField();
                 final Class<?> fieldType = field.getType();
                 
                 if (List.class == fieldType) {
@@ -534,12 +543,26 @@ public class Configurator {
             }
             
         } catch (final IllegalArgumentException iae) {
-            LOG.error(iae.getMessage(), iae);
-            return null;
+            final String msg = "Configuration error: " + EOL
+                    + " config: " + configuration.getName() + EOL
+                    + " field: " + field + EOL
+                    + " message: " + iae.getMessage();
+            LOG.error(msg, iae);
+            throw new ConfigurationException(msg, iae);
+            
+//            LOG.error(iae.getMessage(), iae);
+//            return null;
             
         } catch (final IllegalAccessException iae) {
-            LOG.error(iae.getMessage(), iae);
-            return null;
+            final String msg = "Security error: " + EOL
+                    + " config: " + configuration.getName() + EOL
+                    + " field: " + field + EOL
+                    + " message: " + iae.getMessage();
+            LOG.error(msg, iae);
+            throw new ConfigurationException(msg, iae);
+
+//            LOG.error(iae.getMessage(), iae);
+//            return null;
         }
 
         return configuration;

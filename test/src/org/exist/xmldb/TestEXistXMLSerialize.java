@@ -106,7 +106,7 @@ public class TestEXistXMLSerialize {
         CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
         cms.removeCollection(TEST_COLLECTION);
 
-        //shutdown the db
+        //shutdownDB the db
         DatabaseInstanceManager dim = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
     }

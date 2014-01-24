@@ -156,11 +156,15 @@ declare function indexes:show-index-keys() {
             if (util:index-type($indexes:node-set) eq 'xs:string') then 
                 util:index-keys($indexes:node-set, $indexes:start-value, $indexes:callback, $indexes:max-number-returned)
             else 
-                let $start-value := 
+                let $indexes:start-value := 
                     if (util:index-type($indexes:node-set) eq 'xs:double') then 
                         if ($indexes:start-value castable as xs:double) then xs:double($indexes:start-value) else xs:double(0)
                     else if (util:index-type($indexes:node-set) eq 'xs:float') then 
                         if ($indexes:start-value castable as xs:float) then xs:float($indexes:start-value) else xs:float(0)
+                    else if (util:index-type($indexes:node-set) eq 'xs:decimal') then 
+                        if ($indexes:start-value castable as xs:decimal) then xs:decimal($indexes:start-value) else xs:decimal(0)
+                    else if (util:index-type($indexes:node-set) eq 'xs:decimal') then 
+                        if ($indexes:start-value castable as xs:decimal) then xs:decimal($indexes:start-value) else xs:decimal(0)
                     else if (util:index-type($indexes:node-set) eq 'xs:boolean') then 
                         if ($indexes:start-value castable as xs:boolean) then xs:boolean($indexes:start-value) else xs:boolean(0)
                     else if (util:index-type($indexes:node-set) eq 'xs:dateTime') then 
@@ -170,7 +174,7 @@ declare function indexes:show-index-keys() {
                     else 
                         if ($indexes:start-value castable as xs:integer) then xs:integer($indexes:start-value) 
                     else 0
-                return util:index-keys($indexes:node-set, $start-value, $indexes:callback, $indexes:max-number-returned)
+                return util:index-keys($indexes:node-set, $indexes:start-value, $indexes:callback, $indexes:max-number-returned)
         (: all other indexes need to specify the index in the 5th parameter of util:index-keys() :)
         else
             if ($indexes:show-keys-by eq 'node') then

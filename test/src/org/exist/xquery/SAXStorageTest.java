@@ -170,7 +170,7 @@ public class SAXStorageTest extends TestCase {
 	
 	private static void shutdown(Collection collection) {
 		try {
-			//		shutdown the database gracefully
+			//		shutdownDB the database gracefully
 			DatabaseInstanceManager manager =
 				(DatabaseInstanceManager) collection.getService("DatabaseInstanceManager", "1.0");
 			manager.shutdown();

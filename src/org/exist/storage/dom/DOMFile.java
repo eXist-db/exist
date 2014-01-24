@@ -2134,12 +2134,8 @@ public class DOMFile extends BTree implements Lockable {
         return null;
     }
 
-    /**
-     * Get the active Lock object for this file.
-     * 
-     * @see org.exist.util.Lockable#getLock()
-     */
-    public final Lock getLock() {
+    @Override
+    public Lock getLock() {
         return lock;
     }
 

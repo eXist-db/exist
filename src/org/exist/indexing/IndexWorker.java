@@ -31,6 +31,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.NodeList;
 
@@ -202,7 +203,15 @@ public interface IndexWorker {
      * <li>the list of the documents in which the index entry is</li>
      * </ol> 
      */
-    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints);
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map<?,?> hints);
+
+    /**
+     * Returns a {@link QueryRewriter} to be called by the query optimizer.
+     *
+     * @param context the current XQuery context
+     * @return the query rewriter or null if the index does no rewriting
+     */
+    QueryRewriter getQueryRewriter(XQueryContext context);
 
     //TODO : a scanIndex() method that would return an unaggregated list of index entries ?
 

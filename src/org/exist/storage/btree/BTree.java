@@ -85,16 +85,16 @@ import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.journal.Loggable;
 import org.exist.storage.journal.Lsn;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
+import org.exist.util.Lockable;
 import org.exist.xquery.TerminatedException;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.text.NumberFormat;
+import java.util.*;
 
 /**
  *  A general purpose B+-tree which stores binary keys as instances of
@@ -108,7 +108,7 @@ import java.text.NumberFormat;
  *  Both, branch and leaf nodes are represented by the inner class 
  *  {@link org.exist.storage.btree.BTree.BTreeNode}.
  */
-public class BTree extends Paged {
+public class BTree extends Paged implements Lockable {
 
     protected final static Logger LOGSTATS = Logger.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
     
@@ -230,6 +230,15 @@ public class BTree extends Paged {
         cacheManager.deregisterCache(cache);
     }
 
+    /**
+     * Get the active Lock object for this file.
+     *
+     * @see org.exist.util.Lockable#getLock()
+     */
+    public Lock getLock() {
+        return null;
+    }
+
     protected void initCache() {
         cache = new BTreeCache(cacheManager.getDefaultInitialSize(), 1.5,
             0, CacheManager.BTREE_CACHE);
@@ -320,7 +329,7 @@ public class BTree extends Paged {
                 if (query.getOperator() != IndexQuery.NEQ && !test)
                     {return;}
                 if (test) {
-                    if (isTransactional && transaction != null) {
+                    if (isTransactional && transaction != null && nextPage.pageHeader.getStatus() == LEAF) {
                         final RemoveValueLoggable log = new RemoveValueLoggable(transaction, 
                             fileId, nextPage.page.getPageNum(), i, nextPage.keys[i], nextPage.ptrs[i]);
                         writeToLog(log, nextPage);
@@ -422,7 +431,7 @@ public class BTree extends Paged {
         try {
             final Page page = getFreePage(reuseDeleted);
             final BTreeNode node = new BTreeNode(page, true);
-            if (transaction != null && isTransactional) {
+            if (transaction != null && isTransactional && status == LEAF) {
                 final Loggable loggable = new CreateBTNodeLoggable(transaction, fileId, 
                     status, page.getPageNum(), parent != null ? parent.page.getPageNum() : Page.NO_PAGE);
                 writeToLog(loggable, node);
@@ -441,7 +450,7 @@ public class BTree extends Paged {
     /**
      * Read a node from the given page.
      * 
-     * @param page
+     * @param pageNum
      * @return The BTree node
      */
     private BTreeNode getBTreeNode(long pageNum) {
@@ -548,9 +557,10 @@ public class BTree extends Paged {
     protected void dumpValue(Writer writer, Value value, int status) throws IOException {
         final byte[] data = value.getData();
         writer.write('[');
-        for (int i = 0; i < data.length; i++) {
-            writer.write(Integer.toHexString(data[i]));
-        }
+        writer.write(Paged.hexDump(data));
+//        for (int i = 0; i < data.length; i++) {
+//            writer.write(Integer.toHexString(data[i]));
+//        }
         writer.write(']');
     }
 
@@ -566,6 +576,178 @@ public class BTree extends Paged {
                 node.scanRaw(query, callback);
             }
         }
+    }
+
+    protected static class TreeInfo {
+        long firstPage;
+        int leafPages = 0;
+
+        TreeInfo(long firstPage, int leafs) {
+            this.firstPage = firstPage;
+            this.leafPages = leafs;
+        }
+    }
+
+    /**
+     * Scan pages by walking through the file sequentially.
+     * Optionally remove all inner (branch) pages and return the first leaf page (in order).
+     * This method is used to rebuild the btree from the leaf pages.
+     *
+     * @return
+     * @throws IOException
+     * @throws TerminatedException
+     * @throws DBException
+     */
+    private TreeInfo scanTree(boolean removeBranches) throws IOException, TerminatedException, DBException {
+        final Set<Long> pagePointers = new HashSet<Long>();
+        final Set<Long> nextPages = new HashSet<Long>();
+        final List<Long> branchPages = new ArrayList<Long>();
+
+        int pageCount = 0;
+        final long pages = getFileHeader().getTotalCount();
+        for (long i = 0; i < pages; i++) {
+            Page page;
+            // first check if page is in cache. if yes, use it.
+            BTreeNode node = (BTreeNode) cache.get(i);
+            if (node != null) {
+                page = node.page;
+            } else {
+                page = getPage(i);
+                page.read();
+            }
+            if (page.getPageHeader().getStatus() == LEAF) {
+                pageCount++;
+                if (node == null) {
+                    node = new BTreeNode(page, false);
+                    node.read();
+                }
+                cache.add(node);
+                pagePointers.add(node.page.getPageNum());
+                if (node.pageHeader.getNextPage() != Page.NO_PAGE) {
+                    nextPages.add(node.pageHeader.getNextPage());
+                }
+            } else if (page.getPageHeader().getStatus() == BRANCH) {
+                branchPages.add(page.getPageNum());
+            }
+        }
+        pagePointers.removeAll(nextPages);
+        if (pagePointers.size() > 1) {
+            for (long pointer: pagePointers) {
+                System.out.println("Start page: " + pointer);
+            }
+            throw new DBException("More than one start page found for btree");
+        }
+        if (removeBranches) {
+            for (long p : branchPages) {
+                Page page = getPage(p);
+                page.read();
+                BTreeNode node = new BTreeNode(page, false);
+                node.read();
+                cache.remove(node);
+                unlinkPages(page);
+                page.getPageHeader().setDirty(true);
+            }
+        }
+        return new TreeInfo(pagePointers.iterator().next(), pageCount);
+    }
+
+    public void scanSequential(long pageNum, BTreeCallback callback) throws IOException, TerminatedException {
+        while (pageNum != Page.NO_PAGE) {
+            System.out.print(pageNum + " ");
+            final BTreeNode node = getBTreeNode(pageNum);
+            node.scanRaw(null, callback);
+            pageNum = node.pageHeader.getNextPage();
+        }
+        System.out.println();
+    }
+
+    public void scanSequential() throws TerminatedException, IOException, DBException {
+        TreeInfo info = scanTree(false);
+        System.out.println("Sequential scan...");
+        scanSequential(info.firstPage, new BTreeCallback() {
+            @Override
+            public boolean indexInfo(Value value, long pointer) throws TerminatedException {
+                return true;
+            }
+        });
+    }
+
+    /**
+     * Rebuild the btree: removes all branches and rebuilds the tree by scanning
+     * through leaf pages.
+     *
+     * @throws TerminatedException
+     * @throws IOException
+     * @throws DBException
+     */
+    public void rebuild() throws TerminatedException, IOException, DBException {
+        TreeInfo info  = scanTree(true);
+        if (info.leafPages == 1) {
+            BTreeNode root = getBTreeNode(info.firstPage);
+            setRootNode(root);
+            cache.add(root);
+        } else {
+            // create a new root node
+            final BTreeNode root = createBTreeNode(null, BRANCH, null, false);
+            setRootNode(root);
+            // insert a pointer to the first page into the root
+            BTreeNode node = getBTreeNode(info.firstPage);
+            root.insertPointer(info.firstPage, 0);
+            cache.add(root);
+            node.setParent(root);
+            node.saved = false;
+            cache.add(node);
+
+            // scan through chain of pages and add them to the tree
+            long rightPageNum = node.pageHeader.getNextPage();
+            while (rightPageNum != Page.NO_PAGE) {
+
+                node = getBTreeNode(rightPageNum);
+
+                rightPageNum = node.pageHeader.getNextPage();
+
+                // promote first key of page to parent
+                if (node.nKeys < 1) {
+    //                throw new IOException("No keys found in page " + node.page.getPageNum());
+                    continue;
+                }
+                final Value key = node.keys[0];
+                final BTreeNode parent = findParent(key);
+                if (parent == null) {
+                    throw new IOException("Parent is null for page " + node.page.getPageNum());
+                }
+                if (parent.pageHeader.getStatus() != BRANCH) {
+                    throw new IOException("Not a branch page: " + parent.page.getPageNum());
+                }
+
+                parent.promoteValue(null, key, node);
+            }
+        }
+    }
+
+    /**
+     * Walk the tree to find the parent page to which key should
+     * be promoted.
+     *
+     * @param key
+     * @return
+     * @throws IOException
+     */
+    private BTreeNode findParent(Value key) throws IOException {
+        BTreeNode node = getRootNode();
+        BTreeNode last = node;
+        while (node.pageHeader.getStatus() != LEAF) {
+            last = node;
+            try {
+                int idx = node.searchKey(key);
+                idx = idx < 0 ? - (idx + 1) : idx + 1;
+                node = node.getChildNode(idx);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new IOException("Error while scanning page " + node.page.getPageNum());
+            }
+        }
+        return last;
     }
 
     /* -------------------------------------------------------------------------
@@ -1284,18 +1466,8 @@ public class BTree extends Paged {
                 throws IOException, BTreeException {
             int idx = searchKey(value);
             idx = idx < 0 ? -( idx + 1) : idx + 1;
-            if (transaction != null && isTransactional) {
-                final InsertValueLoggable loggable = new InsertValueLoggable(transaction,
-                    fileId, page.getPageNum(), idx, value, idx + 1, rightNode.page.getPageNum());
-                writeToLog(loggable, this);
-            }
             insertKey(value, idx);
             insertPointer(rightNode.page.getPageNum(), idx + 1);
-            if (transaction != null && isTransactional) {
-                final Loggable log = new SetParentLoggable(transaction, fileId, 
-                    rightNode.page.getPageNum(), page.getPageNum());
-                writeToLog(log, rightNode);
-            }
             rightNode.setParent(this);
             rightNode.saved = false;
             cache.add(rightNode);
@@ -1358,7 +1530,7 @@ public class BTree extends Paged {
                     throw new BTreeException("Invalid Page Type In split");
             }
             // Log the update of the current page
-            if (transaction != null && isTransactional) {
+            if (transaction != null && isTransactional && pageHeader.getStatus() == LEAF) {
                 final Loggable log = new UpdatePageLoggable(transaction, fileId,
                     page.getPageNum(), prefix, leftVals, leftVals.length, leftPtrs, leftPtrs.length);
                 writeToLog(log, this);
@@ -1372,7 +1544,7 @@ public class BTree extends Paged {
                 // This can only happen if this is the root
                 parent = createBTreeNode(transaction, BRANCH, null, false);
                 // Log change of the parent page
-                if (transaction != null && isTransactional) {
+                if (transaction != null && isTransactional && pageHeader.getStatus() == LEAF) {
                     final Loggable log = new SetParentLoggable(transaction, fileId, page.getPageNum(), 
                         parent.page.getPageNum());
                     writeToLog(log, this);
@@ -1394,7 +1566,7 @@ public class BTree extends Paged {
                     pageHeader.setNextPage(rNode.page.getPageNum());
                 }
                 // Log update of the right node
-                if (isTransactional && transaction != null) {
+                if (isTransactional && transaction != null && pageHeader.getStatus() == LEAF) {
                     final Loggable log = new UpdatePageLoggable(transaction, fileId,
                         rNode.page.getPageNum(), rNode.prefix, rNode.keys, rNode.nKeys, rightPtrs, rightPtrs.length);
                     writeToLog(log, rNode);
@@ -1403,13 +1575,6 @@ public class BTree extends Paged {
                 parent.prefix = separator;
                 parent.setValues(new Value[] { Value.EMPTY_VALUE });
                 parent.setPointers(new long[] { page.getPageNum(), rNode.page.getPageNum()});
-                // Log update of the parent node
-                if (isTransactional && transaction != null) {
-                    final Loggable log = new UpdatePageLoggable(transaction, fileId, 
-                        parent.page.getPageNum(), parent.prefix, parent.keys, 
-                        parent.keys.length, parent.ptrs, parent.ptrs.length);
-                    writeToLog(log, parent);
-                }
                 parent.recalculateDataLen();
                 cache.add(parent);
                 setRootNode(parent);
@@ -1439,7 +1604,7 @@ public class BTree extends Paged {
                     pageHeader.setNextPage(rNode.page.getPageNum());
                 }
                 // Log update of the right node
-                if (isTransactional && transaction != null) {
+                if (isTransactional && transaction != null && pageHeader.getStatus() == LEAF) {
                     final Loggable log = new UpdatePageLoggable(transaction, fileId, 
                         rNode.page.getPageNum(), rNode.prefix, rNode.keys,
                         rNode.nKeys, rightPtrs, rightPtrs.length);
@@ -1465,11 +1630,6 @@ public class BTree extends Paged {
             if (pageHeader.getStatus() == BRANCH) {
                 for (int i = 0; i < nPtrs; i++) {
                     final BTreeNode node = getBTreeNode(ptrs[i]);
-                    if (transaction != null && isTransactional) {
-                        final Loggable log = new SetParentLoggable(transaction, fileId, 
-                            node.page.getPageNum(), page.getPageNum());
-                        writeToLog(log, node);
-                    }
                     node.setParent(this);
                     cache.add(node);
                 }
@@ -1525,6 +1685,8 @@ public class BTree extends Paged {
          * Prints out a debug view of the node to the given writer.
          */
         private void dump(Writer writer) throws IOException, BTreeException {
+            //if (pageHeader.getStatus() == LEAF)
+            //    return;
             if (page.getPageNum() == fileHeader.getRootPage())
                 {writer.write("ROOT: ");}
             writer.write(page.getPageNum() + ": ");
@@ -1867,7 +2029,7 @@ public class BTree extends Paged {
 
         protected void scanRaw(IndexQuery query, BTreeCallback callback) throws TerminatedException {
             for (int i = 0; i < nKeys; i++) {
-                if (query.testValue(keys[i]))
+                if (query == null || query.testValue(keys[i]))
                     {callback.indexInfo(keys[i], ptrs[i]);}
             }
         }

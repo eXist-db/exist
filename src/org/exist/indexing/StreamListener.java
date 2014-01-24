@@ -112,13 +112,4 @@ public interface StreamListener {
      * @param path the current node path
      */
     void endElement(Txn transaction, ElementImpl element, NodePath path);
-
-    /**
-     * Processed none xml data associated with document.
-     *
-     * @param transaction the current transaction
-     * @param key
-     * @param value
-     */
-    void metadata(Txn transaction, String key, Object value);
 }

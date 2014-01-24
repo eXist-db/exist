@@ -310,7 +310,7 @@ public class ValidationFunctions_XSD_Test {
 //        DatabaseManager.deregisterDatabase(database);
 //        DatabaseInstanceManager dim =
 //            (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-//        dim.shutdown();
+//        dim.shutdownDB();
 //
 //    }
     

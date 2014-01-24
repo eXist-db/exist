@@ -24,8 +24,8 @@ import java.util.Map;
 
 public class InspectModule extends BasicFunction {
 
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
+    
+        public final static FunctionSignature FNS_INSPECT_MODULE = new FunctionSignature(
             new QName("inspect-module", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
             "Compiles a module from source (without importing it) and returns an XML fragment describing the " +
             "module and the functions/variables contained in it.",
@@ -34,8 +34,10 @@ public class InspectModule extends BasicFunction {
                         "The location URI of the module to inspect"),
             },
             new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE,
-                "An XML fragment describing the module and all functions contained in it.")),
-        new FunctionSignature(
+                "An XML fragment describing the module and all functions contained in it.")
+        );
+        
+        public final static FunctionSignature FNS_INSPECT_MODULE_URI = new FunctionSignature(
             new QName("inspect-module-uri", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
             "Returns an XML fragment describing the " +
             "module identified by the given URI and the functions/variables contained in it.",
@@ -44,8 +46,9 @@ public class InspectModule extends BasicFunction {
                     "The location URI of the module to inspect"),
             },
             new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE,
-                "An XML fragment describing the module and all functions contained in it.")),
-    };
+                "An XML fragment describing the module and all functions contained in it.")
+        );
+    
 
     private static final QName MODULE_QNAME = new QName("module");
     private static final QName VARIABLE_QNAME = new QName("variable");

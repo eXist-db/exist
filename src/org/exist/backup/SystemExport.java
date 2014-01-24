@@ -377,7 +377,7 @@ public class SystemExport
             final SAXSerializer serializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
             serializer.setOutput( contents, contentsOutputProps );
 
-            final Permission perm = current.getPermissions();
+            final Permission perm = current.getPermissionsNoLock();
             
             serializer.startDocument();
             serializer.startPrefixMapping( "", Namespaces.EXIST_NS );

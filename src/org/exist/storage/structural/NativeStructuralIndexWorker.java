@@ -5,6 +5,7 @@ import org.exist.dom.*;
 import org.exist.indexing.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.*;
+import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
@@ -504,6 +505,15 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
         return new Occurrences[0];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public QueryRewriter getQueryRewriter(XQueryContext context) {
+        return null;
+    }
+
+    public BTree getStorage() {
+        return index.btree;
     }
 
     private void addNode(QName qname, NodeProxy proxy) {

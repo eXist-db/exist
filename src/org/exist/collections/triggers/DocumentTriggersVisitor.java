@@ -39,7 +39,7 @@ import org.xml.sax.ext.LexicalHandler;
  *
  * @author aretter
  */
-public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTrigger, DocumentTriggerProxies> implements DocumentTrigger {
+public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTrigger> implements DocumentTrigger {
 
     protected Logger LOG = Logger.getLogger(getClass());
     
@@ -47,28 +47,9 @@ public class DocumentTriggersVisitor extends AbstractTriggersVisitor<DocumentTri
         super(broker, proxies);
     }
     
-    
     @Override
     public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
         //ignore triggers are already configured by this stage!
-    }
-
-    @Override
-    public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-        for(final DocumentTrigger trigger : getTriggers()) {
-            trigger.prepare(event, broker, txn, documentPath, existingDocument);
-        }
-    }
-
-    @Override
-    public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
-        try {
-            for(final DocumentTrigger trigger : getTriggers()) {
-                trigger.finish(event, broker, txn, documentPath, document);
-            }
-        } catch (final TriggerException te) {
-            LOG.error(te.getMessage(), te);
-        }
     }
 
     @Override

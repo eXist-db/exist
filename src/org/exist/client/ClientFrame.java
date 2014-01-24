@@ -942,6 +942,13 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                             return;
                         }
                     }
+                    
+                    try {
+                        removeRootCollection.close();
+                    } catch (final XMLDBException e) {
+                        showErrorMessage(e.getMessage(), e);
+                    }
+                    
                     try {
                         client.getResources();
                     } catch (final XMLDBException e) {

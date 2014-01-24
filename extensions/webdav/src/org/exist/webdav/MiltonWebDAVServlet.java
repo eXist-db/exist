@@ -24,11 +24,14 @@ package org.exist.webdav;
 
 import com.bradmcevoy.http.MiltonServlet;
 import com.bradmcevoy.http.http11.DefaultHttp11ResponseHandler;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -83,6 +86,6 @@ public class MiltonWebDAVServlet extends MiltonServlet {
         // Pass value to Milton
         httpManager.setEnableExpectContinue(enableExpectContinue);
         
-        LOG.debug("Set 'Enable Expect Continue' to " + enableExpectContinue);
+        LOG.debug(String.format("Set 'Enable Expect Continue' to %s", enableExpectContinue));
     }
 }

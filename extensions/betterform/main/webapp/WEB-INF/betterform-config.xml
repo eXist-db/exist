@@ -1,16 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
   ~ Copyright (c) 2012. betterFORM Project - http://www.betterform.de
   ~ Licensed under the terms of BSD License
-  --><!-- $Id: betterform-config.xml 3274 2008-07-16 17:01:30Z lasse $ --><betterform-config>
+  -->
+
+<!-- $Id: betterform-config.xml 3274 2008-07-16 17:01:30Z lasse $ -->
+<betterform-config>
 
     <properties>
-        <property name="xforms.schema" value="XFormsDatatypes11.xsd" description="XForms Schema holding Simple Type Declarations"/>
+        <property name="xforms.schema" value="XFormsDatatypes11.xsd"
+                  description="XForms Schema holding Simple Type Declarations"/>
 
-        <property name="initLogging" value="false" description="'true' if logging should be initialized by betterform, false otherwise"/>
+        <property name="initLogging" value="true" description="'true' if logging should be initialized by betterform, false otherwise"/>
 
-        <property name="log4j.file" value="WEB-INF/log4j.xml" description="the location of the log4j configuration file relative to context"/>
+        <property name="log4j.file" value="WEB-INF/log4j.xml"
+                  description="the location of the log4j configuration file relative to context"/>
 
-        <property name="defaultRequestEncoding" value="UTF-8" description="The character encoding to use for the Request if none was set"/>
+        <property name="defaultRequestEncoding" value="UTF-8"
+                  description="The character encoding to use for the Request if none was set"/>
 
         <property name="uploadDir" value="upload" description="the name of the upload directory relative to context"/>
 
@@ -24,9 +31,11 @@
                   description="optional parameter - 'local' or 'remote' operation of betterForm XForms Processor"/>
 -->
 
-        <property name="forms.uri.relative" value="false" description="use relative pathes for resources in generated UI"/>
+        <property name="forms.uri.relative" value="false"
+                  description="use relative pathes for resources in generated UI"/>
 
-        <property name="filter.ignoreResponseBody" value="false" description="if 'true' XFormsFilter will not check reponse body for XForms markup"/>
+        <property name="filter.ignoreResponseBody" value="false"
+                  description="if 'true' XFormsFilter will not check reponse body for XForms markup"/>
 
         <!--
                    Language selection rules at runtime:
@@ -46,7 +55,10 @@
                 text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,* /*;q=0.5
                 image/png,* /*;q=0.5
         -->
-        <property name="acceptContentTypePattern" value="application/xhtml\+html" description="Based on this property, the XFormsFilter decide if should start XForms processing. Value                              can be 'all_xml' (WebFactory.ALL_XML_TYPES) to accept all xml content types or a reg                              expression to allow only certain ones."/>
+        <property name="acceptContentTypePattern" value="application/xhtml\+html"
+                  description="Based on this property, the XFormsFilter decide if should start XForms processing. Value
+                             can be 'all_xml' (WebFactory.ALL_XML_TYPES) to accept all xml content types or a reg
+                             expression to allow only certain ones."/>
 
         <!--
             This property allows to switch the stylesheet compilation on.
@@ -134,9 +146,12 @@
 
     <error-messages>
         <!--todo: i18n structure for messages-->
-        <message id="default" value="We're sorry. An unexpected Error occured." description="Default message. Shouldn't be deleted"/>
+        <message id="default"
+                 value="We're sorry. An unexpected Error occured."
+                 description="Default message. Shouldn't be deleted"/>
 
-        <message id="session-invalid" value="Sorry your session expired. Press Reload to start over."/>
+        <message id="session-invalid"
+                 value="Sorry your session expired. Press Reload to start over."/>
     </error-messages>
 
     <!--
@@ -145,9 +160,13 @@
         entities and resolve these to the associated filenames.
     -->
     <useragents>
-        <useragent name="html" processor="de.betterform.agent.web.servlet.PlainHtmlProcessor" description="request/response-oriented XForms processor without any JavaScript">
+        <useragent name="html"
+                   processor="de.betterform.agent.web.servlet.PlainHtmlProcessor"
+                   description="request/response-oriented XForms processor without any JavaScript">
         </useragent>
-        <useragent name="dojo" processor="de.betterform.agent.web.flux.FluxProcessor" description="AJAX-enabled useragent with packed resources for production environments">
+        <useragent name="dojo"
+                   processor="de.betterform.agent.web.flux.FluxProcessor"
+                   description="AJAX-enabled useragent with packed resources for production environments">
         </useragent>
 
     </useragents>

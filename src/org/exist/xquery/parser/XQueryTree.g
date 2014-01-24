@@ -2714,15 +2714,27 @@ throws PermissionDeniedException, EXistException, XPathException
 		
 		qnameExpr=expr [qnamePathExpr]
 		(
-			#( prefix:COMP_NS_CONSTRUCTOR uri:STRING_LITERAL )
-			{
-				c.addNamespaceDecl(prefix.getText(), uri.getText());
-			}
-			|
 			{ elementContent = new PathExpr(context); }
 			contentExpr=expr[elementContent]
 			{ construct.addPath(elementContent); }
 		)*
+	)
+	|
+	#(
+		qns:COMP_NS_CONSTRUCTOR
+		{ 
+			NamespaceConstructor c = new NamespaceConstructor(context);
+			c.setASTNode(qns);
+			step = c;
+			PathExpr qnamePathExpr = new PathExpr(context); 
+			c.setNameExpr(qnamePathExpr);
+            elementContent = new PathExpr(context);
+            c.setContentExpr(elementContent);
+		}
+		qnameExpr=expr [qnamePathExpr]
+        (
+            contentExpr=expr [elementContent]
+        )?
 	)
 	|
 	#(
