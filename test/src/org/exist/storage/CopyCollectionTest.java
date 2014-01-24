@@ -22,10 +22,6 @@
 package org.exist.storage;
 
 import java.io.File;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
@@ -37,18 +33,39 @@ import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 
-public class CopyCollectionTest extends TestCase {
+public class CopyCollectionTest {
 
-    public static void main(String[] args) {
-        TestRunner.run(CopyCollectionTest.class);
+    @Test
+    public void storeAndRead() {
+        store();
+        tearDown();
+        read();
     }
-    
-    public void testStore() {
+
+    @Test
+    public void storeAndReadAborted() {
+        storeAborted();
+        tearDown();
+        readAborted();
+    }
+
+    @Test
+    public void storeAndReadXmldb() {
+        xmldbStore();
+        tearDown();
+        xmldbRead();
+    }
+
+    private void store() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
         DBBroker broker = null;
@@ -87,8 +104,8 @@ public class CopyCollectionTest extends TestCase {
             pool.release(broker);
         }
     }
-    
-    public void testRead() {
+
+    private void read() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         DBBroker broker = null;
@@ -115,8 +132,8 @@ public class CopyCollectionTest extends TestCase {
             if (pool != null) pool.release(broker);
         }
     }
-    
-    public void testStoreAborted() {
+
+    private void storeAborted() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = null;
 
@@ -168,8 +185,8 @@ public class CopyCollectionTest extends TestCase {
             if (pool != null) pool.release(broker);
         }
     }
-    
-    public void testReadAborted() {
+
+    private void readAborted() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         DBBroker broker = null;
@@ -192,8 +209,8 @@ public class CopyCollectionTest extends TestCase {
             pool.release(broker);
         }
     }
-    
-    public void testXMLDBStore() {
+
+    private void xmldbStore() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         try {
@@ -232,8 +249,8 @@ public class CopyCollectionTest extends TestCase {
 	        fail(e.getMessage()); 
 	    }
     }
-    
-    public void testXMLDBRead() {    	
+
+    private void xmldbRead() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         
@@ -274,7 +291,8 @@ public class CopyCollectionTest extends TestCase {
         return null;
     }
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
     }
 }

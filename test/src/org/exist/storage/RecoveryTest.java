@@ -25,10 +25,6 @@ import java.io.InputStream;
 import java.io.File;
 import java.io.StringWriter;
 import java.io.Writer;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
@@ -47,6 +43,11 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import org.junit.After;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -56,11 +57,7 @@ import org.xml.sax.SAXException;
  * @author wolf
  *
  */
-public class RecoveryTest extends TestCase {
-    
-    public static void main(String[] args) {
-        TestRunner.run(RecoveryTest.class);
-    }
+public class RecoveryTest {
     
     private static String directory = "samples/shakespeare";
     
@@ -77,8 +74,15 @@ public class RecoveryTest extends TestCase {
         "  <title>Hello</title>" +
         "  <para>Hello World!</para>" +
         "</test>";
-    
-    public void testStore() {
+
+    @Test
+    public void storeAndRead() {
+        store();
+        tearDown();
+        read();
+    }
+
+    private void store() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = null;        
         DBBroker broker = null;
@@ -158,11 +162,11 @@ public class RecoveryTest extends TestCase {
             transact.getJournal().flushToLog(true);
             System.out.println("Transaction interrupted ...");
             
-            DOMFile domDb = ((NativeBroker)broker).getDOMFile();
-            assertNotNull(domDb);
-            Writer writer = new StringWriter();
-            domDb.dump(writer);
-            System.out.println(writer.toString());
+            //DOMFile domDb = ((NativeBroker)broker).getDOMFile();
+            //assertNotNull(domDb);
+            //Writer writer = new StringWriter();
+            //domDb.dump(writer);
+            //System.out.println(writer.toString());
 	    } catch (Exception e) {            
 	        fail(e.getMessage());
 	        e.printStackTrace();
@@ -170,8 +174,8 @@ public class RecoveryTest extends TestCase {
         	if (pool != null) pool.release(broker);
         }
     }
-    
-    public void testRead() {
+
+    private void read() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         DBBroker broker = null;           
@@ -190,14 +194,14 @@ public class RecoveryTest extends TestCase {
             assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
-            System.out.println(data);
+            //System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), Lock.READ_LOCK);
             assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
             data = serializer.serialize(doc);
             assertNotNull(data);
-            System.out.println(data);            
+            //System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             File files[] = dir.listFiles();
@@ -213,7 +217,8 @@ public class RecoveryTest extends TestCase {
             System.out.println("Found: " + seq.getItemCount());
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
-                System.out.println(serializer.serialize((NodeValue) next));
+                String value = serializer.serialize((NodeValue) next);
+                //System.out.println(value);
             }
             
             BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
@@ -230,7 +235,7 @@ public class RecoveryTest extends TestCase {
             assertNotNull(domDb);
             Writer writer = new StringWriter();
             domDb.dump(writer);
-            System.out.println(writer.toString());
+            //System.out.println(writer.toString());
             
             transact = pool.getTransactionManager();
             assertNotNull(transact);
@@ -267,7 +272,8 @@ public class RecoveryTest extends TestCase {
         return null;
     }
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
     }
 }

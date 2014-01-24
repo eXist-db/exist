@@ -50,7 +50,7 @@ public class DOMTest {
 	 * - Storing XML resource from XML string
 	 * - simple XQuery
 	 * - removing resource
-	 * - shutdown with the DatabaseInstanceManager
+	 * - shutdownDB with the DatabaseInstanceManager
 	 */
 	public void runTest1() {
 		try {

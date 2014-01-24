@@ -50,7 +50,7 @@ public class NodePathTest {
     }
 
     @Test
-    public void testWildcards() {
+    public void wildcards() {
         NodePath path = new NodePath(null, "/a//c", false);
 
         assertTrue(path.match(new NodePath(null, "/a/b/c")));

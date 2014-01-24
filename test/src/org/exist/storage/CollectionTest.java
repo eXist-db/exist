@@ -25,9 +25,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.btree.BTree;
@@ -35,12 +32,16 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * @author wolf
  *
  */
-public class CollectionTest extends TestCase {
+public class CollectionTest {
 
     @SuppressWarnings("unused")
 	private static String docs[] = { "hamlet.xml", "r_and_j.xml", "macbeth.xml" };
@@ -54,12 +55,9 @@ public class CollectionTest extends TestCase {
         "  <title>Hello</title>" +
         "  <para>Hello World!</para>" +
         "</test>";
-    
-    public static void main(String[] args) {
-        TestRunner.run(CollectionTest.class);
-    }
 
-    public void testStoreRead() {
+    @Test
+    public void storeRead() {
         store();
         BrokerPool.stopAll(false);
         read();
@@ -134,11 +132,8 @@ public class CollectionTest extends TestCase {
         return null;
     }
 
-    protected void tearDown() {
-    	try {
-	        BrokerPool.stopAll(false);
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }
+    @After
+    public void tearDown() {
+        BrokerPool.stopAll(false);
     }
 }
