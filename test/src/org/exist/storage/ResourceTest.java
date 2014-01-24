@@ -23,8 +23,6 @@
 package org.exist.storage;
 
 import java.io.InputStream;
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
@@ -34,6 +32,11 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
+import org.junit.After;
+import org.junit.Test;
+
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
 
 /**
  *  0 byte binary files cannot be retrieved from database. This test
@@ -41,16 +44,11 @@ import org.exist.xmldb.XmldbURI;
  *
  * @author wessels
  */
-public class ResourceTest extends TestCase {
+public class ResourceTest {
     
     private static String EMPTY_BINARY_FILE="";
     private static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
-    
-    
-    public static void main(String[] args) {
-        TestRunner.run(ResourceTest.class);
-    }
-    
+
     protected BrokerPool startDB() {
         try {
             Configuration config = new Configuration();
@@ -61,16 +59,20 @@ public class ResourceTest extends TestCase {
         }
         return null;
     }
-    
-    protected void tearDown() {
-        try {
-            BrokerPool.stopAll(false);
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+
+    @After
+    public void tearDown() {
+        BrokerPool.stopAll(false);
     }
-    
-    public void testStore() {
+
+    @Test
+    public void storeAndRead() {
+        store();
+        tearDown();
+        read();
+    }
+
+    private void store() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
         DBBroker broker = null;
@@ -100,8 +102,8 @@ public class ResourceTest extends TestCase {
             pool.release(broker);
         }
     }
-    
-    public void testRead() {
+
+    private void read() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
         
@@ -153,12 +155,14 @@ public class ResourceTest extends TestCase {
         
         assertEquals(0, data.length);
     }
-    
-    public void testStore2() {
-    	testStore();
+
+    @Test
+    public void store2() {
+    	store();
     }
-    
-    public void testRemoveCollection() {
+
+    @Test
+    public void removeCollection() {
     	BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDB();
         

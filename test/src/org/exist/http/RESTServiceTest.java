@@ -161,7 +161,7 @@ public class RESTServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        //Don't worry about closing the server : the shutdown hook will do the job
+        //Don't worry about closing the server : the shutdownDB hook will do the job
         if (server == null) {
             server = new JettyStart();
             System.out.println("Starting standalone server...");
