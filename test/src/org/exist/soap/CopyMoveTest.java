@@ -46,7 +46,7 @@ public class CopyMoveTest extends TestCase {
             rex.printStackTrace();
         }
         
-        //mn.shutdown();
+        //mn.shutdownDB();
     }
     
     private void setupTestCollection() throws RemoteException {
