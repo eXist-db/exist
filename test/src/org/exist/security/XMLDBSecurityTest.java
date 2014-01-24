@@ -494,7 +494,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
         final String xquery = "<xquery>{ 1 + 1 }</xquery>";
-        Resource xqueryResource = test.createResource("test.xquery", "BinaryResource");
+        Resource xqueryResource = test.createResource("test.xquery", BinaryResource.RESOURCE_TYPE);
         xqueryResource.setContent(xquery);
         test.storeResource(xqueryResource);
         
@@ -526,7 +526,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
         final String xquery = "<xquery>{ 1 + 2 }</xquery>";
-        Resource xqueryResource = test.createResource("test.xquery", "BinaryResource");
+        Resource xqueryResource = test.createResource("test.xquery", BinaryResource.RESOURCE_TYPE);
         xqueryResource.setContent(xquery);
         test.storeResource(xqueryResource);
         
@@ -550,7 +550,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
         
         final String xquery = "<xquery>{ 1 + 2 }</xquery>";
-        Resource xqueryResource = test.createResource("test.xquery", "BinaryResource");
+        Resource xqueryResource = test.createResource("test.xquery", BinaryResource.RESOURCE_TYPE);
         xqueryResource.setContent(xquery);
         test.storeResource(xqueryResource);
         

@@ -1106,20 +1106,22 @@ public class NativeBroker extends DBBroker {
 
     private Collection doCopyCollection(final Txn transaction, final Collection collection, final Collection destination, XmldbURI newName) throws PermissionDeniedException, IOException, EXistException, TriggerException, LockException {
         
-        if(newName == null)
-            {newName = collection.getURI().lastSegment();}
-
+        if(newName == null) {
+            newName = collection.getURI().lastSegment();
+        }
         newName = destination.getURI().append(newName);
         
-        if (LOG.isDebugEnabled())
-        	{LOG.debug("Copying collection to '" + newName + "'");}
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Copying collection to '" + newName + "'");
+        }
         
         final Collection destCollection = getOrCreateCollection(transaction, newName);
         for(final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
             final DocumentImpl child = i.next();
 
-            if (LOG.isDebugEnabled())
-            	{LOG.debug("Copying resource: '" + child.getURI() + "'");}
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Copying resource: '" + child.getURI() + "'");
+            }
             
             final XmldbURI newUri = destCollection.getURI().append(child.getFileURI());
             pool.getDocumentTrigger().beforeCopyDocument(this, transaction, child, newUri);
