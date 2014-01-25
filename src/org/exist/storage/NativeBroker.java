@@ -776,6 +776,11 @@ public class NativeBroker extends DBBroker {
                         }
             	        
                         sub = new Collection(this, path);
+
+                        //inherit the group to the sub-collection if current collection is setGid
+                        if(current.getPermissions().isSetGid()) {
+                            sub.getPermissions().setGroup(current.getPermissions().getGroup());
+                        }
 			
                         sub.setId(getNextCollectionId(transaction));
                         
