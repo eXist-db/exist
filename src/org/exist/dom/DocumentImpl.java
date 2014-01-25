@@ -25,11 +25,8 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.numbering.NodeId;
-import org.exist.security.Permission;
-import org.exist.security.PermissionFactory;
-import org.exist.security.UnixStylePermission;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.Account;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -64,7 +61,6 @@ import org.w3c.dom.UserDataHandler;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
-import org.exist.security.ACLPermission;
 
 /**
  *  Represents a persistent document object in the database;
@@ -129,6 +125,15 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
 
         // the permissions assigned to this document
         this.permissions = PermissionFactory.getDefaultResourcePermission();
+
+        //inherit the group to the resource if current collection is setGid
+        if(collection != null && collection.getPermissions().isSetGid()) {
+            try {
+                this.permissions.setGroup(collection.getPermissions().getGroup());
+            } catch(final PermissionDeniedException pde) {
+                throw new IllegalArgumentException(pde); //TODO improve
+            }
+        }
     }
 
     public BrokerPool getBrokerPool() {
