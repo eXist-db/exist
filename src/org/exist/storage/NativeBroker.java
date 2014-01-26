@@ -1130,7 +1130,7 @@ public class NativeBroker extends DBBroker {
             if (child.getResourceType() == DocumentImpl.XML_FILE) {
                 //TODO : put a lock on newDoc ?
                 final DocumentImpl newDoc = new DocumentImpl(pool, destCollection, child.getFileURI());
-                newDoc.copyOf(child);
+                newDoc.copyOf(child, false);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
                 copyXMLResource(transaction, child, newDoc);
                 storeXMLResource(transaction, newDoc);
@@ -1139,7 +1139,7 @@ public class NativeBroker extends DBBroker {
                 createdDoc = newDoc;
             } else {
                 final BinaryDocument newDoc = new BinaryDocument(pool, destCollection, child.getFileURI());
-                newDoc.copyOf(child);
+                newDoc.copyOf(child, false);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
                 
                 InputStream is = null;
@@ -2522,9 +2522,8 @@ public class NativeBroker extends DBBroker {
                     }
                 } else {
                     DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
-                    newDoc.copyOf(doc);
+                    newDoc.copyOf(doc, false);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
-                    //newDoc.setPermissions(doc.getPermissions());
                     newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                     try {
                         copyXMLResource(transaction, doc, newDoc);
@@ -3019,7 +3018,7 @@ public class NativeBroker extends DBBroker {
             }.run();
             // create a copy of the old doc to copy the nodes into it
             final DocumentImpl tempDoc = new DocumentImpl(pool, doc.getCollection(), doc.getFileURI());
-            tempDoc.copyOf(doc);
+            tempDoc.copyOf(doc, true);
             tempDoc.setDocId(doc.getDocId());
             indexController.setDocument(doc, StreamListener.STORE);
             final StreamListener listener = indexController.getStreamListener();
