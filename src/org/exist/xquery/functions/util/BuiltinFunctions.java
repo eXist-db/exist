@@ -30,6 +30,8 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunOnFunctions;
+import org.exist.xquery.functions.inspect.InspectFunction;
+import org.exist.xquery.functions.inspect.ModuleFunctions;
 import org.exist.xquery.value.*;
 
 /**
@@ -68,13 +70,13 @@ public class BuiltinFunctions extends BasicFunction {
             "Returns a sequence of function items for each function in the current module.",
             null,
             new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_MORE, "sequence of function references"),
-            "Use inspect:module-functions instead."),
+            ModuleFunctions.FNS_MODULE_FUNCTIONS_CURRENT),
         new FunctionSignature(
             new QName("list-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Returns a sequence of function items for each function in the specified module.",
             new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module") },
             new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_MORE, "sequence of function references"),
-            "Use inspect:module-functions instead.")
+            ModuleFunctions.FNS_MODULE_FUNCTIONS_OTHER)
 	};
 
 	public BuiltinFunctions(XQueryContext context, FunctionSignature signature) {

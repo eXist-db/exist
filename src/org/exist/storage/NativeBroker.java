@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Observer;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1413,7 +1414,10 @@ public class NativeBroker extends DBBroker {
                 final String collName = uri.getRawCollectionPath();
                 
                 // Notify the collection configuration manager
-                pool.getConfigurationManager().invalidateAll(uri);
+                final CollectionConfigurationManager manager = pool.getConfigurationManager();
+                if(manager != null) {
+                    manager.invalidate(uri);
+                }
                 
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("Removing children collections from their parent '" + collName + "'...");
@@ -2064,6 +2068,15 @@ public class NativeBroker extends DBBroker {
             throws IOException {
        if (transaction!=null) {
           dir = new File(dir,"txn."+transaction.getId());
+          if (create && !dir.exists()) {
+             if (!dir.mkdir()) {
+                throw new IOException("Cannot make transaction filesystem directory: "+dir);
+             }
+          }
+          
+          //XXX: replace by transaction operation id/number from Txn
+          //add unique id for operation in transaction
+          dir = new File(dir,"oper."+UUID.randomUUID().toString());
           if (create && !dir.exists()) {
              if (!dir.mkdir()) {
                 throw new IOException("Cannot make transaction filesystem directory: "+dir);

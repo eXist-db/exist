@@ -27,9 +27,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.FileInputStream;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
-
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.storage.lock.Lock;
@@ -37,23 +34,33 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * @author wolf
  *
  */
-public class RecoverBinaryTest extends TestCase {
-
-    public static void main(String[] args) {
-        TestRunner.run(RecoverBinaryTest.class);
-    }
+public class RecoverBinaryTest {
     
     private BrokerPool pool;
-    
-    public void testStore() {
+
+    @Test
+    public void storeAndLoad() {
+        store();
+        tearDown();
+        setUp();
+        load();
+    }
+
+    private void store() {
     	BrokerPool.FORCE_CORRUPTION = true;
         DBBroker broker = null;
         try {
+            System.out.println("store() ...\n");
         	assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
@@ -97,11 +104,11 @@ public class RecoverBinaryTest extends TestCase {
         }
     }
     
-    public void testLoad() {
+    private void load() {
         BrokerPool.FORCE_CORRUPTION = false;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead() ...\n");
+        	System.out.println("load() ...\n");
         	assertNotNull(pool);
         	broker = pool.get(pool.getSecurityManager().getSystemSubject());
         	assertNotNull(broker);
@@ -113,15 +120,16 @@ public class RecoverBinaryTest extends TestCase {
             is.close();
             String data = new String(bdata);
             assertNotNull(data);
-            System.out.println(data);
+            //System.out.println(data);
 		} catch (Exception e) {            
 	        fail(e.getMessage());
 	    } finally {
             if (pool != null) pool.release(broker);
         }
     }
-    
-    protected void setUp() {
+
+    @Before
+    public void setUp() {
         try {
             Configuration config = new Configuration();
             BrokerPool.configure(1, 5, config);
@@ -131,7 +139,8 @@ public class RecoverBinaryTest extends TestCase {
         }
     }
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
         pool = null;
     }
