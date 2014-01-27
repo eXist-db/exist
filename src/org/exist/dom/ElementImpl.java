@@ -479,8 +479,6 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             broker.getIndexController().setMode(StreamListener.STORE);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
-            } else {
-                broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
             }
             if (children == 0) {
                 // no children: append a new child
@@ -1228,8 +1226,6 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             broker.getIndexController().setMode(StreamListener.STORE);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
-            } else {
-                broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
             }
             final StoredNode following = (StoredNode) refChild;
             final StoredNode previous = (StoredNode) following.getPreviousSibling();
@@ -1280,8 +1276,6 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             broker.getIndexController().setMode(StreamListener.STORE);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
-            } else {
-                broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
             }
             final StoredNode previous = (StoredNode) refChild;
             final StoredNode following = (StoredNode) previous.getNextSibling();
