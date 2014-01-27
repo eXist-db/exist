@@ -46,12 +46,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.exist.xquery.AbstractExpression;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Expression;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -109,6 +104,14 @@ public abstract class Modification extends AbstractExpression
 		if (value != null)
 			{value.resetState(postOptimization);}
 	}
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        select.accept(visitor);
+        if (value != null) {
+            value.accept(visitor);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
