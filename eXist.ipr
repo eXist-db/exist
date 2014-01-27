@@ -103,9 +103,6 @@
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
   </component>
-  <component name="GradleSettings">
-    <option name="gradleHome" value="$USER_HOME$/Apps/gradle" />
-  </component>
   <component name="IdProvider" IDEtalkID="EDCB317F9C51C9BBC9F54E158B17D480" />
   <component name="JavacSettings">
     <option name="DEPRECATION" value="false" />

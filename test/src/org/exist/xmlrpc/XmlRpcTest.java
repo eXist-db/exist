@@ -99,7 +99,7 @@ public class XmlRpcTest {
     @BeforeClass
     public static void setUp() {
         System.out.println("==================================");
-		//Don't worry about closing the server : the shutdown hook will do the job
+		//Don't worry about closing the server : the shutdownDB hook will do the job
 		initServer();		
 	}
 
@@ -615,7 +615,7 @@ public class XmlRpcTest {
 
 	public static void main(String[] args) {
 		org.junit.runner.JUnitCore.main(XmlRpcTest.class.getName());
-		//Explicit shutdown for the shutdown hook
+		//Explicit shutdownDB for the shutdownDB hook
 		System.exit(0);		
 	}	
 }

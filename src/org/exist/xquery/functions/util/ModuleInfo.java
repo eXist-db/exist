@@ -39,6 +39,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.inspect.InspectModule;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -109,7 +110,7 @@ public class ModuleInfo extends BasicFunction {
 			"Returns a short description of the module identified by the namespace URI.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the description of the active function module identified by the namespace URI"),
-            "Use inspect:inspect-module-uri instead."
+                        InspectModule.FNS_INSPECT_MODULE_URI
         );
 	
 	public final static FunctionSignature moduleInfoSig =
@@ -123,14 +124,14 @@ public class ModuleInfo extends BasicFunction {
         );
 	
 	public final static FunctionSignature moduleInfoWithURISig =
-		new FunctionSignature(
-			new QName("get-module-info", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Returns an XML fragment providing additional information about the module identified by the " +
-			"namespace URI.",
-			new SequenceType[] { NAMESPACE_URI_PARAMETER },
-			new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
+            new FunctionSignature(
+                new QName("get-module-info", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                "Returns an XML fragment providing additional information about the module identified by the " +
+                "namespace URI.",
+                new SequenceType[] { NAMESPACE_URI_PARAMETER },
+                new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
                 "the description of the active function module identified by the namespace URI"),
-            "Use inspect:inspect-module-uri instead."
+                InspectModule.FNS_INSPECT_MODULE_URI
         );
 	
 	private static final QName MODULE_QNAME = new QName("module");

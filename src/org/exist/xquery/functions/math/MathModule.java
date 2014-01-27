@@ -42,22 +42,22 @@ public class MathModule extends AbstractInternalModule {
 
     private final static FunctionDef functions[] = {
         
-        new FunctionDef(OneParamFunctions.signature[0], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[1], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[2], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[3], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[4], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[5], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[6], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[7], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[8], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[9], OneParamFunctions.class),
-        new FunctionDef(OneParamFunctions.signature[10], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_ACOS, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_ASIN, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_ATAN, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_COS, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_EXP, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_EXP10, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_LOG, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_LOG10, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_SIN, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_SQRT, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_TAN, OneParamFunctions.class),
         
-        new FunctionDef(NoParamFunctions.signature[0], NoParamFunctions.class),
+        new FunctionDef(NoParamFunctions.FNS_PI, NoParamFunctions.class),
         
-        new FunctionDef(TwoParamFunctions.signature[0], TwoParamFunctions.class),
-        new FunctionDef(TwoParamFunctions.signature[1], TwoParamFunctions.class)
+        new FunctionDef(TwoParamFunctions.FNS_ATAN2, TwoParamFunctions.class),
+        new FunctionDef(TwoParamFunctions.FNS_POW, TwoParamFunctions.class)
     };
     
     public MathModule(Map<String, List<? extends Object>> parameters) {
