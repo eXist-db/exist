@@ -117,7 +117,7 @@ public class RestXqServlet extends AbstractExistHttpServlet {
             throw new ServletException(ee.getMessage(), ee);
         } catch(RestXqServiceException rqse) {
             if (rqse.getCause() instanceof PermissionDeniedException) {
-                new BasicAuthenticator(null).sendChallenge(request, response);
+                getAuthenticator().sendChallenge(request, response);
             } else {
                 //TODO should probably be caught higher up and returned as a HTTP Response? maybe need two different types of exception to differentiate critical vs processing exception
                 getLog().error(rqse.getMessage(), rqse);
