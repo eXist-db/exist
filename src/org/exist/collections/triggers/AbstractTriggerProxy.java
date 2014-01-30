@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2011-2012 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,19 +16,14 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.collections.triggers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.exist.collections.Collection;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.XmldbURI;
 
 /**
  *
@@ -36,33 +31,33 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class AbstractTriggerProxy<T extends Trigger> implements TriggerProxy<T> {
 
-    private final Class<T> clazz;
+    private final Class<? extends T> clazz;
     private Map<String, List<? extends Object>> parameters;
     
-    /**
-     * The database Collection URI of where the configuration for this Trigger came from
-     * typically somewhere under /db/system/config/db/
-     */
-    private final XmldbURI collectionConfigurationURI;
+//    /**
+//     * The database Collection URI of where the configuration for this Trigger came from
+//     * typically somewhere under /db/system/config/db/
+//     */
+//    private final XmldbURI collectionConfigurationURI;
 
-    public AbstractTriggerProxy(Class<? extends T> clazz, XmldbURI collectionConfigurationURI) {
-        this.clazz = (Class<T>)clazz;
-        this.collectionConfigurationURI = collectionConfigurationURI;
+    public AbstractTriggerProxy(Class<? extends T> clazz) {
+        this.clazz = clazz;
+//        this.collectionConfigurationURI = collectionConfigurationURI;
     }
     
-    public AbstractTriggerProxy(Class<? extends T> clazz, XmldbURI collectionConfigurationURI, Map<String, List<? extends Object>> parameters) {
-        this.clazz = (Class<T>)clazz;
-        this.collectionConfigurationURI = collectionConfigurationURI;
+    public AbstractTriggerProxy(Class<? extends T> clazz, Map<String, List<? extends Object>> parameters) {
+        this.clazz = clazz;
+//        this.collectionConfigurationURI = collectionConfigurationURI;
         this.parameters = parameters;
     }
 
-    protected Class<T> getClazz() {
+    protected Class<? extends T> getClazz() {
         return clazz;
     }
     
-    protected XmldbURI getCollectionConfigurationURI() {
-        return collectionConfigurationURI;
-    }
+//    protected XmldbURI getCollectionConfigurationURI() {
+//        return collectionConfigurationURI;
+//    }
     
     @Override
     public void setParameters(Map<String, List<? extends Object>> parameters) {
@@ -73,16 +68,10 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
         return parameters;
     }
     
-    public T newInstance(DBBroker broker) throws TriggerException {
+    public T newInstance(DBBroker broker, Collection collection) throws TriggerException {
         try {
             final T trigger = getClazz().newInstance();
 
-            XmldbURI collectionForTrigger = getCollectionConfigurationURI();
-            if(collectionForTrigger.startsWith(XmldbURI.CONFIG_COLLECTION_URI)) {
-                collectionForTrigger = collectionForTrigger.trimFromBeginning(XmldbURI.CONFIG_COLLECTION_URI);
-            }
-
-            final Collection collection = broker.getCollection(collectionForTrigger);
             trigger.configure(broker, collection, getParameters());
 
             return trigger;
@@ -90,27 +79,6 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
             throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + ie.getMessage(), ie);
         } catch (final IllegalAccessException iae) {
             throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + iae.getMessage(), iae);
-        } catch (final PermissionDeniedException pde) {
-            throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + pde.getMessage(), pde);
         }
-    }
-    
-    public static List<TriggerProxy<? extends Trigger>> newInstance(Class<? extends Trigger> c, XmldbURI collectionConfigurationURI, Map<String, List<? extends Object>> parameters) throws TriggerException {
-        
-        final List<TriggerProxy<? extends Trigger>> proxies = new ArrayList<TriggerProxy<? extends Trigger>>();
-        
-        if(DocumentTrigger.class.isAssignableFrom(c)) {
-            proxies.add(new DocumentTriggerProxy((Class<? extends DocumentTrigger>)c, collectionConfigurationURI, parameters));
-        }
-        
-        if(CollectionTrigger.class.isAssignableFrom(c)) {
-            proxies.add(new CollectionTriggerProxy((Class<? extends CollectionTrigger>)c, collectionConfigurationURI, parameters));
-        } 
-        
-        if(proxies.isEmpty()) {
-            throw new TriggerException("Unknown Trigger class type: " + c.getName());
-        }
-        
-        return proxies;
     }
 }

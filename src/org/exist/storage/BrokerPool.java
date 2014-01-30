@@ -1171,9 +1171,8 @@ public class BrokerPool implements Database {
             final CollectionConfigurationManager manager = getConfigurationManager();
             final CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
             
-            final Class c = ConfigurationDocumentTrigger.class;
-            final DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy((Class<DocumentTrigger>)c, collection.getURI());
-            collConf.getDocumentTriggerProxies().add(triggerProxy);  
+            final DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy(ConfigurationDocumentTrigger.class); //, collection.getURI());
+            collConf.documentTriggers().add(triggerProxy);
         }
     }
 
@@ -2138,56 +2137,29 @@ public class BrokerPool implements Database {
 		return new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR));
 	}
 
-	private final List<DocumentTrigger> documentTriggers = new ArrayList<DocumentTrigger>(); 
-	private final List<CollectionTrigger> collectionTriggers = new ArrayList<CollectionTrigger>(); 
+    private final List<TriggerProxy<? extends DocumentTrigger>> documentTriggers = new ArrayList<TriggerProxy<? extends DocumentTrigger>>();
+    private final List<TriggerProxy<? extends CollectionTrigger>> collectionTriggers = new ArrayList<TriggerProxy<? extends CollectionTrigger>>();
 
-	@Override
-	public List<DocumentTrigger> getDocumentTriggers() {
-		return documentTriggers;
-	}
+    @Override
+    public List<TriggerProxy<? extends DocumentTrigger>> getDocumentTriggers() {
+        return documentTriggers;
+    }
 
-	@Override
-	public List<CollectionTrigger> getCollectionTriggers() {
-		return collectionTriggers;
-	}
-	
-	private DocumentTriggersVisitor docsTriggersVisitor = new DocumentTriggersVisitor(null, new DocumentTriggers());
-	private CollectionTriggersVisitor colsTriggersVisitor = new CollectionTriggersVisitor(null, new CollectionTriggers());
+    @Override
+    public List<TriggerProxy<? extends CollectionTrigger>> getCollectionTriggers() {
+        return collectionTriggers;
+    }
 
-	@Override
-	public DocumentTrigger getDocumentTrigger() {
-		return docsTriggersVisitor;
-	}
+    @Override
+    public void registerDocumentTrigger(Class<? extends DocumentTrigger> clazz) {
+        documentTriggers.add(new DocumentTriggerProxy(clazz));
+    }
 
-	@Override
-	public CollectionTrigger getCollectionTrigger() {
-		return colsTriggersVisitor;
-	}
-	
-	class DocumentTriggers extends DocumentTriggerProxies {
-
-		@Override
-	    public DocumentTriggersVisitor instantiateVisitor(DBBroker broker) {
-	        return new DocumentTriggersVisitor(broker, this);
-	    }
-
-		protected List<DocumentTrigger> instantiateTriggers(DBBroker broker) throws TriggerException {
-	        return getDocumentTriggers();
-	    }
-	}
-
-	class CollectionTriggers extends CollectionTriggerProxies {
-
-		@Override
-	    public CollectionTriggersVisitor instantiateVisitor(DBBroker broker) {
-	        return new CollectionTriggersVisitor(broker, this);
-	    }
-
-		protected List<CollectionTrigger> instantiateTriggers(DBBroker broker) throws TriggerException {
-	        return getCollectionTriggers();
-	    }
-	}
-
+    @Override
+    public void registerCollectionTrigger(Class<? extends CollectionTrigger> clazz) {
+        collectionTriggers.add(new CollectionTriggerProxy(clazz));
+    }
+	    
 	public PluginsManager getPluginsManager() {
 		return pluginManager;
 	}

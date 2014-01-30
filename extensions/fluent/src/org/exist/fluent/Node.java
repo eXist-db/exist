@@ -5,11 +5,9 @@ import java.util.*;
 
 import javax.xml.datatype.*;
 
-import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.*;
 import org.exist.dom.*;
-import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
@@ -23,8 +21,6 @@ import org.w3c.dom.*;
  */
 public class Node extends Item {
 	
-    private final static Logger LOG = Logger.getLogger(Collection.class);
-    
 	private XMLDocument document;
 	final StaleMarker staleMarker = new StaleMarker();
 	
@@ -365,17 +361,15 @@ public class Node extends Item {
 	
 	private DocumentTrigger fireTriggerBefore(Transaction tx) throws TriggerException {
 		if (!(item instanceof NodeProxy)) return null;
+		
 		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
-//		try {
-			DocumentTrigger trigger = docimpl.getCollection().getConfiguration(tx.broker).getDocumentTriggerProxies().instantiateVisitor(tx.broker);
-			if (trigger == null) return null;
+		Collection col = docimpl.getCollection();
+		
+		DocumentTrigger trigger = new DocumentTriggers(tx.broker, null, col, col.getConfiguration(tx.broker));
 			
-			trigger.beforeUpdateDocument(tx.broker, tx.tx, docimpl);
+		trigger.beforeUpdateDocument(tx.broker, tx.tx, docimpl);
 
-			return trigger;
-//		} catch (CollectionConfigurationException e) {
-//			throw new DatabaseException(e);
-//		}
+		return trigger;
 	}
 	
 	private void touchDefragAndFireTriggerAfter(Transaction tx, DocumentTrigger trigger) throws TriggerException {
