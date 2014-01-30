@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2003-2012 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,14 +16,13 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.collections.triggers;
 
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.storage.DBBroker;
@@ -84,45 +83,44 @@ import org.exist.storage.DBBroker;
  * @see org.exist.collections.triggers.DocumentTrigger
  */
 public interface Trigger {
+    
+    public static final Logger LOG = Logger.getLogger(Trigger.class);
 
-	public final static int STORE_DOCUMENT_EVENT 	= 0;
-	public final static int CREATE_COLLECTION_EVENT = 1;
-	
-	public final static int UPDATE_DOCUMENT_EVENT 	= 2;
-	public final static int UPDATE_COLLECTION_EVENT = 3;
+    public final static int STORE_DOCUMENT_EVENT = 0;
+    public final static int CREATE_COLLECTION_EVENT = 1;
 
-	public final static int RENAME_DOCUMENT_EVENT 	= 4;
-	public final static int RENAME_COLLECTION_EVENT = 5;
-	
-	public final static int MOVE_DOCUMENT_EVENT 	= 6;
-	public final static int MOVE_COLLECTION_EVENT 	= 7;
+    public final static int UPDATE_DOCUMENT_EVENT = 2;
+    public final static int UPDATE_COLLECTION_EVENT = 3;
 
-	public final static int REMOVE_DOCUMENT_EVENT 	= 8;
-	public final static int REMOVE_COLLECTION_EVENT = 9;
-	
-	public final static String [] OLD_EVENTS = {
-		"STORE",
-		"CREATE-COLLECTION",
-		"UPDATE",
-		"UPDATE-COLLECTION",
-		"RENAME-DOCUMENT",
-		"RENAME-COLLECTION",
-		"MOVE-DOCUMENT",
-		"MOVE-COLLECTION",
-		"REMOVE",
-		"DELETE-COLLECTION"
-	};
+    public final static int RENAME_DOCUMENT_EVENT = 4;
+    public final static int RENAME_COLLECTION_EVENT = 5;
 
-	/**
-	 * The configure method is called once whenever the collection configuration is loaded. Use it to
-	 * initialize the trigger, probably by looking at the parameters.
-	 * 
-	 * @param broker the database instance used to load the collection configuration. The broker object is
-	 * 	required for all database actions. Please note: the broker instance used for configuration is probably
-	 * 	different from the one passed to the prepare method. Don't store the broker object in your class.
-	 * @param parent the collection to which this trigger belongs. 
-	 * @param parameters a Map containing any key/value parameters defined in the configuration file.
-	 * @throws CollectionConfigurationException if the trigger cannot be initialized.
-	 */
-	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException;
+    public final static int MOVE_DOCUMENT_EVENT = 6;
+    public final static int MOVE_COLLECTION_EVENT = 7;
+
+    public final static int REMOVE_DOCUMENT_EVENT = 8;
+    public final static int REMOVE_COLLECTION_EVENT = 9;
+
+    public final static String[] OLD_EVENTS = { "STORE", "CREATE-COLLECTION", "UPDATE", "UPDATE-COLLECTION", "RENAME-DOCUMENT", "RENAME-COLLECTION", "MOVE-DOCUMENT", "MOVE-COLLECTION", "REMOVE", "DELETE-COLLECTION" };
+
+    /**
+     * The configure method is called once whenever the collection configuration
+     * is loaded. Use it to initialize the trigger, probably by looking at the
+     * parameters.
+     * 
+     * @param broker
+     *            the database instance used to load the collection
+     *            configuration. The broker object is required for all database
+     *            actions. Please note: the broker instance used for
+     *            configuration is probably different from the one passed to the
+     *            prepare method. Don't store the broker object in your class.
+     * @param parent
+     *            the collection to which this trigger belongs.
+     * @param parameters
+     *            a Map containing any key/value parameters defined in the
+     *            configuration file.
+     * @throws CollectionConfigurationException
+     *             if the trigger cannot be initialized.
+     */
+    public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException;
 }
