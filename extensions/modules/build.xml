@@ -35,10 +35,6 @@
         </and>
     </condition>
 
-    <condition property="libs.available.calabash">
-        <available file="${modules.lib}/calabash.jar"/>
-    </condition>
-
 	<condition property="include.module.oracle_ext">
 	    <and>
             <istrue value="${include.module.oracle}"/>
@@ -127,23 +123,6 @@
           <!--get src="${include.module.expathrepo.url}"
                 dest="${top.dir}/${lib.core}"/-->
 
-    </target>
-
-    <!-- 
-        Special targets for xmlcalabash module 
-    -->
-    <target name="prepare-xmlcalabash"
-            unless="libs.available.calabash" if="${include.module.xmlcalabash}" >
-        <echo message="------------------------------------------------------"/>
-        <echo message="Downloading libraries required by the xmlcalabash module"/>
-        <echo message="------------------------------------------------------"/>
-        <echo message="Calabash: ${libs.available.calabash}"/>
-        <fetch classpathref="classpath.core" dest="${modules.lib}" 
-               url="${include.module.xmlcalabash.url}">
-            <patternset>
-              <include name="**/calabash.jar"/>
-            </patternset>
-        </fetch>
     </target>
 
     <!-- 
@@ -243,7 +222,7 @@
         <ivy:retrieve xmlns:ivy="antlib:org.apache.ivy.ant" sync="false"/>
     </target>
 
-    <target name="prepare" depends="prepare-ivy,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-xmlcalabash,prepare-expathrepo,prepare-cqlparser">
+    <target name="prepare" depends="prepare-ivy,prepare-xslfo,prepare-simpleql,prepare-jfreechart,prepare-memcached,prepare-xmpp,prepare-expathrepo,prepare-cqlparser">
         <mkdir dir="${classes}"/>
     </target>
 
@@ -286,7 +265,6 @@
             <exclude name="org/exist/xquery/modules/xmldiff/**" unless="${include.module.xmldiff}"/>
             <exclude name="org/exist/xquery/modules/xmpp/**" unless="${include.module.xmpp}"/>
             <exclude name="org/exist/xquery/modules/xslfo/**" unless="${include.module.xslfo}"/>
-            <exclude name="org/exist/xquery/modules/xmlcalabash/**" unless="${include.module.xmlcalabash}"/>
             <exclude name="org/exist/xquery/modules/expathrepo/**" unless="${include.module.expathrepo}"/>
             <exclude name="org/exist/xquery/modules/process/**" unless="${include.module.process}"/>
             <exclude name="org/exist/xquery/modules/persistentlogin/**" unless="${include.module.persistentlogin}"/>
@@ -311,8 +289,5 @@
     </target>
 
     <target name="clean-all">
-        <delete file="${modules.lib}/calabash.jar" failonerror="false"/>
     </target>
-
-
 </project>
