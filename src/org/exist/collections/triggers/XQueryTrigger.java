@@ -81,7 +81,7 @@ import org.xml.sax.SAXException;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
 */
-public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, CollectionTrigger {
+public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, CollectionTrigger {
 
         protected Logger LOG = Logger.getLogger(getClass());
     
@@ -537,70 +537,70 @@ public class XQueryTrigger extends FilteringTrigger implements DocumentTrigger, 
         	{LOG.debug("Trigger fired 'before'");}
 	}
 
-	public void startDocument() throws SAXException
-	{
-		originalOutputHandler = getOutputHandler();
-		//TODO : uncomment when it works
-		/*
-		if (isValidating()) 
-			setOutputHandler(adapter);	
-		*/	
-		super.startDocument();
-	}	
-
-	public void endDocument() throws SAXException
-	{
-		super.endDocument();
-		
-		setOutputHandler(originalOutputHandler);
-		
-		//if (!isValidating())
-		//		return;				
-		
-        //XQueryContext context = service.newContext(AccessContext.TRIGGER);
-        //TODO : futher initializations ?
-        // CompiledXQuery compiledQuery;
-        
-        //try {
-        	
-        	// compiledQuery = 
-        	//service.compile(context, query);
-        	
-        	//context.declareVariable(bindingPrefix + "validating", new BooleanValue(isValidating()));
-        	//if (adapter.getDocument() == null)
-        		//context.declareVariable(bindingPrefix + "document", Sequence.EMPTY_SEQUENCE);
-        	//TODO : find the right method ;-)
-        	/*
-        	else
-        		context.declareVariable(bindingPrefix + "document", (DocumentImpl)adapter.getDocument());
-        	*/
-	        	        
-        //} catch (XPathException e) {
-        	//query = null; //prevents future use
-        //	throw new SAXException("Error during endDocument", e);
-	    //} catch (IOException e) {
-        	//query = null; //prevents future use
-        //	throw new SAXException("Error during endDocument", e);
-	    //}
-
-	    //TODO : uncomment when it works
-	    /*
-        try {
-        	//TODO : should we provide another contextSet ?
-	        NodeSet contextSet = NodeSet.EMPTY_SET;	        
-			//Sequence result = service.execute(compiledQuery, contextSet);
-			//TODO : should we have a special processing ?
-			LOG.debug("done.");
-			
-        } catch (XPathException e) {
-        	query = null; //prevents future use
-        	throw new SAXException("Error during endDocument", e);
-		}	
-		*/		
-		
-        //TODO : check that result is a document node
-		//TODO : Stream result to originalOutputHandler 
-	}
+//	public void startDocument() throws SAXException
+//	{
+//		originalOutputHandler = getOutputHandler();
+//		//TODO : uncomment when it works
+//		/*
+//		if (isValidating()) 
+//			setOutputHandler(adapter);	
+//		*/	
+//		super.startDocument();
+//	}	
+//
+//	public void endDocument() throws SAXException
+//	{
+//		super.endDocument();
+//		
+//		setOutputHandler(originalOutputHandler);
+//		
+//		//if (!isValidating())
+//		//		return;				
+//		
+//        //XQueryContext context = service.newContext(AccessContext.TRIGGER);
+//        //TODO : futher initializations ?
+//        // CompiledXQuery compiledQuery;
+//        
+//        //try {
+//        	
+//        	// compiledQuery = 
+//        	//service.compile(context, query);
+//        	
+//        	//context.declareVariable(bindingPrefix + "validating", new BooleanValue(isValidating()));
+//        	//if (adapter.getDocument() == null)
+//        		//context.declareVariable(bindingPrefix + "document", Sequence.EMPTY_SEQUENCE);
+//        	//TODO : find the right method ;-)
+//        	/*
+//        	else
+//        		context.declareVariable(bindingPrefix + "document", (DocumentImpl)adapter.getDocument());
+//        	*/
+//	        	        
+//        //} catch (XPathException e) {
+//        	//query = null; //prevents future use
+//        //	throw new SAXException("Error during endDocument", e);
+//	    //} catch (IOException e) {
+//        	//query = null; //prevents future use
+//        //	throw new SAXException("Error during endDocument", e);
+//	    //}
+//
+//	    //TODO : uncomment when it works
+//	    /*
+//        try {
+//        	//TODO : should we provide another contextSet ?
+//	        NodeSet contextSet = NodeSet.EMPTY_SET;	        
+//			//Sequence result = service.execute(compiledQuery, contextSet);
+//			//TODO : should we have a special processing ?
+//			LOG.debug("done.");
+//			
+//        } catch (XPathException e) {
+//        	query = null; //prevents future use
+//        	throw new SAXException("Error during endDocument", e);
+//		}	
+//		*/		
+//		
+//        //TODO : check that result is a document node
+//		//TODO : Stream result to originalOutputHandler 
+//	}
     
 	/**
 	 * Returns a String representation of the Trigger event
