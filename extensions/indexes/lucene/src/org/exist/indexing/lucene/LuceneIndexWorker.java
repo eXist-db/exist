@@ -349,6 +349,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("Error while deleting lucene index entries: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
+            nodesToRemove = null;
         }
     }
 

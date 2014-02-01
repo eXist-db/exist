@@ -241,9 +241,9 @@ public class ValidationFunctions_Node_Test {
 //    }
 //
 //    @AfterClass
-//    public static void shutdown() throws Exception {
+//    public static void shutdownDB() throws Exception {
 //
-//        logger.info("shutdown");
+//        logger.info("shutdownDB");
 //
 //
 //        root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
@@ -252,7 +252,7 @@ public class ValidationFunctions_Node_Test {
 //        DatabaseManager.deregisterDatabase(database);
 //        DatabaseInstanceManager dim =
 //                (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-//        dim.shutdown();
+//        dim.shutdownDB();
 //
 //    }
 }

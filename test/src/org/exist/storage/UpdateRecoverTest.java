@@ -21,8 +21,6 @@
  */
 package org.exist.storage;
 
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DefaultDocumentSet;
@@ -39,6 +37,10 @@ import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
+import org.junit.After;
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -53,11 +55,7 @@ import java.io.StringReader;
  * @author wolf
  *
  */
-public class UpdateRecoverTest extends TestCase {
-
-    public static void main(String[] args) {
-        TestRunner.run(UpdateRecoverTest.class);
-    }
+public class UpdateRecoverTest {
     
     private static String TEST_XML =
         "<?xml version=\"1.0\"?>" +
@@ -67,8 +65,22 @@ public class UpdateRecoverTest extends TestCase {
         "       <price>22.50</price>" +
         "   </product>" +
         "</products>";    
-    
-    public void testStore() {
+
+    @Test
+    public void storeAndRead() {
+        store();
+        tearDown();
+        read();
+    }
+
+    @Test
+    public void storeAndReadXmldb() {
+        xmldbStore();
+        tearDown();
+        xmldbRead();
+    }
+
+    private void store() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = null;        
         DBBroker broker = null;
@@ -277,8 +289,8 @@ public class UpdateRecoverTest extends TestCase {
         	if (pool!= null) pool.release(broker);
         }
     }
-    
-    public void testRead() {
+
+    private void read() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         DBBroker broker = null;
@@ -304,8 +316,8 @@ public class UpdateRecoverTest extends TestCase {
         	if (pool!= null) pool.release(broker);
         }
     }
-    
-    public void testXMLDBStore() {
+
+    private void xmldbStore() {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         try {
@@ -446,8 +458,8 @@ public class UpdateRecoverTest extends TestCase {
             fail(e.getMessage());   
         }	        
     }
-    
-    public void testXMLDBRead() {
+
+    private void xmldbRead() {
         BrokerPool.FORCE_CORRUPTION = false;
         try {
 	        
@@ -488,7 +500,8 @@ public class UpdateRecoverTest extends TestCase {
         return null;
     }
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         BrokerPool.stopAll(false);
     }
 
