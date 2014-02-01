@@ -30,7 +30,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	
 	protected void setUp() {
 		try {
-			//Don't worry about closing the server : the shutdown hook will do the job
+			//Don't worry about closing the server : the shutdownDB hook will do the job
 			initServer();
 			setUpRemoteDatabase();
         } catch (Exception e) {            
@@ -182,7 +182,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 
     public static void main(String[] args) {
 		TestRunner.run(RemoteCollectionTest.class);
-		//Explicit shutdown for the shutdown hook
+		//Explicit shutdownDB for the shutdownDB hook
 		System.exit(0);
 	}
 }

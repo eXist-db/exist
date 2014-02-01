@@ -434,7 +434,7 @@ public class XIncludeSerializerTest {
      */
 	@BeforeClass
     public static void startDB() {
-        //Don't worry about closing the server : the shutdown hook will do the job
+        //Don't worry about closing the server : the shutdownDB hook will do the job
         try {
             if (server == null) {
                 server = new JettyStart();

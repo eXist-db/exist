@@ -147,7 +147,7 @@ public class XQueryTest extends TestCase {
         } catch (RemoteException rex) {
             rex.printStackTrace();
         }
-        //mn.shutdown();
+        //mn.shutdownDB();
     }
     
     public void testRemoveThisEmptyTest() throws Exception {
