@@ -33,6 +33,8 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.log4j.Logger;
 
+import org.exist.http.servlets.Authenticator;
+import org.exist.http.servlets.BasicAuthenticator;
 import org.exist.security.internal.web.HttpAccount;
 import org.exist.source.Source;
 import org.exist.source.DBSource;
@@ -139,7 +141,9 @@ public class XQueryURLRewrite extends HttpServlet {
     private boolean compiledCache = true;
 
     private RewriteConfig rewriteConfig;
-    
+
+    private Authenticator authenticator;
+
     @Override
     public void init(ServletConfig filterConfig) throws ServletException {
         // save FilterConfig for later use
@@ -187,8 +191,18 @@ public class XQueryURLRewrite extends HttpServlet {
         Subject user = defaultUser;
     	
         Subject requestUser = HttpAccount.getUserFromServletRequest(request);
-        if (requestUser != null)
-        	{user = requestUser;}
+        if (requestUser != null) {
+            user = requestUser;
+        } else {
+            // Secondly try basic authentication
+            final String auth = request.getHeader("Authorization");
+            if (auth != null) {
+                requestUser = authenticator.authenticate(request, response);
+                if (requestUser != null) {
+                    user = requestUser;
+                }
+            }
+        }
 
         try {
             configure();
@@ -637,6 +651,7 @@ public class XQueryURLRewrite extends HttpServlet {
 				LOG.error("User can not be authenticated ("+username+"), using default user.");
 			}
 		}
+        authenticator = new BasicAuthenticator(pool);
     }
 
     private void logResult(DBBroker broker, Sequence result) throws IOException, SAXException {
