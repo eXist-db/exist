@@ -1092,7 +1092,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 useTriggers = false;
                 final CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
                 if (confMgr != null) {
-                    confMgr.invalidate(getURI());
+                    confMgr.invalidate(getURI(), broker.getBrokerPool());
                 }
             }
             
@@ -1400,7 +1400,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             final CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
             if(manager != null) {
                 try {
-                    manager.invalidate(getURI());
+                    manager.invalidate(getURI(), broker.getBrokerPool());
                     manager.loadConfiguration(broker, this);
                 } catch(final PermissionDeniedException pde) {
                     throw new EXistException(pde.getMessage(), pde);

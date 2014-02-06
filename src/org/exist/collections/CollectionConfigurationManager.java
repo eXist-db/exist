@@ -24,6 +24,7 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.lock.Lock;
@@ -388,8 +389,9 @@ public class CollectionConfigurationManager {
      * This will delete the cached configuration instance for this collection.
      * 
      * @param collectionPath
+     * @param pool if not null: clear query cache
      */
-    public void invalidate(final XmldbURI collectionPath) {
+    public void invalidate(final XmldbURI collectionPath, final BrokerPool pool) {
         if (!collectionPath.startsWith(CONFIG_COLLECTION_URI)) {
             return;
         }
@@ -402,8 +404,10 @@ public class CollectionConfigurationManager {
                     LOG.debug("Invalidating collection " + collectionPath);
                 }
 
-                configurations.remove(new CollectionURI(collectionPath.getRawCollectionPath()));
-
+                CollectionConfiguration removed = configurations.remove(new CollectionURI(collectionPath.getRawCollectionPath()));
+                if (removed != null && pool != null) {
+                    pool.getXQueryPool().clear();
+                }
                 return null;
             }
         });

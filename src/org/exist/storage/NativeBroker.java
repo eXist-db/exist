@@ -1420,7 +1420,7 @@ public class NativeBroker extends DBBroker {
                 // Notify the collection configuration manager
                 final CollectionConfigurationManager manager = pool.getConfigurationManager();
                 if(manager != null) {
-                    manager.invalidate(uri);
+                    manager.invalidate(uri, getBrokerPool());
                 }
                 
                 if(LOG.isDebugEnabled()) {
