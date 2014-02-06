@@ -1780,7 +1780,7 @@ public class NativeBroker extends DBBroker {
         reindexCollection(collection, NodeProcessor.MODE_STORE);
     }
 
-    protected void reindexCollection(Collection collection, int mode) throws PermissionDeniedException {
+    public void reindexCollection(Collection collection, int mode) throws PermissionDeniedException {
         final TransactionManager transact = pool.getTransactionManager();
         final Txn transaction = transact.beginTransaction();
         long start = System.currentTimeMillis();
@@ -1803,7 +1803,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    protected void reindexCollection(Txn transaction, Collection collection, int mode) throws PermissionDeniedException {
+    public void reindexCollection(Txn transaction, Collection collection, int mode) throws PermissionDeniedException {
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
             if (!collection.getPermissionsNoLock().validate(getSubject(), Permission.WRITE))
