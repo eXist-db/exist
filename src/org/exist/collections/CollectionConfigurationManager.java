@@ -389,11 +389,8 @@ public class CollectionConfigurationManager {
      * This will delete the cached configuration instance for this collection.
      * 
      * @param collectionPath
+     * @param pool if not null: clear query cache
      */
-    public void invalidate(final XmldbURI collectionPath) {
-        invalidate(collectionPath, null);
-    }
-
     public void invalidate(final XmldbURI collectionPath, final BrokerPool pool) {
         if (!collectionPath.startsWith(CONFIG_COLLECTION_URI)) {
             return;
