@@ -25,7 +25,9 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.collections.triggers.DocumentTriggersVisitor;
+import org.exist.collections.Collection;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -72,7 +74,7 @@ public abstract class Modification extends AbstractExpression
 	
 	protected DocumentSet lockedDocuments = null;
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
-    protected Int2ObjectHashMap<DocumentTriggersVisitor> triggers;
+    protected Int2ObjectHashMap<DocumentTrigger> triggers;
     
     /**
 	 * @param context
@@ -81,7 +83,7 @@ public abstract class Modification extends AbstractExpression
 		super(context);
 		this.select = select;
 		this.value = value;
-        this.triggers = new Int2ObjectHashMap<DocumentTriggersVisitor>(10);
+        this.triggers = new Int2ObjectHashMap<DocumentTrigger>(10);
     }
 
 	public int getCardinality() {
@@ -294,11 +296,14 @@ public abstract class Modification extends AbstractExpression
 	 */
 	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
 
-            final DocumentTriggersVisitor triggersVisitor = doc.getCollection().getConfiguration(context.getBroker()).getDocumentTriggerProxies().instantiateVisitor(context.getBroker());
+	    final Collection col = doc.getCollection();
+            final DBBroker broker = context.getBroker();
+            
+            final DocumentTrigger trigger = new DocumentTriggers(broker, col);
             
             //prepare the trigger
-            triggersVisitor.beforeUpdateDocument(context.getBroker(), transaction, doc);
-            triggers.put(doc.getDocId(), triggersVisitor);
+            trigger.beforeUpdateDocument(context.getBroker(), transaction, doc);
+            triggers.put(doc.getDocId(), trigger);
 	}
 	
 	/** Fires the finish function for UPDATE_DOCUMENT_EVENT for the documents trigger
@@ -310,9 +315,9 @@ public abstract class Modification extends AbstractExpression
 	 */
 	private void finishTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
             //finish the trigger
-            final DocumentTriggersVisitor triggersVisitor = triggers.get(doc.getDocId());
-            if(triggersVisitor != null) {
-                triggersVisitor.afterUpdateDocument(context.getBroker(), transaction, doc);
+            final DocumentTrigger trigger = triggers.get(doc.getDocId());
+            if(trigger != null) {
+                trigger.afterUpdateDocument(context.getBroker(), transaction, doc);
             }
 	}
 	
