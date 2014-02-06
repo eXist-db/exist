@@ -1416,7 +1416,7 @@ public class NativeBroker extends DBBroker {
                 // Notify the collection configuration manager
                 final CollectionConfigurationManager manager = pool.getConfigurationManager();
                 if(manager != null) {
-                    manager.invalidate(uri);
+                    manager.invalidate(uri, getBrokerPool());
                 }
                 
                 if(LOG.isDebugEnabled()) {
@@ -1776,7 +1776,7 @@ public class NativeBroker extends DBBroker {
         reindexCollection(collection, NodeProcessor.MODE_STORE);
     }
 
-    public void reindexCollection(Collection collection, int mode) throws PermissionDeniedException {
+    protected void reindexCollection(Collection collection, int mode) throws PermissionDeniedException {
         final TransactionManager transact = pool.getTransactionManager();
         final Txn transaction = transact.beginTransaction();
         long start = System.currentTimeMillis();
@@ -1799,7 +1799,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    public void reindexCollection(Txn transaction, Collection collection, int mode) throws PermissionDeniedException {
+    protected void reindexCollection(Txn transaction, Collection collection, int mode) throws PermissionDeniedException {
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
             if (!collection.getPermissionsNoLock().validate(getSubject(), Permission.WRITE))
