@@ -31,11 +31,11 @@ import org.exist.xmldb.XmldbURI;
  */
 public class CollectionTriggerProxy extends AbstractTriggerProxy<CollectionTrigger> {
     
-    public CollectionTriggerProxy(Class<? extends CollectionTrigger> clazz,  XmldbURI collectionConfigurationURI){
-        super(clazz, collectionConfigurationURI);
+    public CollectionTriggerProxy(Class<? extends CollectionTrigger> clazz){
+        super(clazz);
     }
     
-    public CollectionTriggerProxy(Class<? extends CollectionTrigger> clazz,  XmldbURI collectionConfigurationURI, Map<String, List<? extends Object>> parameters) {
-        super(clazz, collectionConfigurationURI, parameters);
+    public CollectionTriggerProxy(Class<? extends CollectionTrigger> clazz, Map<String, List<? extends Object>> parameters) {
+        super(clazz, parameters);
     }
 }

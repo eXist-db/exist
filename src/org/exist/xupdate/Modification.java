@@ -31,7 +31,9 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -313,7 +315,11 @@ public abstract class Modification {
 	 * @throws TriggerException 
 	 */
 	private void prepareTrigger(Txn transaction, DocumentImpl doc) throws TriggerException {
-            final DocumentTrigger trigger = doc.getCollection().getConfiguration(broker).getDocumentTriggerProxies().instantiateVisitor(broker);
+            
+	    final Collection col = doc.getCollection();
+	        
+            final DocumentTrigger trigger = new DocumentTriggers(broker, col);
+            
             trigger.beforeUpdateDocument(broker, transaction, doc);
             triggers.put(doc.getDocId(), trigger);
 	}
