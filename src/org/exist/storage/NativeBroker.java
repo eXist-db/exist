@@ -1447,7 +1447,7 @@ public class NativeBroker extends DBBroker {
                 notifyDropIndex(collection);
                 
                 // Drop custom indexes
-                indexController.removeCollection(collection, this);
+                indexController.removeCollection(collection, this, false);
                 
                 if(!isRoot) {
                     // remove from parent collection
@@ -1809,8 +1809,9 @@ public class NativeBroker extends DBBroker {
             if (!collection.getPermissionsNoLock().validate(getSubject(), Permission.WRITE))
                 {throw new PermissionDeniedException("Account "+getSubject().getName()+" have insufficient privileges on collection " + collection.getURI());}
             LOG.debug("Reindexing collection " + collection.getURI());
-            if (mode == NodeProcessor.MODE_STORE)
-                {dropCollectionIndex(transaction, collection);}
+            if (mode == NodeProcessor.MODE_STORE) {
+                dropCollectionIndex(transaction, collection, true);
+            }
             for(final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
                 final DocumentImpl next = i.next();
                 reindexXMLResource(transaction, next, mode);
@@ -1829,12 +1830,16 @@ public class NativeBroker extends DBBroker {
     }
 
     public void dropCollectionIndex(final Txn transaction, Collection collection) throws PermissionDeniedException {
+        dropCollectionIndex(transaction, collection, false);
+    }
+
+    public void dropCollectionIndex(final Txn transaction, Collection collection, boolean reindex) throws PermissionDeniedException {
         if (pool.isReadOnly())
             {throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);}
         if (!collection.getPermissionsNoLock().validate(getSubject(), Permission.WRITE))
             {throw new PermissionDeniedException("Account "+getSubject().getName()+" have insufficient privileges on collection " +collection.getURI());}
         notifyDropIndex(collection);
-        indexController.removeCollection(collection, this);
+        indexController.removeCollection(collection, this, reindex);
         for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext();) {
             final DocumentImpl doc = i.next();
             LOG.debug("Dropping index for document " + doc.getFileURI());

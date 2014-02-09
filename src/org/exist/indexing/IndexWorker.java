@@ -176,7 +176,7 @@ public interface IndexWorker {
      * @param collection The collection to remove
      * @param broker The broker that will perform the operation
      */
-    void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException;
+    void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException;
 
     /** 
      * Checking index could be delegated to a worker. Use this method to do so.
