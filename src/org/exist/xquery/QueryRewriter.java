@@ -37,15 +37,15 @@ public class QueryRewriter {
     }
 
     /**
-     * Implementations should return true if the location step has been rewritten and should
-     * not be further optimized.
+     * Rewrite the expression to make use of indexes. The method may also return an additional
+     * pragma to be added to the extension expression which is inserted by the optimizer.
      *
      * @param locationStep
      * @return
      * @throws XPathException
      */
-    public boolean rewriteLocationStep(LocationStep locationStep) throws XPathException {
-        return false;
+    public Pragma rewriteLocationStep(LocationStep locationStep) throws XPathException {
+        return null;
     }
 
     protected XQueryContext getContext() {

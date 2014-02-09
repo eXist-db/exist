@@ -21,19 +21,26 @@
  */
 package org.exist.xquery.modules.range;
 
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.indexing.range.RangeIndex;
+import org.exist.indexing.range.RangeIndexConfig;
+import org.exist.indexing.range.RangeIndexConfigElement;
 import org.exist.indexing.range.RangeIndexWorker;
 import org.exist.storage.ElementValue;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.NodePath;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class Lookup extends Function implements Optimizable {
@@ -120,10 +127,10 @@ public class Lookup extends Function implements Optimizable {
         )
     };
 
-    public static Lookup create(XQueryContext context, RangeIndex.Operator operator) {
+    public static Lookup create(XQueryContext context, RangeIndex.Operator operator, NodePath contextPath) {
         for (FunctionSignature sig: signatures) {
             if (sig.getName().getLocalName().equals(operator.toString())) {
-                return new Lookup(context, sig);
+                return new Lookup(context, sig, contextPath);
             }
         }
         return null;
@@ -133,16 +140,30 @@ public class Lookup extends Function implements Optimizable {
     protected QName contextQName = null;
     protected int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
+    protected boolean canOptimize = false;
     protected boolean optimizeSelf = false;
     protected boolean optimizeChild = false;
     protected Expression fallback = null;
+    protected NodePath contextPath = null;
 
     public Lookup(XQueryContext context, FunctionSignature signature) {
+        this(context, signature, null);
+    }
+
+    public Lookup(XQueryContext context, FunctionSignature signature, NodePath contextPath) {
         super(context, signature);
+        this.contextPath = contextPath;
     }
 
     public void setFallback(Expression expression) {
+        if (expression instanceof InternalFunctionCall) {
+            expression = ((InternalFunctionCall)expression).getFunction();
+        }
         this.fallback = expression;
+    }
+
+    public Expression getFallback() {
+        return fallback;
     }
 
     public void setArguments(List<Expression> arguments) throws XPathException {
@@ -205,6 +226,9 @@ public class Lookup extends Function implements Optimizable {
 
     @Override
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        if (!canOptimize) {
+            return ((Optimizable)fallback).preSelect(contextSequence, useContext);
+        }
         if (contextSequence != null && !contextSequence.isPersistentSet())
             // in-memory docs won't have an index
             return NodeSet.EMPTY_SET;
@@ -262,6 +286,9 @@ public class Lookup extends Function implements Optimizable {
 
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (!canOptimize && fallback != null) {
+            return fallback.eval(contextSequence, contextItem);
+        }
         if (contextItem != null)
             contextSequence = contextItem.toSequence();
 
@@ -273,7 +300,7 @@ public class Lookup extends Function implements Optimizable {
                 return fallback.eval(contextSequence, contextItem);
             }
         }
-        NodeSet result = NodeSet.EMPTY_SET;
+        NodeSet result;
         if (preselectResult == null) {
             long start = System.currentTimeMillis();
             Sequence input = getArgument(0).eval(contextSequence);
@@ -321,12 +348,52 @@ public class Lookup extends Function implements Optimizable {
         }
         if (!postOptimization) {
             preselectResult = null;
+            canOptimize = false;
         }
     }
 
     @Override
     public boolean canOptimize(Sequence contextSequence) {
-        return contextQName != null;
+        if (contextQName == null) {
+            return false;
+        }
+        RangeIndexConfigElement rice = findConfiguration(contextSequence);
+        if (rice == null) {
+            canOptimize = false;
+            if (fallback instanceof Optimizable) {
+                return ((Optimizable)fallback).canOptimize(contextSequence);
+            }
+            return false;
+        }
+        canOptimize = true;
+        return canOptimize;
+    }
+
+    private RangeIndexConfigElement findConfiguration(Sequence contextSequence) {
+        NodePath path = contextPath;
+        if (path == null) {
+            if (contextQName == null) {
+                return null;
+            }
+            path = new NodePath(contextQName);
+        }
+        for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            final Collection collection = i.next();
+            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
+                continue;
+            }
+            IndexSpec idxConf = collection.getIndexConfiguration(context.getBroker());
+            if (idxConf != null) {
+                RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
+                if (config != null) {
+                    RangeIndexConfigElement rice = config.find(path);
+                    if (rice != null && !rice.isComplex()) {
+                        return rice;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override

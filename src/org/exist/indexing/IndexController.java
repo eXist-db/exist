@@ -196,10 +196,10 @@ public class IndexController {
      * @param collection the collection to remove
      * @param broker the broker that will perform the operation
      */
-    public void removeCollection(Collection collection, DBBroker broker)
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex)
             throws PermissionDeniedException {
         for (final IndexWorker indexWorker : indexWorkers.values()) {
-            indexWorker.removeCollection(collection, broker);
+            indexWorker.removeCollection(collection, broker, reindex);
         }
     }
 
