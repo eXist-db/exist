@@ -26,8 +26,8 @@ import java.io.IOException;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
-
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -45,7 +45,6 @@ import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
 
 import java.net.URISyntaxException;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Observable;
@@ -54,9 +53,9 @@ import java.util.Stack;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Logger;
 import org.exist.backup.BackupDescriptor;
-import org.exist.backup.RestoreHandler;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
@@ -274,6 +273,8 @@ public class SystemImportHandler extends DefaultHandler {
 
                 reader.setContentHandler(handler);
                 reader.parse(is);
+            } catch(final SAXParseException e) {
+                throw new SAXException("Could not process collection: " + descriptor.getSymbolicPath(name, false), e);
             } catch(final ParserConfigurationException pce) {
                 throw new SAXException("Could not initalise SAXParser for processing sub-collection: " + descriptor.getSymbolicPath(name, false), pce);
             } catch(final IOException ioe) {
