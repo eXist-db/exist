@@ -404,10 +404,7 @@ public class CollectionConfigurationManager {
                     LOG.debug("Invalidating collection " + collectionPath);
                 }
 
-                CollectionConfiguration removed = configurations.remove(new CollectionURI(collectionPath.getRawCollectionPath()));
-                if (removed != null && pool != null) {
-                    pool.getXQueryPool().clear();
-                }
+                configurations.remove(new CollectionURI(collectionPath.getRawCollectionPath()));
                 return null;
             }
         });
