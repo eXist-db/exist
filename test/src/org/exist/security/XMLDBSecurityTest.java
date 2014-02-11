@@ -94,8 +94,10 @@ public class XMLDBSecurityTest {
         ums.chown(guest, "guest");
     }
 
+    /**
+     * only the owner or dba can chown a collection or resource
+     */
     @Test (expected=XMLDBException.class)
-    // only the owner or dba can chown a collection or resource
     public void worldChownResource() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
         final Resource resource = test.getResource("test.xml");
@@ -683,9 +685,7 @@ public class XMLDBSecurityTest {
         resource = test.getResource("test.bin");
         assertArrayEquals("binary-test".getBytes(), (byte[])resource.getContent());
     }
-
-    //TODO
-
+    
     @Test
     public void canCreateXmlResourceWithOnlyExecuteAndWritePermissionOnParentCollection() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
@@ -837,7 +837,594 @@ public class XMLDBSecurityTest {
         final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/test.xquery");
         assertEquals("<xquery>3</xquery>", result.getResource(0).getContent());
     }
+    
+    @Test(expected=XMLDBException.class)
+    public void cannotOpenCollection() throws XMLDBException {
+        //check that a user not in the users group (i.e. test3) cannot open the collection /db/securityTest1
+        DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test3", "test3");
+    }
 
+    @Test
+    public void canOpenCollection() throws XMLDBException {
+        //check that a user in the users group (i.e. test2) can open the collection /db/securityTest1
+        DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+        DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+
+        //check that any user can open the collection /db/securityTest3
+        DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test2", "test2");
+        DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+    }
+
+    @Test
+    public void copyCollectionWithResources() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        Resource resSource = source.createResource("source1.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+
+        resSource = source.createResource("source2.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+
+        final Collection copyOfSource = test.getChildCollection("copy-of-source");
+        assertNotNull(copyOfSource);
+        assertEquals(2, copyOfSource.listResources().length);
+    }
+    
+    /**
+     * As the 'test1' user, creates the collection and resource:
+     *
+     *  test1:users /db/securityTest3/source
+     *  test1:users /db/securityTest3/source/source1.xml
+     *  test1:users /db/securityTest3/source/source2.xml
+     *
+     * We then also create the Collection
+     *  test1:users /db/securityTest3/copy-of-source (0777)
+     * so that the destination (for the copy we are about
+     * to do) already exists and is writable...
+     * 
+     * As the 'test3' user, copy the collection:
+     *
+     *  /db/securityTest3/source
+     *      -> /db/securityTest3/copy-of-source
+     */
+    @Test
+    public void copyCollectionWithResources_destExists_destIsWritable() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        Resource resSource = source.createResource("source1.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+
+        resSource = source.createResource("source2.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+        
+        //pre-create the destination and set writable by all
+        final Collection dest = cms.createCollection("copy-of-source");
+        final UserManagementService ums = (UserManagementService)dest.getService("UserManagementService", "1.0");
+        ums.chmod(0777);
+
+        
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+
+        final Collection copyOfSource = test.getChildCollection("copy-of-source");
+        assertNotNull(copyOfSource);
+        assertEquals(2, copyOfSource.listResources().length);
+    }
+    
+    /**
+     * As the 'test1' user, creates the collection and resource:
+     *
+     *  test1:users /db/securityTest3/source
+     *  test1:users /db/securityTest3/source/source1.xml
+     *  test1:users /db/securityTest3/source/source2.xml
+     *
+     * We then also create the Collection
+     *  test1:users /db/securityTest3/copy-of-source (0755)
+     * so that the destination (for the copy we are about
+     * to do) already exists and is NOT writable...
+     * 
+     * As the 'test3' user, copy the collection:
+     *
+     *  /db/securityTest3/source
+     *      -> /db/securityTest3/copy-of-source
+     */
+    @Test(expected=XMLDBException.class)
+    public void copyCollectionWithResources_destExists_destIsNotWritable() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        Resource resSource = source.createResource("source1.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+
+        resSource = source.createResource("source2.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+        
+        //pre-create the destination with default mode (0755)
+        //so that it is not writable by 'test3' user
+        final Collection dest = cms.createCollection("copy-of-source");
+
+        
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+    }
+    
+    /**
+     * As the 'test1' user, creates the collection and resource:
+     *
+     *  test1:users /db/securityTest3/source
+     *  test1:users /db/securityTest3/source/source1.xml
+     *  test1:users /db/securityTest3/source/source2.xml
+     *
+     * We then also create the Collection
+     *  test1:users /db/securityTest3/copy-of-source (0777)
+     * so that the destination (for the copy we are about
+     * to do) already exists and is writable.
+     * We then create the resource
+     *  test1:users /db/securityTest/copy-of-source/source1.xml
+     * and set it so that it is not accessible by anyone
+     * apart from 'test1' user...
+     * 
+     * As the 'test3' user, copy the collection:
+     *
+     *  /db/securityTest3/source
+     *      -> /db/securityTest3/copy-of-source
+     * 
+     * The test should prove that during a copy, existing
+     * documents in the dest are replaced as long as the
+     * dest collection has write permission and that the
+     * permissions on the dest resource must also be writable
+     */
+    @Test(expected=XMLDBException.class)
+    public void copyCollectionWithResources_destResourceExists_destResourceIsNotWritable() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        Resource resSource = source.createResource("source1.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test1/>");
+        source.storeResource(resSource);
+
+        resSource = source.createResource("source2.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test2/>");
+        source.storeResource(resSource);
+        
+        //pre-create the destination and set writable by all
+        final Collection dest = cms.createCollection("copy-of-source");
+        UserManagementService ums = (UserManagementService) dest.getService("UserManagementService", "1.0");
+        ums.chmod(0777);
+        
+        //pre-create a destination resource and set no access to group and others
+        Resource resDestSource1 = dest.createResource("source1.xml", XMLResource.RESOURCE_TYPE);
+        resDestSource1.setContent("<old/>");
+        dest.storeResource(resDestSource1);
+        ums.chmod(resDestSource1, 0700);
+        
+        
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+        
+        final Collection copyOfSource = test.getChildCollection("copy-of-source");
+        assertNotNull(copyOfSource);
+        assertEquals(2, copyOfSource.listResources().length);
+        
+        final Resource resCopyOfSource1 = copyOfSource.getResource("source1.xml");
+        assertEquals("<test1/>", resCopyOfSource1.getContent().toString());
+        
+        final Resource resCopyOfSource2 = copyOfSource.getResource("source2.xml");
+        assertEquals("<test2/>", resCopyOfSource2.getContent().toString());
+        
+        //TODO check perms are/areNot preserved? on the replaced resource
+    }
+    
+    @Test
+    public void copyCollectionWithResources_withSubCollectionWithResource() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        Resource resSource = source.createResource("source1.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+
+        resSource = source.createResource("source2.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+        
+        //create sub-collection "sub" owned by "test1", and group "users" in /db/securityTest3/source
+        CollectionManagementService cms1 = (CollectionManagementServiceImpl)source.getService("CollectionManagementService", "1.0");
+        Collection sub = cms1.createCollection("sub");
+        
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source/sub1
+        Resource resSub = sub.createResource("sub1.xml", XMLResource.RESOURCE_TYPE);
+        resSub.setContent("<test-sub/>");
+        sub.storeResource(resSub);
+
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+
+        final Collection copyOfSource = test.getChildCollection("copy-of-source");
+        assertNotNull(copyOfSource);
+        assertEquals(2, copyOfSource.listResources().length);
+        
+        final Collection copyOfSub = copyOfSource.getChildCollection("sub");
+        assertNotNull(copyOfSub);
+        assertEquals(1, copyOfSub.listResources().length);
+    }
+
+    @Test
+    public void copyDocument_doesNotPreservePermissions() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3
+        final Resource resSource = test.createResource("source.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        test.storeResource(resSource);
+
+        //as the 'test3' user copy the resource
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copyResource("/db/securityTest3/source.xml", "/db/securityTest3", "copy-of-source.xml");
+
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        final Permission permissions = ums.getPermissions(test.getResource("copy-of-source.xml"));
+
+        //resource should be owned by test3:guest, i.e. permissions were not preserved from the test1 users doc /db/securityTest3/source.xml
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+    }
+    
+    @Test
+    public void copyDocument_doesPreservePermissions_whenDestResourceExists() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3
+        final Resource resSource = test.createResource("source.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        test.storeResource(resSource);
+        
+        //pre-create the dest resource (before the copy) and set writable by all
+        final Resource resDest = test.createResource("copy-of-source.xml", XMLResource.RESOURCE_TYPE);
+        resDest.setContent("<old/>");
+        test.storeResource(resDest);
+        UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        ums.chmod(resDest, 0777);
+
+        
+        //as the 'test3' user copy the resource
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copyResource("/db/securityTest3/source.xml", "/db/securityTest3", "copy-of-source.xml");
+
+        //as test3 user!
+        ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        final Permission permissions = ums.getPermissions(test.getResource("copy-of-source.xml"));
+
+        //resource should be owned by test3:guest, i.e. permissions were not preserved from the test1 users doc /db/securityTest3/source.xml
+        assertEquals("test1", permissions.getOwner().getName());
+        assertEquals("users", permissions.getGroup().getName());
+        
+        //TODO copy collection should do the same??!?
+    }
+
+    @Test
+    public void copyCollection_doesNotPreservePermissions() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+
+
+        final UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        final Permission permissions = ums.getPermissions(test.getChildCollection("copy-of-source"));
+
+        //collection should be owned by test3:guest, i.e. permissions were not preserved from the test1 users collection /db/securityTest3/source
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+    }
+    
+    @Test
+    public void copyCollection_doesPreservePermissions_whenDestCollectionExists() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+        
+        //pre-create the dest collection and grant access to all (0777)
+        Collection dest = cms.createCollection("copy-of-source");
+        UserManagementService ums = (UserManagementService)dest.getService("UserManagementService", "1.0");
+        ums.chmod(0777);
+
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+
+        //re-get ums as 'test3' user
+        ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        final Permission permissions = ums.getPermissions(test.getChildCollection("copy-of-source"));
+
+        //collection should STILL be owned by test1:users, i.e. permissions were preserved from the test1 users collection /db/securityTest3/copy-of-source
+        assertEquals("test1", permissions.getOwner().getName());
+        assertEquals("users", permissions.getGroup().getName());
+    }
+
+    /**
+     * As the 'test1' user, creates the collection and resource:
+     *
+     *  test1:users /db/securityTest3/source
+     *  test1:users /db/securityTest3/source/source.xml
+     *
+     *
+     * As the 'test3' user, copy the collection:
+     *
+     *  /db/securityTest3/source
+     *      -> /db/securityTest3/copy-of-source
+     */
+    @Test
+    public void copyCollectionWithResource_doesNotPreservePermissions() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        final Resource resSource = source.createResource("source.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+
+
+        UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        final Collection copyOfSource = test.getChildCollection("copy-of-source");
+        Permission permissions = ums.getPermissions(copyOfSource);
+
+        //collection should be owned by test3:guest, i.e. permissions were not preserved from the test1 users doc /db/securityTest3/source
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+
+        ums = (UserManagementService) copyOfSource.getService("UserManagementService", "1.0");
+        final Resource resCopyOfSource = copyOfSource.getResource("source.xml");
+        permissions = ums.getPermissions(resCopyOfSource);
+
+        //resource in collection should be owned by test3:guest, i.e. permissions were not preserved from the test1 users doc /db/securityTest3/source.xml
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+    }
+    
+    
+    /**
+     * As the 'test1' user, creates the collection and resource:
+     *
+     *  test1:users /db/securityTest3/source
+     *  test1:users /db/securityTest3/source/source1.xml
+     *  test1:users /db/securityTest3/source/source2.xml
+     *  test1:users /db/securityTest3/source/sub
+     *  test1:users /db/securityTest3/source/sub/sub1.xml
+     *
+     *
+     * As the 'test3' user, copy the collection:
+     *
+     *  /db/securityTest3/source
+     *      -> /db/securityTest3/copy-of-source
+     */
+    @Test
+    public void copyCollectionWithResources_withSubCollectionWithResource_doesNotPreservePermissions() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        Resource resSource = source.createResource("source1.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+
+        resSource = source.createResource("source2.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test/>");
+        source.storeResource(resSource);
+        
+        //create sub-collection "sub" owned by "test1", and group "users" in /db/securityTest3/source
+        CollectionManagementService cms1 = (CollectionManagementServiceImpl)source.getService("CollectionManagementService", "1.0");
+        Collection sub = cms1.createCollection("sub");
+        
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source/sub1
+        Resource resSub = sub.createResource("sub1.xml", XMLResource.RESOURCE_TYPE);
+        resSub.setContent("<test-sub/>");
+        sub.storeResource(resSub);
+
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+
+        final Collection copyOfSource = test.getChildCollection("copy-of-source");
+        assertNotNull(copyOfSource);
+        assertEquals(2, copyOfSource.listResources().length);
+        
+        final Collection copyOfSub = copyOfSource.getChildCollection("sub");
+        assertNotNull(copyOfSub);
+        assertEquals(1, copyOfSub.listResources().length);
+        
+        //collection should be owned by test3:guest, i.e. permissions were not preserved from the test1 users doc /db/securityTest3/source
+        UserManagementService ums = (UserManagementService) test.getService("UserManagementService", "1.0");
+        Permission permissions = ums.getPermissions(copyOfSource);
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+
+        //resource in collection should be owned by test3:guest, i.e. permissions were not preserved from the test1 users doc /db/securityTest3/source/source1.xml
+        ums = (UserManagementService) copyOfSource.getService("UserManagementService", "1.0");
+        final Resource resCopyOfSource1 = copyOfSource.getResource("source1.xml");
+        permissions = ums.getPermissions(resCopyOfSource1);
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+        
+        //resource in collection should be owned by test3:guest, i.e. permissions were not preserved from the test1 users doc /db/securityTest3/source/source2.xml
+        final Resource resCopyOfSource2 = copyOfSource.getResource("source2.xml");
+        permissions = ums.getPermissions(resCopyOfSource2);
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+        
+        //sub-collection should be owned by test3:guest, i.e. permissions were not preserved from the test1 users doc /db/securityTest3/source/sub
+        ums = (UserManagementService)copyOfSub.getService("UserManagementService", "1.0");
+        permissions = ums.getPermissions(copyOfSub);
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+        
+        //sub-collection/resource should be owned by test3:guest, i.e. permissions were not preserved from the test1 users doc /db/securityTest3/source/sub/sub1.xml
+        final Resource resCopyOfSub1 = copyOfSub.getResource("sub1.xml");
+        permissions = ums.getPermissions(resCopyOfSub1);
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+    }
+    
+    /**
+     * As the 'test1' user, creates the collection and resource:
+     *
+     *  test1:users /db/securityTest3/source
+     *  test1:users /db/securityTest3/source/source1.xml
+     *  test1:users /db/securityTest3/source/source2.xml
+     *
+     * We then also create the Collection
+     *  test1:users /db/securityTest3/copy-of-source (0777)
+     * so that the destination (for the copy we are about
+     * to do) already exists and is writable.
+     * We then create the resource
+     *  test1:users /db/securityTest/copy-of-source/source1.xml
+     * and set it so that it is writable by all (0777)...
+     * 
+     * As the 'test3' user, copy the collection:
+     *
+     *  /db/securityTest3/source
+     *      -> /db/securityTest3/copy-of-source
+     * 
+     * The test should prove that during a copy, existing
+     * documents in the dest are replaced as long as the
+     * dest collection has write permission and that the
+     * permissions on the dest resource must also be writable
+     * and that the existing permissions on the dest
+     * resource will be preserved
+     */
+    @Test
+    public void copyCollectionWithResources_destResourceExists_destResourceIsWritable_preservePermissions() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+
+        //create collection owned by "test1", and group "users" in /db/securityTest3
+        Collection source = cms.createCollection("source");
+
+        //create resource owned by "test1", and group "users" in /db/securityTest3/source
+        Resource resSource = source.createResource("source1.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test1/>");
+        source.storeResource(resSource);
+
+        resSource = source.createResource("source2.xml", XMLResource.RESOURCE_TYPE);
+        resSource.setContent("<test2/>");
+        source.storeResource(resSource);
+        
+        //pre-create the destination and set writable by all
+        final Collection dest = cms.createCollection("copy-of-source");
+        UserManagementService ums = (UserManagementService) dest.getService("UserManagementService", "1.0");
+        ums.chmod(0777);
+        
+        //pre-create a destination resource and set access for all
+        Resource resDestSource1 = dest.createResource("source1.xml", XMLResource.RESOURCE_TYPE);
+        resDestSource1.setContent("<old/>");
+        dest.storeResource(resDestSource1);
+        ums.chmod(resDestSource1, 0777);
+        
+        //as the 'test3' user copy the collection
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest3", "test3", "test3");
+        cms = (CollectionManagementServiceImpl) test.getService("CollectionManagementService", "1.0");
+        cms.copy("/db/securityTest3/source", "/db/securityTest3", "copy-of-source");
+        
+        final Collection copyOfSource = test.getChildCollection("copy-of-source");
+        assertNotNull(copyOfSource);
+        assertEquals(2, copyOfSource.listResources().length);
+        ums = (UserManagementService) copyOfSource.getService("UserManagementService", "1.0");
+        
+        //permissions should NOT have changed as the dest already existed!
+        Permission permissions = ums.getPermissions(copyOfSource);
+        assertEquals("test1", permissions.getOwner().getName());
+        assertEquals("users", permissions.getGroup().getName());
+        
+        final Resource resCopyOfSource1 = copyOfSource.getResource("source1.xml");
+        assertEquals("<test1/>", resCopyOfSource1.getContent().toString());
+        
+        //permissions should NOT have changed as the dest resource already existed!
+        permissions = ums.getPermissions(resCopyOfSource1);
+        assertEquals("test1", permissions.getOwner().getName());
+        assertEquals("users", permissions.getGroup().getName());
+        
+        final Resource resCopyOfSource2 = copyOfSource.getResource("source2.xml");
+        assertEquals("<test2/>", resCopyOfSource2.getContent().toString());
+        
+        //permissions SHOULD have changed as the dest resource is did NOT exist
+        permissions = ums.getPermissions(resCopyOfSource2);
+        assertEquals("test3", permissions.getOwner().getName());
+        assertEquals("guest", permissions.getGroup().getName());
+    }
+    
+    
+    //TODO need tests for
+    //4) CopyingCollections to dests where permission is denied!
+    //5) What about move Document, move Collection?
+    
+    
     /**
      * 1) Sets '/db' to rwxr-xr-x (0755)
      * 2) Adds the Group 'users'
