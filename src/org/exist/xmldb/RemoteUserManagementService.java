@@ -311,13 +311,51 @@ public class RemoteUserManagementService implements EXistUserManagementService {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
     }
-	
+
+    /**
+     * Change the owner gid of the current collection
+     *
+     * @param  group                  Description of the Parameter
+     * @exception  XMLDBException  Description of the Exception
+     */
+    @Override
+    public void chgrp(String group) throws XMLDBException {
+        try {
+            final List<Object> params = new ArrayList<Object>(4);
+            params.add(parent.getPath());
+            params.add(group);
+
+            parent.getClient().execute("chgrp", params);
+        } catch (final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Change the owner uid of the current collection
+     *
+     * @param  u                   Description of the Parameter
+     * @exception  XMLDBException  Description of the Exception
+     */
+    @Override
+    public void chown(Account u) throws XMLDBException {
+        try {
+            final List<Object> params = new ArrayList<Object>(4);
+            params.add(parent.getPath());
+            params.add(u.getName());
+
+            parent.getClient().execute("chown", params);
+        } catch (final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
 	/**
-	 *  Change the owner of the current collection
+	 * Change the owner of the current collection
 	 *
-	 *@param  u                   Description of the Parameter
-	 *@param  group               Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
+	 * @param  u                   Description of the Parameter
+	 * @param  group               Description of the Parameter
+	 * @exception  XMLDBException  Description of the Exception
 	 */
     @Override
     public void chown(Account u, String group) throws XMLDBException {
@@ -327,7 +365,51 @@ public class RemoteUserManagementService implements EXistUserManagementService {
             params.add(u.getName());
             params.add(group);
 
-            parent.getClient().execute("setPermissions", params);
+            parent.getClient().execute("chown", params);
+        } catch (final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Change the owner uid of a resource
+     *
+     * @param  res                 Resource
+     * @param  u                   The new owner of the resource
+     * @exception  XMLDBException  Description of the Exception
+     */
+    @Override
+    public void chgrp(Resource res, String group) throws XMLDBException {
+        //TODO : use dedicated function in XmldbURI
+        final String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+        try {
+            final List<Object> params = new ArrayList<Object>(4);
+            params.add(path);
+            params.add(group);
+
+            parent.getClient().execute("chgrp", params);
+        } catch (final XmlRpcException e) {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Change the owner uid of a resource
+     *
+     * @param  res                 Resource
+     * @param  u                   The new owner of the resource
+     * @exception  XMLDBException  Description of the Exception
+     */
+    @Override
+    public void chown(Resource res, Account u) throws XMLDBException {
+        //TODO : use dedicated function in XmldbURI
+        final String path = ((RemoteCollection) res.getParentCollection()).getPath() + "/" + res.getId();
+        try {
+            final List<Object> params = new ArrayList<Object>(4);
+            params.add(path);
+            params.add(u.getName());
+
+            parent.getClient().execute("chown", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -351,7 +433,7 @@ public class RemoteUserManagementService implements EXistUserManagementService {
             params.add(u.getName());
             params.add(group);
 
-            parent.getClient().execute("setPermissions", params);
+            parent.getClient().execute("chown", params);
         } catch (final XmlRpcException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
