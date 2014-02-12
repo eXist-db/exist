@@ -74,13 +74,6 @@ public class FunDoc extends Function {
     }
 
     /**
-     * @see org.exist.xquery.Function#getDependencies()
-     */
-    public int getDependencies() {
-        return Dependency.CONTEXT_SET;
-    }
-
-    /**
      * @see org.exist.xquery.Expression#eval(Sequence, Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
