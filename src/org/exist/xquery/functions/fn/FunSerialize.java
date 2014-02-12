@@ -9,6 +9,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.*;
+import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -53,8 +54,9 @@ public class FunSerialize extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final Properties outputProperties = new Properties();
-        if (getArgumentCount() == 2 && !args[1].isEmpty())
-            {parseParameters((NodeValue) args[1].itemAt(0), outputProperties);}
+        if (getArgumentCount() == 2 && !args[1].isEmpty()) {
+                SerializerUtils.getSerializationOptions(this, (NodeValue) args[1].itemAt(0), outputProperties);
+        }
 
         final StringBuilder out = new StringBuilder();
 
@@ -77,30 +79,6 @@ public class FunSerialize extends BasicFunction {
             throw new XPathException(this, ErrorCodes.EXXQDY0001, e.getMessage());
         } catch (final SAXException e) {
             throw new XPathException(this, FnModule.SENR0001, e.getMessage());
-        }
-    }
-
-    protected void parseParameters(NodeValue parameters, Properties properties) throws XPathException {
-        try {
-            final XMLStreamReader reader = context.getXMLStreamReader(parameters);
-            while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) {
-            }
-            if (!reader.getNamespaceURI().equals(Namespaces.XSLT_XQUERY_SERIALIZATION_NS)) {
-                throw new XPathException(this, FnModule.SENR0001, "serialization parameter elements should be in the output namespace");
-            }
-            while (reader.hasNext()) {
-                final int status = reader.next();
-                if (status == XMLStreamReader.START_ELEMENT) {
-                    final String key = reader.getLocalName();
-                    if (properties.contains(key))
-                        {throw new XPathException(this, FnModule.SEPM0019, "serialization parameter specified twice: " + key);}
-                    properties.put(key, reader.getElementText());
-                }
-            }
-        } catch (final XMLStreamException e) {
-            throw new XPathException(ErrorCodes.EXXQDY0001, e.getMessage());
-        } catch (final IOException e) {
-            throw new XPathException(ErrorCodes.EXXQDY0001, e.getMessage());
         }
     }
 
