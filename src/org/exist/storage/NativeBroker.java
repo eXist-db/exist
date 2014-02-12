@@ -48,6 +48,7 @@ import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
+import org.exist.collections.Collection.CollectionEntry;
 import org.exist.collections.Collection.SubCollectionEntry;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
@@ -995,32 +996,34 @@ public class NativeBroker extends DBBroker {
     /**
      * Checks all permissions in the tree to ensure that a copy operation will succeed
      */
-    final void checkPermissionsForCopy(final Collection src, final XmldbURI destUri) throws PermissionDeniedException, LockException {
+    protected void checkPermissionsForCopy(final Collection src, final XmldbURI destUri, final XmldbURI newName) throws PermissionDeniedException, LockException {
         
         if(!src.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " by " + getSubject().getName());
         }
-        
-        
+
         final Collection dest = getCollection(destUri);
-        final XmldbURI newDestUri = destUri.append(src.getURI().lastSegment());
+        final XmldbURI newDestUri = destUri.append(newName);
         final Collection newDest = getCollection(newDestUri);
         
         if(dest != null) {
-            if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.WRITE | Permission.READ)) {
+            //if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.WRITE | Permission.READ)) {
+            //TODO do we really need WRITE permission on the dest?
+            if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.WRITE)) {
                 throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getSubject().getName());
             }
             
             if(newDest != null) {
-                if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.READ)) {
+                //TODO why do we need READ access on the dest collection?
+                /*if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.READ)) {
                     throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getSubject().getName());
-                }
+                }*/
                 
-                if(newDest.isEmpty(this)) {
-                    if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getSubject().getName());
+                //if(newDest.isEmpty(this)) {
+                    if(!newDest.getPermissionsNoLock().validate(getSubject(), Permission.EXECUTE | Permission.WRITE)) {
+                        throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + newDest.getURI() + " by " + getSubject().getName());
                     }
-                }
+                //}
             }
         }
         
@@ -1029,16 +1032,13 @@ public class NativeBroker extends DBBroker {
             if(!srcSubDoc.getPermissions().validate(getSubject(), Permission.READ)) {
                 throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " for resource " + srcSubDoc.getURI() + " by " + getSubject().getName());
             }
-            
+
+            //if the destination resource exists, we must have write access to replace it's metadata etc. (this follows the Linux convention)
             if(newDest != null && !newDest.isEmpty(this)) {
                 final DocumentImpl newDestSubDoc = newDest.getDocument(this, srcSubDoc.getFileURI()); //TODO check this uri is just the filename!
                 if(newDestSubDoc != null) {
                     if(!newDestSubDoc.getPermissions().validate(getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " for resource " + newDestSubDoc.getURI() + " by " + getSubject().getName());
-                    }
-                } else {
-                    if(!dest.getPermissionsNoLock().validate(getSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + dest.getURI() + " by " + getSubject().getName());
                     }
                 }
             }
@@ -1048,7 +1048,7 @@ public class NativeBroker extends DBBroker {
             final XmldbURI srcSubColUri = itSrcSubColUri.next();
             final Collection srcSubCol = getCollection(src.getURI().append(srcSubColUri));
             
-            checkPermissionsForCopy(srcSubCol, newDestUri);
+            checkPermissionsForCopy(srcSubCol, newDestUri, srcSubColUri);
         }
     }
     
@@ -1092,7 +1092,7 @@ public class NativeBroker extends DBBroker {
                 triggersVisitor.beforeCopyCollection(this, transaction, collection, dstURI);
 
                 //atomically check all permissions in the tree to ensure a copy operation will succeed before starting copying
-                checkPermissionsForCopy(collection, destination.getURI());
+                checkPermissionsForCopy(collection, destination.getURI(), newName);
                 
                 final Collection newCollection = doCopyCollection(transaction, collection, destination, newName);
 
@@ -1123,14 +1123,30 @@ public class NativeBroker extends DBBroker {
                 LOG.debug("Copying resource: '" + child.getURI() + "'");
             }
             
+            //TODO The code below seems quite different to that in NativeBroker#copyResource presumably should be the same?
+            
+            
             final XmldbURI newUri = destCollection.getURI().append(child.getFileURI());
             pool.getDocumentTrigger().beforeCopyDocument(this, transaction, child, newUri);
+            
+            //are we overwriting an existing document?
+            final CollectionEntry oldDoc;
+            if(destCollection.hasDocument(this, child.getFileURI())) {
+                oldDoc = destCollection.getResourceEntry(this, child.getFileURI().toString());
+            } else {
+                oldDoc = null;
+            }
             
             DocumentImpl createdDoc;
             if (child.getResourceType() == DocumentImpl.XML_FILE) {
                 //TODO : put a lock on newDoc ?
                 final DocumentImpl newDoc = new DocumentImpl(pool, destCollection, child.getFileURI());
                 newDoc.copyOf(child, false);
+                if(oldDoc != null) {
+                    //preserve permissions from existing doc we are replacing
+                    newDoc.setPermissions(oldDoc.getPermissions()); //TODO use newDoc.copyOf(oldDoc) ideally, but we cannot currently access oldDoc without READ access to it, which we may not have (and should not need for this)!
+                }
+                
                 newDoc.setDocId(getNextResourceId(transaction, destination));
                 copyXMLResource(transaction, child, newDoc);
                 storeXMLResource(transaction, newDoc);
@@ -1140,6 +1156,10 @@ public class NativeBroker extends DBBroker {
             } else {
                 final BinaryDocument newDoc = new BinaryDocument(pool, destCollection, child.getFileURI());
                 newDoc.copyOf(child, false);
+                if(oldDoc != null) {
+                    //preserve permissions from existing doc we are replacing
+                    newDoc.setPermissions(oldDoc.getPermissions()); //TODO use newDoc.copyOf(oldDoc) ideally, but we cannot currently access oldDoc without READ access to it, which we may not have (and should not need for this)!
+                }
                 newDoc.setDocId(getNextResourceId(transaction, destination));
                 
                 InputStream is = null;
@@ -2501,6 +2521,7 @@ public class NativeBroker extends DBBroker {
                         throw new PermissionDeniedException("A resource with the same name already exists in the target collection '" + oldDoc.getURI() + "', and you do not have write access on that resource.");
                     }
                     
+                    //TODO these should not be here?!?
                     getDatabase().getDocumentTrigger().beforeDeleteDocument(this, transaction, oldDoc);
                     getDatabase().getDocumentTrigger().afterDeleteDocument(this, transaction, newURI);
                 }
@@ -2522,7 +2543,7 @@ public class NativeBroker extends DBBroker {
                     }
                 } else {
                     DocumentImpl newDoc = new DocumentImpl(pool, destination, newName);
-                    newDoc.copyOf(doc, false);
+                    newDoc.copyOf(doc, oldDoc != null);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
                     newDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                     try {

@@ -902,7 +902,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
 
-    final public Permission getPermissionsNoLock() {
+    public Permission getPermissionsNoLock() {
         return permissions;
     }
 
