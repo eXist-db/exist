@@ -248,7 +248,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
     private final static Pattern existSymbolicModePattern = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
     private final static Matcher existSymbolicModeMatcher = existSymbolicModePattern.matcher("");
 
-    private final static Pattern simpleSymbolicModePattern = Pattern.compile("[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETUID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETGID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + STICKY_CHAR + UNSET_CHAR + "]{3}");
+    private final static Pattern simpleSymbolicModePattern = Pattern.compile("(?:(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + SETUID_CHAR + SETUID_CHAR_NO_EXEC + "]|" + UNSET_CHAR + ")){2}(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + STICKY_CHAR + "]|" + UNSET_CHAR + ")");
     private final static Matcher simpleSymbolicModeMatcher = simpleSymbolicModePattern.matcher("");
 
     /**
@@ -305,11 +305,15 @@ public abstract class AbstractUnixStylePermission implements Permission {
                 case EXECUTE_CHAR:
                     mode |= (EXECUTE << shift);
                     break;
+                case SETUID_CHAR_NO_EXEC:
                 case SETUID_CHAR:
                     if(i < 3) {
                         mode |= (SET_UID << 9);
                     } else {
                         mode |= (SET_GID << 9);
+                    }
+                    if(c == SETUID_CHAR) {
+                        mode |= (EXECUTE << shift);
                     }
                     break;
                 case STICKY:
