@@ -24,7 +24,6 @@ package org.exist.xquery.modules.range;
 import org.exist.indexing.range.*;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
-import org.exist.xquery.value.StringValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,175 +34,77 @@ import java.util.List;
  */
 public class RangeQueryRewriter extends QueryRewriter {
 
-    private final RangeIndexWorker worker;
-    private final List<Object> configs;
-
-    public RangeQueryRewriter(RangeIndexWorker worker, List<Object> configs, XQueryContext context) {
+    public RangeQueryRewriter(XQueryContext context) {
         super(context);
-        this.worker = worker;
-        this.configs = configs;
     }
 
     @Override
-    public boolean rewriteLocationStep(LocationStep locationStep) throws XPathException {
+    public Pragma rewriteLocationStep(LocationStep locationStep) throws XPathException {
         if (locationStep.hasPredicates()) {
             Expression parentExpr = locationStep.getParentExpression();
-            if (!(parentExpr instanceof RewritableExpression)) {
-                return true;
-            }
-            final List<Predicate> preds = locationStep.getPredicates();
+            if ((parentExpr instanceof RewritableExpression)) {
+                // Step 1: replace all optimizable expressions within predicates with
+                // calls to the range functions. If those functions are used or not will
+                // be decided at run time.
 
-            // get path of path expression before the predicates
-            NodePath contextPath = toNodePath(getPrecedingSteps(locationStep));
+                final List<Predicate> preds = locationStep.getPredicates();
 
-            if (tryRewriteToFields(locationStep, (RewritableExpression) parentExpr, preds, contextPath)) {
-                return false;
-            }
+                // get path of path expression before the predicates
+                NodePath contextPath = toNodePath(getPrecedingSteps(locationStep));
+                // process the remaining predicates
+                for (Predicate pred : preds) {
+                    if (pred.getLength() != 1) {
+                        // can only optimize predicates with one expression
+                        break;
+                    }
 
-            // Step 2: process the remaining predicates
-            for (Predicate pred : preds) {
-                if (pred.getLength() != 1) {
-                    // can only optimize predicates with one expression
-                    break;
-                }
+                    Expression innerExpr = pred.getExpression(0);
+                    List<LocationStep> steps = getStepsToOptimize(innerExpr);
+                    if (steps == null || steps.size() == 0) {
+                        // no optimizable steps found
+                        continue;
+                    }
+                    // compute left hand path
+                    NodePath innerPath = toNodePath(steps);
+                    if (innerPath == null) {
+                        continue;
+                    }
+                    NodePath path;
+                    if (contextPath == null) {
+                        path = innerPath;
+                    } else {
+                        path = new NodePath(contextPath);
+                        path.append(innerPath);
+                    }
 
-                Expression innerExpr = pred.getExpression(0);
-                List<LocationStep> steps = getStepsToOptimize(innerExpr);
-                if (steps == null) {
-                    // no optimizable steps found
-                    continue;
-                }
-                // compute left hand path
-                NodePath innerPath = toNodePath(steps);
-                if (innerPath == null) {
-                    continue;
-                }
-                NodePath path;
-                if (contextPath == null) {
-                    path = innerPath;
-                } else {
-                    path = new NodePath(contextPath);
-                    path.append(innerPath);
-                }
-
-                if (path.length() > 0) {
-                    // find a range index configuration matching the full path to the predicate expression
-                    RangeIndexConfigElement rice = findConfiguration(path, false);
-                    if (rice != null && !rice.isComplex()) {
-                        // found simple index configuration: replace with call to lookup function
+                    if (path.length() > 0) {
+                        // replace with call to lookup function
                         // collect arguments
-                        Lookup func = rewrite(innerExpr);
+                        Lookup func = rewrite(innerExpr, path);
                         // preserve original comparison: may need it for in-memory lookups
                         func.setFallback(innerExpr);
                         func.setLocation(innerExpr.getLine(), innerExpr.getColumn());
-                        // replace comparison with range:eq
+
                         pred.replace(innerExpr, new InternalFunctionCall(func));
                     }
                 }
+
+                // Step 2: return an OptimizeFieldPragma to handle field lookups and optimize the entire
+                // path expression. If the pragma can optimize the path expression, the original code will
+                // not be called.
+                return new OptimizeFieldPragma(OptimizeFieldPragma.OPTIMIZE_RANGE_PRAGMA, null, getContext());
             }
         }
-        return true;
+        return null;
     }
 
-    private boolean tryRewriteToFields(LocationStep locationStep, RewritableExpression parentExpr, List<Predicate> preds, NodePath contextPath) throws XPathException {
-        // without context path, we cannot rewrite the entire query
-        if (contextPath != null) {
-            List<Expression> args = null;
-            SequenceConstructor arg0 = null;
-            SequenceConstructor arg1 = null;
-
-            List<Predicate> notOptimizable = new ArrayList<Predicate>(preds.size());
-
-            // walk through the predicates attached to the current location step
-            // check if expression can be optimized
-            for (final Predicate pred : preds) {
-                if (pred.getLength() != 1) {
-                    // can only optimize predicates with one expression
-                    notOptimizable.add(pred);
-                    continue;
-                }
-                Expression innerExpr = pred.getExpression(0);
-                List<LocationStep> steps = getStepsToOptimize(innerExpr);
-                if (steps == null) {
-                    notOptimizable.add(pred);
-                    continue;
-                }
-                // compute left hand path
-                NodePath innerPath = toNodePath(steps);
-                if (innerPath == null) {
-                    notOptimizable.add(pred);
-                    continue;
-                }
-                NodePath path = new NodePath(contextPath);
-                path.append(innerPath);
-
-                if (path.length() > 0) {
-                    // find a range index configuration matching the full path to the predicate expression
-                    RangeIndexConfigElement rice = findConfiguration(path, true);
-                    // found index configuration with sub-fields
-                    if (rice != null && rice.isComplex() && rice.getNodePath().match(contextPath) && findConfiguration(path, false) == null) {
-                        // check for a matching sub-path and retrieve field information
-                        RangeIndexConfigField field = ((ComplexRangeIndexConfigElement) rice).getField(path);
-                        if (field != null) {
-                            if (args == null) {
-                                // initialize args
-                                args = new ArrayList<Expression>(4);
-                                arg0 = new SequenceConstructor(getContext());
-                                args.add(arg0);
-                                arg1 = new SequenceConstructor(getContext());
-                                args.add(arg1);
-                            }
-                            // field is added to the sequence in first parameter
-                            arg0.add(new LiteralValue(getContext(), new StringValue(field.getName())));
-                            // operator
-                            arg1.add(new LiteralValue(getContext(), new StringValue(getOperator(innerExpr).toString())));
-                            // append right hand expression as additional parameter
-                            args.add(getKeyArg(innerExpr));
-                        } else {
-                            notOptimizable.add(pred);
-                            continue;
-                        }
-                    } else {
-                        notOptimizable.add(pred);
-                        continue;
-                    }
-                } else {
-                    notOptimizable.add(pred);
-                    continue;
-                }
-            }
-            if (args != null) {
-                // the entire filter expression can be replaced
-                RewritableExpression parent = parentExpr;
-                // create range:field-equals function
-                FieldLookup func = new FieldLookup(getContext(), FieldLookup.signatures[0]);
-                func.setFallback(locationStep);
-                func.setLocation(locationStep.getLine(), locationStep.getColumn());
-                func.setArguments(args);
-
-                Expression optimizedExpr = new InternalFunctionCall(func);
-                if (notOptimizable.size() > 0) {
-                    final FilteredExpression filtered = new FilteredExpression(getContext(), optimizedExpr);
-                    for (Predicate pred : notOptimizable) {
-                        filtered.addPredicate(pred);
-                    }
-                    optimizedExpr = filtered;
-                }
-                parent.replace(locationStep, optimizedExpr);
-
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Lookup rewrite(Expression expression) throws XPathException {
+    protected static Lookup rewrite(Expression expression, NodePath path) throws XPathException {
         ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
         if (expression instanceof GeneralComparison) {
             GeneralComparison comparison = (GeneralComparison) expression;
             eqArgs.add(comparison.getLeft());
             eqArgs.add(comparison.getRight());
-            Lookup func = Lookup.create(comparison.getContext(), getOperator(expression));
+            Lookup func = Lookup.create(comparison.getContext(), getOperator(expression), path);
             func.setArguments(eqArgs);
             return func;
         } else if (expression instanceof InternalFunctionCall) {
@@ -213,7 +114,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                 if (function.isCalledAs("matches")) {
                     eqArgs.add(function.getArgument(0));
                     eqArgs.add(function.getArgument(1));
-                    Lookup func = Lookup.create(function.getContext(), RangeIndex.Operator.MATCH);
+                    Lookup func = Lookup.create(function.getContext(), RangeIndex.Operator.MATCH, path);
                     func.setArguments(eqArgs);
                     return func;
                 }
@@ -222,20 +123,7 @@ public class RangeQueryRewriter extends QueryRewriter {
         return null;
     }
 
-    private Expression getKeyArg(Expression expression) {
-        if (expression instanceof GeneralComparison) {
-            return ((GeneralComparison)expression).getRight();
-        } else if (expression instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expression;
-            Function function = fcall.getFunction();
-            if (function instanceof Lookup) {
-                return function.getArgument(1);
-            }
-        }
-        return null;
-    }
-
-    private List<LocationStep> getStepsToOptimize(Expression expr) {
+    protected static List<LocationStep> getStepsToOptimize(Expression expr) {
         if (expr instanceof GeneralComparison) {
             GeneralComparison comparison = (GeneralComparison) expr;
             return BasicExpressionVisitor.findLocationSteps(comparison.getLeft());
@@ -245,13 +133,23 @@ public class RangeQueryRewriter extends QueryRewriter {
             if (function instanceof Lookup) {
                 if (function.isCalledAs("matches")) {
                     return BasicExpressionVisitor.findLocationSteps(function.getArgument(0));
+                } else {
+                    Expression original = ((Lookup)function).getFallback();
+                    return getStepsToOptimize(original);
                 }
             }
         }
         return null;
     }
 
-    private RangeIndex.Operator getOperator(Expression expr) {
+    protected static RangeIndex.Operator getOperator(Expression expr) {
+        if (expr instanceof InternalFunctionCall) {
+            InternalFunctionCall fcall = (InternalFunctionCall) expr;
+            Function function = fcall.getFunction();
+            if (function instanceof Lookup) {
+                expr = ((Lookup)function).getFallback();
+            }
+        }
         RangeIndex.Operator operator = RangeIndex.Operator.EQ;
         if (expr instanceof GeneralComparison) {
             GeneralComparison comparison = (GeneralComparison) expr;
@@ -292,26 +190,13 @@ public class RangeQueryRewriter extends QueryRewriter {
             if (function instanceof Lookup && function.isCalledAs("matches")) {
                 operator = RangeIndex.Operator.MATCH;
             }
+        } else if (expr instanceof Lookup && ((Function)expr).isCalledAs("matches")) {
+            operator = RangeIndex.Operator.MATCH;
         }
         return operator;
     }
 
-    /**
-     * Scan all index configurations to find one matching path.
-     */
-    private RangeIndexConfigElement findConfiguration(NodePath path, boolean complex) {
-        for (Object configObj : configs) {
-            final RangeIndexConfig config = (RangeIndexConfig) configObj;
-            final RangeIndexConfigElement rice = config.find(path);
-            if (rice != null && ((complex && rice.isComplex()) ||
-                    (!complex && !rice.isComplex()))) {
-                return rice;
-            }
-        }
-        return null;
-    }
-
-    private NodePath toNodePath(List<LocationStep> steps) {
+    protected static NodePath toNodePath(List<LocationStep> steps) {
         NodePath path = new NodePath();
         for (LocationStep step: steps) {
             if (step == null) {
@@ -335,7 +220,7 @@ public class RangeQueryRewriter extends QueryRewriter {
         return path;
     }
 
-    private List<LocationStep> getPrecedingSteps(LocationStep current) {
+    protected static List<LocationStep> getPrecedingSteps(LocationStep current) {
         Expression parentExpr = current.getParentExpression();
         if (!(parentExpr instanceof RewritableExpression)) {
             return null;

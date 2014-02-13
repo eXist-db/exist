@@ -36,6 +36,8 @@ import org.exist.EXistException;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletResponseAdapter;
 import org.exist.http.servlets.AbstractExistHttpServlet;
+import org.exist.http.servlets.BasicAuthenticator;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -114,9 +116,13 @@ public class RestXqServlet extends AbstractExistHttpServlet {
             getLog().error(ee.getMessage(), ee);
             throw new ServletException(ee.getMessage(), ee);
         } catch(RestXqServiceException rqse) {
-            //TODO should probably be caught higher up and returned as a HTTP Response? maybe need two different types of exception to differentiate critical vs processing exception
-            getLog().error(rqse.getMessage(), rqse);
-            throw new ServletException(rqse.getMessage(), rqse);
+            if (rqse.getCause() instanceof PermissionDeniedException) {
+                getAuthenticator().sendChallenge(request, response);
+            } else {
+                //TODO should probably be caught higher up and returned as a HTTP Response? maybe need two different types of exception to differentiate critical vs processing exception
+                getLog().error(rqse.getMessage(), rqse);
+                throw new ServletException(rqse.getMessage(), rqse);
+            }
         } finally {
             if(broker != null) {
                 getPool().release(broker);

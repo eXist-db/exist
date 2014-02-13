@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,12 +16,9 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.collections.triggers;
 
-import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DefaultDocumentSet;
 import org.exist.dom.DocumentImpl;
@@ -43,7 +40,7 @@ import org.apache.log4j.Logger;
 /**
  * Test trigger to check if trigger configuration is working properly.
  */
-public class TestTrigger extends FilteringTrigger implements DocumentTrigger {
+public class TestTrigger extends SAXTrigger implements DocumentTrigger {
 
     protected Logger LOG = Logger.getLogger(getClass());
     

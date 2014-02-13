@@ -343,7 +343,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     @Override
-    public void removeCollection(Collection collection, DBBroker broker) {
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
         if (LOG.isDebugEnabled())
             LOG.debug("Dropping NGram index for collection " + collection.getURI());
         final Lock lock = index.db.getLock();

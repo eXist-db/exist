@@ -112,7 +112,7 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
         if ($output instance of element(error)) then
             $output
         else if ($test/@serialize) then
-            let $options := $test/@serialize
+            let $options := $test/@serialize/string()
             let $serialized :=
                 util:catch("*",
                     for $x in $output

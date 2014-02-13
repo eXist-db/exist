@@ -44,6 +44,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -53,6 +54,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 public class SerializeToFile extends BasicFunction 
@@ -75,8 +77,9 @@ public class SerializeToFile extends BasicFunction
                         Cardinality.ZERO_OR_MORE, "The contents to write to the file system." ),
 				new FunctionParameterSequenceType( "path", Type.ITEM, 
                         Cardinality.EXACTLY_ONE, "The full path or URI to the file" ),
-				new FunctionParameterSequenceType( "parameters", Type.STRING, 
-                        Cardinality.ZERO_OR_MORE, "The serialization parameters specified as key-value pairs" )
+				new FunctionParameterSequenceType( "parameters", Type.ITEM,
+                        Cardinality.ZERO_OR_MORE, "The serialization parameters: either a sequence of key=value pairs or an output:serialization-parameters " +
+                            "element as defined by the standard fn:serialize function." )
             },
 			new FunctionReturnSequenceType( Type.BOOLEAN, 
                     Cardinality.ZERO_OR_ONE, "true on success - false if the specified file can not be "
@@ -96,8 +99,9 @@ public class SerializeToFile extends BasicFunction
                         Cardinality.ZERO_OR_MORE, "The contents to write to the file system." ),
 				new FunctionParameterSequenceType( "path", Type.ITEM, 
                         Cardinality.EXACTLY_ONE, "The full path or URI to the file" ),
-				new FunctionParameterSequenceType( "parameters", Type.STRING, 
-                        Cardinality.ZERO_OR_MORE, "The serialization parameters specified as key-value pairs" ),
+				new FunctionParameterSequenceType( "parameters", Type.ITEM,
+                        Cardinality.ZERO_OR_MORE, "The serialization parameters: either a sequence of key=value pairs or an output:serialization-parameters " +
+                        "element as defined by the standard fn:serialize function." ),
 				new FunctionParameterSequenceType( "append", Type.BOOLEAN, 
                         Cardinality.EXACTLY_ONE, "Should content be appended?")
                         },
@@ -170,7 +174,7 @@ public class SerializeToFile extends BasicFunction
 
             if(isCalledAs(FN_SERIALIZE_LN)) {
                 //parse serialization options from third argument to function
-                final Properties outputProperties = parseXMLSerializationOptions( args[2].iterate() );
+                final Properties outputProperties = parseXMLSerializationOptions( args[2] );
                 final boolean doAppend = (args.length > 3) && "true".equals(args[3].itemAt(0).getStringValue());
 
                 //do the serialization
@@ -186,13 +190,17 @@ public class SerializeToFile extends BasicFunction
 	}
 	
 	
-	private Properties parseXMLSerializationOptions(final SequenceIterator siSerializeParams) throws XPathException {
-            //parse serialization options
-            final Properties outputProperties = new Properties();
+	private Properties parseXMLSerializationOptions(final Sequence sSerializeParams) throws XPathException {
+        //parse serialization options
+        final Properties outputProperties = new Properties();
 
-            outputProperties.setProperty( OutputKeys.INDENT, "yes" );
-            outputProperties.setProperty( OutputKeys.OMIT_XML_DECLARATION, "yes" );
+        outputProperties.setProperty( OutputKeys.INDENT, "yes" );
+        outputProperties.setProperty( OutputKeys.OMIT_XML_DECLARATION, "yes" );
 
+        if (sSerializeParams.hasOne() && Type.subTypeOf(sSerializeParams.getItemType(), Type.NODE)) {
+            SerializerUtils.getSerializationOptions(this, (NodeValue) sSerializeParams.itemAt(0), outputProperties);
+        } else {
+            SequenceIterator siSerializeParams = sSerializeParams.iterate();
             while(siSerializeParams.hasNext()) {
                 final String serializeParam = siSerializeParams.nextItem().getStringValue();
                 final String opt[] = Option.parseKeyValuePair(serializeParam);
@@ -200,8 +208,8 @@ public class SerializeToFile extends BasicFunction
                     outputProperties.setProperty( opt[0], opt[1] );
                 }
             }
-
-            return outputProperties;
+        }
+        return outputProperties;
 	}
 	
 	

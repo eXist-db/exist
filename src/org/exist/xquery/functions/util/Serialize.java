@@ -45,6 +45,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.NodeValue;
@@ -53,6 +54,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 public class Serialize extends BasicFunction {
@@ -87,7 +89,9 @@ public class Serialize extends BasicFunction {
                 "called from.",
                 new SequenceType[] { 
                     new FunctionParameterSequenceType("node-set", Type.NODE, Cardinality.ZERO_OR_MORE, "The node set to serialize"),
-                    new FunctionParameterSequenceType("parameters", Type.STRING, Cardinality.ZERO_OR_MORE, "The serialization parameters")
+                    new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE,
+                            "The serialization parameters: either a sequence of key=value pairs or an output:serialization-parameters " +
+                            "element as defined by the standard fn:serialize function.")
                 },
                 new FunctionParameterSequenceType("result", Type.STRING, Cardinality.ZERO_OR_ONE, "the string containing the serialized node set.")
         )
@@ -127,7 +131,7 @@ public class Serialize extends BasicFunction {
 	        }
 	        
 	        //parse serialization options from third argument to function
-	        outputProperties = parseSerializationOptions(args[2].iterate());
+	        outputProperties = parseSerializationOptions(args[2]);
 	        
 	        //setup output stream for file
 	        try
@@ -149,7 +153,7 @@ public class Serialize extends BasicFunction {
         	/** serialize to string **/
 
 	        //parse serialization options from second argument to function        	
-        	outputProperties = parseSerializationOptions(args[1].iterate());
+        	outputProperties = parseSerializationOptions(args[1]);
         	
         	//setup output stream for byte array
         	os = new ByteArrayOutputStream();
@@ -170,23 +174,27 @@ public class Serialize extends BasicFunction {
         
     }
     
-    private Properties parseSerializationOptions(SequenceIterator siSerializeParams) throws XPathException
+    private Properties parseSerializationOptions(Sequence sSerializeParams) throws XPathException
     {
     	//parse serialization options
         final Properties outputProperties = new Properties();
-        outputProperties.setProperty(OutputKeys.INDENT, "yes");
-        outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        while(siSerializeParams.hasNext())
-        {
-            final String serializeParams = siSerializeParams.nextItem().getStringValue();
-            final String params[] = serializeParams.split(" ");
-            for(final String param : params)
+        if (sSerializeParams.hasOne() && Type.subTypeOf(sSerializeParams.getItemType(), Type.NODE)) {
+            SerializerUtils.getSerializationOptions(this, (NodeValue) sSerializeParams.itemAt(0), outputProperties);
+        } else {
+            SequenceIterator siSerializeParams = sSerializeParams.iterate();
+            outputProperties.setProperty(OutputKeys.INDENT, "yes");
+            outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            while(siSerializeParams.hasNext())
             {
-                final String opt[] = Option.parseKeyValuePair(param);
-                outputProperties.setProperty(opt[0], opt[1]);
+                final String serializeParams = siSerializeParams.nextItem().getStringValue();
+                final String params[] = serializeParams.split(" ");
+                for(final String param : params)
+                {
+                    final String opt[] = Option.parseKeyValuePair(param);
+                    outputProperties.setProperty(opt[0], opt[1]);
+                }
             }
         }
-
         return outputProperties;
     }
     
