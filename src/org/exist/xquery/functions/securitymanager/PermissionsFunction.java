@@ -54,7 +54,7 @@ import org.exist.xquery.value.Type;
  *
  * @author Adam Retter <adam@existsolutions.com>
  */
-public class PermissionsFunctions extends BasicFunction {
+public class PermissionsFunction extends BasicFunction {
     
     private final static QName qnGetPermissions = new QName("get-permissions", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnAddUserACE = new QName("add-user-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
@@ -224,7 +224,7 @@ public class PermissionsFunctions extends BasicFunction {
 
     final static char OWNER_GROUP_SEPARATOR = ':';
 
-    public PermissionsFunctions(final XQueryContext context, final FunctionSignature signature) {
+    public PermissionsFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -436,9 +436,9 @@ public class PermissionsFunctions extends BasicFunction {
             mode |= Permission.EXECUTE;
         }
         
-        final Subject currentSubject = context.getBroker().getSubject();
+        final Subject effectiveSubject = context.getEffectiveUser();
         try {
-            final boolean hasAccess = getPermissions(pathUri).validate(currentSubject, mode);
+            final boolean hasAccess = getPermissions(pathUri).validate(effectiveSubject, mode);
             return BooleanValue.valueOf(hasAccess);
         } catch(final XPathException xpe) {
             LOG.error(xpe.getMessage(), xpe);

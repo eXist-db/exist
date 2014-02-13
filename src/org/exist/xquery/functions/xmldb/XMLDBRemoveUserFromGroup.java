@@ -33,7 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.securitymanager.GroupMembershipFunctions;
+import org.exist.xquery.functions.securitymanager.GroupMembershipFunction;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -45,6 +45,7 @@ import org.exist.xquery.value.Type;
  * @author Adam Retter <adam@existsolutions.com>
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
+@Deprecated
 public class XMLDBRemoveUserFromGroup extends BasicFunction {
 
     protected static final Logger logger = Logger.getLogger(XMLDBRemoveUserFromGroup.class);
@@ -57,7 +58,7 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group name")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() or false() indicating the outcome of the operation"),
-            GroupMembershipFunctions.FNS_REMOVE_GROUP_MEMBER
+            GroupMembershipFunction.FNS_REMOVE_GROUP_MEMBER
     );
 
     /**

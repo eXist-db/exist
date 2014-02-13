@@ -47,13 +47,14 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * op           ::= + | - | =
      * perm         ::= r | s | t | w | x
      */
-    private void setUnixSymbolicMode(final String symbolicMode) throws SyntaxException, PermissionDeniedException {
+    private void setUnixSymbolicMode(final String symbolicMode)
+            throws SyntaxException, PermissionDeniedException {
 
         //TODO expand perm to full UNIX chmod i.e. perm ::= r | s | t | w | x | X | u | g | o
 
         final String clauses[] = symbolicMode.split(",");
         for(final String clause : clauses) {
-            final String whoPerm[] = clause.split("[+-=]");
+            final String whoPerm[] = clause.split("[+\\-=]");
 
             int perm = 0;
             boolean uidgid = false;
@@ -86,7 +87,15 @@ public abstract class AbstractUnixStylePermission implements Permission {
                 }
             }
 
-            for(final char c: whoPerm[0].toCharArray()) {
+            
+            final char whoose[];
+            if(whoPerm[0].length() > 0) {
+                whoose = whoPerm[0].toCharArray();
+            } else {
+                whoose = new char[]{ ALL_CHAR };
+            }
+            
+            for(final char c: whoose) {
                 switch(c) {
                     case ALL_CHAR:
                         final int newMode = (perm << 6) | (perm << 3) | perm | (sticky ? (STICKY << 9) : 0) | (uidgid ? ((SET_UID | SET_GID) << 9) : 0);
@@ -186,7 +195,8 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * @deprecated setUnixSymbolicMode should be used instead
      */
     @Deprecated
-    private void setExistSymbolicMode(final String existSymbolicMode) throws SyntaxException, PermissionDeniedException {
+    private void setExistSymbolicMode(final String existSymbolicMode)
+            throws SyntaxException, PermissionDeniedException {
 
         LOG.warn("Permission modes should not be set using this format '" + existSymbolicMode + "', consider using the UNIX symbolic mode instead");
 
@@ -227,25 +237,36 @@ public abstract class AbstractUnixStylePermission implements Permission {
     /**
      * Simple symbolic mode is [rwxs-]{3}[rwxs-]{3}[rwxt-]{3}
      */
-    private void setSimpleSymbolicMode(final String simpleSymbolicMode) throws SyntaxException, PermissionDeniedException {
+    private void setSimpleSymbolicMode(final String simpleSymbolicMode)
+            throws SyntaxException, PermissionDeniedException {
         setMode(simpleSymbolicModeToInt(simpleSymbolicMode));
     }
 
-    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]+(?:[+-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR +"])+)+),?)+");
+    private final static Pattern unixSymbolicModePattern = Pattern.compile("((?:[augo]*(?:[+\\-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR +"])+)+),?)+");
     private final static Matcher unixSymbolicModeMatcher = unixSymbolicModePattern.matcher("");
 
     private final static Pattern existSymbolicModePattern = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
     private final static Matcher existSymbolicModeMatcher = existSymbolicModePattern.matcher("");
 
-    private final static Pattern simpleSymbolicModePattern = Pattern.compile("[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETUID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + SETGID_CHAR + UNSET_CHAR + "]{3}[" + READ_CHAR + WRITE_CHAR + EXECUTE_CHAR + STICKY_CHAR + UNSET_CHAR + "]{3}");
+    private final static Pattern simpleSymbolicModePattern = Pattern.compile("(?:(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + SETUID_CHAR + SETUID_CHAR_NO_EXEC + "]|" + UNSET_CHAR + ")){2}(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + STICKY_CHAR + "]|" + UNSET_CHAR + ")");
     private final static Matcher simpleSymbolicModeMatcher = simpleSymbolicModePattern.matcher("");
 
     /**
-     * Note we dont need @PermissionRequired(user = IS_DBA | IS_OWNER) here
+     * Note: we don't need @PermissionRequired(user = IS_DBA | IS_OWNER) here
      * because all of these methods delegate to the subclass implementation.
+     *
+     * @param modeStr The String representing a mode to set
+     *
+     * @throws org.exist.util.SyntaxException If the string syntax for the mode
+     * is not recognised. The following syntaxes are supported. Simple symbolic,
+     * Unix symbolic, eXist symbolic.
+     * 
+     * @throws org.exist.security.PermissionDeniedException If you do not have
+     * permission to set the mode
      */
     @Override
-    public final void setMode(final String modeStr) throws SyntaxException, PermissionDeniedException {
+    public final void setMode(final String modeStr) 
+            throws SyntaxException, PermissionDeniedException {
         simpleSymbolicModeMatcher.reset(modeStr);
 
         if(simpleSymbolicModeMatcher.matches()) {
@@ -284,11 +305,15 @@ public abstract class AbstractUnixStylePermission implements Permission {
                 case EXECUTE_CHAR:
                     mode |= (EXECUTE << shift);
                     break;
+                case SETUID_CHAR_NO_EXEC:
                 case SETUID_CHAR:
                     if(i < 3) {
                         mode |= (SET_UID << 9);
                     } else {
                         mode |= (SET_GID << 9);
+                    }
+                    if(c == SETUID_CHAR) {
+                        mode |= (EXECUTE << shift);
                     }
                     break;
                 case STICKY:
@@ -325,8 +350,11 @@ public abstract class AbstractUnixStylePermission implements Permission {
     
     /**
      * Utility function for external use
+     *
+     * @param types Types to convert to a string representation
+     * @return The string representation of the types
      */
-    public static String typesToString(int types) {
+    public static String typesToString(final int types) {
         final StringBuilder builder = new StringBuilder();
         
         if((types >> 8) > 0) {

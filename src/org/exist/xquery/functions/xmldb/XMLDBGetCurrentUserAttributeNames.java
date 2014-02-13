@@ -37,6 +37,7 @@ import org.exist.security.SchemaType;
  * Time: 1:51:11 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class XMLDBGetCurrentUserAttributeNames extends BasicFunction {
     protected static final Logger logger = Logger.getLogger(XMLDBGetCurrentUserAttribute.class);
 
