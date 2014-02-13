@@ -902,7 +902,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
 
-    final public Permission getPermissionsNoLock() {
+    public Permission getPermissionsNoLock() {
         return permissions;
     }
 
@@ -1649,7 +1649,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 } else {
                     //TODO : use a more elaborated method ? No triggers...
                     broker.removeXMLResource(transaction, oldDoc, false);
-                    oldDoc.copyOf(document);
+                    oldDoc.copyOf(document, true);
                     indexer.setDocumentObject(oldDoc);
                     //old has become new at this point
                     document = oldDoc;
