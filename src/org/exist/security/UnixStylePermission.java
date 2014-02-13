@@ -25,6 +25,7 @@ import java.io.IOException;
 import static org.exist.security.PermissionRequired.IS_DBA;
 import static org.exist.security.PermissionRequired.IS_MEMBER;
 import static org.exist.security.PermissionRequired.IS_OWNER;
+import static org.exist.security.PermissionRequired.IS_SET_GID;
 import org.exist.security.internal.RealmImpl;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -185,15 +186,30 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         }
         setGroupId(group.getId());
     }
-        
+    
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     private void setGroupId(@PermissionRequired(user = IS_DBA | IS_MEMBER) final int groupId) {
+        /*
+        This function wrapper is really just used as a place
+        to focus PermissionRequired checks for several public
+        functions
+        */
+        _setGroupId(groupId);
+    }
+    
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    @Override
+    public void setGroupFrom(@PermissionRequired(mode = IS_SET_GID) final Permission other) {
+        _setGroupId(other.getGroup().getId());
+    }
+    
+    private void _setGroupId(final int groupId) {
         this.vector =
             ((vector >>> 28) << 28) | //current ownerId and ownerMode, mask rest
             (groupId << 8) |          //left shift new groupId into positon
             (vector & 255);            //current groupMode and otherMode
     }
-
+    
     /**
      * Get the mode
      *

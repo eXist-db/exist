@@ -129,7 +129,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         //inherit the group to the resource if current collection is setGid
         if(collection != null && collection.getPermissions().isSetGid()) {
             try {
-                this.permissions.setGroup(collection.getPermissions().getGroup());
+                this.permissions.setGroupFrom(collection.getPermissions());
             } catch(final PermissionDeniedException pde) {
                 throw new IllegalArgumentException(pde); //TODO improve
             }
