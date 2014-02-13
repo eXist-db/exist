@@ -32,6 +32,7 @@ import static org.exist.security.PermissionRequired.IS_DBA;
 import static org.exist.security.PermissionRequired.IS_OWNER;
 import static org.exist.security.PermissionRequired.IS_MEMBER;
 import static org.exist.security.PermissionRequired.ACL_WRITE;
+import static org.exist.security.PermissionRequired.IS_SET_GID;
 
 /**
  * @author Adam Retter <adam@exist-db.org>
@@ -63,6 +64,14 @@ public class PermissionRequiredAspect {
             final Integer groupId = (Integer)o;
             if(permission.isCurrentSubjectInGroup(groupId)) {
                return; 
+            }
+        }
+        
+        //3) check if we are looking for setGID
+        if((parameterPermissionRequired.mode() & IS_SET_GID) == IS_SET_GID) {
+            final Permission other = (Permission)o;
+            if(other.isSetGid()) {
+                return;
             }
         }
             

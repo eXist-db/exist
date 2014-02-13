@@ -27,9 +27,9 @@ import org.xmldb.api.modules.XMLResource;
 @RunWith(Parameterized.class)
 public class XMLDBSecurityTest {
 
-    private static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
+    private static final String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-    private String baseUri;
+    private final String baseUri;
 
     private static JettyStart server;
 
@@ -41,19 +41,19 @@ public class XMLDBSecurityTest {
     public static LinkedList<String[]> instances() {
         final LinkedList<String[]> params = new LinkedList<String[]>();
         params.add(new String[] { "xmldb:exist://" });
-	params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" });
+        params.add(new String[] { "xmldb:exist://localhost:" + System.getProperty("jetty.port", "8088") + "/xmlrpc" });
         
         return params;
     }
 
-    @Test (expected=XMLDBException.class) // fails since guest has no write permissions
+    @Test(expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldCreateCollection() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
         final CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
         cms.createCollection("createdByGuest");
     }
 
-    @Test (expected=XMLDBException.class) // fails since guest has no write permissions
+    @Test(expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldAddResource() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
         final Resource resource = test.createResource("createdByGuest", XMLResource.RESOURCE_TYPE);
@@ -61,14 +61,14 @@ public class XMLDBSecurityTest {
         test.storeResource(resource);
     }
 
-    @Test (expected=XMLDBException.class) // fails since guest has no write permissions
+    @Test(expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldRemoveCollection() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(baseUri + "/db", "guest", "guest");
         final CollectionManagementService cms = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
         cms.removeCollection("securityTest1");
     }
 
-    @Test (expected=XMLDBException.class) // fails since guest has no write permissions
+    @Test(expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldChmodCollection() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
         final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
@@ -76,7 +76,7 @@ public class XMLDBSecurityTest {
         ums.chmod(0777);
     }
 
-    @Test (expected=XMLDBException.class) // fails since guest has no write permissions
+    @Test(expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldChmodResource() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
         final Resource resource = test.getResource("test.xml");
@@ -85,7 +85,7 @@ public class XMLDBSecurityTest {
         ums.chmod(resource, 0777);
     }
 
-    @Test (expected=XMLDBException.class) // fails since guest has no write permissions
+    @Test(expected=XMLDBException.class) // fails since guest has no write permissions
     public void worldChownCollection() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "guest", "guest");
         final UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
@@ -685,7 +685,7 @@ public class XMLDBSecurityTest {
         resource = test.getResource("test.bin");
         assertArrayEquals("binary-test".getBytes(), (byte[])resource.getContent());
     }
-    
+
     @Test
     public void canCreateXmlResourceWithOnlyExecuteAndWritePermissionOnParentCollection() throws XMLDBException{
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
@@ -837,7 +837,7 @@ public class XMLDBSecurityTest {
         final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/test.xquery");
         assertEquals("<xquery>3</xquery>", result.getResource(0).getContent());
     }
-    
+
     @Test(expected=XMLDBException.class)
     public void cannotOpenCollection() throws XMLDBException {
         //check that a user not in the users group (i.e. test3) cannot open the collection /db/securityTest1
@@ -1418,12 +1418,373 @@ public class XMLDBSecurityTest {
         assertEquals("test3", permissions.getOwner().getName());
         assertEquals("guest", permissions.getGroup().getName());
     }
+
+    @Test
+    public void setUidXQueryCanWriteRestrictedCollection() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+
+        final long timestamp = System.currentTimeMillis();
+        final String content = "<setuid>" + timestamp + "</setuid>";
+
+        //create an XQuery /db/securityTest1/setuid.xquery
+        final String xquery = "xmldb:store('/db/securityTest1/forSetUidWrite', 'setuid.xml', " + content + ")";
+        Resource xqueryResource = test.createResource("setuid.xquery", "BinaryResource");
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
+
+        //set the xquery to be owned by 'test1' and set it 'setuid', and set it 'rx' by 'users' group so 'test2' can execute it!
+        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+        xqueryResource = test.getResource("setuid.xquery");
+        ums.chmod(xqueryResource, 04750);
+
+        //create a collection for the XQuery to write into
+        final CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+        final Collection colForSetUid = cms.createCollection("forSetUidWrite");
+
+        //only allow the user 'test1' to write into the collection
+        ums = (UserManagementService)colForSetUid.getService("UserManagementService", "1.0");
+        ums.chmod(0700);
+
+        //execute the XQuery as the 'test2' user... it should become 'setuid' of 'test1' and succeed.
+        final Collection test2 = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final XPathQueryServiceImpl queryService = (XPathQueryServiceImpl)test2.getService("XPathQueryService", "1.0");
+        final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/setuid.xquery");
+        assertEquals("/db/securityTest1/forSetUidWrite/setuid.xml", result.getResource(0).getContent());
+
+        //check the written content
+        final Resource writtenXmlResource = colForSetUid.getResource("setuid.xml");
+        assertEquals(content, writtenXmlResource.getContent());
+    }
+
+    @Test(expected=XMLDBException.class)
+    public void nonSetUidXQueryCannotWriteRestrictedCollection() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test1", "test1");
+
+        final long timestamp = System.currentTimeMillis();
+        final String content = "<not_setuid>" + timestamp + "</not_setuid>";
+
+        //create an XQuery /db/securityTest1/not_setuid.xquery
+        final String xquery = "xmldb:store('/db/securityTest1/forSetUidWrite', 'not_setuid.xml', " + content + ")";
+        Resource xqueryResource = test.createResource("not_setuid.xquery", "BinaryResource");
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
+
+        //set the xquery to be owned by 'test1' and do NOT set it 'setuid', and do set it 'rx' by 'users' group so 'test2' can execute it!
+        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+        xqueryResource = test.getResource("not_setuid.xquery");
+        ums.chmod(xqueryResource, 00750); //NOT SETUID
+
+        //create a collection for the XQuery to write into
+        final CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+        final Collection colForSetUid = cms.createCollection("forSetUidWrite");
+
+        //only allow the user 'test1' to write into the collection
+        ums = (UserManagementService)colForSetUid.getService("UserManagementService", "1.0");
+        ums.chmod(0700);
+
+        //execute the XQuery as the 'test2' user... it should become 'setuid' of 'test1' and succeed.
+        final Collection test2 = DatabaseManager.getCollection(baseUri + "/db/securityTest1", "test2", "test2");
+        final XPathQueryServiceImpl queryService = (XPathQueryServiceImpl)test2.getService("XPathQueryService", "1.0");
+        final ResourceSet result = queryService.executeStoredQuery("/db/securityTest1/not_setuid.xquery");
+        assertFalse("/db/securityTest1/forSetUidWrite/not_setuid.xml".equals(result.getResource(0).getContent()));
+    }
+
+    @Test
+    public void setGidXQueryCanWriteRestrictedCollection() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+
+        final long timestamp = System.currentTimeMillis();
+        final String content = "<setgid>" + timestamp + "</setgid>";
+
+        //create an XQuery /db/securityTest1/setuid.xquery
+        final String xquery = "xmldb:store('/db/securityTest2/forSetGidWrite', 'setgid.xml', " + content + ")";
+        Resource xqueryResource = test.createResource("setgid.xquery", "BinaryResource");
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
+
+        //set the xquery to be owned by 'test1':'users' and set it 'setgid', and set it 'rx' by ohers, so 'test3' can execute it!
+        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+        xqueryResource = test.getResource("setgid.xquery");
+        ums.chown(xqueryResource, ums.getAccount("test1"), "users");
+        ums.chmod(xqueryResource, 02705); //setgid
+
+        //create a collection for the XQuery to write into
+        final CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+        final Collection colForSetUid = cms.createCollection("forSetGidWrite");
+
+        //only allow the group 'users' to write into the collection
+        ums = (UserManagementService)colForSetUid.getService("UserManagementService", "1.0");
+        ums.chmod(0570);
+
+        //execute the XQuery as the 'test3' user... it should become 'setgid' of 'users' and succeed.
+        final Collection test3 = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
+        final XPathQueryServiceImpl queryService = (XPathQueryServiceImpl)test3.getService("XPathQueryService", "1.0");
+        final ResourceSet result = queryService.executeStoredQuery("/db/securityTest2/setgid.xquery");
+        assertEquals("/db/securityTest2/forSetGidWrite/setgid.xml", result.getResource(0).getContent());
+
+        //check the written content
+        final Resource writtenXmlResource = colForSetUid.getResource("setgid.xml");
+        assertEquals(content, writtenXmlResource.getContent());
+    }
     
+    @Test(expected=XMLDBException.class)
+    public void nonSetGidXQueryCannotWriteRestrictedCollection() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+
+        final long timestamp = System.currentTimeMillis();
+        final String content = "<not_setgid>" + timestamp + "</not_setgid>";
+
+        //create an XQuery /db/securityTest1/not_setgid.xquery
+        final String xquery = "xmldb:store('/db/securityTest2/forSetGidWrite', 'not_setgid.xml', " + content + ")";
+        Resource xqueryResource = test.createResource("not_setgid.xquery", "BinaryResource");
+        xqueryResource.setContent(xquery);
+        test.storeResource(xqueryResource);
+
+        //set the xquery to be owned by 'test1':'users' and set it 'setgid', and set it 'rx' by ohers, so 'test3' can execute it!
+        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+        xqueryResource = test.getResource("not_setgid.xquery");
+        ums.chmod(xqueryResource, 00705); //NOT setgid
+
+        //create a collection for the XQuery to write into
+        final CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+        final Collection colForSetUid = cms.createCollection("forSetGidWrite");
+
+        //only allow the group 'users' to write into the collection
+        ums = (UserManagementService)colForSetUid.getService("UserManagementService", "1.0");
+        ums.chmod(0070);
+
+        //execute the XQuery as the 'test3' user... it should become 'setgid' of 'users' and succeed.
+        final Collection test3 = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
+        final XPathQueryServiceImpl queryService = (XPathQueryServiceImpl)test3.getService("XPathQueryService", "1.0");
+        final ResourceSet result = queryService.executeStoredQuery("/db/securityTest2/not_setgid.xquery");
+        assertFalse("/db/securityTest2/forSetGidWrite/not_setgid.xml".equals(result.getResource(0).getContent()));
+    }
+
+    @Test
+    public void noSetGid_createSubCollection_subCollectionGroupIsUsersPrimaryGroup() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+        CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxr--rwx"
+        Collection parentCollection = cms.createCollection("parentCollection");
+        UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxr--rwx");
+
+        //now create the sub-collection /db/securityTest2/parentCollection/subCollection1
+        //as "user3:guest", it should have it's group set to the primary group of user3 i.e. 'guest'
+        //as the collection is NOT setUid and it should NOT have the setGid bit set
+        parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        cms = (CollectionManagementService)parentCollection.getService("CollectionManagementService", "1.0");
+        final Collection subCollection = cms.createCollection("subCollection1");
+
+        final Permission permissions = ums.getPermissions(subCollection);
+        assertEquals("guest", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
+    }
+
+    @Test
+    public void setGid_createSubCollection_subCollectionGroupInheritedFromParent() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+        CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwsrwx"
+        Collection parentCollection = cms.createCollection("parentCollection");
+        UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxrwsrwx");
+
+        //now create the sub-collection /db/securityTest2/parentCollection/subCollection1
+        //it should inherit the group ownership 'users' from the parent collection which is setGid
+        //and it should inherit the setGid bit
+        parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        cms = (CollectionManagementService)parentCollection.getService("CollectionManagementService", "1.0");
+        final Collection subCollection = cms.createCollection("subCollection1");
+
+        final Permission permissions = ums.getPermissions(subCollection);
+        assertEquals("users", permissions.getGroup().getName());
+        assertTrue(permissions.isSetGid());
+    }
+
+    @Test
+    public void noSetGid_createResource_resourceGroupIsUsersPrimaryGroup() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+        CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwxrwx"
+        Collection parentCollection = cms.createCollection("parentCollection");
+        UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxrwxrwx");
+
+        //now create the sub-resource /db/securityTest2/parentCollection/test.xml
+        //as "user3:guest", it should have it's group set to the primary group of user3 i.e. 'guest'
+        //as the collection is NOT setGid, the file should NOT have the setGid bit set
+        parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        Resource resource = parentCollection.createResource("test.xml", XMLResource.RESOURCE_TYPE);
+        resource.setContent("<test/>");
+        parentCollection.storeResource(resource);
+
+        final Permission permissions = ums.getPermissions(resource);
+        assertEquals("guest", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
+    }
+
+    @Test
+    public void setGid_createResource_resourceGroupInheritedFromParent() throws XMLDBException {
+        final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+        CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
+
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwsrwx"
+        Collection parentCollection = cms.createCollection("parentCollection");
+        UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxrwsrwx");
+
+        //now as "test3:guest" create the sub-resource /db/securityTest2/parentCollection/test.xml
+        //it should inherit the group ownership 'users' from the parent which is setGid
+        //but it should not inherit the setGid bit as it is a resource
+        parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        Resource resource = parentCollection.createResource("test.xml", XMLResource.RESOURCE_TYPE);
+        resource.setContent("<test/>");
+        parentCollection.storeResource(resource);
+
+        final Permission permissions = ums.getPermissions(resource);
+        assertEquals("users", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
+    }
+
+    @Test
+    public void noSetGid_copyCollection_collectionGroupIsUsersPrimaryGroup() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
+
+        //create the /db/securityTest2/src collection
+        Collection srcCollection = cms.createCollection("src");
+
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwxrwx"
+        Collection parentCollection = cms.createCollection("parentCollection");
+        UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxrwxrwx");
+
+        //now copy /db/securityTest2/src to /db/securityTest2/parentCollection/src
+        //as "user3:guest", it should have it's group set to the primary group of "user3" i.e. 'guest'
+        //as the collection is NOT setGid and it should NOT have it's setGid bit set
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
+        cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
+        cms.copy("src", "/db/securityTest2/parentCollection", "src");
+        parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+
+        srcCollection = test.getChildCollection("src");
+        final Collection destCollection = parentCollection.getChildCollection("src");
+
+        final Permission permissions = ums.getPermissions(destCollection);
+        assertEquals("guest", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
+    }
+    
+    @Test
+    public void setGid_copyCollection_collectionGroupInheritedFromParent() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
+        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+
+        //create the /db/securityTest2/src collection with owner "test1:extusers" and default mode
+        Collection srcCollection = cms.createCollection("src");
+        ums = (UserManagementService)srcCollection.getService("UserManagementService", "1.0");
+        ums.chgrp("extusers");
+
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwsrwx"
+        Collection parentCollection = cms.createCollection("parentCollection");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxrwsrwx");
+
+        //now copy /db/securityTest2/src to /db/securityTest2/parentCollection/src
+        //as "user3:guest", it should inherit the group ownership 'users' from the parent
+        //collection which is setGid and it should have its setGid bit set
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
+        cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
+        cms.copy("src", "/db/securityTest2/parentCollection", "src");
+        parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+
+        final Collection destCollection = parentCollection.getChildCollection("src");
+
+        final Permission permissions = ums.getPermissions(destCollection);
+        assertEquals("users", permissions.getGroup().getName());
+        assertTrue(permissions.isSetGid());
+    }
+
+
+    @Test
+    public void noSetGid_copyResource_resourceGroupIsUsersPrimaryGroup() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
+
+        //create the /db/securityTest2/test.xml resource
+        Resource resource = test.createResource("test.xml", XMLResource.RESOURCE_TYPE);
+        resource.setContent("<test/>");
+        test.storeResource(resource);
+
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwxrwx"
+        Collection parentCollection = cms.createCollection("parentCollection");
+        UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxrwxrwx");
+
+        //now copy /db/securityTest2/test.xml to /db/securityTest2/parentCollection/test.xml
+        //as user3, it should have it's group set to the primary group of user3 i.e. 'guest'
+        //as the collection is NOT setGid and it should not have the setGid bit
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
+        cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
+        cms.copyResource("test.xml", "/db/securityTest2/parentCollection", "test.xml");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+
+        parentCollection = test.getChildCollection("parentCollection");
+        resource = parentCollection.getResource("test.xml");
+
+        final Permission permissions = ums.getPermissions(resource);
+        assertEquals("guest", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
+    }
+
+    @Test
+    public void setGid_copyResource_resourceGroupInheritedFromParent() throws XMLDBException {
+        Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");        
+        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
+
+        //create the /db/securityTest2/test.xml resource
+        Resource resource = test.createResource("test.xml", XMLResource.RESOURCE_TYPE);
+        resource.setContent("<test/>");
+        test.storeResource(resource);
+        ums.chgrp(resource, "extusers");
+
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwsrwx"
+        Collection parentCollection = cms.createCollection("parentCollection");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxrwsrwx");
+
+        //now copy /db/securityTest2/test.xml to /db/securityTest2/parentCollection/test.xml
+        //as "user3:guest", it should inherit the group ownership 'users' from the parent collection which is setGid
+        //and it should NOT have its setGid bit set as it is a resource
+        test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
+        cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
+        cms.copyResource("test.xml", "/db/securityTest2/parentCollection", "test.xml");
+        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+
+        parentCollection = test.getChildCollection("parentCollection");
+        resource = parentCollection.getResource("test.xml");
+
+        final Permission permissions = ums.getPermissions(resource);
+        assertEquals("users", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
+    }
+
     
     //TODO need tests for
     //4) CopyingCollections to dests where permission is denied!
     //5) What about move Document, move Collection?
-    
     
     /**
      * 1) Sets '/db' to rwxr-xr-x (0755)
