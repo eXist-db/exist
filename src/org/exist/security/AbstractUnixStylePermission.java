@@ -252,7 +252,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
     private final static Matcher simpleSymbolicModeMatcher = simpleSymbolicModePattern.matcher("");
 
     /**
-     * Note we dont need @PermissionRequired(user = IS_DBA | IS_OWNER) here
+     * Note: we don't need @PermissionRequired(user = IS_DBA | IS_OWNER) here
      * because all of these methods delegate to the subclass implementation.
      *
      * @param modeStr The String representing a mode to set
