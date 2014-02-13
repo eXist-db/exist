@@ -43,6 +43,7 @@ import org.exist.xquery.value.Type;
 /**
  * @author Adam Retter <adam@existsolutions.com>
  */
+@Deprecated
 public class XMLDBGroupExists extends BasicFunction {
 	
     protected static final Logger logger = Logger.getLogger(XMLDBCreateUser.class);

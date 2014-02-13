@@ -38,12 +38,17 @@ public @interface PermissionRequired {
     int group() default UNDEFINED;
     int mode() default UNDEFINED;
 
-    public final static int UNDEFINED = -1;
+    public final static int UNDEFINED = 0;
 
+    //user flags
     public final static int IS_DBA = 04;
     public final static int IS_OWNER = 02;
 
+    //group flags
     public final static int IS_MEMBER = 40;
     
+    //mode flags
     public final static int ACL_WRITE = 04;
+    public final static int IS_SET_UID = 02;
+    public final static int IS_SET_GID = 01;
 }
