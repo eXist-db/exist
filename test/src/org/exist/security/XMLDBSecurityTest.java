@@ -1561,19 +1561,18 @@ public class XMLDBSecurityTest {
     }
 
     @Test
-    public void noSetUid_createSubCollection_subCollectionGroupIsUsersPrimaryGroup() throws XMLDBException {
+    public void noSetGid_createSubCollection_subCollectionGroupIsUsersPrimaryGroup() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
         CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
 
-        //create /db/securityTest2/parentCollection with owner "test3:users" and mode "rwxrwxr-x"
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxr--rwx"
         Collection parentCollection = cms.createCollection("parentCollection");
         UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
-        ums.chown(ums.getAccount("test3"), "users");
-        ums.chmod("rwxrwxr-x");
+        ums.chmod("rwxr--rwx");
 
         //now create the sub-collection /db/securityTest2/parentCollection/subCollection1
-        //as user3, it should have it's group set to the primary group of user3 i.e. 'guest'
-        //as it is NOT setUid
+        //as "user3:guest", it should have it's group set to the primary group of user3 i.e. 'guest'
+        //as the collection is NOT setUid and it should NOT have the setGid bit set
         parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
         ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
         cms = (CollectionManagementService)parentCollection.getService("CollectionManagementService", "1.0");
@@ -1581,21 +1580,22 @@ public class XMLDBSecurityTest {
 
         final Permission permissions = ums.getPermissions(subCollection);
         assertEquals("guest", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
     }
 
     @Test
-    public void setUid_createSubCollection_subCollectionGroupInheritedFromParent() throws XMLDBException {
+    public void setGid_createSubCollection_subCollectionGroupInheritedFromParent() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
         CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
 
-        //create /db/securityTest2/parentCollection with owner "test3:users" and mode "rwxrwsr-x"
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwsrwx"
         Collection parentCollection = cms.createCollection("parentCollection");
         UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
-        ums.chown(ums.getAccount("test3"), "users");
-        ums.chmod("rwxrwsr-x");
+        ums.chmod("rwxrwsrwx");
 
         //now create the sub-collection /db/securityTest2/parentCollection/subCollection1
-        //it should inherit the group ownership 'users' from the parent which is setUid
+        //it should inherit the group ownership 'users' from the parent collection which is setGid
+        //and it should inherit the setGid bit
         parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
         ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
         cms = (CollectionManagementService)parentCollection.getService("CollectionManagementService", "1.0");
@@ -1603,22 +1603,22 @@ public class XMLDBSecurityTest {
 
         final Permission permissions = ums.getPermissions(subCollection);
         assertEquals("users", permissions.getGroup().getName());
+        assertTrue(permissions.isSetGid());
     }
 
     @Test
-    public void noSetUid_createResource_resourceGroupIsUsersPrimaryGroup() throws XMLDBException {
+    public void noSetGid_createResource_resourceGroupIsUsersPrimaryGroup() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
         CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
 
-        //create /db/securityTest2/parentCollection with owner "test3:users" and mode "rwxrwxr-x"
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwxrwx"
         Collection parentCollection = cms.createCollection("parentCollection");
         UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
-        ums.chown(ums.getAccount("test3"), "users");
-        ums.chmod("rwxrwxr-x");
+        ums.chmod("rwxrwxrwx");
 
         //now create the sub-resource /db/securityTest2/parentCollection/test.xml
-        //as user3, it should have it's group set to the primary group of user3 i.e. 'guest'
-        //as it is NOT setUid
+        //as "user3:guest", it should have it's group set to the primary group of user3 i.e. 'guest'
+        //as the collection is NOT setGid, the file should NOT have the setGid bit set
         parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
         ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
         Resource resource = parentCollection.createResource("test.xml", XMLResource.RESOURCE_TYPE);
@@ -1627,21 +1627,22 @@ public class XMLDBSecurityTest {
 
         final Permission permissions = ums.getPermissions(resource);
         assertEquals("guest", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
     }
 
     @Test
-    public void setUid_createResource_resourceGroupInheritedFromParent() throws XMLDBException {
+    public void setGid_createResource_resourceGroupInheritedFromParent() throws XMLDBException {
         final Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
         CollectionManagementService cms = (CollectionManagementService)test.getService("CollectionManagementService", "1.0");
 
-        //create /db/securityTest2/parentCollection with owner "test3:users" and mode "rwxrwsr-x"
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwsrwx"
         Collection parentCollection = cms.createCollection("parentCollection");
         UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
-        ums.chown(ums.getAccount("test3"), "users");
-        ums.chmod("rwxrwsr-x");
+        ums.chmod("rwxrwsrwx");
 
-        //now create the sub-resource /db/securityTest2/parentCollection/test.xml
-        //it should inherit the group ownership 'users' from the parent which is setUid
+        //now as "test3:guest" create the sub-resource /db/securityTest2/parentCollection/test.xml
+        //it should inherit the group ownership 'users' from the parent which is setGid
+        //but it should not inherit the setGid bit as it is a resource
         parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
         ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
         Resource resource = parentCollection.createResource("test.xml", XMLResource.RESOURCE_TYPE);
@@ -1650,27 +1651,25 @@ public class XMLDBSecurityTest {
 
         final Permission permissions = ums.getPermissions(resource);
         assertEquals("users", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
     }
 
     @Test
-    public void noSetUid_copyCollection_collectionGroupIsUsersPrimaryGroup() throws XMLDBException {
+    public void noSetGid_copyCollection_collectionGroupIsUsersPrimaryGroup() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
         CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
-        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
 
         //create the /db/securityTest2/src collection
         Collection srcCollection = cms.createCollection("src");
-        ums.chown(ums.getAccount("test1"), "users");
 
-        //create /db/securityTest2/parentCollection with owner "test3:users" and mode "rwxrwxr-x"
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwxrwx"
         Collection parentCollection = cms.createCollection("parentCollection");
-        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
-        ums.chown(ums.getAccount("test3"), "users");
-        ums.chmod("rwxrwxr-x");
+        UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxrwxrwx");
 
         //now copy /db/securityTest2/src to /db/securityTest2/parentCollection/src
-        //as user3, it should have it's group set to the primary group of user3 i.e. 'guest'
-        //as the collection is NOT setUid
+        //as "user3:guest", it should have it's group set to the primary group of "user3" i.e. 'guest'
+        //as the collection is NOT setGid and it should NOT have it's setGid bit set
         test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
         cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
         cms.copy("src", "/db/securityTest2/parentCollection", "src");
@@ -1682,64 +1681,60 @@ public class XMLDBSecurityTest {
 
         final Permission permissions = ums.getPermissions(destCollection);
         assertEquals("guest", permissions.getGroup().getName());
-
-        //TODO place a document in /db/securityTest2/src before it's copied and mae sure its perms are correct after the copy
+        assertFalse(permissions.isSetGid());
     }
-
+    
     @Test
-    public void setUid_copyCollection_collectionGroupInheritedFromParent() throws XMLDBException {
+    public void setGid_copyCollection_collectionGroupInheritedFromParent() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
         CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
         UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
 
-        //create the /db/securityTest2/src collection
+        //create the /db/securityTest2/src collection with owner "test1:extusers" and default mode
         Collection srcCollection = cms.createCollection("src");
-        ums.chown(ums.getAccount("test1"), "users");
+        ums = (UserManagementService)srcCollection.getService("UserManagementService", "1.0");
+        ums.chgrp("extusers");
 
-        //create /db/securityTest2/parentCollection with owner "test3:users" and mode "rwxrwsr-x"
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwsrwx"
         Collection parentCollection = cms.createCollection("parentCollection");
         ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
-        ums.chown(ums.getAccount("test3"), "users");
-        ums.chmod("rwxrwsr-x");
+        ums.chmod("rwxrwsrwx");
 
         //now copy /db/securityTest2/src to /db/securityTest2/parentCollection/src
-        //as user3, it should inherit the group ownership 'users' from the parent collection which is setUid
+        //as "user3:guest", it should inherit the group ownership 'users' from the parent
+        //collection which is setGid and it should have its setGid bit set
         test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
         cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
         cms.copy("src", "/db/securityTest2/parentCollection", "src");
         parentCollection = DatabaseManager.getCollection(baseUri + "/db/securityTest2/parentCollection", "test3", "test3");
         ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
 
-        srcCollection = test.getChildCollection("src");
         final Collection destCollection = parentCollection.getChildCollection("src");
 
         final Permission permissions = ums.getPermissions(destCollection);
         assertEquals("users", permissions.getGroup().getName());
-
-        //TODO place a document in /db/securityTest2/src before it's copied and mae sure its perms are correct after the copy
+        assertTrue(permissions.isSetGid());
     }
 
 
     @Test
-    public void noSetUid_copyResource_resourceGroupIsUsersPrimaryGroup() throws XMLDBException {
+    public void noSetGid_copyResource_resourceGroupIsUsersPrimaryGroup() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
         CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
-        UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
 
         //create the /db/securityTest2/test.xml resource
         Resource resource = test.createResource("test.xml", XMLResource.RESOURCE_TYPE);
         resource.setContent("<test/>");
         test.storeResource(resource);
 
-        //create /db/securityTest2/parentCollection with owner "test3:users" and mode "rwxrwxr-x"
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwxrwx"
         Collection parentCollection = cms.createCollection("parentCollection");
-        ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
-        ums.chown(ums.getAccount("test3"), "users");
-        ums.chmod("rwxrwxr-x");
+        UserManagementService ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
+        ums.chmod("rwxrwxrwx");
 
         //now copy /db/securityTest2/test.xml to /db/securityTest2/parentCollection/test.xml
         //as user3, it should have it's group set to the primary group of user3 i.e. 'guest'
-        //as the collection is NOT setUid
+        //as the collection is NOT setGid and it should not have the setGid bit
         test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
         cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
         cms.copyResource("test.xml", "/db/securityTest2/parentCollection", "test.xml");
@@ -1750,27 +1745,29 @@ public class XMLDBSecurityTest {
 
         final Permission permissions = ums.getPermissions(resource);
         assertEquals("guest", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
     }
 
     @Test
-    public void setUid_copyResource_resourceGroupInheritedFromParent() throws XMLDBException {
+    public void setGid_copyResource_resourceGroupInheritedFromParent() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test1", "test1");
-        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
+        CollectionManagementServiceImpl cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");        
         UserManagementService ums = (UserManagementService)test.getService("UserManagementService", "1.0");
 
         //create the /db/securityTest2/test.xml resource
         Resource resource = test.createResource("test.xml", XMLResource.RESOURCE_TYPE);
         resource.setContent("<test/>");
         test.storeResource(resource);
+        ums.chgrp(resource, "extusers");
 
-        //create /db/securityTest2/parentCollection with owner "test3:users" and mode "rwxrwsr-x"
+        //create /db/securityTest2/parentCollection with owner "test1:users" and mode "rwxrwsrwx"
         Collection parentCollection = cms.createCollection("parentCollection");
         ums = (UserManagementService)parentCollection.getService("UserManagementService", "1.0");
-        ums.chown(ums.getAccount("test3"), "users");
-        ums.chmod("rwxrwsr-x");
+        ums.chmod("rwxrwsrwx");
 
         //now copy /db/securityTest2/test.xml to /db/securityTest2/parentCollection/test.xml
-        //as user3, it should inherit the group ownership 'users' from the parent collection which is setUid
+        //as "user3:guest", it should inherit the group ownership 'users' from the parent collection which is setGid
+        //and it should NOT have its setGid bit set as it is a resource
         test = DatabaseManager.getCollection(baseUri + "/db/securityTest2", "test3", "test3");
         cms = (CollectionManagementServiceImpl)test.getService("CollectionManagementService", "1.0");
         cms.copyResource("test.xml", "/db/securityTest2/parentCollection", "test.xml");
@@ -1781,11 +1778,14 @@ public class XMLDBSecurityTest {
 
         final Permission permissions = ums.getPermissions(resource);
         assertEquals("users", permissions.getGroup().getName());
+        assertFalse(permissions.isSetGid());
     }
 
+    
     //TODO need tests for
     //4) CopyingCollections to dests where permission is denied!
     //5) What about move Document, move Collection?
+    
     /**
      * 1) Sets '/db' to rwxr-xr-x (0755)
      * 2) Adds the Group 'users'
