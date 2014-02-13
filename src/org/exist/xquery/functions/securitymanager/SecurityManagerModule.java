@@ -79,14 +79,14 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(GroupManagementFunction.FNS_REMOVE_GROUP, GroupManagementFunction.class),
         new FunctionDef(GroupManagementFunction.FNS_DELETE_GROUP, GroupManagementFunction.class),
 
-        new FunctionDef(GroupMembershipFunctions.FNS_ADD_GROUP_MEMBER, GroupMembershipFunctions.class),
-        new FunctionDef(GroupMembershipFunctions.FNS_REMOVE_GROUP_MEMBER, GroupMembershipFunctions.class),
-        new FunctionDef(GroupMembershipFunctions.FNS_ADD_GROUP_MANAGER, GroupMembershipFunctions.class),
-        new FunctionDef(GroupMembershipFunctions.FNS_REMOVE_GROUP_MANAGER, GroupMembershipFunctions.class),
-        new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MANAGERS, GroupMembershipFunctions.class),
-        new FunctionDef(GroupMembershipFunctions.FNS_GET_GROUP_MEMBERS, GroupMembershipFunctions.class),
-        new FunctionDef(GroupMembershipFunctions.FNS_IS_DBA, GroupMembershipFunctions.class),
-        new FunctionDef(GroupMembershipFunctions.FNS_SET_USER_PRIMARY_GROUP, GroupMembershipFunctions.class),
+        new FunctionDef(GroupMembershipFunction.FNS_ADD_GROUP_MEMBER, GroupMembershipFunction.class),
+        new FunctionDef(GroupMembershipFunction.FNS_REMOVE_GROUP_MEMBER, GroupMembershipFunction.class),
+        new FunctionDef(GroupMembershipFunction.FNS_ADD_GROUP_MANAGER, GroupMembershipFunction.class),
+        new FunctionDef(GroupMembershipFunction.FNS_REMOVE_GROUP_MANAGER, GroupMembershipFunction.class),
+        new FunctionDef(GroupMembershipFunction.FNS_GET_GROUP_MANAGERS, GroupMembershipFunction.class),
+        new FunctionDef(GroupMembershipFunction.FNS_GET_GROUP_MEMBERS, GroupMembershipFunction.class),
+        new FunctionDef(GroupMembershipFunction.FNS_IS_DBA, GroupMembershipFunction.class),
+        new FunctionDef(GroupMembershipFunction.FNS_SET_USER_PRIMARY_GROUP, GroupMembershipFunction.class),
 
         new FunctionDef(FindGroupFunction.FNS_LIST_GROUPS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_BY_GROUPNAME, FindGroupFunction.class),
@@ -96,23 +96,26 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(FindGroupFunction.FNS_GET_USER_PRIMARY_GROUP, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GROUP_EXISTS, FindGroupFunction.class),
 
-        new FunctionDef(PermissionsFunctions.FNS_GET_PERMISSIONS, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_ADD_USER_ACE, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_ADD_GROUP_ACE, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_INSERT_USER_ACE, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_INSERT_GROUP_ACE, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_MODIFY_ACE, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_REMOVE_ACE, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_CLEAR_ACL, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_CHMOD, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_CHOWN, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_CHGRP, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_HAS_ACCESS, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_MODE_TO_OCTAL, PermissionsFunctions.class),
-        new FunctionDef(PermissionsFunctions.FNS_OCTAL_TO_MODE, PermissionsFunctions.class),
+        new FunctionDef(PermissionsFunction.FNS_GET_PERMISSIONS, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_ADD_USER_ACE, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_ADD_GROUP_ACE, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_INSERT_USER_ACE, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_INSERT_GROUP_ACE, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_MODIFY_ACE, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_REMOVE_ACE, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_CLEAR_ACL, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_CHMOD, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_CHOWN, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_CHGRP, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_MODE_TO_OCTAL, PermissionsFunction.class),
+        new FunctionDef(PermissionsFunction.FNS_OCTAL_TO_MODE, PermissionsFunction.class),
 
-        new FunctionDef(IsAuthenticated.FNS_IS_AUTHENTICATED, IsAuthenticated.class),
-        new FunctionDef(IsAuthenticated.FNS_IS_EXTERNALLY_AUTHENTICATED, IsAuthenticated.class)
+        //<editor-fold desc="Functions on the broker/context current user">
+        new FunctionDef(PermissionsFunction.FNS_HAS_ACCESS, PermissionsFunction.class),
+        new FunctionDef(IsAuthenticatedFunction.FNS_IS_AUTHENTICATED, IsAuthenticatedFunction.class),
+        new FunctionDef(IsAuthenticatedFunction.FNS_IS_EXTERNALLY_AUTHENTICATED, IsAuthenticatedFunction.class),
+        new FunctionDef(IdFunction.FNS_ID, IdFunction.class)
+        //</editor-fold>
     };
 
     public SecurityManagerModule(Map<String, List<? extends Object>> parameters) {

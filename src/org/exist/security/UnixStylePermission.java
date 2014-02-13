@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2013 The eXist-db Project
+ *  Copyright (C) 2013 The eXist-db Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -25,6 +25,7 @@ import java.io.IOException;
 import static org.exist.security.PermissionRequired.IS_DBA;
 import static org.exist.security.PermissionRequired.IS_MEMBER;
 import static org.exist.security.PermissionRequired.IS_OWNER;
+import static org.exist.security.PermissionRequired.IS_SET_GID;
 import org.exist.security.internal.RealmImpl;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -54,7 +55,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     	this.sm = sm;
     }
     
-    protected UnixStylePermission(SecurityManager sm, long vector) {
+    protected UnixStylePermission(final SecurityManager sm, final long vector) {
         if(sm == null) {
             throw new IllegalArgumentException("Security manager can't be null");
         }
@@ -85,9 +86,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Set the owner passed as User object
+     * Set the owner passed as User object
      *
-     *@param  account  The new owner value
+     * @param account The new owner value
      */
     @Override
     public void setOwner(Account account) {
@@ -121,9 +122,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Set the owner
+     * Set the owner
      *
-     *@param  name  The new owner value
+     * @param name The new owner value
      */
     @Override
     public void setOwner(final String name) {
@@ -144,9 +145,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Gets the group 
+     * Gets the group 
      *
-     *@return    The group value
+     * @return The group value
      */
     @Override
     public Group getGroup() {
@@ -158,9 +159,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
     
     /**
-     *  Set the owner group
+     * Set the owner group
      *
-     *@param  groupName  The new group value
+     * @param groupName The new group value
      */
     @Override
     public void setGroup(final String groupName) {
@@ -185,30 +186,50 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         }
         setGroupId(group.getId());
     }
-        
+    
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     private void setGroupId(@PermissionRequired(user = IS_DBA | IS_MEMBER) final int groupId) {
+        /*
+        This function wrapper is really just used as a place
+        to focus PermissionRequired checks for several public
+        functions
+        */
+        _setGroupId(groupId);
+    }
+    
+    @PermissionRequired(user = IS_DBA | IS_OWNER)
+    @Override
+    public void setGroupFrom(@PermissionRequired(mode = IS_SET_GID) final Permission other) {
+        _setGroupId(other.getGroup().getId());
+    }
+    
+    private void _setGroupId(final int groupId) {
         this.vector =
             ((vector >>> 28) << 28) | //current ownerId and ownerMode, mask rest
             (groupId << 8) |          //left shift new groupId into positon
             (vector & 255);            //current groupMode and otherMode
     }
-
+    
     /**
-     *  Get the mode
+     * Get the mode
      *
-     *@return    The mode
+     * @return The mode
      */
     @Override
     public int getMode() {
-        return (int) ((((vector >>> 31) & 1) << 11) | (((vector >>> 7) & 1) << 10) | (((vector >>> 3) & 1) << 9) | //setUid | setGid | sticky
-                ((((vector >>> 28) & 7) << 6) | (((vector >>> 4) & 7) << 3) | (vector & 7))); //userPerm | groupPerm | otherPerm
+        return (int)
+            ((((vector >>> 31) & 1) << 11) |    //setUid
+            (((vector >>> 7) & 1) << 10) |      //setGid
+            (((vector >>> 3) & 1) << 9) |       //sticky
+            ((((vector >>> 28) & 7) << 6) |     //userPerm
+            (((vector >>> 4) & 7) << 3) |       //groupPerm
+            (vector & 7)));                     //otherPerm
     }
 
     /**
-     *  Set the mode
+     * Set the mode
      *
-     *@param  mode  The new mode value
+     * @param mode The new mode value
      */
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
@@ -232,7 +253,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
     public void setSetUid(final boolean setUid) {
-        this.vector = ((vector >>> 32) << 32) | (setUid ? 1 : 0) | (vector & 2147483647);
+        this.vector = (((vector >>> 32) << 1 | (setUid ? 1 : 0)) << 31) | (vector & 2147483647);
     }
 
     @Override
@@ -243,7 +264,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
     public void setSetGid(final boolean setGid) {
-        this.vector = ((vector >>> 8) << 8) | (setGid ? 1 : 0) | (vector & 127);
+        this.vector = (((vector >>> 8) << 1 | (setGid ? 1 : 0)) << 7) | (vector & 127);
     }
 
     @Override
@@ -254,13 +275,13 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
     public void setSticky(final boolean sticky) {
-        this.vector = ((vector >>> 4) << 4) | (sticky ? 1 : 0) | (vector & 7);
+        this.vector = (((vector >>> 4) << 1 | (sticky ? 1 : 0)) << 3) | (vector & 7);
     }
     
     /**
-     *  Get the active mode for the owner
+     * Get the active mode for the owner
      *
-     *@return    The mode value
+     * @return The mode value
      */
     @Override
     public int getOwnerMode() {
@@ -268,9 +289,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Set mode for the owner
+     * Set mode for the owner
      *
-     *@param  mode  The new owner mode value
+     * @param mode The new owner mode value
      */
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
@@ -284,9 +305,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Get the mode for group
+     * Get the mode for group
      *
-     *@return    The mode value
+     * @return The mode value
      */
     @Override
     public int getGroupMode() {
@@ -294,9 +315,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Sets mode for group
+     * Sets mode for group
      *
-     *@param  mode  The new mode value
+     * @param  mode The new mode value
      */
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
@@ -310,9 +331,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Get the mode for others
+     * Get the mode for others
      *
-     *@return    The mode value
+     * @return The mode value
      */
     @Override
     public int getOtherMode() {
@@ -320,9 +341,9 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Set mode for others
+     * Set mode for others
      *
-     *@param  mode  The new other mode value
+     * @param mode The new other mode value
      */
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
@@ -335,34 +356,34 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     }
 
     /**
-     *  Format mode
+     * Format mode
      *
-     *@return the mode formatted as a string e.g. 'rwxrwxrwx'
+     * @return the mode formatted as a string e.g. 'rwxrwxrwx'
      */
     @Override
     public String toString() {
         final char ch[] = new char[] {
             (vector & (READ << 28)) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & (WRITE << 28)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (vector & (1L << 31)) == 0 ? ((vector & (EXECUTE << 28)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETUID_CHAR,
+            (vector & (1L << 31)) == 0 ? ((vector & (EXECUTE << 28)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((vector & (EXECUTE << 28)) == 0 ? SETUID_CHAR_NO_EXEC : SETUID_CHAR),
             
             (vector & (READ << 4)) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & (WRITE << 4)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (vector & (1 << 7)) == 0 ? ((vector & (EXECUTE << 4)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETGID_CHAR,
+            (vector & (1 << 7)) == 0 ? ((vector & (EXECUTE << 4)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((vector & (EXECUTE << 4)) == 0 ? SETGID_CHAR_NO_EXEC : SETGID_CHAR),
 
             (vector & READ) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (vector & (1 << 3)) == 0 ? ((vector & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : STICKY_CHAR
+            (vector & (1 << 3)) == 0 ? ((vector & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((vector & EXECUTE) == 0 ? STICKY_CHAR_NO_EXEC : STICKY_CHAR)
         };
         return String.valueOf(ch);
     }
 
     /**
-     *  Check  if user has the requested mode for this resource.
+     * Check if user has the requested mode for this resource.
      *
-     *@param  user  The user
-     *@param  mode  The requested mode
-     *@return       true if user has the requested mode
+     * @param user The user
+     * @param mode The requested mode
+     * @return true if user has the requested mode
      */
     @Override
     public boolean validate(final Subject user, final int mode) {

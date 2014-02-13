@@ -32,6 +32,9 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.InteractiveClient;
+import org.exist.client.LabelledBoolean;
+import org.exist.client.LabelledBooleanEditor;
+import org.exist.client.LabelledBooleanRenderer;
 import org.exist.client.ResourceDescriptor;
 import org.exist.security.ACLPermission;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
@@ -179,6 +182,8 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         btnChangeGroup = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblBasePermissions = new javax.swing.JTable();
+        tblBasePermissions.setDefaultRenderer(LabelledBoolean.class, new LabelledBooleanRenderer());
+        tblBasePermissions.setDefaultEditor(LabelledBoolean.class, new LabelledBooleanEditor());
         lblAccessControlList = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         lblBasePermissions = new javax.swing.JLabel();
@@ -275,7 +280,6 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         tblBasePermissions.setModel(getBasicPermissionsTableModel());
         tblBasePermissions.setRowSelectionAllowed(false);
         jScrollPane2.setViewportView(tblBasePermissions);
-        tblBasePermissions.getColumnModel().getColumn(0).setResizable(false);
 
         lblAccessControlList.setText("Access Control List");
 
@@ -353,9 +357,10 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
                                         .addComponent(lblOwnerValue, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(btnChangeOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnAddAce))
+                            .addComponent(btnAddAce)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                                .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
