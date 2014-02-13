@@ -194,7 +194,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    public void removeCollection(Collection collection, DBBroker broker) {
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
         engine.dropIndex(collection);
     }
 
