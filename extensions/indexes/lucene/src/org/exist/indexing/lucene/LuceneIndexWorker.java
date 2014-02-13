@@ -46,6 +46,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
+import org.exist.storage.btree.DBException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
@@ -290,7 +291,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
     
-    public void removeCollection(Collection collection, DBBroker broker) {
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
         if (LOG.isDebugEnabled())
             LOG.debug("Removing collection " + collection.getURI());
         IndexWriter writer = null;
@@ -309,6 +310,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.error("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
+            if (reindex) {
+                try {
+                    index.sync();
+                } catch (DBException e) {
+                    LOG.warn("Exception during reindex: " + e.getMessage(), e);
+                }
+            }
             mode = StreamListener.STORE;
         }
         if (LOG.isDebugEnabled())
@@ -349,6 +357,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("Error while deleting lucene index entries: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
+            nodesToRemove = null;
         }
     }
 

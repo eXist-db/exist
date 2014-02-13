@@ -13,10 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Level;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.apache.log4j.Logger;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.util.Version;
@@ -132,88 +134,136 @@ public class AnalyzerConfig {
 
         // Get classname from attribute
         final String className = config.getAttribute(CLASS_ATTRIBUTE);
+        
+        Analyzer newAnalyzer=null;
 
         if (StringUtils.isBlank(className)) {
             // No classname is defined.
             LOG.error("Missing class attribute or attribute is empty.");
-
             // DW: throw exception?
             
         } else {
             // Classname is defined.
+
+            // Probe class
+            Class<?> clazz = null;
             try {
-                Class<?> clazz = Class.forName(className);
-                if (!Analyzer.class.isAssignableFrom(clazz)) {
-                    LOG.warn(String.format("Lucene index: analyzer class has to be a subclass of %s", Analyzer.class.getName()));
-                    return null;
-                }
-
-                // Get list of parameters
-                final List<KeyTypedValue> cParams = getAllConstructorParameters(config);
-
-                // Iterate over all parameters, convert data to two arrays
-                // that can be used in the reflection code
-                final Class<?> cParamClasses[] = new Class<?>[cParams.size()];
-                final Object cParamValues[] = new Object[cParams.size()];
-                for (int i = 0; i < cParams.size(); i++) {
-                    KeyTypedValue ktv = cParams.get(i);
-                    cParamClasses[i] = ktv.getValueClass();
-                    cParamValues[i] = ktv.getValue();
-                }
-
-                //try and get a matching constructor
-                try {
-                    final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
-                    cstr.setAccessible(true);
-                    return (Analyzer) cstr.newInstance(cParamValues);
-
-                } catch (NoSuchMethodException nsme) {
-
-                    // We could not find a constructor that had a complete match
-                    // This makes sense because because a lucene Version class is requires most of the time
-
-                    
-                    //couldnt find a matching constructor,
-                    //if a version parameter wasnt already specified
-                    //see if there is one with a Version parameter 
-                    if (cParamClasses.length == 0 || (cParamClasses.length > 0 && cParamClasses[0] != Version.class)) {
-
-                        // extend arrays, add to front
-                        Class<?>[] vcParamClasses = addVersionToClasses(cParamClasses);
-                        Object[] vcParamValues = adVersionValueToValues(cParamValues);
-
-                        // Finally invoke again
-                        try {
-                            final Constructor<?> cstr = clazz.getDeclaredConstructor(vcParamClasses);
-                            cstr.setAccessible(true);
-                            LOG.warn(String.format("Using analyzer %s", clazz.getName()));
-                            return (Analyzer) cstr.newInstance(vcParamValues);
-
-                        } catch (NoSuchMethodException vnsme) {
-                            LOG.error(String.format("Could not find matching analyzer class constructor%s: %s", className, vnsme.getMessage()), vnsme);
-                        }
-                    }
-                }
+                clazz = Class.forName(className);
 
             } catch (ClassNotFoundException e) {
-                LOG.error(String.format("Lucene index: analyzer class %s not found.", className));
-            } catch (IllegalAccessException e) {
-                LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
-            } catch (InstantiationException e) {
-                LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
-            } catch (InvocationTargetException ite) {
-                LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, ite.getMessage()), ite);
-            } catch (ParameterException pe) {
-                LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, pe.getMessage()), pe);
+                LOG.error(String.format("Lucene index: analyzer class %s not found. (%s)", className, e.getMessage()));
+                return null;
             }
+
+            // CHeck if class is an Analyzer
+            if (!Analyzer.class.isAssignableFrom(clazz)) {
+                LOG.error(String.format("Lucene index: analyzer class has to be a subclass of %s", Analyzer.class.getName()));
+                return null;
+            }
+
+            // Get list of parameters
+            List<KeyTypedValue> cParams;
+            try {
+                cParams = getAllConstructorParameters(config);
+
+            } catch (ParameterException pe) {
+                // Unable to parse parameters.
+                LOG.error(String.format("Unable to get parameters for %s: %s", className, pe.getMessage()), pe);
+                cParams = new ArrayList<KeyTypedValue>();
+            }
+
+            // Iterate over all parameters, convert data to two arrays
+            // that can be used in the reflection code
+            final Class<?> cParamClasses[] = new Class<?>[cParams.size()];
+            final Object cParamValues[] = new Object[cParams.size()];
+            for (int i = 0; i < cParams.size(); i++) {
+                KeyTypedValue ktv = cParams.get(i);
+                cParamClasses[i] = ktv.getValueClass();
+                cParamValues[i] = ktv.getValue();
+            }
+
+            // Create new analyzer
+            if (cParamClasses.length > 0 && cParamClasses[0] == Version.class) {
+
+                if (LOG.isDebugEnabled()) {
+                    Version version = (Version) cParamValues[0];
+                    LOG.debug(String.format("An explicit Version %s of lucene has been specified.", version.toString()));
+                }
+
+                // A lucene Version object has been provided, so it shall be used
+                newAnalyzer = createInstance(clazz, cParamClasses, cParamValues);
+
+            } else {
+                    // Either no parameters have been provided or more than one parameter
+
+                // Extend arrays with (default) Version object info, add to front.
+                Class<?>[] vcParamClasses = addVersionToClasses(cParamClasses);
+                Object[] vcParamValues = addVersionValueToValues(cParamValues);
+
+                // Finally create Analyzer
+                newAnalyzer = createInstance(clazz, vcParamClasses, vcParamValues);
+
+                // Fallback scenario: a special (not standard type of) Analyzer has been specified without 
+                // a 'Version' argument on purpose. For this (try) to create the Analyzer with 
+                // the original parameters.
+                if (newAnalyzer == null) {
+                    newAnalyzer = createInstance(clazz, cParamClasses, cParamValues);
+                }
+
+            }
+
         }
+
+        if (newAnalyzer == null) {
+            LOG.error(String.format("Unable to create analyzer '%s'", className));
+        }
+
+        return newAnalyzer;
+    }
+
+    /**
+     * Create instance of the lucene analyzer with provided arguments
+     *
+     * @param clazz The analyzer class
+     * @param vcParamClasses The parameter classes
+     * @param vcParamValues The parameter values
+     * @return The lucene analyzer
+     */
+    private static Analyzer createInstance(Class<?> clazz, Class<?>[] vcParamClasses, Object[] vcParamValues) {
+
+        String className = clazz.getName();
+
+        try {
+            final Constructor<?> cstr = clazz.getDeclaredConstructor(vcParamClasses);
+            cstr.setAccessible(true);
+            
+            if(LOG.isDebugEnabled()){
+                LOG.debug(String.format("Using analyzer %s", className));
+            }
+
+            return (Analyzer) cstr.newInstance(vcParamValues);
+            
+        } catch (IllegalArgumentException e) {
+            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
+        } catch (IllegalAccessException e) {
+            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
+        } catch (InstantiationException e) {
+            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
+        } catch (InvocationTargetException ite) {
+            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, ite.getMessage()), ite);
+        } catch (NoSuchMethodException ex) {
+            LOG.error(String.format("Could not find matching analyzer class constructor%s: %s", className, ex.getMessage()), ex);
+        } catch (SecurityException ex) {
+            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, ex.getMessage()), ex);
+        }
+        
         return null;
     }
 
     /**
      * Extend list of values, add version-value to front
      */
-    private static Object[] adVersionValueToValues(final Object[] cParamValues) {
+    private static Object[] addVersionValueToValues(final Object[] cParamValues) {
         final Object vcParamValues[] = new Object[cParamValues.length + 1];
         vcParamValues[0] = LuceneIndex.LUCENE_VERSION_IN_USE;
         System.arraycopy(cParamValues, 0, vcParamValues, 1, cParamValues.length);
@@ -333,14 +383,19 @@ public class AnalyzerConfig {
             final File f = new File(value);
             parameter = new KeyTypedValue(name, f, File.class);
 
-        } else if ("java.io.FileReader".equals(type)) {
+        } else if ("java.io.FileReader".equals(type) || "file".equals(type)) {
+
             // DW: Experimental
-            final File f = new File(value);
+            File f = new File(value);
+            Reader fileReader = null;
+
             try {
-                final Reader r = new FileReader(f);
-                parameter = new KeyTypedValue(name, r, Reader.class);
+                fileReader = new FileReader(f);
+                parameter = new KeyTypedValue(name, fileReader, Reader.class);
+
             } catch (FileNotFoundException ex) {
                 LOG.error(String.format("File %s could not be found.", f.getAbsolutePath()), ex);
+                IOUtils.closeQuietly(fileReader);
             }
 
         } else if ("java.util.Set".equals(type)) {
@@ -348,8 +403,8 @@ public class AnalyzerConfig {
             final Set s = getConstructorParameterSetValues(param);
             parameter = new KeyTypedValue(name, s, Set.class);
 
-        } else if ("org.apache.lucene.analysis.util.CharArraySet".equals(type)) {
-            // This is mandatory since Lucene4
+        } else if ("org.apache.lucene.analysis.util.CharArraySet".equals(type) || "set".equals(type)) {
+            // This is mandatory to use iso a normal Set since Lucene 4
             final CharArraySet s = getConstructorParameterCharArraySetValues(param);
             parameter = new KeyTypedValue(name, s, CharArraySet.class);
 

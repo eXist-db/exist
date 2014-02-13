@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,19 +16,17 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.collections;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.exist.collections.triggers.AbstractTriggerProxy;
-import org.exist.collections.triggers.CollectionTriggerProxies;
+import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.CollectionTriggerProxy;
-import org.exist.collections.triggers.DocumentTriggerProxies;
+import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggerProxy;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
@@ -80,8 +78,8 @@ public class CollectionConfiguration {
 
     private static final Logger LOG = Logger.getLogger(CollectionConfiguration.class);
 
-    private DocumentTriggerProxies documentTriggerProxies = null;
-    private CollectionTriggerProxies collectionTriggerProxies = null;
+    private List<TriggerProxy<? extends CollectionTrigger>> colTriggers = new ArrayList<TriggerProxy<? extends CollectionTrigger>>();
+    private List<TriggerProxy<? extends DocumentTrigger>> docTriggers = new ArrayList<TriggerProxy<? extends DocumentTrigger>>();
 
     private IndexSpec indexSpec = null;
 
@@ -142,20 +140,8 @@ public class CollectionConfiguration {
                     final NodeList triggers = node.getChildNodes();
                     for(int j = 0; j < triggers.getLength(); j++) {
                         node = triggers.item(j);
-                        if(node.getNodeType() == Node.ELEMENT_NODE &&
-                                node.getLocalName().equals(TRIGGER_ELEMENT)) {
-                            final List <TriggerProxy<? extends Trigger>> triggerProxys = configureTrigger(
-                                    (Element)node, srcCollectionURI, checkOnly);
-                            if(triggerProxys != null) {
-                                for(final TriggerProxy<? extends Trigger> triggerProxy : triggerProxys) {
-                                    if(triggerProxy instanceof DocumentTriggerProxy) {
-                                        getDocumentTriggerProxies().add((DocumentTriggerProxy)triggerProxy);
-                                    }
-                                    if(triggerProxy instanceof CollectionTriggerProxy) {
-                                        getCollectionTriggerProxies().add((CollectionTriggerProxy)triggerProxy);   
-                                    }
-                                }
-                            }
+                        if(node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals(TRIGGER_ELEMENT)) {
+                            configureTrigger((Element)node, srcCollectionURI, checkOnly);
                         }
                     }
                 } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
@@ -302,22 +288,7 @@ public class CollectionConfiguration {
         return indexSpec;
     }
 
-    public DocumentTriggerProxies getDocumentTriggerProxies() {
-        if(documentTriggerProxies == null) {
-             documentTriggerProxies = new DocumentTriggerProxies();
-        }
-        return documentTriggerProxies;
-    }
-    
-    public CollectionTriggerProxies getCollectionTriggerProxies() {
-        if(collectionTriggerProxies == null) {
-             collectionTriggerProxies = new CollectionTriggerProxies();
-        }
-        return collectionTriggerProxies;
-    }
-    
-    private List<TriggerProxy<? extends Trigger>> configureTrigger(Element triggerElement,
-        XmldbURI collectionConfigurationURI, boolean testOnly) throws CollectionConfigurationException {
+    private void configureTrigger(Element triggerElement, XmldbURI collectionConfigurationURI, boolean testOnly) throws CollectionConfigurationException {
 
         //TODO : rely on schema-driven validation -pb
 
@@ -327,12 +298,26 @@ public class CollectionConfiguration {
             final Class clazz = Class.forName(classname);
             if(!Trigger.class.isAssignableFrom(clazz)) {
                 throwOrLog("Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'", testOnly);
-                return null;
+                return;
             }
             final NodeList nlParameter = triggerElement.getElementsByTagNameNS(NAMESPACE, PARAMETER_ELEMENT);
             final Map<String, List<? extends Object>> parameters = ParametersExtractor.extract(nlParameter);
-            final List<TriggerProxy<? extends Trigger>> triggerProxys = AbstractTriggerProxy.newInstance(clazz, collectionConfigurationURI, parameters);
-            return triggerProxys;
+
+            boolean added = false;
+            if(DocumentTrigger.class.isAssignableFrom(clazz)) {
+                docTriggers.add(new DocumentTriggerProxy((Class<? extends DocumentTrigger>)clazz, parameters)); //collectionConfigurationURI, parameters));
+                added = true;
+            }
+            
+            if(CollectionTrigger.class.isAssignableFrom(clazz)) {
+                colTriggers.add(new CollectionTriggerProxy((Class<? extends CollectionTrigger>)clazz, parameters)); //collectionConfigurationURI, parameters));
+                added = true;
+            } 
+            
+            if(!added) {
+                throw new TriggerException("Unknown Trigger class type: " + clazz.getName());
+            }
+
         } catch (final ClassNotFoundException e) {
             if(testOnly) {
                 throw new CollectionConfigurationException(e.getMessage(), e);
@@ -346,7 +331,14 @@ public class CollectionConfiguration {
                 LOG.warn("Trigger class not found: " + te.getMessage(), te);
             }
         }
-        return null;
+    }
+    
+    public List<TriggerProxy<? extends CollectionTrigger>> collectionTriggers() {
+        return colTriggers;
+    }
+
+    public List<TriggerProxy<? extends DocumentTrigger>> documentTriggers() {
+        return docTriggers;
     }
 
     //TODO: code

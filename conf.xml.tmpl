@@ -865,7 +865,6 @@
             <module uri="http://exist-db.org/xquery/versioning/svn"     class="org.exist.versioning.svn.xquery.SVNModule" />
             <module uri="http://exist-db.org/xquery/xmldiff"            class="org.exist.xquery.modules.xmldiff.XmlDiffModule" />
             <module uri="http://exist-db.org/xquery/xmpp"               class="org.exist.xquery.modules.xmpp.XMPPModule" />
-            <module uri="http://xmlcalabash.com"                        class="org.exist.xquery.modules.xmlcalabash.XMLCalabashModule" />
             -->
 
             <!--
@@ -912,6 +911,6 @@
             containing valid nodes.
         
     -->
-    <xupdate allowed-fragmentation="100" enable-consistency-checks="no"/>
+    <xupdate allowed-fragmentation="10000" enable-consistency-checks="no"/>
 
 </exist>

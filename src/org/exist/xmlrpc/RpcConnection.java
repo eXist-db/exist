@@ -3756,7 +3756,43 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public boolean setPermissions(final String resource, final String owner, final String ownerGroup) throws EXistException, PermissionDeniedException, URISyntaxException {
+    public boolean chgrp(final String resource, final String ownerGroup) throws EXistException, PermissionDeniedException, URISyntaxException {
+        executeWithBroker(new BrokerOperation<Void>() {
+            @Override
+            public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
+                    @Override
+                    public void modify(Permission permission) throws PermissionDeniedException {
+                        permission.setGroup(ownerGroup);
+                    }
+                });
+                return null;
+            }
+        });
+
+        return true;
+    }
+
+    @Override
+    public boolean chown(final String resource, final String owner) throws EXistException, PermissionDeniedException, URISyntaxException {
+        executeWithBroker(new BrokerOperation<Void>() {
+            @Override
+            public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {
+                PermissionFactory.updatePermissions(broker, XmldbURI.xmldbUriFor(resource), new PermissionModifier(){
+                    @Override
+                    public void modify(Permission permission) throws PermissionDeniedException {
+                        permission.setOwner(owner);
+                    }
+                });
+                return null;
+            }
+        });
+
+        return true;
+    }
+
+    @Override
+    public boolean chown(final String resource, final String owner, final String ownerGroup) throws EXistException, PermissionDeniedException, URISyntaxException {
         executeWithBroker(new BrokerOperation<Void>() {
             @Override
             public Void withBroker(final DBBroker broker) throws EXistException, URISyntaxException, PermissionDeniedException {

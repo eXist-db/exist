@@ -69,10 +69,8 @@ public class ExtensionExpression extends AbstractExpression {
         for (final Pragma pragma : pragmas) {
             Sequence temp = pragma.eval(contextSequence, contextItem);
             if (temp != null) {
-                if (result != null)
-                    {throw new XPathException(this,
-                        "Conflicting pragmas: only one should return a result for eval");}
                 result = temp;
+                break;
             }
         }
         if (result == null)
