@@ -786,19 +786,29 @@ public interface RpcAPI {
 		int permissions)
 		throws EXistException, PermissionDeniedException, URISyntaxException;
 
-        boolean setPermissions(
-                final String resource,
-                final String owner,
-                final String ownerGroup,
-                final int mode,
-                final List<ACEAider> aces)
-                throws EXistException, PermissionDeniedException, URISyntaxException;
+    boolean setPermissions(
+            final String resource,
+            final String owner,
+            final String ownerGroup,
+            final int mode,
+            final List<ACEAider> aces)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
 
-        public boolean setPermissions(
-                final String resource,
-                final String owner,
-                final String ownerGroup)
-                throws EXistException, PermissionDeniedException, URISyntaxException;
+    public boolean chgrp(
+        final String resource,
+        final String ownerGroup)
+        throws EXistException, PermissionDeniedException, URISyntaxException;
+
+    public boolean chown(
+        final String resource,
+        final String owner)
+        throws EXistException, PermissionDeniedException, URISyntaxException;
+
+    public boolean chown(
+        final String resource,
+        final String owner,
+        final String ownerGroup)
+        throws EXistException, PermissionDeniedException, URISyntaxException;
 
 	public boolean lockResource(String path, String userName)
 	throws EXistException, PermissionDeniedException, URISyntaxException;

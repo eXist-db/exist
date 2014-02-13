@@ -704,12 +704,14 @@ declare function test:to-html($output as element(testsuites)) {
 };
 
 declare %private function test:print-testcase($case as element(testcase)) {
-    <tr class="{if ($case/failure) then 'fail' else 'pass'}">
+    <tr class="{if ($case/failure or $case/error) then 'fail' else 'pass'}">
         <td>{$case/@name/string()}</td>
         <td>
         {
             if ($case/failure) then
                 ($case/failure/@message/string(), " Expected: ", $case/failure/text())
+            else if ($case/error) then
+                ($case/error/@type/string(), " ", $case/error/@message/string())
             else
                 "OK"
         }

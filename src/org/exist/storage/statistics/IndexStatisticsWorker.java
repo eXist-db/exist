@@ -159,7 +159,7 @@ public class IndexStatisticsWorker implements IndexWorker {
         }
     }
 
-    public void removeCollection(Collection collection, DBBroker broker) {
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
     }
 
     public boolean checkIndex(DBBroker broker) {

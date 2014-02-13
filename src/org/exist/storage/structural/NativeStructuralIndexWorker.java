@@ -492,7 +492,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     @Override
-    public void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException {
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException {
         for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
             removeDocument(doc);

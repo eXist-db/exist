@@ -89,7 +89,7 @@ public class CollectionCache extends LRUCache {
                     try {
                         if (cached.allowUnload()) {
                             if(pool.getConfigurationManager()!=null) { // might be null during db initialization
-                                pool.getConfigurationManager().invalidate(old.getURI());
+                                pool.getConfigurationManager().invalidate(old.getURI(), null);
                             }
                             names.remove(old.getURI().getRawCollectionPath());
                             cached.sync(true);
@@ -116,7 +116,7 @@ public class CollectionCache extends LRUCache {
         super.remove(item);
         names.remove(col.getURI().getRawCollectionPath());
         if(pool.getConfigurationManager() != null) // might be null during db initialization
-           {pool.getConfigurationManager().invalidate(col.getURI());}
+           {pool.getConfigurationManager().invalidate(col.getURI(), null);}
     }
 
     /**
