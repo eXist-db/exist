@@ -159,7 +159,7 @@ public abstract class DBBroker extends Observable {
      * @param subject
      */
     //TODO: this should be done in connection with authenticate (SecurityManager)
-    public void setSubject(Subject subject) {
+    public void setSubject(final Subject subject) {
         this.subject = subject;
         /*
         synchronized (this){ System.out.println("DBBroker.setUser(" +

@@ -42,6 +42,7 @@ import org.exist.xquery.value.Type;
  * @author Loren Cahlander
  *
  */
+@Deprecated
 public class XMLDBGetCurrentUserAttribute extends BasicFunction
 {
 	protected static final Logger logger = Logger.getLogger(XMLDBGetCurrentUserAttribute.class);

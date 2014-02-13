@@ -41,6 +41,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
+@Deprecated
 public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipulator {
 
     public final static FunctionSignature signature = new FunctionSignature(
