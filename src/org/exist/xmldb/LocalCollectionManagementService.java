@@ -465,10 +465,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     		throws XMLDBException { 
     	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
 
-    	if (destinationPath == null)
-	    {destinationPath = resourcePath.removeLastSegment();}
-    	else
-	    {destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);}	
+    	if(destinationPath == null) {
+            destinationPath = resourcePath.removeLastSegment();
+        } else {
+            destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+        }
 
     	final Subject preserveSubject = brokerPool.getSubject();
     	final TransactionManager transact = brokerPool.getTransactionManager();
@@ -493,9 +494,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + destinationPath + " not found");
             }
-	    if (newName == null) {
-		newName = resourcePath.lastSegment();
-	    }
+	        if(newName == null) {
+		        newName = resourcePath.lastSegment();
+	        }
             broker.copyResource(transaction, doc, destination, newName);
             transact.commit(transaction);
         } catch ( final EXistException e ) {
@@ -520,12 +521,12 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
     }
 	
-    public void setCollection( Collection parent ) throws XMLDBException {
+    public void setCollection(Collection parent) throws XMLDBException {
         this.parent = (LocalCollection) parent;
     }
 
-    public void setProperty( String property,
-                             String value ) {
+    public void setProperty(String property,
+                             String value) {
     }
 	
     @Override
