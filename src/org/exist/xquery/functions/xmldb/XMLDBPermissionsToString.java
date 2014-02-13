@@ -33,7 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.securitymanager.PermissionsFunctions;
+import org.exist.xquery.functions.securitymanager.PermissionsFunction;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -45,6 +45,7 @@ import org.exist.xquery.value.Type;
 /**
  * @author wolf
  */
+@Deprecated
 public class XMLDBPermissionsToString extends BasicFunction {
     protected static final Logger logger = Logger.getLogger(XMLDBPermissionsToString.class);
     
@@ -61,7 +62,7 @@ public class XMLDBPermissionsToString extends BasicFunction {
                 new FunctionParameterSequenceType("permissions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions in xs:integer format")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the permissions as string 'rwu' for, user, group and other"),
-            PermissionsFunctions.FNS_OCTAL_TO_MODE
+            PermissionsFunction.FNS_OCTAL_TO_MODE
         ),
 
         new FunctionSignature(
@@ -73,7 +74,7 @@ public class XMLDBPermissionsToString extends BasicFunction {
                 new FunctionParameterSequenceType("permissions-string", Type.STRING, Cardinality.EXACTLY_ONE, "The permissions string")
             },
             new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The permissions integer"),
-            PermissionsFunctions.FNS_MODE_TO_OCTAL
+            PermissionsFunction.FNS_MODE_TO_OCTAL
         )
     };
 	

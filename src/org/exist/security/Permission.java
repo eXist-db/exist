@@ -41,13 +41,13 @@ public interface Permission {
     
     public final static int DEFAULT_TEMPORARY_DOCUMENT_PERM = 0771;
 
-    public final static int SET_UID = 4;
-    public final static int SET_GID = 2;
-    public final static int STICKY = 1;
+    public final static int SET_UID = 04;
+    public final static int SET_GID = 02;
+    public final static int STICKY = 01;
 
-    public final static int READ = 4;
-    public final static int WRITE = 2;
-    public final static int EXECUTE = 1;
+    public final static int READ = 04;
+    public final static int WRITE = 02;
+    public final static int EXECUTE = 01;
 	
     public final static String USER_STRING = "user";
     public final static String GROUP_STRING = "group";
@@ -58,8 +58,11 @@ public interface Permission {
     public final static String EXECUTE_STRING = "execute";
 
     public final static char SETUID_CHAR = 's';
+    public final static char SETUID_CHAR_NO_EXEC = 'S';
     public final static char SETGID_CHAR = 's';
+    public final static char SETGID_CHAR_NO_EXEC = 'S';
     public final static char STICKY_CHAR = 't';
+    public final static char STICKY_CHAR_NO_EXEC = 'T';
     public final static char READ_CHAR = 'r';
     public final static char WRITE_CHAR = 'w';
     public final static char EXECUTE_CHAR = 'x';
@@ -129,6 +132,20 @@ public interface Permission {
     public void setGroup(String name) throws PermissionDeniedException;
 
     /**
+     * Set the owner group
+     * 
+     * This is used to set the owner group
+     * of this permission to the same
+     * as the owner group of the <i>other</i>
+     * permission.
+     * 
+     * This is typically used in setGID situations.
+     * 
+     * @param other Another permissions object
+     */
+    public void setGroupFrom(Permission other) throws PermissionDeniedException;
+    
+    /**
      * Sets mode for group
      *
      * @param  perm  The new group mode value
@@ -157,25 +174,21 @@ public interface Permission {
     public void setOwner(String user) throws PermissionDeniedException;
 
     /**
-     *  Set mode using a string. The string has the
-     * following syntax:
+     * Set mode using a string.
      * 
-     * [user|group|other]=[+|-][read|write|update]
+     * The string can either be in one of three formats:
+     *  
+     * 1) Unix Symbolic format as given to 'chmod' on Unix/Linux
+     * 2) eXist Symbolic format as described in @see org.exist.security.AbstractUnixStylePermission#setExistSymbolicMode(java.lang.String)
+     * 3) Simple Symbolic format e.g. "rwxr-xr-x"
      * 
-     * For example, to set read and write mode for the group, but
-     * not for others:
+     * The eXist symbolic format should be avoided
+     * in new applications as it is deprecated
      * 
-     * group=+read,+write,other=-read,-write
-     * 
-     * The new settings are or'ed with the existing settings.
-     * 
-     *@param  str                  The new mode
-     *@exception  SyntaxException  Description of the Exception
-     *
-     * @deprecated Setting permissions via string is not very efficient!
+     * @param  str                  The new mode
+     * @exception  SyntaxException  Description of the Exception
      */
-    @Deprecated
-    public void setMode(String str) throws SyntaxException, PermissionDeniedException;
+    public void setMode(String modeStr) throws SyntaxException, PermissionDeniedException;
 
     /**
      *  Set mode

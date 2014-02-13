@@ -46,6 +46,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author Luigi P. Bai, finder@users.sf.net, 2004
  * 
  */
+@Deprecated
 public class XMLDBCreateUser extends BasicFunction {
 
     protected static final Logger logger = Logger.getLogger(XMLDBCreateUser.class);
