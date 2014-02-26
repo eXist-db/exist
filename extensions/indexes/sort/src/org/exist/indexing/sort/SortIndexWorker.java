@@ -362,8 +362,8 @@ public class SortIndexWorker implements IndexWorker {
         return mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
-        return node;
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+        return insert ? null : node;
     }
 
     public StreamListener getListener() {
