@@ -512,7 +512,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     @Override
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
             return null;
         IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(broker);

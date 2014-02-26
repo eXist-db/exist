@@ -255,7 +255,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     @Override
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
 //        if (node.getNodeType() == Node.ATTRIBUTE_NODE)
 //            return null;
         if (config == null)

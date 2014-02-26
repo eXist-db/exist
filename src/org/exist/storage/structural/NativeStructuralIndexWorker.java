@@ -364,8 +364,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
-        return node;
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+        // if a node is inserted, we do not need to reindex the parent
+        return insert ? null : node;
     }
 
     private NativeStructuralStreamListener listener = new NativeStructuralStreamListener();
