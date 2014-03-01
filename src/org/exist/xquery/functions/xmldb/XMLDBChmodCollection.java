@@ -28,7 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.securitymanager.PermissionsFunctions;
+import org.exist.xquery.functions.securitymanager.PermissionsFunction;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -44,7 +44,7 @@ import org.xmldb.api.base.XMLDBException;
  * @author Luigi P. Bai, finder@users.sf.net, 2004
  *
  */
-
+@Deprecated
 public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator {
     private static final Logger logger = Logger.getLogger(XMLDBChmodCollection.class);
 	public final static FunctionSignature signature = new FunctionSignature(
@@ -56,7 +56,7 @@ public class XMLDBChmodCollection extends XMLDBAbstractCollectionManipulator {
 			    new FunctionParameterSequenceType("mode", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mode as xs:integer"),
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY),
-            PermissionsFunctions.FNS_CHMOD
+            PermissionsFunction.FNS_CHMOD
 	);
 
 	

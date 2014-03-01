@@ -36,7 +36,7 @@ import org.exist.xquery.value.Type;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class IsAuthenticated extends BasicFunction {
+public class IsAuthenticatedFunction extends BasicFunction {
 
     public final static FunctionSignature FNS_IS_AUTHENTICATED = new FunctionSignature(
         new QName("is-authenticated", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX),
@@ -52,15 +52,16 @@ public class IsAuthenticated extends BasicFunction {
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise")
     );
 
-    public IsAuthenticated(final XQueryContext context, final FunctionSignature signature) {
+    public IsAuthenticatedFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
     public Sequence eval(final Sequence args[], final Sequence contextSequence) throws XPathException {
-        if (mySignature == FNS_IS_EXTERNALLY_AUTHENTICATED)
-        	return new BooleanValue(context.getSubject().isExternallyAuthenticated());
-        
-    	return new BooleanValue(context.getSubject().isAuthenticated());
+        if (mySignature == FNS_IS_EXTERNALLY_AUTHENTICATED) {
+            return new BooleanValue(context.getRealUser().isExternallyAuthenticated());
+        } else {
+            return new BooleanValue(context.getRealUser().isAuthenticated());
+        }
     }
 }

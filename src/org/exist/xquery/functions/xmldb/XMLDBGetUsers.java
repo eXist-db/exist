@@ -33,7 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.securitymanager.GroupMembershipFunctions;
+import org.exist.xquery.functions.securitymanager.GroupMembershipFunction;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -46,6 +46,7 @@ import org.exist.xquery.value.StringValue;
 /**
  * @author Adam Retter <adam@existsolutions.com>
  */
+@Deprecated
 public class XMLDBGetUsers extends BasicFunction {
 
     protected static final Logger logger = Logger.getLogger(XMLDBGetUsers.class);
@@ -57,7 +58,7 @@ public class XMLDBGetUsers extends BasicFunction {
             new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The group-name"),
         },
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of users in the group identified by $group-name"),
-        GroupMembershipFunctions.FNS_GET_GROUP_MEMBERS
+        GroupMembershipFunction.FNS_GET_GROUP_MEMBERS
     );
 	
     public XMLDBGetUsers(XQueryContext context) {

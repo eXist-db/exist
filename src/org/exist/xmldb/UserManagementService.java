@@ -64,26 +64,61 @@ public interface UserManagementService extends Service {
         //public void setPermissions(Collection collection, String owner, String group, int mode) throws XMLDBException;
 
         //public void setPermissions(Resource resource, String owner, String group, int mode) throws XMLDBException;
-	
-    /**
-     *  Change owner and group of the current collection.
-     *
-     *@param  u                   Description of the Parameter
-     *@param  group               Description of the Parameter
-     *@exception  XMLDBException  Description of the Exception
-     */
-    public void chown( Account u, String group ) throws XMLDBException;
-
 
     /**
-     *  Change owner and group of the specified resource.
+     * Change owner gid of the current collection.
      *
-     *@param  res                 Description of the Parameter
-     *@param  u                   Description of the Parameter
-     *@param  group               Description of the Parameter
-     *@exception  XMLDBException  Description of the Exception
+     * @param  group               The group
+     * @throws XMLDBException
      */
-    public void chown( Resource res, Account u, String group )
+    public void chgrp(String group) throws XMLDBException;
+
+    /**
+     * Change owner uid of the current collection.
+     *
+     * @param  u                   The user
+     * @throws XMLDBException
+     */
+    public void chown(Account u) throws XMLDBException;
+
+    /**
+     * Change owner uid and gid of the current collection.
+     *
+     * @param  u                   The user
+     * @param  group               The group
+     * @throws XMLDBException
+     */
+    public void chown(Account u, String group) throws XMLDBException;
+
+    /**
+     * Change owner gid of the specified resource.
+     *
+     * @param  res                 The resource
+     * @param  group               The group
+     * @throws XMLDBException
+     */
+    public void chgrp(Resource res, String group)
+            throws XMLDBException;
+
+    /**
+     * Change owner uid of the specified resource.
+     *
+     * @param  res                 The resource
+     * @param  u                   The user
+     * @throws XMLDBException
+     */
+    public void chown(Resource res, Account u)
+            throws XMLDBException;
+
+    /**
+     * Change owner uid and gid of the specified resource.
+     *
+     * @param  res                 The resource
+     * @param  u                   The user
+     * @param  group               The group
+     * @throws XMLDBException
+     */
+    public void chown(Resource res, Account u, String group)
          throws XMLDBException;
 
 

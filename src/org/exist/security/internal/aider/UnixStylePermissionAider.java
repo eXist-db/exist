@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
+ *  Copyright (C) 2013 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -27,6 +27,8 @@ import org.exist.security.AbstractUnixStylePermission;
 import org.exist.security.Group;
 import org.exist.security.SecurityManager;
 import org.exist.security.Account;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -55,7 +57,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      *
      * @param  mode  The mode
      */
-    public UnixStylePermissionAider(int mode) {
+    public UnixStylePermissionAider(final int mode) {
     	this();
         this.mode = mode;
     }
@@ -68,7 +70,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      * @param  group
      * @param  mode
      */
-    public UnixStylePermissionAider(String user, String group, int mode) {
+    public UnixStylePermissionAider(final String user, final String group, final int mode) {
         this.owner = new UserAider(user);
         this.ownerGroup = new GroupAider(group);
         this.mode = mode;
@@ -90,7 +92,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     }
 
     @Override
-    public void setSetUid(boolean setUid) {
+    public void setSetUid(final boolean setUid) {
         if(setUid) {
             this.mode = mode | (SET_UID << 9);
         } else {
@@ -99,7 +101,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     }
 
     @Override
-    public void setSetGid(boolean setGid) {
+    public void setSetGid(final boolean setGid) {
         if(setGid) {
             this.mode = mode | (SET_GID << 9);
         } else {
@@ -108,7 +110,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     }
 
     @Override
-    public void setSticky(boolean sticky) {
+    public void setSticky(final boolean sticky) {
         if(sticky) {
             this.mode = mode | (STICKY << 9);
         } else {
@@ -182,7 +184,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      * @param  group  The group value
      */
     @Override
-    public void setGroup(Group group) {
+    public void setGroup(final Group group) {
         this.ownerGroup = group;
     }
 
@@ -192,8 +194,13 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      * @param  group  The group name
      */
     @Override
-    public void setGroup(String group) {
+    public void setGroup(final String group) {
         this.ownerGroup = new GroupAider(group);
+    }
+    
+    @Override
+    public void setGroupFrom(Permission other) throws PermissionDeniedException {
+        this.ownerGroup = new GroupAider(other.getGroup().getName());
     }
 
     /**
@@ -202,7 +209,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      *@param  groupMode  The new group mode value
      */
     @Override
-    public void setGroupMode(int groupMode) {
+    public void setGroupMode(final int groupMode) {
         this.mode |= (groupMode << 3);
     }
 
@@ -212,7 +219,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      *@param  user  The new owner value
      */
     @Override
-    public void setOwner(Account user) {
+    public void setOwner(final Account user) {
         this.owner = user;
     }
 
@@ -222,7 +229,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      *@param  user  The new owner value
      */
     @Override
-    public void setOwner(String user) {
+    public void setOwner(final String user) {
         this.owner = new UserAider(user);
     }
 
@@ -232,7 +239,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      *@param  mode  The new mode value
      */
     @Override
-    public void setMode(int mode) {
+    public void setMode(final int mode) {
         this.mode = mode;
     }
 
@@ -242,7 +249,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      *@param  otherMode  The new public mode value
      */
     @Override
-    public void setOtherMode(int otherMode) {
+    public void setOtherMode(final int otherMode) {
         this.mode |= otherMode ;
     }
 
@@ -252,7 +259,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      *@param  ownerMode  The new owner mode value
      */
     @Override
-    public void setOwnerMode(int ownerMode) {
+    public void setOwnerMode(final int ownerMode) {
         this.mode |= (ownerMode << 6);
     }
 
@@ -268,20 +275,20 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
         final char ch[] = new char[] {
             (mode & (READ << 6)) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & (WRITE << 6)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (SET_UID << 9)) == 0 ? ((mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETUID_CHAR,
+            (mode & (SET_UID << 9)) == 0 ? ((mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((mode & (EXECUTE << 6)) == 0 ? SETUID_CHAR_NO_EXEC : SETUID_CHAR),
             
             (mode & (READ << 3)) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & (WRITE << 3)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (SET_GID << 9)) == 0 ? ((mode & (EXECUTE << 3)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : SETGID_CHAR,
+            (mode & (SET_GID << 9)) == 0 ? ((mode & (EXECUTE << 3)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((mode & (EXECUTE << 3)) == 0 ? SETGID_CHAR_NO_EXEC : SETGID_CHAR),
 
             (mode & READ) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (STICKY << 9)) == 0 ? ((mode & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : STICKY_CHAR
+            (mode & (STICKY << 9)) == 0 ? ((mode & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((mode & EXECUTE) == 0 ? STICKY_CHAR_NO_EXEC : STICKY_CHAR)
         };
         return String.valueOf(ch);
     }
 
-    public static UnixStylePermissionAider fromString(String modeStr) throws SyntaxException {
+    public static UnixStylePermissionAider fromString(final String modeStr) throws SyntaxException {
         if(modeStr == null || !(modeStr.length() == 9 || modeStr.length() == 12)){
             throw new SyntaxException("Invalid Permission String '" + modeStr + "'");
         }
@@ -305,8 +312,20 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
                         } else if(i == 3) {
                             mode |= (SET_GID << 9);
                         }
+                        mode |= (EXECUTE << (6 - i));
+                        break;
+                    case SETUID_CHAR_NO_EXEC | SETGID_CHAR_NO_EXEC:
+                        if(i == 0) {
+                            mode |= (SET_UID << 9);
+                        } else if(i == 3) {
+                            mode |= (SET_GID << 9);
+                        }
                         break;
                     case STICKY_CHAR:
+                        mode |= (STICKY << 9);
+                        mode |= (EXECUTE << (6 - i));
+                        break;
+                    case STICKY_CHAR_NO_EXEC:
                         mode |= (STICKY << 9);
                         break;
                     case UNSET_CHAR:
@@ -320,27 +339,27 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     }
     
     @Override
-    public boolean validate(Subject user, int mode) {
-    	throw new UnsupportedOperationException("Validation of permission Aider is unsupported");
+    public boolean validate(final Subject user, final int mode) {
+    	throw new UnsupportedOperationException("Validation of Permission Aider is unsupported");
     }
 
     @Override
-    public void setGroup(int id) {
+    public void setGroup(final int id) {
         ownerGroup = new GroupAider(id);
     }
 
     @Override
-    public void setOwner(int id) {
+    public void setOwner(final int id) {
         owner = new UserAider(id);
     }
 
     @Override
-    public void write(VariableByteOutputStream ostream) {
+    public void write(final VariableByteOutputStream ostream) {
        throw new UnsupportedOperationException("Serialization of permission Aider is unsupported");
     }
 
     @Override
-    public void read(VariableByteInput istream) throws IOException {
+    public void read(final VariableByteInput istream) throws IOException {
         throw new UnsupportedOperationException("De-Serialization of permission Aider is unsupported");
     }
 
@@ -360,7 +379,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     }
     
     @Override
-    public boolean isCurrentSubjectInGroup(int groupId) {
+    public boolean isCurrentSubjectInGroup(final int groupId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

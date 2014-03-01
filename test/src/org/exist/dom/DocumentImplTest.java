@@ -53,7 +53,7 @@ public class DocumentImplTest {
         other.setMetadata(otherMetadata);
 
         //actions
-        doc.copyOf(other);
+        doc.copyOf(other, false);
 
         verify(mockBrokerPool, mockDatabase, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
@@ -91,7 +91,7 @@ public class DocumentImplTest {
         other.setMetadata(otherMetadata);
 
         //actions
-        doc.copyOf(other);
+        doc.copyOf(other, false);
 
         verify(mockBrokerPool, mockDatabase, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
@@ -131,7 +131,7 @@ public class DocumentImplTest {
         other.setMetadata(otherMetadata);
 
         //actions
-        doc.copyOf(other);
+        doc.copyOf(other, false);
 
         verify(mockBrokerPool, mockDatabase, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 

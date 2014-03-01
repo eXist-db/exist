@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
+ *  Copyright (C) 2013 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -63,7 +63,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.http.servlets.RequestWrapper;
-import org.exist.http.servlets.SessionWrapper;
 import org.exist.interpreter.Context;
 import org.exist.memtree.InMemoryXMLStreamReader;
 import org.exist.memtree.MemTreeBuilder;
@@ -87,7 +86,6 @@ import org.exist.util.LockException;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
@@ -317,6 +315,14 @@ public class XQueryContext implements BinaryValueManager, Context
     protected Database db;
 
     private boolean analyzed = false;
+    
+    /**
+     * The Subject of the User that requested the execution of the XQuery
+     * attached by this Context. This is not the same as the Effective User
+     * as we may be executed setUid or setGid. The Effective User can be retrieved
+     * through broker.getSubject()
+     */
+    private Subject realUser;
 
     public synchronized ExistRepository getRepository()
     throws XPathException {
@@ -519,6 +525,8 @@ public class XQueryContext implements BinaryValueManager, Context
         if(user != null) {
             getBroker().setSubject(user);
         }
+        
+        setRealUser(getBroker().getSubject());
 
         //Reset current context position
         setContextSequencePosition( 0, null );
@@ -1341,8 +1349,10 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @param  keepGlobals  
      */
-    public void reset( boolean keepGlobals )
-    {
+    @Override
+    public void reset(final boolean keepGlobals) {
+        setRealUser(null);
+        
         if( modifiedDocuments != null ) {
 
             try {
@@ -3000,6 +3010,33 @@ public class XQueryContext implements BinaryValueManager, Context
             envs = System.getenv();
         }
         return envs;
+    }
+
+    /**
+     * Gets the Effective user
+     * i.e. the user that the query is executing as
+     * 
+     * @return The Effective User
+     */
+    public Subject getEffectiveUser() {
+        return getBroker().getSubject();
+    }
+    
+    /**
+     * Gets the Real User
+     * i.e. the user that initiated execution of the query
+     * Note this is not necessarily the same as the user that the
+     * query is executing as
+     * @see org.exist.xquery.XQueryContext#getEffectiveUser()
+     * 
+     * @return The Real User
+     */
+    public Subject getRealUser() {
+        return realUser;
+    }
+    
+    public void setRealUser(final Subject realUser) {
+        this.realUser = realUser;
     }
 
     /* ----------------- Save state ------------------------ */

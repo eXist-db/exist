@@ -364,8 +364,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
-        return node;
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+        // if a node is inserted, we do not need to reindex the parent
+        return insert ? null : node;
     }
 
     private NativeStructuralStreamListener listener = new NativeStructuralStreamListener();
@@ -492,7 +493,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     @Override
-    public void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException {
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException {
         for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
             removeDocument(doc);
@@ -503,8 +504,66 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    /**
+     * Collect index statistics. Used by functions like util:index-keys.
+     *
+     * @param context
+     * @param docs The documents to which the index entries belong
+     * @param contextSet ignored by this index
+     * @param hints Some "hints" for retrieving the index entries. See such hints in
+     * {@link org.exist.indexing.OrderedValuesIndex} and {@link org.exist.indexing.QNamedKeysIndex}.
+     * @return
+     */
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
-        return new Occurrences[0];  //To change body of implemented methods use File | Settings | File Templates.
+        final Map<String, Occurrences> occurrences = new TreeMap<String, Occurrences>();
+        for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+            final DocumentImpl doc = i.next();
+            final List<QName> qnames = getQNamesForDoc(doc);
+            for (final QName qname : qnames) {
+                final String name;
+                if (qname.getNameType() == ElementValue.ATTRIBUTE) {
+                    name = "@" + qname.getLocalName();
+                } else {
+                    name = qname.getLocalName();
+                }
+                final byte[] fromKey = computeKey(qname.getNameType(), qname, doc.getDocId());
+                final byte[] toKey = computeKey(qname.getNameType(), qname, doc.getDocId() + 1);
+                final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
+
+                final Lock lock = index.btree.getLock();
+                try {
+                    lock.acquire(Lock.READ_LOCK);
+                    index.btree.query(query, new BTreeCallback() {
+                        public boolean indexInfo(Value value, long pointer) throws TerminatedException {
+                            Occurrences oc = occurrences.get(name);
+                            if (oc == null) {
+                                oc = new Occurrences(name);
+                                occurrences.put(name, oc);
+                                oc.addDocument(doc);
+                                oc.addOccurrences(1);
+                            } else {
+                                oc.addOccurrences(1);
+                                oc.addDocument(doc);
+                            }
+                            return true;
+                        }
+                    });
+                } catch (final LockException e) {
+                    NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
+                } catch (final Exception e) {
+                    NativeStructuralIndex.LOG.warn("Exception caught while reading structural index for document " +
+                            doc.getURI() + ": " + e.getMessage(), e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
+                }
+            }
+        }
+        final Occurrences[] result = new Occurrences[occurrences.size()];
+        int i = 0;
+        for (Occurrences occ: occurrences.values()) {
+            result[i++] = occ;
+        }
+        return result;
     }
 
     @Override

@@ -49,6 +49,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * @author wolf
  */
+@Deprecated
 public class XMLDBChangeUser extends BasicFunction {
     private static final Logger logger = Logger.getLogger(XMLDBChangeUser.class);
 
