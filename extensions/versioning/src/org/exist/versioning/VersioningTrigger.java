@@ -292,7 +292,7 @@ public class VersioningTrigger extends FilteringTrigger {
                 vDoc = vCollection.getDocument(broker, binUri);
             } else {
                 vDoc = new DocumentImpl(broker.getBrokerPool(), vCollection, XmldbURI.createInternal(vFileName));
-                vDoc.copyOf(document);
+                vDoc.copyOf(document, true);
                 vDoc.copyChildren(document);
             }
             

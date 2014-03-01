@@ -475,8 +475,9 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             StreamListener listener = null;
             //May help getReindexRoot() to make some useful things
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path);
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
             broker.getIndexController().setMode(StreamListener.STORE);
+            // only reindex if reindexRoot is an ancestor of the current node
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
             }
@@ -1222,7 +1223,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             StreamListener listener = null;
             //May help getReindexRoot() to make some useful things
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true);
+            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
             broker.getIndexController().setMode(StreamListener.STORE);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
@@ -1272,7 +1273,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             StreamListener listener = null;
             //May help getReindexRoot() to make some useful things
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true);
+            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
+            System.out.println("Reindex root after insert: " + reindexRoot);
             broker.getIndexController().setMode(StreamListener.STORE);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
@@ -1311,7 +1313,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         try {
             broker = ownerDocument.getBrokerPool().get(null);
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true);
+            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
             broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
@@ -1395,7 +1397,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             //May help getReindexRoot() to make some useful things
             broker.getIndexController().setDocument(ownerDocument);
             //Check if the change affects any ancestor nodes, which then need to be reindexed later
-            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath);
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
             //Remove indexes
             if (reindexRoot == null)
                 {reindexRoot = oldNode;}
@@ -1445,7 +1447,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             //May help getReindexRoot() to make some useful things
             broker = ownerDocument.getBrokerPool().get(null);
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath);
+            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
             broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
@@ -1580,7 +1582,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         try {
             broker = ownerDocument.getBrokerPool().get(null);
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath);
+            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
             broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();

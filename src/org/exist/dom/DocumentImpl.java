@@ -25,11 +25,8 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.numbering.NodeId;
-import org.exist.security.Permission;
-import org.exist.security.PermissionFactory;
-import org.exist.security.UnixStylePermission;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.Account;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -64,7 +61,6 @@ import org.w3c.dom.UserDataHandler;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
-import org.exist.security.ACLPermission;
 
 /**
  *  Represents a persistent document object in the database;
@@ -129,6 +125,15 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
 
         // the permissions assigned to this document
         this.permissions = PermissionFactory.getDefaultResourcePermission();
+
+        //inherit the group to the resource if current collection is setGid
+        if(collection != null && collection.getPermissions().isSetGid()) {
+            try {
+                this.permissions.setGroupFrom(collection.getPermissions());
+            } catch(final PermissionDeniedException pde) {
+                throw new IllegalArgumentException(pde); //TODO improve
+            }
+        }
     }
 
     public BrokerPool getBrokerPool() {
@@ -312,8 +317,13 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * This is called by {@link Collection} when replacing a document.
      *
      * @param other a <code>DocumentImpl</code> value
+     * @param preserve Cause copyOf to preserve the following attributes of
+     *                 each source file in the copy: modification time,
+     *                 access time, file mode, user ID, and group ID,
+     *                 as allowed by permissions and  Access Control
+     *                 Lists (ACLs)
      */
-    public void copyOf(DocumentImpl other) {
+    public void copyOf(final DocumentImpl other, final boolean preserve) {
         childAddress = null;
         children = 0;
 
@@ -326,16 +336,21 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         //copy metadata
         metadata.copyOf(other.getMetadata());
 
-        //update timestamp
-        final long timestamp = System.currentTimeMillis();
-        metadata.setCreated(timestamp);
-        metadata.setLastModified(timestamp);
+        if(preserve) {
+            //copy permission
+            permissions = ((UnixStylePermission)other.permissions).copy();
+            //created and last modified are done by metadata.copyOf
+            //metadata.setCreated(other.getMetadata().getCreated());
+            //metadata.setLastModified(other.getMetadata().getLastModified());
+        } else {
+            //update timestamp
+            final long timestamp = System.currentTimeMillis();
+            metadata.setCreated(timestamp);
+            metadata.setLastModified(timestamp);
+        }
 
         // reset pageCount: will be updated during storage
         metadata.setPageCount(0);
-        
-        //copy permission
-        permissions = ((UnixStylePermission)other.permissions).copy();        
     }
 
     /**

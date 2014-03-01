@@ -43,6 +43,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
@@ -254,7 +255,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     @Override
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
 //        if (node.getNodeType() == Node.ATTRIBUTE_NODE)
 //            return null;
         if (config == null)
@@ -289,8 +290,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public QueryRewriter getQueryRewriter(XQueryContext context) {
-        List<Object> configs = index.getBrokerPool().getConfigurationManager().getCustomIndexSpecs(getIndexId());
-        return new RangeQueryRewriter(this, configs, context);
+        return new RangeQueryRewriter(context);
     }
 
     @Override
@@ -320,7 +320,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     @Override
-    public void removeCollection(Collection collection, DBBroker broker) throws PermissionDeniedException {
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException {
         if (LOG.isDebugEnabled())
             LOG.debug("Removing collection " + collection.getURI());
         IndexWriter writer = null;
@@ -339,6 +339,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.error("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
+            if (reindex) {
+                try {
+                    index.sync();
+                } catch (DBException e) {
+                    LOG.warn("Exception during reindex: " + e.getMessage(), e);
+                }
+            }
             mode = StreamListener.STORE;
         }
         if (LOG.isDebugEnabled())

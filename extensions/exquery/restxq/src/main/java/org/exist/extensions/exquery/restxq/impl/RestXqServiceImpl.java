@@ -133,10 +133,8 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             
             //first, get the content of the request
             is = new CloseShieldInputStream(request.getInputStream());
-        
-            //if the content length is unknown or 0, return
-            final int contentLength = request.getContentLength();
-            if(contentLength == -1 || contentLength == 0) {
+
+            if(is.available() <= 0) {
                 return null;
             }
             
@@ -162,18 +160,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
         try {
 
             //was there any POST content?
-
-
-            /**
-             * There is a bug in HttpInput.available() in Jetty 7.2.2.v20101205
-             * This has been filed as Bug 333415 - https://bugs.eclipse.org/bugs/show_bug.cgi?id=333415
-             * It is expected to be fixed in the Jetty 7.3.0 release
-             */
-
-            //TODO reinstate call to .available() when Jetty 7.3.0 is released, use of .getContentLength() is not reliable because of http mechanics
-            //if(is != null && is.available() > 0) {
-            final int contentLength = request.getContentLength();            
-            if(is != null && contentLength > 0) {
+            if(is != null && is.available() > 0) {
                 String contentType = request.getContentType();
                 // 1) determine if exists mime database considers this binary data
                 if(contentType != null) {
@@ -227,6 +214,8 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                     }
                 }
             }
+        } catch (IOException e) {
+            throw new RestXqServiceException(e.getMessage());
         } finally {
 
             if(cache != null) {
@@ -281,6 +270,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             builder.startDocument();
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
             reader.setContentHandler(receiver);
+            reader.setProperty("http://xml.org/sax/properties/lexical-handler", receiver);
             reader.parse(src);
             builder.endDocument();
             final Document doc = receiver.getDocument();

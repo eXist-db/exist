@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2013 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -31,6 +31,7 @@ import java.io.Reader;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
@@ -46,14 +47,14 @@ import org.exist.xmldb.XmldbURI;
  */
 public class DBSource extends AbstractSource {
     
-    private BinaryDocument doc;
-    private XmldbURI key;
-    private long lastModified;
+    private final BinaryDocument doc;
+    private final XmldbURI key;
+    private final long lastModified;
     private String encoding = "UTF-8";
-    private boolean checkEncoding;
-    private DBBroker broker;
+    private final boolean checkEncoding;
+    private final DBBroker broker;
     
-    public DBSource(DBBroker broker, BinaryDocument doc, boolean checkXQEncoding) {
+    public DBSource(final DBBroker broker, final BinaryDocument doc, final boolean checkXQEncoding) {
         this.broker = broker;
         this.doc = doc;
         this.key = doc.getURI();
@@ -64,6 +65,7 @@ public class DBSource extends AbstractSource {
     /* (non-Javadoc)
      * @see org.exist.source.Source#getKey()
      */
+    @Override
     public Object getKey() {
         return key;
     }
@@ -79,38 +81,52 @@ public class DBSource extends AbstractSource {
     /* (non-Javadoc)
      * @see org.exist.source.Source#isValid()
      */
-    public int isValid(DBBroker broker) {
-        DocumentImpl doc = null;
+    @Override
+    public int isValid(final DBBroker broker) {
+        DocumentImpl d = null;
+        int result;
         try {
-            doc = broker.getXMLResource(key, Lock.READ_LOCK);
-            if (doc == null)
-                {return INVALID;}
-            if (doc.getMetadata().getLastModified() > lastModified)
-                {return INVALID;}
-            return VALID;
-        } catch (final PermissionDeniedException e) {
-            return INVALID;
+            d = broker.getXMLResource(key, Lock.READ_LOCK);
+            
+            if(d == null) {
+                result = INVALID;
+            } else if(d.getMetadata().getLastModified() > lastModified) {
+                result = INVALID;
+            } else {
+                result = VALID;
+            }
+        } catch(final PermissionDeniedException pde) {
+            result = INVALID;
         } finally {
-            if (doc != null)
-                {doc.getUpdateLock().release(Lock.READ_LOCK);}
+            if(d != null) {
+                d.getUpdateLock().release(Lock.READ_LOCK);
+            }
         }
+        
+        return result;
     }
 
     /* (non-Javadoc)
      * @see org.exist.source.Source#isValid(org.exist.source.Source)
      */
-    public int isValid(Source other) {
-        if(!(other instanceof DBSource))
-            {return INVALID;}
-        final DBSource source = (DBSource) other;
-        if(source.getLastModified() > lastModified)
-            {return INVALID;}
-        return VALID;
+    @Override
+    public int isValid(final Source other) {
+        final int result;
+        if(!(other instanceof DBSource)) {
+            result = INVALID;
+        } else if(((DBSource)other).getLastModified() > lastModified) {
+            result = INVALID;
+        } else {
+            result = VALID;
+        }
+        
+        return result;
     }
 
     /* (non-Javadoc)
      * @see org.exist.source.Source#getReader()
      */
+    @Override
     public Reader getReader() throws IOException {
         final InputStream is = broker.getBinaryResource(doc);
         final BufferedInputStream bis = new BufferedInputStream(is);
@@ -120,6 +136,7 @@ public class DBSource extends AbstractSource {
         return new InputStreamReader(bis, encoding);
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
         return broker.getBinaryResource(doc);
     }
@@ -127,11 +144,12 @@ public class DBSource extends AbstractSource {
     /* (non-Javadoc)
      * @see org.exist.source.Source#getContent()
      */
+    @Override
     public String getContent() throws IOException {
         final InputStream raw = broker.getBinaryResource(doc);
         final long binaryLength = broker.getBinaryResourceSize(doc);
 	if(binaryLength > (long)Integer.MAX_VALUE) {
-		throw new IOException("Resource too big to be read using this method.");
+            throw new IOException("Resource too big to be read using this method.");
 	}
         final byte [] data = new byte[(int)binaryLength];
         raw.read(data);
@@ -141,6 +159,7 @@ public class DBSource extends AbstractSource {
         return new String(data, encoding);
     }
 
+    @Override
     public QName isModule() throws IOException {
         final InputStream raw = broker.getBinaryResource(doc);
         final long binaryLength = broker.getBinaryResourceSize(doc);
@@ -154,20 +173,22 @@ public class DBSource extends AbstractSource {
         return getModuleDecl(is);
     }
 
-    private void checkEncoding(InputStream is) throws IOException {
-        if (checkEncoding) {
-            String checkedEnc = guessXQueryEncoding(is);
-            if (checkedEnc != null)
-                {encoding = checkedEnc;}
+    private void checkEncoding(final InputStream is) throws IOException {
+        if(checkEncoding) {
+            final String checkedEnc = guessXQueryEncoding(is);
+            if(checkedEnc != null) {
+                encoding = checkedEnc;
+            }
         }
     }
     
+    @Override
     public String toString() {
     	return doc.getDocumentURI();
     }
 
     @Override
-    public void validate(Subject subject, int mode) throws PermissionDeniedException {
+    public void validate(final Subject subject, final int mode) throws PermissionDeniedException {
         
         //TODO This check should not even be here! Its up to the database to refuse access not requesting source
         
@@ -175,5 +196,9 @@ public class DBSource extends AbstractSource {
             final String modeStr = new UnixStylePermissionAider(mode).toString();
             throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have '" + modeStr + "' access to resource '" + doc.getURI() + "'.");
         }
+    }
+    
+    public Permission getPermissions() {
+        return doc.getPermissions();
     }
 }

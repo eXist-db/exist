@@ -33,7 +33,7 @@ import org.junit.Test;
  *
  * @author Adam Retter <adam.retter@googlemail.com>
  */
-public class PermissionsFunctionsTest {
+public class PermissionFunctionsTest {
 
     /**
      * Test of eval method, of class PermissionsFunctions.
@@ -42,7 +42,7 @@ public class PermissionsFunctionsTest {
     public void modeToOctal() throws XPathException {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
-       final PermissionsFunctions permissionsFunctions = new PermissionsFunctions(mckContext, PermissionsFunctions.FNS_MODE_TO_OCTAL);
+       final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
        Sequence args[] = {
            new StringValue("rwxr-x---")
        };
@@ -57,7 +57,7 @@ public class PermissionsFunctionsTest {
     public void modeToOctal_invalidMode() throws XPathException {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
-       final PermissionsFunctions permissionsFunctions = new PermissionsFunctions(mckContext, PermissionsFunctions.FNS_MODE_TO_OCTAL);
+       final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
        Sequence args[] = {
            new StringValue("invalid")
        };
@@ -69,7 +69,7 @@ public class PermissionsFunctionsTest {
     public void octalToMode() throws XPathException {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
-       final PermissionsFunctions permissionsFunctions = new PermissionsFunctions(mckContext, PermissionsFunctions.FNS_OCTAL_TO_MODE);
+       final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_OCTAL_TO_MODE);
        Sequence args[] = {
            new StringValue("0750")
        };

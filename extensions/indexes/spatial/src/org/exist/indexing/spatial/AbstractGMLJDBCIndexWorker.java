@@ -222,7 +222,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         return null;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
         if (!isDocumentGMLAware)
             //Not concerned
             return null;
@@ -375,7 +375,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             LOG.debug("Dropped " + nodeCount + " nodes from GML index");
     }
 
-    public void removeCollection(Collection collection, DBBroker broker) {
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
         boolean isCollectionGMLAware = false;
         IndexSpec idxConf = collection.getIndexConfiguration(broker);
         if (idxConf != null) {

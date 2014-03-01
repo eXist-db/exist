@@ -362,8 +362,8 @@ public class SortIndexWorker implements IndexWorker {
         return mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
-        return node;
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+        return insert ? null : node;
     }
 
     public StreamListener getListener() {
@@ -374,7 +374,7 @@ public class SortIndexWorker implements IndexWorker {
         return null;
     }
 
-    public void removeCollection(Collection collection, DBBroker broker) {
+    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
     }
 
     public boolean checkIndex(DBBroker broker) {
