@@ -228,9 +228,7 @@ public class EmbeddedUpload {
             throw new IOException(ex.getMessage(), ex);
             
         } finally {
-            if (transact != null) {
-                transact.close(txn);
-            }
+            transact.close(txn);
             LOG.debug("Done.");
             if(collectionLocked && collection != null){
                 collection.release(Lock.READ_LOCK);
