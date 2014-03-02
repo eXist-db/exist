@@ -195,7 +195,8 @@ public class ErrorCodes {
 	public static final ErrorCode FTDY0020 = new W3CErrorCode("FTDY0020", "");
 	
 	public static final ErrorCode FODC0006 = new W3CErrorCode("FODC0006", "String passed to fn:parse-xml is not a well-formed XML document.");
-		
+	
+	
     
     /* eXist specific XQuery and XPath errors
      *
