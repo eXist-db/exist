@@ -43,6 +43,7 @@ public class DynamicFunctionCall extends AbstractExpression {
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
+        context.proceed(this);
         final Sequence funcSeq = functionExpr.eval(contextSequence, contextItem);
         if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)
             {throw new XPathException(this, ErrorCodes.XPTY0004,

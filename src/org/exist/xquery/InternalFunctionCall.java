@@ -34,6 +34,7 @@ public class InternalFunctionCall extends Function
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
 	{
+        context.proceed(this);
 		final QName functionName = function.getName();
 		//check access to the method
 		try {
