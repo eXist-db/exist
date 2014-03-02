@@ -221,7 +221,9 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunHigherOrderFun.signatures[3], FunHigherOrderFun.class),
         new FunctionDef(FunHigherOrderFun.signatures[4], FunHigherOrderFun.class),
         new FunctionDef(FunEnvironment.signature[0], FunEnvironment.class),
-        new FunctionDef(FunEnvironment.signature[1], FunEnvironment.class),
+        new FunctionDef(FunEnvironment.signature[1], FunEnvironment.class),        
+        new FunctionDef(ParsingFunctions.signatures[0], ParsingFunctions.class),
+        new FunctionDef(ParsingFunctions.signatures[1], ParsingFunctions.class)        
     };
 
     static {
