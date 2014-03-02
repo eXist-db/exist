@@ -271,6 +271,7 @@ public class FunctionCall extends Function {
     }
 
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) throws XPathException {
+        context.proceed(this);
         if(context.isProfilingEnabled()) {
             context.getProfiler().start(this);     
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -327,7 +328,9 @@ public class FunctionCall extends Function {
                 returnSeq = expression.eval(contextSequence, contextItem);
                 while(returnSeq instanceof DeferredFunctionCall &&
                     functionDef.getSignature().equals(((DeferredFunctionCall)returnSeq).getSignature())) {
-                    LOG.trace("Executing function: " + functionDef.getSignature());
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Executing function: " + functionDef.getSignature());
+                    }
                     returnSeq = ((DeferredFunctionCall) returnSeq).execute();
                 }
                 
