@@ -130,15 +130,15 @@ public class ContentFunctions extends BasicFunction {
 
             } catch (IOException ex) {
                 LOG.error(ex.getMessage(), ex);
-                throw new XPathException(ex.getMessage(), ex);
+                throw new XPathException(this, ex.getMessage(), ex);
 
             } catch (SAXException ex) {
                 LOG.error(ex.getMessage(), ex);
-                throw new XPathException(ex.getMessage(), ex);
+                throw new XPathException(this, ex.getMessage(), ex);
 
             } catch (ContentExtractionException ex) {
                 LOG.error(ex.getMessage(), ex);
-                throw new XPathException(ex.getMessage(), ex);
+                throw new XPathException(this, ex.getMessage(), ex);
             }
         }
     }
@@ -186,15 +186,15 @@ public class ContentFunctions extends BasicFunction {
 
         } catch (IOException ex) {
             LOG.error(ex.getMessage(), ex);
-            throw new XPathException(ex.getMessage(), ex);
+            throw new XPathException(this, ex.getMessage(), ex);
 
         } catch (SAXException ex) {
             LOG.error(ex.getMessage(), ex);
-            throw new XPathException(ex.getMessage(), ex);
+            throw new XPathException(this, ex.getMessage(), ex);
 
         } catch (ContentExtractionException ex) {
             LOG.error(ex.getMessage(), ex);
-            throw new XPathException(ex.getMessage(), ex);
+            throw new XPathException(this, ex.getMessage(), ex);
         }
 
         return receiver.getResult();
