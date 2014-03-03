@@ -119,7 +119,7 @@ public class ParsingFunctions extends BasicFunction {
 		} catch (final SAXException e) {
 			logger.debug("Error while parsing XML: " + e.getMessage(), e);
 		} catch (final IOException e) {
-			throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + "\n" + e.getMessage(),
+			throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + e.getMessage(),
 					args[0], e);
 		}
 
@@ -139,7 +139,7 @@ public class ParsingFunctions extends BasicFunction {
 		} else {
 			final MemTreeBuilder builder = context.getDocumentBuilder();
 			final NodeImpl result = Shared.writeReport(report, builder);
-			throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + "\n" + report.toString(), result);
+			throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + report.toString(), result);
 		}
 	}
 }
