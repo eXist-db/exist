@@ -283,6 +283,8 @@ public class Optimizer extends DefaultExpressionVisitor {
 //                pathExpr.remove(last);
 //            }
 //        }
+        comparison.getLeft().accept(this);
+        comparison.getRight().accept(this);
     }
 
     public void visitPredicate(Predicate predicate) {
