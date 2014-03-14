@@ -144,4 +144,39 @@
         </code>
         <expected>6 3 2</expected>
     </test>
+    <test output="xml">
+        <task>Self axis step used inside enclosed expression</task>
+        <code><![CDATA[
+            let $data :=
+            <root>
+                <elem>One</elem>
+            </root>
+            return
+            $data/elem/<data>{.,<a>1</a>}</data>
+        ]]></code>
+        <expected>
+            <data>
+                <elem>One</elem>
+                <a>1</a>
+            </data>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Context item should not be touched by nested let clause</task>
+        <code><![CDATA[
+        let $xml := <test><title>title</title></test>
+        return
+            $xml/title/<test>
+                {
+                    let $title := ./text()
+                    return
+                        let $text := text()
+                        return
+                            $text
+                }
+                </test>]]></code>
+        <expected>
+            <test>title</test>
+        </expected>
+    </test>
 </TestSet>
