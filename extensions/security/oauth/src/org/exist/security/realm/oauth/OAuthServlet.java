@@ -28,11 +28,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.scribe.model.OAuthConstants;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Token;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
+import org.scribe.utils.OAuthEncoder;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -102,21 +106,41 @@ public class OAuthServlet extends HttpServlet {
 	        OAuthRequest req = new OAuthRequest(api.getAccessTokenVerb(), api.getAccessTokenEndpoint());
 	        req.addBodyParameter(OAuthConstants.CLIENT_ID, config.getApiKey());
 	        req.addBodyParameter(OAuthConstants.CLIENT_SECRET, config.getApiSecret());
-	        req.addBodyParameter(OAuthConstants.CODE, verification);
+	        req.addBodyParameter(OAuthConstants.CODE, verifier.getValue());
 		// jetty.port.jetty
-        	req.addBodyParameter(OAuthConstants.REDIRECT_URI, "http://localhost:" + System.getProperty("jetty.port") + "/oauth/cook2gl");
+        	req.addBodyParameter(OAuthConstants.REDIRECT_URI, config.getReturnURL());
 	        req.addBodyParameter("grant_type", "authorization_code");
-	        accessToken = api.getAccessTokenExtractor().extract(req.send().getBody());
+	        
+	        String responce = req.send().getBody();
+
+	        JSONTokener tokener = new JSONTokener(responce);
+	        try {
+	            JSONObject root = new JSONObject(tokener);
+	            String access_token = root.getString("access_token");
+
+	            String token = OAuthEncoder.decode(access_token);
+	            accessToken = new Token(token, "", responce);
+
+	        } catch (JSONException e) {
+	            throw new IOException(e);
+	        }
+	        
+	        //accessToken = api.getAccessTokenExtractor().extract(req.send().getBody());
         } else
-        	accessToken = service.getAccessToken(EMPTY_TOKEN, verifier);
+            accessToken = service.getAccessToken(EMPTY_TOKEN, verifier);
         
         try {
-        	OAuthRealm._.getServiceBulderByPath(path).saveAccessToken(request, service, accessToken);
-		} catch (Exception e) {
-			throw new ServletException(e);
-		}
+            OAuthRealm._.getServiceBulderByPath(path).saveAccessToken(request, service, accessToken);
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
         
         String returnToPage = (String)request.getSession().getAttribute(RETURN_TO_PAGE);
-        response.sendRedirect(returnToPage);
+        
+        if (returnToPage != null) {
+            response.sendRedirect(returnToPage);
+        } else {
+            response.sendRedirect("/");
+        }
     }
 }
