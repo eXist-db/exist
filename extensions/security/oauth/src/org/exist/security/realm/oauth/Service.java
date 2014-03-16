@@ -38,83 +38,93 @@ import org.scribe.oauth.OAuthService;
  * <service name="app" key="APP_ID" secret="APP_SECRET" />
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * 
  */
 @ConfigurationClass("service")
 public class Service implements Configurable {
-	
-	private Configuration configuration = null;
-	
-	@ConfigurationFieldAsAttribute("name")
-	String name;
 
-	@ConfigurationFieldAsAttribute("key")
-	String apiKey;
-    
+    private Configuration configuration = null;
+
+    @ConfigurationFieldAsAttribute("name")
+    String name;
+
+    @ConfigurationFieldAsAttribute("key")
+    String apiKey;
+
     @ConfigurationFieldAsAttribute("secret")
     String apiSecret;
 
     @ConfigurationFieldAsAttribute("provider")
     String provider;
 
+    @ConfigurationFieldAsAttribute("return-url")
+    String return_url;
+
     public Service(OAuthRealm realm, Configuration config) {
 
-		configuration = Configurator.configure(this, config);
-	}
+        configuration = Configurator.configure(this, config);
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public ServiceBuilder getServiceBuilder() {
+    public ServiceBuilder getServiceBuilder() {
         return new ServiceBuilder()
-        		.provider(getProviderClass())
-        		.apiKey(apiKey)
-        		.apiSecret(apiSecret);
-	}
-	
-	private String getProvider() {
-		if (provider == null)
-			throw new IllegalArgumentException("Provider was not set.");
-		
-		return provider; 
-	}
+            .provider(getProviderClass())
+            .apiKey(apiKey)
+            .apiSecret(apiSecret);
+    }
 
-	private Class<? extends Api> getProviderClass() {
-		String provider = getProvider().toLowerCase();
+    private String getProvider() {
+        if (provider == null)
+            throw new IllegalArgumentException("Provider was not set.");
 
-		if (provider.equalsIgnoreCase("facebook"))
-			return FacebookApi.class;
-		else if (provider.equalsIgnoreCase("google"))
-			return Google2Api.class;
-		
-		throw new IllegalArgumentException("Unknown provider '"+provider+"'");
-	}
+        return provider;
+    }
 
-	public void saveAccessToken(HttpServletRequest request, OAuthService service, Token accessToken) throws Exception {
-		String provider = getProvider().toLowerCase();
+    private Class<? extends Api> getProviderClass() {
+        String provider = getProvider().toLowerCase();
 
-		if (provider.equalsIgnoreCase("facebook"))
-			ServiceFacebook.saveAccessToken(request, service, accessToken);
-		else if (provider.equalsIgnoreCase("google"))
-			ServiceGoogle.saveAccessToken(request, service, accessToken);
-		
-		throw new IllegalArgumentException("Unknown provider '"+provider+"'");
-	}
-	
-	public String getApiKey() {
-		return apiKey;
-	}
+        if (provider.equalsIgnoreCase("facebook"))
+            return FacebookApi.class;
+        else if (provider.equalsIgnoreCase("google"))
+            return Google2Api.class;
 
-	public String getApiSecret() {
-		return apiSecret;
-	}
+        throw new IllegalArgumentException("Unknown provider '" + provider + "'");
+    }
 
-	public boolean isConfigured() {
-		return configuration != null;
-	}
+    public void saveAccessToken(HttpServletRequest request, OAuthService service, Token accessToken) throws Exception {
+        String provider = getProvider().toLowerCase();
 
-	public Configuration getConfiguration() {
-		return configuration;
-	}
+        if (provider.equalsIgnoreCase("facebook")) {
+            ServiceFacebook.saveAccessToken(request, service, accessToken);
+        
+        } else if (provider.equalsIgnoreCase("google")) {
+            ServiceGoogle.saveAccessToken(request, service, accessToken);
+        
+        } else {
+            throw new IllegalArgumentException("Unknown provider '" + provider + "'");
+        }
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public String getApiSecret() {
+        return apiSecret;
+    }
+    
+    public String getReturnURL() {
+        return return_url;
+    }
+
+    public boolean isConfigured() {
+        return configuration != null;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 }
