@@ -100,17 +100,22 @@ public class ServiceGoogle  {
 			
 		String id = responseAttributes.get("id");
 		
-		String accountName = id + "@facebook.com";
+		String accountName = id + "@google.com";
 
 		Account found = OAuthRealm._.getAccount(accountName);
 		
 		if (found == null) {
 			Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
-			metadata.put(GoogleSchemaType.ID, responseAttributes.get("id"));
-			metadata.put(AXSchemaType.FIRSTNAME, responseAttributes.get("given_name"));
-			metadata.put(AXSchemaType.LASTNAME, responseAttributes.get("family_name"));
-			metadata.put(AXSchemaType.FULLNAME, responseAttributes.get("name"));
-			metadata.put(AXSchemaType.TIMEZONE, responseAttributes.get("timezone"));
+			addMetadata(responseAttributes, metadata, GoogleSchemaType.ID, "id");
+			addMetadata(responseAttributes, metadata, AXSchemaType.FIRSTNAME, "given_name");
+			addMetadata(responseAttributes, metadata, AXSchemaType.LASTNAME, "family_name");
+			addMetadata(responseAttributes, metadata, AXSchemaType.FULLNAME, "name");
+			addMetadata(responseAttributes, metadata, AXSchemaType.TIMEZONE, "timezone");
+
+			addMetadata(responseAttributes, metadata, GoogleSchemaType.PICTURE, "picture");
+			addMetadata(responseAttributes, metadata, GoogleSchemaType.LOCALE, "locale");
+			addMetadata(responseAttributes, metadata, GoogleSchemaType.LINK, "link");
+			addMetadata(responseAttributes, metadata, GoogleSchemaType.GENDER, "gender");			
 			
 			found = OAuthRealm._.createAccountInDatabase(accountName, metadata);
 		}
@@ -153,10 +158,22 @@ public class ServiceGoogle  {
 		return parameters;
 	}
 	
+	private static void addMetadata(Map<String, String> attributes, Map<SchemaType, String> metadata, SchemaType type, String attrName) {
+	    String val = attributes.get(attrName);
+
+	    if (val != null) {
+	        metadata.put(type, val);
+	    }
+	}
+	
 	public enum GoogleSchemaType implements SchemaType {
 
-	    ID("https://www.googleapis.com/oauth2/v1/userinfo", "id");
-
+	    ID("https://www.googleapis.com/oauth2/v1/userinfo", "id"),
+	    PICTURE("https://www.googleapis.com/oauth2/v1/userinfo", "picture"),
+	    LOCALE("https://www.googleapis.com/oauth2/v1/userinfo", "locale"),
+	    LINK("https://www.googleapis.com/oauth2/v1/userinfo", "link"),
+	    GENDER("https://www.googleapis.com/oauth2/v1/userinfo", "gender");
+	    
 	    private final String namespace;
 	    private final String alias;
 
