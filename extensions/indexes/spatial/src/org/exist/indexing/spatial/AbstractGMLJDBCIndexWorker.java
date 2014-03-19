@@ -222,7 +222,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         return null;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
         if (!isDocumentGMLAware)
             //Not concerned
             return null;
