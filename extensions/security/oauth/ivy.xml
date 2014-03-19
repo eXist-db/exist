@@ -1,0 +1,9 @@
+<!--
+    Ivy module to retrieve jar for OAuth
+-->
+<ivy-module version="2.0">
+    <info organisation="org.exist" module="security.oauth"/>
+    <dependencies>
+        <dependency org="org.scribe" name="scribe" rev="1.3.5" conf="*->*,!sources,!javadoc"/>
+    </dependencies>
+</ivy-module>
