@@ -69,6 +69,10 @@ public class ListBackups extends BasicFunction
 
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
+        if(!context.getEffectiveUser().hasDbaRole()) {
+            throw new XPathException("You must be a DBA to list available backups");
+        }
+
         final String exportDir = args[0].getStringValue();
         File   dir       = new File( exportDir );
 
