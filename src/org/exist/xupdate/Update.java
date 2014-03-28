@@ -109,7 +109,7 @@ public class Update extends Modification {
                         }
                         final AttrImpl attr = (AttrImpl) node;
                         temp = children.item(0);
-                        attribute = new AttrImpl(attr.getQName(), temp.getNodeValue());
+                        attribute = new AttrImpl(attr.getQName(), temp.getNodeValue(), broker.getBrokerPool().getSymbols());
                         attribute.setOwnerDocument(doc);
                         parent.updateChild(transaction, node, attribute);
                         break;

@@ -497,7 +497,12 @@ public class SymbolTable {
             if (id != -1) {
                 return id;
             }
-            id = add(++offset, name); 
+            // symbol space exceeded. return -1 to indicate.
+            if (offset == Short.MAX_VALUE) {
+                return -1;
+            }
+
+            id = add(++offset, name);
             //we use "++offset" here instead of "offset++", 
             //because the system expects id's to start at 1, not 0
             write(id, name);
