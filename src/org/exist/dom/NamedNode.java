@@ -23,6 +23,7 @@
 package org.exist.dom;
 
 import org.exist.numbering.NodeId;
+import org.w3c.dom.DOMException;
 
 /**
  * A node with a QName, i.e. an element or attribute.
@@ -72,6 +73,14 @@ public class NamedNode extends StoredNode implements QNameable {
 
     public void setNodeName(QName name) {
         nodeName = name;
+    }
+
+    public void setNodeName(QName name, SymbolTable symbols) throws DOMException {
+        nodeName = name;
+        if (symbols.getSymbol(nodeName.getLocalName()) < 0) {
+            throw new DOMException(DOMException.INVALID_ACCESS_ERR,
+                    "Too many element/attribute names registered in the database. No of distinct names is limited to 16bit. Aborting store.");
+        }
     }
 
     /* (non-Javadoc)

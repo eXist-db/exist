@@ -61,17 +61,16 @@ public class AttrImpl extends NamedNode implements Attr {
     	super(Node.ATTRIBUTE_NODE);
     }
 
-    public AttrImpl (QName name) {
+    public AttrImpl (QName name, SymbolTable symbols) throws DOMException {
         super( Node.ATTRIBUTE_NODE, name);
+        if (symbols != null && symbols.getSymbol(nodeName.getLocalName()) < 0) {
+            throw new DOMException(DOMException.INVALID_ACCESS_ERR,
+                    "Too many element/attribute names registered in the database. No of distinct names is limited to 16bit. Aborting store.");
+        }
     }
 
-    public AttrImpl( QName name, XMLString value ) {
-        super( Node.ATTRIBUTE_NODE, name);
-        this.value = value;
-    }
-
-    public AttrImpl (QName name, String str) {
-        super( Node.ATTRIBUTE_NODE, name);
+    public AttrImpl (QName name, String str, SymbolTable symbols) throws DOMException {
+        this(name, symbols);
         this.value = new XMLString( str.toCharArray() );
     }
 

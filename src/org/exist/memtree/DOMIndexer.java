@@ -101,7 +101,7 @@ public class DOMIndexer {
      */
     public void store() {
         //Create a wrapper element as root node
-        final ElementImpl elem = new ElementImpl(ROOT_QNAME);
+        final ElementImpl elem = new ElementImpl(ROOT_QNAME, broker.getBrokerPool().getSymbols());
         elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
         elem.setOwnerDocument(targetDoc);
         elem.setChildCount(doc.getChildCount());
@@ -266,7 +266,7 @@ public class DOMIndexer {
         elem.setOwnerDocument( targetDoc );
         elem.setAttributes( attribs );
         elem.setChildCount( doc.getChildCountFor( nodeNr ) + attribs );
-        elem.setNodeName( doc.nodeName[nodeNr] );
+        elem.setNodeName( doc.nodeName[nodeNr], broker.getBrokerPool().getSymbols() );
         final Map<String, String> ns = getNamespaces( nodeNr );
 
         if( ns != null ) {
@@ -316,7 +316,7 @@ public class DOMIndexer {
             while( ( attr < doc.nextAttr ) && ( doc.attrParent[attr] == nodeNr ) ) {
                 final QName    qn     = doc.attrName[attr];
                 final AttrImpl attrib = (AttrImpl)NodePool.getInstance().borrowNode( Node.ATTRIBUTE_NODE );
-                attrib.setNodeName( qn );
+                attrib.setNodeName( qn, broker.getBrokerPool().getSymbols() );
                 attrib.setValue( doc.attrValue[attr] );
                 attrib.setOwnerDocument( targetDoc );
                 elem.appendChildInternal( prevNode, attrib );
