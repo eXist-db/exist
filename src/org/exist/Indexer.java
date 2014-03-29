@@ -54,6 +54,7 @@ import org.exist.util.XMLString;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -573,11 +574,15 @@ public class Indexer extends Observable implements ContentHandler,
                 }
                 charBuf.reset();
             }
-            if (!usedElements.isEmpty()) {
-                node = usedElements.pop();
-                node.setNodeName(qn);
-            } else {
-                node = new ElementImpl(qn);
+            try {
+                if (!usedElements.isEmpty()) {
+                    node = usedElements.pop();
+                    node.setNodeName(qn, broker.getBrokerPool().getSymbols());
+                } else {
+                    node = new ElementImpl(qn, broker.getBrokerPool().getSymbols());
+                }
+            } catch (DOMException e) {
+                throw new SAXException(e.getMessage(), e);
             }
             // copy xml:space setting
             node.setPreserveSpace(last.preserveSpace());
@@ -601,10 +606,10 @@ public class Indexer extends Observable implements ContentHandler,
                 storeElement(node);
             }
         } else {
-            if (validate) {
-                node = new ElementImpl(qn);
-            } else {
-                node = new ElementImpl(qn);
+            try {
+                node = new ElementImpl(qn, broker.getBrokerPool().getSymbols());
+            } catch (DOMException e) {
+                throw new SAXException(e.getMessage(), e);
             }
             rootNode = node;
             setPrevious(null);
@@ -643,10 +648,13 @@ public class Indexer extends Observable implements ContentHandler,
                 p = attrQName.indexOf(':');
                 attrPrefix = (p != Constants.STRING_NOT_FOUND) ?
                     attrQName.substring(0, p) : null;
-                final AttrImpl attr = (AttrImpl) NodePool.getInstance()
-                    .borrowNode(Node.ATTRIBUTE_NODE);
-                attr.setNodeName(broker.getBrokerPool().getSymbols()
-                    .getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix));
+                final AttrImpl attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
+                final QName attrQN = broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix);
+                try {
+                    attr.setNodeName(attrQN, broker.getBrokerPool().getSymbols());
+                } catch (DOMException e) {
+                    throw new SAXException(e.getMessage(), e);
+                }
                 attr.setValue(attributes.getValue(i));
                 attr.setOwnerDocument(document);
                 if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
