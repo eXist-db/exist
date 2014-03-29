@@ -189,9 +189,9 @@ public class Deployment {
                 }
                 if (pkgName != null) {
                     LOG.info("Package " + name + " depends on " + pkgName);
+                    boolean isInstalled = false;
                     if (repo.getParentRepo().getPackages(pkgName) != null) {
                         LOG.debug("Package " + pkgName + " already installed");
-                        boolean isInstalled = false;
                         Packages pkgs = repo.getParentRepo().getPackages(pkgName);
                         // check if installed package matches required version
                         if (pkgs != null) {
@@ -215,17 +215,17 @@ public class Deployment {
                                 LOG.debug("Package " + pkgName + " already installed");
                             }
                         }
-                        if (!isInstalled && loader != null) {
-                            final File depFile = loader.load(pkgName, version);
-                            if (depFile != null) {
-                                installAndDeploy(depFile, loader);
-                            } else {
-                                if (enforceDeps) {
-                                    LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
+                    }
+                    if (!isInstalled && loader != null) {
+                        final File depFile = loader.load(pkgName, version);
+                        if (depFile != null) {
+                            installAndDeploy(depFile, loader);
+                        } else {
+                            if (enforceDeps) {
+                                LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
                                         "is not fatal, but the package may not work as expected");
-                                } else {
-                                    throw new PackageException("Missing dependency: package " + pkgName + " could not be resolved.");
-                                }
+                            } else {
+                                throw new PackageException("Missing dependency: package " + pkgName + " could not be resolved.");
                             }
                         }
                     }
