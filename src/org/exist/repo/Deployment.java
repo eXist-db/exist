@@ -308,11 +308,14 @@ public class Deployment {
                 } else {
                     final ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
                     if (target != null) {
-                        // determine target collection
-                        try {
-                            targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
-                        } catch (final Exception e) {
-                            throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue(), e);
+                        final String targetPath = target.getStringValue();
+                        if (targetPath.length() > 0) {
+                            // determine target collection
+                            try {
+                                targetCollection = XmldbURI.create(getTargetCollection(targetPath));
+                            } catch (final Exception e) {
+                                throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue(), e);
+                            }
                         }
                     }
                 }
@@ -439,15 +442,16 @@ public class Deployment {
     private void uninstall(Package pkg, ElementImpl target)
             throws PackageException {
         // determine target collection
+        final String targetPath = target.getStringValue();
         XmldbURI targetCollection;
-        if (target == null) {
+        if (target == null || targetPath.length() == 0) {
             final String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
             targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
         } else {
             try {
-                targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
+                targetCollection = XmldbURI.create(getTargetCollection(targetPath));
             } catch (final Exception e) {
-                throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue());
+                throw new PackageException("Bad collection URI for <target> element: " + targetPath);
             }
         }
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
