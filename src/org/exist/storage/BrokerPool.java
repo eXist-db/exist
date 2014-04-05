@@ -1339,7 +1339,9 @@ public class BrokerPool implements Database {
     public boolean isReadOnly() {
     	if (dataLock.getFreeSpace() < minFreeSpace) {
             LOG.info("Partition have "+(dataLock.getFreeSpace() / (1024 * 1024))+" Mb.");
-            setReadOnly();
+            LOG.info("Switching to read-only mode!!!");
+            if (dataLock.getFreeSpace() != 0)
+            	setReadOnly();
     	}
     	
         return isReadOnly;

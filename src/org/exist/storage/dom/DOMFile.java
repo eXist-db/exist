@@ -1366,7 +1366,7 @@ public class DOMFile extends BTree implements Lockable {
         {buf.append("N/A");}
         else
         {buf.append(nf1.format(dataCache.getHits()/(float)(dataCache.getFails() + dataCache.getHits())));}
-        LOGSTATS.info(buf.toString());
+//        LOGSTATS.info(buf.toString());
 }
 
     public BufferStats getDataBufferStats() {

@@ -86,7 +86,7 @@ public class SyncTask implements SystemTask {
 
     private boolean checkDiskSpace(BrokerPool pool) {
         final long space = dataDir.getUsableSpace();
-        //LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
+        LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
         return space > diskSpaceMin;
     }
 }

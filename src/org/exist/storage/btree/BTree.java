@@ -2546,7 +2546,7 @@ public class BTree extends Paged implements Lockable {
             {buf.append("N/A");}
         else
             {buf.append(nf.format(cache.getHits() / (float)(cache.getFails() + cache.getHits())));}
-        LOGSTATS.info(buf.toString());
+//        LOGSTATS.info(buf.toString());
     }
 
     protected class BTreeFileHeader extends FileHeader {

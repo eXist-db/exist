@@ -432,7 +432,7 @@ public class BFile extends BTree {
             {buf.append(nf.format(dataCache.getHits()/(float)(dataCache.getHits() + dataCache.getFails())));}        
         //buf.append(dataCache.getHits()).append(" / ");
         //buf.append(dataCache.getFails());
-        LOGSTATS.info(buf.toString());
+//        LOGSTATS.info(buf.toString());
     }
 
     /**
