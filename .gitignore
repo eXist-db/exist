@@ -113,3 +113,5 @@ installer/scripts/shutdown.sh
 installer/scripts/startup.bat
 
 installer/scripts/startup.sh
+
+examples.jar
