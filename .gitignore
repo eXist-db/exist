@@ -115,3 +115,5 @@ installer/scripts/startup.bat
 installer/scripts/startup.sh
 
 examples.jar
+
+installer/eXist-db-setup-2.1-rev.jar
