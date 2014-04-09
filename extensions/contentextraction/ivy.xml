@@ -6,7 +6,7 @@
 <ivy-module version="2.0">
     <info organisation="org.exist" module="tika"/>
     <dependencies>
-        <dependency org="org.apache.tika" name="tika-parsers" rev="1.4" conf="*->*,!sources,!javadoc">
+        <dependency org="org.apache.tika" name="tika-parsers" rev="1.5" conf="*->*,!sources,!javadoc">
             <exclude module="jdom"/>
             <exclude module="slf4j-api"/>
             <exclude module="commons-codec"/>
@@ -19,6 +19,7 @@
             <exclude module="xml-apis"/>
             <exclude module="xercesImpl"/>    
             <exclude module="aspectjrt"/>
+			<exclude module="geronimo-stax-api_1.0_spec"/>
         </dependency>
         <dependency org="org.apache.poi" name="poi" rev="3.9" conf="*->*,!sources,!javadoc">
             <exclude module="commons-io"/>
