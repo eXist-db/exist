@@ -60,7 +60,10 @@ public class FunCount extends Function {
     }
 
     public int getDependencies() {
-        return Dependency.CONTEXT_SET;
+        if (getArgumentCount() == 0) {
+            return Dependency.CONTEXT_SET;
+        }
+        return getArgument(0).getDependencies();
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
