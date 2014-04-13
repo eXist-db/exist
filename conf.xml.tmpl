@@ -166,13 +166,30 @@
         -->
         <startup>
             <triggers>
-                <!-- EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time -->
+                <!-- 
+                    EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time 
+                -->
                 <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
-            <!-- 
-             ! AutoDeploymentTrigger will install any .xar application package it finds
-             ! in the autodeploy directory unless the application has already been installed
-             ! in the db. -->   
+                
+                <!-- 
+                    AutoDeploymentTrigger will install any .xar application package it finds
+                    in the autodeploy directory unless the application has already been installed
+                    in the db. 
+                -->   
                 <trigger class="org.exist.repo.AutoDeploymentTrigger"/>
+                
+                <!-- 
+                    XQueryStartupTrigger will execute all xquery scripts stored in the
+                    /db/system/autostart collection during startup of the database. 
+                    
+                    Alternatively scripts can be specified by passing parameters to
+                    the trigger:
+                    
+                    <parameter name="xquery" value="/db/myscript.xq"/>
+
+                -->
+                <!--<trigger class="org.exist.collections.triggers.XQueryStartupTrigger"/>-->
+                    
             </triggers>
         </startup>
 
