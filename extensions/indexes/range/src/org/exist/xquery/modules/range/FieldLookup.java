@@ -297,7 +297,7 @@ public class FieldLookup extends Function implements Optimizable {
         } else {
             long start = System.currentTimeMillis();
             result = preselectResult.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, getContextId(), true);
-            LOG.info("eval took " + (System.currentTimeMillis() - start));
+            // LOG.info("eval took " + (System.currentTimeMillis() - start));
         }
         return result;
     }
