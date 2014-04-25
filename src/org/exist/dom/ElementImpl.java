@@ -1279,7 +1279,6 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             //May help getReindexRoot() to make some useful things
             broker.getIndexController().setDocument(ownerDocument);
             final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
-            System.out.println("Reindex root after insert: " + reindexRoot);
             broker.getIndexController().setMode(StreamListener.STORE);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();

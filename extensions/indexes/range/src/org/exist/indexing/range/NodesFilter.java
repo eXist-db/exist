@@ -15,10 +15,13 @@ import org.exist.numbering.NodeId;
 import org.exist.util.ByteConversion;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NodesFilter extends Filter {
 
     private final NodeSet contextSet;
+    private Map<Integer, DocIdSet> cachedSets = new HashMap<Integer, DocIdSet>();
 
     public NodesFilter(NodeSet contextSet) {
         this.contextSet = contextSet;
@@ -26,12 +29,22 @@ public class NodesFilter extends Filter {
 
     @Override
     public DocIdSet getDocIdSet(AtomicReaderContext context, Bits acceptDocs) throws IOException {
-        final AtomicReader reader = context.reader();
+        DocIdSet cached = cachedSets.get(context.ord);
+        return cached;
+    }
 
+    public void init(IndexReader reader) throws IOException {
+        for (AtomicReaderContext context : reader.leaves()) {
+            init(context);
+        }
+    }
+    private void init(AtomicReaderContext context) throws IOException {
+        final AtomicReader reader = context.reader();
         final FixedBitSet result = new FixedBitSet(reader.maxDoc());
+        cachedSets.put(context.ord, result);
+
         final Fields fields = reader.fields();
         Terms terms = fields.terms(RangeIndexWorker.FIELD_ID);
-        int count = 0;
         if (terms != null) {
             TermsEnum termsEnum = terms.iterator(null);
             DocsEnum docs = null;
@@ -48,7 +61,6 @@ public class NodesFilter extends Filter {
                             while (docs.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
                                 int id = docs.docID();
                                 result.set(id);
-                                count++;
                             }
                         } else {
                             break;
@@ -57,9 +69,6 @@ public class NodesFilter extends Filter {
                 }
             }
         }
-//        if (count > 0)
-//            System.out.println("Found " + count + " docs for mode " + contextSet.get(0).getDoc().getDocId() + "/" + contextSet.get(0).getNodeId() + " with reader " + reader);
-        return result;
     }
 
     private static boolean startsWith(byte[] key, int offset, int length, byte[] prefix) {

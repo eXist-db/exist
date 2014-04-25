@@ -73,13 +73,13 @@ function rt:setup() {
     xmldb:store($rt:COLLECTION, "test.xml", $rt:DATA)
 };
 
-(:declare
+declare
     %test:tearDown
 function rt:cleanup() {
     xmldb:remove($rt:COLLECTION, "test.xml"),
     xmldb:remove($rt:COLLECTION),
     xmldb:remove("/db/system/config/db/rangetest")
-};:)
+};
 
 declare
     %test:assertEquals(1)
