@@ -62,12 +62,7 @@ public class OptimizeFieldPragma extends Pragma {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (rewritten != null) {
             rewritten.analyze(contextInfo);
-            Sequence result = rewritten.eval(contextSequence, contextItem);
-            // filter out descendant nodes
-            if (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS) {
-                result = result.toNodeSet().selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT);
-            }
-            return result;
+            return rewritten.eval(contextSequence, contextItem);
         }
         return null;
     }
