@@ -251,9 +251,9 @@ public class Optimizer extends DefaultExpressionVisitor {
             hasOptimized = true;
             final LocationStep step = (LocationStep) predicate.getParent();
             final Predicate newPred = new Predicate(context);
-            newPred.add(and.getRight());
+            newPred.add(simplifyPath(and.getRight()));
             step.insertPredicate(predicate, newPred);
-            path.replace(and, and.getLeft());
+            path.replace(and, simplifyPath(and.getLeft()));
         } else if (and.isRewritable()) {
         	and.getLeft().accept(this);
 			and.getRight().accept(this);
@@ -317,7 +317,18 @@ public class Optimizer extends DefaultExpressionVisitor {
     	}
     	return Constants.UNKNOWN_AXIS;
     }
-    
+
+    private Expression simplifyPath(Expression expression) {
+        if (!(expression instanceof PathExpr)) {
+            return expression;
+        }
+        final PathExpr path = (PathExpr) expression;
+        if (path.getLength() != 1) {
+            return path;
+        }
+        return path.getExpression(0);
+    }
+
     /**
      * Try to find an expression object implementing interface Optimizable.
      */
