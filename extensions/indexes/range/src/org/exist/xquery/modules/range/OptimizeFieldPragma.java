@@ -22,6 +22,7 @@
 package org.exist.xquery.modules.range;
 
 import org.exist.Namespaces;
+import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.range.*;
 import org.exist.storage.NodePath;
@@ -44,6 +45,7 @@ public class OptimizeFieldPragma extends Pragma {
     private final XQueryContext context;
     private Expression rewritten = null;
     private AnalyzeContextInfo contextInfo;
+    private int axis;
 
     public OptimizeFieldPragma(QName qname, String contents, XQueryContext context) throws XPathException {
         super(qname, contents);
@@ -60,7 +62,12 @@ public class OptimizeFieldPragma extends Pragma {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (rewritten != null) {
             rewritten.analyze(contextInfo);
-            return rewritten.eval(contextSequence, contextItem);
+            Sequence result = rewritten.eval(contextSequence, contextItem);
+            // filter out descendant nodes
+            if (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS) {
+                result = result.toNodeSet().selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT);
+            }
+            return result;
         }
         return null;
     }
@@ -79,6 +86,7 @@ public class OptimizeFieldPragma extends Pragma {
             NodePath contextPath = RangeQueryRewriter.toNodePath(RangeQueryRewriter.getPrecedingSteps(locationStep));
 
             rewritten = tryRewriteToFields(locationStep, preds, contextPath);
+            axis = locationStep.getAxis();
         }
     }
 
