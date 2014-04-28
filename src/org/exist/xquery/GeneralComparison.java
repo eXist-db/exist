@@ -720,26 +720,27 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
             boolean indexScan = false;
             boolean indexMixed = false;
+            QName myContextQName = contextQName;
             if( contextSequence != null ) {
-                final IndexFlags iflags     = checkForQNameIndex( idxflags, context, contextSequence, contextQName );
+                final IndexFlags iflags     = checkForQNameIndex( idxflags, context, contextSequence, myContextQName );
                 boolean    indexFound = false;
 
                 if( !iflags.indexOnQName ) {
-                    // if contextQName != null and no index is defined on
-                    // contextQName, we don't need to scan other QName indexes
+                    // if myContextQName != null and no index is defined on
+                    // myContextQName, we don't need to scan other QName indexes
                     // and can just use the generic range index
-                    indexFound   = contextQName != null;
+                    indexFound   = myContextQName != null;
 
                     if (iflags.partialIndexOnQName) {
                         indexMixed = true;
                     } else {
-                        // set contextQName to null so the index lookup below is not
+                        // set myContextQName to null so the index lookup below is not
                         // restricted to that QName
-                        contextQName = null;
+                        myContextQName = null;
                     }
                 }
 
-                if( !indexFound && ( contextQName == null ) ) {
+                if( !indexFound && ( myContextQName == null ) ) {
 
                     // if there are some indexes defined on a qname,
                     // we need to check them all
@@ -823,7 +824,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             if( indexScan ) {
                                 ns = context.getBroker().getValueIndex().findAll( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, ( Indexable )key, collator );
                             } else {
-                                ns = context.getBroker().getValueIndex().find( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, contextQName,
+                                ns = context.getBroker().getValueIndex().find( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, myContextQName,
                                         ( Indexable )key, collator, indexMixed );
                             }
                             hasUsedIndex = true;
@@ -854,7 +855,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                                 if( indexScan ) {
                                     ns = context.getBroker().getValueIndex().matchAll( context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, matchString, matchType, 0, true, collator, truncation );
                                 } else {
-                                    ns = context.getBroker().getValueIndex().match( context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, matchString, contextQName, matchType, collator, truncation );
+                                    ns = context.getBroker().getValueIndex().match( context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, matchString, myContextQName, matchType, collator, truncation );
                                 }
 
                                 hasUsedIndex = true;
