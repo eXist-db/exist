@@ -840,7 +840,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 
     public abstract void readCollectionEntry(SubCollectionEntry entry);
 
-    @Override
     public void close() throws Exception {
         pool.release(this);
     }
