@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
+
 import org.exist.collections.Collection.SubCollectionEntry;
 
 /**
@@ -65,7 +66,7 @@ import org.exist.collections.Collection.SubCollectionEntry;
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
-public abstract class DBBroker extends Observable {
+public abstract class DBBroker extends Observable implements AutoCloseable {
 
 	// Matching types
 	public final static int MATCH_EXACT 		= 0;
@@ -839,7 +840,16 @@ public abstract class DBBroker extends Observable {
 
     public abstract void readCollectionEntry(SubCollectionEntry entry);
 
-	public void release() {
-		pool.release(this);
-	}
+    public void close() throws Exception {
+        pool.release(this);
+    }
+    
+    @Deprecated //use close() method instead
+    public void release() {
+        pool.release(this);
+    }
+    
+    public Txn beginTx() {
+        return getDatabase().getTransactionManager().beginTransaction();
+    }
 }
