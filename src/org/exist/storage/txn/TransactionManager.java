@@ -157,7 +157,7 @@ public class TransactionManager {
 			public Txn execute() {
 				final long txnId = nextTxnId++;
                 LOG.debug("Starting new transaction: " + txnId);
-                final Txn txn = new Txn(txnId);
+                final Txn txn = new Txn(TransactionManager.this, txnId);
 	            try {
 	                journal.writeToLog(new TxnStart(txnId));
 	            } catch (final TransactionException e) {
