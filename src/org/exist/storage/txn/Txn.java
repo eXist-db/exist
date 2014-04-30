@@ -24,6 +24,7 @@ package org.exist.storage.txn;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.exist.Transaction;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 
@@ -31,7 +32,7 @@ import org.exist.util.LockException;
  * @author wolf
  *
  */
-public class Txn {
+public class Txn implements Transaction {
 
     public enum State { STARTED, ABORTED, COMMITTED };
 
@@ -44,8 +45,11 @@ public class Txn {
     private List<TxnListener> listeners = new ArrayList<TxnListener>();
     
     private String originId;
+    
+    private TransactionManager tm;
 
-    public Txn(long transactionId) {
+    public Txn(TransactionManager tm, long transactionId) {
+        this.tm = tm;
         this.id = transactionId;
         this.state = State.STARTED;
     }
@@ -54,7 +58,7 @@ public class Txn {
         return state;
     }
 
-    public void setState(State state) {
+    protected void setState(State state) {
         this.state = state;
     }
 
@@ -83,14 +87,14 @@ public class Txn {
         listeners.add(listener);
     }
 
-    public void signalAbort() {
+    protected void signalAbort() {
         state = State.ABORTED;
         for (int i = 0; i < listeners.size(); i++) {
             listeners.get(i).abort();
         }
     }
 
-    public void signalCommit() {
+    protected void signalCommit() {
         state = State.COMMITTED;
         for (int i = 0; i < listeners.size(); i++) {
             listeners.get(i).commit();
@@ -123,5 +127,18 @@ public class Txn {
      */
     public void setOriginId(String id) {
         originId = id;
+    }
+    
+    public void success() throws TransactionException {
+        tm.commit(this);
+    }
+    
+    public void failure() {
+        tm.abort(this);
+    }
+
+    @Override
+    public void close() {
+        tm.close(this);
     }
 }
