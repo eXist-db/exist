@@ -17,17 +17,17 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.x.y.z;
+package org.exist;
 
-import org.apache.log4j.Logger;
+import org.exist.storage.txn.TransactionException;
 
 /**
- *   Description of class.
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
- * @author John Doe (JohnDoe@exist-db.org)
  */
-public class MyNewClass {
+public interface Transaction extends AutoCloseable {
     
-    private final static Logger LOG = Logger.getLogger(MyNewClass.class);
-
+    public void success() throws TransactionException;
+    
+    public void failure();
 }

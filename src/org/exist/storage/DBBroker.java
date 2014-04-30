@@ -839,7 +839,11 @@ public abstract class DBBroker extends Observable {
 
     public abstract void readCollectionEntry(SubCollectionEntry entry);
 
-	public void release() {
-		pool.release(this);
-	}
+    public void release() {
+        pool.release(this);
+    }
+    
+    public Txn beginTx() {
+        return getDatabase().getTransactionManager().beginTransaction();
+    }
 }
