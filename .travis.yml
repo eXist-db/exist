@@ -1,6 +1,5 @@
 language: java
 jdk:
- - openjdk6
  - openjdk7
  - oraclejdk7
 script: ./build.sh clean clean-all all
