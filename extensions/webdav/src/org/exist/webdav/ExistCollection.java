@@ -428,21 +428,12 @@ public class ExistCollection extends ExistResource {
             // Commit change
             txnManager.commit(txn);
 
-            if(LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Document created sucessfully");
+            }
 
 
-        } catch (EXistException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw new IOException(e);
-
-        } catch (TriggerException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw new IOException(e);
-
-        } catch (SAXException e) {
+        } catch (EXistException | SAXException e) {
             LOG.error(e);
             txnManager.abort(txn);
             throw new IOException(e);
