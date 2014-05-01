@@ -97,9 +97,9 @@ public class ExistResourceFactory implements ResourceFactory {
             // Read from file if existent
             if(config.canRead()){
                 LOG.info(String.format("Read WebDAV configuration from %s", config.getCanonicalPath()));
-                FileInputStream fis = new FileInputStream(config);
-                webDavOptions.load(fis);
-                fis.close();
+                try (FileInputStream fis = new FileInputStream(config)) {
+                    webDavOptions.load(fis);
+                }
                 
             } else {
                 LOG.info("Using WebDAV default serialization options.");
