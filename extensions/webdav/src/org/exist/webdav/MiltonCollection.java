@@ -152,7 +152,7 @@ public class MiltonCollection extends MiltonResource
     }
 
     private List<MiltonCollection> getCollectionResources() {
-        List<MiltonCollection> allResources = new ArrayList<MiltonCollection>();
+        List<MiltonCollection> allResources = new ArrayList<>();
         for (XmldbURI path : existCollection.getCollectionURIs()) {
             allResources.add(new MiltonCollection(this.host, path, brokerPool, subject));
         }
@@ -160,7 +160,7 @@ public class MiltonCollection extends MiltonResource
     }
 
     private List<MiltonDocument> getDocumentResources() {
-        List<MiltonDocument> allResources = new ArrayList<MiltonDocument>();
+        List<MiltonDocument> allResources = new ArrayList<>();
         for (XmldbURI path : existCollection.getDocumentURIs()) {
             MiltonDocument mdoc = new MiltonDocument(this.host, path, brokerPool, subject);
             // Show (restimated) size for PROPFIND only
@@ -172,7 +172,7 @@ public class MiltonCollection extends MiltonResource
 
     @Override
     public List<? extends Resource> getChildren() {
-        List<Resource> allResources = new ArrayList<Resource>();
+        List<Resource> allResources = new ArrayList<>();
 
         allResources.addAll(getCollectionResources());
         allResources.addAll(getDocumentResources());
@@ -238,13 +238,10 @@ public class MiltonCollection extends MiltonResource
             LOG.debug(ex.getMessage());
             throw new NotAuthorizedException(this);
 
-        } catch (CollectionExistsException ex) {
+        } catch (CollectionExistsException | EXistException ex) {
             LOG.debug(ex.getMessage());
             throw new ConflictException(this);
 
-        } catch (EXistException ex) {
-            LOG.debug(ex.getMessage());
-            throw new ConflictException(this);
         }
 
         return collection;
@@ -269,17 +266,10 @@ public class MiltonCollection extends MiltonResource
 
             resource = new MiltonDocument(host, resourceURI, brokerPool, subject);
 
-        } catch (PermissionDeniedException e) {
+        } catch (PermissionDeniedException | CollectionDoesNotExistException | IOException e) {
             LOG.debug(e.getMessage());
             throw new ConflictException(this);
 
-        } catch (CollectionDoesNotExistException e) {
-            LOG.debug(e.getMessage());
-            throw new ConflictException(this);
-
-        } catch (IOException e){
-            LOG.debug(e.getMessage());
-            throw new ConflictException(this);
         }
         return resource;
     }

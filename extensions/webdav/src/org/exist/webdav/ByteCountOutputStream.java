@@ -35,6 +35,7 @@ public class ByteCountOutputStream extends OutputStream {
     /**
      * @see java.io.OutputStream#write(int)
      */
+    @Override
     public void write(int b) throws IOException {
         nrOfBytes++;
     }
@@ -42,6 +43,7 @@ public class ByteCountOutputStream extends OutputStream {
     /**
      * @see java.io.OutputStream#write(byte[], int, int)
      */
+    @Override
     public void write(byte b[], int off, int len) throws IOException {
         nrOfBytes += len;
     }

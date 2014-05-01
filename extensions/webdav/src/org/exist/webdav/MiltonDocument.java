@@ -460,7 +460,7 @@ public class MiltonDocument extends MiltonResource
             LOG.debug(ex.getMessage());
             throw new NotAuthorizedException(this);
 
-        } catch (DocumentNotLockedException ex) {
+        } catch (DocumentNotLockedException | EXistException ex) {
             LOG.debug(ex.getMessage());
             lr = LockResult.failed(LockResult.FailureReason.PRECONDITION_FAILED);
 
@@ -468,10 +468,6 @@ public class MiltonDocument extends MiltonResource
             //throw new LockedException(this);
             LOG.debug(ex.getMessage());
             lr = LockResult.failed(LockResult.FailureReason.ALREADY_LOCKED);
-
-        } catch (EXistException ex) {
-            LOG.debug(ex.getMessage());
-            lr = LockResult.failed(LockResult.FailureReason.PRECONDITION_FAILED);
 
         }
         return lr;
@@ -490,13 +486,10 @@ public class MiltonDocument extends MiltonResource
             LOG.debug(ex.getMessage());
             throw new NotAuthorizedException(this);
 
-        } catch (DocumentNotLockedException ex) {
+        } catch (DocumentNotLockedException | EXistException ex) {
             LOG.debug(ex.getMessage());
             throw new PreConditionFailedException(this);
 
-        } catch (EXistException ex) {
-            LOG.debug(ex.getMessage());
-            throw new PreConditionFailedException(this);
         }
     }
 
