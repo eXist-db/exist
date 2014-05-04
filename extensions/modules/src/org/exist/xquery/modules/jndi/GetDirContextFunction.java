@@ -117,8 +117,8 @@ public class GetDirContextFunction extends BasicFunction
 			return( new IntegerValue( JNDIModule.storeJNDIContext( context, dirCtx ) ) );
 		}
 		catch( NamingException ne ) {
-			logger.error( "jndi:get-dir-context() Cannot get JNDI directory context: ", ne );
-			throw( new XPathException( this, "jndi:get-dir-context() Cannot get JNDI directory context: " + ne ) );
+//			logger.error( "jndi:get-dir-context() Cannot get JNDI directory context: ", ne );
+			throw( new XPathException( this, "jndi:get-dir-context() Cannot get JNDI directory context: " + ne.getMessage() ) );
 		}
 	}
 }

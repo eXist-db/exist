@@ -45,7 +45,7 @@
         </bundleapp>
     </target>
     
-    <target depends="all,samples,copy_scripts,macosx" name="prepare-installer">
+    <target depends="all,samples,xars,copy_scripts,macosx" name="prepare-installer">
 	    <path id="izpackdeps">
 	        <fileset dir="${izpack.dir}/lib/">
 	            <include name="*.jar"/>

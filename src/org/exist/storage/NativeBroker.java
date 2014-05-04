@@ -3734,10 +3734,10 @@ public class NativeBroker extends DBBroker {
                 }
                 notifySync();
                 pool.getIndexManager().sync();
-                final NumberFormat nf = NumberFormat.getNumberInstance();
-                LOGSTATS.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
-                        nf.format(run.maxMemory() / 1024) + "K max; " +
-                        nf.format(run.freeMemory() / 1024) + "K free");
+//                final NumberFormat nf = NumberFormat.getNumberInstance();
+//                LOGSTATS.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
+//                        nf.format(run.maxMemory() / 1024) + "K max; " +
+//                        nf.format(run.freeMemory() / 1024) + "K free");
                 domDb.printStatistics();
                 collectionsDb.printStatistics();
                 notifyPrintStatistics();

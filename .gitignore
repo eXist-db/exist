@@ -45,31 +45,18 @@ test/temp/
 nbproject/build/
 nbproject/private/
 /target
-
 installer/apps/00shared-resources-0.3.9.xar
-
 installer/apps/00shared-resources-0.3.9.xml
-
 installer/apps/bf-XForms-1.3.xar
-
 installer/apps/bf-XForms-1.3.xml
-
 installer/apps/dashboard-0.3.7.xar
-
 tools/ant/lib/appbundler-1.0.jar
-
 installer/apps/dashboard-0.3.7.xml
-
 installer/apps/demo-0.2.8.xar
-
 installer/apps/demo-0.2.8.xml
-
 installer/apps/doc-0.3.1.xar
-
 installer/apps/doc-0.3.1.xml
-
 installer/apps/eXide-2.0.6.xar
-
 installer/apps/eXide-2.0.6.xml
 
 installer/apps/fundocs-0.4.xar
@@ -117,3 +104,4 @@ installer/scripts/startup.sh
 examples.jar
 
 installer/eXist-db-setup-2.1-rev.jar
+/.DS_Store
