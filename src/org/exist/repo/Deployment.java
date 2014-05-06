@@ -442,12 +442,12 @@ public class Deployment {
     private void uninstall(Package pkg, ElementImpl target)
             throws PackageException {
         // determine target collection
-        final String targetPath = target.getStringValue();
         XmldbURI targetCollection;
-        if (target == null || targetPath.length() == 0) {
+        if (target == null || target.getStringValue().length() == 0) {
             final String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
             targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
         } else {
+            final String targetPath = target.getStringValue();
             try {
                 targetCollection = XmldbURI.create(getTargetCollection(targetPath));
             } catch (final Exception e) {
