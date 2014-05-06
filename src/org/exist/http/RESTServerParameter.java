@@ -330,9 +330,9 @@ enum RESTServerParameter {
      * 
      * Contexts: POST
      * 
-     * <exist:property>
+     * <exist:properties>
      *  (exist:property+)
-     * </exist:property>
+     * </exist:properties>
      */
     Properties,
 
