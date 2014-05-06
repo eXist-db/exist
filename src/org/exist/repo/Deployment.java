@@ -442,7 +442,6 @@ public class Deployment {
     private void uninstall(Package pkg, ElementImpl target)
             throws PackageException {
         // determine target collection
-        ;
         XmldbURI targetCollection;
         if (target == null || target.getStringValue().length() == 0) {
             final String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
