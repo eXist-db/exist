@@ -33,6 +33,7 @@ import java.io.Reader;
 import java.util.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.io.input.CloseShieldInputStream;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
@@ -122,8 +123,8 @@ public class HttpServletRequestAdapter implements HttpRequest {
         } else {
             is.reset();
         }
-        
-        return is;
+
+        return new CloseShieldInputStream(is);
     }
 
     @Override
@@ -274,5 +275,11 @@ public class HttpServletRequestAdapter implements HttpRequest {
         }
         
         return fields;
+    }
+
+    public void release() throws IOException {
+        if (is != null) {
+            is.close();
+        }
     }
 }

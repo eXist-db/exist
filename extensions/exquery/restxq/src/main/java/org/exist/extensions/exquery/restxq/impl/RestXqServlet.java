@@ -36,13 +36,11 @@ import org.exist.EXistException;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.HttpServletResponseAdapter;
 import org.exist.http.servlets.AbstractExistHttpServlet;
-import org.exist.http.servlets.BasicAuthenticator;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
-import org.exquery.http.HttpRequest;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceException;
 import org.exquery.restxq.RestXqServiceRegistry;
@@ -77,12 +75,13 @@ public class RestXqServlet extends AbstractExistHttpServlet {
         }
         
         DBBroker broker = null;
+        HttpServletRequestAdapter requestAdapter = null;
         try {
             broker = getPool().get(user);
 
             final Configuration configuration = broker.getConfiguration();
             
-            final HttpRequest requestAdapter = new HttpServletRequestAdapter(
+            requestAdapter = new HttpServletRequestAdapter(
                 request,
                 new FilterInputStreamCacheConfiguration(){
                     @Override
@@ -124,6 +123,9 @@ public class RestXqServlet extends AbstractExistHttpServlet {
                 throw new ServletException(rqse.getMessage(), rqse);
             }
         } finally {
+            if(requestAdapter != null) {
+                requestAdapter.release();
+            }
             if(broker != null) {
                 getPool().release(broker);
             }

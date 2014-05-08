@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.log4j.Logger;
 import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
@@ -43,9 +42,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-import org.exist.util.io.CachingFilterInputStream;
-import org.exist.util.io.FilterInputStreamCache;
-import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValue;
@@ -62,7 +58,6 @@ import org.exquery.restxq.RestXqServiceSerializer;
 import org.exquery.restxq.impl.AbstractRestXqService;
 import org.exquery.xdm.type.SequenceImpl;
 import org.exquery.xquery.Sequence;
-import org.exquery.xquery.Type;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -125,33 +120,16 @@ public class RestXqServiceImpl extends AbstractRestXqService {
     @Override
     protected Sequence extractRequestBody(final HttpRequest request) throws RestXqServiceException {
         
-        //TODO dont use close shield input stream and move parsing of form parameters from HttpServletRequestAdapter into RequestBodyParser
+        //TODO move parsing of form parameters from HttpServletRequestAdapter into RequestBodyParser
         InputStream is = null;
-        FilterInputStreamCache cache = null;
 
         try {
-            
-            //first, get the content of the request
-            is = new CloseShieldInputStream(request.getInputStream());
+            // In existdb the input stream exposed by our HttpRequest is cached and can be reset and used as many times as we want.
+            is = request.getInputStream();
 
             if(is.available() <= 0) {
                 return null;
             }
-            
-            //if marking is not supported, we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
-            if(!is.markSupported()) {
-                cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration(){
-                    @Override
-                    public String getCacheClass() {
-                        final Configuration configuration = getBrokerPool().getConfiguration();
-                        return (String)configuration.getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
-                    }
-                });
-                
-                is = new CachingFilterInputStream(cache, is);
-            }
-            
-            is.mark(Integer.MAX_VALUE);
         } catch(final IOException ioe) {
             throw new RestXqServiceException(RestXqErrorCodes.RQDY0014, ioe);
         }
@@ -216,39 +194,6 @@ public class RestXqServiceImpl extends AbstractRestXqService {
             }
         } catch (IOException e) {
             throw new RestXqServiceException(e.getMessage());
-        } finally {
-
-            if(cache != null) {
-                try {
-                    cache.invalidate();
-                } catch(final IOException ioe) {
-                    LOG.error(ioe.getMessage(), ioe);
-                }
-            }
-
-            if(is != null) {
-                /*
-                 * Do NOT close the stream if its a binary value,
-                 * because we will need it later for serialization
-                 */
-                boolean isBinaryType = false;
-                if(result != null) {
-                    try {
-                        final Type type = result.head().getType();
-                        isBinaryType = (type == Type.BASE64_BINARY || type == Type.HEX_BINARY);
-                    } catch(final IndexOutOfBoundsException ioe) {
-                        LOG.warn("Called head on an empty HTTP Request body sequence", ioe);
-                    }
-                }
-                
-                if(!isBinaryType) {
-                    try {
-                        is.close();
-                    } catch(final IOException ioe) {
-                        LOG.error(ioe.getMessage(), ioe);
-                    }
-                }
-            }
         }
         
         return result;
@@ -261,17 +206,13 @@ public class RestXqServiceImpl extends AbstractRestXqService {
 
         try {
             //try and construct xml document from input stream, we use eXist's in-memory DOM implementation
-
-            //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
-            final InputSource src = new InputSource(new CloseShieldInputStream(is));
-
             reader = getBrokerPool().getParserPool().borrowXMLReader();
             final MemTreeBuilder builder = new MemTreeBuilder();
             builder.startDocument();
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
             reader.setContentHandler(receiver);
             reader.setProperty("http://xml.org/sax/properties/lexical-handler", receiver);
-            reader.parse(src);
+            reader.parse(new InputSource(is));
             builder.endDocument();
             final Document doc = receiver.getDocument();
 
