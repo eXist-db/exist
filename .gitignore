@@ -105,3 +105,4 @@ examples.jar
 
 installer/eXist-db-setup-2.1-rev.jar
 /.DS_Store
+/.exist_history
