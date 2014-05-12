@@ -56,7 +56,8 @@ public class RangeIndexModule extends AbstractInternalModule {
         new FunctionDef(FieldLookup.signatures[8], FieldLookup.class),
         new FunctionDef(FieldLookup.signatures[9], FieldLookup.class),
         new FunctionDef(Optimize.signature, Optimize.class),
-        new FunctionDef(IndexKeys.signatures[0], IndexKeys.class)
+        new FunctionDef(IndexKeys.signatures[0], IndexKeys.class),
+        new FunctionDef(IndexKeys.signatures[1], IndexKeys.class)
     };
 
     public final static Map<String, RangeIndex.Operator> OPERATOR_MAP = new HashMap<String, RangeIndex.Operator>();
