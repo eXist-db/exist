@@ -503,7 +503,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query = toQuery(field, qname, keys[0], operator, docs);
                 }
 
-                resultSet = doQuery(contextId, docs, contextSet, axis, searcher, qname, query, null);
+                if (contextSet != null && contextSet.hasOne() && contextSet.getItemType() != Type.DOCUMENT) {
+                    NodesFilter filter = new NodesFilter(contextSet);
+                    filter.init(searcher.getIndexReader());
+                    FilteredQuery filtered = new FilteredQuery(query, filter, FilteredQuery.LEAP_FROG_FILTER_FIRST_STRATEGY);
+                    resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, filtered, null);
+                } else {
+                    resultSet = doQuery(contextId, docs, contextSet, axis, searcher, null, query, null);
+                }
             }
         } finally {
             index.releaseSearcher(searcher);
