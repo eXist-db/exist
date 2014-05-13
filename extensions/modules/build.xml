@@ -215,7 +215,7 @@
                 <path refid="classpath.core"/>
             </classpath>
 
-        <exclude name="org/exist/xquery/modules/cache/**" unless="${include.module.cache}"/>
+            <exclude name="org/exist/xquery/modules/cache/**" unless="${include.module.cache}"/>
             <exclude name="org/exist/xquery/modules/compression/**" unless="${include.module.compression}"/>
             <exclude name="org/exist/xquery/modules/context/**" unless="${include.module.context}"/>
             <exclude name="org/exist/xquery/modules/counter/**" unless="${include.module.counter}"/>
@@ -241,6 +241,7 @@
             <exclude name="org/exist/xquery/modules/process/**" unless="${include.module.process}"/>
             <exclude name="org/exist/xquery/modules/persistentlogin/**" unless="${include.module.persistentlogin}"/>
         </javac>
+        <copy file="${src}/org/exist/xquery/modules/file/repo.xsl" tofile="${classes}/org/exist/xquery/modules/file/repo.xsl"/>
     </target>
 
     <target name="jar" depends="compile, finish-persistentlogin">
