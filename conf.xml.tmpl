@@ -181,12 +181,12 @@
                 <!-- 
                     XQueryStartupTrigger will execute all xquery scripts stored in the
                     /db/system/autostart collection during startup of the database. 
-                    
-                    Alternatively scripts can be specified by passing parameters to
-                    the trigger:
-                    
-                    <parameter name="xquery" value="/db/myscript.xq"/>
 
+                    The collection must be owned by SYSTEM/DBA mode "rwxrwx___" (0770)
+					
+                    Each of the scripts must be owned by a DBA user, group DBA, 
+                    mode "rwxrwx___" (0770) with mime-type "application/xquery". 
+                    The names of the scripts must end with ".xq", ".xqy" or ".xquery".
                 -->
                 <!--<trigger class="org.exist.collections.triggers.XQueryStartupTrigger"/>-->
                     
