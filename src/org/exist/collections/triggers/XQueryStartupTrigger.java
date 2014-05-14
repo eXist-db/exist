@@ -60,7 +60,7 @@ import org.exist.xquery.value.Sequence;
  * }
  * </pre>
  *
- * Due to security reasons individual scripts cannot be specified anymore.
+ * Due to security reasons individual scripts cannot be specified anymore. The permissions were not checked per file.
  *
  * <pre>
  * {@code
@@ -78,7 +78,6 @@ public class XQueryStartupTrigger implements StartupTrigger {
     private static final String XQUERY = "xquery";
     private static final String AUTOSTART_COLLECTION = "/db/system/autostart";
     private static final String[] XQUERY_EXTENSIONS = {".xq", ".xquery", ".xqy"};
-    private static final int REQUIRED_COLLECTION_MODE = Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM;
     private static final String REQUIRED_MIMETYPE = "application/xquery";
 
     @Override
@@ -137,13 +136,13 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
                         } else {
                             LOG.error(String.format("Document %s should be owned by DBA, mode %s, mimetype %s",
-                                    docPath, REQUIRED_COLLECTION_MODE, REQUIRED_MIMETYPE));
+                                    docPath, Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM, REQUIRED_MIMETYPE));
                         }
                     }
 
                 } else {
                     LOG.error(String.format("Collection %s should be owned by SYSTEM/DBA, mode %s.", AUTOSTART_COLLECTION,
-                            REQUIRED_COLLECTION_MODE));
+                            Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM));
                 }
 
             }
@@ -176,7 +175,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
         return (perms.getOwner().getName().equals(SecurityManager.SYSTEM)
                 && perms.getGroup().getName().equals(SecurityManager.DBA_GROUP)
-                && perms.getMode() == REQUIRED_COLLECTION_MODE);
+                && perms.getMode() == Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
 
     }
 
@@ -193,7 +192,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
         return (perms.getOwner().hasDbaRole()
                 && perms.getGroup().getName().equals(SecurityManager.DBA_GROUP)
-                && perms.getMode() == REQUIRED_COLLECTION_MODE
+                && perms.getMode() == Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM
                 && document.getMetadata().getMimeType().equals(REQUIRED_MIMETYPE));
 
     }
@@ -320,7 +319,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
             Permission perms = created.getPermissions();
             perms.setOwner(broker.getBrokerPool().getSecurityManager().getSystemSubject());
             perms.setGroup(broker.getBrokerPool().getSecurityManager().getDBAGroup());
-            perms.setMode(REQUIRED_COLLECTION_MODE);
+            perms.setMode(Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
             broker.saveCollection(txn, created);
             broker.flush();
 
