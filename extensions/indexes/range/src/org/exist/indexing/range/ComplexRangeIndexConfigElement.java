@@ -63,6 +63,16 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
     }
 
     @Override
+    public boolean isCaseSensitive(String fieldName) {
+        for (RangeIndexConfigField field: fields.values()) {
+            if(fieldName != null && fieldName.equals(field.getName())) {
+                return field.isCaseSensitive();
+            }
+        }
+        return caseSensitive;
+    }
+
+    @Override
     public boolean match(NodePath other) {
         if (isQNameIndex)
             return other.getLastComponent().equalsSimple(path.getLastComponent());

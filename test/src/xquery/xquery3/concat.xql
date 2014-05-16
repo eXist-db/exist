@@ -89,3 +89,9 @@ declare
 function concat:bad-argument() {
     ("abc" || "abc" ||  fn:concat#3)
 };
+
+(: declare
+    %test:assertEquals("<a b='ccdd'/>") 
+function concat:attributes1() {
+    <a b="{ 'cc' || 'dd'}"/>
+}; :)

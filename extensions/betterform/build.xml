@@ -28,10 +28,14 @@
         <sequential>
             <echo level="info">XSLT Generating @{out}</echo>
             <java classname="net.sf.saxon.Transform"
-                  classpath="${exist.rootdir}/lib/endorsed/saxonhe-9.4.0.7.jar"
                   logError="true"
                   output="@{out}"
                   fork="true">
+                <classpath>
+                    <fileset dir="${exist.rootdir}/lib/endorsed">
+                        <include name="saxon*.jar"/>
+                    </fileset>
+                </classpath>
                 <arg value="@{in}"/>
                 <arg value="@{style}"/>
             </java>

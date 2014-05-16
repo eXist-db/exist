@@ -74,7 +74,7 @@
 	<classpathentry kind="lib" path="lib/optional/jaxrpc-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
-	<classpathentry kind="lib" path="tools/ant/lib/ant.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/ant-1.9.3.jar"/>
 	<classpathentry kind="lib" path="lib/test/junit-4.11.jar"/>
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>

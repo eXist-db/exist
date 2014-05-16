@@ -121,12 +121,12 @@ public class RangeIndexConfig {
         if (qname != null) {
             RangeIndexConfigElement idxConf = paths.get(qname);
             if (idxConf != null) {
-                caseSensitive = idxConf.isCaseSensitive();
+                caseSensitive = idxConf.isCaseSensitive(fieldName);
             }
         } else {
             for (RangeIndexConfigElement idxConf: paths.values()) {
                 if (idxConf.isComplex()) {
-                    caseSensitive = idxConf.isCaseSensitive();
+                    caseSensitive = idxConf.isCaseSensitive(fieldName);
                     if (!caseSensitive) {
                         break;
                     }

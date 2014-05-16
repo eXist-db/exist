@@ -149,14 +149,14 @@ declare
     %test:args("Pü Reh")
     %test:assertEquals("Wiesental")
 function rt:equality-fields($name as xs:string) {
-    range:field-eq("address-name", $name)/city/text()
+    //range:field-eq("address-name", $name)/city/text()
 };
 
 declare 
     %test:args(65428)
     %test:assertEquals("Rudi Rüssel")
 function rt:equality-field-integer($code as xs:integer) {
-    range:field-eq("address-code", $code)/name/text()
+    //range:field-eq("address-code", $code)/name/text()
 };
 
 declare 
@@ -174,7 +174,7 @@ declare
     %test:args("Pü Reh", "Wiesental")
     %test:assertEquals("Wiesental")
 function rt:equality-fields-multi($name as xs:string, $city as xs:string) {
-    range:field-eq(("address-name", "address-city"), $name, $city)/city/text()
+    //range:field-eq(("address-name", "address-city"), $name, $city)/city/text()
 };
 
 (:declare :)
@@ -308,7 +308,7 @@ declare
     %test:args("Berta")
     %test:assertEquals("Almweide")
 function rt:field-starts-with-string($name as xs:string) {
-    range:field-starts-with("address-name", $name)/city/text()
+    //range:field-starts-with("address-name", $name)/city/text()
 };
 
 declare
@@ -317,7 +317,7 @@ declare
     %test:args("Muh")
     %test:assertEquals("Almweide")
 function rt:field-ends-with-string($name as xs:string) {
-    range:field-ends-with("address-name", $name)/city/text()
+    //range:field-ends-with("address-name", $name)/city/text()
 };
 
 declare
@@ -326,7 +326,7 @@ declare
     %test:args("ta M")
     %test:assertEquals("Almweide")
 function rt:field-contains-string($name as xs:string) {
-    range:field-contains("address-name", $name)/city/text()
+    //range:field-contains("address-name", $name)/city/text()
 };
 
 declare
@@ -335,7 +335,7 @@ declare
     %test:args(".*ta M.*")
     %test:assertEquals("Almweide")
 function rt:field-matches-string($name as xs:string) {
-    range:field-matches("address-name", $name)/city/text()
+    //range:field-matches("address-name", $name)/city/text()
 };
 
 declare 
@@ -346,7 +346,7 @@ declare
     %test:args("main", "official", "Dorfprozelten")
     %test:assertEquals("Dorfprozelten")
 function rt:equality-field-nested($type as xs:string, $subtype as xs:string, $name as xs:string) {
-    range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
+    //range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
 };
 
 declare 
