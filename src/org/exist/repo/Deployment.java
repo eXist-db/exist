@@ -189,9 +189,9 @@ public class Deployment {
                 }
                 if (pkgName != null) {
                     LOG.info("Package " + name + " depends on " + pkgName);
+                    boolean isInstalled = false;
                     if (repo.getParentRepo().getPackages(pkgName) != null) {
                         LOG.debug("Package " + pkgName + " already installed");
-                        boolean isInstalled = false;
                         Packages pkgs = repo.getParentRepo().getPackages(pkgName);
                         // check if installed package matches required version
                         if (pkgs != null) {
@@ -215,17 +215,17 @@ public class Deployment {
                                 LOG.debug("Package " + pkgName + " already installed");
                             }
                         }
-                        if (!isInstalled && loader != null) {
-                            final File depFile = loader.load(pkgName, version);
-                            if (depFile != null) {
-                                installAndDeploy(depFile, loader);
-                            } else {
-                                if (enforceDeps) {
-                                    LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
+                    }
+                    if (!isInstalled && loader != null) {
+                        final File depFile = loader.load(pkgName, version);
+                        if (depFile != null) {
+                            installAndDeploy(depFile, loader);
+                        } else {
+                            if (enforceDeps) {
+                                LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
                                         "is not fatal, but the package may not work as expected");
-                                } else {
-                                    throw new PackageException("Missing dependency: package " + pkgName + " could not be resolved.");
-                                }
+                            } else {
+                                throw new PackageException("Missing dependency: package " + pkgName + " could not be resolved.");
                             }
                         }
                     }
@@ -308,11 +308,14 @@ public class Deployment {
                 } else {
                     final ElementImpl target = findElement(repoXML, TARGET_COLL_ELEMENT);
                     if (target != null) {
-                        // determine target collection
-                        try {
-                            targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
-                        } catch (final Exception e) {
-                            throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue(), e);
+                        final String targetPath = target.getStringValue();
+                        if (targetPath.length() > 0) {
+                            // determine target collection
+                            try {
+                                targetCollection = XmldbURI.create(getTargetCollection(targetPath));
+                            } catch (final Exception e) {
+                                throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue(), e);
+                            }
                         }
                     }
                 }
@@ -440,14 +443,15 @@ public class Deployment {
             throws PackageException {
         // determine target collection
         XmldbURI targetCollection;
-        if (target == null) {
+        if (target == null || target.getStringValue().length() == 0) {
             final String pkgColl = pkg.getAbbrev() + "-" + pkg.getVersion();
             targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
         } else {
+            final String targetPath = target.getStringValue();
             try {
-                targetCollection = XmldbURI.create(getTargetCollection(target.getStringValue()));
+                targetCollection = XmldbURI.create(getTargetCollection(targetPath));
             } catch (final Exception e) {
-                throw new PackageException("Bad collection URI for <target> element: " + target.getStringValue());
+                throw new PackageException("Bad collection URI for <target> element: " + targetPath);
             }
         }
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();

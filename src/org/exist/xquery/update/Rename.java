@@ -149,12 +149,12 @@ public class Rename extends Modification {
                     switch (node.getNodeType()) {
                         case Node.ELEMENT_NODE:
                             final ElementImpl newElem = new ElementImpl((ElementImpl) node);
-                            newElem.setNodeName(newQName);
+                            newElem.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
                             parent.updateChild(transaction, node, newElem);
                             break;
                         case Node.ATTRIBUTE_NODE:
                             final AttrImpl newAttr = new AttrImpl((AttrImpl) node);
-                            newAttr.setNodeName(newQName);
+                            newAttr.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
                             parent.updateChild(transaction, node, newAttr);
                             break;
                         default:

@@ -284,7 +284,11 @@ public class FieldLookup extends Function implements Optimizable {
             try {
                 result = index.queryField(getExpressionId(), docs, contextSet, fields, keys, operators, NodeSet.DESCENDANT);
                 if (contextSet != null) {
-                    result = result.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, true, getContextId(), true);
+                    if (fallback != null && (fallback.getPrimaryAxis() == Constants.CHILD_AXIS || fallback.getPrimaryAxis() == Constants.ATTRIBUTE_AXIS)) {
+                        result = result.selectParentChild(contextSet, NodeSet.DESCENDANT, getContextId());
+                    } else {
+                        result = result.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, true, getContextId(), true);
+                    }
                 }
             } catch (IOException e) {
                 throw new XPathException(this, e.getMessage());
@@ -295,9 +299,7 @@ public class FieldLookup extends Function implements Optimizable {
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
-            long start = System.currentTimeMillis();
             result = preselectResult.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, getContextId(), true);
-            LOG.info("eval took " + (System.currentTimeMillis() - start));
         }
         return result;
     }

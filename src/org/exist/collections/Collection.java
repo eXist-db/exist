@@ -624,6 +624,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      */
     @Override
     public boolean allowUnload() {
+        if (getURI().startsWith(CollectionConfigurationManager.ROOT_COLLECTION_CONFIG_URI)) {
+            return false;
+        }
         for(final DocumentImpl doc : documents.values()) {
             if(doc.isLockedForWrite()) {
                 return false;

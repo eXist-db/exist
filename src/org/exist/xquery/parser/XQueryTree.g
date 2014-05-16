@@ -2382,9 +2382,13 @@ throws PermissionDeniedException, EXistException, XPathException
 :
 	#(
 		PREDICATE
-		{ Predicate predicateExpr= new Predicate(context); }
-		expr [predicateExpr]
-		{ step.addPredicate(predicateExpr); }
+		{ PathExpr path = new PathExpr(context); }
+		expr [path]
+		{
+		    Predicate predicateExpr= new Predicate(context);
+		    predicateExpr.addPath(path);
+		    step.addPredicate(predicateExpr);
+        }
 	)
 	;
 

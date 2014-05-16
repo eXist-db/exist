@@ -32,6 +32,7 @@ public class RangeIndexDoc {
     private NodePath path;
     private TextCollector collector;
     private RangeIndexConfigElement config;
+    private long address = -1;
 
     public RangeIndexDoc(NodeId nodeId, QName qname, NodePath path, TextCollector collector, RangeIndexConfigElement config) {
         this.nodeId = nodeId;
@@ -39,6 +40,14 @@ public class RangeIndexDoc {
         this.path = path;
         this.collector = collector;
         this.config = config;
+    }
+
+    public void setAddress(long address) {
+        this.address = address;
+    }
+
+    public long getAddress() {
+        return address;
     }
 
     public NodeId getNodeId() {

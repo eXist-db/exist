@@ -169,7 +169,7 @@ public class Update extends Modification {
                                 break;
                             }
                             final AttrImpl attr = (AttrImpl) node;
-                            attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue());
+                            attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
                             attribute.setOwnerDocument(doc);
                             parent.updateChild(transaction, node, attribute);
                             break;

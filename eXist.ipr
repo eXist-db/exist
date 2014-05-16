@@ -319,7 +319,7 @@
   <component name="libraryTable">
     <library name="ant">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/tools/ant/lib/ant.jar!/" />
+        <root url="jar://$PROJECT_DIR$/tools/ant/lib/ant-1.9.3.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

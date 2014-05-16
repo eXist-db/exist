@@ -878,7 +878,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @exception DOMException if an error occurs
      */
     public Attr createAttribute(String name) throws DOMException {
-        final AttrImpl attr = new AttrImpl(new QName(name, "", null));
+        final AttrImpl attr = new AttrImpl(new QName(name, "", null), getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -902,7 +902,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             prefix = qualifiedName.substring(0, p);
             name = qualifiedName.substring(p); 
         }
-        final AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix));
+        final AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -915,7 +915,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @exception DOMException if an error occurs
      */
     public Element createElement(String tagName) throws DOMException {
-        final ElementImpl element = new ElementImpl(new QName(tagName, "", null));
+        final ElementImpl element = new ElementImpl(new QName(tagName, "", null), getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -939,7 +939,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             prefix = qualifiedName.substring(0, p); 
             name = qualifiedName.substring(p);
         }
-        final ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix));
+        final ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }

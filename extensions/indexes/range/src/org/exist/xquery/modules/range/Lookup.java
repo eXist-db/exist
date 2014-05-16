@@ -255,7 +255,7 @@ public class Lookup extends Function implements Optimizable {
         final RangeIndex.Operator operator = getOperator();
 
         try {
-            preselectResult = index.query(getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null, qnames, keys, operator, NodeSet.DESCENDANT);
+            preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT);
         } catch (IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }

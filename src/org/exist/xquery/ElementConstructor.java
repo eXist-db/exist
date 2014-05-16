@@ -388,8 +388,6 @@ public class ElementConstructor extends NodeConstructor {
 	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
 	 */
 	public void setPrimaryAxis(int axis) {
-		if(content != null)
-			{content.setPrimaryAxis(axis);}
 	}
 
     public int getPrimaryAxis() {
