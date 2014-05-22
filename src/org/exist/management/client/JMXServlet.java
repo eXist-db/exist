@@ -38,95 +38,94 @@ import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 
 /**
- * A servlet to monitor the database. It returns status information for the database based
- * on the JMX interface. For simplicity, the JMX beans provided by eXist
- * are organized into categories. One calls the servlet with one or more
+ * A servlet to monitor the database. It returns status information for the database based on the JMX interface. For
+ * simplicity, the JMX beans provided by eXist are organized into categories. One calls the servlet with one or more
  * categories in parameter "c", e.g.:
- * 
- * /exist/jmx?c=instances&c=memory 
- * 
- * If no parameter is specified, all categories will be returned. Valid
- * categories are "memory", "instances", "disk", "system", "caches",
- * "locking", "processes", "sanity", "all".
- * 
- * The servlet can also be used to test if the database is responsive by
- * using parameter "operation=ping" and a timeout (t=timeout-in-milliseconds).
- * For example, the following call
- * 
+ *
+ * /exist/jmx?c=instances&c=memory
+ *
+ * If no parameter is specified, all categories will be returned. Valid categories are "memory", "instances", "disk",
+ * "system", "caches", "locking", "processes", "sanity", "all".
+ *
+ * The servlet can also be used to test if the database is responsive by using parameter "operation=ping" and a timeout
+ * (t=timeout-in-milliseconds). For example, the following call
+ *
  * /exist/jmx?operation=ping&t=1000
- * 
- * will wait for a response within 1000ms. If the ping returns within the
- * specified timeout, the servlet returns the attributes of the SanityReport
- * JMX bean, which will include an element &lt;jmx:Status&gt;PING_OK&lt;/jmx:Status&gt;.
- * If the ping takes longer than the timeout, you'll instead find an element  
- * &lt;jmx:error&gt; in the returned XML. In this case, additional information on
- * running queries, memory consumption and database locks will be provided.
- * 
+ *
+ * will wait for a response within 1000ms. If the ping returns within the specified timeout, the servlet returns the
+ * attributes of the SanityReport JMX bean, which will include an element &lt;jmx:Status&gt;PING_OK&lt;/jmx:Status&gt;.
+ * If the ping takes longer than the timeout, you'll instead find an element &lt;jmx:error&gt; in the returned XML. In
+ * this case, additional information on running queries, memory consumption and database locks will be provided.
+ *
  * @author wolf
  *
  */
 public class JMXServlet extends HttpServlet {
 
-	private final static Properties defaultProperties = new Properties();
-	static {
-		defaultProperties.setProperty(OutputKeys.INDENT, "yes");
-		defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-	}
-	
-	private JMXtoXML client;
+    private final static Properties defaultProperties = new Properties();
 
-	public JMXServlet() {
-	}
+    static {
+        defaultProperties.setProperty(OutputKeys.INDENT, "yes");
+        defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+    }
 
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		Element root = null;
-		
-		final String operation = req.getParameter("operation");
-		if (operation != null && "ping".equals(operation)) {
-			long timeout = 5000;
-			final String timeoutParam = req.getParameter("t");
-			if (timeoutParam != null) {
-				try {
-					timeout = Long.parseLong(timeoutParam);
-				} catch (final NumberFormatException e) {
-					throw new ServletException("timeout parameter needs to be a number. Got: " + timeoutParam);
-				}
-			}
-			final long responseTime = client.ping("exist", timeout);
-			if (responseTime == JMXtoXML.PING_TIMEOUT)
-				{root = client.generateXMLReport("no response on ping after " + timeout + "ms", 
-						new String[] { "sanity", "locking", "processes", "instances", "memory" });}
-			else
-				{root = client.generateXMLReport(null, new String[] { "sanity" });}
-		} else {
-			String[] categories = req.getParameterValues("c");
-			if (categories == null)
-				{categories = new String[] { "all" };}
-			root = client.generateXMLReport(null, categories);
-		}
-		
-		resp.setContentType("application/xml");
-		
-		final Object useAttribute = req.getAttribute("jmx.attribute");
-		if (useAttribute != null)
-			{req.setAttribute(useAttribute.toString(), root);}
-		else {
-			final Writer writer = new OutputStreamWriter(resp.getOutputStream(), "UTF-8");
-			final DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
-			try {
-				streamer.serialize(root);
-			} catch (final TransformerException e) {
-				throw new ServletException("Error while serializing result: " + e.getMessage(), e);
-			}
-			writer.flush();
-		}
-	}
+    private JMXtoXML client;
 
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-		
-		client = new JMXtoXML();
-		client.connect();
-	}
+    public JMXServlet() {
+    }
+
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        Element root = null;
+
+        final String operation = req.getParameter("operation");
+        if (operation != null && "ping".equals(operation)) {
+            long timeout = 5000;
+            final String timeoutParam = req.getParameter("t");
+            if (timeoutParam != null) {
+                try {
+                    timeout = Long.parseLong(timeoutParam);
+                } catch (final NumberFormatException e) {
+                    throw new ServletException("timeout parameter needs to be a number. Got: " + timeoutParam);
+                }
+            }
+
+            final long responseTime = client.ping("exist", timeout);
+            if (responseTime == JMXtoXML.PING_TIMEOUT) {
+                root = client.generateXMLReport("no response on ping after " + timeout + "ms",
+                        new String[]{"sanity", "locking", "processes", "instances", "memory"});
+            } else {
+                root = client.generateXMLReport(null, new String[]{"sanity"});
+            }
+
+        } else {
+            String[] categories = req.getParameterValues("c");
+            if (categories == null) {
+                categories = new String[]{"all"};
+            }
+            root = client.generateXMLReport(null, categories);
+        }
+
+        resp.setContentType("application/xml");
+
+        final Object useAttribute = req.getAttribute("jmx.attribute");
+        if (useAttribute != null) {
+            req.setAttribute(useAttribute.toString(), root);
+        } else {
+            final Writer writer = new OutputStreamWriter(resp.getOutputStream(), "UTF-8");
+            final DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
+            try {
+                streamer.serialize(root);
+            } catch (final TransformerException e) {
+                throw new ServletException("Error while serializing result: " + e.getMessage(), e);
+            }
+            writer.flush();
+        }
+    }
+
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+
+        client = new JMXtoXML();
+        client.connect();
+    }
 }
