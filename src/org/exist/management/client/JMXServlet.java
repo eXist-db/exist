@@ -24,16 +24,20 @@ package org.exist.management.client;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashSet;
 import java.util.Properties;
-
+import java.util.Set;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
-
+import org.apache.log4j.Logger;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 
@@ -62,6 +66,8 @@ import org.w3c.dom.Element;
  */
 public class JMXServlet extends HttpServlet {
 
+    protected final static Logger LOG = Logger.getLogger(JMXServlet.class);
+
     private final static Properties defaultProperties = new Properties();
 
     static {
@@ -70,17 +76,31 @@ public class JMXServlet extends HttpServlet {
     }
 
     private JMXtoXML client;
+    private final Set<String> localhostAddresses = new HashSet<>();
 
-    public JMXServlet() {
-    }
 
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        // Verify if request is from localhost or if user has specific servlet/container managed role.
+        if (isFromLocalHost(request)) {
+            // Localhost is always authorized to access
+        } else if (!request.isUserInRole("admin")) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            HttpSession session = request.getSession();
+            response.setHeader("WWW-Authenticate", "basic realm=\"JMXservlet\"");
+            session.setAttribute("auth", Boolean.TRUE);
+            return;
+        } else {
+            // User is authorized
+        }
+
         Element root = null;
 
-        final String operation = req.getParameter("operation");
-        if (operation != null && "ping".equals(operation)) {
+        final String operation = request.getParameter("operation");
+        if ("ping".equals(operation)) {
             long timeout = 5000;
-            final String timeoutParam = req.getParameter("t");
+            final String timeoutParam = request.getParameter("t");
             if (timeoutParam != null) {
                 try {
                     timeout = Long.parseLong(timeoutParam);
@@ -91,41 +111,81 @@ public class JMXServlet extends HttpServlet {
 
             final long responseTime = client.ping("exist", timeout);
             if (responseTime == JMXtoXML.PING_TIMEOUT) {
-                root = client.generateXMLReport("no response on ping after " + timeout + "ms",
+                root = client.generateXMLReport(String.format("no response on ping after %sms", timeout),
                         new String[]{"sanity", "locking", "processes", "instances", "memory"});
             } else {
                 root = client.generateXMLReport(null, new String[]{"sanity"});
             }
 
         } else {
-            String[] categories = req.getParameterValues("c");
+            String[] categories = request.getParameterValues("c");
             if (categories == null) {
                 categories = new String[]{"all"};
             }
             root = client.generateXMLReport(null, categories);
         }
 
-        resp.setContentType("application/xml");
+        response.setContentType("application/xml");
 
-        final Object useAttribute = req.getAttribute("jmx.attribute");
+        final Object useAttribute = request.getAttribute("jmx.attribute");
         if (useAttribute != null) {
-            req.setAttribute(useAttribute.toString(), root);
+            request.setAttribute(useAttribute.toString(), root);
+
         } else {
-            final Writer writer = new OutputStreamWriter(resp.getOutputStream(), "UTF-8");
+            final Writer writer = new OutputStreamWriter(response.getOutputStream(), "UTF-8");
             final DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
             try {
                 streamer.serialize(root);
             } catch (final TransformerException e) {
+                LOG.error(e.getMessageAndLocation());
                 throw new ServletException("Error while serializing result: " + e.getMessage(), e);
             }
             writer.flush();
         }
     }
 
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
         client = new JMXtoXML();
         client.connect();
+
+        registerLocalHostAddresses();
+    }
+
+    /**
+     * Register all known IP-addresses for localhost
+     */
+    void registerLocalHostAddresses() {
+        // The external IP address of the server
+        try {
+            localhostAddresses.add(InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException ex) {
+            LOG.warn(String.format("Unable to get HostAddress for LocalHost: %s", ex.getMessage()));
+        }
+
+        // The configured Localhost addresses
+        try {
+            for (InetAddress address : InetAddress.getAllByName("localhost")) {
+                localhostAddresses.add(address.getHostAddress());
+            }
+        } catch (UnknownHostException ex) {
+            LOG.warn(String.format("Unable to retrieve ipaddresses for LocalHost: %s", ex.getMessage()));
+        }
+
+        if (localhostAddresses.isEmpty()) {
+            LOG.error("Unable to determine addresses for localhost, jmx servlet is disfunctional.");
+        }
+    }
+
+    /**
+     * Determine if HTTP request is originated from localhost.
+     *
+     * @param request The HTTP request
+     * @return TRUE if request is from LOCALHOST otherwise FALSE
+     */
+    boolean isFromLocalHost(HttpServletRequest request) {
+        return localhostAddresses.contains(request.getRemoteAddr());
     }
 }
