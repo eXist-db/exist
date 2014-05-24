@@ -225,7 +225,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     @Override
 	public final String toString() {
 		final StringBuilder buf = new StringBuilder();
-		buf.append("<account name=\"");
+		buf.append("<user name=\"");
 		buf.append(name);
 		buf.append("\" ");
 		buf.append("id=\"");
