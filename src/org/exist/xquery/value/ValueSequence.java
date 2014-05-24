@@ -354,7 +354,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     @Override
     public void destroy(XQueryContext context, Sequence contextSequence) {
         for (int i = 0; i <= size; i++) {
-            ((Sequence)values[i]).destroy(context, contextSequence);
+            values[i].destroy(context, contextSequence);
         }
     }
 
@@ -365,6 +365,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         }
         return false;
     }
+
     public void sortInDocumentOrder() {
         if (size == UNSET_SIZE)
             {return;}
