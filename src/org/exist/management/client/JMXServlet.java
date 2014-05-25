@@ -230,7 +230,7 @@ public class JMXServlet extends HttpServlet {
         if (tokenFile == null) {
             File existHome = ConfigurationHelper.getExistHome();
             File dataDir = new File(existHome, "webapp/WEB-INF/data");
-            tokenFile = (dataDir.exists()) ? new File(dataDir, "jms.identity") : new File(existHome, "jms.identity");
+            tokenFile = (dataDir.exists()) ? new File(dataDir, "jmxservlet.token") : new File(existHome, "jmxservlet.token");
         }
     }
 
