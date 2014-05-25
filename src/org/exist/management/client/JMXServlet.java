@@ -21,7 +21,12 @@
  */
 package org.exist.management.client;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetAddress;
@@ -29,15 +34,18 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.exist.util.ConfigurationHelper;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 
@@ -77,6 +85,7 @@ public class JMXServlet extends HttpServlet {
 
     private JMXtoXML client;
     private final Set<String> localhostAddresses = new HashSet<>();
+    private File tokenFile = null;
 
 
     @Override
@@ -85,14 +94,26 @@ public class JMXServlet extends HttpServlet {
         // Verify if request is from localhost or if user has specific servlet/container managed role.
         if (isFromLocalHost(request)) {
             // Localhost is always authorized to access
-        } else if (!request.isUserInRole("admin")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            HttpSession session = request.getSession();
-            response.setHeader("WWW-Authenticate", "basic realm=\"JMXservlet\"");
-            session.setAttribute("auth", Boolean.TRUE);
-            return;
-        } else {
-            // User is authorized
+            LOG.info("Local access");
+
+        } else if (hasSecretToken(request, createGetToken())) {         
+            // Correct token is provided
+            LOG.info("COrrect token provided by " + request.getRemoteHost());
+            
+        } else  {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null) {
+                response.setHeader("WWW-Authenticate", "basic realm=\"JMXservlet\"");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
+            if (!request.isUserInRole("admin")) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Incorrect role");
+                return;
+            }
+
+
         }
 
         Element root = null;
@@ -152,6 +173,7 @@ public class JMXServlet extends HttpServlet {
         client.connect();
 
         registerLocalHostAddresses();
+        createTokenFile();
     }
 
     /**
@@ -188,4 +210,74 @@ public class JMXServlet extends HttpServlet {
     boolean isFromLocalHost(HttpServletRequest request) {
         return localhostAddresses.contains(request.getRemoteAddr());
     }
+
+    /**
+     * Check if URL contains magic Token
+     *
+     * @param request The HTTP request
+     * @return TRUE if request contains correct value for token, else FALSE
+     */
+    boolean hasSecretToken(HttpServletRequest request, String token) {
+        String[] tokenValue = request.getParameterValues("token");
+        return ArrayUtils.contains(tokenValue, token);
+    }
+
+    /**
+     * Create reference to token file
+     */
+    private void createTokenFile() {
+
+        if (tokenFile == null) {
+            File existHome = ConfigurationHelper.getExistHome();
+            File dataDir = new File(existHome, "webapp/WEB-INF/data");
+            tokenFile = (dataDir.exists()) ? new File(dataDir, "jms.identity") : new File(existHome, "jms.identity");
+        }
+    }
+
+    /**
+     * Get token from file, create if not existent
+     */
+    private String createGetToken() {
+
+        Properties props = new Properties();
+        String token = null;
+
+        // Read if possible
+        if (tokenFile.exists()) {
+            InputStream is = null;
+            try {
+                is = new FileInputStream(tokenFile);
+                props.load(is);
+
+                token = props.getProperty("token");
+            } catch (IOException ex) {
+                LOG.error(ex.getMessage());
+            } finally {
+                IOUtils.closeQuietly(is);
+            }
+
+        }
+
+        // Create and write when needed
+        if (!tokenFile.exists() || token == null) {
+            token = UUID.randomUUID().toString();
+
+            props.setProperty("token", token);
+
+            OutputStream os = null;
+            try {
+                os = new FileOutputStream(tokenFile);
+                props.store(os, "");
+
+            } catch (IOException ex) {
+                LOG.error(ex.getMessage());
+            } finally {
+                IOUtils.closeQuietly(os);
+            }
+
+        }
+
+        return token;
+    }
+
 }
