@@ -111,6 +111,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     final static String                                  NAMESPACE_URI                  = HTTPClientModule.NAMESPACE_URI;
     final static String                                  PREFIX                         = HTTPClientModule.PREFIX;
     final static String                                  HTTP_MODULE_PERSISTENT_STATE 	= HTTPClientModule.HTTP_MODULE_PERSISTENT_STATE;
+    final static String                                  HTTP_MODULE_PERSISTENT_OPTIONS	= HTTPClientModule.HTTP_MODULE_PERSISTENT_OPTIONS;
 
     final static String                                  HTTP_EXCEPTION_STATUS_CODE     = "500";
 
@@ -153,20 +154,28 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
     /**
      * Performs a HTTP Request.
      *
-     * @param   context         The context of the calling XQuery
-     * @param   method          The HTTP method for the request
-     * @param   persistState  	If true existing HTTP state (cookies, credentials, etc) are re-used and athe state is persisted for future HTTP Requests
+     * @param   context          The context of the calling XQuery
+     * @param   method           The HTTP method for the request
+     * @param   persistState  	 If true existing HTTP state (cookies, credentials, etc) are re-used and athe state is persisted for future HTTP Requests
+     * @param   parserFeatures   Map of NekoHtml parser features to be used for the HTML parser. If null, the session-wide options will be used.
+     * @param   parserProperties Map of NekoHtml parser properties to be used for the HTML parser. If null, the session-wide options will be used.
      *
      * @return  DOCUMENT ME!
      *
      * @throws  IOException     
      * @throws  XPathException  
      */
-    protected Sequence doRequest(final XQueryContext context, final HttpMethod method, final boolean persistState, final Map<String, Boolean> parserFeatures, final Map<String, String> parserProperties) throws IOException, XPathException {
+    protected Sequence doRequest(final XQueryContext context, final HttpMethod method, boolean persistState, Map<String, Boolean> parserFeatures, Map<String, String> parserProperties) throws IOException, XPathException {
         
         Sequence encodedResponse = null;
 
         final HttpClient http = new HttpClient();
+
+        FeaturesAndProperties defaultFeaturesAndProperties = (FeaturesAndProperties) context.getXQueryContextVar(HTTP_MODULE_PERSISTENT_OPTIONS);
+        if (defaultFeaturesAndProperties != null) {
+            if (parserFeatures   == null) parserFeatures   = defaultFeaturesAndProperties.getFeatures();
+            if (parserProperties == null) parserProperties = defaultFeaturesAndProperties.getProperties();
+        }
 
         //execute the request	
         try {
