@@ -61,6 +61,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.*;
 import java.util.Date;
@@ -751,7 +752,8 @@ public class Deployment {
     }
 
     /**
-     * Update repo.xml while copying it.
+     * Update repo.xml while copying it. For security reasons, make sure
+     * any default password is removed before uploading.
      */
     private class UpdatingDocumentReceiver extends DocumentBuilderReceiver {
 
@@ -767,8 +769,18 @@ public class Deployment {
         @Override
         public void startElement(QName qname, AttrList attribs) {
             stack.push(qname.getLocalName());
-            if (!("deployed".equals(qname.getLocalName()) || "permissions".equals(qname.getLocalName()))) {
-                super.startElement(qname, attribs);
+            AttrList newAttrs = attribs;
+            if (attribs != null && "permissions".equals(qname.getLocalName())) {
+                newAttrs = new AttrList();
+                for (int i = 0; i < attribs.getLength(); i++) {
+                    if (!"password". equals(attribs.getQName(i).getLocalName())) {
+                        newAttrs.addAttribute(attribs.getQName(i), attribs.getValue(i), attribs.getType(i));
+                    }
+                }
+            }
+
+            if (!"deployed".equals(qname.getLocalName())) {
+                super.startElement(qname, newAttrs);
             }
         }
 
@@ -776,7 +788,7 @@ public class Deployment {
         public void startElement(String namespaceURI, String localName,
                                  String qName, Attributes attrs) throws SAXException {
             stack.push(localName);
-            if (!("deployed".equals(localName) || "permissions".equals(localName)))
+            if (!"deployed".equals(localName))
                 {super.startElement(namespaceURI, localName, qName, attrs);}
         }
 
@@ -786,7 +798,7 @@ public class Deployment {
             if ("meta".equals(qname.getLocalName())) {
                 addDeployTime();
             }
-            if (!("deployed".equals(qname.getLocalName()) || "permissions".equals(qname.getLocalName()))) {
+            if (!"deployed".equals(qname.getLocalName())) {
                 super.endElement(qname);
             }
         }
@@ -798,7 +810,7 @@ public class Deployment {
             if ("meta".equals(localName)) {
                 addDeployTime();
             }
-            if (!("deployed".equals(localName) || "permissions".equals(localName))) {
+            if (!"deployed".equals(localName)) {
                 super.endElement(uri, localName, qName);
             }
         }
@@ -806,7 +818,7 @@ public class Deployment {
         @Override
         public void attribute(QName qname, String value) throws SAXException {
             final String current = stack.peek();
-            if (!"permissions".equals(current)) {
+            if (!("permissions".equals(current) && "password".equals(qname.getLocalName()))) {
                 super.attribute(qname, value);
             }
         }

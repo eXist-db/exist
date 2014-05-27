@@ -136,6 +136,7 @@ Release branches? [release/]
 Hotfix branches? [hotfix/] 
 Support branches? [support/] 
 Version tag prefix? [] eXist-
+Hooks and filters directory? [.git/hooks]
 ```
 
 A new `develop` branch is created, and checked out. 
@@ -168,5 +169,5 @@ Release branches? [release/]
 Hotfix branches? [hotfix/] 
 Support branches? [support/] 
 Version tag prefix? [] eXist-
-
+Hooks and filters directory? [.git/hooks]
 ```

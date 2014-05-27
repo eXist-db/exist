@@ -13,7 +13,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import javax.xml.transform.OutputKeys;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamSource;
 
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
@@ -24,6 +33,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.serializer.Receiver;
+import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
@@ -38,6 +49,8 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xslt.TransformerFactoryAllocator;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class Sync extends BasicFunction {
@@ -169,6 +182,7 @@ public class Sync extends BasicFunction {
 		if (targetFile.exists() && targetFile.lastModified() >= doc.getMetadata().getLastModified()) {
 			return;
 		}
+        boolean isRepoXML = targetFile.exists() && targetFile.getName().equals("repo.xml");
 		SAXSerializer sax = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
 		try {
 			output.startElement(new QName("update", FileModule.NAMESPACE_URI), null);
@@ -177,19 +191,20 @@ public class Sync extends BasicFunction {
 			output.addAttribute(new QName("collection"), doc.getCollection().getURI().toString());
 			output.addAttribute(new QName("type"), "xml");
 			output.addAttribute(new QName("modified"), new DateTimeValue(new Date(doc.getMetadata().getLastModified())).getStringValue());
-			
-            OutputStream os = new FileOutputStream(targetFile);
-			Writer writer = new OutputStreamWriter( os, "UTF-8" );
-			
-			sax.setOutput(writer, DEFAULT_PROPERTIES);
-			Serializer serializer = context.getBroker().getSerializer();
-			serializer.reset();
-			serializer.setProperties(DEFAULT_PROPERTIES);
+            if (isRepoXML) {
+                processRepoDesc(targetFile, doc, sax, output);
+            } else {
+                OutputStream os = new FileOutputStream(targetFile);
+                Writer writer = new OutputStreamWriter(os, "UTF-8");
+                sax.setOutput(writer, DEFAULT_PROPERTIES);
+                Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+                serializer.setProperties(DEFAULT_PROPERTIES);
 
-			serializer.setSAXHandlers(sax, sax);
-			serializer.toSAX( doc );	
-			
-			writer.close();
+                serializer.setSAXHandlers(sax, sax);
+                serializer.toSAX(doc);
+                writer.close();
+            }
 		} catch (IOException e) {
 			reportError(output, "IO error while saving file: " + targetFile.getAbsolutePath());
 		} catch (SAXException e) {
@@ -201,6 +216,46 @@ public class Sync extends BasicFunction {
 			SerializerPool.getInstance().returnObject( sax );
 		}		
 	}
+
+    /**
+     * Merge repo.xml modified by user with original file. This is necessary because we have to
+     * remove sensitive information during upload (default password) and need to restore it
+     * when the package is synchronized back to disk.
+     */
+    private void processRepoDesc(File targetFile, DocumentImpl doc, SAXSerializer sax, MemTreeBuilder output) {
+        try {
+            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document original = builder.parse(targetFile);
+
+            OutputStream os = new FileOutputStream(targetFile);
+            Writer writer = new OutputStreamWriter(os, "UTF-8");
+            sax.setOutput(writer, DEFAULT_PROPERTIES);
+
+            StreamSource stylesource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));
+
+            final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
+            TransformerHandler handler = factory.newTransformerHandler(stylesource);
+            handler.getTransformer().setParameter("original", original.getDocumentElement());
+            handler.setResult(new SAXResult(sax));
+
+            final Serializer serializer = context.getBroker().getSerializer();
+            serializer.reset();
+            serializer.setProperties(DEFAULT_PROPERTIES);
+            serializer.setSAXHandlers(handler, handler);
+
+            serializer.toSAX(doc);
+
+            writer.close();
+        } catch (ParserConfigurationException e) {
+            reportError(output, "Parser exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
+        } catch (SAXException e) {
+            reportError(output, "SAX exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
+        } catch (IOException e) {
+            reportError(output, "IO exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
+        } catch (TransformerException e) {
+            reportError(output, "Transformation exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
+        }
+    }
 
 	private void saveBinary(File targetDir, BinaryDocument binary, MemTreeBuilder output) {
 		File targetFile = new File(targetDir, binary.getFileURI().toASCIIString());

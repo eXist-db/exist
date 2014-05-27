@@ -144,7 +144,8 @@ public class Transform extends BasicFunction {
 				new FunctionParameterSequenceType("node-tree", Type.NODE, Cardinality.ZERO_OR_MORE, "The source-document (node tree)"),
 				new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
 				new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
-                new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
+                new FunctionParameterSequenceType("attributes", Type.NODE, Cardinality.ZERO_OR_ONE, "Attributes to pass to the transformation factory"),
+                new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.ZERO_OR_ONE, "The serialization options")},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the transformed result (node tree)")),
         new FunctionSignature(
             new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
@@ -194,10 +195,7 @@ public class Transform extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		
-		if(args[0].isEmpty()) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
+
 		final Sequence inputNode = args[0];
 		final Item stylesheetItem = args[1].itemAt(0);
 		
@@ -205,27 +203,28 @@ public class Transform extends BasicFunction {
 		if(!args[2].isEmpty())
 			{options = ((NodeValue)args[2].itemAt(0)).getNode();}
 
-        // apply serialization options set on the XQuery context
-        final Properties serializeOptions = new Properties();
-        if (getArgumentCount() == 4) {
-            final String serOpts = args[3].getStringValue();
-            final String[] contents = Option.tokenize(serOpts);
-            for (int i = 0; i < contents.length; i++) {
-                final String[] pair = Option.parseKeyValuePair(contents[i]);
-                if (pair == null)
-                    {throw new XPathException(this, "Found invalid serialization option: " + pair);}
-                logger.info("Setting serialization property: " + pair[0] + " = " + pair[1]);
-                serializeOptions.setProperty(pair[0], pair[1]);
-            }
-        } else
-            {context.checkOptions(serializeOptions);}
+        final Properties attributes = new Properties();
+        final Properties serializationProps = new Properties();
+        if (getArgumentCount() == 5) {
+
+            final Sequence attrs = args[3];
+            attributes.putAll(extractAttributes(attrs));
+
+            //extract serialization options
+            final Sequence serOpts = args[4];
+            serializationProps.putAll(extractSerializationProperties(serOpts));
+        } else {
+            context.checkOptions(serializationProps);
+        }
+
         boolean expandXIncludes =
-                "yes".equals(serializeOptions.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"));
+                "yes".equals(serializationProps.getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"));
 
         final Properties stylesheetParams = new Properties();
-        if (options != null)
-            {parseParameters(stylesheetParams, options);}
-        final TransformerHandler handler = createHandler(stylesheetItem, stylesheetParams);
+        if (options != null) {
+            stylesheetParams.putAll(parseParameters(options));
+        }
+        final TransformerHandler handler = createHandler(stylesheetItem, stylesheetParams, attributes);
         final TransformErrorListener errorListener = new TransformErrorListener();
         handler.getTransformer().setErrorListener(errorListener);
         if (isCalledAs("transform"))
@@ -252,10 +251,10 @@ public class Transform extends BasicFunction {
             final Serializer serializer = context.getBroker().getSerializer();
             serializer.reset();
             try {
-                serializer.setProperties(serializeOptions);
+                serializer.setProperties(serializationProps);
                 serializer.setReceiver(receiver, true);
                 if (expandXIncludes) {
-                    String xipath = serializeOptions.getProperty(EXistOutputKeys.XINCLUDE_PATH);
+                    String xipath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
                     if (xipath != null) {
                         final File f = new File(xipath);
                         if (!f.isAbsolute())
@@ -320,10 +319,10 @@ public class Transform extends BasicFunction {
                 serializer.reset();
                 Receiver receiver = new ReceiverToSAX(handler);
                 try {
-                    serializer.setProperties(serializeOptions);
+                    serializer.setProperties(serializationProps);
                     if (expandXIncludes) {
                         XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
-                        String xipath = serializeOptions.getProperty(EXistOutputKeys.XINCLUDE_PATH);
+                        String xipath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
                         if (xipath != null) {
                             final File f = new File(xipath);
                             if (!f.isAbsolute())
@@ -353,13 +352,19 @@ public class Transform extends BasicFunction {
     /**
      * @param stylesheetItem
      * @param options
+     * @param attributes Attributes to set on the Transformer Factory
      * @throws TransformerFactoryConfigurationError
      * @throws XPathException
      */
-    private TransformerHandler createHandler(Item stylesheetItem, Properties options) throws TransformerFactoryConfigurationError, XPathException
+    private TransformerHandler createHandler(Item stylesheetItem, Properties options, Properties attributes) throws TransformerFactoryConfigurationError, XPathException
     {
     	final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
-    	
+
+        //set any attributes
+        for(final Map.Entry<Object, Object> attribute : attributes.entrySet()) {
+            factory.setAttribute((String)attribute.getKey(), (String)attribute.getValue());
+        }
+
 		TransformerHandler handler;
 		try
 		{
@@ -429,27 +434,59 @@ public class Transform extends BasicFunction {
         return handler;
     }
 
-	private void parseParameters(Properties properties, Node options) throws XPathException {
-		if(options.getNodeType() == Node.ELEMENT_NODE && "parameters".equals(options.getLocalName())) {
-			Node child = options.getFirstChild();
-			while(child != null) {
-				if(child.getNodeType() == Node.ELEMENT_NODE && "param".equals(child.getLocalName())) {
-					final Element elem = (Element)child;
-					final String name = elem.getAttribute("name");
-					final String value = elem.getAttribute("value");
-					if(name == null || value == null)
-						{throw new XPathException(this, "Name or value attribute missing for stylesheet parameter");}
-                    if ("exist:stop-on-warn".equals(name))
-                        stopOnWarn = "yes".equals(value);
-                    else if ("exist:stop-on-error".equals(name))
-                        stopOnError = "yes".equals(value);
-                    else
-					    {properties.setProperty(name, value);}
-				}
-				child = child.getNextSibling();
-			}
-		}
+    private Properties extractSerializationProperties(final Sequence serOpts) throws XPathException {
+        final Properties serializationProps = new Properties();
+        if (!serOpts.isEmpty()) {
+            final String[] contents = Option.tokenize(serOpts.getStringValue());
+            for (int i = 0; i < contents.length; i++) {
+                final String[] pair = Option.parseKeyValuePair(contents[i]);
+                if (pair == null) {
+                    throw new XPathException(this, "Found invalid serialization option: " + pair);
+                }
+                logger.info("Setting serialization property: " + pair[0] + " = " + pair[1]);
+                serializationProps.setProperty(pair[0], pair[1]);
+            }
+        }
+        return serializationProps;
+    }
+
+    private Properties extractAttributes(final Sequence attrs) throws XPathException {
+        if(attrs.isEmpty()) {
+            return new Properties();
+        } else {
+            return parseElementParam(((NodeValue)attrs.itemAt(0)).getNode(), "attributes", "attr");
+        }
+    }
+
+	private Properties parseParameters(final Node options) throws XPathException {
+		return parseElementParam(options, "parameters", "param");
 	}
+
+    private Properties parseElementParam(final Node elementParam, final String container, final String param) throws XPathException {
+        final Properties props = new Properties();
+        if(elementParam.getNodeType() == Node.ELEMENT_NODE && elementParam.getLocalName().equals(container)) {
+            Node child = elementParam.getFirstChild();
+            while(child != null) {
+                if(child.getNodeType() == Node.ELEMENT_NODE && child.getLocalName().equals(param)) {
+                    final Element elem = (Element)child;
+                    final String name = elem.getAttribute("name");
+                    final String value = elem.getAttribute("value");
+                    if(name == null || value == null) {
+                        throw new XPathException(this, "Name or value attribute missing");
+                    }
+                    if("exist:stop-on-warn".equals(name)) {
+                        stopOnWarn = "yes".equals(value);
+                    } else if ("exist:stop-on-error".equals(name)) {
+                        stopOnError = "yes".equals(value);
+                    } else {
+                        props.setProperty(name, value);
+                    }
+                }
+                child = child.getNextSibling();
+            }
+        }
+        return props;
+    }
 
     private void setParameters(Properties parameters, Transformer handler) {
         for (final Iterator i = parameters.keySet().iterator(); i.hasNext();) {
