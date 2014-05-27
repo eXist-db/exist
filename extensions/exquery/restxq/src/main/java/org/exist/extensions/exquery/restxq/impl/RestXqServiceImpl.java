@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.log4j.Logger;
 import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
@@ -124,9 +126,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
         InputStream is = null;
 
         try {
-            // In existdb the input stream exposed by our HttpRequest is cached and can be reset and used as many times as we want.
             is = request.getInputStream();
-
             if(is.available() <= 0) {
                 return null;
             }
@@ -153,7 +153,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                         //binary data
                         try {
                             
-                            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), is);
+                            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), new CloseShieldInputStream(is));
                             if(binaryValue != null) {
                                 result = new SequenceImpl<BinaryValue>(new BinaryTypedValue(binaryValue));
                             }
@@ -165,7 +165,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
 
                 if(result == null) {
                     //2) not binary, try and parse as an XML documemnt
-                    final DocumentImpl doc = parseAsXml(is);
+                    final DocumentImpl doc = parseAsXml(new CloseShieldInputStream(is));
                     if(doc != null) {
                         result = new SequenceImpl<Document>(new DocumentTypedValue(doc));
                     }
@@ -183,7 +183,7 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                         //reset the stream, as we need to reuse for string parsing
                         is.reset();
 
-                        final StringValue str = parseAsString(is, encoding);
+                        final StringValue str = parseAsString(new CloseShieldInputStream(is), encoding);
                         if(str != null) {
                             result = new SequenceImpl<StringValue>(new StringTypedValue(str));
                         }
