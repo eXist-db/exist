@@ -1244,7 +1244,7 @@ public class Configurator {
         final BrokerPool pool = broker.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
-        LOG.info("Storing configuration " + collection.getURI() + "/" + uri);
+//        LOG.info("Storing configuration " + collection.getURI() + "/" + uri);
         final Subject currentUser = broker.getSubject();
         
         try {
