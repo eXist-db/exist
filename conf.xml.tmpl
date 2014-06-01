@@ -166,13 +166,30 @@
         -->
         <startup>
             <triggers>
-                <!-- EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time -->
+                <!-- 
+                    EXQuery RESTXQ trigger to load the RESTXQ Registry at startup time 
+                -->
                 <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqStartupTrigger"/>
-            <!-- 
-             ! AutoDeploymentTrigger will install any .xar application package it finds
-             ! in the autodeploy directory unless the application has already been installed
-             ! in the db. -->   
+                
+                <!-- 
+                    AutoDeploymentTrigger will install any .xar application package it finds
+                    in the autodeploy directory unless the application has already been installed
+                    in the db. 
+                -->   
                 <trigger class="org.exist.repo.AutoDeploymentTrigger"/>
+                
+                <!-- 
+                    XQueryStartupTrigger will execute all xquery scripts stored in the
+                    /db/system/autostart collection during startup of the database. 
+
+                    The collection must be owned by SYSTEM/DBA mode "rwxrwx___" (0770)
+					
+                    Each of the scripts must be owned by a DBA user, group DBA, 
+                    mode "rwxrwx___" (0770) with mime-type "application/xquery". 
+                    The names of the scripts must end with ".xq", ".xqy" or ".xquery".
+                -->
+                <!--<trigger class="org.exist.collections.triggers.XQueryStartupTrigger"/>-->
+                    
             </triggers>
         </startup>
 

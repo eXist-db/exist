@@ -16,6 +16,8 @@ declare variable $tt:COLLECTION_CONFIG :=
                 <create qname="entry">
                     <field name="date" match="date2" type="xs:date"/>
                 </create>
+                <create qname="string-lc" type="xs:string" case="no"/>
+                <create qname="string" type="xs:string"/>
             </range>
         </index>
     </collection>;
@@ -28,6 +30,8 @@ declare variable $tt:XML :=
             <date2>1918-02-11</date2>
             <time>09:00:00Z</time>
             <dateTime>1918-02-11T09:00:00Z</dateTime>
+            <string-lc>UPPERCASE</string-lc>
+            <string>UPPERCASE</string>
         </entry>
         <entry>
             <id>E2</id>
@@ -35,6 +39,8 @@ declare variable $tt:XML :=
             <date2>2012-01-20</date2>
             <time>10:00:00Z</time>
             <dateTime>2012-01-20T10:00:00Z</dateTime>
+            <string-lc>lowercase</string-lc>
+            <string>lowercase</string>
         </entry>
         <entry>
             <id>E3</id>
@@ -42,6 +48,8 @@ declare variable $tt:XML :=
             <date2>2013-02-04</date2>
             <time>10:00:00+01:00</time>
             <dateTime>2012-01-20T11:00:00+01:00</dateTime>
+            <string-lc>MiXeDmOdE</string-lc>
+            <string>MiXeDmOdE</string>
         </entry>
     </test>;
 
@@ -240,4 +248,160 @@ declare
     %test:assertEquals("E1")
 function tt:lt-dateTime($dateTime as xs:dateTime) {
     collection($tt:COLLECTION)//entry[dateTime < $dateTime]/id/string()
+};
+
+declare
+    %test:stats
+    %test:args("up")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function tt:string-contains-optimized($string as xs:string) {
+    collection($tt:COLLECTION)//entry[contains(string, $string)]/id/string()
+};
+    
+declare
+    %test:args("up")
+    %test:assertEquals("E1")
+    %test:args("UP")
+    %test:assertEquals("E1")
+    %test:args("Up")
+    %test:assertEquals("E1")
+    %test:args("case")
+    %test:assertEquals("E1", "E2")
+    %test:args("mixed")
+    %test:assertEquals("E3")
+    %test:args("MIXED")
+    %test:assertEquals("E3")
+    %test:args("MiXeD")
+    %test:assertEquals("E3")
+function tt:string-contains-ignore-case($string as xs:string) {
+    collection($tt:COLLECTION)//entry[contains(string-lc, $string)]/id/string()
+};
+
+declare 
+    %test:args("mixedmode")
+    %test:assertEquals("E3")
+    %test:args("MIXEDMODE")
+    %test:assertEquals("E3")
+    %test:args("MiXeDmOdE")
+    %test:assertEquals("E3")
+function tt:string-equals-ignore-case($string as xs:string) {
+    collection($tt:COLLECTION)//entry[string-lc eq $string]/id/string()
+};
+
+declare 
+    %test:args("mixedmode")
+    %test:assertEquals("E3")
+    %test:args("MIXEDMODE")
+    %test:assertEquals("E3")
+    %test:args("MiXeDmOdE")
+    %test:assertEquals("E3")
+function tt:string-equals-2-ignore-case($string as xs:string) {
+    collection($tt:COLLECTION)//entry[string-lc = $string]/id/string()
+};
+
+declare 
+    %test:args("up")
+    %test:assertEquals("E1")
+    %test:args("UP")
+    %test:assertEquals("E1")
+    %test:args("Up")
+    %test:assertEquals("E1")
+    %test:args("case")
+    %test:assertEmpty
+    %test:args("mixed")
+    %test:assertEquals("E3")
+    %test:args("MIXED")
+    %test:assertEquals("E3")
+    %test:args("MiXeD")
+    %test:assertEquals("E3")
+function tt:starts-with-ignore-case($string as xs:string) {
+    collection($tt:COLLECTION)//entry[starts-with(string-lc, $string)]/id/string()
+};
+
+declare 
+    %test:args("percase")
+    %test:assertEquals("E1")
+    %test:args("PeRcAsE")
+    %test:assertEquals("E1")
+    %test:args("PERCASE")
+    %test:assertEquals("E1")
+    %test:args("cAsE")
+    %test:assertEquals("E1", "E2")
+function tt:ends-with-ignore-case($string as xs:string) {
+    collection($tt:COLLECTION)//entry[ends-with(string-lc, $string)]/id/string()
+};
+
+declare
+    %test:args("lo")
+    %test:assertEquals("E2")
+    %test:args("UP")
+    %test:assertEquals("E1")
+    %test:args("Up")
+    %test:assertEmpty
+    %test:args("case")
+    %test:assertEquals("E2")
+    %test:args("mixed")
+    %test:assertEmpty
+    %test:args("MIXED")
+    %test:assertEmpty
+    %test:args("MiXeD")
+    %test:assertEquals("E3")
+function tt:string-contains($string as xs:string) {
+    collection($tt:COLLECTION)//entry[contains(string, $string)]/id/string()
+};
+
+declare 
+    %test:args("mixedmode")
+    %test:assertEmpty
+    %test:args("MIXEDMODE")
+    %test:assertEmpty
+    %test:args("MiXeDmOdE")
+    %test:assertEquals("E3")
+function tt:string-equals($string as xs:string) {
+    collection($tt:COLLECTION)//entry[string eq $string]/id/string()
+};
+
+declare 
+    %test:args("mixedmode")
+    %test:assertEmpty
+    %test:args("MIXEDMODE")
+    %test:assertEmpty
+    %test:args("MiXeDmOdE")
+    %test:assertEquals("E3")
+function tt:string-equals-2($string as xs:string) {
+    collection($tt:COLLECTION)//entry[string = $string]/id/string()
+};
+
+declare 
+    %test:args("up")
+    %test:assertEmpty
+    %test:args("UP")
+    %test:assertEquals("E1")
+    %test:args("Up")
+    %test:assertEquals
+    %test:args("case")
+    %test:assertEmpty
+    %test:args("mixed")
+    %test:assertEmpty
+    %test:args("MIXED")
+    %test:assertEmpty
+    %test:args("MiXeD")
+    %test:assertEquals("E3")
+function tt:starts-with($string as xs:string) {
+    collection($tt:COLLECTION)//entry[starts-with(string, $string)]/id/string()
+};
+
+declare 
+    %test:args("percase")
+    %test:assertEmpty
+    %test:args("PeRcAsE")
+    %test:assertEmpty
+    %test:args("PERCASE")
+    %test:assertEquals("E1")
+    %test:args("cAsE")
+    %test:assertEmpty
+    %test:args("case")
+    %test:assertEquals("E2")
+function tt:ends-with($string as xs:string) {
+    collection($tt:COLLECTION)//entry[ends-with(string, $string)]/id/string()
 };

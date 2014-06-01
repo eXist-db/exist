@@ -53,6 +53,11 @@ public class SimpleTextCollector implements TextCollector {
     }
 
     @Override
+    public boolean hasFields() {
+        return false;
+    }
+
+    @Override
     public List<Field> getFields() {
         List<Field> fields = new ArrayList<Field>(1);
         fields.add(new Field(buf, wsTreatment, caseSensitive));

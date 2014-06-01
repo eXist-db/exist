@@ -120,10 +120,8 @@ public class ExistCollection extends ExistResource {
             ownerUser = permissions.getOwner().getUsername();
             ownerGroup = permissions.getGroup().getName();
 
-        } catch(PermissionDeniedException pde) {
+        } catch (PermissionDeniedException | EXistException pde) {
             LOG.error(pde);
-        } catch (EXistException e) {
-            LOG.error(e);
 
         } finally {
 
@@ -146,7 +144,7 @@ public class ExistCollection extends ExistResource {
     public List<XmldbURI> getCollectionURIs() {
 
 
-        List<XmldbURI> collectionURIs = new ArrayList<XmldbURI>();
+        List<XmldbURI> collectionURIs = new ArrayList<>();
 
         DBBroker broker = null;
         Collection collection = null;
@@ -162,14 +160,11 @@ public class ExistCollection extends ExistResource {
 
             }
 
-        } catch (EXistException e) {
+        } catch (EXistException | PermissionDeniedException e) {
             LOG.error(e);
             //return empty list
-            return new ArrayList<XmldbURI>();
-        } catch (PermissionDeniedException pde) {
-            LOG.error(pde);
-            //return empty list
-            return new ArrayList<XmldbURI>();            
+            return new ArrayList<>();
+
         } finally {
 
             if (collection != null) {
@@ -187,7 +182,7 @@ public class ExistCollection extends ExistResource {
      */
     public List<XmldbURI> getDocumentURIs() {
 
-        List<XmldbURI> documentURIs = new ArrayList<XmldbURI>();
+        List<XmldbURI> documentURIs = new ArrayList<>();
 
         DBBroker broker = null;
         Collection collection = null;
@@ -202,15 +197,10 @@ public class ExistCollection extends ExistResource {
                 documentURIs.add(documents.next().getURI());
             }
 
-        } catch (PermissionDeniedException e) {
+        } catch (PermissionDeniedException | EXistException e) {
             LOG.error(e);
             //return empty list
-            return new ArrayList<XmldbURI>();
-            
-        } catch (EXistException e) {
-            LOG.error(e);
-            //return empty list
-            return new ArrayList<XmldbURI>();
+            return new ArrayList<>();
             
         } finally {
             // Clean up resources
@@ -259,23 +249,11 @@ public class ExistCollection extends ExistResource {
                 LOG.debug("Document deleted sucessfully");
 
 
-        } catch (EXistException e) {
+        } catch (EXistException | IOException | PermissionDeniedException | TriggerException e) {
             LOG.error(e);
             txnManager.abort(txn);
 
-        } catch (IOException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-
-        } catch (PermissionDeniedException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-
-        } catch (TriggerException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-
-		} finally {
+        } finally {
 
             // TODO: check if can be done earlier
             if (collection != null) {
@@ -332,7 +310,7 @@ public class ExistCollection extends ExistResource {
                 LOG.debug("Collection created sucessfully");
 
 
-        } catch (EXistException e) {
+        } catch (EXistException | PermissionDeniedException e) {
             LOG.error(e);
             txnManager.abort(txn);
             throw e;
@@ -340,11 +318,6 @@ public class ExistCollection extends ExistResource {
         } catch (IOException e) {
             LOG.error(e);
             txnManager.abort(txn);
-
-        } catch (PermissionDeniedException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw e;
 
         } catch (Throwable e) {
             LOG.error(e);
@@ -448,28 +421,19 @@ public class ExistCollection extends ExistResource {
                 // Stream into database
                 InputStream fis = vtf.getByteStream();
                 bis = new BufferedInputStream(fis);
-                collection.addBinaryResource(txn, broker, newNameUri, bis, mime.getName(), length.longValue());
+                collection.addBinaryResource(txn, broker, newNameUri, bis, mime.getName(), length);
                 bis.close();
             }
 
             // Commit change
             txnManager.commit(txn);
 
-            if(LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("Document created sucessfully");
+            }
 
 
-        } catch (EXistException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw new IOException(e);
-
-        } catch (TriggerException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw new IOException(e);
-
-        } catch (SAXException e) {
+        } catch (EXistException | SAXException e) {
             LOG.error(e);
             txnManager.abort(txn);
             throw new IOException(e);
@@ -479,12 +443,7 @@ public class ExistCollection extends ExistResource {
             txnManager.abort(txn);
             throw new PermissionDeniedException(xmldbUri + "");
 
-        } catch (IOException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw e;
-
-        } catch (PermissionDeniedException e) {
+        } catch (IOException | PermissionDeniedException e) {
             LOG.error(e);
             txnManager.abort(txn);
             throw e;
@@ -580,22 +539,12 @@ public class ExistCollection extends ExistResource {
             txnManager.abort(txn);
             throw e;
 
-        } catch (IOException e) {
+        } catch (IOException | PermissionDeniedException | TriggerException e) {
             LOG.error(e);
             txnManager.abort(txn);
             throw new EXistException(e.getMessage());
 
-        } catch (PermissionDeniedException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw new EXistException(e.getMessage());
-
-        } catch (TriggerException e) {
-            LOG.error(e);
-            txnManager.abort(txn);
-            throw new EXistException(e.getMessage());
-
-		} finally {
+        } finally {
 
             if (destCollection != null) {
                 destCollection.release(Lock.WRITE_LOCK);

@@ -2576,16 +2576,13 @@ public class XQueryContext implements BinaryValueManager, Context
      */
     public void popLocalVariables(LocalVariable var, Sequence resultSeq)
     {
-        final LocalVariable end = contextStack.isEmpty() ? null : contextStack.peek();
-
-        for( LocalVariable old = lastVar; old != null; old = old.before ) {
-
-            if( old == end ) {
-                break;
+        // clear all variables registered after var. they should be out of scope.
+        LocalVariable outOfScope = lastVar;
+        while (outOfScope != var) {
+            if (!outOfScope.isClosureVar()) {
+                outOfScope.destroy(this, resultSeq);
             }
-            // reset variable unless it is a closure variable (inherited from context)
-            if (!old.isClosureVar())
-                {old.destroy(this, resultSeq);}
+            outOfScope = outOfScope.before;
         }
         if( var != null ) {
             var.after = null;

@@ -10011,10 +10011,14 @@ public XQueryTreeParser() {
 		org.exist.xquery.parser.XQueryAST tmp136_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 		match(_t,PREDICATE);
 		_t = _t.getFirstChild();
-		Predicate predicateExpr= new Predicate(context);
-		expr(_t,predicateExpr);
+		PathExpr path = new PathExpr(context);
+		expr(_t,path);
 		_t = _retTree;
-		step.addPredicate(predicateExpr);
+		
+				    Predicate predicateExpr= new Predicate(context);
+				    predicateExpr.addPath(path);
+				    step.addPredicate(predicateExpr);
+		
 		_t = __t261;
 		_t = _t.getNextSibling();
 		_retTree = _t;

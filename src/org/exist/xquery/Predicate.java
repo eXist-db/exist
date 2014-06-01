@@ -63,9 +63,18 @@ public class Predicate extends PathExpr {
         super(context);
     }
 
+    @Override
+    public void addPath(PathExpr path) {
+        if (path.getLength() == 1) {
+            add(path.getExpression(0));
+        } else {
+            super.addPath(path);
+        }
+    }
+
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.exist.xquery.PathExpr#getDependencies()
      */
     public int getDependencies() {
