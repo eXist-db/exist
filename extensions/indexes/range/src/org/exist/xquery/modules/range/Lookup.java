@@ -332,7 +332,7 @@ public class Lookup extends Function implements Optimizable {
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
-            long start = System.currentTimeMillis();
+//            long start = System.currentTimeMillis();
             contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
             result = getArgument(0).eval(contextSequence).toNodeSet();
             //LOG.info("eval took " + (System.currentTimeMillis() - start));
