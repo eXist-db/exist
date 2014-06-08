@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2013 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.collections;
 
@@ -30,11 +28,14 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.TreeMap;
+
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Indexer;
+import org.exist.Resource;
+import org.exist.ResourceMetadata;
 import org.exist.collections.triggers.*;
 import org.exist.dom.*;
 import org.exist.security.Account;
@@ -65,6 +66,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import static org.exist.collections.CollectionConfigurationManager.CONFIG_COLLECTION_URI;
+import static org.exist.collections.CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI;
+
 /**
  * This class represents a collection in the database. A collection maintains a list of
  * sub-collections and documents, and provides the methods to store/remove resources.
@@ -75,7 +79,7 @@ import org.xml.sax.XMLReader;
  *
  * @author wolf
  */
-public class Collection extends Observable implements Comparable<Collection>, Cacheable {
+public class Collection extends Observable implements Resource, Comparable<Collection>, Cacheable {
 
     public static int LENGTH_COLLECTION_ID = 4; //sizeof int
 
@@ -134,8 +138,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         lock = new ReentrantReadWriteLock(path);
     }
 
-    public boolean isTriggersEnabled() {
-        return triggersEnabled;
+    public boolean isTriggersEnabled(DBBroker broker) {
+        return broker.isTriggersEnabled() && triggersEnabled;
     }
 
     public final void setPath(XmldbURI path) {
@@ -514,7 +518,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                     }
                 }
             } catch(final LockException e) {
-                LOG.error(e.getMessage());
+                LOG.error(e.getMessage(), e);
                 throw e;
             } finally {
                 getLock().release(Lock.READ_LOCK);
@@ -704,6 +708,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         }
     }
     
+    public int countSubCollection() {
+        return subCollections.size();
+    }
+
     /**
      * Determines if this Collection has any documents, or sub-collections
      */
@@ -1058,15 +1066,30 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             getLock().release(Lock.WRITE_LOCK);
         }
     }
+    
+    public void removeResource(Txn txn, DBBroker broker, DocumentImpl doc) throws PermissionDeniedException, LockException, TriggerException {
+        if (doc == null) return;
+        
+        if (doc.getCollection() != this) {
+            throw new PermissionDeniedException("illegal: doc '"+doc.getURI()+"' does not belong col '"+getURI()+"'.");
+        }
+        
+        if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+            removeBinaryResource(txn, broker, doc);
+        } else {
+            removeXMLResource(txn, broker, doc);
+        }
+    }
+
 
     /**
      * Remove the specified document from the collection.
      *
-     * @param  transaction
+     * @param  txn
      * @param  broker
      * @param  docUri
      */
-    public void removeXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI docUri) throws PermissionDeniedException, TriggerException, LockException {
+    public void removeXMLResource(final Txn txn, final DBBroker broker, final XmldbURI docUri) throws PermissionDeniedException, TriggerException, LockException {
         
         if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Permission denied to write collection: " + path);
@@ -1088,12 +1111,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             
             doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
             
-            boolean useTriggers = isTriggersEnabled();
+            boolean useTriggers = isTriggersEnabled(broker);
             if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
                 // we remove a collection.xconf configuration file: tell the configuration manager to
                 // reload the configuration.
                 useTriggers = false;
-                final CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+                final CollectionConfigurationManager confMgr = db.getConfigurationManager();
                 if (confMgr != null) {
                     confMgr.invalidate(getURI(), broker.getBrokerPool());
                 }
@@ -1101,16 +1124,62 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             
             DocumentTriggers trigger = new DocumentTriggers(broker, null, this, useTriggers ? getConfiguration(broker) : null);
             
-            trigger.beforeDeleteDocument(broker, transaction, doc);
+            trigger.beforeDeleteDocument(broker, txn, doc);
             
-            broker.removeXMLResource(transaction, doc);
+            broker.removeXMLResource(txn, doc);
             documents.remove(docUri.getRawCollectionPath());
             
-            trigger.afterDeleteDocument(broker, transaction, getURI().append(docUri));
+            trigger.afterDeleteDocument(broker, txn, getURI().append(docUri));
             
-            broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
+            db.getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
         } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
+            db.getProcessMonitor().endJob();
+            if(doc != null) {
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            }
+            getLock().release(Lock.WRITE_LOCK);
+        }
+    }
+    
+    private void removeXMLResource(Txn txn, DBBroker broker, DocumentImpl doc) throws PermissionDeniedException, TriggerException, LockException {
+        
+        if(!getPermissionsNoLock().validate(broker.getSubject(), Permission.WRITE)) {
+            throw new PermissionDeniedException("Permission denied to write collection: " + path);
+        }
+        
+        XmldbURI docUri = doc.getFileURI();
+        
+        final BrokerPool db = broker.getBrokerPool();
+        try {
+            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_XML, docUri);
+
+            getLock().acquire(Lock.WRITE_LOCK);
+            
+            doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+            
+            boolean useTriggers = isTriggersEnabled(broker);
+            if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
+                // we remove a collection.xconf configuration file: tell the configuration manager to
+                // reload the configuration.
+                useTriggers = false;
+                final CollectionConfigurationManager confMgr = db.getConfigurationManager();
+                if (confMgr != null) {
+                    confMgr.invalidate(getURI(), broker.getBrokerPool());
+                }
+            }
+            
+            DocumentTriggers trigger = new DocumentTriggers(broker, null, this, useTriggers ? getConfiguration(broker) : null);
+            
+            trigger.beforeDeleteDocument(broker, txn, doc);
+            
+            broker.removeXMLResource(txn, doc);
+            documents.remove(docUri.getRawCollectionPath());
+            
+            trigger.afterDeleteDocument(broker, txn, getURI().append(docUri));
+            
+            db.getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
+        } finally {
+            db.getProcessMonitor().endJob();
             if(doc != null) {
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
             }
@@ -1146,8 +1215,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             return;  //TODO should throw an exception!!! Otherwise we dont know if the document was removed
         }
         
+        final Database db = broker.getBrokerPool();
+        
         try {
-            broker.getBrokerPool().getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_BINARY, doc.getFileURI());
+            db.getProcessMonitor().startJob(ProcessMonitor.ACTION_REMOVE_BINARY, doc.getFileURI());
             getLock().acquire(Lock.WRITE_LOCK);
             
             if(doc.getResourceType() != DocumentImpl.BINARY_FILE) {
@@ -1160,12 +1231,12 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             
             doc.getUpdateLock().acquire(Lock.WRITE_LOCK);
             
-            DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+            DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled(broker) ? getConfiguration(broker) : null);
 
             trigger.beforeDeleteDocument(broker, transaction, doc);
 
             try {
-               broker.removeBinaryResource(transaction, (BinaryDocument) doc);
+                broker.removeBinaryResource(transaction, (BinaryDocument) doc);
             } catch (final IOException ex) {
                throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
             }
@@ -1175,7 +1246,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             trigger.afterDeleteDocument(broker, transaction, doc.getURI());
 
         } finally {
-            broker.getBrokerPool().getProcessMonitor().endJob();
+            db.getProcessMonitor().endJob();
             doc.getUpdateLock().release(Lock.WRITE_LOCK);
             getLock().release(Lock.WRITE_LOCK);
         }
@@ -1305,7 +1376,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, CollectionConfiguration, org.exist.collections.Collection.ValidateBlock)} 
      * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
      * 
-     * @param transaction
+     * @param txn
      * @param broker
      * @param info
      * @param privileged
@@ -1314,7 +1385,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      * @throws EXistException
      * @throws SAXException
      */
-    private void storeXMLInternal(final Txn transaction, final DBBroker broker, final IndexInfo info, final boolean privileged, final StoreBlock doParse) throws EXistException, SAXException, PermissionDeniedException {
+    private void storeXMLInternal(final Txn txn, final DBBroker broker, final IndexInfo info, final boolean privileged, final StoreBlock doParse) throws EXistException, SAXException, PermissionDeniedException {
         
         final DocumentImpl document = info.getIndexer().getDocument();
         
@@ -1373,7 +1444,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_DOC, document.getFileURI());
             doParse.run();
-            broker.storeXMLResource(transaction, document);
+            broker.storeXMLResource(txn, document);
             broker.flush();
             broker.closeDocument();
             //broker.checkTree(document);
@@ -1387,9 +1458,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         broker.deleteObservers();
         
         if(info.isCreating()) {
-            info.getTriggers().afterCreateDocument(broker, transaction, document);
+            info.getTriggers().afterCreateDocument(broker, txn, document);
         } else {
-            info.getTriggers().afterUpdateDocument(broker, transaction, document);
+            info.getTriggers().afterUpdateDocument(broker, txn, document);
         }
         
         db.getNotificationService().notifyUpdate(document, (info.isCreating() ? UpdateListener.ADD : UpdateListener.UPDATE));
@@ -1397,8 +1468,8 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
         final XmldbURI docName = document.getFileURI();
         //WARNING : there is no reason to lock the collection since setPath() is normally called in a safe way
         //TODO: *resolve* URI against CollectionConfigurationManager.CONFIG_COLLECTION_URI 
-        if (getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI)
-                && docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
+        if (getURI().startsWith(CONFIG_COLLECTION_URI)
+                && docName.endsWith(COLLECTION_CONFIG_SUFFIX_URI)) {
             broker.sync(Sync.MAJOR_SYNC);
             final CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
             if(manager != null) {
@@ -1604,7 +1675,6 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             info.setOldDocPermissions(oldDoc != null ? oldDoc.getPermissions() : null);
             indexer.setDocument(document, config);
             addObserversToIndexer(broker, indexer);
-            indexer.setValidating(true);
             
             if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
                 // we are updating collection.xconf. Notify configuration manager
@@ -1613,7 +1683,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                 setCollectionConfigEnabled(false);
             }
             
-            final DocumentTriggers trigger = new DocumentTriggers(broker, indexer, this, isTriggersEnabled() ? config : null);
+            final DocumentTriggers trigger = new DocumentTriggers(broker, indexer, this, isTriggersEnabled(broker) ? config : null);
             trigger.setValidating(true);
             
             info.setTriggers(trigger);
@@ -1689,10 +1759,10 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     private void checkConfigurationDocument(final Txn transaction, final DBBroker broker, final XmldbURI docUri) throws EXistException, PermissionDeniedException, LockException {
         //Is it a collection configuration file ?
         //TODO : use XmldbURI.resolve() !
-        if (!getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI)) {
+        if (!getURI().startsWith(CONFIG_COLLECTION_URI)) {
             return;
         }
-        if(!docUri.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
+        if(!docUri.endsWith(COLLECTION_CONFIG_SUFFIX_URI)) {
             return;
         }
         //Allow just one configuration document per collection
@@ -1867,7 +1937,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             }
             blob.setContentLength(size);
             
-            final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+            final DocumentTriggers trigger = new DocumentTriggers(broker, null, this, isTriggersEnabled(broker) ? getConfiguration(broker) : null);
             
             if (oldDoc == null) {
                 trigger.beforeCreateDocument(broker, transaction, blob.getURI());
@@ -1876,7 +1946,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
             }
 
             if (oldDoc != null) {
-                LOG.debug("removing old document " + oldDoc.getFileURI());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("removing old document " + oldDoc.getFileURI());
+                }
                 if (oldDoc instanceof BinaryDocument) {
                     broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
                 } else {
@@ -2225,6 +2297,29 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
     public FulltextIndexSpec getFulltextIndexConfiguration(final DBBroker broker) {
         final IndexSpec idxSpec = getIndexConfiguration(broker);
         return (idxSpec == null) ? null : idxSpec.getFulltextIndexSpec();
+    }
+
+    @Override
+    public ResourceMetadata getMetadata() {
+        return new CollectionMetadata();
+    }
+    
+    class CollectionMetadata implements ResourceMetadata {
+
+        @Override
+        public String getMimeType() {
+            return "collection";
+        }
+
+        @Override
+        public long getCreated() {
+            return Collection.this.getCreationTime();
+        }
+
+        @Override
+        public long getLastModified() {
+            return getCreated();
+        }
     }
 
     /*

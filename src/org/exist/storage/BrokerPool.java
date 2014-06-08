@@ -1169,7 +1169,7 @@ public class BrokerPool implements Database {
         //initialize configurations watcher trigger
         if(collection != null) {
             final CollectionConfigurationManager manager = getConfigurationManager();
-            final CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
+            final CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(this, collection);
             
             final DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy(ConfigurationDocumentTrigger.class); //, collection.getURI());
             collConf.documentTriggers().add(triggerProxy);
