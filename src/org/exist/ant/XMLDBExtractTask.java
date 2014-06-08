@@ -35,11 +35,9 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.ExtendedResource;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import java.util.Properties;
@@ -233,11 +231,9 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
      * @param   dest  DOCUMENT ME!
      *
      * @throws  XMLDBException                DOCUMENT ME!
-     * @throws  FileNotFoundException         DOCUMENT ME!
-     * @throws  UnsupportedEncodingException  DOCUMENT ME!
      * @throws  IOException                   DOCUMENT ME!
      */
-    private void writeResource( Resource res, File dest ) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException
+    private void writeResource( Resource res, File dest ) throws XMLDBException, IOException
     {
         if( res instanceof XMLResource ) {
             writeXMLResource( (XMLResource)res, dest );
@@ -313,11 +309,9 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
      * @param   dest  DOCUMENT ME!
      *
      * @throws  XMLDBException                DOCUMENT ME!
-     * @throws  FileNotFoundException         DOCUMENT ME!
-     * @throws  UnsupportedEncodingException  DOCUMENT ME!
      * @throws  IOException                   DOCUMENT ME!
      */
-    private void writeBinaryResource( Resource res, File dest ) throws XMLDBException, FileNotFoundException, UnsupportedEncodingException, IOException
+    private void writeBinaryResource( Resource res, File dest ) throws XMLDBException, IOException
     {
         if( createdirectories == true ) {
             final File parentDir = new File( dest.getParent() );

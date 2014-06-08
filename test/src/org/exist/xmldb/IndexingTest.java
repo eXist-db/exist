@@ -27,6 +27,8 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /** Reproduce the EXistException "the document is too complex/irregularily structured
  * to be mapped into eXist's numbering scheme"
  * raised in {@link org.exist.dom.DocumentImpl} .
@@ -137,8 +139,7 @@ public class IndexingTest extends TestCase {
 				n = resource.getContentAsDOM();
 			} else {
 				String s = (String) resource.getContent();
-				byte[] bytes;
-				bytes = s.getBytes("UTF-8");
+				byte[] bytes = s.getBytes(UTF_8);
 				ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 				DocumentBuilder db =
 					DocumentBuilderFactory.newInstance().newDocumentBuilder();

@@ -29,7 +29,7 @@ import org.exist.util.pool.NodePool;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
-import java.io.UnsupportedEncodingException;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Persistent implementation of a DOM processing-instruction node.
@@ -146,20 +146,10 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
 
     @Override
     public byte[] serialize() {
-        byte[] td;
-        try {
-            td = target.getBytes("UTF-8");
-        } catch (final UnsupportedEncodingException uee) {
-            LOG.warn(uee);
-            td = target.getBytes();
-        }
-        byte[] dd;
-        try {
-            dd = data.getBytes("UTF-8");
-        } catch (final UnsupportedEncodingException uee) {
-            LOG.warn(uee);
-            dd = data.getBytes();
-        }
+
+        byte[] td = target.getBytes(UTF_8);
+        byte[] dd = data.getBytes(UTF_8);
+
         int nodeIdLen = nodeId.size();
         final byte[] d = new byte[td.length + dd.length + nodeIdLen + 7];
         int pos = 0;
@@ -188,20 +178,10 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         int l = ByteConversion.byteToInt(data, pos);
         pos += LENGTH_TARGET_DATA;
         String target;
-        try {
-            target = new String(data, pos, l, "UTF-8");
-        } catch (final UnsupportedEncodingException uee) {
-            LOG.warn(uee);
-            target = new String(data, pos, l);
-        }
+        target = new String(data, pos, l, UTF_8);
         pos += l;
         String cdata;
-        try {
-            cdata = new String(data, pos, len - (pos - start), "UTF-8");
-        } catch (final UnsupportedEncodingException uee) {
-            LOG.warn(uee);
-            cdata = new String(data, pos, len - (pos - start));
-        }
+        cdata = new String(data, pos, len - (pos - start), UTF_8);
         //OK : we have the necessary material to build the processing instruction
         ProcessingInstructionImpl pi;
         if(pooled)
