@@ -35,6 +35,8 @@ import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -74,7 +76,7 @@ public class ConfigurableTest {
 	
 	@Test
 	public void simple() throws Exception {
-		InputStream is = new ByteArrayInputStream(config1.getBytes("UTF-8"));
+		InputStream is = new ByteArrayInputStream(config1.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
         
@@ -98,7 +100,7 @@ public class ConfigurableTest {
 
 	@Test
 	public void subelement() throws Exception {
-		InputStream is = new ByteArrayInputStream(config2.getBytes("UTF-8"));
+		InputStream is = new ByteArrayInputStream(config2.getBytes(UTF_8));
 		
         // initialize xml parser
         // we use eXist's in-memory DOM implementation to work
@@ -123,7 +125,7 @@ public class ConfigurableTest {
 	
 	@Test
 	public void notSimple() throws Exception {
-		InputStream is = new ByteArrayInputStream(config3.getBytes("UTF-8"));
+		InputStream is = new ByteArrayInputStream(config3.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
         

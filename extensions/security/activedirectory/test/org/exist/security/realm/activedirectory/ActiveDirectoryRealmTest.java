@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
@@ -57,7 +58,7 @@ public class ActiveDirectoryRealmTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		InputStream is = new ByteArrayInputStream(config.getBytes("UTF-8"));
+		InputStream is = new ByteArrayInputStream(config.getBytes(StandardCharsets.UTF_8));
 		
 		Configuration config = Configurator.parse(is);
 

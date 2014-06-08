@@ -45,3 +45,4 @@ test/temp/
 nbproject/build/
 nbproject/private/
 /target
+build/intellij

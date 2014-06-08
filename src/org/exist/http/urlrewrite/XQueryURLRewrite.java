@@ -95,6 +95,8 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * A servlet to redirect HTTP requests. Similar to the popular UrlRewriteFilter, but
  * based on XQuery.
@@ -365,7 +367,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 	if (modelView.hasErrorHandlers()) {
                         final byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
                         if (data != null)
-                            {modifiedRequest.setAttribute(RQ_ATTR_ERROR, new String(data, "UTF-8"));}
+                            {modifiedRequest.setAttribute(RQ_ATTR_ERROR, new String(data, UTF_8));}
                 		applyViews(modelView, modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
                 	} else {
                 		flushError(response, wrappedResponse);
@@ -376,29 +378,17 @@ public class XQueryURLRewrite extends HttpServlet {
 //            if ((result = (Sequence) request.getAttribute(RQ_ATTR_RESULT)) != null) {
 //                writeResults(response, broker, result);
 //            }
-        } catch (final EXistException e) {
-            LOG.error("Error while processing " + servletRequest.getRequestURI() + ": " + e.getMessage(), e);
-            throw new ServletException("An error occurred while processing request to " + servletRequest.getRequestURI() + ": "
-                    + e.getMessage(), e);
-
-        } catch (final XPathException e) {
-            LOG.error("Error while processing " + servletRequest.getRequestURI() + ": " + e.getMessage(), e);
-            throw new ServletException("An error occurred while processing request to " + servletRequest.getRequestURI() + ": "
-                    + e.getMessage(), e);
-
-//        } catch (SAXException e) {
-//            throw new ServletException("Error while serializing results: " + e.getMessage(), e);
-            
         } catch (final Throwable e) {
             LOG.error("Error while processing " + servletRequest.getRequestURI() + ": " + e.getMessage(), e);
             throw new ServletException("An error occurred while processing request to " + servletRequest.getRequestURI() + ": "
                     + e.getMessage(), e);
+
         }
     }
     
 	private void applyViews(ModelAndView modelView, List<URLRewrite> views, HttpServletResponse response, RequestWrapper modifiedRequest,
 			HttpServletResponse currentResponse)
-			throws UnsupportedEncodingException, IOException, ServletException {
+			throws IOException, ServletException {
 		int status;
         HttpServletResponse wrappedResponse = currentResponse;
 		for (int i = 0; i < views.size(); i++) {
@@ -430,7 +420,7 @@ public class XQueryURLRewrite extends HttpServlet {
             if (status >= 400) {
                 if (modelView != null && modelView.hasErrorHandlers()) {
                     data = ((CachingResponseWrapper) wrappedResponse).getData();
-                    final String msg = data == null ? "" : new String(data, "UTF-8");
+                    final String msg = data == null ? "" : new String(data, UTF_8);
                     modifiedRequest.setAttribute(RQ_ATTR_ERROR, msg);
                     applyViews(null, modelView.errorHandlers, response, modifiedRequest, wrappedResponse);
                     break;

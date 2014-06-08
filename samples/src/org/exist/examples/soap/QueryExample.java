@@ -24,6 +24,8 @@ package org.exist.examples.soap;
 import org.exist.soap.*;
 import java.io.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class QueryExample {
 
     /**
@@ -53,13 +55,7 @@ public class QueryExample {
     	
         // we send the data in base64 encoding to avoid
         // difficulties with XML special chars in the query.
-        byte[] queryData;
-        try {
-            queryData = xquery.getBytes("UTF-8");
-        } catch(UnsupportedEncodingException e) {
-            // should never happen
-            queryData = xquery.getBytes();
-        }
+        byte[] queryData = xquery.getBytes(UTF_8);
 
         QueryService service = new QueryServiceLocator();
         Query query = service.getQuery();
