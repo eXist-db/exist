@@ -137,7 +137,7 @@ public class Search extends BasicFunction {
 
         } catch (XPathException ex) {
             // Log and rethrow
-            logger.error(ex);
+            logger.error(ex.getMessage(), ex);
             throw ex;
         }
 
