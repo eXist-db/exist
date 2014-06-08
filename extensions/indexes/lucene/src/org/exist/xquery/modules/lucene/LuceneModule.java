@@ -1,23 +1,21 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2008-2009 The eXist Project
- * http://exist-db.org
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2014 The eXist Project
+ *  http://exist-db.org
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *  
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.modules.lucene;
 
@@ -53,16 +51,26 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Query.signatures[1], Query.class),
         new FunctionDef(QueryField.signatures[0], QueryField.class),
         new FunctionDef(QueryField.signatures[1], QueryField.class),
+
         new FunctionDef(Score.signature, Score.class),
         new FunctionDef(Optimize.signature, Optimize.class),
+        
         new FunctionDef(Index.signatures[0], Index.class),
         new FunctionDef(Index.signatures[1], Index.class),
         new FunctionDef(Index.signatures[2], Index.class),
+        
         new FunctionDef(InspectIndex.signatures[0], InspectIndex.class),
         new FunctionDef(RemoveIndex.signature, RemoveIndex.class),
+        
         new FunctionDef(Search.signatures[0], Search.class),
         new FunctionDef(Search.signatures[1], Search.class),
-        new FunctionDef(GetField.signatures[0], GetField.class)
+
+        new FunctionDef(FacetSearch.signatures[0], FacetSearch.class),
+        new FunctionDef(FacetSearch.signatures[1], FacetSearch.class),
+
+        new FunctionDef(GetField.signatures[0], GetField.class),
+
+        new FunctionDef(GetIndexFields.signatures[0], GetIndexFields.class)
     };
 
     public LuceneModule(Map<String, List<? extends Object>> parameters) {

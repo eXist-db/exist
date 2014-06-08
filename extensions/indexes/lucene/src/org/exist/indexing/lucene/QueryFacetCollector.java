@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.indexing.lucene;
 
@@ -100,12 +98,16 @@ public abstract class QueryFacetCollector extends Collector {
         this.taxonomyReader = taxonomyReader;
         
 //        this.facetArrays = new FacetArrays(taxonomyReader.getSize());
-        this.facetArrays = new FacetArrays(
-                PartitionsUtils.partitionSize(searchParams.indexingParams, taxonomyReader));
+        if (searchParams == null) {
+            this.facetArrays = null;
+            
+        } else {
+            this.facetArrays = new FacetArrays(
+                    PartitionsUtils.partitionSize(searchParams.indexingParams, taxonomyReader));
+        }
         
         docbits = new DefaultDocumentSet(1031);//docs.getDocumentCount());
         //docbits = new FixedBitSet(docs.getDocumentCount());
-
     }
 
     @Override
@@ -114,28 +116,43 @@ public abstract class QueryFacetCollector extends Collector {
     }
 
     @Override
-    public void setNextReader(AtomicReaderContext atomicReaderContext)
-            throws IOException {
-        reader = atomicReaderContext.reader();
+    public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
+        
+    	reader = atomicReaderContext.reader();
         docIdValues = reader.getNumericDocValues(LuceneUtil.FIELD_DOC_ID);
 
+        context = atomicReaderContext;
+        
+        prepare(reader.maxDoc());
+    }
+    
+    protected void prepare(int maxDocs) {
         if (bits != null) {
-            matchingDocs.add(new MatchingDocs(context, bits, totalHits, scores));
+      	  if (context == null)
+    		  throw new RuntimeException();
+
+      	  matchingDocs.add(new MatchingDocs(context, bits, totalHits, scores));
         }
-        bits = new FixedBitSet(reader.maxDoc());
+        bits = new FixedBitSet(maxDocs);
         totalHits = 0;
         scores = new float[64]; // some initial size
-        context = atomicReaderContext;
     }
     
     protected void finish() {
       if (bits != null) {
-        matchingDocs.add(new MatchingDocs(this.context, bits, totalHits, scores));
+    	  if (context == null)
+    		  throw new RuntimeException();
+
+    	  matchingDocs.add(new MatchingDocs(context, bits, totalHits, scores));
+    	  
         bits = null;
         scores = null;
         context = null;
       }
+      getCallback().totalHits(totalHits);
     }
+    
+    protected abstract SearchCallback<?> getCallback();
 
     @Override
     public boolean acceptsDocsOutOfOrder() {
@@ -143,7 +160,7 @@ public abstract class QueryFacetCollector extends Collector {
     }
 
     @Override
-    public abstract void collect(int doc);
+    public abstract void collect(int doc) throws IOException;
 
     private boolean verifySearchParams(FacetSearchParams fsp) {
         // verify that all category lists were encoded with DGapVInt
@@ -205,8 +222,14 @@ public abstract class QueryFacetCollector extends Collector {
     
     public List<FacetResult> getFacetResults() throws IOException {
         if (facetResults == null) {
+            
             finish();
-            facetResults = accumulate();
+            
+            if (searchParams != null) {
+                facetResults = accumulate();
+            } else {
+                facetResults = new ArrayList<FacetResult>();
+            }
         }
         return facetResults;
     }
