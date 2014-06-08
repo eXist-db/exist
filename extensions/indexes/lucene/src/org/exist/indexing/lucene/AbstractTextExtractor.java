@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,10 +16,7 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
  */
-
 package org.exist.indexing.lucene;
 
 import org.exist.util.XMLString;
@@ -27,17 +24,24 @@ import org.exist.util.XMLString;
 public abstract class AbstractTextExtractor implements TextExtractor {
 
     protected LuceneConfig config;
-    protected LuceneIndexConfig idxConfig;
+    protected LuceneConfigText idxConfig;
+    protected int initLevel = 0;
 
     protected XMLString buffer = new XMLString();
 
-    public void configure(LuceneConfig config, LuceneIndexConfig idxConfig) {
+    public void configure(LuceneConfig config, LuceneConfigText idxConfig, int level) {
         this.config = config;
         this.idxConfig = idxConfig;
+        
+        initLevel = level;
     }
 
-    public LuceneIndexConfig getIndexConfig() {
+    public LuceneConfigText getIndexConfig() {
     	return idxConfig;
+    }
+    
+    public int getInitLevel() {
+    	return initLevel;
     }
 
     public XMLString getText() {
