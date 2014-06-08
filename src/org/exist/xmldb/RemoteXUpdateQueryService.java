@@ -5,7 +5,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -14,6 +13,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RemoteXUpdateQueryService implements XUpdateQueryService {
 
@@ -34,13 +35,8 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 	public long update(String commands) throws XMLDBException {
 		LOG.debug("processing xupdate:\n" + commands);
 		final Vector<Object> params = new Vector<Object>();
-		byte[] xupdateData;
-		try {
-			xupdateData = commands.getBytes("UTF-8");
-		} catch (final UnsupportedEncodingException e) {
-			LOG.warn(e);
-			xupdateData = commands.getBytes();
-		}
+		byte[] xupdateData = commands.getBytes(UTF_8);
+
 		params.addElement(parent.getPath());
 		params.addElement(xupdateData);
 		try {
@@ -58,13 +54,7 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 	public long updateResource(String id, String commands) throws XMLDBException {
 		LOG.debug("processing xupdate:\n" + commands);
 		final Vector<Object> params = new Vector<Object>();
-		byte[] xupdateData;
-		try {
-			xupdateData = commands.getBytes("UTF-8");
-		} catch (final UnsupportedEncodingException e) {
-			LOG.warn(e);
-			xupdateData = commands.getBytes();
-		}
+		byte[] xupdateData = commands.getBytes(UTF_8);
         //TODO : use dedicated function in XmldbURI
 		params.addElement(parent.getPath() + "/" + id);
 		params.addElement(xupdateData);

@@ -43,6 +43,8 @@ import java.net.URL;
 import java.util.*;
 import org.exist.security.Permission;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * JUnit test for XMLRPC interface methods.
  * @author wolf
@@ -245,7 +247,7 @@ public class XmlRpcTest {
 			Assert.assertTrue(result.booleanValue());
 			
 			System.out.println("Storing resource " + MODULE_DATA);
-			params.setElementAt(MODULE_DATA.getBytes("UTF-8"), 0);
+			params.setElementAt(MODULE_DATA.getBytes(UTF_8), 0);
 			params.setElementAt(MODULE_RESOURCE.toString(), 1);
 			params.setElementAt(MimeType.XQUERY_TYPE.getName(), 2);
 			params.addElement(Boolean.TRUE);
@@ -342,7 +344,7 @@ public class XmlRpcTest {
 			System.out.println("Testing charsets returned by query");
 			Vector<Object> params = new Vector<Object>();
 			String query = "distinct-values(//para)";
-			params.addElement(query.getBytes("UTF-8"));
+			params.addElement(query.getBytes(UTF_8));
 			params.addElement(new Hashtable<Object, Object>());
 			XmlRpcClient xmlrpc = getClient();
 	        HashMap<?,?> result = (HashMap<?,?>) xmlrpc.execute( "queryP", params );
@@ -368,7 +370,7 @@ public class XmlRpcTest {
 			Vector<Object> params = new Vector<Object>();
 			String query = 
 				"(::pragma exist:serialize indent=no::) //para";
-			params.addElement(query.getBytes("UTF-8"));
+			params.addElement(query.getBytes(UTF_8));
 			params.addElement(Integer.valueOf(10));
 			params.addElement(Integer.valueOf(1));
 			params.addElement(new Hashtable());
@@ -394,7 +396,7 @@ public class XmlRpcTest {
 			//TODO : check the number of resources before !
 			Vector<Object> params = new Vector<Object>();
 			String query = "//para[1]";
-			params.addElement(query.getBytes("UTF-8"));
+			params.addElement(query.getBytes(UTF_8));
 			params.addElement(options);
 			XmlRpcClient xmlrpc = getClient();
 	        Integer handle = (Integer) xmlrpc.execute( "executeQuery", params );
@@ -407,7 +409,7 @@ public class XmlRpcTest {
 	        byte[] item = (byte[]) xmlrpc.execute( "retrieve", params );
 	        Assert.assertNotNull(item);
 	        Assert.assertTrue(item.length > 0);
-	        String out = new String(item, "UTF-8");
+	        String out = new String(item, UTF_8);
 	        System.out.println("Received: " + out);
 	        XMLAssert.assertXMLEqual("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 	        		"<p>Test: \u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF</p>", out);
@@ -423,7 +425,7 @@ public class XmlRpcTest {
 		try {
 			Vector<Object> params = new Vector<Object>();
 			String query = "<a>Invalid<a>";
-			params.addElement(query.getBytes("UTF-8"));
+			params.addElement(query.getBytes(UTF_8));
 			params.addElement(new Hashtable<Object, Object>());
 			XmlRpcClient xmlrpc = getClient();
 			System.out.println("Executing query: " + query);
@@ -471,7 +473,7 @@ public class XmlRpcTest {
 		try {
 			Vector<Object> params = new Vector<Object>();
 			String query = "distinct-values(//para)";
-			params.addElement(query.getBytes("UTF-8"));
+			params.addElement(query.getBytes(UTF_8));
 			params.addElement(new Hashtable<Object, Object>());
 			XmlRpcClient xmlrpc = getClient();
 			System.out.println("Executing query: " + query);
@@ -509,7 +511,7 @@ public class XmlRpcTest {
 		try {
 			System.out.println("Quering with external variable definied in module ...");
 			Vector<Object> params = new Vector<Object>();
-			params.addElement(QUERY_MODULE_DATA.getBytes("UTF-8"));
+			params.addElement(QUERY_MODULE_DATA.getBytes(UTF_8));
 			
 			Hashtable<String, Object> qp = new Hashtable<String, Object>();
 			

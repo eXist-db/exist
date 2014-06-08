@@ -22,9 +22,10 @@ package org.exist.storage.io;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import org.apache.log4j.Logger;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Abstract base class for implementations of VariableByteInput.
@@ -86,18 +87,13 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         return i;
     }
 
-    public String readUTF() throws IOException, EOFException {
+    public String readUTF() throws IOException {
         final int len = readInt();
         final byte data[] = new byte[len];
+
         read(data);
-        String s;
-        try {
-            s = new String(data, "UTF-8");
-        } catch (final UnsupportedEncodingException e) {
-        	LOG.warn(e);
-            s = new String(data);
-        }
-        return s;
+
+        return new String(data, UTF_8);
     }
 
     public void skip(int count) throws IOException {

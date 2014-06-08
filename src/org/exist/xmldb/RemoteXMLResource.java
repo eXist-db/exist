@@ -61,10 +61,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RemoteXMLResource
 	extends AbstractRemoteResource
@@ -115,11 +116,8 @@ public class RemoteXMLResource
         final Object res=super.getContent();
         if(res!=null) {
 		if(res instanceof byte[]) {
-			try {
-				return new String((byte[])res,"UTF-8");
-			} catch(final UnsupportedEncodingException uee) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
-			}
+            return new String((byte[])res, UTF_8);
+
 		} else {
 			return res;
 		}
@@ -269,12 +267,10 @@ public class RemoteXMLResource
     	if(!super.setContentInternal(value)) {
     		if(value instanceof String) {
     			content = new String((String)value);
+
     		} else if(value instanceof byte[]) {
-    			try {
-    				content = new String((byte[])value,"UTF-8");
-    			} catch(final UnsupportedEncodingException uee) {
-    				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
-    			}
+                content = new String((byte[])value, UTF_8);
+
     		} else {
 	    		content = value.toString();
     		}

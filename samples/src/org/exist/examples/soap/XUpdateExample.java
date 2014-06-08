@@ -30,6 +30,8 @@ import org.exist.soap.QueryServiceLocator;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.XUpdateProcessor;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Execute xupdate via SOAP. First create /db/test collection in database.
  *
@@ -61,7 +63,7 @@ public class XUpdateExample {
         Query query = queryService.getQuery();
         
 		String session = admin.connect("guest", "guest");
-		admin.store(session, document.getBytes("UTF-8"), "UTF-8", XmldbURI.ROOT_COLLECTION + "/test/notes.xml", true);
+		admin.store(session, document.getBytes(UTF_8), "UTF-8", XmldbURI.ROOT_COLLECTION + "/test/notes.xml", true);
 		admin.xupdateResource(session, XmldbURI.ROOT_COLLECTION + "/test/notes.xml", xupdate);
 		
 		String data = query.getResource(session, 

@@ -24,6 +24,8 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author jmv
  */
@@ -281,7 +283,7 @@ public class DOMTest {
 			} else {
 				String s = (String) resource.getContent();
 				byte[] bytes;
-				bytes = s.getBytes("UTF-8");
+				bytes = s.getBytes(UTF_8);
 				ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 				DocumentBuilder db =
 					DocumentBuilderFactory.newInstance().newDocumentBuilder();
