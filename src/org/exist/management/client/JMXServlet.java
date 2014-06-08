@@ -222,7 +222,7 @@ public class JMXServlet extends HttpServlet {
      * @return TRUE if request contains correct value for token, else FALSE
      */
     boolean hasSecretToken(HttpServletRequest request, String token) {
-        String[] tokenValue = request.getParameterValues("token");
+        String[] tokenValue = request.getParameterValues(TOKEN_KEY);
         return ArrayUtils.contains(tokenValue, token);
     }
 
@@ -269,7 +269,7 @@ public class JMXServlet extends HttpServlet {
             token = UUID.randomUUID().toString();
 
             // Set value to properties
-            props.setProperty("token", token);
+            props.setProperty(TOKEN_KEY, token);
 
             // Write data to file
             try (OutputStream os = new FileOutputStream(tokenFile)) {
