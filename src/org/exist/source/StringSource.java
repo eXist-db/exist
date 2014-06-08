@@ -32,6 +32,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A simple source object wrapping around a single string value.
@@ -78,7 +79,7 @@ public class StringSource extends AbstractSource {
     }
 
     public InputStream getInputStream() throws IOException {
-        return new ByteArrayInputStream(data.getBytes("UTF-8"));
+        return new ByteArrayInputStream(data.getBytes(UTF_8));
     }
 
     /* (non-Javadoc)

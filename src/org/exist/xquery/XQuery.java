@@ -98,7 +98,7 @@ public class XQuery {
         context.setSource(source);
         context.setXacmlSource(XACMLSource.getInstance(source));
 		
-        Reader reader = null;
+        Reader reader;
         try {
             reader = source.getReader();
         } catch(final UnsupportedEncodingException e) {

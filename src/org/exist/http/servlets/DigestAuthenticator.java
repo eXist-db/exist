@@ -22,7 +22,6 @@
 package org.exist.http.servlets;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -35,6 +34,8 @@ import org.exist.security.Subject;
 import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.storage.BrokerPool;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * An Authenticator that uses MD5 Digest Authentication.
@@ -165,25 +166,23 @@ public class DigestAuthenticator implements Authenticator {
 
 				// calc A2 digest
 				md.reset();
-				md.update(method.getBytes("ISO-8859-1"));
+				md.update(method.getBytes(ISO_8859_1));
 				md.update((byte) ':');
-				md.update(uri.getBytes("ISO-8859-1"));
+				md.update(uri.getBytes(ISO_8859_1));
 				final byte[] ha2 = md.digest();
 
 				// calc digest
-				md.update(credentials.getBytes("ISO-8859-1"));
+				md.update(credentials.getBytes(ISO_8859_1));
 				md.update((byte) ':');
-				md.update(nonce.getBytes("ISO-8859-1"));
+				md.update(nonce.getBytes(ISO_8859_1));
 				md.update((byte) ':');
-				md.update(MessageDigester.byteArrayToHex(ha2).getBytes("ISO-8859-1"));
+				md.update(MessageDigester.byteArrayToHex(ha2).getBytes(ISO_8859_1));
 				final byte[] digest = md.digest();
 
 				// check digest
 				return (MessageDigester.byteArrayToHex(digest).equalsIgnoreCase(response));
 			} catch (final NoSuchAlgorithmException e) {
 				throw new RuntimeException("MD5 not supported");
-			} catch (final UnsupportedEncodingException e) {
-				throw new RuntimeException("Encoding not supported");
 			}
 
 		}

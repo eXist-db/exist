@@ -326,12 +326,25 @@ public class ForExpr extends BindingExpression {
             // restore the local variable stack 
             context.popLocalVariables(mark, resultSequence);
         }
-        // bv : Special processing for groupBy : one return per group in groupedSequence 
-        //TODO : positional variable ! 
-        if (groupSpecs!=null){
+        // bv : Special processing for groupBy : one return per group in groupedSequence
+        if (groupSpecs!=null) {
             mark = context.markLocalVariables(false);
             context.declareVariableBinding(var);
-            for (final Iterator<String> it = groupedSequence.iterate(); it.hasNext(); ){
+
+            // Declare positional variable if required
+            LocalVariable at = null;
+            if (positionalVariable != null) {
+                at = new LocalVariable(QName.parse(context, positionalVariable, null));
+                at.setSequenceType(POSITIONAL_VAR_TYPE);
+                context.declareVariableBinding(at);
+            }
+            final IntegerValue atVal = new IntegerValue(1);
+            if(positionalVariable != null) {
+                at.setValue(atVal);
+            }
+
+            int p = 0;
+            for (final Iterator<String> it = groupedSequence.iterate(); it.hasNext(); ) {
                 final GroupedValueSequence currentGroup = groupedSequence.get(it.next());
                 context.proceed(this);
                 // set binding variable to current group
@@ -341,9 +354,18 @@ public class ForExpr extends BindingExpression {
                 for (int i=0; i< groupKeyVar.length ; i ++) {
                     groupKeyVar[i].setValue(currentGroup.getGroupKey().itemAt(i).toSequence());
                 }
+                if (positionalVariable != null) {
+                    final ValueSequence ps = new ValueSequence();
+                    for (int i = 0; i < currentGroup.getItemCount(); i++) {
+                        ps.add(new IntegerValue(p + i + 1));
+                    }
+                    at.setValue(ps);
+                }
                 //evaluate real return expression 
                 final Sequence val = groupReturnExpr.eval(null); 
                 resultSequence.addAll(val);
+
+                p += currentGroup.getItemCount();
             }
             //Reset the context position
             context.setContextSequencePosition(0, null);

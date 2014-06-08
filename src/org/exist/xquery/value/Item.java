@@ -27,6 +27,7 @@ import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -57,7 +58,12 @@ public interface Item {
 	 *  
 	 */
 	public Sequence toSequence();
-	
+
+    /**
+     * Clean up any resources used by the items in this sequence.
+     */
+    void destroy(XQueryContext context, Sequence contextSequence);
+
 	/**
 	 * Convert this item into an atomic value, whose type corresponds to
 	 * the specified target type. requiredType should be one of the type

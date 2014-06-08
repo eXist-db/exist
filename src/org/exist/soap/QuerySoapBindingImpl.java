@@ -1,7 +1,6 @@
 package org.exist.soap;
 
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.Iterator;
@@ -45,6 +44,8 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 import antlr.collections.AST;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  *  Provides the actual implementations for the methods defined in
@@ -141,12 +142,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
         outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI,
                 processXSLPI ? "yes" : "no");
         final String xml = getResource(sessionId, path, outputProperties);
-        try {
-            return xml.getBytes("UTF-8");
-        } catch (final UnsupportedEncodingException e) {
-        	LOG.warn(e);
-            return xml.getBytes();
-        }
+        return xml.getBytes(UTF_8);
     }
     
     public java.lang.String getResource(java.lang.String sessionId, java.lang.String name, boolean indent, boolean xinclude) throws java.rmi.RemoteException {
@@ -254,13 +250,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
          */
     @Override
     public org.exist.soap.QueryResponse xquery(java.lang.String sessionId, byte[] xquery) throws java.rmi.RemoteException {
-        String query;
-        try {
-            query = new String(xquery, "UTF-8");
-        } catch (final UnsupportedEncodingException e) {
-        	LOG.warn(e);
-            query = new String(xquery);
-        }
+        String query = new String(xquery, UTF_8);
         return query(sessionId, query);
     }
 
@@ -330,10 +320,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
         final String[] results = retrieve(sessionId, start, howmany, indent, xinclude, highlight);
         final byte[][] data = new byte[results.length][];
         for(int i = 0; i < results.length; i++) {
-            try {
-                data[i] = results[i].getBytes("UTF-8");
-            } catch (final UnsupportedEncodingException e) {
-            }
+            data[i] = results[i].getBytes(UTF_8);
         }
         return new Base64BinaryArray(data);
     }

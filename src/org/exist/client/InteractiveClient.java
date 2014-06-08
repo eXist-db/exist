@@ -40,7 +40,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
@@ -125,6 +124,8 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Command-line client based on the XML:DB API.
@@ -2101,11 +2102,9 @@ public class InteractiveClient {
                     final String traceFile = option.getArgument();
                     final File f = new File(traceFile);
                     try {
-                        traceWriter = new OutputStreamWriter(new FileOutputStream(f, false), "UTF-8");
+                        traceWriter = new OutputStreamWriter(new FileOutputStream(f, false), UTF_8);
                         traceWriter.write("<?xml version=\"1.0\"?>" + EOL);
                         traceWriter.write("<query-log>" + EOL);
-                    } catch (final UnsupportedEncodingException e1) {
-                    	LOG.warn(e1);
                     } catch (final FileNotFoundException e1) {
                         errorln("Cannot open file " + traceFile);
                         return null;

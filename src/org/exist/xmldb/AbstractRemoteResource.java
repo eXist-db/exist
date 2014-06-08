@@ -10,7 +10,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +30,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public abstract class AbstractRemoteResource
 	implements EXistResource, ExtendedResource, Resource
@@ -116,11 +117,7 @@ public abstract class AbstractRemoteResource
 			} else if(res instanceof InputSource) {
 				return readFile((InputSource)res);
 			} else if(res instanceof String) {
-				try {
-					return ((String)res).getBytes("UTF-8");
-				} catch(final UnsupportedEncodingException uee) {
-					throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
-				}
+                return ((String)res).getBytes(UTF_8);
 			}
 		}
 		
@@ -207,13 +204,9 @@ public abstract class AbstractRemoteResource
 			setExtendendContentLength(vfile.length());
 			wasSet=true;
 		} else if(value instanceof String) {
-			try {
-				vfile = new VirtualTempFile(((String)value).getBytes("UTF-8"));
-				setExtendendContentLength(vfile.length());
-				wasSet=true;
-			} catch(final UnsupportedEncodingException uee) {
-				throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,"input value cannot be translated to UTF-8",uee);
-			}
+            vfile = new VirtualTempFile(((String)value).getBytes(UTF_8));
+            setExtendendContentLength(vfile.length());
+            wasSet=true;
 		}
 		
 		return wasSet;
@@ -390,21 +383,13 @@ public abstract class AbstractRemoteResource
 	protected static InputStream getAnyStream(Object obj)
 		throws XMLDBException
 	{
-		InputStream bis=null;
-		
 		if(obj instanceof String) {
-			try {
-				bis=new ByteArrayInputStream(((String)obj).getBytes("UTF-8"));
-			} catch(final UnsupportedEncodingException uee) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,uee.getMessage(),uee);
-			}
+            return new ByteArrayInputStream(((String)obj).getBytes(UTF_8));
 		} else if(obj instanceof byte[]) {
-			bis=new ByteArrayInputStream((byte[])obj);
+			return new ByteArrayInputStream((byte[])obj);
 		} else {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,"don't know how to handle value of type " + obj.getClass().getName());
 		}
-		
-		return bis;
 	}
 	
 	protected void getContentIntoAStreamInternal(OutputStream os, Object obj, boolean isRetrieve, int handle, int pos)
@@ -516,11 +501,7 @@ public abstract class AbstractRemoteResource
 			retval=((EXistInputSource)inputSource).getByteStreamLength();
 		} else if(obj!=null) {
 			if(obj instanceof String) {
-				try {
-					retval=((String)obj).getBytes("UTF-8").length;
-				} catch(final UnsupportedEncodingException uee) {
-					throw new XMLDBException(ErrorCodes.VENDOR_ERROR,uee.getMessage(),uee);
-				}
+                retval=((String)obj).getBytes(UTF_8).length;
 			} else if(obj instanceof byte[]) {
 				retval=((byte[])obj).length;
 			} else {
