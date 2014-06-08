@@ -41,6 +41,7 @@ import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
@@ -92,6 +93,21 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @Override
     public QueryRewriter getQueryRewriter(XQueryContext context) {
         return null;
+    }
+
+    @Override
+    public void indexCollection(Collection col) {
+
+    }
+
+    @Override
+    public void indexBinary(BinaryDocument doc) {
+
+    }
+
+    @Override
+    public void removeIndex(XmldbURI url) {
+
     }
 
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {

@@ -1,3 +1,22 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2014 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.storage.structural;
 
 import org.exist.collections.Collection;
@@ -15,12 +34,14 @@ import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.NodeTest;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.*;
+
 import org.exist.security.PermissionDeniedException;
 
 /**
@@ -630,7 +651,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     private byte[] computeKey(byte type, QName qname, int documentId, NodeId nodeId) {
-        final SymbolTable symbols = index.getBrokerPool().getSymbols();
+        final SymbolTable symbols = index.getDatabase().getSymbols();
         final short sym = symbols.getSymbol(qname.getLocalName());
         final short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
         final byte[] data = new byte[9 + nodeId.size()];
@@ -644,7 +665,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     private byte[] computeKey(byte type, QName qname, int documentId) {
-        final SymbolTable symbols = index.getBrokerPool().getSymbols();
+        final SymbolTable symbols = index.getDatabase().getSymbols();
         final short sym = symbols.getSymbol(qname.getLocalName());
         final short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
         final byte[] data = new byte[9];
@@ -665,7 +686,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
     
     private byte[] computeDocKey(byte type, int documentId, QName qname) {
-        final SymbolTable symbols = index.getBrokerPool().getSymbols();
+        final SymbolTable symbols = index.getDatabase().getSymbols();
         final short sym = symbols.getSymbol(qname.getLocalName());
         final short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
         final byte[] data = new byte[10];
@@ -706,11 +727,11 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             {bits = 8;}
         // compute total number of bits for node id
         final int units = (key.length - 10) * 8 + bits;
-        return index.getBrokerPool().getNodeFactory().createFromData(units, key, 9);
+        return index.getDatabase().getNodeFactory().createFromData(units, key, 9);
     }
 
     private QName readQName(byte[] key) {
-        final SymbolTable symbols = index.getBrokerPool().getSymbols();
+        final SymbolTable symbols = index.getDatabase().getSymbols();
         final byte type = key[5];
         final short sym = ByteConversion.byteToShortH(key, 6);
         final short nsSym = ByteConversion.byteToShortH(key, 8);
@@ -761,5 +782,17 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         public IndexWorker getWorker() {
             return NativeStructuralIndexWorker.this;
         }
+    }
+
+    @Override
+    public void indexCollection(Collection col) {
+    }
+
+    @Override
+    public void indexBinary(BinaryDocument doc) {
+    }
+
+    @Override
+    public void removeIndex(XmldbURI url) {
     }
 }

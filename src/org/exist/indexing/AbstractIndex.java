@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,15 +13,13 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.indexing;
 
-import org.exist.storage.BrokerPool;
+import org.exist.Database;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
@@ -29,30 +27,17 @@ import org.w3c.dom.Element;
 
 public abstract class AbstractIndex implements Index {
 	
-    /**
-     * Holds an id which uniquely identifies this index. This is usually the class name. 
-     */
-    protected static String ID = "Give me an ID !";
+    protected Database db;
     
-    public static String getID() {
-    	return ID;
-    }
-
-    protected BrokerPool pool;    
     //Probably not useful for every kind of index. Anyway...
     private String dataDir = null; 
     protected String name = null;    
 
-    public void configure(BrokerPool pool, String dataDir, Element config)
-            throws DatabaseConfigurationException {
-        this.pool = pool;
+    public void configure(Database db, String dataDir, Element config) throws DatabaseConfigurationException {
+        this.db = db;
         this.dataDir = dataDir; 
         if (config != null && config.hasAttribute("id"))
             {name = config.getAttribute("id");}
-    }
-
-    public String getIndexId() {
-    	return getID();
     }
 
     public String getIndexName() {
@@ -63,8 +48,8 @@ public abstract class AbstractIndex implements Index {
         this.name = name;
     }
 
-    public BrokerPool getBrokerPool() {
-        return pool;
+    public Database getDatabase() {
+        return db;
     }
 
     //TODO : declare in interface ?

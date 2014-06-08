@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,11 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- *  $Id$
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.indexing;
 
@@ -29,6 +27,7 @@ import org.exist.storage.MetaStreamListener;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
@@ -38,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.exist.security.PermissionDeniedException;
 
 /**
@@ -54,6 +54,7 @@ public class IndexController {
     protected StreamListener listener = null;    
     protected DocumentImpl currentDoc = null;
     protected int currentMode = StreamListener.UNKNOWN;
+    protected XmldbURI currentURL = null;
 
     public IndexController(DBBroker broker) {
         this.broker = broker;
@@ -179,6 +180,10 @@ public class IndexController {
     public void setDocument(DocumentImpl doc, int mode) {
         setDocument(doc);
         setMode(mode);
+    }
+    
+    public void setURL(XmldbURI uri) {
+        currentURL = uri;
     }
 
     /**
@@ -408,7 +413,30 @@ public class IndexController {
     
     public void streamMetas(MetaStreamListener listener) {
         MetaStorage ms = broker.getDatabase().getMetaStorage();
-        if (ms != null)
-            ms.streamMetas(currentDoc, listener);
+        if (ms != null) {
+                if (currentDoc != null)
+                    ms.streamMetas(currentDoc.getURI(), listener);
+                else if (currentURL != null)
+                    ms.streamMetas(currentURL, listener);
+        }
+    }
+    
+    public void indexBinary(BinaryDocument doc) {
+        setDocument(doc, StreamListener.STORE);
+        //setMode(StreamListener.STORE);
+        
+        for (final IndexWorker worker : indexWorkers.values()) {
+            worker.indexBinary(doc);
+        }
+    }
+    
+
+    public void removeIndex(BinaryDocument doc) {
+        setDocument(doc, StreamListener.REMOVE_BINARY);
+        //setMode(StreamListener.REMOVE_BINARY);
+        
+        for (final IndexWorker worker : indexWorkers.values()) {
+            worker.removeIndex(doc.getURI());
+        }
     }
 }

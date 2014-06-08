@@ -32,7 +32,7 @@ public class PlainTextIndexConfig {
                 
             } catch (NumberFormatException e) {
                 // TODO throw exception?
-                LuceneIndexWorker.LOG.error(e);
+                LuceneIndexWorker.LOG.error(e.getMessage(), e);
             }
         }
         

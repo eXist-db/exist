@@ -1,7 +1,5 @@
-package org.exist.storage.btree;
-
 /*
-*  eXist Open Source Native XML Database
+ *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-05 The eXist Project
  *  http://exist-db.org
  *  
@@ -71,13 +69,13 @@ package org.exist.storage.btree;
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package org.exist.storage.btree;
 
 import org.apache.log4j.Logger;
 
-import org.exist.storage.BrokerPool;
+import org.exist.Database;
 import org.exist.storage.BufferStats;
 import org.exist.storage.CacheManager;
-import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.cache.*;
 import org.exist.storage.journal.Journal;
@@ -146,7 +144,7 @@ public class BTree extends Paged implements Lockable {
         LogEntryTypes.addEntryType(LOG_SET_LINK, SetPageLinkLoggable.class);
     }
 
-    protected DefaultCacheManager cacheManager;
+    protected CacheManager cacheManager;
 
     /** Cache of BTreeNode(s) */
     protected Cache cache;
@@ -166,14 +164,14 @@ public class BTree extends Paged implements Lockable {
 
     protected boolean isTransactional;
 
-    protected BrokerPool pool;
+    protected Database db;
 
     private double splitFactor = -1;
 
-    protected BTree(BrokerPool pool, byte fileId, boolean transactional,
-            DefaultCacheManager cacheManager, double growthThreshold) throws DBException {
-        super(pool);
-        this.pool = pool;
+    protected BTree(Database db, byte fileId, boolean transactional,
+            CacheManager cacheManager, double growthThreshold) throws DBException {
+        super(db);
+        this.db = db;
         this.cacheManager = cacheManager;
         this.buffers = cacheManager.getDefaultInitialSize();
         this.growthThreshold = growthThreshold;
@@ -181,15 +179,15 @@ public class BTree extends Paged implements Lockable {
         fileHeader = (BTreeFileHeader) getFileHeader();
         fileHeader.setPageCount(0);
         fileHeader.setTotalCount(0);
-        isTransactional = transactional && pool.isTransactional();
+        isTransactional = transactional && db.isTransactional();
         if (isTransactional)
-            {logManager = pool.getTransactionManager().getJournal();}
+            {logManager = db.getTransactionManager().getJournal();}
     }
 
-    public BTree(BrokerPool pool, byte fileId, boolean transactional,
-            DefaultCacheManager cacheManager, File file, double growthThreshold)
+    public BTree(Database db, byte fileId, boolean transactional,
+            CacheManager cacheManager, File file, double growthThreshold)
             throws DBException {
-        this(pool, fileId, transactional, cacheManager, growthThreshold);
+        this(db, fileId, transactional, cacheManager, growthThreshold);
         setFile(file);
     }
 
@@ -1278,7 +1276,7 @@ public class BTree extends Paged implements Lockable {
                         keys[i] = new Value(t);
                     } catch (final Exception e) {
                         e.printStackTrace();
-                        LOG.error("prefixLen = " + prefixLen + "; i = " + i + "; nKeys = " + nKeys);
+                        LOG.error("prefixLen = " + prefixLen + "; i = " + i + "; nKeys = " + nKeys, e);
                         throw new IOException(e.getMessage());
                     }
                 } else {
