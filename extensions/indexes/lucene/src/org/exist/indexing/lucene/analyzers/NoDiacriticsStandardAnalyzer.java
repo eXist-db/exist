@@ -11,6 +11,7 @@ import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
 import org.apache.lucene.analysis.util.WordlistLoader;
 import org.apache.lucene.util.Version;
+import org.exist.indexing.lucene.LuceneIndex;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -42,7 +43,7 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
      * @param stopWords stop words */
     public NoDiacriticsStandardAnalyzer(Version matchVersion, CharArraySet stopWords) {
         super(matchVersion, stopWords);
-        replaceInvalidAcronym = matchVersion.onOrAfter(Version.LUCENE_43);
+        replaceInvalidAcronym = matchVersion.onOrAfter(LuceneIndex.LUCENE_VERSION_IN_USE);
     }
 
     /** Builds an analyzer with the default stop words ({@link
