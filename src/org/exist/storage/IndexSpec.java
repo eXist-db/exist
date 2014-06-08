@@ -1,29 +1,28 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist.sourceforge.net
- *  
+ *  Copyright (C) 2001-2014 The eXist Project
+ *  http://exist-db.org
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.storage;
 
 import org.exist.Namespaces;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.QName;
+import org.exist.indexing.Index;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -70,6 +69,9 @@ public class IndexSpec {
     private Map<QName, QNameRangeIndexSpec> qnameSpecs = new TreeMap<QName, QNameRangeIndexSpec>();
 
     private Map<String, Object> customIndexSpecs = null;
+
+    public IndexSpec() {
+    }
 
     public IndexSpec(DBBroker broker, Element index) throws DatabaseConfigurationException {
         read(broker, index);
@@ -123,6 +125,13 @@ public class IndexSpec {
      */
     public FulltextIndexSpec getFulltextIndexSpec() {
         return ftSpec;
+    }
+
+    public void addCustomIndexSpec(Index index, Object conf) {
+        if (customIndexSpecs == null)
+            customIndexSpecs = new HashMap<String, Object>();
+
+        customIndexSpecs.put(index.getIndexId(), conf);
     }
 
     /**
