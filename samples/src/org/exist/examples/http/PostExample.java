@@ -31,6 +31,8 @@ import java.net.URL;
 import org.exist.Namespaces;
 import org.exist.xmldb.XmldbURI;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * PostExample
  * Execute: bin\run.bat org.exist.examples.http.PostExample
@@ -69,7 +71,7 @@ public class PostExample {
 		connect.setDoOutput(true);
 		
 		OutputStream os = connect.getOutputStream();
-		os.write(request.getBytes("UTF-8"));
+		os.write(request.getBytes(UTF_8));
 		connect.connect();
 
         BufferedReader is = new BufferedReader(new InputStreamReader(connect.getInputStream()));
