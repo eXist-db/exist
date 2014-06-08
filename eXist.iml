@@ -20,6 +20,10 @@
       <sourceFolder url="file://$MODULE_DIR$/tools/requestlog/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tools/wrapper/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/range/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/metadata/interface/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/metadata/interface/src/test/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/metadata/sleepycat/src/main" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/extensions/metadata/sleepycat/src/main/java" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/cqlparser" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/jfreechart" />
       <excludeFolder url="file://$MODULE_DIR$/extensions/modules/src/org/exist/xquery/modules/memcached" />
