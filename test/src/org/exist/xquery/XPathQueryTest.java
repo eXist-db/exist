@@ -25,6 +25,8 @@ import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class XPathQueryTest extends XMLTestCase {
     
     private final static String nested =
@@ -1949,28 +1951,28 @@ public class XPathQueryTest extends XMLTestCase {
             ResourceSet result = service.query("//item/price");
             
             Resource r = result.getMembersAsResource();
-	    Object rawContent = r.getContent();
-	    String content = null;
-	    if(rawContent instanceof File) {
-		FileInputStream fis = new FileInputStream((File)rawContent);
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
-		byte[] temp = new byte[1024];
-		int count = 0;
-		while((count = fis.read(temp)) > -1) {
-			bos.write(temp, 0, count);
-		}
-		content = new String(bos.toByteArray(),"UTF-8");
-	    } else {
-		content = (String)r.getContent();
-	    }
+            Object rawContent = r.getContent();
+            String content = null;
+            if(rawContent instanceof File) {
+                FileInputStream fis = new FileInputStream((File)rawContent);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(2048);
+                byte[] temp = new byte[1024];
+                int count = 0;
+                while((count = fis.read(temp)) > -1) {
+                    bos.write(temp, 0, count);
+                }
+                content = new String(bos.toByteArray(),UTF_8);
+            } else {
+                content = (String)r.getContent();
+            }
             System.out.println(content);
             
             Pattern p = Pattern.compile( ".*(<price>.*){4}", Pattern.DOTALL);
             Matcher m = p.matcher(content);
             assertTrue( "get whole document numbers.xml", m.matches() );
-	} catch (UnsupportedEncodingException uee) {
+        } catch (UnsupportedEncodingException uee) {
             fail(uee.getMessage());
-	} catch (IOException ioe) {
+        } catch (IOException ioe) {
             fail(ioe.getMessage());
         } catch (XMLDBException e) {
             fail(e.getMessage());

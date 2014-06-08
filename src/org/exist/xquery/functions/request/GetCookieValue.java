@@ -22,8 +22,6 @@
  */
 package org.exist.xquery.functions.request;
 
-import java.io.UnsupportedEncodingException;
-
 import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
@@ -42,6 +40,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)
@@ -107,10 +107,6 @@ public class GetCookieValue extends BasicFunction {
 	// TODO: remove this hack after fixing HTTP 1.1	
 	private String decode (String value)
 	{
-		try {
-			return new String(value.getBytes("ISO-8859-1"));
-		} catch (final UnsupportedEncodingException e) {
-			return value;
-		}
+        return new String(value.getBytes(ISO_8859_1));
 	}
 }

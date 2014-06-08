@@ -60,10 +60,11 @@ import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Properties;
 import org.exist.security.PermissionDeniedException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Local implementation of XMLResource.
@@ -419,12 +420,8 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			{inputSource=(InputSource) obj;}
 
         else if (obj instanceof byte[]){
-            try {
-				content = new String((byte[])obj,"UTF-8");
-			} catch(final UnsupportedEncodingException uee) {
-				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, uee.getMessage(), uee);
-			}
-            
+            content = new String((byte[])obj, UTF_8);
+
         } else {
 			content = obj.toString();
 		}
