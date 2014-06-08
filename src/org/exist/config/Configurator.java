@@ -28,7 +28,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -79,6 +78,8 @@ import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class handle all configuration needs: extracting and saving,
@@ -1122,14 +1123,10 @@ public class Configurator {
                     if (data == null || data.length() == 0) {
                         return null;
                     }
-                    return parse(new ByteArrayInputStream(data.getBytes("UTF-8")));
+                    return parse(new ByteArrayInputStream(data.getBytes(UTF_8)));
                     
                 } catch (final SAXException saxe) {
                     throw new ConfigurationException(saxe.getMessage(), saxe);
-                    
-                } catch (final UnsupportedEncodingException uee) {
-                    LOG.warn(uee.getMessage());
-                    return null;
                 }
             }
             
