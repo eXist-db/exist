@@ -24,13 +24,14 @@ package org.exist.dom;
 
 import java.io.IOException;
 
+import org.exist.ResourceMetadata;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
 
-public class DocumentMetadata {
+public class DocumentMetadata implements ResourceMetadata {
 
     public final static byte NO_DOCTYPE = 0;
     public final static byte HAS_DOCTYPE = 1;
