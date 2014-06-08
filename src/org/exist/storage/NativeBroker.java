@@ -204,6 +204,7 @@ public class NativeBroker extends DBBroker {
     protected int nodesCountThreshold = DEFAULT_NODES_BEFORE_MEMORY_CHECK;
 
     protected String dataDir;
+    protected File fsDataDir;
     protected File fsDir;
     protected File fsBackupDir;
     protected int pageSize;
@@ -238,14 +239,21 @@ public class NativeBroker extends DBBroker {
         dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
         if (dataDir == null)
             {dataDir = DEFAULT_DATA_DIR;}
+        
+        fsDataDir = new File(dataDir);
+        if (!fsDataDir.exists()) {
+            if (!fsDataDir.mkdirs()) {
+                throw new EXistException("Cannot create data directory: "+fsDataDir);
+            }
+         }
 
-        fsDir = new File(new File(dataDir),"fs");
+        fsDir = new File(fsDataDir,"fs");
         if (!fsDir.exists()) {
            if (!fsDir.mkdir()) {
               throw new EXistException("Cannot make collection filesystem directory: "+fsDir);
            }
         }
-        fsBackupDir = new File(new File(dataDir),"fs.journal");
+        fsBackupDir = new File(fsDataDir,"fs.journal");
         if (!fsBackupDir.exists()) {
            if (!fsBackupDir.mkdir()) {
               throw new EXistException("Cannot make collection filesystem directory: "+fsBackupDir);
@@ -298,6 +306,10 @@ public class NativeBroker extends DBBroker {
             LOG.debug(e.getMessage(), e);
             throw new EXistException(e);
         }
+    }
+    
+    public File getDataFolder() {
+        return fsDataDir;
     }
 
     @Override
@@ -900,7 +912,7 @@ public class NativeBroker extends DBBroker {
                     entry.read(is);
                     
                 } catch (final UnsupportedEncodingException e) {
-                    LOG.error("Unable to encode '" + uri + "' in UTF-8");
+                    LOG.error("Unable to encode '" + uri + "' in UTF-8", e);
                 } catch (final LockException e) {
                     LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
                 } catch (final IOException e) {
@@ -957,7 +969,7 @@ public class NativeBroker extends DBBroker {
                         {collectionsCache.add(collection);}
                 //TODO : rethrow exceptions ? -pb
                 } catch (final UnsupportedEncodingException e) {
-                    LOG.error("Unable to encode '" + uri + "' in UTF-8");
+                    LOG.error("Unable to encode '" + uri + "' in UTF-8", e);
                     return null;
                 } catch (final LockException e) {
                     LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
@@ -1121,6 +1133,7 @@ public class NativeBroker extends DBBroker {
         }
         newName = destination.getURI().append(newName);
         
+
         if(LOG.isDebugEnabled()) {
             LOG.debug("Copying collection to '" + newName + "'");
         }
@@ -1134,7 +1147,6 @@ public class NativeBroker extends DBBroker {
             }
             
             //TODO The code below seems quite different to that in NativeBroker#copyResource presumably should be the same?
-            
             
             final XmldbURI newUri = destCollection.getURI().append(child.getFileURI());
             trigger.beforeCopyDocument(this, transaction, child, newUri);
@@ -1274,7 +1286,7 @@ public class NativeBroker extends DBBroker {
             final File fsSourceDir = getCollectionFile(fsDir, collection.getURI(),false);
         
             // Need to move each collection in the source tree individually, so recurse.
-            moveCollectionRecursive(transaction, trigger, collection, destination, newName);
+            moveCollectionRecursive(transaction, trigger, collection, destination, newName, false);
             
             // For binary resources, though, just move the top level directory and all descendants come with it.
             moveBinaryFork(transaction, fsSourceDir, destination, newName);
@@ -1318,7 +1330,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void moveCollectionRecursive(Txn transaction, CollectionTrigger trigger, Collection collection, Collection destination, XmldbURI newName) throws PermissionDeniedException, IOException, LockException, TriggerException {
+    private void moveCollectionRecursive(Txn transaction, CollectionTrigger trigger, Collection collection, Collection destination, XmldbURI newName, boolean fireTrigger) throws PermissionDeniedException, IOException, LockException, TriggerException {
         
         final XmldbURI uri = collection.getURI();
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -1327,7 +1339,8 @@ public class NativeBroker extends DBBroker {
             final XmldbURI srcURI = collection.getURI();
             final XmldbURI dstURI = destination.getURI().append(newName);
 
-            trigger.beforeMoveCollection(this, transaction, collection, dstURI);
+            if (fireTrigger)
+                trigger.beforeMoveCollection(this, transaction, collection, dstURI);
 	
             final XmldbURI parentName = collection.getParentURI();
             final Collection parent = openCollection(parentName, Lock.WRITE_LOCK);
@@ -1364,7 +1377,8 @@ public class NativeBroker extends DBBroker {
                 lock.release(Lock.WRITE_LOCK);
             }
             
-            trigger.afterMoveCollection(this, transaction, collection, srcURI);
+            if (fireTrigger)
+                trigger.afterMoveCollection(this, transaction, collection, srcURI);
             
             for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
                 final XmldbURI childName = i.next();
@@ -1374,7 +1388,7 @@ public class NativeBroker extends DBBroker {
                     LOG.warn("Child collection " + childName + " not found");
                 } else {
                     try {
-                        moveCollectionRecursive(transaction, trigger, child, collection, childName);
+                        moveCollectionRecursive(transaction, trigger, child, collection, childName, true);
                     } finally {
                         child.release(Lock.WRITE_LOCK);
                     }
@@ -1390,13 +1404,13 @@ public class NativeBroker extends DBBroker {
      * enable the Collection Tree to be removed. We then return back up the Collection
      * tree, removing each child as we progresses upwards.
      * 
-     * @param transaction the transaction to use
+     * @param txn the transaction to use
      * @param collection the collection to remove
      * @return true if the collection was removed, false otherwise
      * @throws TriggerException 
      */
     @Override
-    public boolean removeCollection(final Txn transaction, Collection collection) throws PermissionDeniedException, IOException, TriggerException {
+    public boolean removeCollection(final Txn txn, Collection collection) throws PermissionDeniedException, IOException, TriggerException {
         
         if(pool.isReadOnly()) {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -1436,7 +1450,7 @@ public class NativeBroker extends DBBroker {
             
             final CollectionTrigger colTrigger = new CollectionTriggers(this, parent);
             
-            colTrigger.beforeDeleteCollection(this, transaction, collection);
+            colTrigger.beforeDeleteCollection(this, txn, collection);
             
             final long start = System.currentTimeMillis();
             final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -1461,7 +1475,7 @@ public class NativeBroker extends DBBroker {
                     //TODO : resulve URIs !!! (uri.resolve(childName))
                     final Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
                     try {
-                        removeCollection(transaction, childCollection);
+                        removeCollection(txn, childCollection);
                     } finally {
                         if (childCollection != null) {
                             childCollection.getLock().release(Lock.WRITE_LOCK);
@@ -1482,8 +1496,8 @@ public class NativeBroker extends DBBroker {
                     //TODO : resolve URIs ! (uri.resolve(".."))
                     final Collection parentCollection = openCollection(collection.getParentURI(), Lock.WRITE_LOCK);
                     // keep the lock for the transaction
-                    if(transaction != null) {
-                        transaction.registerLock(parentCollection.getLock(), Lock.WRITE_LOCK);
+                    if(txn != null) {
+                        txn.registerLock(parentCollection.getLock(), Lock.WRITE_LOCK);
                     }
                     
                     if(parentCollection != null) {
@@ -1491,13 +1505,13 @@ public class NativeBroker extends DBBroker {
                             LOG.debug("Removing collection '" + collName + "' from its parent...");
                             //TODO : resolve from collection's base URI
                             parentCollection.removeCollection(this, uri.lastSegment());
-                            saveCollection(transaction, parentCollection);
+                            saveCollection(txn, parentCollection);
                             
                         } catch(final LockException e) {
                             LOG.warn("LockException while removing collection '" + collName + "'");
                         }
                         finally {
-                            if(transaction == null){
+                            if(txn == null){
                                 parentCollection.getLock().release(Lock.WRITE_LOCK);
                             }
                         }
@@ -1511,21 +1525,21 @@ public class NativeBroker extends DBBroker {
                     // remove the metadata of all documents in the collection
                     final Value docKey = new CollectionStore.DocumentKey(collection.getId());
                     final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, docKey);
-                    collectionsDb.removeAll(transaction, query);
+                    collectionsDb.removeAll(txn, query);
                     // if this is not the root collection remove it...
                     if(!isRoot) {
                         final Value key = new CollectionStore.CollectionKey(collName);
                         //... from the disk
-                        collectionsDb.remove(transaction, key);
+                        collectionsDb.remove(txn, key);
                         //... from the cache
                         collectionsCache.remove(collection);
                         //and free its id for any futher use
-                        freeCollectionId(transaction, collection.getId());
+                        freeCollectionId(txn, collection.getId());
                     } else {
                         //Simply save the collection on disk
                         //It will remain cached
                         //and its id well never be made available
-                        saveCollection(transaction, collection);
+                        saveCollection(txn, collection);
                     }
                 }
                 catch(final LockException e) {
@@ -1554,7 +1568,7 @@ public class NativeBroker extends DBBroker {
                 for(final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext();) {
                     final DocumentImpl doc = i.next();
 
-                    docTrigger.beforeDeleteDocument(this, transaction, doc);
+                    docTrigger.beforeDeleteDocument(this, txn, doc);
 
                     //Remove doc's metadata
                     // WM: now removed in one step. see above.
@@ -1566,7 +1580,7 @@ public class NativeBroker extends DBBroker {
                             try {
                                 final Value ref = new NodeRef(doc.getDocId());
                                 final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-                                domDb.remove(transaction, query, null);
+                                domDb.remove(txn, query, null);
                             } catch(final BTreeException e) {
                                 LOG.warn("btree error while removing document", e);
                             } catch(final IOException e) {
@@ -1585,24 +1599,24 @@ public class NativeBroker extends DBBroker {
                             if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                                 final long page = ((BinaryDocument)doc).getPage();
                                 if (page > Page.NO_PAGE)
-                                    {domDb.removeOverflowValue(transaction, page);}
+                                    {domDb.removeOverflowValue(txn, page);}
                             } else {
                                 final StoredNode node = (StoredNode)doc.getFirstChild();
-                                domDb.removeAll(transaction, node.getInternalAddress());
+                                domDb.removeAll(txn, node.getInternalAddress());
                             }
                             return null;
                         }
                     }.run();
                     
-                    docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
+                    docTrigger.afterDeleteDocument(this, txn, doc.getURI());
                     
                     //Make doc's id available again
-                    freeResourceId(transaction, doc.getDocId());
+                    freeResourceId(txn, doc.getDocId());
                 }
                 
                 //now that the database has been updated, update the binary collections on disk
                 final File fsSourceDir = getCollectionFile(fsDir,collection.getURI(),false);
-                final File fsTargetDir = getCollectionFile(fsBackupDir,transaction,collection.getURI(),true);
+                final File fsTargetDir = getCollectionFile(fsBackupDir,txn,collection.getURI(),true);
 
                 // remove child binary collections
                 if (fsSourceDir.exists()) {
@@ -1612,7 +1626,7 @@ public class NativeBroker extends DBBroker {
                    // DW: not sure a Fatal is required here. Copy and delete
                    // maybe?
                    if(fsSourceDir.renameTo(fsTargetDir)) {
-                     final Loggable loggable = new RenameBinaryLoggable(this,transaction,fsSourceDir,fsTargetDir);
+                     final Loggable loggable = new RenameBinaryLoggable(this,txn,fsSourceDir,fsTargetDir);
                      try {
                         logManager.writeToLog(loggable);
                      } catch (final TransactionException e) {
@@ -1629,7 +1643,7 @@ public class NativeBroker extends DBBroker {
                     LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
                 }
                 
-                colTrigger.afterDeleteCollection(this, transaction, collection.getURI());
+                colTrigger.afterDeleteCollection(this, txn, collection.getURI());
 
                 return true;
                 
@@ -1870,7 +1884,10 @@ public class NativeBroker extends DBBroker {
         indexController.removeCollection(collection, this, reindex);
         for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext();) {
             final DocumentImpl doc = i.next();
-            LOG.debug("Dropping index for document " + doc.getFileURI());
+            
+            if (LOG.isDebugEnabled())
+                LOG.debug("Dropping index for document " + doc.getFileURI());
+            
             new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                 @Override
                 public Object start() {
@@ -2076,17 +2093,21 @@ public class NativeBroker extends DBBroker {
         } finally {
             lock.release(Lock.WRITE_LOCK);
         }
+        
+        if (doc instanceof BinaryDocument) {
+            indexController.indexBinary( (BinaryDocument)doc );
+        }
     }
 
-    public void storeMetadata(final Txn transaction, final DocumentImpl doc) throws TriggerException {
+    public void storeMetadata(final Txn txn, final DocumentImpl doc) throws TriggerException {
     	final Collection col = doc.getCollection();
     	final DocumentTrigger trigger = new DocumentTriggers(this, col);
     	
-    	trigger.beforeUpdateDocumentMetadata(this, transaction, doc);
+    	trigger.beforeUpdateDocumentMetadata(this, txn, doc);
 
-    	storeXMLResource(transaction, doc);
+    	storeXMLResource(txn, doc);
     	
-    	trigger.afterUpdateDocumentMetadata(this, transaction, doc);
+    	trigger.afterUpdateDocumentMetadata(this, txn, doc);
     }
 
     private File getCollectionFile(File dir,XmldbURI uri,boolean create) throws IOException {
@@ -2736,7 +2757,7 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void removeXMLResource(final Txn transaction, final DocumentImpl document, boolean freeDocId) throws PermissionDeniedException {
+    public void removeXMLResource(final Txn txn, final DocumentImpl document, boolean freeDocId) throws PermissionDeniedException {
         if (pool.isReadOnly())
             {throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);}
         try {
@@ -2748,10 +2769,10 @@ public class NativeBroker extends DBBroker {
             final DocumentTrigger trigger = new DocumentTriggers(this);
             
             if (freeDocId) {
-                trigger.beforeDeleteDocument(this, transaction, document);
+                trigger.beforeDeleteDocument(this, txn, document);
             }
             
-            dropIndex(transaction, document);
+            dropIndex(txn, document);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
             }
@@ -2760,7 +2781,11 @@ public class NativeBroker extends DBBroker {
                     @Override
                     public Object start() {
                         final StoredNode node = (StoredNode)document.getFirstChild();
-                        domDb.removeAll(transaction, node.getInternalAddress());
+                        if (node != null) {
+                            domDb.removeAll(txn, node.getInternalAddress());
+                        } else {
+                            LOG.error("removeDocument() - no root element!");
+                        }
                         return null;
                     }
                 }.run();
@@ -2771,7 +2796,7 @@ public class NativeBroker extends DBBroker {
                 @Override
                 public Object start() {
                     try {
-                        domDb.remove(transaction, idx, null);
+                        domDb.remove(txn, idx, null);
                     } catch (final BTreeException e) {
                         LOG.warn("start() - " + "error while removing doc", e);
                     } catch (final IOException e) {
@@ -2782,11 +2807,11 @@ public class NativeBroker extends DBBroker {
                     return null;
                 }
             }.run();
-            removeResourceMetadata(transaction, document);
+            removeResourceMetadata(txn, document);
             if (freeDocId) {
-                freeResourceId(transaction, document.getDocId());
+                freeResourceId(txn, document.getDocId());
 
-                trigger.afterDeleteDocument(this, transaction, document.getURI());
+                trigger.afterDeleteDocument(this, txn, document.getURI());
             }
 
         } catch (final ReadOnlyException e) {
@@ -2845,9 +2870,9 @@ public class NativeBroker extends DBBroker {
             }
         }
         removeResourceMetadata(transaction, blob);
-        
-        getIndexController().setDocument(blob, StreamListener.REMOVE_BINARY);
-        getIndexController().flush();
+
+        indexController.removeIndex(blob);
+        indexController.flush();
     }
 
     /**
@@ -2990,22 +3015,33 @@ public class NativeBroker extends DBBroker {
         return nextDocId;
     }
 
+    public void reindexXMLResource(Txn txn, DocumentImpl doc) {
+        reindexXMLResource(txn, doc, NodeProcessor.MODE_REPAIR);
+    }
+    
     /**
      * Reindex the nodes in the document. This method will either reindex all
      * descendant nodes of the passed node, or all nodes below some level of
      * the document if node is null.
      */
-    private void reindexXMLResource(Txn transaction, DocumentImpl doc, int mode) {
+    private void reindexXMLResource(Txn txn, DocumentImpl doc, int mode) {
         if(doc.isCollectionConfig())
             {doc.getCollection().setCollectionConfigEnabled(false);}
+
         indexController.setDocument(doc, StreamListener.STORE);
-        final StreamListener listener = indexController.getStreamListener();
-        final NodeList nodes = doc.getChildNodes();
-        for (int i = 0; i < nodes.getLength(); i++) {
-            final StoredNode node = (StoredNode) nodes.item(i);
-            final Iterator<StoredNode> iterator = getNodeIterator(node);
-            iterator.next();
-            scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
+        
+        if (doc instanceof BinaryDocument) {
+            indexController.indexBinary((BinaryDocument) doc);
+
+        } else {
+            final StreamListener listener = indexController.getStreamListener();
+            final NodeList nodes = doc.getChildNodes();
+            for (int i = 0; i < nodes.getLength(); i++) {
+                final StoredNode node = (StoredNode) nodes.item(i);
+                final Iterator<StoredNode> iterator = getNodeIterator(node);
+                iterator.next();
+                scanNodes(txn, iterator, node, new NodePath(), mode, listener);
+            }
         }
         flush();
         if(doc.isCollectionConfig())
@@ -3013,7 +3049,7 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void defragXMLResource(final Txn transaction, final DocumentImpl doc) {
+    public void defragXMLResource(final Txn txn, final DocumentImpl doc) {
         //TODO : use dedicated function in XmldbURI
         LOG.debug("============> Defragmenting document " + 
             doc.getCollection().getURI() + "/" + doc.getFileURI());
@@ -3021,7 +3057,7 @@ public class NativeBroker extends DBBroker {
         try {
             final long firstChild = doc.getFirstChildAddress();
             // dropping old structure index
-            dropIndex(transaction, doc);
+            dropIndex(txn, doc);
             // dropping dom index
             final NodeRef ref = new NodeRef(doc.getDocId());
             final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
@@ -3029,7 +3065,7 @@ public class NativeBroker extends DBBroker {
                 @Override
                 public Object start() {
                     try {
-                        domDb.remove(transaction, idx, null);
+                        domDb.remove(txn, idx, null);
                         domDb.flush();
                     } catch (final BTreeException e) {
                         LOG.warn("start() - " + "error while removing doc", e);
@@ -3055,14 +3091,14 @@ public class NativeBroker extends DBBroker {
                 final StoredNode node = (StoredNode) nodes.item(i);
                 final Iterator<StoredNode> iterator = getNodeIterator(node);
                 iterator.next();
-                copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, true, listener);
+                copyNodes(txn, iterator, node, new NodePath(), tempDoc, true, true, listener);
             }
             flush();
             // remove the old nodes
             new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                 @Override
                 public Object start() {
-                    domDb.removeAll(transaction, firstChild);
+                    domDb.removeAll(txn, firstChild);
                     try {
                         domDb.flush();
                     } catch (final DBException e) {
@@ -3074,7 +3110,7 @@ public class NativeBroker extends DBBroker {
             doc.copyChildren(tempDoc);
             doc.getMetadata().setSplitCount(0);
             doc.getMetadata().setPageCount(tempDoc.getMetadata().getPageCount());
-            storeXMLResource(transaction, doc);
+            storeXMLResource(txn, doc);
             closeDocument();
             LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
         } catch (final ReadOnlyException e) {
