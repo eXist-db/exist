@@ -42,8 +42,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.serializer.DOMSerializer;
@@ -76,6 +76,8 @@ public class JMXServlet extends HttpServlet {
 
     protected final static Logger LOG = Logger.getLogger(JMXServlet.class);
 
+    private static final String TOKEN_KEY = "token";
+
     private final static Properties defaultProperties = new Properties();
 
     static {
@@ -94,35 +96,36 @@ public class JMXServlet extends HttpServlet {
         // Verify if request is from localhost or if user has specific servlet/container managed role.
         if (isFromLocalHost(request)) {
             // Localhost is always authorized to access
-            LOG.info("Local access");
+            LOG.debug("Local access granted");
 
-        } else if (hasSecretToken(request, createGetToken())) {         
+        } else if (hasSecretToken(request, getToken())) {
             // Correct token is provided
-            LOG.info("COrrect token provided by " + request.getRemoteHost());
+            LOG.debug("Correct token provided by " + request.getRemoteHost());
             
-        } else  {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader == null) {
-                response.setHeader("WWW-Authenticate", "basic realm=\"JMXservlet\"");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        } else {
+            // Check if user is already authorized, e.g. via MONEX allow user too
+            if (request.isRequestedSessionIdValid()) {
+                LOG.debug("Session is valid");
+
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access allowed for localhost or when correct token has been provided.");
                 return;
             }
-
-            if (!request.isUserInRole("admin")) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Incorrect role");
-                return;
-            }
-
-
+            
         }
 
+        // Perform actual writing of data
+        writeXmlData(request, response);
+    }
+
+    private void writeXmlData(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Element root = null;
 
         final String operation = request.getParameter("operation");
         if ("ping".equals(operation)) {
             long timeout = 5000;
             final String timeoutParam = request.getParameter("t");
-            if (timeoutParam != null) {
+            if (StringUtils.isNotBlank(timeoutParam)) {
                 try {
                     timeout = Long.parseLong(timeoutParam);
                 } catch (final NumberFormatException e) {
@@ -173,7 +176,8 @@ public class JMXServlet extends HttpServlet {
         client.connect();
 
         registerLocalHostAddresses();
-        createTokenFile();
+        obtainTokenFileReference();
+        LOG.info(String.format("JMXservlet token: %s", getToken()));
     }
 
     /**
@@ -223,61 +227,63 @@ public class JMXServlet extends HttpServlet {
     }
 
     /**
-     * Create reference to token file
+     * Obtain reference to token file
      */
-    private void createTokenFile() {
+    private void obtainTokenFileReference() {
 
         if (tokenFile == null) {
             File existHome = ConfigurationHelper.getExistHome();
             File dataDir = new File(existHome, "webapp/WEB-INF/data");
             tokenFile = (dataDir.exists()) ? new File(dataDir, "jmxservlet.token") : new File(existHome, "jmxservlet.token");
+
+            LOG.info(String.format("Token file:  %s", tokenFile.getAbsolutePath()));
         }
     }
 
     /**
-     * Get token from file, create if not existent
+     * Get token from file, create if not existent. Data is read for each call so the file can be updated run-time.
+     *
+     * @return Toke for servlet
      */
-    private String createGetToken() {
+    private String getToken() {
 
         Properties props = new Properties();
         String token = null;
 
         // Read if possible
         if (tokenFile.exists()) {
-            InputStream is = null;
-            try {
-                is = new FileInputStream(tokenFile);
-                props.load(is);
 
-                token = props.getProperty("token");
+            try (InputStream is = new FileInputStream(tokenFile)) {
+                props.load(is);
+                token = props.getProperty(TOKEN_KEY);
             } catch (IOException ex) {
                 LOG.error(ex.getMessage());
-            } finally {
-                IOUtils.closeQuietly(is);
-            }
+            } 
 
         }
 
         // Create and write when needed
         if (!tokenFile.exists() || token == null) {
+
+            // Create random token
             token = UUID.randomUUID().toString();
 
+            // Set value to properties
             props.setProperty("token", token);
 
-            OutputStream os = null;
-            try {
-                os = new FileOutputStream(tokenFile);
-                props.store(os, "");
-
+            // Write data to file
+            try (OutputStream os = new FileOutputStream(tokenFile)) {
+                props.store(os, "JMXservlet token: http://localhost:8080/exist/status?token=......");
             } catch (IOException ex) {
                 LOG.error(ex.getMessage());
-            } finally {
-                IOUtils.closeQuietly(os);
             }
+
+            LOG.debug(String.format("Token written to file %s", tokenFile.getAbsolutePath()));
 
         }
 
         return token;
     }
+
 
 }
