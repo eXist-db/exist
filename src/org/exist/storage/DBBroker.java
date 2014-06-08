@@ -127,7 +127,6 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public void initIndexModules() {
         indexController = new IndexController(this);
     }
-    
 
     /**
      * Set the user that is currently using this DBBroker object.
@@ -477,8 +476,9 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * public abstract void reindexCollection(String collectionName) throws
      * PermissionDeniedException;
      */
-    public abstract void reindexCollection(XmldbURI collectionName)
-        throws PermissionDeniedException;
+    public abstract void reindexCollection(XmldbURI collectionName) throws PermissionDeniedException;
+    
+    public abstract void reindexXMLResource(Txn txn, DocumentImpl doc);
 
     /**
      * Repair indexes. Should delete all secondary indexes and rebuild them.
@@ -839,6 +839,19 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract void backupToArchive(RawDataBackup backup) throws IOException, EXistException;
 
     public abstract void readCollectionEntry(SubCollectionEntry entry);
+
+    private boolean triggersEnabled = true;
+    public boolean isTriggersEnabled() {
+        return triggersEnabled;
+    }
+
+    public void enableTriggers() {
+        triggersEnabled = true;
+    }
+
+    public void disableTriggers() {
+        triggersEnabled = false;
+    }
 
     @Override
     public void close() throws Exception {
