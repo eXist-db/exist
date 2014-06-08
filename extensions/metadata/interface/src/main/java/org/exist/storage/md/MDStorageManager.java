@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.storage.md;
 
@@ -58,6 +56,8 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 
     public final static String PREFIX = "md";
 	public final static String NAMESPACE_URI = "http://exist-db.org/metadata";
+	
+    public final static String LUCENE_ID = "org.exist.indexing.lucene.LuceneIndex";
 
 	public final static String UUID = "uuid";
 	public final static String META = "meta";
@@ -71,7 +71,11 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	public final static String PREFIX_VALUE = PREFIX+":"+VALUE;
 	public final static String PREFIX_VALUE_IS_DOCUMENT = PREFIX+":"+VALUE_IS_DOCUMENT;
 
-	protected static MDStorageManager _ = null;
+	protected static MDStorageManager inst = null;
+
+    protected static MDStorageManager get() {
+        return inst;
+    }
 	
 	MetaData md;
 	
@@ -88,14 +92,22 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 			throw new PermissionDeniedException(e);
 		}
 
-		_ = this;
+        inst = this;
 		
 		Database db = manager.getDatabase();
 		
 		inject(db, md);
 
-		db.getDocumentTriggers().add(new DocumentEvents());
-		db.getCollectionTriggers().add(new CollectionEvents());
+		db.registerDocumentTrigger(DocumentEvents.class);
+		db.registerCollectionTrigger(CollectionEvents.class);
+		
+		//XXX: configuration is not loaded
+//		try {
+//			db.getIndexManager().registerIndex(new ExtractorIndex());
+//		} catch (DatabaseConfigurationException e) {
+//			e.printStackTrace();
+//			throw new PermissionDeniedException(e);
+//		}
 		
 		Map<String, Class<?>> map = (Map<String, Class<?>>) db.getConfiguration().getProperty(XQueryContext.PROPERTY_BUILT_IN_MODULES);
         map.put(
@@ -171,7 +183,11 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	        return;
 	    
 //		System.out.println("backup collection "+colection.getURI());
-		backup(md.getMetas(collection.getURI()), attrs);
+	    Metas ms = md.getMetas(collection.getURI());
+	    if (ms != null)
+	    	backup(ms, attrs);
+	    else
+	    	LOG.error("Collection '"+collection.getURI()+"' have no metas");
 	}
 
 	@Override
@@ -180,7 +196,11 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	        return;
 	    
 //		System.out.println("backup collection "+colection.getURI());
-		backup(md.getMetas(collection.getURI()), serializer);
+	    Metas ms = md.getMetas(collection.getURI());
+	    if (ms != null)
+	    	backup(ms, serializer);
+//	    else
+//	    	LOG.error("Collection '"+collection.getURI()+"' have no metas");
 	}
 
 	@Override
@@ -189,7 +209,12 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	        return;
 	    
 //		System.out.println("backup document "+document.getURI());
-		backup(md.getMetas(document), attrs);
+	    Metas ms = md.getMetas(document);
+	    if (ms != null)
+	    	backup(ms, attrs);
+	    else
+	    	LOG.error("Document '"+document.getURI()+"' have no metas");
+	    	
 	}
 
 	@Override
@@ -198,7 +223,11 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	        return;
 	    
 //		System.out.println("backup document "+document.getURI());
-		backup(md.getMetas(document), serializer);
+	    Metas ms = md.getMetas(document);
+	    if (ms != null)
+	    	backup(ms, serializer);
+//	    else
+//	    	LOG.error("Document '"+document.getURI()+"' have no metas");
 	}
 
 	//restore methods

@@ -17,18 +17,31 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.storage;
+package org.exist.storage.md;
 
-import org.exist.xmldb.XmldbURI;
+import org.exist.util.XMLString;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface MetaStorage {
+public abstract class AbstractTextExtractor implements TextExtractor {
 
-    public String getId();
+    protected ExtractorConfig config;
+    protected ExtractConfig idxConfig;
 
-    public void streamMetas(XmldbURI uri, MetaStreamListener listener);
+    protected XMLString buffer = new XMLString();
 
+    public void configure(ExtractorConfig config, ExtractConfig idxConfig) {
+        this.config = config;
+        this.idxConfig = idxConfig;
+    }
+
+    public ExtractConfig getIndexConfig() {
+    	return idxConfig;
+    }
+
+    public XMLString getText() {
+        return buffer;
+    }
 }

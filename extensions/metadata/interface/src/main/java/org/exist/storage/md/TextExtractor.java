@@ -17,18 +17,31 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.storage;
+package org.exist.storage.md;
 
-import org.exist.xmldb.XmldbURI;
+import org.exist.dom.QName;
+import org.exist.util.XMLString;
 
 /**
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * Extract text from an XML fragment.
+ * This interface provides an additional abstraction to handle whitespace
+ * between elements or ignore certain elements.
  */
-public interface MetaStorage {
+public interface TextExtractor {
 
-    public String getId();
+    public void configure(ExtractorConfig config, ExtractConfig idxConfig);
 
-    public void streamMetas(XmldbURI uri, MetaStreamListener listener);
+    public ExtractConfig getIndexConfig();
 
+    
+    public int startElement(QName name);
+
+    public int endElement(QName name);
+
+    public int beforeCharacters();
+    
+    public int characters(XMLString value);
+
+    
+    public XMLString getText();
 }

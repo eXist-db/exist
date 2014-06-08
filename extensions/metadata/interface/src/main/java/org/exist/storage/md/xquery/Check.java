@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.storage.md.xquery;
 
@@ -31,7 +29,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockedDocumentMap;
@@ -56,7 +53,7 @@ public class Check extends BasicFunction {
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("create", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX),
+			new QName("check", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX),
 			"",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EMPTY));
@@ -73,12 +70,12 @@ public class Check extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 		
-		BrokerPool db = null;
+		if (!context.getSubject().hasDbaRole())
+			throw new XPathException(this, "only DBA can call md:check function.");
+		
 		DBBroker broker = null;
 		try {
-			db = BrokerPool.getInstance();
-			
-			broker = db.get(context.getSubject());
+			broker = context.getBroker();
 			
 			Collection col = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
 			
@@ -87,9 +84,6 @@ public class Check extends BasicFunction {
 		} catch (Exception e) {
 		    //e.printStackTrace();
 			throw new XPathException(this, e);
-		} finally {
-			if (db != null)
-				db.release(broker);
 		}
 		
 		return Sequence.EMPTY_SEQUENCE;

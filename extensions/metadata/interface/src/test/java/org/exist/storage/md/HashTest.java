@@ -19,36 +19,37 @@
  */
 package org.exist.storage.md;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
-
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class DocumentAsValueTest {
+public class HashTest {
 
     private static String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -58,66 +59,89 @@ public class DocumentAsValueTest {
 
     /** /db/test **/
     private static XmldbURI col1uri = TestConstants.TEST_COLLECTION_URI;
+    /** /db/test/test2 **/
+    private static XmldbURI col2uri = TestConstants.TEST_COLLECTION_URI2;
+    /** /db/moved **/
+    private static XmldbURI col3uri = XmldbURI.ROOT_COLLECTION_URI.append("moved");
 
-    /** /db/test/test_string1.xml **/
-    private static XmldbURI doc1uri = col1uri.append("test_string1.xml");
+    /** /db/test/test_string.xml **/
+    private static XmldbURI doc1uri = col1uri.append("test_string.xml");
     /** /db/test/test_string2.xml **/
     private static XmldbURI doc2uri = col1uri.append("test_string2.xml");
+    /** /db/test/test2/test_2.xml **/
+    private static XmldbURI doc3uri = col2uri.append("test_2.xml");
+    /** /db/moved/test_string.xml **/
+    private static XmldbURI doc4uri = col3uri.append("test_string.xml");
     /** /db/test/test.binary **/
-    private static XmldbURI doc3uri = col1uri.append("test.binary");
+    private static XmldbURI doc5uri = col1uri.append("test.binary");
+    /** /db/moved/test.binary **/
+//    private static XmldbURI doc6uri = col3uri.append("test.binary");
     
-    private static String XML1 = "<test1/>";
+    private static String XML1 = "<test/>";
     private static String XML2 = "<test2/>";
 
     private static String BINARY = "test";
 
+    private static String wrongXML = "<test>";
+
     private static String KEY1 = "key1";
+    private static String VALUE1 = "value1";
+
+    private static String KEY2 = "key2";
+    private static String VALUE2 = "value2";
     
     private static BrokerPool pool;
     private static DocumentImpl doc1 = null;
     private static DocumentImpl doc2 = null;
 
     @Test
-    @Ignore
-    public void test_00() throws Exception {
-    	System.out.println("test");
+	public void test_01() throws Exception {
     	
-    	startDB();
-    	
+    	pureStartDB();
+
     	MetaData md = MetaData.get();
     	assertNotNull(md);
-    	
-    	Metas docMD = MetaData.get().getMetas(doc1uri);
-    	assertNotNull(docMD);
-    	
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+
+        Meta meta = null;
+
+        try (DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
             assertNotNull(broker);
-            
-	    	//add first key-value
-	    	docMD.put(KEY1, doc2);
+
+            try (Txn txn = broker.beginTx()) {
+
+                Collection col = broker.getOrCreateCollection(txn, col1uri);
+                assertNotNull(col);
+
+                broker.saveCollection(txn, col);
+
+                doc1 = storeDocument(txn, broker, col, doc1uri, XML1);
+
+                txn.success();
+            }
+
+	    	Metas docMD = md.getMetas(doc1uri);
+	    	assertNotNull(docMD);
 	    	
-	    	Meta meta = docMD.get(KEY1);
-	    	assertNotNull(meta);
-	
-	    	assertEquals(serializer(broker, doc2), serializer(broker, (DocumentImpl)meta.getValue()));
+	    	meta = docMD.get("eXist:hash-of-content");
+            assertNotNull(meta);
 
-        } finally {
-        	pool.release(broker);
+            System.out.println(meta.getValue());
         }
-    }
+	        
+        shutdown();
+	}
+	
+	private static DocumentImpl storeDocument(Txn txn, DBBroker broker, Collection col, XmldbURI uri, String data) throws TriggerException, EXistException, PermissionDeniedException, SAXException, LockException, IOException {
+        System.out.println("STORING DOCUMENT....");
+        IndexInfo info = col.validateXMLResource(txn, broker, uri.lastSegment(), data);
+        assertNotNull(info);
+        System.out.println("STORING DOCUMENT....SECOND ROUND....");
+        col.store(txn, broker, info, data, false);
+        assertNotNull(info.getDocument());
+        System.out.println("STORING DOCUMENT....DONE.");
 
-    public Properties contentsOutputProps = new Properties();
-    {
-        contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
-        contentsOutputProps.setProperty( EXistOutputKeys.OUTPUT_DOCTYPE, "yes" );
-    }
-    private String serializer(DBBroker broker, DocumentImpl document) throws SAXException {
-		Serializer serializer = broker.getSerializer();
-		serializer.setUser(broker.getSubject());
-		serializer.setProperties(contentsOutputProps);
-		return serializer.serialize(document);
+        return info.getDocument();
 	}
 
 	//@BeforeClass
@@ -131,7 +155,7 @@ public class DocumentAsValueTest {
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
         	assertNotNull(pool);
-        	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+        	pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
             
         	broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
@@ -149,32 +173,45 @@ public class DocumentAsValueTest {
             assertNotNull(root);
             broker.saveCollection(txn, root);
 
+            Collection test2 = broker.getOrCreateCollection(txn, col2uri);
+            assertNotNull(test2);
+            broker.saveCollection(txn, test2);
+
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
 
-            System.out.println("STORING DOCUMENT....");
-            IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
-            assertNotNull(info);
-            System.out.println("STORING DOCUMENT....SECOND ROUND....");
-            root.store(txn, broker, info, XML1, false);
-            assertNotNull(info.getDocument());
-            System.out.println("STORING DOCUMENT....DONE.");
+            doc1 = storeDocument(txn, broker, root, doc1uri, XML1);
+            doc2 = storeDocument(txn, broker, root, doc2uri, XML2);
 
-            doc1 = info.getDocument();
-
-            info = root.validateXMLResource(txn, broker, doc2uri.lastSegment(), XML2);
-            assertNotNull(info);
-            root.store(txn, broker, info, XML2, false);
-
-            doc2 =  info.getDocument();
-
-            System.out.println("store "+doc3uri);
-            root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
+            System.out.println("store "+doc5uri);
+            root.addBinaryResource(txn, broker, doc5uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);
         } catch (Exception e) {
             e.printStackTrace();
             txnManager.abort(txn);
+            fail(e.getMessage());
+        } finally {
+            if (pool != null)
+                pool.release(broker);
+        }
+    }
+
+    public static void pureStartDB() {
+        DBBroker broker = null;
+        try {
+            File confFile = ConfigurationHelper.lookup("conf.xml");
+            Configuration config = new Configuration(confFile.getAbsolutePath());
+            BrokerPool.configure(1, 5, config);
+            pool = BrokerPool.getInstance();
+            assertNotNull(pool);
+            pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
+
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+
+        } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         } finally {
             if (pool != null)
@@ -213,6 +250,14 @@ public class DocumentAsValueTest {
             System.out.println("Transaction started ...");
 
             Collection col = broker.getOrCreateCollection(txn, col1uri);
+            assertNotNull(col);
+        	broker.removeCollection(txn, col);
+
+//            col = broker.getOrCreateCollection(txn, col2uri);
+//            assertNotNull(col);
+//        	broker.removeCollection(txn, col);
+
+            col = broker.getOrCreateCollection(txn, col3uri);
             assertNotNull(col);
         	broker.removeCollection(txn, col);
 

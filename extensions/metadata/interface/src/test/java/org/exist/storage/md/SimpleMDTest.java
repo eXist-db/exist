@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.storage.md;
 
@@ -262,38 +260,44 @@ public class SimpleMDTest {
 	    	assertNotNull(docMD);
 	    	
 	    	docUUID = docMD.getUUID();
+
+            System.out.println(docUUID);
 	    	
 	    	//set metas
 	    	docMD.put(KEY1, VALUE1);
 	    	docMD.put(KEY2, VALUE2);
 	    	
-	        TransactionManager txnManager = null;
-	        Txn txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
+	        try (Txn txn = broker.beginTx()) {
+                assertNotNull(txn);
 
 		    	IndexInfo info = col.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
 	            assertNotNull(info);
 	            col.store(txn, broker, info, XML1, false);
 	            
 	            //XXX: need to simulate unfinished transaction & crash
-	            txnManager.commit(txn);
+	            txn.success();
 
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
+
+            docMD = md.getMetas(doc1uri);
+            assertNotNull(docMD);
+
+            assertEquals(VALUE1, docMD.get(KEY1).getValue());
+
+            System.out.println(docUUID);
+            System.out.println(docMD.getUUID());
+
+            assertEquals(docUUID, docMD.getUUID());
 	        
         } finally {
         	pool.release(broker);
         }
 	        
         shutdown();
-    	startDB();
+        pureStartDB();
 
     	md = MetaData.get();
     	assertNotNull(md);
@@ -306,31 +310,41 @@ public class SimpleMDTest {
             Collection root = broker.getCollection(col1uri);
         	assertNotNull(root);
 
-	        TransactionManager txnManager = null;
-	        Txn txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
+            Metas docMD = md.getMetas(doc1uri);
+            assertNotNull(docMD);
+
+            assertNotNull(docMD.get(KEY1));
+            assertEquals(VALUE1, docMD.get(KEY1).getValue());
+
+            System.out.println(docUUID);
+            System.out.println(docMD.getUUID());
+
+            assertEquals(docUUID, docMD.getUUID());
+
+	        try (Txn txn = broker.beginTx()) {
+
 	            assertNotNull(txn);
 
-            
 		    	IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
 	            assertNotNull(info);
 	            root.store(txn, broker, info, XML1, false);
 
-	            txnManager.commit(txn);
+	            txn.success();
 	            
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 
-	        Metas docMD = md.getMetas(doc1uri);
+	        docMD = md.getMetas(doc1uri);
 	    	assertNotNull(docMD);
+
+            assertEquals(VALUE1, docMD.get(KEY1).getValue());
+
+            System.out.println(docUUID);
+            System.out.println(docMD.getUUID());
 	    	
-	    	assertNotSame(docUUID, docMD.getUUID());
+	    	assertEquals(docUUID, docMD.getUUID());
 
         } finally {
         	pool.release(broker);
@@ -387,6 +401,8 @@ public class SimpleMDTest {
 	    	
 	    	assertEquals(uuid, docMD.getUUID());
 
+            assertEquals(VALUE1, docMD.get(KEY1).getValue());
+
         } finally {
     		pool.release(broker);
     	}
@@ -397,7 +413,7 @@ public class SimpleMDTest {
 
     //resource move
 	@Test
-	public void test_recource_move() throws Exception {
+	public void test_resource_move() throws Exception {
     	startDB();
     	
     	MetaData md = MetaData.get();
@@ -975,6 +991,28 @@ public class SimpleMDTest {
         } catch (Exception e) {
             e.printStackTrace();
             txnManager.abort(txn);
+            fail(e.getMessage());
+        } finally {
+            if (pool != null)
+                pool.release(broker);
+        }
+    }
+
+    public static void pureStartDB() {
+        DBBroker broker = null;
+        try {
+            File confFile = ConfigurationHelper.lookup("conf.xml");
+            Configuration config = new Configuration(confFile.getAbsolutePath());
+            BrokerPool.configure(1, 5, config);
+            pool = BrokerPool.getInstance();
+            assertNotNull(pool);
+            pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
+
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            assertNotNull(broker);
+
+        } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         } finally {
             if (pool != null)

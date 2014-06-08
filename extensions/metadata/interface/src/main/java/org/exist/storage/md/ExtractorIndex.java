@@ -17,18 +17,55 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.storage;
+package org.exist.storage.md;
 
-import org.exist.xmldb.XmldbURI;
+import org.exist.indexing.AbstractIndex;
+import org.exist.indexing.IndexWorker;
+import org.exist.storage.DBBroker;
+import org.exist.storage.btree.DBException;
+import org.exist.util.DatabaseConfigurationException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public interface MetaStorage {
+public class ExtractorIndex extends AbstractIndex {
+	
+	protected static final String ID = ExtractorIndex.class.getName();;
+	
+	public ExtractorIndex() {
+		setName("meta data extractor");
+	}
+	
+	@Override
+    public String getIndexId() {
+		return ID;
+	}
 
-    public String getId();
+	@Override
+	public void open() throws DatabaseConfigurationException {
+	}
 
-    public void streamMetas(XmldbURI uri, MetaStreamListener listener);
+	@Override
+	public void close() throws DBException {
+	}
+
+	@Override
+	public void sync() throws DBException {
+	}
+
+	@Override
+	public void remove() throws DBException {
+	}
+
+	@Override
+	public IndexWorker getWorker(DBBroker broker) {
+		return new ExtractorWorker(this, broker);
+	}
+
+	@Override
+	public boolean checkIndex(DBBroker broker) {
+		return true;
+	}
 
 }
