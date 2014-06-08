@@ -56,7 +56,6 @@ import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,6 +64,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class is responsible for fulltext-indexing. Text-nodes are handed over
@@ -754,6 +755,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     //TODO : unify functionalities with storeText -pb
     private void collect(Set words, Iterator domIterator) {
+
+        TextToken token;
+        int readOffset;
+
         final byte[] data = ((Value) domIterator.next()).getData();
         final short type = Signatures.getType(data[OFFSET_NODE_TYPE]);
         switch (type) {
@@ -766,48 +771,43 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         case Node.TEXT_NODE :
             int dlnLen = ByteConversion.byteToShort(data, OFFSET_TEXT_DLN_LENGTH);
             int nodeIdLen = broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, OFFSET_DLN);
-            try {
-                final int readOffset = nodeIdLen + OFFSET_DLN;
-                final String s = new String(data, readOffset, data.length - readOffset, "UTF-8");
-                tokenizer.setText(s);
-                TextToken token;
-                while (null != (token = tokenizer.nextToken())) {
-                    final String word = token.getText();
-                    if (stoplist.contains(word))
-                        {continue;}
-                    words.add(word.toLowerCase());
-                }
-            } catch (final UnsupportedEncodingException e) {
-                LOG.error(e.getMessage(), e);
-                //TODO : throwexception ? -pb
+
+            readOffset = nodeIdLen + OFFSET_DLN;
+            final String s = new String(data, readOffset, data.length - readOffset, UTF_8);
+            tokenizer.setText(s);
+
+            while (null != (token = tokenizer.nextToken())) {
+                final String word = token.getText();
+                if (stoplist.contains(word))
+                    {continue;}
+                words.add(word.toLowerCase());
             }
+
             break;
         case Node.ATTRIBUTE_NODE :
             final byte idSizeType = (byte) (data[OFFSET_NODE_TYPE] & 0x3);
             final boolean hasNamespace = (data[OFFSET_NODE_TYPE] & 0x10) == 0x10;
             dlnLen = ByteConversion.byteToShort(data, OFFSET_ATTRIBUTE_DLN_LENGTH);
             nodeIdLen = broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, OFFSET_DLN);
-            int readOffset = Signatures.getLength(idSizeType) + nodeIdLen + OFFSET_DLN;
+
+            readOffset = Signatures.getLength(idSizeType) + nodeIdLen + OFFSET_DLN;
             if (hasNamespace) {
                 //TODO : check the order in wich both info are read (and discarded)
                 readOffset += SymbolTable.LENGTH_LOCAL_NAME; // skip namespace id
                 final short prefixLen = ByteConversion.byteToShort(data, readOffset);
                 readOffset += prefixLen + SymbolTable.LENGTH_NS_URI; // skip prefix
             }
-            try {
-                final String val = new String(data, readOffset, data.length - readOffset, "UTF-8");
-                tokenizer.setText(val);
-                TextToken token;
-                while (null != (token = tokenizer.nextToken())) {
-                    final String word = token.getText();
-                    if (stoplist.contains(word))
-                        {continue;}
-                    words.add(word.toLowerCase());
-                }
-            } catch (final UnsupportedEncodingException e) {
-                LOG.error(e.getMessage(), e);
-                //TODO : throw exception ? -pb
+
+            final String val = new String(data, readOffset, data.length - readOffset, UTF_8);
+            tokenizer.setText(val);
+
+            while (null != (token = tokenizer.nextToken())) {
+                final String word = token.getText();
+                if (stoplist.contains(word))
+                    {continue;}
+                words.add(word.toLowerCase());
             }
+
             break;
        default :
            //Other types are ignored : some may be useful though -pb
@@ -1319,17 +1319,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             if(context != null)
                 {context.proceed();}
-            try {
-                final String word = new String(key.getData(), Collection.LENGTH_COLLECTION_ID, 
-                        key.getLength() - Collection.LENGTH_COLLECTION_ID, "UTF-8");
-                if (matcher.matches(word))
-                    {matches.add(word);}
-                return true;
-            } catch (final UnsupportedEncodingException e) {
-                LOG.error(e.getMessage(), e);
-                //TODO : throw exception ?
-                return true;
-            }
+
+            final String word = new String(key.getData(), Collection.LENGTH_COLLECTION_ID,
+                    key.getLength() - Collection.LENGTH_COLLECTION_ID, UTF_8);
+            if (matcher.matches(word))
+                {matches.add(word);}
+            return true;
+
         }
     }
 

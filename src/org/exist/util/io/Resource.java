@@ -60,6 +60,7 @@ import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 
 import static org.exist.security.Permission.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * eXist's resource. It extend java.io.File
@@ -712,7 +713,7 @@ public class Resource extends File {
 	
 				} else {
 					// store as binary resource
-					is = new ByteArrayInputStream("".getBytes("UTF-8"));
+					is = new ByteArrayInputStream("".getBytes(UTF_8));
 					
 					final BinaryDocument blob = new BinaryDocument(db, collection, fileName);
 	

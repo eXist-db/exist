@@ -32,6 +32,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.FixedByteArray;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author wolf
  *
@@ -65,7 +67,7 @@ public class BFileOverflowTest extends TestCase {
             
             for (int i = 1; i < 101; i++) {
                 String value = "_HELLO_" + i;
-                data = value.getBytes("UTF-8");
+                data = value.getBytes(UTF_8);
                 collectionsDb.append(txn, key, new FixedByteArray(data, 0, data.length));
             }
             
@@ -76,7 +78,7 @@ public class BFileOverflowTest extends TestCase {
             
             for (int i = 1001; i < 2001; i++) {
                 String value = "_HELLO_" + i;
-                data = value.getBytes("UTF-8");
+                data = value.getBytes(UTF_8);
                 collectionsDb.append(txn, key, new FixedByteArray(data, 0, data.length));
             }
        

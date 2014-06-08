@@ -2,11 +2,12 @@ package org.exist.storage.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 
 import org.apache.log4j.Logger;
 import org.exist.util.ByteArray;
 import org.exist.util.FastByteBuffer;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A byte array output stream using variable byte encoding.
@@ -150,13 +151,8 @@ public class VariableByteOutputStream extends OutputStream {
     }
 
     public void writeUTF(String s) throws IOException {
-        byte[] data = null;
-        try {
-            data = s.getBytes("UTF-8");
-        } catch (final UnsupportedEncodingException e) {
-            LOG.warn(e);
-            data = s.getBytes();
-        }
+        byte[] data = s.getBytes(UTF_8);
+
         writeInt(data.length);
         write(data, 0, data.length);
     }

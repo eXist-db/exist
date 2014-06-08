@@ -140,7 +140,7 @@ public class RemoteResourceSet implements ResourceSet {
 				LOG.warn(ue);
 				content = new String(data);
 			}
-			final RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, 
+			final RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0,
 	            	XmldbURI.EMPTY_URI, null );
 	        res.setContent( content );
 	        res.setProperties(outputProperties);

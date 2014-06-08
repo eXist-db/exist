@@ -36,6 +36,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import junit.framework.TestCase;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author wolf
  *
@@ -133,7 +135,7 @@ public class MultiDBTest extends TestCase {
           System.out.println("Storing database test" + i + " in " + dir.getAbsolutePath());
           File conf = new File(dir, "conf.xml");
           FileOutputStream os = new FileOutputStream(conf);
-          os.write(CONFIG.getBytes("UTF-8"));
+          os.write(CONFIG.getBytes(UTF_8));
           os.close();
 
           Database database = (Database) cl.newInstance();

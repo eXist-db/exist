@@ -39,7 +39,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
 
-import java.io.UnsupportedEncodingException;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class AttrImpl extends NamedNode implements Attr {
 	
@@ -201,13 +201,8 @@ public class AttrImpl extends NamedNode implements Attr {
             pos += prefixLen;
         }
         final String namespace = nsId == 0 ? "" : broker.getBrokerPool().getSymbols().getNamespace(nsId);
-        String value;
-        try {
-            value = new String( data, pos, len - (pos - start), "UTF-8" );
-        } catch (final UnsupportedEncodingException uee) {
-            LOG.warn(uee);
-            value = new String( data, pos, len - (pos - start));
-        }
+        String value = new String( data, pos, len - (pos - start), UTF_8 );
+
         list.addAttribute(broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix), value, attrType, dln);
     }
 
