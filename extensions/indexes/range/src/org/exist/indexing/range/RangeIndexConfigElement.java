@@ -5,12 +5,9 @@ import org.apache.lucene.collation.CollationKeyAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
-import org.exist.EXistException;
 import org.exist.dom.QName;
-import org.exist.indexing.lucene.LuceneIndexConfig;
-import org.exist.storage.Indexable;
+import org.exist.indexing.lucene.LuceneConfigXML;
 import org.exist.storage.NodePath;
-import org.exist.util.ByteConversion;
 import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
@@ -18,8 +15,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
-import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -45,7 +42,7 @@ public class RangeIndexConfigElement {
                 throw new DatabaseConfigurationException("Range index module: invalid qname in configuration: " + e.getMessage());
             }
         } else if (node.hasAttribute("qname")) {
-            QName qname = LuceneIndexConfig.parseQName(node, namespaces);
+            QName qname = LuceneConfigXML.parseQName(node, namespaces);
             path = new NodePath(NodePath.SKIP);
             path.addComponent(qname);
             isQNameIndex = true;

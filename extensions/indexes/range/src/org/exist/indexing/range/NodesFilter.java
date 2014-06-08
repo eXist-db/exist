@@ -11,8 +11,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.NodeSetIterator;
 import org.exist.indexing.lucene.LuceneUtil;
-import org.exist.numbering.NodeId;
-import org.exist.util.ByteConversion;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -71,15 +69,15 @@ public class NodesFilter extends Filter {
         }
     }
 
-    private static boolean startsWith(byte[] key, int offset, int length, byte[] prefix) {
-        if (length < prefix.length) {
-            return false;
-        }
-        for (int i = 0; i < prefix.length; i++) {
-            if (key[offset + i] != prefix[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
+//    private static boolean startsWith(byte[] key, int offset, int length, byte[] prefix) {
+//        if (length < prefix.length) {
+//            return false;
+//        }
+//        for (int i = 0; i < prefix.length; i++) {
+//            if (key[offset + i] != prefix[i]) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 }
