@@ -23,7 +23,6 @@ package org.exist.management.impl;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.lang.reflect.Method;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
@@ -37,58 +36,51 @@ import org.exist.util.Configuration;
  */
 public class DiskUsage implements DiskUsageMBean {
 
-    @SuppressWarnings("unused")
-	private BrokerPool pool;
-    private Configuration config;
+    private final File journalDir;
+    private final File dataDir;
 
     public DiskUsage(BrokerPool pool) {
-        this.pool = pool;
-        config = pool.getConfiguration();
+
+        Configuration config = pool.getConfiguration();
+
+        String journalDirValue = (String) config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, "NOT DEFINED");
+        journalDir = new File(journalDirValue);
+
+        String dataDirValue = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR, "NOT DEFINED");
+        dataDir = new File(dataDirValue);
     }
 
-    private long getSpace(File dir, String method) {
-        try {
-            final Class<?> cls = dir.getClass();
-            final Method m = cls.getMethod(method, new Class[0]);
-            final Long a = (Long) m.invoke(dir, new Object[0]);
-            return a;
-        } catch (final NoSuchMethodException ex) {
-            // method not 
-        } catch (final Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return -1;
-    }
-
+    @Override
     public String getDataDirectory() {
-        return (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        return dataDir.getAbsolutePath();
     }
 
+    @Override
     public String getJournalDirectory() {
-        return (String) config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR);
+        return journalDir.getAbsolutePath();
     }
 
+    @Override
     public long getDataDirectoryTotalSpace() {
-        final File dir = new File(getDataDirectory());
-        return getSpace(dir, "getTotalSpace");
+        return dataDir.getTotalSpace();
     }
 
+    @Override
     public long getDataDirectoryFreeSpace() {
-        final File dir = new File(getDataDirectory());
-        return getSpace(dir, "getUsableSpace");
+        return dataDir.getUsableSpace();
     }
 
+    @Override
     public long getJournalDirectoryTotalSpace() {
-        final File dir = new File(getJournalDirectory());
-        return getSpace(dir, "getTotalSpace");
+        return journalDir.getTotalSpace();
     }
 
+    @Override
     public long getJournalDirectoryFreeSpace() {
-        final File dir = new File(getJournalDirectory());
-        return getSpace(dir, "getUsableSpace");
+        return journalDir.getUsableSpace();
     }
 
+    @Override
     public long getDataDirectoryUsedSpace() {
 
         long totalSize = 0;
@@ -102,6 +94,7 @@ public class DiskUsage implements DiskUsageMBean {
         return totalSize;
     }
 
+    @Override
     public long getJournalDirectoryUsedSpace() {
         long totalSize = 0;
 
@@ -114,31 +107,27 @@ public class DiskUsage implements DiskUsageMBean {
         return totalSize;
     }
 
+    @Override
     public int getJournalDirectoryNumberOfFiles() {
        final File dir = new File(getJournalDirectory());
        final File[] files = dir.listFiles(new JournalFilenameFilter());
        return files.length;
     }
 }
+
 class DbxFilenameFilter implements FilenameFilter {
 
+    @Override
     public boolean accept(File directory, String name) {
-        if (name.endsWith(".dbx")) {
-            return true;
-        } else {
-            return false;
-        }
+        return name.endsWith(".dbx");
     }
 }
 
 class JournalFilenameFilter implements FilenameFilter {
 
+    @Override
     public boolean accept(File directory, String name) {
-        if (name.endsWith(".log")) {
-            return true;
-        } else {
-            return false;
-        }
+        return name.endsWith(".log");
     }
 }
 

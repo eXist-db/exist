@@ -54,7 +54,6 @@ import org.exist.storage.XQueryPool;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Sequence;
 
 public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMBean {
 
@@ -98,6 +97,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         this.pool = pool;
     }
 
+    @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
         final String[] types = new String[] { AttributeChangeNotification.ATTRIBUTE_CHANGE };
         final String name = AttributeChangeNotification.class.getName();
@@ -106,30 +106,37 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         return new MBeanNotificationInfo[] { info };
     }
 
+    @Override
     public Date getLastCheckEnd() {
         return lastCheckEnd;
     }
 
+    @Override
     public Date getLastCheckStart() {
         return lastCheckStart;
     }
 
+    @Override
     public Date getActualCheckStart() {
         return actualCheckStart;
     }
 
+    @Override
     public String getStatus() {
         return taskstatus.getStatusString();
     }
 
+    @Override
     public String getLastActionInfo() {
         return lastActionInfo;
     }
 
+    @Override
     public long getPingTime() {
     	return lastPingRespTime;
     }
     
+    @Override
     public TabularData getErrors() {
         final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING };
         CompositeType infoType;
@@ -143,12 +150,14 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
                 data.put(new CompositeDataSupport(infoType, itemNames, itemValues));
             }
             return data;
+
         } catch (final OpenDataException e) {
             LOG.warn(e.getMessage(), e);
             return null;
         }
     }
 
+    @Override
     public void triggerCheck(String output, String backup, String incremental) {
         try {
             this.output = output;
@@ -156,10 +165,11 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             final Properties properties = parseParameter(output, backup, incremental);
             task.configure(pool.getConfiguration(), properties);
             pool.triggerSystemTask(task);
+
         } catch (final EXistException existException) {
             taskstatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
 
-            final List<ErrorReport> errors = new ArrayList<ErrorReport>();
+            final List<ErrorReport> errors = new ArrayList<>();
             errors.add(
             		new ErrorReport(
             				ErrorReport.CONFIGURATION_FAILD, 
@@ -173,6 +183,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         }
     }
 
+    @Override
     public long ping(boolean checkQueryEngine) {
     	final long start = System.currentTimeMillis();
     	lastPingRespTime = -1;
@@ -205,7 +216,8 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 			taskstatus.setStatus(TaskStatus.Status.PING_ERROR);
 			taskstatus.setStatusChangeTime();
 			taskstatus.setReason(e.getMessage());
-			changeStatus(taskstatus);
+            changeStatus(taskstatus);
+
 		} finally {
     		pool.release(broker);
     		
@@ -221,17 +233,22 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     private Properties parseParameter(String output, String backup, String incremental) {
         final Properties properties = new Properties();
         final boolean doBackup = backup.equalsIgnoreCase("YES");
+
+        // This should be simplified
         if (backup != null && (doBackup) || backup.equalsIgnoreCase("no")) {
             properties.put("backup", backup);
         }
+
         if (incremental != null && (incremental.equalsIgnoreCase("YES") || incremental.equalsIgnoreCase("no"))) {
             properties.put("incremental", incremental);
         }
+
         if (output != null) {
             properties.put("output", output);
         } else {
             properties.put("backup", "no");
         }
+
         return properties;
     }
 
@@ -269,6 +286,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             default:
                 break;
         }
+
         final TaskStatus oldState = taskstatus;
         try {
             taskstatus = status;
