@@ -78,7 +78,7 @@ public class JMXServlet extends HttpServlet {
 
     private static final String TOKEN_KEY = "token";
     private static final String TOKEN_FILE = "jmxservlet.token";
-    private static final String WEBAPP_DATA_DIR = "webapp/WEB-INF/data";
+    private static final String WEBINF_DATA_DIR = "WEB-INF/data";
 
     private final static Properties defaultProperties = new Properties();
 
@@ -89,7 +89,9 @@ public class JMXServlet extends HttpServlet {
 
     private JMXtoXML client;
     private final Set<String> localhostAddresses = new HashSet<>();
-    private File tokenFile = null;
+
+    private File dataDir;
+    private File tokenFile;
 
 
     @Override
@@ -174,12 +176,24 @@ public class JMXServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
+        // Setup JMS client
         client = new JMXtoXML();
         client.connect();
 
+        // Register all known localhost addresses
         registerLocalHostAddresses();
+
+        // Get directory for token file
+        dataDir = new File(config.getServletContext().getRealPath(WEBINF_DATA_DIR));
+        if (!dataDir.isDirectory() || !dataDir.canWrite()) {
+            LOG.error("Cannot access directory " + WEBINF_DATA_DIR);
+        }
+
+        // Setup token and tokenfile
         obtainTokenFileReference();
+
         LOG.info(String.format("JMXservlet token: %s", getToken()));
+        
     }
 
     /**
@@ -234,10 +248,7 @@ public class JMXServlet extends HttpServlet {
     private void obtainTokenFileReference() {
 
         if (tokenFile == null) {
-            File existHome = ConfigurationHelper.getExistHome();
-            File dataDir = new File(existHome, WEBAPP_DATA_DIR);
-            tokenFile = (dataDir.exists()) ? new File(dataDir, TOKEN_FILE) : new File(existHome, TOKEN_FILE);
-
+            tokenFile = new File(dataDir, TOKEN_FILE);
             LOG.info(String.format("Token file:  %s", tokenFile.getAbsolutePath()));
         }
     }
