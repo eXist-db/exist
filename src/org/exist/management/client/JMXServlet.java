@@ -77,6 +77,8 @@ public class JMXServlet extends HttpServlet {
     protected final static Logger LOG = Logger.getLogger(JMXServlet.class);
 
     private static final String TOKEN_KEY = "token";
+    private static final String TOKEN_FILE = "jmxservlet.token";
+    private static final String WEBAPP_DATA_DIR = "webapp/WEB-INF/data";
 
     private final static Properties defaultProperties = new Properties();
 
@@ -108,7 +110,7 @@ public class JMXServlet extends HttpServlet {
                 LOG.debug("Session is valid");
 
             } else {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access allowed for localhost or when correct token has been provided.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access allowed for localhost, or when correct token has been provided.");
                 return;
             }
             
@@ -181,14 +183,14 @@ public class JMXServlet extends HttpServlet {
     }
 
     /**
-     * Register all known IP-addresses for localhost
+     * Register all known IP-addresses for localhost.
      */
     void registerLocalHostAddresses() {
         // The external IP address of the server
         try {
             localhostAddresses.add(InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException ex) {
-            LOG.warn(String.format("Unable to get HostAddress for LocalHost: %s", ex.getMessage()));
+            LOG.warn(String.format("Unable to get HostAddress for localhost: %s", ex.getMessage()));
         }
 
         // The configured Localhost addresses
@@ -197,11 +199,11 @@ public class JMXServlet extends HttpServlet {
                 localhostAddresses.add(address.getHostAddress());
             }
         } catch (UnknownHostException ex) {
-            LOG.warn(String.format("Unable to retrieve ipaddresses for LocalHost: %s", ex.getMessage()));
+            LOG.warn(String.format("Unable to retrieve ipaddresses for localhost: %s", ex.getMessage()));
         }
 
         if (localhostAddresses.isEmpty()) {
-            LOG.error("Unable to determine addresses for localhost, jmx servlet is disfunctional.");
+            LOG.error("Unable to determine addresses for localhost, jmx servlet might be disfunctional.");
         }
     }
 
@@ -233,8 +235,8 @@ public class JMXServlet extends HttpServlet {
 
         if (tokenFile == null) {
             File existHome = ConfigurationHelper.getExistHome();
-            File dataDir = new File(existHome, "webapp/WEB-INF/data");
-            tokenFile = (dataDir.exists()) ? new File(dataDir, "jmxservlet.token") : new File(existHome, "jmxservlet.token");
+            File dataDir = new File(existHome, WEBAPP_DATA_DIR);
+            tokenFile = (dataDir.exists()) ? new File(dataDir, TOKEN_FILE) : new File(existHome, TOKEN_FILE);
 
             LOG.info(String.format("Token file:  %s", tokenFile.getAbsolutePath()));
         }
@@ -284,6 +286,5 @@ public class JMXServlet extends HttpServlet {
 
         return token;
     }
-
 
 }
