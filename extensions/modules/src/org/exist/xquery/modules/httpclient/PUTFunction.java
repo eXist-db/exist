@@ -45,6 +45,8 @@ import java.io.UnsupportedEncodingException;
 
 import java.util.Properties;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * Performs HTTP Put method
@@ -110,15 +112,10 @@ public class PUTFunction extends BaseHTTPClientFunction
         
         if( Type.subTypeOf( payload.getType(), Type.NODE ) ) {
 	        //serialize the node to SAX
-	        ByteArrayOutputStream baos           = new ByteArrayOutputStream();
-	        OutputStreamWriter    osw            = null;
-	
-	        try {
-	            osw = new OutputStreamWriter( baos, "UTF-8" );
-	        }
-	        catch( UnsupportedEncodingException e ) {
-	            throw( new XPathException( this, "Internal error" ) );
-	        }
+	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            OutputStreamWriter osw = new OutputStreamWriter( baos, UTF_8 );
+
 	        IndentingXMLWriter     xmlWriter = new IndentingXMLWriter( osw );
 	        Properties outputProperties = new Properties();
 	        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
@@ -145,7 +142,7 @@ public class PUTFunction extends BaseHTTPClientFunction
 
         } else if( Type.subTypeOf( payload.getType(), Type.BASE64_BINARY ) ) { 
 
-        	entity = new ByteArrayRequestEntity((byte[]) ((BinaryValue)payload).toJavaObject(byte[].class));
+        	entity = new ByteArrayRequestEntity(payload.toJavaObject(byte[].class));
         	
         } else {
 

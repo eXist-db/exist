@@ -35,6 +35,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -55,7 +57,7 @@ public class LDAPRealmTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		InputStream is = new ByteArrayInputStream(config.getBytes("UTF-8"));
+		InputStream is = new ByteArrayInputStream(config.getBytes(UTF_8));
 		
 		Configuration config = Configurator.parse(is);
 
