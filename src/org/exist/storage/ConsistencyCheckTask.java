@@ -28,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Properties;
 
@@ -42,6 +41,8 @@ import org.exist.management.TaskStatus;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Configuration;
 import org.exist.xquery.TerminatedException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ConsistencyCheckTask implements SystemTask {
 
@@ -211,9 +212,7 @@ public class ConsistencyCheckTask implements SystemTask {
         try {
             final File file = SystemExport.getUniqueFile("report", ".log", exportDir);
             final OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
-            return new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
-        } catch (final UnsupportedEncodingException e) {
-            throw new EXistException("ERROR: failed to create report file in " + exportDir, e);
+            return new PrintWriter(new OutputStreamWriter(os, UTF_8));
         } catch (final FileNotFoundException e) {
             throw new EXistException("ERROR: failed to create report file in " + exportDir, e);
         }

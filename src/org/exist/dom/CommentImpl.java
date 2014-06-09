@@ -9,7 +9,7 @@ import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
 
-import java.io.UnsupportedEncodingException;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class CommentImpl extends CharacterDataImpl implements Comment {
 
@@ -53,13 +53,8 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
             LOG.warn(e);
             s = cdata.toString();
         }
-        byte[] cd;
-        try {
-            cd = s.getBytes( "UTF-8" );
-        } catch (final UnsupportedEncodingException uee) {
-            LOG.warn(uee);
-            cd = s.getBytes();
-        }
+        byte[] cd = s.getBytes( UTF_8 );
+
         int nodeIdLen = nodeId.size();
         final byte[] data = new byte[StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
            + nodeIdLen + cd.length];
@@ -83,13 +78,7 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
-        String cdata;
-        try {
-            cdata = new String(data, pos, len - (pos - start), "UTF-8" );
-        } catch ( final UnsupportedEncodingException uee ) {
-            LOG.warn(uee);
-            cdata = new String(data, pos, len - (pos - start));
-        }
+        String cdata = new String(data, pos, len - (pos - start), UTF_8 );
         //OK : we have the necessary material to build the comment
         CommentImpl comment;
         if(pooled)

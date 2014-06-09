@@ -40,6 +40,8 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQueryService {
 
     protected RemoteCollection collection;
@@ -96,7 +98,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             if (protectedMode)
                 {optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());}
             final List<Object> params = new ArrayList<Object>(2);
-			params.add(query.getBytes("UTF-8"));
+			params.add(query.getBytes(UTF_8));
 			params.add(optParams);
             final HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute("queryP", params);
             
@@ -113,8 +115,6 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             return new RemoteResourceSet( collection, outputProperties, resources, handle, hash );
         } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
-        } catch ( final IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe );
         }
     }
 
@@ -153,7 +153,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             optParams.put(RpcAPI.BASE_URI, 
                     outputProperties.getProperty("base-uri", collection.getPath()));
             final List<Object> params = new ArrayList<Object>(2);
-            params.add(query.getBytes("UTF-8"));
+            params.add(query.getBytes(UTF_8));
             params.add(optParams);
             final HashMap<?,?> result = (HashMap<?,?>) collection.getClient().execute( "compile", params );
             
@@ -162,8 +162,6 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             return new RemoteCompiledExpression(query);
         } catch ( final XmlRpcException xre ) {
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre );
-        } catch ( final IOException ioe ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe );
         }
     }
     
@@ -279,7 +277,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
             if (protectedMode)
                 {optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());}
             final List<Object> params = new ArrayList<Object>(5);
-            params.add(query.getBytes("UTF-8"));
+            params.add(query.getBytes(UTF_8));
             params.add(resource.path.toString());
             if(resource.id == null)
             	{params.add("");}
@@ -301,8 +299,6 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
 			return new RemoteResourceSet(collection, outputProperties, resources, handle, hash);
         } catch (final XmlRpcException xre) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-        } catch (final IOException ioe) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         }
     }
     

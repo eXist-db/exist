@@ -36,7 +36,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 
 import java.util.List;
 
@@ -45,6 +44,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import org.exist.security.PermissionDeniedException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 /**
@@ -612,9 +613,7 @@ public class ExportGUI extends javax.swing.JFrame
         try {
             final File         file = SystemExport.getUniqueFile( "report", ".log", dir );
             final OutputStream os   = new BufferedOutputStream( new FileOutputStream( file ) );
-            logWriter = new PrintWriter( new OutputStreamWriter( os, "UTF-8" ) );
-        }
-        catch( final UnsupportedEncodingException e ) {
+            logWriter = new PrintWriter( new OutputStreamWriter( os, UTF_8 ) );
         }
         catch( final FileNotFoundException e ) {
             System.err.println( "ERROR: failed to create log file" );

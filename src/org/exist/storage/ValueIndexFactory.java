@@ -22,7 +22,6 @@
  */
 package org.exist.storage;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -37,6 +36,8 @@ import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author wolf
@@ -54,13 +55,9 @@ public class ValueIndexFactory {
         // TODO : improve deserialization (use static methods in the org.exist.xquery.Value package
         /* xs:string */
         if (Type.subTypeOf(type, Type.STRING)) {
-            String s;
-            try {
-                s = new String(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE),
-                    len - (ValueIndexFactory.LENGTH_VALUE_TYPE), "UTF-8");
-            } catch (final UnsupportedEncodingException e) {
-                throw new EXistException(e);
-            }
+            String s = new String(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE),
+                    len - (ValueIndexFactory.LENGTH_VALUE_TYPE), UTF_8);
+
             return new StringValue(s);
         }
         /* xs:dateTime */
@@ -122,14 +119,9 @@ public class ValueIndexFactory {
         /* xs:decimal */
         else if (type == Type.DECIMAL) {
             //actually loaded from string data due to the uncertain length
-            String s;
-            try {
-                s = new String(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE),
-                    len - (ValueIndexFactory.LENGTH_VALUE_TYPE), "UTF-8");
-            } catch (final UnsupportedEncodingException e) {
-                LOG.error(e);
-                throw new EXistException(e);
-            }
+            String s = new String(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE),
+                    len - (ValueIndexFactory.LENGTH_VALUE_TYPE), UTF_8);
+
             return new DecimalValue(new BigDecimal(s));
         }
         /* xs:boolean */

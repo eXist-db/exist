@@ -26,6 +26,8 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.Assert;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /*
  * VirtualTempFileTest.java
  * A test battery for the VirtualTempFile class
@@ -37,7 +39,7 @@ public class VirtualTempFileTest {
 	public void testWriteSwitch()
 		throws IOException
 	{
-		byte[] testString = "teststring".getBytes("UTF-8");
+		byte[] testString = "teststring".getBytes(UTF_8);
 		int testStringLength = testString.length;
 		
 		// Test1, no temp file
@@ -69,8 +71,8 @@ public class VirtualTempFileTest {
 	public void testLength()
 		throws IOException
 	{
-		byte[] testString = "teststring".getBytes("UTF-8");
-		byte[] testString2 = "teststring2".getBytes("UTF-8");
+		byte[] testString = "teststring".getBytes(UTF_8);
+		byte[] testString2 = "teststring2".getBytes(UTF_8);
 		int testStringLength = testString.length;
 		
 		// Test1, no temp file
@@ -103,8 +105,8 @@ public class VirtualTempFileTest {
 	public void testCompare()
 		throws IOException
 	{
-		byte[] testString = "teststring".getBytes("UTF-8");
-		byte[] testString2 = "teststring2".getBytes("UTF-8");
+		byte[] testString = "teststring".getBytes(UTF_8);
+		byte[] testString2 = "teststring2".getBytes(UTF_8);
 		int testStringLength = testString.length;
 		
 		// Test1, no temp file
