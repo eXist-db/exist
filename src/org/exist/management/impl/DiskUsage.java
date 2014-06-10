@@ -23,61 +23,100 @@ package org.exist.management.impl;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import org.apache.commons.lang3.StringUtils;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
 
-
 /**
- * Class DiskUsage
- * 
+ * Class DiskUsage. Retrieves data from the java File object
+ *
  * @author dizzzz@exist-db.org
  */
 public class DiskUsage implements DiskUsageMBean {
 
-    private final File journalDir;
-    private final File dataDir;
+    private File journalDir;
+    private File dataDir;
 
     public DiskUsage(BrokerPool pool) {
 
         Configuration config = pool.getConfiguration();
 
-        String journalDirValue = (String) config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, "NOT DEFINED");
-        journalDir = new File(journalDirValue);
+        String journalDirValue = (String) config.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR);
+        if (StringUtils.isNotBlank(journalDirValue)) {
+            File tmpDir = new File(journalDirValue);
+            if (tmpDir.isDirectory()) {
+                journalDir = tmpDir;
+            }
+        }
 
-        String dataDirValue = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR, "NOT DEFINED");
-        dataDir = new File(dataDirValue);
+        String dataDirValue = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
+        if (StringUtils.isNotBlank(dataDirValue)) {
+            File tmpDir = new File(dataDirValue);
+            if (tmpDir.isDirectory()) {
+                dataDir = tmpDir;
+            }
+        }
+
     }
 
     @Override
     public String getDataDirectory() {
-        return dataDir.getAbsolutePath();
+        if (dataDir != null) {
+            try {
+                return dataDir.getCanonicalPath();
+            } catch (IOException ex) {
+                return dataDir.getAbsolutePath();
+            }
+        }
+        return NOT_CONFIGURED;
     }
 
     @Override
     public String getJournalDirectory() {
-        return journalDir.getAbsolutePath();
+        if (journalDir != null) {
+            try {
+                return journalDir.getCanonicalPath();
+            } catch (IOException ex) {
+                return journalDir.getAbsolutePath();
+            }
+        }
+        return NOT_CONFIGURED;
     }
 
     @Override
     public long getDataDirectoryTotalSpace() {
-        return dataDir.getTotalSpace();
+        if (dataDir != null) {
+            return dataDir.getTotalSpace();
+        }
+
+        return NO_VALUE;
     }
 
     @Override
-    public long getDataDirectoryFreeSpace() {
-        return dataDir.getUsableSpace();
+    public long getDataDirectoryUsableSpace() {
+        if (dataDir != null) {
+            return dataDir.getUsableSpace();
+        }
+        return NO_VALUE;
     }
 
     @Override
     public long getJournalDirectoryTotalSpace() {
-        return journalDir.getTotalSpace();
+        if (journalDir != null) {
+            return journalDir.getTotalSpace();
+        }
+        return NO_VALUE;
     }
 
     @Override
-    public long getJournalDirectoryFreeSpace() {
-        return journalDir.getUsableSpace();
+    public long getJournalDirectoryUsableSpace() {
+        if (journalDir != null) {
+            return journalDir.getUsableSpace();
+        }
+        return NO_VALUE;
     }
 
     @Override
@@ -109,9 +148,9 @@ public class DiskUsage implements DiskUsageMBean {
 
     @Override
     public int getJournalDirectoryNumberOfFiles() {
-       final File dir = new File(getJournalDirectory());
-       final File[] files = dir.listFiles(new JournalFilenameFilter());
-       return files.length;
+        final File dir = new File(getJournalDirectory());
+        final File[] files = dir.listFiles(new JournalFilenameFilter());
+        return files.length;
     }
 }
 
@@ -130,5 +169,3 @@ class JournalFilenameFilter implements FilenameFilter {
         return name.endsWith(".log");
     }
 }
-
-
