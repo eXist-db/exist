@@ -108,7 +108,7 @@ public class TaskStatus implements Serializable {
         final TaskStatus status = new TaskStatus((Status)compositeData.get("status"));
         status._reason = compositeData.get("reason");
         status._statusChangeTime = (Date) compositeData.get("statusChangeTime");
-        status._percentageDone = ((Integer) compositeData.get("percentage")).intValue();
+        status._percentageDone = ((Integer) compositeData.get("percentage"));
         return status;
     }
 
