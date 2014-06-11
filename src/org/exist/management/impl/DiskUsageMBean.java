@@ -23,15 +23,26 @@
 package org.exist.management.impl;
 
 /**
- * Interface DiskUsageMBean
+ * Interface DiskUsageMBean.
  *
  * @author dizzzz@exist-db.org
  */
 public interface DiskUsageMBean 
 {
+
+    /**
+     * No disk space could be determined.
+     */
+    public static final long NO_VALUE = -1;
+
+    /**
+     * Directory is not defined.
+     */
+    public static final String NOT_CONFIGURED = "NOT_CONFIGURED";
+
     public String getDataDirectory();
     
-    public long getDataDirectoryFreeSpace();
+    public long getDataDirectoryUsableSpace();
     
     public long getDataDirectoryTotalSpace();
     
@@ -39,7 +50,7 @@ public interface DiskUsageMBean
     
     public String getJournalDirectory();
     
-    public long getJournalDirectoryFreeSpace();
+    public long getJournalDirectoryUsableSpace();
     
     public long getJournalDirectoryTotalSpace();
     
