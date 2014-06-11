@@ -63,7 +63,7 @@ public class JMXClient {
     public void connect(String address,int port) throws IOException {
         final JMXServiceURL url =
                 new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+address+":" + port + "/jmxrmi");
-        final Map<String, String[]> env = new HashMap<String, String[]>();
+        final Map<String, String[]> env = new HashMap<>();
         final String[] creds = {"guest", "guest"};
         env.put(JMXConnector.CREDENTIALS, creds);
 
@@ -169,17 +169,7 @@ public class JMXClient {
                     echo(String.format("%20s: %s", "Wait for write", Arrays.toString(writers)));
                 }
             }
-        } catch (final MBeanException e) {
-            error(e);
-        } catch (final AttributeNotFoundException e) {
-            error(e);
-        } catch (final InstanceNotFoundException e) {
-            error(e);
-        } catch (final ReflectionException e) {
-            error(e);
-        } catch (final IOException e) {
-            error(e);
-        } catch (final MalformedObjectNameException e) {
+        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
             error(e);
         }
     }
@@ -205,17 +195,7 @@ public class JMXClient {
                 echo(String.format("%22s: %s", "Error code", data.get("errcode")));
                 echo(String.format("%22s: %s", "Description", data.get("description")));
             }
-        } catch (final MBeanException e) {
-            error(e);
-        } catch (final AttributeNotFoundException e) {
-            error(e);
-        } catch (final InstanceNotFoundException e) {
-            error(e);
-        } catch (final ReflectionException e) {
-            error(e);
-        } catch (final IOException e) {
-            error(e);
-        } catch (final MalformedObjectNameException e) {
+        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
             error(e);
         }
     }
@@ -245,17 +225,7 @@ public class JMXClient {
                 final CompositeData data = (CompositeData) i.next();
                 echo(String.format("%15s %15s %30s %6s", data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
             }
-        } catch (final MBeanException e) {
-            error(e);
-        } catch (final AttributeNotFoundException e) {
-            error(e);
-        } catch (final InstanceNotFoundException e) {
-            error(e);
-        } catch (final ReflectionException e) {
-            error(e);
-        } catch (final IOException e) {
-            error(e);
-        } catch (final MalformedObjectNameException e) {
+        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
             error(e);
         }
     }
@@ -337,6 +307,7 @@ public class JMXClient {
         boolean displayInstance = false;
         boolean displayReport = false;
         boolean jobReport = false;
+
         for(final CLOption option : opts) {
             switch(option.getId()) {
                 case HELP_OPT :
@@ -388,6 +359,7 @@ public class JMXClient {
                     jobReport = true;
             }
         }
+
         try {
             final JMXClient stats = new JMXClient(dbInstance);
             stats.connect(address,port);

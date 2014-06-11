@@ -41,9 +41,7 @@ public class AgentFactory {
                 }
             } catch (final ClassNotFoundException e) {
                 LOG.warn("Class not found for JMX agent: " + className);
-            } catch (final IllegalAccessException e) {
-                LOG.warn("Failed to instantiate class for JMX agent: " + className);
-            } catch (final InstantiationException e) {
+            } catch (final IllegalAccessException | InstantiationException e) {
                 LOG.warn("Failed to instantiate class for JMX agent: " + className);
             }
             if (instance == null)
