@@ -85,12 +85,12 @@ public class TaskStatus implements Serializable {
     }
 
     public CompositeDataSupport getCompositeData() {
-        final Map<String, Object> data = new HashMap<String, Object>();
+        final Map<String, Object> data = new HashMap<>();
         CompositeDataSupport compositeData = null;
         data.put("status", status);
         data.put("statusChangeTime", _statusChangeTime);
         data.put("reason", _reason);
-        data.put("percentage", Integer.valueOf(_percentageDone));
+        data.put("percentage", _percentageDone);
         try {
             compositeData = new CompositeDataSupport(new CompositeType("TaskStatus", "Status of the task", //
                     new String[] { "status", "statusChangeTime", "reason", "percentage" }, //
@@ -108,7 +108,7 @@ public class TaskStatus implements Serializable {
         final TaskStatus status = new TaskStatus((Status)compositeData.get("status"));
         status._reason = compositeData.get("reason");
         status._statusChangeTime = (Date) compositeData.get("statusChangeTime");
-        status._percentageDone = ((Integer) compositeData.get("percentage")).intValue();
+        status._percentageDone = ((Integer) compositeData.get("percentage"));
         return status;
     }
 

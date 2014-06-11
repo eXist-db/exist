@@ -45,7 +45,6 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.exist.util.ConfigurationHelper;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
 

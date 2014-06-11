@@ -9,7 +9,7 @@ package org.exist.management;
  */
 public class CacheManager implements CacheManagerMBean {
 
-    private org.exist.storage.CacheManager manager;
+    private final org.exist.storage.CacheManager manager;
 
     public CacheManager(org.exist.storage.CacheManager manager) {
         this.manager = manager;
