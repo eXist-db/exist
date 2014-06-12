@@ -70,6 +70,7 @@ public class ExportGUI extends javax.swing.JFrame
     private javax.swing.JCheckBox    zipBtn;
     private javax.swing.JCheckBox    incrementalBtn;
     private JCheckBox                directAccessBtn;
+    private javax.swing.JCheckBox    scanBtn;
     private javax.swing.JLabel       jLabel1;
     private javax.swing.JLabel       jLabel2;
     private javax.swing.JMenu        jMenu1;
@@ -156,7 +157,8 @@ public class ExportGUI extends javax.swing.JFrame
         jToolBar1       = new javax.swing.JToolBar();
         startBtn        = new javax.swing.JButton();
         exportBtn       = new javax.swing.JButton();
-        incrementalBtn  = new JCheckBox( "Incremental backup" );
+        incrementalBtn  = new JCheckBox( "Incremental" );
+        scanBtn         = new JCheckBox( "Scan docs" );
         directAccessBtn = new JCheckBox( "Direct access" );
         zipBtn			= new JCheckBox("Create ZIP");
         outputDir       = new javax.swing.JTextField();
@@ -246,6 +248,10 @@ public class ExportGUI extends javax.swing.JFrame
         jToolBar1.add( exportBtn );
 
         jToolBar1.add( incrementalBtn );
+        scanBtn.setSelected(true);
+        scanBtn.setToolTipText( "Perform additional checks; scans every XML document" );
+        jToolBar1.add( scanBtn );
+        directAccessBtn.setToolTipText( "Bypass collection index by scanning collection store" );
         jToolBar1.add( directAccessBtn );
         jToolBar1.add( zipBtn );
 
@@ -496,12 +502,14 @@ public class ExportGUI extends javax.swing.JFrame
             
             selected = zipBtn.getSelectedObjects();
             final boolean zip = ( selected != null ) && ( selected[0] != null );
-            
+
             displayMessage( "Starting export ..." );
+            final long start = System.currentTimeMillis();
             final SystemExport sysexport   = new SystemExport( broker, callback, null, directAccess );
             final File         file        = sysexport.export( exportTarget, incremental, zip, errorList );
 
             displayMessage( "Export to " + file.getAbsolutePath() + " completed successfully." );
+            displayMessage( "Export took " + (System.currentTimeMillis() - start) + "ms.");
             progress.setString( "" );
         }
         catch( final EXistException e ) {
@@ -524,9 +532,12 @@ public class ExportGUI extends javax.swing.JFrame
 
         try {
             broker = pool.get( pool.getSecurityManager().getSystemSubject() );
-            final Object[]                                           selected     = directAccessBtn.getSelectedObjects();
-            final boolean                                            directAccess = ( selected != null ) && ( selected[0] != null );
-            final ConsistencyCheck                                   checker      = new ConsistencyCheck( broker, directAccess );
+            Object[] selected     = directAccessBtn.getSelectedObjects();
+            final boolean directAccess = ( selected != null ) && ( selected[0] != null );
+            selected = scanBtn.getSelectedObjects();
+            final boolean scan = ( selected != null ) && ( selected[0] != null );
+
+            final ConsistencyCheck                                   checker      = new ConsistencyCheck( broker, directAccess, scan );
             final org.exist.backup.ConsistencyCheck.ProgressCallback cb           = new ConsistencyCheck.ProgressCallback() {
                 public void startDocument( String path, int current, int count )
                 {
