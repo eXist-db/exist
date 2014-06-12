@@ -52,6 +52,7 @@ public class ConsistencyCheckTask implements SystemTask {
     private boolean paused = false;
     private boolean incremental = false;
     private boolean incrementalCheck = false;
+    private boolean checkDocs = false;
     private int maxInc = -1;
 
     private File lastExportedBackup = null;
@@ -64,6 +65,7 @@ public class ConsistencyCheckTask implements SystemTask {
     public final static String INCREMENTAL_PROP_NAME = "incremental";
     public final static String INCREMENTAL_CHECK_PROP_NAME = "incremental-check";
     public final static String MAX_PROP_NAME = "max";
+    public final static String CHECK_DOCS_PROP_NAME = "check-documents";
 
     private final static LoggingCallback logCallback = new LoggingCallback();
     
@@ -104,6 +106,9 @@ public class ConsistencyCheckTask implements SystemTask {
         } catch (final NumberFormatException e) {
             throw new EXistException("Parameter 'max' has to be an integer");
         }
+
+        final String check = properties.getProperty(CHECK_DOCS_PROP_NAME, "no");
+        checkDocs = check.equalsIgnoreCase("YES");
     }
 
     @Override
@@ -134,7 +139,7 @@ public class ConsistencyCheckTask implements SystemTask {
                 report = openLog();
                 final CheckCallback cb = new CheckCallback(report);
 
-                final ConsistencyCheck check = new ConsistencyCheck(broker, false);
+                final ConsistencyCheck check = new ConsistencyCheck(broker, false, checkDocs);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_CHECK));
                 errors = check.checkAll(cb);
                 
