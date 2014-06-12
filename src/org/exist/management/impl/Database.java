@@ -29,17 +29,17 @@ import org.exist.storage.DBBroker;
 
 public class Database implements DatabaseMBean {
 
-    private static String[] itemNames = {
+    private static final String[] itemNames = {
         "owner", "referenceCount", "stack", "stackAcquired"};
     
-    private static String[] itemDescriptions = {
+    private static final String[] itemDescriptions = {
         "Name of the thread owning the broker",
         "Number of references held by the thread",
         "Stack trace",
         "Broker acquired"
     };
     
-    private static String[] indexNames = { "owner" };
+    private static final String[] indexNames = {"owner"};
 
     private final BrokerPool pool;
 
@@ -124,11 +124,11 @@ public class Database implements DatabaseMBean {
     }
     
     public String printStackTrace(Thread thread) {
-    	final StackTraceElement[] stack = thread.getStackTrace();
+        final StackTraceElement[] stackElements = thread.getStackTrace();
     	final StringWriter writer = new StringWriter();
-    	final int showItems = stack.length > 20 ? 20 : stack.length;
+        final int showItems = stackElements.length > 20 ? 20 : stackElements.length;
 		for (int i = 0; i < showItems; i++) {
-			writer.append(stack[i].toString()).append('\n');
+            writer.append(stackElements[i].toString()).append('\n');
 		}
 		return writer.toString();
     }

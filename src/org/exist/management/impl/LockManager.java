@@ -21,7 +21,6 @@
  */
 package org.exist.management.impl;
 
-import org.exist.management.impl.LockManagerMBean;
 import org.exist.storage.lock.DeadlockDetection;
 import org.exist.storage.lock.LockInfo;
 
@@ -37,6 +36,7 @@ import java.util.Map;
  */
 public class LockManager implements LockManagerMBean {
 
+    @Override
     public TabularData getWaitingThreads() {
         final Map<String, LockInfo> map = DeadlockDetection.getWaitingThreads();
         try {
@@ -47,9 +47,8 @@ public class LockManager implements LockManagerMBean {
         }
     }
 
-    private static String[] itemNames = { "waitingThread", "lockType", "lockMode", "id", "owner", "waitingForRead", "waitingForWrite" };
-    private static String[] itemDescriptions = {
-            "Name of the thread waiting for the lock",
+    private static final String[] itemNames = {"waitingThread", "lockType", "lockMode", "id", "owner", "waitingForRead", "waitingForWrite"};
+    private static final String[] itemDescriptions = {            "Name of the thread waiting for the lock",
             "Type of the lock (COLLECTION or RESOURCE)",
             "Mode of the lock (READ or WRITE)",
             "Id of the lock (resource or collection path)",
@@ -57,19 +56,27 @@ public class LockManager implements LockManagerMBean {
             "Names of threads currently waiting for a read lock",
             "Names of threads currently waiting for a write lock"
     };
-    private static String[] indexNames = { "waitingThread" };
+    private static final String[] indexNames = {"waitingThread"};
 
     private TabularData lockMapToComposite(Map<String, LockInfo> map) throws OpenDataException {
-        final OpenType<?>[] itemTypes = { SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, new ArrayType<Object>(1, SimpleType.STRING),
-                new ArrayType<Object>(1, SimpleType.STRING), new ArrayType<Object>(1, SimpleType.STRING) };
+
+        final OpenType<?>[] itemTypes = {
+            SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING,
+            new ArrayType<>(1, SimpleType.STRING), new ArrayType<>(1, SimpleType.STRING), new ArrayType<>(1, SimpleType.STRING)
+        };
+
         final CompositeType lockType = new CompositeType("lockInfo", "Provides information on a thread waiting for a lock",
                 itemNames, itemDescriptions, itemTypes);
+
         final TabularType tabularType = new TabularType("waitingThreads", "Lists all threads waiting for a lock", lockType, indexNames);
         final TabularDataSupport data = new TabularDataSupport(tabularType);
+
         for (final Map.Entry<String, LockInfo> entry : map.entrySet()) {
             final LockInfo info = entry.getValue();
-            final Object[] itemValues = {entry.getKey(), info.getLockType(), info.getLockMode(), info.getId(), info.getOwners(), info.getWaitingForRead(),
-                    info.getWaitingForWrite()};
+            final Object[] itemValues = {
+                entry.getKey(), info.getLockType(), info.getLockMode(), info.getId(),
+                info.getOwners(), info.getWaitingForRead(), info.getWaitingForWrite()
+            };
             data.put(new CompositeDataSupport(lockType, itemNames, itemValues));
         }
         return data;
