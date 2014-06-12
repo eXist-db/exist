@@ -21,6 +21,7 @@
  */
 package org.exist.backup;
 
+import org.exist.storage.StorageAddress;
 import org.w3c.dom.Node;
 
 import org.exist.collections.Collection;
@@ -47,10 +48,7 @@ import org.exist.xquery.TerminatedException;
 
 import java.io.IOException;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -65,12 +63,19 @@ public class ConsistencyCheck
     private DBBroker           broker;
     private int                defaultIndexDepth;
     private boolean            directAccess      = false;
+    private boolean            checkDocs        = false;
 
-    public ConsistencyCheck( DBBroker broker, boolean directAccess )
+    /**
+     * @param broker the db broker to use
+     * @param directAccess set to true to bypass the collections.dbx index and perform a low-level scan instead
+     * @param checkDocs set to true to perform additional checks on every document (slow)
+     */
+    public ConsistencyCheck( DBBroker broker, boolean directAccess, boolean checkDocs)
     {
         this.broker            = broker;
         this.defaultIndexDepth = ( (NativeBroker)broker ).getDefaultIndexDepth();
         this.directAccess      = directAccess;
+        this.checkDocs = checkDocs;
     }
 
     /**
@@ -214,12 +219,47 @@ public class ConsistencyCheck
         try {
             final DocumentCallback cb = new DocumentCallback( errorList, progress, true );
             broker.getResourcesFailsafe( cb, directAccess );
+            cb.checkDocs();
         }
         finally {
             AccountImpl.getSecurityProperties().enableCheckPasswords(true);
         }
     }
 
+    /**
+     * Check if data for the given XML document exists. Tries to load the document's root element.
+     * This check is certainly not as comprehensive as {@link #checkXMLTree(org.exist.dom.DocumentImpl)},
+     * but much faster.
+     *
+     * @param doc the document object to check
+     * @return
+     */
+    public ErrorReport checkDocument(final DocumentImpl doc) {
+        final DOMFile domDb = ( (NativeBroker)broker ).getDOMFile();
+        return (ErrorReport)new DOMTransaction( this, domDb, Lock.WRITE_LOCK, doc ) {
+            public Object start() {
+                EmbeddedXMLStreamReader reader = null;
+                try {
+                    final ElementImpl root = (ElementImpl)doc.getDocumentElement();
+                    if (root == null) {
+                        return new ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, "Failed to access document data");
+                    }
+                } catch( final Exception e ) {
+                    e.printStackTrace();
+                    return( new ErrorReport.ResourceError( org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED, e.getMessage(), e ) );
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (XMLStreamException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                return null;
+            }
+        }.run();
+    }
 
     /**
      * Check the persistent DOM of a document. The method traverses the entire node tree and checks it for consistency, including node relationships,
@@ -233,11 +273,11 @@ public class ConsistencyCheck
     {
         final DOMFile domDb = ( (NativeBroker)broker ).getDOMFile();
         return( (ErrorReport)new DOMTransaction( this, domDb, Lock.WRITE_LOCK, doc ) {
-                    public Object start()
-                    {
+                    public Object start() {
+                        EmbeddedXMLStreamReader reader = null;
                         try {
                             final ElementImpl             root            = (ElementImpl)doc.getDocumentElement();
-                            final EmbeddedXMLStreamReader reader          = broker.getXMLStreamReader( root, true );
+                            reader = broker.getXMLStreamReader( root, true );
                             NodeId                  nodeId;
                             boolean                 attribsAllowed  = false;
                             int                     expectedAttribs = 0;
@@ -348,6 +388,13 @@ public class ConsistencyCheck
                         }
                         finally {
                             elementStack.clear();
+                            if (reader != null) {
+                                try {
+                                    reader.close();
+                                } catch (XMLStreamException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         }
                     }
                 }.run() );
@@ -385,6 +432,7 @@ public class ConsistencyCheck
         private boolean           checkDocs;
         private int               lastPercentage = -1;
         private Agent             jmxAgent       = AgentFactory.getInstance();
+        private ArrayList<DocumentImpl> docs = new ArrayList<>(8192);
 
         private DocumentCallback( List<ErrorReport> errors, ProgressCallback progress, boolean checkDocs )
         {
@@ -426,22 +474,8 @@ public class ConsistencyCheck
                     }
 
                     if( ( type == DocumentImpl.XML_FILE ) && !directAccess ) {
-                        final ErrorReport report = checkXMLTree( doc );
-
-                        if( report != null ) {
-
-                            if( report instanceof ErrorReport.ResourceError ) {
-                                ( (ErrorReport.ResourceError)report ).setDocumentId( docId );
-                            }
-
-                            if( errors != null ) {
-                                errors.add( report );
-                            }
-
-                            if( progress != null ) {
-                                progress.error( report );
-                            }
-                        }
+                        // add to the list of pending documents. They will be checked later
+                        docs.add(doc);
                     }
                 }
             }
@@ -462,6 +496,44 @@ public class ConsistencyCheck
                 }
             }
             return( true );
+        }
+
+        /**
+         * Sort the documents in the pending list by their storage page, then
+         * check each of them.
+         */
+        public void checkDocs() {
+            DocumentImpl documents[] = new DocumentImpl[docs.size()];
+            docs.toArray(documents);
+            Arrays.sort(documents, new Comparator<DocumentImpl>() {
+                @Override
+                public int compare(DocumentImpl d1, DocumentImpl d2) {
+                    final long a1 = StorageAddress.pageFromPointer(d1.getFirstChildAddress());
+                    final long a2 = StorageAddress.pageFromPointer(d2.getFirstChildAddress());
+                    return Long.compare(a1, a2);
+                }
+            });
+            for (DocumentImpl doc : documents) {
+                final ErrorReport report;
+                if (ConsistencyCheck.this.checkDocs) {
+                    report = checkXMLTree(doc);
+                } else {
+                    report = checkDocument(doc);
+                }
+                if( report != null ) {
+                    if(report instanceof ErrorReport.ResourceError) {
+                        ( (ErrorReport.ResourceError)report ).setDocumentId( doc.getDocId() );
+                    }
+
+                    if(errors != null) {
+                        errors.add(report);
+                    }
+
+                    if(progress != null) {
+                        progress.error(report);
+                    }
+                }
+            }
         }
     }
 }
