@@ -10,13 +10,16 @@ import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;
+import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
 import org.exist.util.Configuration;
+import org.exist.util.LockException;
 import org.exist.util.UTF8;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Stack;
 
 /**
  * Handles access to the central collection storage file (collections.dbx). 
@@ -35,6 +38,9 @@ public class CollectionStore extends BFile {
 
     public final static byte KEY_TYPE_COLLECTION = 0;
     public final static byte KEY_TYPE_DOCUMENT = 1;
+
+    private Stack<Integer> freeResourceIds = new Stack<>();
+    private Stack<Integer> freeCollectionIds = new Stack<>();
 
     /**
      * @param pool
@@ -58,13 +64,6 @@ public class CollectionStore extends BFile {
     }
 
     /* (non-Javadoc)
-     * @see org.dbxml.core.filer.BTree#getBTreeSyncPeriod()
-     */
-    protected long getBTreeSyncPeriod() {
-        return 1000;
-    }
-
-    /* (non-Javadoc)
      * @see org.exist.storage.store.BFile#getDataSyncPeriod()
      */
     @Override
@@ -80,6 +79,71 @@ public class CollectionStore extends BFile {
             flushed = flushed | super.flush();
         }
         return flushed;
+    }
+
+    public void freeResourceId(int id) {
+        final Lock lock = getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+
+            freeResourceIds.push(id);
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + getFile().getName(), e);
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
+    }
+
+    public int getFreeResourceId() {
+        int freeDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;
+        final Lock lock = getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+
+            if (!freeResourceIds.isEmpty()) {
+                freeDocId = freeResourceIds.pop();
+            }
+        } catch (final LockException e) {
+            LOG.warn("Failed to acquire lock on " + getFile().getName(), e);
+            return DocumentImpl.UNKNOWN_DOCUMENT_ID;
+            //TODO : rethrow ? -pb
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
+        return freeDocId;
+    }
+
+    public void freeCollectionId(int id) {
+        final Lock lock = getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+
+            freeCollectionIds.push(id);
+        } catch (LockException e) {
+            LOG.warn("Failed to acquire lock on " + getFile().getName(), e);
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
+    }
+
+    public int getFreeCollectionId() {
+        int freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;
+        final Lock lock = getLock();
+        try {
+            lock.acquire(Lock.WRITE_LOCK);
+
+            if (!freeCollectionIds.isEmpty()) {
+                freeCollectionId = freeCollectionIds.pop();
+            }
+            LOG.info("Reusing collection id " + freeCollectionId);
+        } catch (final LockException e) {
+            LOG.warn("Failed to acquire lock on " + getFile().getName(), e);
+            return Collection.UNKNOWN_COLLECTION_ID;
+            //TODO : rethrow ? -pb
+        } finally {
+            lock.release(Lock.WRITE_LOCK);
+        }
+        return freeCollectionId;
     }
 
     protected void dumpValue(Writer writer, Value value) throws IOException {
