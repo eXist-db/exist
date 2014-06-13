@@ -1006,6 +1006,9 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
      */
     public void read(final DBBroker broker, final VariableByteInput istream) throws IOException, PermissionDeniedException {
         collectionId = istream.readInt();
+        if (collectionId < 0) {
+            throw new PermissionDeniedException("Internal error reading collection: invalid collection id");
+        }
         final int collLen = istream.readInt();
         subCollections = new ObjectHashSet<XmldbURI>(collLen == 0 ? 19 : collLen); //TODO what is this number 19?
         for (int i = 0; i < collLen; i++) {
