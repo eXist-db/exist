@@ -74,7 +74,7 @@ public abstract class QueryFacetCollector extends Collector {
 
     protected final DocumentSet docs;
 
-    protected final List<MatchingDocs> matchingDocs = new ArrayList<MatchingDocs>();
+    protected final List<MatchingDocs> matchingDocs = new ArrayList<>();
     protected final FacetArrays facetArrays;
     
     protected final TaxonomyReader taxonomyReader;
@@ -170,7 +170,7 @@ public abstract class QueryFacetCollector extends Collector {
             return Collections.singleton(searchParams.indexingParams.getCategoryListParams(null));
         }
 
-        HashSet<CategoryListParams> clps = new HashSet<CategoryListParams>();
+        HashSet<CategoryListParams> clps = new HashSet<>();
         for (FacetRequest fr : searchParams.facetRequests) {
             clps.add(searchParams.indexingParams.getCategoryListParams(fr.categoryPath));
         }
@@ -226,7 +226,7 @@ public abstract class QueryFacetCollector extends Collector {
         // compute top-K
         final int[] children = arrays.children();
         final int[] siblings = arrays.siblings();
-        List<FacetResult> res = new ArrayList<FacetResult>();
+        List<FacetResult> res = new ArrayList<>();
         for (FacetRequest fr : searchParams.facetRequests) {
             int rootOrd = taxonomyReader.getOrdinal(fr.categoryPath);
             // category does not exist

@@ -157,8 +157,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     public void remove() throws DBException {
         try {
             String[] files = directory.listAll();
-            for (int i = 0; i < files.length; i++) {
-                String file = files[i];
+            for (String file : files) {
                 directory.deleteFile(file);
             }
             close();
@@ -328,6 +327,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     private void waitForReadersAndReopen() {
         while (readerUseCount > 0 || searcherUseCount > 0) {
             try {
+                // DW: feedback: ".wait invoked outside a synchronized context"
                 wait();
             } catch (InterruptedException e) {
                 //Nothing special to do

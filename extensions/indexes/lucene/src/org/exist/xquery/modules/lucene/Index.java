@@ -23,7 +23,6 @@ package org.exist.xquery.modules.lucene;
 
 import org.apache.log4j.Logger;
 
-import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 

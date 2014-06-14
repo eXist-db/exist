@@ -183,13 +183,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         switch (mode) {
             case StreamListener.STORE:
                 if (nodesToWrite == null)
-                    nodesToWrite = new ArrayList<PendingDoc>();
+                    nodesToWrite = new ArrayList<>();
                 else
                     nodesToWrite.clear();
                 cachedNodesSize = 0;
                 break;
             case StreamListener.REMOVE_SOME_NODES:
-                nodesToRemove = new TreeSet<NodeId>();
+                nodesToRemove = new TreeSet<>();
                 break;
         }
     }
@@ -304,9 +304,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Term dt = new Term(FIELD_DOC_ID, bytes);
                 writer.deleteDocuments(dt);
             }
-        } catch (IOException e) {
-            LOG.error("Error while removing lucene index: " + e.getMessage(), e);
-        } catch (PermissionDeniedException e) {
+        } catch (IOException | PermissionDeniedException e) {
             LOG.error("Error while removing lucene index: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
@@ -938,7 +936,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @return List of QName objects on which indexes are defined
      */
     public List<QName> getDefinedIndexes(List<QName> qnames) {
-        List<QName> indexes = new ArrayList<QName>(20);
+        List<QName> indexes = new ArrayList<>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
                 if (qname.getLocalName() == null || qname.getNamespaceURI() == null)
@@ -1045,7 +1043,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) {
-        TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
+        TreeMap<String, Occurrences> map = new TreeMap<>();
         IndexReader reader = null;
         try {
             reader = index.getReader();
@@ -1092,6 +1090,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                     int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
                                     nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                                 }
+                                // DW: warning: nodes can be null?
                                 if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
                                     Occurrences oc = map.get(term);
                                     if (oc == null) {
@@ -1156,7 +1155,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
     
     private void write() {
-        if (nodesToWrite == null || nodesToWrite.size() == 0)
+        if (nodesToWrite == null || nodesToWrite.isEmpty())
             return;
         IndexWriter writer = null;
         try {
@@ -1167,8 +1166,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // docId also needs to be indexed
             IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, IntField.TYPE_NOT_STORED);
 
-            final List<Field> metas = new ArrayList<Field>();
-            final List<CategoryPath> paths = new ArrayList<CategoryPath>();
+            final List<Field> metas = new ArrayList<>();
+            final List<CategoryPath> paths = new ArrayList<>();
 
             broker.getIndexController().streamMetas(new MetaStreamListener() {
                 @Override
@@ -1243,7 +1242,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
-            nodesToWrite = new ArrayList<PendingDoc>();
+            nodesToWrite = new ArrayList<>();
             cachedNodesSize = 0;
         }
     }
@@ -1277,7 +1276,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
                 Iterator<LuceneIndexConfig> configIter = config.getConfig(path);
                 if (configIter != null) {
-                    if (contentStack == null) contentStack = new Stack<TextExtractor>();
+                    if (contentStack == null) contentStack = new Stack<>();
                     while (configIter.hasNext()) {
                         LuceneIndexConfig configuration = configIter.next();
                         if (configuration.match(path)) {
@@ -1365,7 +1364,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public class LuceneMatch extends Match {
 
         private float score = 0.0f;
-        private Query query;
+        private final Query query;
 
         public LuceneMatch(int contextId, NodeId nodeId, Query query) {
             super(contextId, nodeId, null);
@@ -1409,13 +1408,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.score = score;
         }
 
+        // DW: missing hashCode() ?
         @Override
         public boolean equals(Object other) {
-            if(!(other instanceof LuceneMatch))
+            if (!(other instanceof LuceneMatch)) {
                 return false;
+            }
             LuceneMatch o = (LuceneMatch) other;
-            return (nodeId == o.nodeId || nodeId.equals(o.nodeId))  &&
-                query == ((LuceneMatch)other).query;
+            return (nodeId == o.nodeId || nodeId.equals(o.nodeId))
+                    && query == ((LuceneMatch) other).query;
         }
 
         @Override

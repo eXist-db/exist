@@ -183,11 +183,12 @@ public class Query extends Function implements Optimizable {
         long start = System.currentTimeMillis();
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
-        LuceneIndexWorker index = (LuceneIndexWorker)
-                context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+        LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+
+        // DW: contextSequence can be null
         DocumentSet docs = contextSequence.getDocumentSet();
         Item key = getKey(contextSequence, null);
-        List<QName> qnames = new ArrayList<QName>(1);
+        List<QName> qnames = new ArrayList<>(1);
         qnames.add(contextQName);
         Properties options = parseOptions(contextSequence, null);
         try {
@@ -197,9 +198,7 @@ public class Query extends Function implements Optimizable {
             else
                 preselectResult = index.query(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
                     qnames, key.getStringValue(), NodeSet.DESCENDANT, options);
-        } catch (IOException e) {
-            throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
-        } catch (org.apache.lucene.queryparser.classic.ParseException e) {
+        } catch (IOException | org.apache.lucene.queryparser.classic.ParseException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
         LOG.trace("Lucene query took " + (System.currentTimeMillis() - start));
@@ -232,7 +231,7 @@ public class Query extends Function implements Optimizable {
                 Item key = getKey(contextSequence, contextItem);
                 List<QName> qnames = null;
                 if (contextQName != null) {
-                    qnames = new ArrayList<QName>(1);
+                    qnames = new ArrayList<>(1);
                     qnames.add(contextQName);
                 }
                 Properties options = parseOptions(contextSequence, contextItem);
@@ -243,9 +242,7 @@ public class Query extends Function implements Optimizable {
                     else
                         result = index.query(context, getExpressionId(), docs, inNodes, qnames,
                                 key.getStringValue(), NodeSet.ANCESTOR, options);
-                } catch (IOException e) {
-                    throw new XPathException(this, e.getMessage());
-                } catch (org.apache.lucene.queryparser.classic.ParseException e) {
+                } catch (IOException | org.apache.lucene.queryparser.classic.ParseException e) {
                     throw new XPathException(this, e.getMessage());
                 }
             }
@@ -253,6 +250,7 @@ public class Query extends Function implements Optimizable {
                 context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
             }
         } else {
+            // DW: contextSequence can be null
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
             result = getArgument(0).eval(contextSequence).toNodeSet();
         }
@@ -299,9 +297,7 @@ public class Query extends Function implements Optimizable {
                 }
             }
             return options;
-        } catch (XMLStreamException e) {
-            throw new XPathException(this, "Error while parsing options to ft:query: " + e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (XMLStreamException | IOException e) {
             throw new XPathException(this, "Error while parsing options to ft:query: " + e.getMessage(), e);
         }
     }
