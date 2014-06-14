@@ -1,31 +1,22 @@
 package org.exist.storage.btree;
 
 import org.exist.EXistException;
+import org.exist.indexing.Index;
 import org.exist.indexing.StructuralIndex;
-import org.exist.security.internal.SubjectImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.structural.NativeStructuralIndex;
 import org.exist.storage.structural.NativeStructuralIndexWorker;
-import org.exist.storage.sync.Sync;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.xquery.TerminatedException;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 
 /**
- *
+ * Utility to rebuild any of the b+-tree based index files. Scans through all leaf pages to
+ * reconstruct the inner b+-tree.
  */
 public class Repair {
-
-    private static final String[] INDEXES = {
-            "collections", "dom", "structure"
-    };
 
     private BrokerPool pool;
 
@@ -49,16 +40,21 @@ public class Repair {
                 NativeStructuralIndexWorker index = (NativeStructuralIndexWorker)
                         broker.getIndexController().getWorkerByIndexName(StructuralIndex.STRUCTURAL_INDEX_ID);
                 btree = index.getStorage();
+            } else {
+                // use index id defined in conf.xml
+                Index index = pool.getIndexManager().getIndexByName(id);
+                if (index != null) {
+                    btree = index.getStorage();
+                }
             }
             if (btree == null) {
-                System.console().printf("Unkown index: %s", id);
+                System.console().printf("Unkown index: %s\n", id);
                 return;
             }
             final Lock lock = btree.getLock();
             try {
                 lock.acquire(Lock.WRITE_LOCK);
 
-//                btree.scanSequential();
                 System.console().printf("Rebuilding %15s ...", btree.getFile().getName());
                 btree.rebuild();
                 System.out.println("Done");
@@ -92,15 +88,20 @@ public class Repair {
     }
 
     public static void main(String[] args) {
-        Repair repair = new Repair();
-
         if (args.length == 0) {
-            for (String index : INDEXES) {
-                repair.repair(index);
-            }
+            System.out.println("\nUsage: " + Repair.class.getName() + " [index-name]+\n");
+            System.out.println("Rebuilds the index files specified as arguments. Can be applied to");
+            System.out.println("any of the b+-tree based indexes: collections, dom, structure, ngram-index.");
+            System.out.println("The b+-tree is rebuild by scanning all leaf pages in the .dbx file.");
+            System.out.println("Crash recovery uses the same operation.\n");
+            System.out.println("Example call to rebuild all indexes:\n");
+            System.out.println(Repair.class.getName() + " dom collections structure ngram-index");
         } else {
-            repair.repair(args[0]);
+            Repair repair = new Repair();
+            for (String arg: args) {
+                repair.repair(arg);
+            }
+            repair.shutdown();
         }
-        repair.shutdown();
     }
 }

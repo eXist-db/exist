@@ -28,6 +28,7 @@ import org.exist.indexing.IndexWorker;
 import org.exist.indexing.RawBackupSupport;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BFile;
 import org.exist.util.DatabaseConfigurationException;
@@ -110,6 +111,10 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
 
     public int getN() {
         return gramSize;
+    }
+
+    public BTree getStorage() {
+        return db;
     }
 
     public void backupToArchive(RawDataBackup backup) throws IOException {

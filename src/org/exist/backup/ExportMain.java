@@ -50,6 +50,8 @@ public class ExportMain
     private final static int                  NO_CHECK_OPT      = 'n';
     private final static int                  DIRECT_ACCESS_OPT = 'D';
     private final static int                  ZIP_OPT           = 'z';
+    private final static int                  CHECK_DOCS_OPT    = 's';
+    private final static int                  VERBOSE_OPT       = 'v';
 
     private final static CLOptionDescriptor[] OPTIONS           = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit." ),
@@ -59,7 +61,11 @@ public class ExportMain
         new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED, EXPORT_OPT, "export database contents while preserving as much data as possible" ),
         new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT, "create incremental backup (use with --export|-x)" ),
         new CLOptionDescriptor( "nocheck", CLOptionDescriptor.ARGUMENT_DISALLOWED, NO_CHECK_OPT, "do not run a consistency check. Just export the data." ),
-        new CLOptionDescriptor( "zip", CLOptionDescriptor.ARGUMENT_DISALLOWED, ZIP_OPT, "write output to a ZIP instead of a file system directory" )
+        new CLOptionDescriptor( "check-docs", CLOptionDescriptor.ARGUMENT_DISALLOWED, CHECK_DOCS_OPT, "scan every document to find errors in the " +
+                "the nodes stored (costs time)" ),
+        new CLOptionDescriptor( "zip", CLOptionDescriptor.ARGUMENT_DISALLOWED, ZIP_OPT, "write output to a ZIP instead of a file system directory" ),
+        new CLOptionDescriptor( "verbose", CLOptionDescriptor.ARGUMENT_DISALLOWED, VERBOSE_OPT, "print processed resources " +
+                "to stdout" )
     };
 
     protected static BrokerPool startDB( String configFile )
@@ -100,6 +106,8 @@ public class ExportMain
         boolean        direct       = false;
         boolean        zip          = false;
         boolean        nocheck      = false;
+        boolean        verbose      = false;
+        boolean        checkDocs    = false;
         String         exportTarget = "export/";
         String         dbConfig     = null;
 
@@ -145,8 +153,19 @@ public class ExportMain
                     zip = true;
                     break;
                 }
+
                 case NO_CHECK_OPT: {
                     nocheck = true;
+                    break;
+                }
+
+                case CHECK_DOCS_OPT: {
+                    checkDocs = true;
+                    break;
+                }
+
+                case VERBOSE_OPT: {
+                    verbose = true;
                     break;
                 }
             }
@@ -165,7 +184,7 @@ public class ExportMain
             List<ErrorReport> errors  = null;
             
             if(!nocheck) {
-                final ConsistencyCheck  checker = new ConsistencyCheck( broker, direct );
+                final ConsistencyCheck  checker = new ConsistencyCheck( broker, direct, checkDocs );
                 errors = checker.checkAll( new CheckCallback() );
             }
 
@@ -182,8 +201,8 @@ public class ExportMain
                 if( !dir.exists() ) {
                     dir.mkdirs();
                 }
-                final SystemExport sysexport = new SystemExport( broker, new Callback(), null, direct );
-                sysexport.export( exportTarget, incremental, true, errors );
+                final SystemExport sysexport = new SystemExport( broker, new Callback(verbose), null, direct );
+                sysexport.export( exportTarget, incremental, zip, errors );
             }
         }
         catch( final EXistException e ) {
@@ -205,17 +224,27 @@ public class ExportMain
         System.exit( retval );
     }
 
-    private static class Callback implements SystemExport.StatusCallback
-    {
+    private static class Callback implements SystemExport.StatusCallback {
+
+        private boolean verbose = false;
+
+        public Callback(boolean verbose) {
+            this.verbose = verbose;
+        }
+
         public void startCollection( String path )
         {
-            System.out.println( "Entering collection " + path + " ..." );
+            if (verbose) {
+                System.out.println("Entering collection " + path + " ...");
+            }
         }
 
 
         public void startDocument( String name, int count, int docsCount )
         {
-            System.out.println( "Writing document " + name + " [" + count + " of " + docsCount + ']' );
+            if (verbose) {
+                System.out.println("Writing document " + name + " [" + (count + 1) + " of " + docsCount + ']');
+            }
         }
 
 

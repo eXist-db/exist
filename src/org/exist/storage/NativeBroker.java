@@ -1520,7 +1520,7 @@ public class NativeBroker extends DBBroker {
                         //... from the cache
                         collectionsCache.remove(collection);
                         //and free its id for any futher use
-                        freeCollectionId(transaction, collection.getId());
+                        collectionsDb.freeCollectionId(collection.getId());
                     } else {
                         //Simply save the collection on disk
                         //It will remain cached
@@ -1597,7 +1597,7 @@ public class NativeBroker extends DBBroker {
                     docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
                     
                     //Make doc's id available again
-                    freeResourceId(transaction, doc.getDocId());
+                    collectionsDb.freeResourceId(doc.getDocId());
                 }
                 
                 //now that the database has been updated, update the binary collections on disk
@@ -1694,83 +1694,13 @@ public class NativeBroker extends DBBroker {
     }
 
     /**
-     * Release the collection id assigned to a collection so it can be
-     * reused later.
-     * 
-     * @param id
-     * @throws PermissionDeniedException
-     */
-    protected void freeCollectionId(Txn transaction, int id) throws PermissionDeniedException {
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(Lock.WRITE_LOCK);
-            final Value key = new CollectionStore.CollectionKey(CollectionStore.FREE_COLLECTION_ID_KEY);
-            final Value value = collectionsDb.get(key);
-            if (value != null) {
-                final byte[] data = value.getData();
-                final byte[] ndata = new byte[data.length + Collection.LENGTH_COLLECTION_ID];
-                System.arraycopy(data, 0, ndata, OFFSET_VALUE, data.length);
-                ByteConversion.intToByte(id, ndata, OFFSET_COLLECTION_ID);
-                collectionsDb.put(transaction, key, ndata, true);
-            } else {
-                final byte[] data = new byte[Collection.LENGTH_COLLECTION_ID];
-                ByteConversion.intToByte(id, data, OFFSET_COLLECTION_ID);
-                collectionsDb.put(transaction, key, data, true);
-            }
-        } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
-            //TODO : rethrow ? -pb
-        //} catch (ReadOnlyException e) {
-            //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-        } finally {
-            lock.release(Lock.WRITE_LOCK);
-        }
-    }
-
-    /**
-     * Get the next free collection id. If a collection is removed, its collection id
-     * is released so it can be reused.
-     * 
-     * @return next free collection id.
-     * @throws ReadOnlyException
-     */
-    public int getFreeCollectionId(Txn transaction) throws ReadOnlyException {
-        int freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(Lock.WRITE_LOCK);
-            final Value key = new CollectionStore.CollectionKey(CollectionStore.FREE_COLLECTION_ID_KEY);
-            final Value value = collectionsDb.get(key);
-            if (value != null) {
-                final byte[] data = value.getData();
-                freeCollectionId = ByteConversion.byteToInt(data, data.length - Collection.LENGTH_COLLECTION_ID);
-                //LOG.debug("reusing collection id: " + freeCollectionId);
-                if(data.length - Collection.LENGTH_COLLECTION_ID > 0) {
-                    final byte[] ndata = new byte[data.length - Collection.LENGTH_COLLECTION_ID];
-                    System.arraycopy(data, 0, ndata, OFFSET_COLLECTION_ID, ndata.length);
-                    collectionsDb.put(transaction, key, ndata, true);
-                } else {
-                    collectionsDb.remove(transaction, key);
-                }
-            }
-            return freeCollectionId;
-        } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
-            return Collection.UNKNOWN_COLLECTION_ID;
-            //TODO : rethrow ? -pb
-        } finally {
-            lock.release(Lock.WRITE_LOCK);
-        }
-    }
-
-    /**
      * Get the next available unique collection id.
      * 
      * @return next available unique collection id
      * @throws ReadOnlyException
      */
     public int getNextCollectionId(Txn transaction) throws ReadOnlyException {
-        int nextCollectionId = getFreeCollectionId(transaction);
+        int nextCollectionId = collectionsDb.getFreeCollectionId();
         if (nextCollectionId != Collection.UNKNOWN_COLLECTION_ID)
             {return nextCollectionId;}
         final Lock lock = collectionsDb.getLock();
@@ -2784,7 +2714,7 @@ public class NativeBroker extends DBBroker {
             }.run();
             removeResourceMetadata(transaction, document);
             if (freeDocId) {
-                freeResourceId(transaction, document.getDocId());
+                collectionsDb.freeResourceId(document.getDocId());
 
                 trigger.afterDeleteDocument(this, transaction, document.getURI());
             }
@@ -2872,92 +2802,14 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    /**
-     * Release the document id reserved for a document so it
-     * can be reused.
-     * 
-     * @param id
-     * @throws PermissionDeniedException
-     */
-    protected void freeResourceId(Txn transaction, int id) throws PermissionDeniedException {		
-    	if (incrementalDocIds)
-    		{return;}
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(Lock.WRITE_LOCK);
-            final Value key = new CollectionStore.CollectionKey(CollectionStore.FREE_DOC_ID_KEY);
-            final Value value = collectionsDb.get(key);
-            if (value != null) {
-                final byte[] data = value.getData();
-                final byte[] ndata = new byte[data.length + 4];
-                System.arraycopy(data, 0, ndata, 4, data.length);
-                ByteConversion.intToByte(id, ndata, 0);
-                collectionsDb.put(transaction, key, ndata, true);
-            } else {
-                final byte[] data = new byte[4];
-                ByteConversion.intToByte(id, data, 0);
-                collectionsDb.put(transaction, key, data, true);
-            }
-        } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
-            //TODO : rethrow ? -pb
-        //} catch (ReadOnlyException e) {
-            //throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-        } finally {
-            lock.release(Lock.WRITE_LOCK);
-        }
-    }
-
-    /**
-     * Get the next unused document id. If a document is removed, its doc id is
-     * released, so it can be reused.
-     * 
-     * @return Next unused document id
-     * @throws ReadOnlyException
-     */
-    public int getFreeResourceId(Txn transaction) throws ReadOnlyException {
-        int freeDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;
-        final Lock lock = collectionsDb.getLock();
-        try {
-            lock.acquire(Lock.WRITE_LOCK);
-            final Value key = new CollectionStore.CollectionKey(CollectionStore.FREE_DOC_ID_KEY);
-            final Value value = collectionsDb.get(key);
-            if (value != null) {
-                final byte[] data = value.getData();
-                freeDocId = ByteConversion.byteToInt(data, data.length - 4);
-                //LOG.debug("reusing document id: " + freeDocId);
-                if(data.length - 4 > 0) {
-                    final byte[] ndata = new byte[data.length - 4];
-                    System.arraycopy(data, 0, ndata, 0, ndata.length);
-                    collectionsDb.put(transaction, key, ndata, true);
-                } else {
-                    collectionsDb.remove(transaction, key);
-                }
-            }
-            //TODO : maybe something ? -pb
-        } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName(), e);
-            return DocumentImpl.UNKNOWN_DOCUMENT_ID;
-            //TODO : rethrow ? -pb
-        } finally {
-            lock.release(Lock.WRITE_LOCK);
-        }
-        return freeDocId;
-    }
-
     /** get next Free Doc Id 
      * @throws EXistException If there's no free document id */
     @Override
     public int getNextResourceId(Txn transaction, Collection collection) throws EXistException {
-        int nextDocId;
-        try {
-            nextDocId = getFreeResourceId(transaction);
-        } catch (final ReadOnlyException e) {
-            //TODO : rethrow ? -pb
-            return 1;
+        int nextDocId = collectionsDb.getFreeResourceId();
+        if (nextDocId != DocumentImpl.UNKNOWN_DOCUMENT_ID) {
+            return nextDocId;
         }
-        if (nextDocId != DocumentImpl.UNKNOWN_DOCUMENT_ID)
-            {return nextDocId;}
         nextDocId = 1;
         final Lock lock = collectionsDb.getLock();
         try {
@@ -3556,9 +3408,9 @@ public class NativeBroker extends DBBroker {
                 if (child == null) {
                     LOG.fatal("child " + i + " not found for node: " + node.getNodeName() +
                         "; children = " + node.getChildCount());
-                    throw new IllegalStateException("Wrong node id");
+                } else {
+                    scanNodes(transaction, iterator, child, currentPath, mode, listener);
                 }
-                scanNodes(transaction, iterator, child, currentPath, mode, listener);
             }
         }
         if (node.getNodeType() == Node.ELEMENT_NODE) {
