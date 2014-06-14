@@ -36,13 +36,14 @@ public class MetadataModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2012-04-01";
     public final static String RELEASED_IN_VERSION = "eXist-2.0";
 
+    public final static String DEPRECATED_AFTER_2_2 = "it will removed after 2.2";
+
 	public static final FunctionDef[] functions = {
 		new FunctionDef( Check.signature, Check.class ),
-		
-		new FunctionDef( Reindex.signature, Reindex.class ),
 
 		new FunctionDef( DocumentByPair.signatures[0], DocumentByPair.class ),
 		new FunctionDef( DocumentByUUID.signatures[0], DocumentByUUID.class ),
+
 		new FunctionDef( Keys.signatures[0], Keys.class ),
 		new FunctionDef( Keys.signatures[1], Keys.class ),
 		
@@ -57,10 +58,7 @@ public class MetadataModule extends AbstractInternalModule {
         new FunctionDef( PairDelete.signatures[1], PairDelete.class ),
 
         new FunctionDef( UUID.signatures[0], UUID.class ),
-		new FunctionDef( UUID.signatures[1], UUID.class ),
-
-		new FunctionDef( Search.signatures[0], Search.class ),
-        new FunctionDef( Search.signatures[1], Search.class )
+		new FunctionDef( UUID.signatures[1], UUID.class )
 	};
 	
 	public MetadataModule(Map<String, List<? extends Object>> parameters) throws XPathException {

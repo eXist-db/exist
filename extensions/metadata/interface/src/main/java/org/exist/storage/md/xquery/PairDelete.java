@@ -49,7 +49,7 @@ public class PairDelete extends BasicFunction {
 			NAME,
 			DESCRIPTION,
 			new SequenceType[] { 
-				 new FunctionParameterSequenceType("document", Type.ITEM, Cardinality.EXACTLY_ONE, "The document."),
+				 new FunctionParameterSequenceType("resource", Type.ITEM, Cardinality.EXACTLY_ONE, "The resource or resource's url."),
 				 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key. '*' mean delete all."),
 			}, 
 			RETURN
@@ -58,7 +58,7 @@ public class PairDelete extends BasicFunction {
             NAME,
             DESCRIPTION,
             new SequenceType[] { 
-                 new FunctionParameterSequenceType("uuid", Type.STRING, Cardinality.EXACTLY_ONE, "The meta UUID.")
+                 new FunctionParameterSequenceType("uuid", Type.STRING, Cardinality.EXACTLY_ONE, "The key-value pair ID.")
             }, 
             RETURN
         )
@@ -84,7 +84,10 @@ public class PairDelete extends BasicFunction {
         
         } else if (args[0] instanceof DocumentImpl) {
 			metas = MetaData.get().getMetas((DocumentImpl)args[0]);
-		
+
+        } else if (args[0] instanceof XmldbURI) {
+            metas = MetaData.get().getMetas((XmldbURI)args[0]);
+
         } else {
             metas = MetaData.get().getMetas(XmldbURI.create( args[0].getStringValue() ));
 

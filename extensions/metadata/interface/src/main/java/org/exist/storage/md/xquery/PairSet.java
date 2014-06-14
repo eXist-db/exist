@@ -51,8 +51,8 @@ public class PairSet extends BasicFunction {
 		new FunctionSignature(
 			NAME,
 			DESCRIPTION,
-			new SequenceType[] { 
-				 new FunctionParameterSequenceType("document", Type.ITEM, Cardinality.EXACTLY_ONE, "The document."),
+			new SequenceType[] {
+				 new FunctionParameterSequenceType("resource", Type.ITEM, Cardinality.EXACTLY_ONE, "The resource or resource's url."),
 				 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key."),
 				 new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.EXACTLY_ONE, "The value.")
 			}, 
@@ -76,7 +76,8 @@ public class PairSet extends BasicFunction {
 				 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key."),
 				 new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The value.")
 			}, 
-			RETURN
+			RETURN,
+            MetadataModule.DEPRECATED_AFTER_2_2
 		)
 	};
 
@@ -94,7 +95,10 @@ public class PairSet extends BasicFunction {
 		Metas metas = null;
 		if (getSignature().getName().equals(NAME))
 			if (args[0] instanceof DocumentImpl) {
-				metas = MetaData.get().getMetas(((DocumentImpl)args[0]));
+                metas = MetaData.get().getMetas(((DocumentImpl) args[0]));
+
+            } else if (args[0] instanceof XmldbURI) {
+                metas = MetaData.get().getMetas(((XmldbURI)args[0]));
 				
 			} else
 				throw new XPathException(this, "Unsupported type "+args[0].getItemType());

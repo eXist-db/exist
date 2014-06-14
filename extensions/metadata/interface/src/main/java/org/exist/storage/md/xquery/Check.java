@@ -54,7 +54,10 @@ public class Check extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("check", MDStorageManager.NAMESPACE_URI, MDStorageManager.PREFIX),
-			"",
+			"Scans the database and creates IDs and empty metadata sets \n" +
+            "for each resource found. It can run for a long time and will block the \n" +
+            "rest of the database while it runs. Stopping the database while it \n" +
+            "runs will leave the database in an inconsistent state.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EMPTY));
 
@@ -73,24 +76,29 @@ public class Check extends BasicFunction {
 		if (!context.getSubject().hasDbaRole())
 			throw new XPathException(this, "only DBA can call md:check function.");
 		
-		DBBroker broker = null;
+		DBBroker broker = context.getBroker();
 		try {
-			broker = context.getBroker();
-			
+
 			Collection col = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
 			
 			checkSub(broker, col);
 			
 		} catch (Exception e) {
-		    //e.printStackTrace();
+            LOG.info("md:check finish with error", e);
 			throw new XPathException(this, e);
 		}
+
+        LOG.info("md:check finish");
 		
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	
 	private void checkSub(DBBroker broker, Collection col) throws PermissionDeniedException, IOException, LockException, TriggerException {
-		
+
+        LOG.info("md:check processing "+col.getURI());
+
+        MetaData.get().addMetas(col);
+
         for (Iterator<XmldbURI> i = col.collectionIterator(broker); i.hasNext(); ) {
             XmldbURI childName = i.next();
             Collection childColl = broker.getCollection(col.getURI().append(childName));
@@ -103,11 +111,15 @@ public class Check extends BasicFunction {
 		MutableDocumentSet childDocs = new DefaultDocumentSet();
 		LockedDocumentMap lockedDocuments = new LockedDocumentMap();
 		col.getDocuments(broker, childDocs, lockedDocuments, Lock.WRITE_LOCK);
-		
-		for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext();) {
-			DocumentImpl childDoc = itChildDocs.next();
-			
-			MetaData.get().addMetas(childDoc);
-		} 
+
+        try {
+            for (Iterator<DocumentImpl> itChildDocs = childDocs.getDocumentIterator(); itChildDocs.hasNext(); ) {
+                DocumentImpl childDoc = itChildDocs.next();
+
+                MetaData.get().addMetas(childDoc);
+            }
+        } finally {
+            lockedDocuments.unlock();
+        }
 	}
 }
