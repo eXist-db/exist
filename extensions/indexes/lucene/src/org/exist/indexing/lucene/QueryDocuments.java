@@ -183,6 +183,9 @@ public class QueryDocuments {
 
         @Override
         public void collect(int doc) throws IOException {
+            //in some cases can be null
+            if (this.docIdValues == null) return;
+
             if (numHits > 0 && totalHits > numHits) {
                 return;
             }

@@ -251,9 +251,13 @@ public class QueryNodes {
 
 		@Override
 		public void collect(int doc) {
+            //in some cases can be null
+            if (this.docIdValues == null) return;
+
 		    if (maxHits > 0 && totalHits > maxHits) {
 		        return;
 		    }
+
 			try {
 				float score = scorer.score();
 				int docId = (int) this.docIdValues.get(doc);
