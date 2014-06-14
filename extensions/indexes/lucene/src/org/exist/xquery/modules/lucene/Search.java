@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.lucene;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -47,9 +46,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 
 /**
  *  Class implementing the ft:search() method
@@ -98,7 +95,7 @@ public class Search extends BasicFunction {
         NodeImpl report = null;
         try {
             // Only match documents that match these URLs 
-            List<String> toBeMatchedURIs = new ArrayList<String>();
+            List<String> toBeMatchedURIs = new ArrayList<>();
 
             Sequence pathSeq = getArgumentCount() == 2 ? args[0] : contextSequence;
             if (pathSeq == null)

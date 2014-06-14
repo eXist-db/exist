@@ -20,15 +20,15 @@ import org.exist.memtree.MemTreeBuilder;
 
 public class PlainTextHighlighter {
 
-	private TreeMap<Object, Query> termMap;
+    private final TreeMap<Object, Query> termMap;
 	
 	public PlainTextHighlighter(Query query, IndexReader reader) throws IOException {
-		this.termMap = new TreeMap<Object, Query>();
+		this.termMap = new TreeMap<>();
 		LuceneUtil.extractTerms(query, termMap, reader, false);
 	}
 	
 	public void highlight(String content, List<Offset> offsets, MemTreeBuilder builder) {
-		if (offsets == null || offsets.size() == 0) {
+        if (offsets == null || offsets.isEmpty()) {
 			builder.characters(content);
 		} else {
 			int lastOffset = 0;
@@ -68,9 +68,10 @@ public class PlainTextHighlighter {
                             // they are part of the phrase
                             stream.mark();
                             int t = 1;
-                            List<State> stateList = new ArrayList<State>(terms.length);
+                            List<State> stateList = new ArrayList<>(terms.length);
                             stateList.add(stream.captureState());
-                            while(stream.incrementToken() && t < terms.length) {
+                            while (stream.incrementToken() && t < terms.length) {
+                                // DW: what does this do
                                 text = text = stream.getAttribute(CharTermAttribute.class).toString();
                                 if (text.equals(terms[t].text())) {
                                     stateList.add(stream.captureState());
@@ -84,7 +85,7 @@ public class PlainTextHighlighter {
                             }
                             if (stateList.size() == terms.length) {
                             	if (offsets == null)
-                            		offsets = new ArrayList<Offset>();
+                            		offsets = new ArrayList<>();
                             	
                                 
                                 
@@ -100,7 +101,7 @@ public class PlainTextHighlighter {
                         }
                     } else {
                     	if (offsets == null)
-                    		offsets = new ArrayList<Offset>();
+                    		offsets = new ArrayList<>();
                         
                         OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
                         offsets.add(new Offset(offsetAttr.startOffset(), offsetAttr.endOffset()));

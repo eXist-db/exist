@@ -84,9 +84,9 @@ public class LuceneUtil {
     }
 
 	public static String[] extractFields(Query query, IndexReader reader) throws IOException {
-		Map<Object, Query> map = new TreeMap<Object, Query>();
+		Map<Object, Query> map = new TreeMap<>();
 		extractTerms(query, map, reader, true);
-		Set<String> fields = new TreeSet<String>();
+		Set<String> fields = new TreeSet<>();
 		for (Object term : map.keySet()) {
 			fields.add(((Term)term).field());
 		}
@@ -125,7 +125,7 @@ public class LuceneUtil {
         else {
             // fallback to Lucene's Query.extractTerms if none of the
             // above matches
-            Set<Term> tempSet = new TreeSet<Term>();
+            Set<Term> tempSet = new TreeSet<>();
             query.extractTerms(tempSet);
             for (Term t : tempSet) {
             	if (includeFields)
@@ -138,8 +138,8 @@ public class LuceneUtil {
 
     private static void extractTermsFromBoolean(BooleanQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
         BooleanClause clauses[] = query.getClauses();
-        for (int i = 0; i < clauses.length; i++) {
-            extractTerms(clauses[i].getQuery(), terms, reader, includeFields);
+        for (BooleanClause clause : clauses) {
+            extractTerms(clause.getQuery(), terms, reader, includeFields);
         }
     }
 
@@ -168,11 +168,12 @@ public class LuceneUtil {
 
     private static void extractTermsFromPhrase(PhraseQuery query, Map<Object, Query> terms, boolean includeFields) {
         Term[] t = query.getTerms();
-        for (int i = 0; i < t.length; i++) {
-        	if (includeFields)
-        		terms.put(t[i], query);
-        	else
-        		terms.put(t[i].text(), query);
+        for (Term t1 : t) {
+            if (includeFields) {
+                terms.put(t1, query);
+            } else {
+                terms.put(t1.text(), query);
+            }
         }
     }
 
