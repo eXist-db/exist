@@ -1,5 +1,6 @@
 package org.exist.indexing.lucene;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.exist.util.DatabaseConfigurationException;
@@ -34,7 +35,7 @@ public class FieldType {
         
     	if (LuceneConfig.FIELD_TYPE_ELEMENT.equals(config.getLocalName())) {
     		id = config.getAttribute(ID_ATTR);
-    		if (id == null || id.length() == 0)
+            if (StringUtils.isEmpty(id))
     			throw new DatabaseConfigurationException("fieldType needs an attribute 'id'");
     	}
     	
