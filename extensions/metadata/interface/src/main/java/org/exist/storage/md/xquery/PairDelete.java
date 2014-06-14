@@ -42,7 +42,7 @@ public class PairDelete extends BasicFunction {
 	
 	private static final QName NAME = new QName("delete", NAMESPACE_URI, PREFIX);
 	private static final String DESCRIPTION = "Delete document's key/value pair.";
-	private static final FunctionReturnSequenceType RETURN = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "Key/value pair UUID");
+	private static final SequenceType RETURN = new SequenceType(Type.EMPTY, Cardinality.ZERO);
 	
     public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

@@ -58,7 +58,9 @@ public class MetadataModule extends AbstractInternalModule {
         new FunctionDef( PairDelete.signatures[1], PairDelete.class ),
 
         new FunctionDef( UUID.signatures[0], UUID.class ),
-		new FunctionDef( UUID.signatures[1], UUID.class )
+		new FunctionDef( UUID.signatures[1], UUID.class ),
+
+        new FunctionDef( Reindex.signatures[0], Reindex.class )
 	};
 	
 	public MetadataModule(Map<String, List<? extends Object>> parameters) throws XPathException {
