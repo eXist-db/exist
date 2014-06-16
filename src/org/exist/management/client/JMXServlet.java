@@ -183,7 +183,12 @@ public class JMXServlet extends HttpServlet {
         registerLocalHostAddresses();
 
         // Get directory for token file
-        dataDir = new File(config.getServletContext().getRealPath(WEBINF_DATA_DIR));
+        final String jmxDataDir = client.getDataDir();
+        if (jmxDataDir == null) {
+            dataDir = new File(config.getServletContext().getRealPath(WEBINF_DATA_DIR));
+        } else {
+            dataDir = new File(jmxDataDir);
+        }
         if (!dataDir.isDirectory() || !dataDir.canWrite()) {
             LOG.error("Cannot access directory " + WEBINF_DATA_DIR);
         }
