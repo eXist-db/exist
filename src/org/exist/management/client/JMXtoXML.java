@@ -276,6 +276,15 @@ public class JMXtoXML {
         return (Element) builder.getDocument().getNode(1);
     }
 
+    public String getDataDir() {
+        try {
+            final Object dir = connection.getAttribute(new ObjectName("org.exist.management.exist:type=DiskUsage"), "DataDirectory");
+            return dir == null ? null : dir.toString();
+        } catch (MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
+            return null;
+        }
+    }
+
     private void queryMBeans(MemTreeBuilder builder, ObjectName query)
             throws IOException, InstanceNotFoundException, IntrospectionException, ReflectionException,
             SAXException, AttributeNotFoundException, MBeanException, MalformedObjectNameException, NullPointerException {
