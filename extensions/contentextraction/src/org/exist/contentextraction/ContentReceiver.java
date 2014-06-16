@@ -30,8 +30,11 @@ import org.exist.memtree.NodeImpl;
 import org.exist.storage.NodePath;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -45,15 +48,15 @@ public class ContentReceiver implements Receiver {
 
     private final static Logger LOG = Logger.getLogger(ContentReceiver.class);
     
-    private ValueSequence result = new ValueSequence();
-    private FunctionReference ref;
-    private NodePath currentElementPath = new NodePath();
-    private NodePath[] paths;
+    private final ValueSequence result = new ValueSequence();
+    private final FunctionReference ref;
+    private final NodePath currentElementPath = new NodePath();
+    private final NodePath[] paths;
     private DocumentBuilderReceiver docBuilderReceiver = null;
     private NodePath startElementPath = null;
     private Sequence userData = null;
     private Sequence prevReturnData = Sequence.EMPTY_SEQUENCE;
-    private XQueryContext context;
+    private final XQueryContext context;
     
     private boolean sendDataToCB = false;
 
@@ -89,8 +92,8 @@ public class ContentReceiver implements Receiver {
      * @return TRUE if path is in to-be-retrieved paths
      */
     private boolean matches(NodePath path) {
-        for (int i = 0; i < paths.length; i++) {
-            if (paths[i].match(path)) {
+        for (NodePath p : paths) {
+            if (p.match(path)) {
                 return true;
             }
         }
