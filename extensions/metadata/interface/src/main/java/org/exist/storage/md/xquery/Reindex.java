@@ -93,6 +93,8 @@ public class Reindex extends BasicFunction {
             throw new XPathException(this, e);
         }
 
+        broker.flush();
+
         return Sequence.EMPTY_SEQUENCE;
 	}
 }

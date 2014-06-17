@@ -425,8 +425,7 @@ public class FacetSearch extends BasicFunction {
             
             //System.out.println(builder.getDocument().toString());
             
-            report = ((org.exist.memtree.DocumentImpl) builder.getDocument()).getNode(nodeNr);
-
+            report = builder.getDocument().getNode(nodeNr);
 
         } catch (Exception ex){
             //ex.printStackTrace();
@@ -448,10 +447,10 @@ public class FacetSearch extends BasicFunction {
 //        if (optSeq.isEmpty()) 
 //        	throw new XPathException(this, "Facet request can't be ZERO");
         
-        if (optSeq.getItemCount() > 1) 
-        	throw new XPathException(this, "Facet request can't be MANY");
+//        if (optSeq.getItemCount() > 1)
+//        	throw new XPathException(this, "Facet request can't be MANY");
 
-        List<FacetRequest> facetRequests = new ArrayList<FacetRequest>();
+        List<FacetRequest> facetRequests = new ArrayList<>();
         
         SequenceIterator iter = optSeq.iterate();
         while (iter.hasNext()) {
@@ -482,7 +481,7 @@ public class FacetSearch extends BasicFunction {
         if (optSeq.isEmpty()) 
         	return null;
         
-        List<SortField> sortFields = new ArrayList<SortField>();
+        List<SortField> sortFields = new ArrayList<>();
         
         SequenceIterator iter = optSeq.iterate();
         while (iter.hasNext()) {
@@ -496,7 +495,7 @@ public class FacetSearch extends BasicFunction {
     		} else if ("STRING".equalsIgnoreCase(str)) {
         		type = SortField.Type.STRING;
     		} else {
-    			throw new XPathException(this, "Uknown sort field type '"+str+"'.");
+    			throw new XPathException(this, "Unknown sort field type '"+str+"'.");
     		}
     		
     		str = element.getAttribute("reverse");
