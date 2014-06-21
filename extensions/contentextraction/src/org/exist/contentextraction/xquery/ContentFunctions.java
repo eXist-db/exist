@@ -32,8 +32,20 @@ import org.exist.contentextraction.ContentReceiver;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.NodePath;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -108,7 +120,7 @@ public class ContentFunctions extends BasicFunction {
             /* callback function */
             FunctionReference ref = (FunctionReference) args[2].itemAt(0);
 
-            Map<String, String> mappings = new HashMap<String, String>();
+            Map<String, String> mappings = new HashMap<>();
             if (args[3].hasOne()) {
                 NodeValue namespaces = (NodeValue) args[3].itemAt(0);
                 parseMappings(namespaces, mappings);
@@ -128,17 +140,10 @@ public class ContentFunctions extends BasicFunction {
 
                 return (NodeValue) builder.getDocument();
 
-            } catch (IOException ex) {
+            } catch (IOException | SAXException | ContentExtractionException ex) {
                 LOG.error(ex.getMessage(), ex);
                 throw new XPathException(this, ex.getMessage(), ex);
 
-            } catch (SAXException ex) {
-                LOG.error(ex.getMessage(), ex);
-                throw new XPathException(this, ex.getMessage(), ex);
-
-            } catch (ContentExtractionException ex) {
-                LOG.error(ex.getMessage(), ex);
-                throw new XPathException(this, ex.getMessage(), ex);
             }
         }
     }
@@ -159,11 +164,9 @@ public class ContentFunctions extends BasicFunction {
                 }
             }
 
-        } catch (XMLStreamException e) {
+        } catch (XMLStreamException | IOException e) {
             throw new XPathException(this, "Error while parsing namespace mappings: " + e.getMessage(), e);
 
-        } catch (IOException e) {
-            throw new XPathException(this, "Error while parsing namespace mappings: " + e.getMessage(), e);
         }
     }
 
@@ -184,17 +187,10 @@ public class ContentFunctions extends BasicFunction {
         try {
             ce.extractContentAndMetadata(binary, receiver);
 
-        } catch (IOException ex) {
+        } catch (IOException | SAXException | ContentExtractionException ex) {
             LOG.error(ex.getMessage(), ex);
             throw new XPathException(this, ex.getMessage(), ex);
 
-        } catch (SAXException ex) {
-            LOG.error(ex.getMessage(), ex);
-            throw new XPathException(this, ex.getMessage(), ex);
-
-        } catch (ContentExtractionException ex) {
-            LOG.error(ex.getMessage(), ex);
-            throw new XPathException(this, ex.getMessage(), ex);
         }
 
         return receiver.getResult();

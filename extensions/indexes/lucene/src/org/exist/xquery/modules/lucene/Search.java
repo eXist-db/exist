@@ -93,7 +93,7 @@ public class Search extends BasicFunction {
         NodeImpl report = null;
         try {
             // Only match documents that match these URLs 
-            List<String> toBeMatchedURIs = new ArrayList<String>();
+            List<String> toBeMatchedURIs = new ArrayList<>();
 
             Sequence pathSeq = getArgumentCount() == 2 ? args[0] : contextSequence;
             if (pathSeq == null)

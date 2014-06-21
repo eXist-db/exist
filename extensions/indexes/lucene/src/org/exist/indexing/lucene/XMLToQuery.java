@@ -49,39 +49,56 @@ import java.util.Properties;
  */
 public class XMLToQuery {
 
-    private LuceneIndex index;
+    private final LuceneIndex index;
 
     public XMLToQuery(LuceneIndex index) {
         this.index = index;
     }
 
     public Query parse(String field, Element root, Analyzer analyzer, Properties options) throws XPathException {
-        Query query;
+        Query query = null;
         String localName = root.getLocalName();
-        if ("query".equals(localName))
-            query = parseChildren(field, root, analyzer, options);
-        else if ("term".equals(localName))
-            query = termQuery(field, root, analyzer);
-        else if ("wildcard".equals(localName))
-            query = wildcardQuery(field, root, analyzer, options);
-        else if ("prefix".equals(localName))
-            query = prefixQuery(field, root, options);
-        else if ("fuzzy".equals(localName))
-            query = fuzzyQuery(field, root);
-        else if ("bool".equals(localName))
-            query = booleanQuery(field, root, analyzer, options);
-        else if ("phrase".equals(localName))
-            query = phraseQuery(field, root, analyzer);
-        else if ("near".equals(localName))
-            query = nearQuery(field, root, analyzer);
-        else if ("first".equals(localName))
-            query = getSpanFirst(field, root, analyzer);
-        else if ("regex".equals(localName))
-            query = regexQuery(field, root, options);
-        else
-            throw new XPathException("Unknown element in lucene query expression: " + localName);
-        if (query != null)
-        	setBoost(root, query);
+        if (null != localName) {
+            switch (localName) {
+                case "query":
+                    query = parseChildren(field, root, analyzer, options);
+                    break;
+                case "term":
+                    query = termQuery(field, root, analyzer);
+                    break;
+                case "wildcard":
+                    query = wildcardQuery(field, root, analyzer, options);
+                    break;
+                case "prefix":
+                    query = prefixQuery(field, root, options);
+                    break;
+                case "fuzzy":
+                    query = fuzzyQuery(field, root);
+                    break;
+                case "bool":
+                    query = booleanQuery(field, root, analyzer, options);
+                    break;
+                case "phrase":
+                    query = phraseQuery(field, root, analyzer);
+                    break;
+                case "near":
+                    query = nearQuery(field, root, analyzer);
+                    break;
+                case "first":
+                    query = getSpanFirst(field, root, analyzer);
+                    break;
+                case "regex":
+                    query = regexQuery(field, root, options);
+                    break;
+                default:
+                    throw new XPathException("Unknown element in lucene query expression: " + localName);
+            }
+        }
+
+        if (query != null) {
+            setBoost(root, query);
+        }
+
         return query;
     }
 
@@ -137,7 +154,7 @@ public class XMLToQuery {
 
         if (!hasElementContent(node)) {
             String qstr = getText(node);
-            List<SpanTermQuery> list = new ArrayList<SpanTermQuery>(8);
+            List<SpanTermQuery> list = new ArrayList<>(8);
             try {
                 TokenStream stream = analyzer.tokenStream(field, new StringReader(qstr));
                 CharTermAttribute termAttr = stream.addAttribute(CharTermAttribute.class);
@@ -157,20 +174,29 @@ public class XMLToQuery {
     }
 
     private SpanQuery[] parseSpanChildren(String field, Element node, Analyzer analyzer) throws XPathException {
-        List<SpanQuery> list = new ArrayList<SpanQuery>(8);
+        List<SpanQuery> list = new ArrayList<>(8);
         Node child = node.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
-                if ("term".equals(child.getLocalName()))
-                    getSpanTerm(list, field, (Element) child, analyzer);
-                else if ("near".equals(child.getLocalName()))
-                    list.add(nearQuery(field, (Element) child, analyzer));
-                else if ("first".equals(child.getLocalName()))
-                    list.add(getSpanFirst(field, (Element) child, analyzer));
-//                else if ("regex".equals(child.getLocalName()))
-//                	list.add(getSpanRegex(field, (Element) child, analyzer));
-                else
-                    throw new XPathException("Unknown query element: " + child.getNodeName());
+                final String localName = child.getLocalName();
+                if (null != localName) {
+                    switch (localName) {
+                        case "term":
+                            getSpanTerm(list, field, (Element) child, analyzer);
+                            break;
+                        case "near":
+                            list.add(nearQuery(field, (Element) child, analyzer));
+                            break;
+                        case "first":
+                            list.add(getSpanFirst(field, (Element) child, analyzer));
+                            break;
+//                      case "regex":
+//                          list.add(getSpanRegex(field, (Element) child, analyzer));
+
+                        default:
+                            throw new XPathException("Unknown query element: " + child.getNodeName());
+                    }
+                }
             }
             child = child.getNextSibling();
         }
@@ -229,7 +255,7 @@ public class XMLToQuery {
     }
 
     private Term[] expandTerms(String field, String queryStr) throws XPathException {
-        List<Term> termList = new ArrayList<Term>(8);
+        List<Term> termList = new ArrayList<>(8);
         Automaton automaton = WildcardQuery.toAutomaton(new Term(field, queryStr));
         CompiledAutomaton compiled = new CompiledAutomaton(automaton);
         IndexReader reader = null;
@@ -347,12 +373,17 @@ public class XMLToQuery {
         BooleanClause.Occur occur = BooleanClause.Occur.SHOULD;
         String occurOpt = elem.getAttribute("occur");
         if (occurOpt != null) {
-            if (occurOpt.equals("must"))
-                occur = BooleanClause.Occur.MUST;
-            else if (occurOpt.equals("not"))
-                occur = BooleanClause.Occur.MUST_NOT;
-            else if (occurOpt.equals("should"))
-                occur = BooleanClause.Occur.SHOULD;
+            switch (occurOpt) {
+                case "must":
+                    occur = BooleanClause.Occur.MUST;
+                    break;
+                case "not":
+                    occur = BooleanClause.Occur.MUST_NOT;
+                    break;
+                case "should":
+                    occur = BooleanClause.Occur.SHOULD;
+                    break;
+            }
         }
         return occur;
     }
@@ -392,7 +423,7 @@ public class XMLToQuery {
     }
 
     private String getText(Element root) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         Node child = root.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.TEXT_NODE)

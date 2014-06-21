@@ -55,15 +55,7 @@ public abstract class QueryParserWrapper {
                 final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
                 return (QueryParserWrapper) cstr.newInstance(field, analyzer);
             }
-        } catch (ClassNotFoundException e) {
-            LOG.warn("Failed to instantiate lucene query parser wrapper class: " + className, e);
-        } catch (NoSuchMethodException e) {
-            LOG.warn("Failed to instantiate lucene query parser wrapper class: " + className, e);
-        } catch (InstantiationException e) {
-            LOG.warn("Failed to instantiate lucene query parser wrapper class: " + className, e);
-        } catch (IllegalAccessException e) {
-            LOG.warn("Failed to instantiate lucene query parser wrapper class: " + className, e);
-        } catch (InvocationTargetException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             LOG.warn("Failed to instantiate lucene query parser wrapper class: " + className, e);
         }
         return null;

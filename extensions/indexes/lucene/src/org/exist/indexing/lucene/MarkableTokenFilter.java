@@ -48,7 +48,7 @@ public class MarkableTokenFilter extends TokenFilter {
 
     public void mark() {
         isCaching = true;
-        cache = new LinkedList<AttributeSource.State>();
+        cache = new LinkedList<>();
     }
 
     @Override

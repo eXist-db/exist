@@ -36,7 +36,7 @@ public class PlainTextIndexConfig {
     
     private PlainTextDoc solrDoc = new PlainTextDoc();
     
-    private ArrayList<PlainTextField> solrFields = new ArrayList<PlainTextField>();
+    private ArrayList<PlainTextField> solrFields = new ArrayList<>();
     
     /**
      * Helper method for retrieving boost value, defaults to 1.0f

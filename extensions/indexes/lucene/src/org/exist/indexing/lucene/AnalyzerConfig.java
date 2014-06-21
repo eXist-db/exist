@@ -93,7 +93,7 @@ public class AnalyzerConfig {
     private static final String PARAM_VALUE_ENTRY = "value";
     private static final String PARAM_ELEMENT_NAME = "param";
 
-    private Map<String, Analyzer> analyzers = new TreeMap<String, Analyzer>();
+    private Map<String, Analyzer> analyzers = new TreeMap<>();
     private Analyzer defaultAnalyzer = null;
 
     public Analyzer getAnalyzerById(String id) {
@@ -188,7 +188,7 @@ public class AnalyzerConfig {
             } catch (ParameterException pe) {
                 // Unable to parse parameters.
                 LOG.error(String.format("Unable to get parameters for %s: %s", className, pe.getMessage()), pe);
-                cParams = new ArrayList<KeyTypedValue>();
+                cParams = new ArrayList<>();
             }
 
             // Iterate over all parameters, convert data to two arrays
@@ -262,18 +262,10 @@ public class AnalyzerConfig {
 
             return (Analyzer) cstr.newInstance(vcParamValues);
             
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException | SecurityException e) {
             LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
-        } catch (IllegalAccessException e) {
-            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
-        } catch (InstantiationException e) {
-            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage()), e);
-        } catch (InvocationTargetException ite) {
-            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, ite.getMessage()), ite);
         } catch (NoSuchMethodException ex) {
             LOG.error(String.format("Could not find matching analyzer class constructor%s: %s", className, ex.getMessage()), ex);
-        } catch (SecurityException ex) {
-            LOG.error(String.format("Exception while instantiating analyzer class %s: %s", className, ex.getMessage()), ex);
         }
         
         return null;
@@ -307,7 +299,7 @@ public class AnalyzerConfig {
      * @throws org.exist.indexing.lucene.AnalyzerConfig.ParameterException
      */
     private static List<KeyTypedValue> getAllConstructorParameters(Element config) throws ParameterException {
-        final List<KeyTypedValue> parameters = new ArrayList<KeyTypedValue>();
+        final List<KeyTypedValue> parameters = new ArrayList<>();
         final NodeList params = config.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_ELEMENT_NAME);
 
         // iterate over all <param/> elements
@@ -376,8 +368,8 @@ public class AnalyzerConfig {
             // Use reflection
             // - retrieve classname from the value field
             // - retrieve fieldname from the value field
-            final String clazzName = value.substring(0, value.lastIndexOf("."));
-            final String fieldName = value.substring(value.lastIndexOf(".") + 1);
+            final String clazzName = value.substring(0, value.lastIndexOf('.'));
+            final String fieldName = value.substring(value.lastIndexOf('.') + 1);
 
             try {
                 // Retrieve value from Field
@@ -387,13 +379,7 @@ public class AnalyzerConfig {
                 final Object fValue = field.get(fieldClazz.newInstance());
                 parameter = new KeyTypedValue(name, fValue);
 
-            } catch (NoSuchFieldException nsfe) {
-                throw new ParameterException(nsfe.getMessage(), nsfe);
-            } catch (ClassNotFoundException nsfe) {
-                throw new ParameterException(nsfe.getMessage(), nsfe);
-            } catch (InstantiationException nsfe) {
-                throw new ParameterException(nsfe.getMessage(), nsfe);
-            } catch (IllegalAccessException nsfe) {
+            } catch (NoSuchFieldException | ClassNotFoundException | InstantiationException | IllegalAccessException nsfe) {
                 throw new ParameterException(nsfe.getMessage(), nsfe);
             }
 
@@ -467,7 +453,7 @@ public class AnalyzerConfig {
      * @return Set of parameter values
      */
     private static Set<String> getConstructorParameterSetValues(Element param) {
-        final Set<String> set = new HashSet<String>();
+        final Set<String> set = new HashSet<>();
         final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_VALUE_ENTRY);
         for (int i = 0; i < values.getLength(); i++) {
             final Element value = (Element) values.item(i);

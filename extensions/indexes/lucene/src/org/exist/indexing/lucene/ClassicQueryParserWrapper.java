@@ -55,16 +55,10 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
                 final Constructor<?> cstr = clazz.getDeclaredConstructor(cParamClasses);
                 parser = (QueryParserBase) cstr.newInstance(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
             }
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
             LOG.warn("Failed to instantiate lucene query parser class: " + className, e);
-        } catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException | InstantiationException e) {
             LOG.warn("Failed to instantiate lucene query parser class: " + className + ": " + e.getMessage(), e);
-        } catch (InstantiationException e) {
-            LOG.warn("Failed to instantiate lucene query parser class: " + className + ": " + e.getMessage(), e);
-        } catch (IllegalAccessException e) {
-            LOG.warn("Failed to instantiate lucene query parser class: " + className, e);
-        } catch (InvocationTargetException e) {
-            LOG.warn("Failed to instantiate lucene query parser class: " + className, e);
         }
     }
 

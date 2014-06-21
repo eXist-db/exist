@@ -116,9 +116,7 @@ public class QueryField extends Query implements Optimizable {
             else
                 preselectResult = index.queryField(context, getExpressionId(), docs, useContext ? contextSequence.toNodeSet() : null,
                     field, query.getStringValue(), NodeSet.DESCENDANT, options);
-        } catch (IOException e) {
-            throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
         LOG.debug("Lucene query took " + (System.currentTimeMillis() - start));
@@ -144,7 +142,8 @@ public class QueryField extends Query implements Optimizable {
         	if (contextSequence == null)
         		docs = context.getStaticallyKnownDocuments();
         	else
-        		docs = contextSequence.getDocumentSet();
+                docs = contextSequence.getDocumentSet();
+
         	NodeSet contextSet = null;
         	if (contextSequence != null)
         		contextSet = contextSequence.toNodeSet();
@@ -159,9 +158,7 @@ public class QueryField extends Query implements Optimizable {
         		else
         			result = index.queryField(context, getExpressionId(), docs, contextSet, field,
         					query.getStringValue(), NodeSet.ANCESTOR, options);
-        	} catch (IOException e) {
-        		throw new XPathException(this, e.getMessage());
-        	} catch (ParseException e) {
+            } catch (IOException | ParseException e) {
         		throw new XPathException(this, e.getMessage());
         	}
         	if( context.getProfiler().traceFunctions() ) {

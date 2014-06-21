@@ -21,6 +21,7 @@ package org.exist.indexing;
 
 import org.exist.Database;
 import org.exist.storage.DBBroker;
+import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
@@ -69,4 +70,8 @@ public abstract class AbstractIndex implements Index {
 
     public abstract boolean checkIndex(DBBroker broker);
 
+    @Override
+    public BTree getStorage() {
+        return null;
+    }
 }
