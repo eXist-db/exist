@@ -116,7 +116,7 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public BTree getStorage() {
-        return db;
+        return bf;
     }
 
     public void backupToArchive(RawDataBackup backup) throws IOException {
