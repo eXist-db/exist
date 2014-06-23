@@ -107,14 +107,8 @@ public class JMXServlet extends HttpServlet {
             
         } else {
             // Check if user is already authorized, e.g. via MONEX allow user too
-            if (request.isRequestedSessionIdValid()) {
-                LOG.debug("Session is valid");
-
-            } else {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access allowed for localhost, or when correct token has been provided.");
-                return;
-            }
-            
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access allowed for localhost, or when correct token has been provided.");
+            return;
         }
 
         // Perform actual writing of data
