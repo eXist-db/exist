@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import javax.management.*;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -137,7 +138,28 @@ public class JMXServlet extends HttpServlet {
             } else {
                 root = client.generateXMLReport(null, new String[]{"sanity"});
             }
-
+        } else if (operation != null && operation.length() > 0) {
+            final String mbean = request.getParameter("mbean");
+            if (mbean == null) {
+                throw new ServletException("to call an operation, you also need to specify parameter 'mbean'");
+            }
+            String[] args = request.getParameterValues("args");
+            try {
+                root = client.invoke(mbean, operation, args);
+                if (root == null) {
+                    throw new ServletException("operation " + operation + " not found on " + mbean);
+                }
+            } catch (InstanceNotFoundException e) {
+                throw new ServletException("mbean " + mbean + " not found: " + e.getMessage(), e);
+            } catch (MalformedObjectNameException e) {
+                throw new ServletException(e.getMessage(), e);
+            } catch (MBeanException e) {
+                throw new ServletException(e.getMessage(), e);
+            } catch (ReflectionException e) {
+                throw new ServletException(e.getMessage(), e);
+            } catch (IntrospectionException e) {
+                throw new ServletException(e.getMessage(), e);
+            }
         } else {
             String[] categories = request.getParameterValues("c");
             if (categories == null) {
