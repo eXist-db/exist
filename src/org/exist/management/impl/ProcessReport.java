@@ -26,6 +26,7 @@ import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 import org.apache.log4j.Logger;
 
@@ -142,6 +143,20 @@ public class ProcessReport implements ProcessReportMBean {
             LOG.warn(e.getMessage(), e);
         }
         return null;
+    }
+
+    public void killQuery(int id) {
+        final XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
+        for (XQueryWatchDog watchdog : watchdogs) {
+            final XQueryContext context = watchdog.getContext();
+
+            if( id == context.hashCode() ) {
+                if( !watchdog.isTerminating() ) {
+                    watchdog.kill(1000);
+                }
+                break;
+            }
+        }
     }
 
     @Override

@@ -32,4 +32,6 @@ public interface ProcessReportMBean {
     public TabularData getRunningQueries();
 
     public TabularData getRecentQueryHistory();
+
+    public void killQuery(int id);
 }
