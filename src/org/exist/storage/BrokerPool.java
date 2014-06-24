@@ -1334,14 +1334,15 @@ public class BrokerPool implements Database {
         return !isReadOnly && transactionsEnabled;
     }
 	
-    private static long minFreeSpace = 50 * 1024 * 1024;
+    private static final long minFreeSpace = 50l * 1024l * 1024l;
     
     public boolean isReadOnly() {
-    	if (dataLock.getFreeSpace() < minFreeSpace) {
-            LOG.info("Partition have "+(dataLock.getFreeSpace() / (1024 * 1024))+" Mb.");
+        final long freeSpace = dataLock.getFreeSpace();
+        if (freeSpace < minFreeSpace) {
+            LOG.info("Partition have " + (freeSpace / (1024l * 1024l)) + " Mb.");
             setReadOnly();
-    	}
-    	
+        }
+
         return isReadOnly;
     }
 
