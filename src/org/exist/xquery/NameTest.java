@@ -102,7 +102,16 @@ public class NameTest extends TypeTest {
 	public boolean isWildcardTest() {
 		return nodeName.getLocalName() == null || nodeName.getNamespaceURI() == null;
 	}
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof NameTest) {
+            final NameTest other = (NameTest) obj;
+            return other.nodeType == nodeType && other.nodeName.equalsSimple(nodeName);
+        }
+        return false;
+    }
+
     public void dump(ExpressionDumper dumper) {
         if(nodeName.getLocalName() == null)
             {dumper.display(nodeName.getPrefix() + ":*");}

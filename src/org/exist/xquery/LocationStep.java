@@ -295,13 +295,15 @@ public class LocationStep extends Step {
 				contextStep = contextInfo.getContextStep();
 				if (contextStep instanceof LocationStep) {
 					final LocationStep cStep = (LocationStep) contextStep;
-					
-					if (!Type.subTypeOf(getTest().getType(), cStep.getTest().getType()))
+
+                    // WM: the following checks will only work on simple filters like //a[self::b], so we
+                    // have to make sure they are not applied to more complex expression types
+					if (parent.getSubExpressionCount() == 1 && !Type.subTypeOf(getTest().getType(), cStep.getTest().getType()))
 						{throw new XPathException(this, 
 								ErrorCodes.XPST0005, "Got nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));}
 					
-					if (!cStep.getTest().isWildcardTest() && cStep.getTest() != getTest())
-						{throw new XPathException(this, 
+					if (parent.getSubExpressionCount() == 1 && !(cStep.getTest().isWildcardTest() || getTest().isWildcardTest()) && !cStep.getTest().equals(getTest()))
+						{throw new XPathException(this,
 								ErrorCodes.XPST0005, "Self::"+getTest()+" called on set of nodes which do not contain any nodes of this name.");}
 				}
 			}
