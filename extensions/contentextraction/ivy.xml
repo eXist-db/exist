@@ -16,6 +16,8 @@
 			<exclude module="xercesImpl" />
 			<exclude module="aspectjrt" />
 			<exclude module="geronimo-stax-api_1.0_spec" />
+			<exclude module="asm-debug-all" />
+			<exclude module="asm-all" />
 		</dependency>
 		<dependency org="org.apache.poi" name="poi" rev="3.10-FINAL" conf="*->*,!sources,!javadoc">
 			<exclude module="commons-io" />
@@ -33,6 +35,5 @@
 			<exclude module="jdom" />
 		</dependency>
 		<dependency org="org.tukaani" name="xz" rev="1.5" conf="*->*,!sources,!javadoc" />
-		<dependency org="asm" name="asm" rev="3.1" />
 	</dependencies>
 </ivy-module>
