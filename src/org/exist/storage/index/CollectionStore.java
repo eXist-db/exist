@@ -135,7 +135,6 @@ public class CollectionStore extends BFile {
             if (!freeCollectionIds.isEmpty()) {
                 freeCollectionId = freeCollectionIds.pop();
             }
-            LOG.info("Reusing collection id " + freeCollectionId);
         } catch (final LockException e) {
             LOG.warn("Failed to acquire lock on " + getFile().getName(), e);
             return Collection.UNKNOWN_COLLECTION_ID;
