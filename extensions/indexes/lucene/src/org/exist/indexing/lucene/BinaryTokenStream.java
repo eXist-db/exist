@@ -59,8 +59,8 @@ public final class BinaryTokenStream extends TokenStream {
         private BytesRef bytes;
 
         @Override
-        public int fillBytesRef() {
-            return bytes.hashCode();
+        public void fillBytesRef() {
+            //return bytes.hashCode();
         }
 
         @Override

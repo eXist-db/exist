@@ -26,10 +26,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.facet.params.FacetSearchParams;
-import org.apache.lucene.facet.search.FacetResult;
-import org.apache.lucene.facet.search.FacetsCollector.MatchingDocs;
-import org.apache.lucene.facet.taxonomy.TaxonomyReader;
+import org.apache.lucene.facet.Facets;
+import org.apache.lucene.facet.FacetsCollector;
+import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.BinaryDocValues;
@@ -66,9 +65,9 @@ import org.w3c.dom.Node;
  */
 public class QueryNodes {
 
-	public static List<FacetResult> query(LuceneIndexWorker worker,
+	public static Facets query(LuceneIndexWorker worker,
 			QName qname, int contextId, 
-			DocumentSet docs, Query query, FacetSearchParams searchParams,
+			DocumentSet docs, Query query, FacetsConfig facetsConfig,
 			SearchCallback<NodeProxy> callback, int maxHits, Sort sort)
 			throws IOException, ParseException, TerminatedException {
 
@@ -76,26 +75,25 @@ public class QueryNodes {
 		
 		final Database db = index.getDatabase();
 
-		Set<String> fieldsToLoad = new HashSet<String>();
+		Set<String> fieldsToLoad = new HashSet<>();
 		fieldsToLoad.add(LuceneUtil.FIELD_DOC_ID);
 
 		IndexSearcher searcher = null;
 		try {
 			searcher = index.getSearcher();
-			final TaxonomyReader taxonomyReader = index.getTaxonomyReader();
 
-                        FieldValueHitQueue<MyEntry> queue;
-                        if (sort == null) {
-                            queue = FieldValueHitQueue.create(new SortField[0], maxHits);
-                            
-                        } else {
-                            queue = FieldValueHitQueue.create(sort.getSort(), maxHits);
-                        }
+            FieldValueHitQueue<MyEntry> queue;
+            if (sort == null) {
+                queue = FieldValueHitQueue.create(new SortField[0], maxHits);
+
+            } else {
+                queue = FieldValueHitQueue.create(sort.getSort(), maxHits);
+            }
 			
 
 			ComparatorCollector collector = new ComparatorCollector(
 					db, worker, query, qname, contextId, queue,
-					maxHits, docs, callback, searchParams, taxonomyReader);
+					maxHits, docs, callback);
 			
 			searcher.search(query, collector);
 
@@ -107,23 +105,23 @@ public class QueryNodes {
 
 			// collector.finish();
 
-			return collector.getFacetResults();
+			return collector.facets(index.getTaxonomyReader(), facetsConfig);
 		} finally {
 			index.releaseSearcher(searcher);
 		}
 	}
-        public static List<FacetResult> query(LuceneIndexWorker worker,
+        public static Facets query(LuceneIndexWorker worker,
                 QName qname, int contextId, DocumentSet docs, Query query,
-                FacetSearchParams searchParams, SearchCallback<NodeProxy> callback)
+                FacetsConfig facetsConfig, SearchCallback<NodeProxy> callback)
                 throws IOException, ParseException, TerminatedException {
             
-            return query(worker, qname, contextId, docs, query, searchParams, callback, Integer.MAX_VALUE);
+            return query(worker, qname, contextId, docs, query, facetsConfig, callback, Integer.MAX_VALUE);
             
         }
 
-	public static List<FacetResult> query(LuceneIndexWorker worker,
+	public static Facets query(LuceneIndexWorker worker,
 			QName qname, int contextId, DocumentSet docs, Query query,
-			FacetSearchParams searchParams, SearchCallback<NodeProxy> callback, int maxHits)
+			FacetsConfig facetsConfig, SearchCallback<NodeProxy> callback, int maxHits)
 			throws IOException, ParseException, TerminatedException {
 
 		final LuceneIndex index = worker.index;
@@ -133,23 +131,21 @@ public class QueryNodes {
 		IndexSearcher searcher = null;
 		try {
 			searcher = index.getSearcher();
-			final TaxonomyReader taxonomyReader = index.getTaxonomyReader();
 
-			NodeHitCollector collector = new NodeHitCollector(db,
-					worker, maxHits, query, qname, contextId, docs, callback,
-					searchParams, taxonomyReader);
+			NodeHitCollector collector = new NodeHitCollector(db, worker, maxHits, query, qname, contextId, docs, callback);
 
 			searcher.search(query, collector);
 
-			return collector.getFacetResults();
+			return collector.facets(index.getTaxonomyReader(), facetsConfig);
+
 		} finally {
 			index.releaseSearcher(searcher);
 		}
 	}
 
-	public static List<FacetResult> query(LuceneIndexWorker worker,
+	public static Facets query(LuceneIndexWorker worker,
 			DocumentSet docs, List<QName> qnames, int contextId,
-			String queryStr, FacetSearchParams searchParams,
+			String queryStr, FacetsConfig facetsConfig,
 			Properties options, SearchCallback<NodeProxy> callback)
 			throws IOException, ParseException, TerminatedException {
 
@@ -164,18 +160,15 @@ public class QueryNodes {
 		IndexSearcher searcher = null;
 		try {
 			searcher = index.getSearcher();
-			final TaxonomyReader taxonomyReader = index.getTaxonomyReader();
 
 			NodeHitCollector collector = 
-					new NodeHitCollector(db, worker, -1, null, null, contextId, docs, callback,
-					searchParams, taxonomyReader);
+					new NodeHitCollector(db, worker, -1, null, null, contextId, docs, callback);
 
 			for (QName qname : qnames) {
 
 				String field = LuceneUtil.encodeQName(qname, db.getSymbols());
 
-				Analyzer analyzer = worker.getAnalyzer(null, qname, broker,
-						docs);
+				Analyzer analyzer = worker.getAnalyzer(null, qname, broker, docs);
 
 				QueryParser parser = new QueryParser(
 						LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
@@ -191,7 +184,8 @@ public class QueryNodes {
 				searcher.search(query, collector);
 			}
 
-			return collector.getFacetResults();
+			return collector.facets(index.getTaxonomyReader(), facetsConfig);
+
 		} finally {
 			index.releaseSearcher(searcher);
 		}
@@ -199,36 +193,39 @@ public class QueryNodes {
 
 	private static class NodeHitCollector extends QueryFacetCollector {
 
-		protected BinaryDocValues nodeIdValues;
+		BinaryDocValues nodeIdValues;
 
-		protected final byte[] buf = new byte[1024];
+		byte[] buf = new byte[1024];
 
-		protected final Database db;
-		private final LuceneIndexWorker worker;
+		Database db;
+		LuceneIndexWorker worker;
 		
-		private final int maxHits;
-		private Query query;
+		int maxHits;
+		Query query;
 
-		private String field = null;
-		private QName qname;
-		private final int contextId;
+		String field = null;
+		QName qname;
+		int contextId;
 
-		protected final SearchCallback<NodeProxy> callback;
+		SearchCallback<NodeProxy> callback;
 
-		private NodeHitCollector(final Database db, final LuceneIndexWorker worker, 
+		private NodeHitCollector(
+
+                Database db,
+                LuceneIndexWorker worker,
 		        
-		        final int maxHits,
+		        int maxHits,
 				
-				final Query query,
+				Query query,
 	
-				final QName qname, final int contextId,
+				QName qname,
+                int contextId,
 		
-				final DocumentSet docs, final SearchCallback<NodeProxy> callback,
-		
-				final FacetSearchParams searchParams,
-				final TaxonomyReader taxonomyReader) {
+				DocumentSet docs,
+                SearchCallback<NodeProxy> callback
+        ) {
 	
-				super(docs, searchParams, taxonomyReader);
+				super(docs);
 
 			this.db = db;
 			this.worker = worker;
@@ -243,16 +240,16 @@ public class QueryNodes {
 		}
 
 		@Override
-		public void setNextReader(AtomicReaderContext atomicReaderContext)
-				throws IOException {
+		public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
 			super.setNextReader(atomicReaderContext);
+
 			nodeIdValues = this.reader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
 		}
 
 		@Override
 		public void collect(int doc) {
             //in some cases can be null
-            if (this.docIdValues == null) return;
+            if (this.docIdValues == null || this.nodeIdValues == null) return;
 
 		    if (maxHits > 0 && totalHits > maxHits) {
 		        return;
@@ -269,13 +266,15 @@ public class QueryNodes {
 				// XXX: understand: check permissions here? No, it may slowdown,
 				// better to check final set
 
-				BytesRef ref = new BytesRef(buf);
-				this.nodeIdValues.get(doc, ref);
+				//BytesRef ref = new BytesRef(buf);
+                BytesRef ref = this.nodeIdValues.get(doc); //, ref);
 				int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
 				NodeId nodeId = db.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
 				// LOG.info("doc: " + docId + "; node: " + nodeId.toString() + "; units: " + units);
 
 				collect(doc, storedDocument, nodeId, score);
+
+                super.collect( doc );
 
 			} catch (Exception e) {
                 LuceneIndex.LOG.error(e.getMessage(), e);
@@ -287,13 +286,6 @@ public class QueryNodes {
 			if (!docbits.contains(storedDocument.getDocId())) {
 				docbits.add(storedDocument);
 
-				bits.set(doc);
-				if (totalHits >= scores.length) {
-					float[] newScores = new float[ArrayUtil.oversize(totalHits + 1, 4)];
-					System.arraycopy(scores, 0, newScores, 0, totalHits);
-					scores = newScores;
-				}
-				scores[totalHits] = score;
 				totalHits++;
 			}
             
@@ -303,47 +295,7 @@ public class QueryNodes {
 					.setNodeType(
 						qname.getNameType() == ElementValue.ATTRIBUTE ? 
 							Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
-			
-			
-//			if (field != null) {
-//				try {
-//					Terms termVector = reader.getTermVector(doc, field);
-//					//Terms termVector = reader.terms(field);
-//					if (termVector != null) {
-//						if (termVector.hasOffsets()) {
-//							TermsEnum term = termVector.iterator(null);
-//							
-//							BytesRef byteref;
-//						    while ((byteref = term.next()) != null) {
-//						    	
-//						    	System.out.println(byteref.utf8ToString());
-//						    	
-//						        DocsAndPositionsEnum docPosEnum = term.docsAndPositions(null, null);//, DocsAndPositionsEnum.FLAG_OFFSETS);
-//
-//						        if (docPosEnum.advance(doc) != DocIdSetIterator.NO_MORE_DOCS) {
-//							        int freq=docPosEnum.freq();
-//							        for(int i=0; i<freq; i++){
-//							            int position=docPosEnum.nextPosition();
-//							            int start=docPosEnum.startOffset();
-//							            int end=docPosEnum.endOffset();
-//							            //Store start, end and position in an a list
-//							            
-//							            System.out.println(position+" = "+start+" : "+end);
-//							        }
-//						        }
-//					        }
-//						}
-//					}
-//					
-//					System.out.println("=====================");
 
-//					Terms terms = reader.terms(field);
-//					TermsEnum termsEnum = terms.iterator(TermsEnum.EMPTY);
-//					BytesRef term;
-//				    while((term=termsEnum.next())!=null){
-//				} catch (IOException e) {
-//				}
-//			}
 
 			LuceneMatch match = worker.new LuceneMatch(contextId, nodeId, query);
 			match.setScore(score);
@@ -360,34 +312,51 @@ public class QueryNodes {
 		}
 	}
 
-	private static class ComparatorCollector extends NodeHitCollector {
+	private static class ComparatorCollector extends QueryFacetCollector {
+
+        BinaryDocValues nodeIdValues;
+
+        byte[] buf = new byte[1024];
+
+        Database db;
+        LuceneIndexWorker worker;
+        Query query;
+
+        String field = null;
+        QName qname;
+        int contextId;
 
 		FieldComparator<?>[] comparators;
-		final int[] reverseMul;
-		final FieldValueHitQueue<MyEntry> queue;
+		int[] reverseMul;
+		FieldValueHitQueue<MyEntry> queue;
 
-		int maxDoc = 0;
+        SearchCallback<NodeProxy> callback;
 
 		public ComparatorCollector(
-				final Database db,
-				final LuceneIndexWorker worker, 
-				final Query query,
+				Database db,
+				LuceneIndexWorker worker,
+				Query query,
 
-				final QName qname, 
-				final int contextId,
+				QName qname,
+				int contextId,
 
-				final FieldValueHitQueue<MyEntry> queue, 
-				final int numHits,
+				FieldValueHitQueue<MyEntry> queue,
+				int numHits,
 
-				final DocumentSet docs,
-				final SearchCallback<NodeProxy> callback,
+				DocumentSet docs,
+				SearchCallback<NodeProxy> callback) {
 
-				final FacetSearchParams searchParams,
+			super(docs);
 
-				final TaxonomyReader taxonomyReader) {
+            this.db = db;
 
-			super(db, worker, -1, query, qname, contextId, docs, callback,
-					searchParams, taxonomyReader);
+            this.qname = qname;
+            this.worker = worker;
+            this.query = query;
+
+            this.contextId = contextId;
+
+            this.callback = callback;
 
 			this.queue = queue;
 			comparators = queue.getComparators();
@@ -396,55 +365,30 @@ public class QueryNodes {
 			this.numHits = numHits;
 		}
 
-		@Override
 		protected void finish() {
-			if (bits != null) {
-				if (context == null)
-					throw new RuntimeException();
-
-				matchingDocs.add(new MatchingDocs(context, bits, totalHits, scores));
-			}
-			bits = new FixedBitSet(maxDoc + 1);// 0x7FFFFFFF);//queue.size());
-			totalHits = 0;
-			scores = new float[64]; // some initial size
 
 			callback.totalHits(queue.size());
-			
-		            int size = queue.size();
-		            
-		            MyEntry[] array = new MyEntry[size];
-		            
-		            for (int i = size - 1; i >= 0; i--) {
-		                array[i] = queue.pop();
-		            }
 
-		            MyEntry entry = null;
-		            for (int i = 0; i < size; i++) {
-		                entry = array[i];
-		                collect(entry.doc, entry.document, entry.node, entry.score);
-		            }
-			
-//		            Object[] array = LuceneUtil.getHeapArray(queue);
-//		            
-//		            for (int i = array.length - 1; i >= 0; i--) {
-//		                MyEntry entry = (MyEntry) array[i];
-//		                
-//		                if (entry != null) {
-//		                    collect(entry.doc, entry.document, entry.node, entry.score);
-//		                }
-//		            }
-			
-//			MyEntry entry;
-//			while ((entry = queue.pop()) != null) {
-//				collect(entry.doc, entry.document, entry.node, entry.score);
-//			}
+            int size = queue.size();
 
-			super.finish();
+            MyEntry[] array = new MyEntry[size];
+
+            for (int i = size - 1; i >= 0; i--) {
+                array[i] = queue.pop();
+            }
+
+            MyEntry entry = null;
+            for (int i = 0; i < size; i++) {
+                entry = array[i];
+                collect(entry.doc, entry.document, entry.node, entry.score);
+            }
+
+			//super.finish();
 		}
 
 		final void updateBottom(int doc, float score, DocumentImpl document) {
 			// bottom.score is already set to Float.NaN in add().
-			bottom.doc = docNumber(docBase, doc);
+			bottom.doc = docBase + doc;
 			bottom.score = score;
 			bottom.document = document;
 			bottom.node = getNodeId(doc);
@@ -455,21 +399,19 @@ public class QueryNodes {
 
 		@Override
 		public void collect(int doc) {
-		    if (this.nodeIdValues == null) {
-		        return;
-		    }
+		    if (this.nodeIdValues == null || this.docIdValues == null) return;
+
 			try {
 				final float score = scorer.score();
 
 				int docId = (int) this.docIdValues.get(doc);
-//				if (docbits.contains(docId))
-//					return;
 
 				DocumentImpl storedDocument = docs.getDoc(docId);
-				if (storedDocument == null)
-					return;
+				if (storedDocument == null) return;
 
 //				docbits.add(storedDocument);
+
+                super.collect( doc );
 
 				++totalHits;
 				if (queueFull) {
@@ -523,10 +465,37 @@ public class QueryNodes {
 			}
 		}
 
+        public void collect(int doc, DocumentImpl storedDocument, NodeId nodeId, float score) {
+
+            if (!docbits.contains(storedDocument.getDocId())) {
+                docbits.add(storedDocument);
+
+                totalHits++;
+            }
+
+            NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+            if (qname != null)
+                storedNode
+                        .setNodeType(
+                                qname.getNameType() == ElementValue.ATTRIBUTE ?
+                                        Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+
+
+            LuceneMatch match = worker.new LuceneMatch(contextId, nodeId, query);
+            match.setScore(score);
+            //XXX: match.addOffset(offset, length);
+
+            storedNode.addMatch(match);
+            callback.found(reader, doc, storedNode, score);
+            // resultSet.add(storedNode, sizeHint);
+        }
+
 		@Override
 		public void setNextReader(AtomicReaderContext context) throws IOException {
 
 			super.setNextReader(context);
+
+            nodeIdValues = this.reader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
 
 			this.docBase = context.docBase;
 			for (int i = 0; i < comparators.length; i++) {
@@ -536,6 +505,7 @@ public class QueryNodes {
 
 		@Override
 		public void setScorer(Scorer scorer) throws IOException {
+
 			super.setScorer(scorer);
 
 			// set the scorer on all comparators
@@ -554,7 +524,7 @@ public class QueryNodes {
 			bottom = queue.add(
 				new MyEntry(
 					slot, 
-					docNumber(docBase, doc), 
+					docBase + doc,
 					score, 
 					document, 
 					getNodeId(doc), 
@@ -564,21 +534,17 @@ public class QueryNodes {
 		}
 		
 		private NodeId getNodeId(int doc) {
-			BytesRef ref = new BytesRef(buf);
+			//BytesRef ref = new BytesRef(buf);
 
-			this.nodeIdValues.get(doc, ref);
+            BytesRef ref = this.nodeIdValues.get(doc); //, ref);
 			int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
 			return db.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
 		}
-		
-		private int docNumber(int docBase, int doc) {
-			final int doca = docBase + doc;
-			
-			if (maxDoc < doca)
-				maxDoc = doca;
-			
-			return doca;
-		}
+
+        @Override
+        protected SearchCallback<NodeProxy> getCallback() {
+            return callback;
+        }
 	}
 	
 	private static class MyEntry extends Entry {

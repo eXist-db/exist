@@ -25,10 +25,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.facet.params.FacetSearchParams;
-import org.apache.lucene.facet.search.FacetResult;
-import org.apache.lucene.facet.search.FacetsCollector.MatchingDocs;
-import org.apache.lucene.facet.taxonomy.TaxonomyReader;
+import org.apache.lucene.facet.Facets;
+import org.apache.lucene.facet.FacetsCollector;
+import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.SlowCompositeReaderWrapper;
@@ -57,9 +56,9 @@ import org.exist.xquery.TerminatedException;
  */
 public class QueryDocuments {
 	
-    public static List<FacetResult> query(
+    public static Facets query(
     		LuceneIndexWorker worker, DocumentSet docs,
-            Query query, FacetSearchParams searchParams,
+            Query query, FacetsConfig facetsConfig,
             SearchCallback<DocumentImpl> callback, int maxHits, Sort sort) 
                     throws IOException, ParseException, TerminatedException {
 
@@ -68,11 +67,10 @@ public class QueryDocuments {
         IndexSearcher searcher = null;
         try {
             searcher = index.getSearcher();
-            final TaxonomyReader taxonomyReader = index.getTaxonomyReader();
             
             FieldValueHitQueue<MyEntry> queue = FieldValueHitQueue.create(sort.getSort(), maxHits);
 
-            ComparatorCollector collector = new ComparatorCollector(queue, maxHits, docs, callback, searchParams, taxonomyReader);
+            ComparatorCollector collector = new ComparatorCollector(queue, maxHits, docs, callback);
             
             searcher.search(query, collector);
             
@@ -83,44 +81,52 @@ public class QueryDocuments {
             
             //collector.finish();
 
-            return collector.getFacetResults();
+            return collector.facets(index.getTaxonomyReader(), facetsConfig);
+
         } finally {
             index.releaseSearcher(searcher);
         }
     }
 
-    public static List<FacetResult> query(LuceneIndexWorker worker, DocumentSet docs,
-            Query query, FacetSearchParams searchParams,
-            SearchCallback<DocumentImpl> callback) 
-                    throws IOException, ParseException, TerminatedException {
+    public static Facets query(
+            LuceneIndexWorker worker,
+            DocumentSet docs,
+            Query query,
+            FacetsConfig facetsConfig,
+            SearchCallback<DocumentImpl> callback
+    ) throws IOException, ParseException, TerminatedException {
         
-        return query(worker, docs, query, searchParams, callback, -1);
+        return query(worker, docs, query, facetsConfig, callback, -1);
     }
     
-    public static List<FacetResult> query(LuceneIndexWorker worker, DocumentSet docs,
-            Query query, FacetSearchParams searchParams,
-            SearchCallback<DocumentImpl> callback, int maxHits) 
-                    throws IOException, ParseException, TerminatedException {
+    public static Facets query(
+            LuceneIndexWorker worker,
+            DocumentSet docs,
+            Query query,
+            FacetsConfig facetsConfig,
+            SearchCallback<DocumentImpl> callback,
+            int maxHits
+    ) throws IOException, ParseException, TerminatedException {
 
         final LuceneIndex index = worker.index;
 
         IndexSearcher searcher = null;
         try {
             searcher = index.getSearcher();
-            final TaxonomyReader taxonomyReader = index.getTaxonomyReader();
 
-            DocumentHitCollector collector = new DocumentHitCollector(maxHits, docs, callback, searchParams, taxonomyReader);
+            DocumentHitCollector collector = new DocumentHitCollector(maxHits, docs, callback);
 
             searcher.search(query, collector);
             
-            return collector.getFacetResults();
+            return collector.facets(index.getTaxonomyReader(), facetsConfig);
+
         } finally {
             index.releaseSearcher(searcher);
         }
     }
 
-    public static List<FacetResult> query(LuceneIndexWorker worker, DocumentSet docs,
-            List<QName> qnames, String queryStr, FacetSearchParams searchParams, Properties options,
+    public static Facets query(LuceneIndexWorker worker, DocumentSet docs,
+            List<QName> qnames, String queryStr, FacetsConfig facetsConfig, Properties options,
             SearchCallback<DocumentImpl> callback) throws IOException, ParseException,
             TerminatedException {
 
@@ -135,9 +141,8 @@ public class QueryDocuments {
         IndexSearcher searcher = null;
         try {
             searcher = index.getSearcher();
-            final TaxonomyReader taxonomyReader = index.getTaxonomyReader();
 
-            DocumentHitCollector collector = new DocumentHitCollector(-1, docs, callback, searchParams, taxonomyReader);
+            DocumentHitCollector collector = new DocumentHitCollector(-1, docs, callback);
 
             for (QName qname : qnames) {
 
@@ -154,7 +159,8 @@ public class QueryDocuments {
                 searcher.search(query, collector);
             }
             
-            return collector.getFacetResults();
+            return collector.facets(index.getTaxonomyReader(), facetsConfig);
+
         } finally {
             index.releaseSearcher(searcher);
         }
@@ -169,13 +175,9 @@ public class QueryDocuments {
         private DocumentHitCollector(
                 final int numHits,
                 final DocumentSet docs, 
-                final SearchCallback<DocumentImpl> callback,
-                
-                final FacetSearchParams searchParams, 
-
-                final TaxonomyReader taxonomyReader) {
+                final SearchCallback<DocumentImpl> callback) {
             
-            super(docs, searchParams, taxonomyReader);
+            super(docs);
             
             this.numHits = numHits;
             this.callback = callback;
@@ -194,16 +196,17 @@ public class QueryDocuments {
 
 				int docId = (int) this.docIdValues.get(doc);
 	            
-	            if (docbits.contains(docId))
-	                return;
+	            if (docbits.contains(docId)) return;
 
 	            final DocumentImpl storedDocument = docs.getDoc(docId);
-	            if (storedDocument == null)
-	                return;
+	            if (storedDocument == null) return;
 	            
 	            docbits.add(storedDocument);
 
 	            collect(doc, storedDocument, score);
+
+                super.collect(doc);
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -211,16 +214,7 @@ public class QueryDocuments {
 
         public void collect(int doc, DocumentImpl storedDocument, float score) {
 
-            bits.set(doc);
-            if (totalHits >= scores.length) {
-                float[] newScores = new float[ArrayUtil.oversize(totalHits + 1, 4)];
-                System.arraycopy(scores, 0, newScores, 0, totalHits);
-                scores = newScores;
-            }
-            scores[totalHits] = score;
             totalHits++;
-
-            // XXX: understand: check permissions here? No, it may slowdown, better to check final set
 
             callback.found(reader, doc, storedDocument, score);
         }
@@ -231,26 +225,24 @@ public class QueryDocuments {
 		}
     }
     
-    private static class ComparatorCollector extends DocumentHitCollector {
+    private static class ComparatorCollector extends QueryFacetCollector {
+
+        SearchCallback<DocumentImpl> callback;
     	
         FieldComparator<?>[] comparators;
         final int[] reverseMul;
         final FieldValueHitQueue<MyEntry> queue;
-
-        int maxDoc = 0;
 
     	public ComparatorCollector(
 			final FieldValueHitQueue<MyEntry> queue,
 			final int numHits,
 
             final DocumentSet docs,
-            final SearchCallback<DocumentImpl> callback,
+            final SearchCallback<DocumentImpl> callback) {
 
-            final FacetSearchParams searchParams,
+    		super(docs);
 
-            final TaxonomyReader taxonomyReader) {
-
-    		super(-1, docs, callback, searchParams, taxonomyReader);
+            this.callback = callback;
 
 			this.queue = queue;
 			comparators = queue.getComparators();
@@ -259,65 +251,8 @@ public class QueryDocuments {
 			this.numHits = numHits;
 		}
 
-    	private void check() {
-
-    	    System.out.println("==============================");
-
-            Object[] array = getHeapArray(queue);
-
-            float last = Float.MAX_VALUE;
-
-            for (int i = array.length - 1; i >= 0; i--) {
-                MyEntry entry = (MyEntry) array[i];
-
-                if (entry != null) {
-                    if (comparators[0].value(entry.slot).equals(entry.score)) {
-                        System.out.print("+");
-                    } else {
-                        System.out.print("-");
-                    }
-
-                    if (last >= entry.score) {
-                        System.out.print("+");
-
-
-                        last  = entry.score;
-                    } else {
-                        System.out.print("-");
-                    }
-
-                    System.out.println(" "+entry.score+" "+entry.document);
-                }
-            }
-    	}
-
-        private Object[] getHeapArray(PriorityQueue queue) {
-            try {
-                Method method = PriorityQueue.class.getDeclaredMethod("getHeapArray");
-                method.setAccessible(true);
-
-                Object res = method.invoke(queue);
-
-                return (Object[]) res;
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-    	@Override
     	protected void finish() {
-            if (bits != null) {
-            	if (context == null)
-                	throw new RuntimeException();
 
-            	matchingDocs.add(new MatchingDocs(context, bits, totalHits, scores));
-            }
-            bits = new FixedBitSet(maxDoc + 1);//0x7FFFFFFF);//queue.size());
-            totalHits = 0;
-            scores = new float[64]; // some initial size
-
-            //System.out.println(maxDoc);
             callback.totalHits(queue.size());
 
             int size = queue.size();
@@ -334,11 +269,6 @@ public class QueryDocuments {
                 collect(entry.doc, entry.document, entry.score);
             }
 
-//        	MyEntry entry;
-//    		while ((entry = queue.pop()) != null) {
-//    			collect(entry.doc, entry.document, entry.score);
-//    		}
-
     		//super.finish();
     	}
 
@@ -354,13 +284,13 @@ public class QueryDocuments {
 	      @Override
 	      public void collect(int doc) throws IOException {
 
+              if (this.docIdValues == null) return;
+
           	int docId = (int) this.docIdValues.get(doc);
-            if (docbits.contains(docId))
-                return;
+            if (docbits.contains(docId)) return;
 
             DocumentImpl storedDocument = docs.getDoc(docId);
-            if (storedDocument == null)
-                return;
+            if (storedDocument == null) return;
 
             docbits.add(storedDocument);
 
@@ -368,6 +298,9 @@ public class QueryDocuments {
 //            System.out.println(score + " " + storedDocument.getDocumentURI());
 
             //check();
+
+              super.collect( doc );
+
 
 	        ++totalHits;
 	        if (queueFull) {
@@ -420,6 +353,14 @@ public class QueryDocuments {
 	          }
 	        }
 	      }
+
+        public void collect(int doc, DocumentImpl storedDocument, float score) {
+
+            totalHits++;
+
+            callback.found(reader, doc, storedDocument, score);
+
+        }
 	    
 	    @Override
 	    public void setNextReader(AtomicReaderContext context) throws IOException {
@@ -454,19 +395,18 @@ public class QueryDocuments {
 	    }
 	    
 		private int docNumber(int docBase, int doc) {
-			final int doca = docBase + doc;
-			
-			if (maxDoc < doca)
-				maxDoc = doca;
-			
-			return doca;
+			return docBase + doc;
 		}
 		
-		@Override
-		public boolean acceptsDocsOutOfOrder() {
-		    return true;
-		}
+//		@Override
+//		public boolean acceptsDocsOutOfOrder() {
+//		    return true;
+//		}
 
+        @Override
+        protected SearchCallback<DocumentImpl> getCallback() {
+            return callback;
+        }
     }
     
     private static class MyEntry extends Entry {

@@ -59,82 +59,77 @@ import static org.exist.collections.CollectionConfigurationManager.ROOT_COLLECTI
 
 public class FacetAbstract {
 
+    protected static final String STATUS = "status";
+
     protected static BrokerPool db;
     protected static Collection root;
     protected Boolean savedConfig;
 
     protected DocumentSet configureAndStore(String configuration, Resource[] resources) {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
+
+        MetaData md = MetaData.get();
+        assertNotNull(md);
+
         MutableDocumentSet docs = new DefaultDocumentSet();
-        try {
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+        try (DBBroker broker = db.get(db.getSecurityManager().getSystemSubject())) {
             assertNotNull(broker);
-            transact = db.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
 
-            MetaData md = MetaData.get();
-            assertNotNull(md);
+            try (Txn txn = broker.beginTx()) {
 
-            if (configuration != null) {
-                CollectionConfigurationManager mgr = db.getConfigurationManager();
-                mgr.addConfiguration(transaction, broker, root, configuration);
+                assertNotNull(txn);
+
+                if (configuration != null) {
+                    CollectionConfigurationManager mgr = db.getConfigurationManager();
+                    mgr.addConfiguration(txn, broker, root, configuration);
+                }
+
+                for (Resource resource : resources) {
+
+                    XmldbURI docURL = root.getURI().append(resource.docName);
+
+                    Metas docMD = md.getMetas(docURL);
+                    if (docMD == null) {
+                        docMD = md.addMetas(docURL);
+                    }
+                    assertNotNull(docMD);
+
+                    for (Entry<String, String> entry : resource.metas.entrySet()) {
+                        docMD.put(entry.getKey(), entry.getValue());
+                    }
+
+                    if (resource.type == "XML") {
+
+                        IndexInfo info = root.validateXMLResource(txn, broker, XmldbURI.create(resource.docName), resource.data);
+                        assertNotNull(info);
+
+                        root.store(txn, broker, info, resource.data, false);
+
+                        docs.add(info.getDocument());
+
+                        //broker.reindexXMLResource(transaction, info.getDocument());
+                    } else {
+
+                        final MimeTable mimeTable = MimeTable.getInstance();
+
+                        final MimeType mimeType = mimeTable.getContentTypeFor(resource.docName);
+
+                        InputStream is = new StringInputStream(resource.data);
+
+                        XmldbURI name = XmldbURI.create(resource.docName);
+
+                        BinaryDocument binary = root.validateBinaryResource(txn, broker, name, is, mimeType.toString(), (long) -1, (Date) null, (Date) null);
+
+                        binary = root.addBinaryResource(txn, broker, name, is, mimeType.getName(), -1, (Date) null, (Date) null);
+
+                        docs.add(binary);
+                    }
+
+                }
+                txn.success();
             }
-            
-            for (Resource resource : resources) {
-                
-                XmldbURI docURL = root.getURI().append(resource.docName);
-
-                Metas docMD = md.getMetas(docURL);
-                if (docMD == null) {
-                    docMD = md.addMetas(docURL);
-                }
-                assertNotNull(docMD);
-                
-                for (Entry<String, String> entry : resource.metas.entrySet()) {
-                    docMD.put(entry.getKey(), entry.getValue());
-                }
-                
-                if (resource.type == "XML") {
-                	
-                    IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(resource.docName), resource.data);
-                    assertNotNull(info);
-        
-                    root.store(transaction, broker, info, resource.data, false);
-
-                    docs.add(info.getDocument());
-                
-//                    broker.reindexXMLResource(transaction, info.getDocument());
-                } else {
-                    
-                    final MimeTable mimeTable = MimeTable.getInstance();
-                    
-                    final MimeType mimeType = mimeTable.getContentTypeFor(resource.docName);
-
-                    InputStream is = new StringInputStream(resource.data);
-                    
-                    XmldbURI name = XmldbURI.create(resource.docName);
-                    
-                    BinaryDocument binary = root.validateBinaryResource(transaction, broker, name, is, mimeType.toString(), (long)-1, (Date)null, (Date)null);
-
-                    binary = root.addBinaryResource(transaction, broker, name, is, mimeType.getName(), -1, (Date)null, (Date)null);
-                    
-                    docs.add(binary);
-                }
-    
-            }
-            
-            transact.commit(transaction);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            db.release(broker);
         }
         
         return docs;

@@ -21,7 +21,7 @@ package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.facet.params.FacetSearchParams;
+import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.search.Query;
@@ -94,7 +94,7 @@ public class SearchTestOrder {
             MultiFieldQueryParser parser = new MultiFieldQueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, fields, analyzer);
 
             Query query = parser.parse("learning and training");
-            FacetSearchParams fsp = null; //new FacetSearchParams(new CountFacetRequest(new CategoryPath("a"), 1));
+            FacetsConfig facetsConfig = null; //new FacetSearchParams(new CountFacetRequest(new CategoryPath("a"), 1));
 
             List<SortField> sortFields = new ArrayList<SortField>();
             
@@ -110,7 +110,7 @@ public class SearchTestOrder {
             
             Sort sort = new Sort(sortFields.toArray(new SortField[sortFields.size()]));
 
-            QueryDocuments.query(worker, docs, query, fsp, new MyCallback(), 4, sort);
+            QueryDocuments.query(worker, docs, query, facetsConfig, new MyCallback(), 4, sort);
             
         } catch (Exception e) {
             e.printStackTrace();

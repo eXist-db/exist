@@ -51,7 +51,7 @@ public class NodesFilter extends Filter {
                 BytesRef lowerBound = new BytesRef(LuceneUtil.createId(node.getDoc().getDocId(), node.getNodeId()));
                 BytesRef upperBound = new BytesRef(LuceneUtil.createId(node.getDoc().getDocId(), node.getNodeId().nextSibling()));
 
-                if (termsEnum.seekCeil(lowerBound, false) != TermsEnum.SeekStatus.END) {
+                if (termsEnum.seekCeil(lowerBound) != TermsEnum.SeekStatus.END) {
                     do {
                         BytesRef nextId = termsEnum.term();
                         if (nextId.compareTo(upperBound) < 0) {

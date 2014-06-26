@@ -22,6 +22,7 @@ package org.exist.storage.md.xquery;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
+import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
@@ -93,7 +94,11 @@ public class Reindex extends BasicFunction {
             throw new XPathException(this, e);
         }
 
-        broker.flush();
+        try {
+            broker.getDatabase().getIndexManager().sync();
+        } catch (DBException e) {
+            throw new XPathException(this, e);
+        }
 
         return Sequence.EMPTY_SEQUENCE;
 	}

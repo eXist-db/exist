@@ -30,11 +30,10 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.facet.params.FacetSearchParams;
-import org.apache.lucene.facet.search.CountFacetRequest;
-import org.apache.lucene.facet.search.FacetResult;
-import org.apache.lucene.facet.search.FacetResultNode;
-import org.apache.lucene.facet.taxonomy.CategoryPath;
+import org.apache.lucene.facet.FacetResult;
+import org.apache.lucene.facet.Facets;
+import org.apache.lucene.facet.FacetsConfig;
+import org.apache.lucene.facet.LabelAndValue;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -59,6 +58,7 @@ public class FacetIndexTest extends FacetAbstract {
 	
 	private final static String CREATED = "created";
 	private final static String STATUS = "status";
+    //private final static String STATUS_FACET = "STATUS";
 
     protected static String XUPDATE_START =
         "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">";
@@ -161,37 +161,37 @@ public class FacetIndexTest extends FacetAbstract {
         metas4.put(CREATED, "20130811");
     }
 
-    private static Map<String, String> metas5 = new HashMap<String, String>();
+    private static Map<String, String> metas5 = new HashMap<>();
     static {
         metas5.put(STATUS, "in review");
         metas5.put(CREATED, "20130901");
     }
 
-    private static Map<String, String> metas6 = new HashMap<String, String>();
+    private static Map<String, String> metas6 = new HashMap<>();
     static {
         metas6.put(STATUS, "in draft");
         metas6.put(CREATED, "20130901");
     }
 
-    private void checkFacet(List<FacetResult> facets) {
-        assertEquals(1, facets.size());
+    private void checkFacet(FacetResult facet) {
+
+        System.out.println(facet);
+
+        assertEquals(2, facet.childCount);
+
+        assertEquals(2.0, facet.value.doubleValue(), 0.0001);
+        assertEquals("status", facet.dim);
+
+        LabelAndValue[] subResults = facet.labelValues;
+        assertEquals(2, subResults.length);
+
+        LabelAndValue node = subResults[0];
+        assertEquals(1.0, node.value.doubleValue(), 0.0001);
+        assertEquals("draft", node.label);
         
-        FacetResult facet = facets.get(0);
-        assertEquals(2, facet.getNumValidDescendants());
-        FacetResultNode node = facet.getFacetResultNode();
-        assertEquals(0.0, node.value, 0.0001);
-        assertEquals("status", node.label.toString());
-        
-        List<FacetResultNode> subResults = node.subResults;
-        assertEquals(2, subResults.size());
-        
-        node = subResults.get(0);
-        assertEquals(1.0, node.value, 0.0001);
-        assertEquals("status/final", node.label.toString());
-        
-        node = subResults.get(1);
-        assertEquals(1.0, node.value, 0.0001);
-        assertEquals("status/draft", node.label.toString());
+        node = subResults[1];
+        assertEquals(1.0, node.value.doubleValue(), 0.0001);
+        assertEquals("final", node.label);
     }
 
     @Test
@@ -209,21 +209,21 @@ public class FacetIndexTest extends FacetAbstract {
             assertNotNull(broker);
             
             final LuceneIndexWorker worker = (LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+
+            FacetsConfig facetsConfig = new FacetsConfig();
+            //facetsConfig.setIndexFieldName(STATUS_FACET, STATUS);
+            //facetsConfig.setRequireDimCount(STATUS, true);
             
-            FacetSearchParams fsp = new FacetSearchParams(
-                new CountFacetRequest(new CategoryPath(STATUS), 10)
-            );
+            Counter<DocumentImpl> cb = new Counter<>();
             
-            Counter<DocumentImpl> cb = new Counter<DocumentImpl>();
-            
-            List<QName> qnames = new ArrayList<QName>();
+            List<QName> qnames = new ArrayList<>();
             qnames.add(new QName("head", ""));
-            List<FacetResult> results = QueryDocuments.query(worker, docs, qnames, "title", fsp, null, cb);
+            Facets results = QueryDocuments.query(worker, docs, qnames, "title", facetsConfig, null, cb);
             
             assertEquals(2, cb.count);
-            assertEquals(2, cb.total);
-            
-            checkFacet(results);
+            //assertEquals(2, cb.total);
+
+            checkFacet(results.getTopChildren(2, STATUS));
             
             cb.reset();
 
@@ -241,45 +241,55 @@ public class FacetIndexTest extends FacetAbstract {
             Query query = parser.parse("title");
             
             
-            results = QueryDocuments.query(worker, docs, query, fsp, cb);
+            results = QueryDocuments.query(worker, docs, query, facetsConfig, cb);
             
             assertEquals(2, cb.count);
-            assertEquals(2, cb.total);
+            //assertEquals(2, cb.total);
             
-            checkFacet(results);
+            checkFacet(results.getTopChildren(2, STATUS));
 
             cb.reset();
             
             //check document filtering
-            qnames = new ArrayList<QName>();
+            qnames = new ArrayList<>();
             qnames.add(new QName("p", ""));
-            results = QueryDocuments.query(worker, docs, qnames, "paragraph", fsp, null, cb);
+            results = QueryDocuments.query(worker, docs, qnames, "paragraph", facetsConfig, null, cb);
             
-            for (FacetResult result : results) {
-                System.out.println(result.toString());
-            }
+//            for (FacetResult result : results.getAllDims(10)) {
+//                System.out.println(result.toString());
+//            }
             
             assertEquals(2, cb.count);
-            assertEquals(2, cb.total);
+            //assertEquals(2, cb.total);
             
-            checkFacet(results);
+            checkFacet(results.getTopChildren(2, STATUS));
             
             cb.reset();
-            
+
             Sort sort = new Sort(new SortField(CREATED, SortField.Type.STRING, true));
-            
-            BooleanQuery bq = new  BooleanQuery();
-            bq.add(new TermQuery(new Term(STATUS, "draft")), BooleanClause.Occur.SHOULD);
-            bq.add(new TermQuery(new Term(STATUS, "final")), BooleanClause.Occur.SHOULD);
-            
-            results = QueryDocuments.query(worker, docs, bq, fsp, cb, 100, sort);
-            
-            assertEquals(2, cb.count);
-            assertEquals(2, cb.total);
 
-            checkFacet(results);
+            results = QueryDocuments.query(worker, docs, qnames, "status:(draft OR final)", facetsConfig, null, cb);
+
+            System.out.println(results.getTopChildren(2, STATUS).toString());
+
+            assertEquals(2, cb.count);
+
+            checkFacet(results.getTopChildren(2, STATUS));
 
             cb.reset();
+
+//            BooleanQuery bq = new  BooleanQuery();
+//            bq.add(new TermQuery(new Term(STATUS, "draft")), BooleanClause.Occur.SHOULD);
+//            bq.add(new TermQuery(new Term(STATUS, "final")), BooleanClause.Occur.SHOULD);
+//
+//            results = QueryDocuments.query(worker, docs, bq, facetsConfig, cb, 100, sort);
+//
+//            assertEquals(2, cb.count);
+//            //assertEquals(2, cb.total);
+//
+//            checkFacet(results.getTopChildren(2, STATUS));
+//
+//            cb.reset();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -304,12 +314,11 @@ public class FacetIndexTest extends FacetAbstract {
             assertNotNull(broker);
             
             final LuceneIndexWorker worker = (LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-            
-            FacetSearchParams fsp = new FacetSearchParams(
-                new CountFacetRequest(new CategoryPath(STATUS), 10)
-            );
-            
-            Counter<DocumentImpl> cb = new Counter<DocumentImpl>();
+
+            FacetsConfig facetsConfig = new FacetsConfig();
+            facetsConfig.setHierarchical(STATUS, true);
+
+            Counter<DocumentImpl> cb = new Counter<>();
             
             Sort sort = new Sort(new SortField(CREATED, SortField.Type.STRING, true));
             
@@ -317,12 +326,12 @@ public class FacetIndexTest extends FacetAbstract {
             bq.add(new TermQuery(new Term(STATUS, "draft")), BooleanClause.Occur.SHOULD);
             bq.add(new TermQuery(new Term(STATUS, "final")), BooleanClause.Occur.SHOULD);
             
-            List<FacetResult> results = QueryDocuments.query(worker, docs, bq, fsp, cb, 100, sort);
+            Facets results = QueryDocuments.query(worker, docs, bq, facetsConfig, cb, 100, sort);
             
             assertEquals(2, cb.count);
             assertEquals(2, cb.total);
             
-            checkFacet(results);
+            checkFacet(results.getTopChildren(2, STATUS));
             
             cb.reset();
 
@@ -376,30 +385,30 @@ public class FacetIndexTest extends FacetAbstract {
         assertEquals(2, facets.size());
         
         FacetResult facet = facets.get(0);
-        assertEquals(1, facet.getNumValidDescendants());
-        FacetResultNode node = facet.getFacetResultNode();
-        assertEquals(0.0, node.value, 0.0001);
-        assertEquals("status", node.label.toString());
-        
-        List<FacetResultNode> subResults = node.subResults;
-        assertEquals(1, subResults.size());
-        
-        node = subResults.get(0);
-        assertEquals(2.0, node.value, 0.0001);
-        assertEquals("status/draft", node.label.toString());
+        assertEquals(1, facet.childCount);
+
+        assertEquals(0.0, facet.value.doubleValue(), 0.0001);
+        assertEquals("status", facet.dim);
+
+        LabelAndValue[] subResults = facet.labelValues;
+        assertEquals(1, subResults.length);
+
+        LabelAndValue node = subResults[0];
+        assertEquals(2.0, node.value.doubleValue(), 0.0001);
+        assertEquals("status/draft", node.label);
 
         facet = facets.get(1);
-        assertEquals(1, facet.getNumValidDescendants());
-        node = facet.getFacetResultNode();
-        assertEquals(2.0, node.value, 0.0001);
-        assertEquals("eXist:meta-type/application", node.label.toString());
+        assertEquals(1, facet.childCount);
+
+        assertEquals(2.0, facet.value.doubleValue(), 0.0001);
+        assertEquals("eXist:meta-type/application", facet.dim);
         
-        subResults = node.subResults;
-        assertEquals(1, subResults.size());
+        subResults = facet.labelValues;
+        assertEquals(1, subResults.length);
         
-        node = subResults.get(0);
-        assertEquals(2.0, node.value, 0.0001);
-        assertEquals("eXist:meta-type/application/xml", node.label.toString());
+        node = subResults[0];
+        assertEquals(2.0, node.value.doubleValue(), 0.0001);
+        assertEquals("eXist:meta-type/application/xml", node.label);
     }
 
     @Test
@@ -419,17 +428,15 @@ public class FacetIndexTest extends FacetAbstract {
             assertNotNull(broker);
 
             final LuceneIndexWorker worker = (LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-            
-            FacetSearchParams fsp = new FacetSearchParams(
-                new CountFacetRequest(new CategoryPath(STATUS), 10),
-                new CountFacetRequest(new CategoryPath("eXist:meta-type"), 10),
-                new CountFacetRequest(new CategoryPath("eXist:meta-type","application"), 10)
-//                new CountFacetRequest(new CategoryPath("Author"), 10)
-            );
-            
+
+            FacetsConfig facetsConfig = new FacetsConfig();
+            facetsConfig.setRequireDimCount(STATUS, true);
+            facetsConfig.setRequireDimCount("eXist:meta-type", true);
+            //facetsConfig.setMultiValued("eXist:meta-type","application", true);
+
             Sort sort = new Sort(new SortField(CREATED, SortField.Type.STRING, true));
             
-            Counter<DocumentImpl> cb = new Counter<DocumentImpl>();
+            Counter<DocumentImpl> cb = new Counter<>();
             
             List<QName> qnames = worker.getDefinedIndexes(null);
             
@@ -447,16 +454,16 @@ public class FacetIndexTest extends FacetAbstract {
             	bq.add(new PrefixQuery(new Term(field, searchText)), BooleanClause.Occur.SHOULD);
             }
 
-            List<FacetResult> results = QueryDocuments.query(worker, docs, bq, fsp, cb, 5, sort);
+            Facets results = QueryDocuments.query(worker, docs, bq, facetsConfig, cb, 5, sort);
             
             assertEquals(2, cb.count);
             assertEquals(2, cb.total);
             
-            for (FacetResult result : results) {
+            for (FacetResult result : results.getAllDims(10)) {
             	System.out.println(result.toString());
             }
             
-            checkFacet2(results);
+            checkFacet2(results.getAllDims(10));
             
             System.out.println("================");
             
@@ -464,12 +471,12 @@ public class FacetIndexTest extends FacetAbstract {
 
             sort = new Sort(new SortField(CREATED, SortField.Type.STRING, false));
             
-            results = QueryDocuments.query(worker, docs, bq, fsp, cb, 5, sort);
+            results = QueryDocuments.query(worker, docs, bq, facetsConfig, cb, 5, sort);
             
             assertEquals(2, cb.count);
             assertEquals(2, cb.total);
             
-            checkFacet2(results);
+            checkFacet2(results.getAllDims(10));
 
             System.out.println("================");
             
@@ -477,7 +484,7 @@ public class FacetIndexTest extends FacetAbstract {
 
             sort = new Sort(new SortField(CREATED, SortField.Type.STRING, false));
             
-            results = QueryDocuments.query(worker, docs, bq, fsp, cb, 1, sort);
+            results = QueryDocuments.query(worker, docs, bq, facetsConfig, cb, 1, sort);
             
             assertEquals(1, cb.count);
             assertEquals(1, cb.total);
@@ -528,15 +535,14 @@ public class FacetIndexTest extends FacetAbstract {
             assertNotNull(broker);
 
             final LuceneIndexWorker worker = (LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-            
-            FacetSearchParams fsp = new FacetSearchParams(
-                new CountFacetRequest(new CategoryPath(STATUS), 100)
-            );
+
+            FacetsConfig facetsConfig = new FacetsConfig();
+            facetsConfig.setRequireDimCount(STATUS, true);
 
             MutableDocumentSet docs = new DefaultDocumentSet(1031);
             broker.getCollection(XmldbURI.xmldbUriFor("/db")).allDocs(broker, docs, true);
 
-            List<QName> qNames = new ArrayList<QName>();
+            List<QName> qNames = new ArrayList<>();
             qNames = worker.getDefinedIndexes(qNames);
 
 
@@ -554,14 +560,14 @@ public class FacetIndexTest extends FacetAbstract {
 
 
             // Sort by status & creation date:
-            List<FacetResult> results = QueryDocuments.query(worker, docs, query, fsp, cb, 
+            Facets results = QueryDocuments.query(worker, docs, query, facetsConfig, cb,
             		200, 
             		new org.apache.lucene.search.Sort(
             				new SortField(STATUS, SortField.Type.STRING, true),
             				new SortField(CREATED, SortField.Type.STRING, true)
     				));
             System.out.println("Hits: "+myHits.size());
-            debug(results);
+            debug(results.getAllDims(10));
             
             String[] mustBe = new String[] {
             		"/db/test/test1.xml",
@@ -600,7 +606,7 @@ public class FacetIndexTest extends FacetAbstract {
                     new Resource("test6.xml", XML1, metas6),
                 });
         
-        final ArrayList<DocumentImpl> myHits = new ArrayList<DocumentImpl>();
+        final ArrayList<DocumentImpl> myHits = new ArrayList<>();
         
         Counter<DocumentImpl> cb = new Counter<DocumentImpl>() {
             @Override
@@ -623,15 +629,14 @@ public class FacetIndexTest extends FacetAbstract {
             assertNotNull(broker);
 
             final LuceneIndexWorker worker = (LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-            
-            FacetSearchParams fsp = new FacetSearchParams(
-                new CountFacetRequest(new CategoryPath(STATUS), 100)
-            );
+
+            FacetsConfig facetsConfig = new FacetsConfig();
+            facetsConfig.setRequireDimCount(STATUS, true);
 
             MutableDocumentSet docs = new DefaultDocumentSet(1031);
             broker.getCollection(XmldbURI.xmldbUriFor("/db")).allDocs(broker, docs, true);
 
-            List<QName> qNames = new ArrayList<QName>();
+            List<QName> qNames = new ArrayList<>();
             qNames = worker.getDefinedIndexes(qNames);
 
 
@@ -649,15 +654,15 @@ public class FacetIndexTest extends FacetAbstract {
 
 
             // Sort by status & creation date:
-            List<FacetResult> results = QueryDocuments.query(
-                    worker, docs, query, fsp, cb, 
+            Facets results = QueryDocuments.query(
+                    worker, docs, query, facetsConfig, cb,
                     200, 
                     new org.apache.lucene.search.Sort(
                         new SortField(STATUS, SortField.Type.STRING, true),
                         new SortField(CREATED, SortField.Type.STRING, true)
                 ));
             System.out.println("Hits: "+myHits.size());
-            debug(results);
+            debug(results.getAllDims(10));
             
             String encoded = worker.index.getSymbolTable().getIdtoHexString("in review");
             
@@ -728,14 +733,13 @@ public class FacetIndexTest extends FacetAbstract {
 
             final LuceneIndexWorker worker = (LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
             
-            FacetSearchParams fsp = new FacetSearchParams(
-                    new CountFacetRequest(new CategoryPath(STATUS), 100)
-            );
+            FacetsConfig facetsConfig = new FacetsConfig();
+            facetsConfig.setRequireDimCount(STATUS, true);
 
             MutableDocumentSet docs = new DefaultDocumentSet(1031);
             broker.getCollection(XmldbURI.xmldbUriFor("/db")).allDocs(broker, docs, true);
 
-            List<QName> qNames = new ArrayList<QName>();
+            List<QName> qNames = new ArrayList<>();
             qNames = worker.getDefinedIndexes(qNames);
 
 
@@ -753,31 +757,31 @@ public class FacetIndexTest extends FacetAbstract {
 
 
             // WORKS:
-            List<FacetResult> results = QueryDocuments.query(worker, docs, query, fsp, cb);
+            Facets results = QueryDocuments.query(worker, docs, query, facetsConfig, cb);
             System.out.println("Hits: "+myHits.size());
-            debug(results);
+            debug(results.getAllDims(10));
             
             cb.reset();
 
             // Default sort (by relevance) :
-            results = QueryDocuments.query(worker, docs, query, fsp, cb, 
+            results = QueryDocuments.query(worker, docs, query, facetsConfig, cb,
             		200, 
             		new org.apache.lucene.search.Sort()
             		);
             
             System.out.println("Hits: "+myHits.size());
-            debug(results);
+            debug(results.getAllDims(10));
 
             cb.reset();
 
             // Sort by status:
-            results = QueryDocuments.query(worker, docs, query, fsp, cb, 
+            results = QueryDocuments.query(worker, docs, query, facetsConfig, cb,
             		200, 
             		new org.apache.lucene.search.Sort(
             				new SortField(STATUS, SortField.Type.STRING, true)
     				));
             System.out.println("Hits: "+myHits.size());
-            debug(results);
+            debug(results.getAllDims(10));
 
             cb.reset();
             
@@ -845,21 +849,21 @@ public class FacetIndexTest extends FacetAbstract {
 
             //query
             final LuceneIndexWorker worker = (LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+
+
+            FacetsConfig facetsConfig = new FacetsConfig();
+            facetsConfig.setRequireDimCount(STATUS, true);
+
+            Counter<DocumentImpl> cb = new Counter<>();
             
-            FacetSearchParams fsp = new FacetSearchParams(
-                new CountFacetRequest(new CategoryPath(STATUS), 10)
-            );
-            
-            Counter<DocumentImpl> cb = new Counter<DocumentImpl>();
-            
-            List<QName> qnames = new ArrayList<QName>();
+            List<QName> qnames = new ArrayList<>();
             qnames.add(new QName("head", ""));
-            List<FacetResult> results = QueryDocuments.query(worker, docs, qnames, "title", fsp, null, cb);
+            Facets results = QueryDocuments.query(worker, docs, qnames, "title", facetsConfig, null, cb);
             
             assertEquals(2, cb.count);
             assertEquals(2, cb.total);
             
-            checkFacet(results);
+            checkFacet(results.getTopChildren(2, STATUS));
             
             cb.reset();
 
@@ -877,28 +881,28 @@ public class FacetIndexTest extends FacetAbstract {
             Query query = parser.parse("title");
             
             
-            results = QueryDocuments.query(worker, docs, query, fsp, cb);
+            results = QueryDocuments.query(worker, docs, query, facetsConfig, cb);
             
             assertEquals(2, cb.count);
             assertEquals(2, cb.total);
             
-            checkFacet(results);
+            checkFacet(results.getTopChildren(2, STATUS));
 
             cb.reset();
             
             //check document filtering
-            qnames = new ArrayList<QName>();
+            qnames = new ArrayList<>();
             qnames.add(new QName("p", ""));
-            results = QueryDocuments.query(worker, docs, qnames, "paragraph", fsp, null, cb);
+            results = QueryDocuments.query(worker, docs, qnames, "paragraph", facetsConfig, null, cb);
             
-            for (FacetResult result : results) {
+            for (FacetResult result : results.getAllDims(10)) {
                 System.out.println(result.toString());
             }
             
             assertEquals(2, cb.count);
             assertEquals(2, cb.total);
             
-            checkFacet(results);
+            checkFacet(results.getTopChildren(2, STATUS));
             
             cb.reset();
         } catch (Exception e) {

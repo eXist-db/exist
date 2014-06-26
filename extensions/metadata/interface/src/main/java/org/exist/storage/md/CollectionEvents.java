@@ -112,31 +112,32 @@ public class CollectionEvents implements CollectionTrigger {
     }
 
     private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException {
+
+        MetaData md = MDStorageManager.get().md;
+
         for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext();) {
             DocumentImpl doc = i.next();
             try {
-                MDStorageManager.get().md.delMetas(doc.getURI());
+                md.delMetas(doc.getURI());
             } catch (Throwable e) {
                 MDStorageManager.LOG.fatal(e,e);
             }
         }
 
-        final XmldbURI uri = collection.getURI();
+        md.delMetas(collection.getURI());
 
-        for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
-            final XmldbURI childName = i.next();
-            // TODO : resolve URIs !!! name.resolve(childName)
-            final Collection child = broker.openCollection(uri.append(childName), Lock.NO_LOCK);
-            if (child == null) {
-                // LOG.warn("Child collection " + childName + " not found");
-            } else {
-                try {
-                    deleteCollectionRecursive(broker, child);
-                } finally {
-                    child.release(Lock.NO_LOCK);
-                }
-            }
-        }
+//        final XmldbURI uri = collection.getURI();
+
+//        for (Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext();) {
+//            final XmldbURI childName = i.next();
+//            // TODO : resolve URIs !!! name.resolve(childName)
+//            final Collection child = broker.openCollection(uri.append(childName), Lock.NO_LOCK);
+//            if (child == null) {
+//                // LOG.warn("Child collection " + childName + " not found");
+//            } else {
+//                deleteCollectionRecursive(broker, child);
+//            }
+//        }
         // removeIndex(collection.getURI());
     }
 
