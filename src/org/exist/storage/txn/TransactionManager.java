@@ -235,7 +235,7 @@ public class TransactionManager {
             return;
         }
         if (txn.getState() == Txn.State.STARTED) {
-            LOG.warn("Transaction was not committed or aborted!", new Throwable());
+            //LOG.warn("Transaction was not committed or aborted!", new Throwable());
             abort(txn);
         }
     }
