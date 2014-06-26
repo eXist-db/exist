@@ -154,7 +154,7 @@
         <code><![CDATA[
             let $stylesheet := doc("/db/test/test.xsl")
             return
-                transform:transform(doc('/db/test/test1.xml'), $stylesheet, (),
+                transform:transform(doc('/db/test/test1.xml'), $stylesheet, (), (),
                     "xinclude-path=xmldb:exist:///db/test")
         ]]></code>
         <xpath>//para[. = 'Included paragraph']</xpath>

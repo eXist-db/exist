@@ -1,0 +1,5 @@
+<package xmlns="http://expath.org/ns/pkg" name="http://exist-db.org/apps/xsltforms-demo" abbrev="xsltforms-demo" version="0.1.5" spec="1.0">
+    <title>XSLTForms Demo</title>
+    <dependency package="http://exist-db.org/apps/xsltforms"/>
+    <dependency package="http://exist-db.org/apps/eXide"/>
+</package>

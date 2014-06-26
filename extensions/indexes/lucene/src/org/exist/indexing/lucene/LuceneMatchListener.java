@@ -58,7 +58,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     private Map<NodeId, Offset> nodesWithMatch;
 
-    private LuceneIndex index;
+    private final LuceneIndex index;
 
     private LuceneConfig config;
 
@@ -90,7 +90,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
 
         getTerms();
-        nodesWithMatch = new TreeMap<NodeId, Offset>();
+        nodesWithMatch = new TreeMap<>();
         /* Check if an index is defined on an ancestor of the current node.
         * If yes, scan the ancestor to get the offset of the first character
         * in the current node. For example, if the indexed node is &lt;a>abc&lt;b>de&lt;/b></a>
@@ -176,26 +176,25 @@ public class LuceneMatchListener extends AbstractMatchListener {
             while (reader.hasNext()) {
                 int ev = reader.next();
                 switch (ev) {
-		case XMLStreamConstants.END_ELEMENT:
-		    if (--level < 0)
-			break;
-		    textOffset += extractor.endElement(reader.getQName());
-		    break;
-		case XMLStreamConstants.START_ELEMENT:
-		    ++level;
-		    textOffset += extractor.startElement(reader.getQName());
-		    break;
-		case XMLStreamConstants.CHARACTERS:
-		    NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-		    textOffset += extractor.beforeCharacters();
-		    offsets.add(textOffset, nodeId);
-		    textOffset += extractor.characters(reader.getXMLText());
-		    break;
+                    case XMLStreamConstants.END_ELEMENT:
+                        if (--level < 0) {
+                            break;
+                        }
+                        textOffset += extractor.endElement(reader.getQName());
+                        break;
+                    case XMLStreamConstants.START_ELEMENT:
+                        ++level;
+                        textOffset += extractor.startElement(reader.getQName());
+                        break;
+                    case XMLStreamConstants.CHARACTERS:
+                        NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                        textOffset += extractor.beforeCharacters();
+                        offsets.add(textOffset, nodeId);
+                        textOffset += extractor.characters(reader.getXMLText());
+                        break;
                 }
             }
-        } catch (IOException e) {
-            LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
-        } catch (XMLStreamException e) {
+        } catch (IOException | XMLStreamException e) {
             LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
         }
         
@@ -230,7 +229,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 			    // if they are part of the phrase.
                             stream.mark();
                             int t = 1;
-                            List<State> stateList = new ArrayList<State>(terms.length);
+                            List<State> stateList = new ArrayList<>(terms.length);
                             stateList.add(stream.captureState());
                             
                             while (stream.incrementToken() && t < terms.length) {
@@ -312,8 +311,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * Get all query terms from the original queries.
      */
     private void getTerms() {
-        Set<Query> queries = new HashSet<Query>();
-        termMap = new TreeMap<Object, Query>();
+        Set<Query> queries = new HashSet<>();
+        termMap = new TreeMap<>();
         Match nextMatch = this.match;
         while (nextMatch != null) {
             if (nextMatch.getIndexId() == LuceneIndex.ID) {
@@ -324,10 +323,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     try {
                         reader = index.getReader();
                         LuceneUtil.extractTerms(query, termMap, reader, false);
-                    } catch (IOException e) {
+                    } catch (IOException | UnsupportedOperationException e) {
                         LOG.warn("Error while highlighting lucene query matches: " + e.getMessage(), e);
-                    } catch (UnsupportedOperationException uoe) {
-                        LOG.warn("Error while highlighting lucene query matches: " + uoe.getMessage(), uoe);
                     } finally {
                         index.releaseReader(reader);
                     }

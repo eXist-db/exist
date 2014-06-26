@@ -26,6 +26,7 @@ import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 import org.apache.log4j.Logger;
 
@@ -112,9 +113,8 @@ public class ProcessReport implements ProcessReportMBean {
             final TabularType tabularType = new TabularType("jobList", "List of currently running jobs", infoType, pIndexNames);
             final TabularDataSupport data = new TabularDataSupport(tabularType);
             final ProcessMonitor.JobInfo[] jobs = processMonitor.runningJobs();
-            for (int i = 0; i < jobs.length; i++) {
-                final Object[] itemValues = { jobs[i].getThread().getName(), jobs[i].getAction(),
-                        jobs[i].getAddInfo().toString() };
+            for (ProcessMonitor.JobInfo job : jobs) {
+                final Object[] itemValues = {job.getThread().getName(), job.getAction(), job.getAddInfo().toString()};
                 data.put(new CompositeDataSupport(infoType, pItemNames, itemValues));
             }
             return data;
@@ -134,9 +134,8 @@ public class ProcessReport implements ProcessReportMBean {
             final TabularType tabularType = new TabularType("queryList", "List of currently running XQueries", infoType, qIndexNames);
             final TabularDataSupport data = new TabularDataSupport(tabularType);
             final XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
-            for (int i = 0; i < watchdogs.length; i++) {
-                final Object[] itemValues = { new Integer(watchdogs[i].getContext().hashCode()), watchdogs[i].getContext().getXacmlSource().getType(),
-                        watchdogs[i].getContext().getXacmlSource().getKey(), Boolean.valueOf(watchdogs[i].isTerminating()) };
+            for (XQueryWatchDog watchdog : watchdogs) {
+                final Object[] itemValues = {new Integer(watchdog.getContext().hashCode()), watchdog.getContext().getXacmlSource().getType(), watchdog.getContext().getXacmlSource().getKey(), Boolean.valueOf(watchdog.isTerminating())};
                 data.put(new CompositeDataSupport(infoType, qItemNames, itemValues));
             }
             return data;
@@ -144,6 +143,20 @@ public class ProcessReport implements ProcessReportMBean {
             LOG.warn(e.getMessage(), e);
         }
         return null;
+    }
+
+    public void killQuery(int id) {
+        final XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
+        for (XQueryWatchDog watchdog : watchdogs) {
+            final XQueryContext context = watchdog.getContext();
+
+            if( id == context.hashCode() ) {
+                if( !watchdog.isTerminating() ) {
+                    watchdog.kill(1000);
+                }
+                break;
+            }
+        }
     }
 
     @Override

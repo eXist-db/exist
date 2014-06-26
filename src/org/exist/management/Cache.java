@@ -23,7 +23,7 @@ package org.exist.management;
 
 public class Cache implements CacheMBean {
 
-    private org.exist.storage.cache.Cache cache;
+    private final org.exist.storage.cache.Cache cache;
 
     public Cache(org.exist.storage.cache.Cache cache) {
         this.cache = cache;

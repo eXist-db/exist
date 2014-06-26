@@ -34,16 +34,16 @@ public class LuceneConfig {
     private final static String BOOST_ATTRIB = "boost";
     private static final String DIACRITICS = "diacritics";
 
-    private Map<QName, LuceneIndexConfig> paths = new TreeMap<QName, LuceneIndexConfig>();
-    private List<LuceneIndexConfig> wildcardPaths = new ArrayList<LuceneIndexConfig>();
-    private Map<String, LuceneIndexConfig> namedIndexes = new TreeMap<String, LuceneIndexConfig>();
+    private Map<QName, LuceneIndexConfig> paths = new TreeMap<>();
+    private List<LuceneIndexConfig> wildcardPaths = new ArrayList<>();
+    private Map<String, LuceneIndexConfig> namedIndexes = new TreeMap<>();
     
-    private Map<String, FieldType> fieldTypes = new HashMap<String, FieldType>();
+    private Map<String, FieldType> fieldTypes = new HashMap<>();
     
     private Set<QName> inlineNodes = null;
     private Set<QName> ignoreNodes = null;
 
-    private PathIterator iterator = new PathIterator();
+    private final PathIterator iterator = new PathIterator();
     
     private float boost = -1;
 
@@ -93,8 +93,8 @@ public class LuceneConfig {
 
     protected LuceneIndexConfig getWildcardConfig(NodePath path) {
         LuceneIndexConfig config;
-        for (int i = 0; i < wildcardPaths.size(); i++) {
-            config = wildcardPaths.get(i);
+        for (LuceneIndexConfig wildcardPath : wildcardPaths) {
+            config = wildcardPath;
             if (config.match(path))
                 return config;
         }
@@ -213,73 +213,79 @@ public class LuceneConfig {
             node = configNodes.item(i);
             if(node.getNodeType() == Node.ELEMENT_NODE) {
                 try {
-					if (CONFIG_ROOT.equals(node.getLocalName())) {
-					    Element elem = (Element) node;
-					    if (elem.hasAttribute(BOOST_ATTRIB)) {
-					        String value = elem.getAttribute(BOOST_ATTRIB);
-					        try {
-					            boost = Float.parseFloat(value);
-					        } catch (NumberFormatException e) {
-					            throw new DatabaseConfigurationException("Invalid value for 'boost' attribute in " +
-					                "lucene index config: float expected, got " + value);
-					        }
-					    }
-                        if (elem.hasAttribute(DIACRITICS)) {
-                            String value = elem.getAttribute(DIACRITICS);
-                            if (value.equalsIgnoreCase("no")) {
-                                analyzers.setDefaultAnalyzer(new NoDiacriticsStandardAnalyzer(LuceneIndex.LUCENE_VERSION_IN_USE));
+                    final String localName = node.getLocalName();
+                    if (null != localName) {
+                        switch (localName) {
+                            case CONFIG_ROOT: {
+                                Element elem = (Element) node;
+                                if (elem.hasAttribute(BOOST_ATTRIB)) {
+                                    String value = elem.getAttribute(BOOST_ATTRIB);
+                                    try {
+                                        boost = Float.parseFloat(value);
+                                    } catch (NumberFormatException e) {
+                                        throw new DatabaseConfigurationException("Invalid value for 'boost' attribute in "
+                                                + "lucene index config: float expected, got " + value);
+                                    }
+                                }
+                                if (elem.hasAttribute(DIACRITICS)) {
+                                    String value = elem.getAttribute(DIACRITICS);
+                                    if (value.equalsIgnoreCase("no")) {
+                                        analyzers.setDefaultAnalyzer(new NoDiacriticsStandardAnalyzer(LuceneIndex.LUCENE_VERSION_IN_USE));
+                                    }
+                                }
+                                parseConfig(node.getChildNodes(), namespaces);
+                                break;
+                            }
+                            case ANALYZER_ELEMENT:
+                                analyzers.addAnalyzer((Element) node);
+                                break;
+                            case PARSER_ELEMENT:
+                                queryParser = ((Element) node).getAttribute("class");
+                                break;
+                            case FIELD_TYPE_ELEMENT:
+                                FieldType type = new FieldType((Element) node, analyzers);
+                                fieldTypes.put(type.getId(), type);
+                                break;
+                            case INDEX_ELEMENT: {
+                                // found an index definition
+                                Element elem = (Element) node;
+                                LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers, fieldTypes);
+                                // if it is a named index, add it to the namedIndexes map
+                                if (config.getName() != null) {
+                                    namedIndexes.put(config.getName(), config);
+                                }       // register index either by QName or path
+                                if (config.getNodePath().hasWildcard()) {
+                                    wildcardPaths.add(config);
+                                } else {
+                                    LuceneIndexConfig idxConf = paths.get(config.getNodePath().getLastComponent());
+                                    if (idxConf == null) {
+                                        paths.put(config.getNodePath().getLastComponent(), config);
+                                    } else {
+                                        idxConf.add(config);
+                                    }
+                                }
+                                break;
+                            }
+                            case INLINE_ELEMENT: {
+                                Element elem = (Element) node;
+                                QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
+                                if (inlineNodes == null) {
+                                    inlineNodes = new TreeSet<>();
+                                }
+                                inlineNodes.add(qname);
+                                break;
+                            }
+                            case IGNORE_ELEMENT: {
+                                Element elem = (Element) node;
+                                QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
+                                if (ignoreNodes == null) {
+                                    ignoreNodes = new TreeSet<>();
+                                }
+                                ignoreNodes.add(qname);
+                                break;
                             }
                         }
-					    parseConfig(node.getChildNodes(), namespaces);
-                        
-					} else if (ANALYZER_ELEMENT.equals(node.getLocalName())) {
-					    analyzers.addAnalyzer((Element) node);
-
-                    } else if (PARSER_ELEMENT.equals(node.getLocalName())) {
-                        queryParser = ((Element)node).getAttribute("class");
-
-					} else if (FIELD_TYPE_ELEMENT.equals(node.getLocalName())) {
-						FieldType type = new FieldType((Element) node, analyzers);
-						fieldTypes.put(type.getId(), type);
-                        
-					} else if (INDEX_ELEMENT.equals(node.getLocalName())) {
-						// found an index definition
-					    Element elem = (Element) node;
-						LuceneIndexConfig config = new LuceneIndexConfig(elem, namespaces, analyzers, fieldTypes);
-						// if it is a named index, add it to the namedIndexes map
-						if (config.getName() != null) {
-                            namedIndexes.put(config.getName(), config);
-                        }
-
-						// register index either by QName or path
-						if (config.getNodePath().hasWildcard()) {
-							wildcardPaths.add(config);
-						} else {
-						    LuceneIndexConfig idxConf = paths.get(config.getNodePath().getLastComponent());
-						    if (idxConf == null) {
-                                paths.put(config.getNodePath().getLastComponent(), config);
-                            }
-						    else {
-                                idxConf.add(config);
-                            }
-						}
-                        
-					} else if (INLINE_ELEMENT.equals(node.getLocalName())) {
-					    Element elem = (Element) node;
-					    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
-					    if (inlineNodes == null) {
-                            inlineNodes = new TreeSet<QName>();
-                        }
-					    inlineNodes.add(qname);
-                        
-					} else if (IGNORE_ELEMENT.equals(node.getLocalName())) {
-					    Element elem = (Element) node;
-					    QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
-					    if (ignoreNodes == null) {
-                            ignoreNodes = new TreeSet<QName>();
-                        }
-					    ignoreNodes.add(qname);
-					}
+                    }
                     
                 } catch (DatabaseConfigurationException e) {
 					LOG.warn("Invalid lucene configuration element: " + e.getMessage());

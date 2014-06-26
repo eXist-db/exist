@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -75,6 +74,8 @@ import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This is the main storage for XML nodes. Nodes are stored in document order.
@@ -1125,15 +1126,12 @@ public class DOMFile extends BTree implements Lockable {
                                 buf.append("(" + nodeId.toString() + ")");
                                 final ByteArrayOutputStream os = new ByteArrayOutputStream();
                                 os.write(page.data, readOffset, valueLength - (readOffset - pos));
-                                String value;
-                                try {
-                                    value = new String(os.toByteArray(),"UTF-8");
-                                    if (value.length() > 15) {
-                                        value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
-                                    }
-                                } catch (final UnsupportedEncodingException e) {
-                                    value = "can't decode value string";
+
+                                String value = new String(os.toByteArray(),UTF_8);
+                                if (value.length() > 15) {
+                                    value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
                                 }
+
                                 buf.append(":'" + value + "'");
                             } catch (final Exception e) {
                                 //TODO : more friendly message. Provide the array of bytes ?
@@ -1170,27 +1168,20 @@ public class DOMFile extends BTree implements Lockable {
                                     readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen;
                                     final ByteArrayOutputStream os = new ByteArrayOutputStream();
                                     os.write(page.data, readOffset, valueLength - (readOffset - prefixLen));
-                                    String prefix = "";
-                                    try {
-                                        prefix = new String(os.toByteArray(), "UTF-8");
-                                    } catch (final UnsupportedEncodingException e) {
-                                        LOG.error("Can't decode prefix string");
-                                    }
+                                    String prefix = new String(os.toByteArray(), UTF_8);
+
                                     final String NsURI = ((NativeBroker)owner).getBrokerPool()
                                         .getSymbols().getNamespace(NSId);
                                     buf.append(prefix + "{" + NsURI + "}");
                                 }
                                 final ByteArrayOutputStream os = new ByteArrayOutputStream();
                                 os.write(page.data, readOffset, valueLength - (readOffset - pos));
-                                String value;
-                                try {
-                                    value = new String(os.toByteArray(),"UTF-8");
-                                    if (value.length() > 15) {
-                                        value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
-                                    }
-                                } catch (final UnsupportedEncodingException e) {
-                                    value = "Can't decode value string";
+
+                                String value = new String(os.toByteArray(),UTF_8);
+                                if (value.length() > 15) {
+                                    value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
                                 }
+
                                 buf.append(":'" + value + "'");
                             } catch (final Exception e) {
                                 //TODO : more friendly message. Provide the array of bytes ?
@@ -1924,17 +1915,8 @@ public class DOMFile extends BTree implements Lockable {
             getNodeValue(broker.getBrokerPool(), (DocumentImpl)node.getOwnerDocument(),
                 os, recordPos, true, addWhitespace);
             final byte[] data = os.toByteArray();
-            String value = null;
-            try {
-                value = new String(data, "UTF-8");
-            } catch (final UnsupportedEncodingException e) {
-                LOG.warn("UTF-8 error while reading node value", e);
-                //TODO : why not log another string like "OOOPS !" ?
-                //then return null
-                //TODO : throw exception ? -pb
-                value = new String(data);
-            }
-            return value;
+
+            return new String(data, UTF_8);
         } catch (final BTreeException e) {
             LOG.error("BTree error while reading node value", e);
           //TODO : rethrow exception ? -pb

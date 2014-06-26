@@ -28,7 +28,7 @@
             <test>test</test>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml">
         <task>[bare context] self axis in location step, full</task>
         <code><![CDATA[
             collection('/db/coll')//test/self::*
@@ -37,7 +37,7 @@
             <test>test</test>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml">
         <task>[bare context] self axis in location step, full with name test</task>
         <code><![CDATA[
             collection('/db/coll')//test/self::test
@@ -55,7 +55,7 @@
             <test>test</test>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml">
         <task>[bare context] self axis in predicate, full</task>
         <code><![CDATA[
             collection('/db/coll')//test[self::*]
@@ -64,7 +64,7 @@
             <test>test</test>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml">
         <task>[bare context] self axis in predicate, full with name test</task>
         <code><![CDATA[
             collection('/db/coll')//test[self::test]
@@ -83,7 +83,7 @@
             <test>test</test>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml">
         <task>[parenthesized context] self axis in location step, full</task>
         <code><![CDATA[
             (collection('/db/coll')//test/self::*)
@@ -92,7 +92,7 @@
             <test>test</test>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml">
         <task>[parenthesized context] self axis in location step, full with name test</task>
         <code><![CDATA[
             (collection('/db/coll')//test/self::test)
@@ -178,5 +178,29 @@
         <expected>
             <test>title</test>
         </expected>
+    </test>
+    <test output="xml">
+        <task>Self axis test after wildcard test</task>
+        <code><![CDATA[
+        let $x := <x><y/><z/></x>
+        return
+            $x/y/following-sibling::element()[1]/self::z ]]></code>
+        <expected><z/></expected>
+    </test>
+    <test output="xml">
+        <task>Self axis test after wildcard test inside filter</task>
+        <code><![CDATA[
+        let $x := <x><y/><z/></x>
+        return
+            $x/y[following-sibling::element()[1]/self::z] ]]></code>
+        <expected><y/></expected>
+    </test>
+    <test output="xml">
+        <task>Self axis wildcard test after wildcard test inside filter</task>
+        <code><![CDATA[
+        let $x := <x><y/><z/></x>
+        return
+            $x/y[following-sibling::element()[1]/self::*] ]]></code>
+        <expected><y/></expected>
     </test>
 </TestSet>

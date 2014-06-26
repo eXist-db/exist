@@ -24,13 +24,14 @@ package org.exist.http.servlets;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -245,10 +246,6 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	
 	// TODO: remove this hack after fixing HTTP 1.1 :)
 	private String encode(String value){
-		try {
-			return new String(value.getBytes(), "ISO-8859-1");
-		} catch (final UnsupportedEncodingException e) {
-			return value;
-		}
+        return new String(value.getBytes(), ISO_8859_1);
 	}
 }

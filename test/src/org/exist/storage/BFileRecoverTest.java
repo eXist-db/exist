@@ -35,6 +35,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.FixedByteArray;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author wolf
  *
@@ -63,14 +65,14 @@ public class BFileRecoverTest extends TestCase {
             
             for (int i = 1; i < 1001; i++) {
                 String value = "test" + i;
-                byte[] data = value.getBytes("UTF-8");
+                byte[] data = value.getBytes(UTF_8);
                 collectionsDb.put(txn, new Value(data), new FixedByteArray(data, 0, data.length), true);
             }
             
-            byte[] replacement = "new value".getBytes("UTF-8");
+            byte[] replacement = "new value".getBytes(UTF_8);
             for (int i = 1; i < 101; i++) {
                 String value = "test" + i;
-                byte[] data = value.getBytes("UTF-8");
+                byte[] data = value.getBytes(UTF_8);
                 collectionsDb.put(txn, new Value(data), new FixedByteArray(replacement, 0, replacement.length), true);
             }
             mgr.commit(txn);
@@ -97,12 +99,12 @@ public class BFileRecoverTest extends TestCase {
             
             for (int i = 1; i < 1001; i++) {
                 String key = "test" + i;
-                byte[] data = key.getBytes("UTF-8");
+                byte[] data = key.getBytes(UTF_8);
                 Value value = collectionsDb.get(new Value(data));
                 if (value == null)
                     System.out.println("Key " + key + " not found.");
                 else
-                    System.out.println(new String(value.data(), value.start(), value.getLength(), "UTF-8"));
+                    System.out.println(new String(value.data(), value.start(), value.getLength(), UTF_8));
             }
         } catch (Exception e) {            
             fail(e.getMessage());            

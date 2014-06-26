@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://expath.org/ns/pkg" name="http://exist-db.org/apps/doc" abbrev="doc" version="0.3.3" spec="1.0">
+    <title>eXist-db Documentation</title>
+    <dependency package="http://exist-db.org/apps/shared" semver-min="0.3.5"/>
+</package>
