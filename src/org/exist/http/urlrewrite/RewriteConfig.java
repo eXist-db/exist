@@ -197,7 +197,7 @@ public class RewriteConfig {
             }
         } else {
             try {
-                final File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("."));
+                final File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("/"));
                 final File configFile = new File(d, controllerConfig);
                 if (configFile.canRead()) {
                     final Document doc = parseConfig(configFile);
