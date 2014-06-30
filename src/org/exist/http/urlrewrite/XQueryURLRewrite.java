@@ -662,7 +662,7 @@ public class XQueryURLRewrite extends HttpServlet {
     }
     
     private SourceInfo getSourceInfo(DBBroker broker, RequestWrapper request, URLRewrite staticRewrite) throws ServletException {
-        final String moduleLoadPath = config.getServletContext().getRealPath(".");
+        final String moduleLoadPath = config.getServletContext().getRealPath("/");
         final String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
         if (basePath == null) {
             return getSource(broker, moduleLoadPath);
