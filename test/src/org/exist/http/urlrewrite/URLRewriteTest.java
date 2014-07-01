@@ -86,6 +86,10 @@ public class URLRewriteTest {
             super(config, uri);
         }
 
+        public TestableURLRewrite(TestableURLRewrite other) {
+            super(other);
+        }
+
         public Map<String, List<String>> getParameters() {
             return parameters;
         }
@@ -95,5 +99,9 @@ public class URLRewriteTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        protected URLRewrite copy() {
+            return new TestableURLRewrite(this);
+        }
     }
 }
