@@ -77,6 +77,11 @@ public class ModuleCall extends URLRewrite {
         }
     }
 
+    protected ModuleCall(ModuleCall other) {
+        super(other);
+        this.call = other.call;
+    }
+
     @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -88,5 +93,10 @@ public class ModuleCall extends URLRewrite {
         } catch (final XPathException e) {
             throw new ServletException("Called function threw exception: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    protected URLRewrite copy() {
+        return new ModuleCall(this);
     }
 }

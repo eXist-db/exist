@@ -43,9 +43,18 @@ public class Redirect extends URLRewrite {
             {setTarget(URLRewrite.normalizePath(redirectTo));}
     }
 
+    public Redirect(Redirect other) {
+        super(other);
+    }
+
     @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         setHeaders(new HttpResponseWrapper(response));
         response.sendRedirect(target);
+    }
+
+    @Override
+    protected URLRewrite copy() {
+        return new Redirect(this);
     }
 }
