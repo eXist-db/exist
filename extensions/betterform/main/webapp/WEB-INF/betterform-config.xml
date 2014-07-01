@@ -25,11 +25,11 @@
 
         <property name="error.page" value="error/error.page" description="location of error-page relative to context"/>
 
-		<!-- DEPRECATED -->
-<!--
-        <property name="defaultProcessorBase" value="remote"
-                  description="optional parameter - 'local' or 'remote' operation of betterForm XForms Processor"/>
--->
+        <!-- DEPRECATED -->
+        <!--
+                <property name="defaultProcessorBase" value="remote"
+                          description="optional parameter - 'local' or 'remote' operation of betterForm XForms Processor"/>
+        -->
 
         <property name="forms.uri.relative" value="false"
                   description="use relative pathes for resources in generated UI"/>
@@ -91,7 +91,7 @@
             The default is to initialize all <case> elements.
         -->
         <!-- DEPRECATED -->
-       <!-- <property name="betterform.ui.initializeDeselectedCases" value="true"/>-->
+        <!-- <property name="betterform.ui.initializeDeselectedCases" value="true"/>-->
 
         <!-- generate default alert Elements for UI controls. default is false -->
         <property name="betterform.ui.generateDefaultAlerts" value="false"/>
@@ -117,17 +117,17 @@
              SSLProtocolSocketFactory-Handling will be activated if the property is specified.
              ! You have to uncomment this if you would like to use betterFORM with custom SSL-Certificates. !
         -->
-<!--
-        <property name="httpclient.ssl.context" value="de.betterform.connector.http.ssl.KeyStoreSSLContext" description="Full classpath of SSLProtocolSocketFactory which should be used by httpclient."/>
--->
+        <!--
+                <property name="httpclient.ssl.context" value="de.betterform.connector.http.ssl.KeyStoreSSLContext" description="Full classpath of SSLProtocolSocketFactory which should be used by httpclient."/>
+        -->
         <!--
             Specify a customPort for SSLProtocolSocketFactory for httpclient.
             Port 443,8443 are the default ports.
             See: http://hc.apache.org/httpclient-3.x/apidocs/org/apache/commons/httpclient/protocol/Protocol.html
         -->
-<!--
-        <property name="httpclient.ssl.context.customPort" value="CUSTOM-SSL-PORT" description="Specify custom Port for SSLProtocolSocketFactory for httpclient. 443,8443 if not specified."/>
--->
+        <!--
+                <property name="httpclient.ssl.context.customPort" value="CUSTOM-SSL-PORT" description="Specify custom Port for SSLProtocolSocketFactory for httpclient. 443,8443 if not specified."/>
+        -->
         <!--
            Location of JAVA keystore used by httpclient to verify trusted ssl-certs.
            If / (root-dir) is omitted in the value "user.home" will be used as relative path.
@@ -142,6 +142,7 @@
         -->
         <property name="httpclient.ssl.keystore.passwd" value="KEYSTORE-PASSWD" description="Password to unlock keystore."/>
 
+        <property name="ui-transform" value="xhtml.xsl" description="xslt stylesheet used for generating the client-side UI"/>
     </properties>
 
     <error-messages>
@@ -154,28 +155,11 @@
                  value="Sorry your session expired. Press Reload to start over."/>
     </error-messages>
 
-    <!--
-        Maps internal names to external file-names.
-        The internal name is used by the framework to identify
-        entities and resolve these to the associated filenames.
-    -->
-    <useragents>
-        <useragent name="html"
-                   processor="de.betterform.agent.web.servlet.PlainHtmlProcessor"
-                   description="request/response-oriented XForms processor without any JavaScript">
-        </useragent>
-        <useragent name="dojo"
-                   processor="de.betterform.agent.web.flux.FluxProcessor"
-                   description="AJAX-enabled useragent with packed resources for production environments">
-        </useragent>
-
-    </useragents>
-
     <ui-generators>
         <!-- todo: deprecate unscripted processing?-->
         <!-- todo: we probably shouldn't use the term 'useragent' here to avoid confusion with other meanings throughout betterform -->
         <ui-generator useragent="dojo" stylesheet="xhtml.xsl"/>
-        <ui-generator useragent="html" stylesheet="html4.xsl"/>
+        <!--<ui-generator useragent="html" stylesheet="html4.xsl"/>-->
     </ui-generators>
 
     <connectors>
@@ -188,24 +172,24 @@
         <uri-resolver scheme="xmlrpc" class="de.betterform.connector.xmlrpc.XMLRPCURIResolver" description="Handler for the xmlrpc protocol"/>
         <uri-resolver scheme="context" class="de.betterform.connector.context.ContextMapResolver" description="Handler for the context protocol"/>
         <uri-resolver scheme="exist" class="de.betterform.connector.exist.ExistURIResolver" description="Handler for local eXist-db connections"/>
-<!--
-        <uri-resolver scheme="context" class="de.betterform.connector.context.ContextResolver"/>
-        <uri-resolver scheme="contextobject" class="de.betterform.connector.context.ContextObjectResolver"/>
--->
+        <!--
+                <uri-resolver scheme="context" class="de.betterform.connector.context.ContextResolver"/>
+                <uri-resolver scheme="contextobject" class="de.betterform.connector.context.ContextObjectResolver"/>
+        -->
 
         <submission-handler scheme="file" class="de.betterform.connector.file.FileSubmissionHandler"/>
         <submission-handler scheme="http" class="de.betterform.connector.http.HTTPSubmissionHandler"/>
         <submission-handler scheme="https" class="de.betterform.connector.http.HTTPSubmissionHandler"/>
         <submission-handler scheme="ant" class="de.betterform.connector.ant.AntSubmissionHandler"/>
         <!-- HTTPSubmissionHandlerXI evaluates any bf:include within the data to load -->
-<!--
-        <submission-handler scheme="http" class="de.betterform.connector.http.HTTPSubmissionHandlerXI"/>
-        <submission-handler scheme="https" class="de.betterform.connector.http.HTTPSubmissionHandlerXI"/>
--->
+        <!--
+                <submission-handler scheme="http" class="de.betterform.connector.http.HTTPSubmissionHandlerXI"/>
+                <submission-handler scheme="https" class="de.betterform.connector.http.HTTPSubmissionHandlerXI"/>
+        -->
         <submission-handler scheme="xmlrpc" class="de.betterform.connector.xmlrpc.XMLRPCSubmissionHandler"/>
-<!--
-        <submission-handler scheme="context" class="de.betterform.connector.context.ContextSubmissionHandler"/>
--->
+        <!--
+                <submission-handler scheme="context" class="de.betterform.connector.context.ContextSubmissionHandler"/>
+        -->
         <submission-handler scheme="mailto" class="de.betterform.connector.smtp.SMTPSubmissionHandler"/>
         <submission-handler scheme="echo" class="de.betterform.connector.echo.EchoSubmissionHandler"/>
         <submission-handler scheme="exec" class="de.betterform.connector.exec.ExecSubmissionHandler"/>
@@ -234,7 +218,7 @@
         <element namespace="http://betterform.sourceforge.net/xforms/controls" name="dialog" class="de.betterform.xml.xforms.ui.extensions.Dialog"/>
         <element namespace="http://betterform.sourceforge.net/xforms/controls" name="show" class="de.betterform.xml.xforms.action.extensions.ShowAction"/>
         <element namespace="http://betterform.sourceforge.net/xforms/controls" name="hide" class="de.betterform.xml.xforms.action.extensions.HideAction"/>
-        
+
     </custom-elements>
 
 

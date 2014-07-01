@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
+    xmlns="urn:infinispan:config:6.0">
+    <!--
+        #####################################################################################################
+        # See https://docs.jboss.org/infinispan/6.0/configdocs/infinispan-config-6.0.html for configuration #
+        #####################################################################################################
+    -->
+    <namedCache name="xfTestConfigOneElementInMemory">
+        <!-- DEFAULT: <eviction maxEntries="-1" strategy="NONE" threadPolicy="DEFAULT"/> -->
+        <eviction maxEntries="1" strategy="LIRS"/>
+        <!-- DEFAULT: <persistence passivation="false"/> -->
+        <persistence passivation="true">
+            <!-- DEFAULT: <singleFile location="Infinispan-SingleFileCacheStore" maxKeysInMemory="-1" fetchPersistentState="false" preload="false" ignoreModifications="false" purgeOnStartup="false" shared="false"/> -->
+            <singleFile fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false" location="${java.io.tmpdir}/xfTestConfigOneElementInMemory" maxEntries="-1">
+                <!--
+                    NOTE: Do NOT enable async for now, this will break betterFORM!
+                    DEFAULT: <async enabled="false" flushLockTimeout="1" modificationQueueSize="1024" shutdownTimeout="25000" threadPoolSize="1"/>
+                    DEFAULT: <singleton pushStateTimeout="10000" pushStateWhenCoordinator="true" enabled="false"/>
+                -->
+            </singleFile>
+        </persistence>
+        
+    </namedCache>
+
+    <namedCache name="xfSessionCache">
+        <!-- DEFAULT: <deadlockDetection enabled="false" spinDuration="100"/> -->
+        <deadlockDetection enabled="true" spinDuration="1000"/>
+        <!-- DEFAULT: <eviction maxEntries="-1" strategy="NONE" threadPolicy="DEFAULT"/> -->
+        <eviction maxEntries="50" strategy="LIRS"/>
+        <!-- DEFAULT: <expiration wakeUpInterval="1000" lifespan="-1" maxIdle="-1" reaperEnabled="true"/> -->
+        
+        <!-- DEFAULT: <persistence passivation="false"/> -->
+        <persistence passivation="true">
+            <!-- DEFAULT: <singleFile location="Infinispan-SingleFileCacheStore" maxKeysInMemory="-1" fetchPersistentState="false" preload="false" ignoreModifications="false" purgeOnStartup="false" shared="false"/> -->
+            <singleFile location="${java.io.tmpdir}/bfCache" maxEntries="-1">
+                <!--
+                    NOTE: Do NOT enable async for now, this will break betterFORM!
+                    DEFAULT: <async enabled="false" flushLockTimeout="1" modificationQueueSize="1024" shutdownTimeout="25000" threadPoolSize="1"/>
+                    DEFAULT: <singleton pushStateTimeout="10000" pushStateWhenCoordinator="true" enabled="false"/>                    
+                -->
+            </singleFile>
+        </persistence>
+    </namedCache>
+</infinispan>
