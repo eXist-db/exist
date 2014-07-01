@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html
-  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
    <head>
       <meta http-equiv="Content-Type" content="text/xml; charset=UTF-8" />
       <title>betterFORM limeGreen: XForms Dojo Framework - dashboard.xhtml</title>
+       <!--
+         ~ Copyright (c) 2012. betterFORM Project - http://www.betterform.de
+         ~ Licensed under the terms of BSD License
+       -->
       <meta name="Author" content="Joern Turner" />
       <meta name="Author" content="Lars Windauer" />
       <meta name="publisher" content="betterFORM Project" />
@@ -17,6 +20,8 @@
       <meta http-equiv="expires" content="Wed, 9 Feb 2011 12:21:57 GMT" />
       <meta name="revisit-after" content="2 days" />
       <link rev="made" href="mailto:info@betterform.de" />
+      <link rel="SHORTCUT ICON" href="./images/betterform.ico" />
+      <link rel="ICON" href="./images/betterform.ico" type="image/x-icon" />
       <link rel="stylesheet" type="text/css" href="bfResources/styles/dashboard.css" />
       <style type="text/css">
 		  @import "bfResources/scripts/dijit/themes/tundra/tundra.css";
@@ -57,6 +62,7 @@
 				margin:6px;
 				padding:10px;
 				border-bottom:thin solid #999999;
+                width: 760px;
 			}
 			.formBrowserHead #commands{
 				position:absolute;
@@ -136,328 +142,296 @@
 				text-align:center;
 				min-height:150px;
 			}
-
-            #eXist-Info {
-                font-size: 14px;
-                position: absolute;
-                bottom: 30px;
-                left: 0;
-                width: 100%;
-                height: 25px;
-            }
         </style>
-
-      <!--<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>-->
 </head>
    <body id="index" class="tundra bf">
 
-      <div class="page">
-         <div id="header">
-            <div class="pageMarginBox">
-               <div id="logoBar"><a href="" class="link" id="linkLogo"><img id="logo" src="bfResources/images/logo.png" alt="betterFORM project" /></a><div id="dashboardTitle">Dashboard</div>
-                  <div id="mission">the XForms way to build the web</div>
-                  <div id="topnav"></div>
-               </div>
-            </div>
-         </div>
+   <div class="page">
+	   <div id="header">
+		   <div class="pageMarginBox">
+			   <div id="logoBar"><a href="." class="link" id="linkLogo"><img id="logo" src="bfResources/images/logo.png"
+																			 alt="betterFORM project"/></a>
+
+				   <div id="dashboardTitle">Dashboard</div>
+				   <div id="mission">the XForms way to build the web</div>
+				   <div id="topnav"></div>
+			   </div>
+		   </div>
+	   </div>
 	   <div id="content-area">
-			 <noscript>
-               <div style="border: thin solid ; width: 100%; color: darkred;position:absolute;top:120px;z-index:999;padding:5px;background:orange">Sorry - this site was optimized for use with JavaScript. You won't be able to access all content until you activate JavaScript</div>
-            </noscript>
-			 <div class="pageMarginBox">
-				<div id="loaderImage" style="text-align:center;">
-					<img id="bfLogo" src="bfResources/images/betterform_icon_118x118.png" width="200" height="200" style="margin-top:140px;" alt="betterFORM"/>
+		   <noscript>
+			   <div style="border: thin solid ; width: 100%; color: darkred;position:absolute;top:120px;z-index:999;padding:5px;background:orange">
+				   Sorry - this site was optimized for use with JavaScript. You won't be able to access all content
+				   until you activate JavaScript
+			   </div>
+		   </noscript>
+		   <div class="pageMarginBox">
+			   <div id="loaderImage" style="text-align:center;">
+				   <img id="bfLogo" src="bfResources/images/betterform_icon_118x118.png" width="200" height="200"
+						style="margin-top:140px;" alt="betterFORM Logo"/>
 
-				</div>
-				 <div id="browser" class="browser">
-					<div id="mountPoint" class="bfFormBrowser">
-				 	</div>
-				 </div>
-			   <!--<div dojotype="dijit.layout.ContentPane" class="bfFormBrowser" href="forms/demo/registration.xhtml"></div>-->
-				 <!--<div id="copyright">© 2010-2011 betterFORM</div>-->
-			 </div>
+			   </div>
+			   <div id="browser" class="browser">
+				   <div id="mountPoint" class="bfFormBrowser">
+				   </div>
+			   </div>
+           </div>
+	   </div>
+   </div>
 
-         </div>
-      </div>
-      <div id="eXist-Info">
-             <p>
-                 If you get an error running this page which states that FormsQuery.xql is not found (404), then please install the eXist-examples within the <a href="http://localhost:8080/exist/admin/admin.xql?panel=setup">admin-section</a>.
-             </p>
-         </div>
-	  <script type="text/javascript">
-		  var djConfig = {
-		  debugAtAllCosts: false,
-		  parseOnLoad:true,
-		  dojoBlankHtmlUrl:"/blank.html",
-		  isDebug: false };
-	  </script>
+  <script type="text/javascript" src="bfResources/scripts/dojo/dojo.js" djConfig="parseOnLoad:true,locale:'en'">&#160;</script>
+  <script type="text/javascript" src="bfResources/scripts/bf/dashboard.js">&#160;</script>
 
-
-
-<!--
-	  <script type="text/javascript" src="bfResources/scripts/dojo/dojo.js" >&#160;</script>
-	  <script type="text/javascript" src="bfResources/scripts/betterform/betterform-dashboard.js">&#160;</script>
--->
-
-	  <script type="text/javascript" src="bfResources/scripts/dojo/dojo.js" djConfig="parseOnLoad:true">&#160;</script>
-	  <script type="text/javascript" src="bfResources/scripts/betterform/betterform-Dashboard.js">&#160;</script>
 
 
 	  <script type="text/javascript">
-		 	dojo.config.dojoBlankHtmlUrl = '/blank.html';
+            require(["dojox/fx","dojo/_base/fx","dojo/fx","dojo/fx/easing", "dojo/dom-style","dojo/dom","dojo/query","dojo/dom-attr",
+                    "dijit/form/DropDownButton","dijit/TooltipDialog", "dijit/form/TextBox", "dijit/form/Button","dojo/parser", "dojo/_base/window","dijit/registry"],
+                    function(fx, baseFx,coreFx, easing, domStyle,dom,query,domAttr,DropDownButton,TooltipDialog,TextBox,Button,parser,win,registry){
+                dojo.config.dojoBlankHtmlUrl = '/blank.html';
 
-//			dojo.require("dijit.layout.ContentPane");
+                win.animateOne = function () {
+                    var easing1 = easing["linear"];
+                    var first = baseFx.animateProperty({
+                        node: "bfLogo",
+                        duration:400,
+                        properties:{
+                            width:{
+                                start:200,
+                                end:0,
+                                unit:"px"
+                            },
+                            height:{
+                                start:200,
+                                end:200,
+                                unit:"px"
+                            },
+                            opacity:{
+                                start:1.0,
+                                end:0.8
+                            },
+                            easing:easing1
 
-            function animateOne() {
-				var easing1 = dojo.fx.easing["linear"];
-				var first = dojo.animateProperty({
-					node: "bfLogo",
-					duration:400,
-					properties:{
-						width:{
-							start:200,
-							end:0,
-							unit:"px"
-						},
-						height:{
-							start:200,
-							end:200,
-							unit:"px"
-						},
-						opacity:{
-							start:1.0,
-							end:0.8
-						},
-						easing:easing1
-
-					},
-					onBeforeBegin:function(){
-						dojo.style("browser","display","none");
-						dojo.style("mountPoint","display","none");
-					},
-					onPlay:function(){
-						console.debug("onPlay");
-						var uri = "apps/betterform/utils/FormsQuery.xql?fragment=true&ajax=load";
-						load(uri);
-					},
-					onEnd:function(){
-						dojo.style("bfLogo", "display", "none");
-					}
-				});
+                        },
+                        onBeforeBegin:function(){
+                            domStyle.set("browser","display","none");
+                            domStyle.set("mountPoint","display","none");
+                        },
+                        onPlay:function(){
+                            // console.debug("onPlay");
+                            win.load("FormBrowser?path=forms&fragment=true&ajax=load");
+                        },
+                        onEnd:function(){
+                            domStyle.set("bfLogo", "display", "none");
+                        }
+                    });
 
 
-				var second = dojo.animateProperty({
-					node: "mountPoint",
-					duration:400,
-					delay:250,
-					properties:{
-						width:{
-							start:0,
-							end:800,
-							unit:"px"
-						},
-/*
-						height:{
-							start:0,
-							end:100,
-							unit:"%"
-						},
-*/
-						opacity:{
-							start:0,
-							end:0.7
-						},
-						marginLeft:{
-							start:400,
-							end:0,
-							unit:"px"
+                    var second = baseFx.animateProperty({
+                                node: "mountPoint",
+                                duration:400,
+                                delay:250,
+                                properties:{
+                                    width:{
+                                        start:0,
+                                        end:800,
+                                        unit:"px"
+                                    },
+                                    opacity:{
+                                        start:0,
+                                        end:0.7
+                                    },
+                                    marginLeft:{
+                                        start:400,
+                                        end:0,
+                                        unit:"px"
 
-						},
-						easing:easing1,
-						onEnd:function() {
-							dojo.style(dojo.byId("mountPoint"),"opacity","1");
-						},
-						onBeforeBegin:function(){
-							dojo.style(dojo.byId("mountPoint"),"opacity","0");
-						}
-					}
-				});
-				var fadeFinal = dojo.fadeIn({
-					delay:400,
-					duration:400,
-					node:"mountPoint"
-				});
-			    var combined = dojo.fx.combine([first,second,fadeFinal]).play();
+                                    },
+                                    easing:easing1,
+                                    onEnd:function() {
+                                        domStyle.set(dom.byId("mountPoint"),"opacity",1);
+                                    },
+                                    onBeforeBegin:function(){
+                                        domStyle.set(dom.byId("mountPoint"),"opacity",0);
+                                    }
+                                }
+                            }
+                    );
+                    var fadeFinal = baseFx.fadeIn({
+                        delay:400,
+                        duration:400,
+                        node:"mountPoint"
+                    });
+                    var combined = coreFx.combine([first,second,fadeFinal]).play();
 
-            }
+                };
 
-			/*
-			* called from directory links to show contents of collection (link generated by servlet)
-			*/
-			function viewContent(node, url) {
-				load(url,true);
-			}
 
-			/*
-			* called whenever link to root collection is clicked
-			*/
-			function viewRoot(node,url){
-				viewContent(node,url);
-			}
+                win.load = function(url,show) {
+                    //Look up the node we'll stick the text under.
+                    //console.debug("load(url"+ url + " ,show:"+show+")");
+                    var popups = query(".dijitPopup .dijitTooltipDialog");
+                    popups.forEach(function(item) {
+                        // console.debug("Dijit Popup item: ", item);
+                        var popUpDijit = registry.byId(domAttr.get(item,"id"));
+                        // console.debug("destroy popup widget: ",popUpDijit);
+                        popUpDijit.destroy();
+                    });
+                    var targetNode = dom.byId("mountPoint");
 
-			/*
-			* called whenever link to root collection is clicked
-			*/
-			function viewParent(node,url){
-				viewContent(node,url);
-			}
+                    //The parameters to pass to xhrGet, the url, how to handle it, and the callbacks.
+                    var xhrArgs = {
+                        url: url,
+                        handleAs: "text",
+                        load: function(data) {
+                            // console.debug("load", data);
+                            domStyle.set(targetNode,"opacity",0);
+                            targetNode.innerHTML = data;
+                            dojo.parser.parse(targetNode);
+                            if(show){
+                                domStyle.set(targetNode,"opacity",1);
+                            }
+                            // console.debug("inserted Node: ",targetNode);
+                            var currentPath=dom.byId("current");
+                            if(!dojo.isIE){
+                                fx.highlight({node:currentPath, color:'#ffffff', duration:400}).play();
+                            }
+                        },
+                        error: function(error) {
+                            targetNode.innerHTML = "An unexpected error occurred: " + error;
+                        }
+                    };
 
-			function load(url,show) {
-				//Look up the node we'll stick the text under.
-				// console.debug("DropDownDialog");
-				var popups = dojo.query(".dijitPopup .dijitTooltipDialog");
-				popups.forEach(function(item) {
-					// console.debug("Dijit Popup item: ", item);
-					var popUpDijit = dijit.byId(dojo.attr(item,"id"));
-					// console.debug("destroy popup widget: ",popUpDijit);
-					popUpDijit.destroy();
-				});
-				var targetNode = dojo.byId("mountPoint");
+                    //Call the asynchronous xhrGet
+                    // console.debug("args", xhrArgs);
+                    var deferred = dojo.xhrGet(xhrArgs);
 
-				//The parameters to pass to xhrGet, the url, how to handle it, and the callbacks.
-				var xhrArgs = {
-					url: url,
-					handleAs: "text",
-					load: function(data) {
-						// console.debug("load", data);
-						dojo.style(targetNode,"opacity","0");
-						targetNode.innerHTML = data;
-						dojo.parser.parse(targetNode);
-						if(show){
-							dojo.style(targetNode,"opacity","1");
-						}
-						// console.debug("inserted Node: ",targetNode);
-						var currentPath=dojo.byId("current");
-						dojox.fx.highlight({node:currentPath, color:'#ffffff', duration:400}).play();
-					},
-					error: function(error) {
-						targetNode.innerHTML = "An unexpected error occurred: " + error;
-					}
-				};
+                };
 
-				//Call the asynchronous xhrGet
-				// console.debug("args", xhrArgs);
-				var deferred = dojo.xhrGet(xhrArgs);
+                dojo.addOnLoad(function() {
+                    console.debug("dojo.addOnLoad");
 
-			}
+                    var uri = "FormBrowser?path=forms&fragment=true&ajax=load";
+                    if(dojo.isIE){
+                        console.debug("is IE: load Forms");
+                        win.load("FormBrowser?path=forms&fragment=true&ajax=load",true);
+                        var mountPoint = dom.byId("mountPoint");
+                        domStyle.set(mountPoint,"opacity",1);
+                        domStyle.set(mountPoint,"dipslay","block");
+                        domStyle.set("bfLogo", "display", "none");
+                    }else {
+                        console.debug("win.animateOne()");
+                        win.animateOne(uri);
+                    }
+                });
 
-			dojo.addOnLoad(function() {
-				var uri = "apps/betterform/utils/FormsQuery.xql?fragment=true&ajax=load";
-				animateOne(uri);
-			});
-
-			// -->
-            function login() {
-					dojo.io.iframe.send({
-						url: "apps/betterform/utils/login.xql",
-						method: "post",
-						handleAs: "text",
-						form: dojo.query(".login")[0],
-						load: function(response, ioArgs) {
-							//console.log("Login: ", response, ioArgs);
-                            //if (response.indexOf("failed") != -1) {
-                            //    alert("Login failed!");
-                            //}
-                            var link = dojo.byId("current").childNodes[1];
-							//console.debug("link: ", link);
-							link.onclick();
-							return response;
-						},
-						error: function(response, ioArgs) {
-							console.log("Login failed.", response, ioArgs);
-							return response;
-						}
-					});
-
-            }
-
-             function sendFile() {
-				var value = dojo.attr(dojo.query(".bfFileUpload")[0], "value");
-				if (value == null || value == "") {
-					var noFileDialog = new dijit.Dialog({
-						title: "Missing file",
-						content:"No file to upload was given",
-						style: "width: 300px"
-					});
-					noFileDialog.show();
-
-				} else {
-					dojo.io.iframe.send({
-						url:  "apps/betterform/utils/upload-document.xql",
-						method: "post",
-						handleAs: "text",
-						form: dojo.query(".upload")[0],
-						load: function(response, ioArgs) {
-							//console.log("Upload OK", response, ioArgs);
-                            //if (response.indexOf("failed") != -1) {
-                            //    alert("Upload failed.\n Try to login.");
-                            //}
-							var link = dojo.byId("current").childNodes[1];
-							// console.debug("link: ", link);
-							link.onclick();
-							return response;
-						},
-						error: function(response, ioArgs) {
-							console.log("Upload FAILED!!!", response, ioArgs);
-							return response;
-						}
-					});
-				}
-			}
-
-			function createCollection() {
-				var controlNode = dojo.query(".bfCollectionName .dijitInputInner")[0];
-				var value = dojo.attr(controlNode, "value");
-				if (value == null || value == "") {
-					var emptyCollectionNameDialog = new dijit.Dialog({
-						title: "Collection name is empty",
-						content:"Collection was not created.<br/>\n" +
-								"<b>Reason</b>: given collection name is empty.",
-						style: "width: 300px"
-					});
-					emptyCollectionNameDialog.show();
-				} else {
-					dojo.io.iframe.send({
-						url: "apps/betterform/utils/create-collection.xql",
-						method: "post",
-						handleAs: "text",
-						form: dojo.query(".createCollection")[0],
-						load: function(response, ioArgs) {
-							//console.log("Collection created ", response, ioArgs);
-                            //if (response.indexOf("failed") != -1) {
-                            //    alert("Creation failed.\n Try to login.");
-                            //}
-							var link = dojo.byId("current").childNodes[1];
-							// console.debug("link: ", link);
-							link.onclick();
-							return response;
-						},
-						error: function(response, ioArgs) {
-							console.log("Creating Collection FAILED!!!", response, ioArgs);
-							return response;
-						}
-					});
-				}
-			}
-
-			function userInputIsEmpty(/*Class*/ className) {
-				// console.debug("userInputIsEmpty: Get value of for control with class: ", className);
-				var controlNode = dojo.query("." + className + " .dijitInputInner")[0];
-				// console.debug("userInputIsEmpty: node: ", controlNode);
-				var value = dojo.attr(controlNode, "value");
+			    win.userInputIsEmpty=function(/*Class*/ className) {
+				    // console.debug("userInputIsEmpty: Get value of for control with class: ", className);
+                    var controlNode = query("." + className + " .dijitInputInner")[0];
+    				// console.debug("userInputIsEmpty: node: ", controlNode);
+                    var value = domAttr.get(controlNode, "value");
 				// console.debug("userInputIsEmpty: value: ", value);
-				return (value == null || value == "");
-			}
-	  </script>
+		    		return (value == null || value == "");
+                }
+
+            });
+
+            sendFile =function() {
+                require(["dojo/query","dojo/dom-attr","dojo/io/iframe","dojo/dom","dijit/Dialog"],function(query,domAttr,iframe,dom,Dialog){
+
+                    var value = domAttr.get(query(".bfFileUpload")[0], "value");
+                    if (value == null || value == "") {
+                        var noFileDialog = new Dialog({
+                            title: "Missing file",
+                            content:"No file to upload was given",
+                            style: "width: 300px"
+                        });
+                        noFileDialog.show();
+
+                    } else {
+                        // console.debug("sendFile.dojo.io.iframe.send");
+                        dojo.io.iframe.send({
+
+                            url: "FileUpload",
+                            method: "post",
+                            handleAs: "text",
+                            form: query(".upload")[0],
+                            load: function(response, ioArgs) {
+                                //console.log("Upload OK", response, ioArgs);
+                                var link = dom.byId("current").childNodes[0];
+                                // console.debug("link: ", link);
+                                link.onclick();
+                                return response;
+                            },
+                            error: function(response, ioArgs) {
+                                // console.log("Upload FAILED!!!", response, ioArgs);
+                                return response;
+                            }
+                        });
+                    }
+                });
+            };
+
+
+            createCollection = function() {
+                require(["dojo/query","dojo/dom-attr","dojo/io/iframe","dojo/dom","dijit/Dialog"],function(query,domAttr,iframe,dom, Dialog){
+                    var controlNode = query(".bfCollectionName .dijitInputInner")[0];
+                    var value = domAttr.get(controlNode, "value");
+                    if (value == null || value == "") {
+                        var emptyCollectionNameDialog = new Dialog({
+                            title: "Collection name is empty",
+                            content:"Collection was not created.<br/>\n" +
+                                    "<b>Reason</b>: given collection name is empty.",
+                            style: "width: 300px"
+                        });
+                        emptyCollectionNameDialog.show();
+                    } else {
+                        // console.debug("createCollection");
+                        iframe.send({
+                            url: "FileUpload",
+                            method: "post",
+                            handleAs: "text",
+                            form: query(".createCollection")[0],
+                            load: function(response, ioArgs) {
+                                // console.log("Collection created ", response, ioArgs);
+                                var link = dom.byId("current").childNodes[0];
+                                // console.debug("link: ", link);
+                                link.onclick();
+                                return response;
+                            },
+                            error: function(response, ioArgs) {
+                                // console.log("Creating Collection FAILED!!!", response, ioArgs);
+                                return response;
+                            }
+                        });
+                    }
+                });
+            };
+            /*
+             * called from directory links to show contents of collection (link generated by servlet)
+             */
+             viewContent = function(node, url) {
+                require(["dojo/_base/window"],function(win){
+                    win.load(url,true);
+                });
+            };
+
+
+            /*
+            * called whenever link to root collection is clicked
+            */
+            viewRoot=function(node,url){
+                viewContent(node,url);
+            }
+
+            /*
+             * called whenever link to root collection is clicked
+             */
+            viewParent = function(node,url){
+                viewContent(node,url);
+            }
+
+
+      </script>
    </body>
 </html>
