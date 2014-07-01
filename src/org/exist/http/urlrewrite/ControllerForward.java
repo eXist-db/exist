@@ -54,6 +54,11 @@ public class ControllerForward extends URLRewrite {
         this.target = config.getAttribute("path");
     }
 
+    public ControllerForward(ControllerForward other) {
+        super(other);
+        this.serverName = other.serverName;
+    }
+
     @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     }
@@ -95,4 +100,9 @@ public class ControllerForward extends URLRewrite {
 	public String getServerName() {
 		return serverName;
 	}
+
+    @Override
+    protected URLRewrite copy() {
+        return new ControllerForward(this);
+    }
 }

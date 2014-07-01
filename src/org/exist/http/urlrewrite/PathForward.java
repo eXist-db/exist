@@ -49,7 +49,12 @@ public class PathForward extends Forward {
         }
     }
 
-    
+    protected PathForward(PathForward other) {
+        super(other);
+        this.filterConfig = other.filterConfig;
+        this.servletName = other.servletName;
+    }
+
     @Override
 	protected void setAbsolutePath(RequestWrapper request) {
 		request.setPaths(target, servletName);
@@ -64,5 +69,10 @@ public class PathForward extends Forward {
             {return request.getRequestDispatcher(target);}
         else
             {return filterConfig.getServletContext().getRequestDispatcher(target);}
+    }
+
+    @Override
+    protected URLRewrite copy() {
+        return new PathForward(this);
     }
 }

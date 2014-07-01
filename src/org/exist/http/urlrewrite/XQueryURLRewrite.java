@@ -549,7 +549,7 @@ public class XQueryURLRewrite extends HttpServlet {
     protected void doRewrite(URLRewrite action, RequestWrapper request, HttpServletResponse response) throws IOException, ServletException {
         if (action.getTarget() != null && !(action instanceof Redirect)) {
             final String uri = action.resolve(request);
-            URLRewrite staticRewrite = rewriteConfig.lookup(uri, request.getServerName(), true);
+            URLRewrite staticRewrite = rewriteConfig.lookup(uri, request.getServerName(), true, action);
 
             if (staticRewrite != null) {
                 staticRewrite.copyFrom(action);

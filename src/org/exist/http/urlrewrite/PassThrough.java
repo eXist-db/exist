@@ -43,9 +43,19 @@ public class PassThrough extends Forward {
         this.target = request.getRequestURI().substring(request.getContextPath().length());
     }
 
+    public PassThrough(PassThrough other) {
+        super(other);
+        this.servletConfig = other.servletConfig;
+    }
+
 	@Override
 	protected RequestDispatcher getRequestDispatcher(HttpServletRequest request) {
 		// always forward to the servlet engine's default servlet
         return servletConfig.getServletContext().getNamedDispatcher("default");
 	}
+
+    @Override
+    protected URLRewrite copy() {
+        return new PassThrough(this);
+    }
 }
