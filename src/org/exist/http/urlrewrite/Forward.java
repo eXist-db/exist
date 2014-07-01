@@ -37,6 +37,10 @@ public abstract class Forward extends URLRewrite {
         super(config, uri);
     }
 
+    protected Forward(URLRewrite other) {
+        super(other);
+    }
+
     @Override
     public void doRewrite(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final RequestDispatcher dispatcher = getRequestDispatcher(request);
