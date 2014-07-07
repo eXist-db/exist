@@ -220,7 +220,9 @@ public class Lookup extends Function implements Optimizable {
             }
         }
         if (fallback != null) {
-            fallback.analyze(new AnalyzeContextInfo(contextInfo));
+            AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+            newContextInfo.setStaticType(Type.NODE);
+            fallback.analyze(newContextInfo);
         }
     }
 

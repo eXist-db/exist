@@ -105,11 +105,7 @@ public class Atomize extends AbstractExpression {
     }
     
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("atomize[");
-        result.append(expression.toString());
-        result.append("]");
-        return result.toString();
+        return expression.toString();
     }    
     
 	/* (non-Javadoc)

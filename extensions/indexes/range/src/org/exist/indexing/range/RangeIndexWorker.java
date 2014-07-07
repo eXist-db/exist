@@ -659,8 +659,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (addressValues != null) {
                 BytesRef ref = new BytesRef(buf);
                 addressValues.get(doc, ref);
-                final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
-                storedNode.setInternalAddress(address);
+                if (ref.offset < ref.bytes.length) {
+                    final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
+                    storedNode.setInternalAddress(address);
+                }
             }
         }
 
