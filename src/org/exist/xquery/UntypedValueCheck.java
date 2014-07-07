@@ -136,13 +136,7 @@ public class UntypedValueCheck extends AbstractExpression {
     }
     
     public String toString() {
-    	final StringBuilder result = new StringBuilder();
-    	result.append("untyped-value-check[");
-    	result.append(Type.getTypeName(requiredType));
-    	result.append(", ");    	
-    	result.append(expression.toString());
-    	result.append("]");
-    	return result.toString();
+        return expression.toString();
     }    
     
 	/* (non-Javadoc)
