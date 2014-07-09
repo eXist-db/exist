@@ -173,16 +173,15 @@ public class ContextAttributes extends Function
 		if( id != 0 ) {
             XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
 			
-            for( int i = 0; i < watchdogs.length; i++ ) {
-	        	XQueryContext ctx = watchdogs[i].getContext();
-	        	
-	      		if( id == ctx.hashCode() ) {
-	      			if( !watchdogs[i].isTerminating() ) {
-	      				foreignContext = ctx;
-	      		 	}
-	      			break;
-	      		}
-	        }
+            for (XQueryWatchDog watchdog : watchdogs) {
+                XQueryContext ctx = watchdog.getContext();
+                if (id == ctx.hashCode()) {
+                    if (!watchdog.isTerminating()) {
+                        foreignContext = ctx;
+                    }
+                    break;
+                }
+            }
 	    }
 			
 		if( foreignContext == null ) {

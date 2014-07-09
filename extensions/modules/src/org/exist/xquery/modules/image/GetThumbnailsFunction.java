@@ -332,14 +332,15 @@ public class GetThumbnailsFunction extends BasicFunction {
 		return false;
 	}
 
-	private boolean fileExist(File[] col, DocumentImpl file, String prefix) {
-		if (col != null)
-			for (int i = 0; i < col.length; i++) {
-				if (col[i].getName().endsWith(prefix + file.getFileURI())) {
-					return true;
-				}
-			}
+	private boolean fileExist(File[] imageFiles, DocumentImpl file, String prefix) {
+        if (imageFiles != null) {
+            for (File imageFile : imageFiles) {
+                if (imageFile.getName().endsWith(prefix + file.getFileURI())) {
+                    return true;
+                }
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 }

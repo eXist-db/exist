@@ -171,21 +171,9 @@ public abstract class AbstractCompressFunction extends BasicFunction
                             compressResource(os, doc, useHierarchy, stripOffset, method, resourceName);
                         }
                     }
-                    catch(PermissionDeniedException pde)
+                    catch(PermissionDeniedException | IOException | SAXException | LockException pde)
                     {
                         throw new XPathException(this, pde.getMessage());
-                    }
-                    catch(IOException ioe)
-                    {
-                        throw new XPathException(this, ioe.getMessage());
-                    }
-                    catch(SAXException saxe)
-                    {
-                        throw new XPathException(this, saxe.getMessage());
-                    }
-                    catch(LockException le)
-                    {
-                        throw new XPathException(this, le.getMessage());
                     }
                     finally
                     {
@@ -365,13 +353,9 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     os.write(value);
                 }
             }
-            catch(IOException ioe)
+            catch(IOException | SAXException ioe)
             {
                 throw new XPathException(this, ioe.getMessage(), ioe);
-            }
-            catch(SAXException saxe)
-            {
-                throw new XPathException(this, saxe.getMessage(), saxe);
             }
             finally
             {

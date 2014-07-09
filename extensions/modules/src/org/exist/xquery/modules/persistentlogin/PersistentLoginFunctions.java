@@ -118,9 +118,7 @@ public class PersistentLoginFunctions extends BasicFunction {
                 return false;
             context.getBroker().setSubject(subject);
             return true;
-        } catch (AuthenticationException e) {
-            return false;
-        } catch (EXistException e) {
+        } catch (AuthenticationException | EXistException e) {
             return false;
         }
     }
