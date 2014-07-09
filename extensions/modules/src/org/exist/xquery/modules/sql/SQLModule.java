@@ -65,7 +65,7 @@ public class SQLModule extends AbstractInternalModule {
         new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class),
         new FunctionDef(PrepareFunction.signatures[0], PrepareFunction.class)
     };
-    private static long currentUID = System.currentTimeMillis();
+    private static final long currentUID = System.currentTimeMillis();
     public final static String CONNECTIONS_CONTEXTVAR = "_eXist_sql_connections";
     public final static String PREPARED_STATEMENTS_CONTEXTVAR = "_eXist_sql_prepared_statements";
 
