@@ -79,7 +79,7 @@ public class MemcachedClientFunction extends BasicFunction
 			Properties props = ModuleUtils.parseProperties( ((NodeValue) i.nextItem()).getNode() );
 			String host = props.getProperty("host");
 			String tmp	= props.getProperty("port");
-			int    port	= tmp == null ? 11211 : new Integer(tmp).intValue();   
+			int    port	= tmp == null ? 11211 : Integer.parseInt(tmp);   
 			InetSocketAddress ia = new InetSocketAddress(host, port);
 			ialist.add(ia);
 		} while (i.hasNext());
