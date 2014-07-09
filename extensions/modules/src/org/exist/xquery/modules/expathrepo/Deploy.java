@@ -162,9 +162,7 @@ public class Deploy extends BasicFunction {
             return null;
         } catch (MalformedURLException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY005, "Malformed URL: " + repoURI);
-        } catch (PackageException e) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
-        } catch (IOException e) {
+        } catch (PackageException | IOException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         }
     }
@@ -183,11 +181,7 @@ public class Deploy extends BasicFunction {
                 loader = new RepoPackageLoader(repoURI);
             Deployment deployment = new Deployment(context.getBroker());
             return deployment.installAndDeploy(file, loader);
-        } catch (PackageException e) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
-        } catch (IOException e) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
-        } catch (PermissionDeniedException e) {
+        } catch (PackageException | IOException | PermissionDeniedException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY007, e.getMessage());
         } finally {
             if (doc != null)

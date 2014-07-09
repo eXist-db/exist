@@ -190,7 +190,7 @@ public class SendEmailFunction extends BasicFunction
             }
 
         	//Parse the XML <mail> into a mail Object
-        	List<Element> mailElements = new ArrayList<Element>();
+        	List<Element> mailElements = new ArrayList<>();
             if(args[0].getItemCount() > 1 && args[0] instanceof ValueSequence) {
             	for(int i = 0; i < args[0].getItemCount(); i++) {
                 	mailElements.add((Element)args[0].itemAt(i));
@@ -274,18 +274,14 @@ public class SendEmailFunction extends BasicFunction
             //Get a string of all recipients email addresses
             String recipients = "";
 
-            for(int x = 0; x < allrecipients.size(); x++)
-            {
+            for (String recipient : allrecipients) {
                 //Check format of to address does it include a name as well as the email address?
-                if(((String)allrecipients.get(x)).indexOf("<") != -1)
-                {
+                if (((String) recipient).contains("<")) {
                     //yes, just add the email address
-                    recipients += " " + ((String)allrecipients.get(x)).substring(((String)allrecipients.get(x)).indexOf("<") + 1, ((String)allrecipients.get(x)).indexOf(">"));
-                }
-                else
-                {
+                    recipients += " " + ((String) recipient).substring(((String) recipient).indexOf("<") + 1, ((String) recipient).indexOf(">"));
+                } else {
                     //add the email address
-                    recipients += " " + ((String)allrecipients.get(x));
+                    recipients += " " + ((String) recipient);
                 }
             }
 
@@ -348,7 +344,7 @@ public class SendEmailFunction extends BasicFunction
         BufferedReader smtpIn = null;
         PrintWriter smtpOut = null;
 
-        List<Boolean> sendMailResults = new ArrayList<Boolean>();
+        List<Boolean> sendMailResults = new ArrayList<>();
 
         try
         {
@@ -427,7 +423,7 @@ public class SendEmailFunction extends BasicFunction
 
             //Send "MAIL FROM:"
             //Check format of from address does it include a name as well as the email address?
-            if(mail.getFrom().indexOf("<") != -1)
+            if(mail.getFrom().contains("<"))
             {
                 //yes, just send the email address
                 smtpOut.println("MAIL FROM:<" + mail.getFrom().substring(mail.getFrom().indexOf("<") + 1, mail.getFrom().indexOf(">")) + ">");

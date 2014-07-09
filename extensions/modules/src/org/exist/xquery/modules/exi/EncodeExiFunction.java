@@ -112,11 +112,8 @@ public class EncodeExiFunction extends BasicFunction {
 			// TODO - test!
 			throw new XPathException(this, ErrorCodes.FODC0002, ioex.getMessage());
 		}
-		catch(EXIException exie) {
+		catch(EXIException | SAXException exie) {
 			throw new XPathException(this, new JavaErrorCode(exie.getCause()), exie.getMessage());
-		}
-		catch(SAXException saxe) {
-			throw new XPathException(this, new JavaErrorCode(saxe.getCause()), saxe.getMessage());
 		}
 	}
 	
