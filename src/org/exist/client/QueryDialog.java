@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2013 The eXist-db Project
+ *  Copyright (C) 2001-2014 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
  */
 package org.exist.client;
 
@@ -405,8 +404,16 @@ public class QueryDialog extends JFrame {
                     } else {
                         throw xmldbe;
                     }
+                } catch (Exception npe) {
+		    System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
+                    continue;
                 }
-                getCollections(child, collection, collectionsList);
+                try {
+                    getCollections(child, collection, collectionsList);
+                } catch (Exception ee) {
+                    System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
+                    continue;
+                }
             }
             return collectionsList;
 	}
