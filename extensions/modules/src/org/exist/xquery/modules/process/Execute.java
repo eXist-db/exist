@@ -79,9 +79,7 @@ public class Execute extends BasicFunction {
                         }
                     }
                 }
-            } catch (XMLStreamException e) {
-                throw new XPathException(this, "Invalid XML fragment for options: " + e.getMessage(), e);
-            } catch (IOException e) {
+            } catch (XMLStreamException | IOException e) {
                 throw new XPathException(this, "Invalid XML fragment for options: " + e.getMessage(), e);
             }
         }

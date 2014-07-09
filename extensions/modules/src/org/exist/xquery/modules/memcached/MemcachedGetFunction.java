@@ -108,9 +108,8 @@ public class MemcachedGetFunction extends BasicFunction
             
         } catch (ParserConfigurationException e) {
             throw new XPathException(this, "Error while constructing XML parser: " + e.getMessage(), e);
-        } catch (SAXException e) {
-            return new StringValue(data);
-        } catch (IOException e) {
+            
+        } catch (SAXException | IOException e) {
             return new StringValue(data);
         }
 		

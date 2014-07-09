@@ -66,11 +66,9 @@ public class Counters implements RawBackupSupport {
         } catch (IOException e) {
             throw new EXistException("IOException occurred when reading counter store file.");
 
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
             throw new EXistException("Corrupt counter store file: " + store.getAbsolutePath());
 
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new EXistException("Corrupt counter store file: " + store.getAbsolutePath());
         }
     }
 

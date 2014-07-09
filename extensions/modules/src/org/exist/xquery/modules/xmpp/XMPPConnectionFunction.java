@@ -72,7 +72,7 @@ public class XMPPConnectionFunction extends BasicFunction
 		if (props.containsKey("proxy.type")){
 			ProxyType type   = ProxyType.valueOf(props.getProperty("proxy.type"));
 			String    host   = props.getProperty("proxy.host");
-			int       port   = new Integer(props.getProperty("proxy.port")).intValue();
+			int       port   = Integer.parseInt(props.getProperty("proxy.port"));
 			String    user   = props.getProperty("proxy.user");
 			String    passwd = props.getProperty("proxy.password");
 			proxy  =  new ProxyInfo(type, host, port, user, passwd);
@@ -81,7 +81,7 @@ public class XMPPConnectionFunction extends BasicFunction
 		String service  = props.getProperty("xmpp.service");
 		String host     = props.getProperty("xmpp.host");
 		String tmp 		= props.getProperty("xmpp.port");
-		int    port		= tmp == null ? 5222 : new Integer(tmp).intValue();   
+		int    port		= tmp == null ? 5222 : Integer.parseInt(tmp);   
 		
 		if (proxy == null){
 			if (host == null)
