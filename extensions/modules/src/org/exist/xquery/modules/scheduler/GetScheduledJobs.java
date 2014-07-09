@@ -121,67 +121,53 @@ public class GetScheduledJobs extends BasicFunction
         List<String>           groups         = scheduler.getJobGroupNames();
         List<ScheduledJobInfo> scheduledJobs  = scheduler.getScheduledJobs();
 
-        for( int g = 0; g < groups.size(); g++ ) {
-
-            if( userhasDBARole || groups.get(g).equals( UserJob.JOB_GROUP ) ) {
-                xmlBuf.append( "<" + SchedulerModule.PREFIX + ":group name=\"" + groups.get(g) + "\">" );
-
-                for( int j = 0; j < scheduledJobs.size(); j++ ) {
-
-                    if( scheduledJobs.get(j).getGroup().equals( groups.get(g) ) ) {
-                        xmlBuf.append( "<" + SchedulerModule.PREFIX + ":job name=\"" + scheduledJobs.get(j).getName() + "\">" );
-                        xmlBuf.append( "<" + SchedulerModule.PREFIX + ":trigger name=\"" + scheduledJobs.get(j).getTriggerName() + "\">" );
+        for (String group : groups) {
+            
+            if (userhasDBARole || group.equals(UserJob.JOB_GROUP)) {
+                xmlBuf.append("<" + SchedulerModule.PREFIX + ":group name=\"" + group + "\">");
+                
+                for (ScheduledJobInfo scheduledJob : scheduledJobs) {
+                    if (scheduledJob.getGroup().equals(group)) {
+                        xmlBuf.append("<" + SchedulerModule.PREFIX + ":job name=\"" + scheduledJob.getName() + "\">");
+                        xmlBuf.append("<" + SchedulerModule.PREFIX + ":trigger name=\"" + scheduledJob.getTriggerName() + "\">");
                         xmlBuf.append( "<expression>" );
-                        xmlBuf.append( scheduledJobs.get(j).getTriggerExpression() );
+                        xmlBuf.append(scheduledJob.getTriggerExpression());
                         xmlBuf.append( "</expression>" );
                         xmlBuf.append( "<state>" );
-                        xmlBuf.append( scheduledJobs.get(j).getTriggerState() );
+                        xmlBuf.append(scheduledJob.getTriggerState());
                         xmlBuf.append( "</state>" );
                         xmlBuf.append( "<start>" );
-                        xmlBuf.append( new DateTimeValue( scheduledJobs.get(j).getStartTime() ) );
+                        xmlBuf.append(new DateTimeValue(scheduledJob.getStartTime()));
                         xmlBuf.append( "</start>" );
                         xmlBuf.append( "<end>" );
-
-                        Date endTime = scheduledJobs.get(j).getEndTime();
-
+                        Date endTime = scheduledJob.getEndTime();
                         if( endTime != null ) {
                             xmlBuf.append( new DateTimeValue( endTime ) );
                         }
-
                         xmlBuf.append( "</end>" );
                         xmlBuf.append( "<previous>" );
-
-                        Date previousTime = scheduledJobs.get(j).getPreviousFireTime();
-
-                        if( previousTime != null ) {
-                            xmlBuf.append( new DateTimeValue( scheduledJobs.get(j).getPreviousFireTime() ) );
+                        Date previousTime = scheduledJob.getPreviousFireTime();
+                        if (previousTime != null) {
+                            xmlBuf.append(new DateTimeValue(scheduledJob.getPreviousFireTime()));
                         }
-
                         xmlBuf.append( "</previous>" );
                         xmlBuf.append( "<next>" );
-
-                        Date nextTime = scheduledJobs.get(j).getNextFireTime();
-
+                        Date nextTime = scheduledJob.getNextFireTime();
                         if( nextTime != null ) {
                             xmlBuf.append( new DateTimeValue() );
                         }
-
                         xmlBuf.append( "</next>" );
                         xmlBuf.append( "<final>" );
-
-                        Date finalTime = scheduledJobs.get(j).getFinalFireTime();
-
+                        Date finalTime = scheduledJob.getFinalFireTime();
                         if( ( endTime != null ) && ( finalTime != null ) ) {
                             xmlBuf.append( new DateTimeValue() );
                         }
-
                         xmlBuf.append( "</final>" );
                         xmlBuf.append( "</" + SchedulerModule.PREFIX + ":trigger>" );
                         xmlBuf.append( "</" + SchedulerModule.PREFIX + ":job>" );
                         iJobs++;
                     }
                 }
-
                 xmlBuf.append( "</" + SchedulerModule.PREFIX + ":group>" );
             }
         }
