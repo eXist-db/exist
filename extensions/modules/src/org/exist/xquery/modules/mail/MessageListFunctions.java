@@ -359,12 +359,12 @@ public class MessageListFunctions extends BasicFunction
 						}
 						
 						// bcc Recipients
-						Address[] bcc = message.getRecipients( Message.RecipientType.BCC );
-						if( bcc != null ) {
-							for( int j = 0; j < cc.length; j++ ) {
+						Address[] bccAddresses = message.getRecipients( Message.RecipientType.BCC );
+						if( bccAddresses != null ) {
+                        for (Address bccAddress : bccAddresses) {
 								builder.startElement( new QName( "recipient", MailModule.NAMESPACE_URI, MailModule.PREFIX ), null );
 								builder.addAttribute( new QName( "type", null, null ), "bcc" );
-								builder.characters( bcc[j].toString() );
+                            builder.characters(bccAddress.toString());
 								builder.endElement();
 							}
 						}
