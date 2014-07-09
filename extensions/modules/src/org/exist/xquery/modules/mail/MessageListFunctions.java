@@ -270,8 +270,8 @@ public class MessageListFunctions extends BasicFunction
 		FetchProfile fp = new FetchProfile();
 		fp.add( FetchProfile.Item.ENVELOPE );
 		
-        for (String PREFETCH_HEADERS : PREFETCH_HEADERS) {
-            fp.add(PREFETCH_HEADERS);
+        for (String PREFETCH_HEADER : PREFETCH_HEADERS) {
+            fp.add(PREFETCH_HEADER);
         }
 		folder.fetch( msgList, fp );
 	}
