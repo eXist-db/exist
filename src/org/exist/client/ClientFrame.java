@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2013 The eXist-db Project
+ * Copyright (C) 2001-2014 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -16,8 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
+ * 
  */
 package org.exist.client;
 
@@ -1010,9 +1009,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     private void renameAction(final ActionEvent ev) {
         final ResourceDescriptor[] res = getSelectedResources();
         String inputValue = "";
-        try {
+	try { 
             inputValue = res[0].getName().toString();
-        } catch (Exception npe) {
+	} catch (Exception npe) {
         }
         final Object val = JOptionPane.showInputDialog(this, Messages.getString("ClientFrame.119"), Messages.getString("ClientFrame.120"), JOptionPane.QUESTION_MESSAGE, null, null, inputValue); //$NON-NLS-1$ //$NON-NLS-2$
 		
@@ -1123,8 +1122,16 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 } else {
                     throw xmldbe;
                 }
+            } catch (Exception npe) {
+                System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
+                continue;
             }
-            getCollections(child, collectionsList);
+            try {
+                getCollections(child, collectionsList);
+            } catch (Exception ee) {
+                System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
+                continue;
+            }
         }
         return collectionsList;
     }
