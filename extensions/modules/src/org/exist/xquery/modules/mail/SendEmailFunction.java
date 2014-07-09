@@ -22,16 +22,10 @@
 
 package org.exist.xquery.modules.mail;
 
-import org.apache.log4j.Logger;
-import org.exist.dom.QName;
-import org.exist.util.Base64Encoder;
-import org.exist.util.MimeTable;
-import org.exist.xquery.*;
-import org.exist.xquery.functions.system.GetVersion;
-import org.exist.xquery.value.*;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.*;
 import javax.activation.DataHandler;
 import javax.mail.*;
 import javax.mail.internet.*;
@@ -41,10 +35,16 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.util.Base64Encoder;
+import org.exist.util.MimeTable;
+import org.exist.xquery.*;
+import org.exist.xquery.functions.system.GetVersion;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 //send-email specific imports
 
@@ -936,11 +936,11 @@ public class SendEmailFunction extends BasicFunction
                                             multibody.addBodyPart(body);
                                         }
                                         
-                                        if (charset == null || charset.length() == 0) {
+                                        if (StringUtils.isEmpty(charset)) {
                                             charset = "UTF-8";
                                         }
                                         
-                                        if (encoding == null || encoding.length() == 0) {
+                                        if (StringUtils.isEmpty(encoding)) {
                                             encoding = "quoted-printable";
                                         }
                                         

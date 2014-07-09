@@ -28,7 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
-
 import javax.mail.Address;
 import javax.mail.FetchProfile;
 import javax.mail.Flags;
@@ -49,7 +48,7 @@ import javax.mail.search.RecipientStringTerm;
 import javax.mail.search.SearchTerm;
 import javax.mail.search.SentDateTerm;
 import javax.mail.search.SubjectTerm;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
@@ -637,7 +636,7 @@ public class MessageListFunctions extends BasicFunction
 		String pattern  = ((Element)terms).getAttribute( "pattern" );
 		String type     = ((Element)terms).getAttribute( "recipientType" );
 		
-		if( type == null || type.length() == 0 ) {
+		if( StringUtils.isEmpty(type) ) {
 			throw( new XPathException(this, "recipientType not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
@@ -670,7 +669,7 @@ public class MessageListFunctions extends BasicFunction
 		String pattern  = ((Element)terms).getAttribute( "pattern" );
 		String name     = ((Element)terms).getAttribute( "name" );
 		
-		if( name == null || name.length() == 0 ) {
+		if( StringUtils.isEmpty(name) ) {
 			throw( new XPathException(this, "name not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
@@ -691,7 +690,7 @@ public class MessageListFunctions extends BasicFunction
 		String flag  = ((Element)terms).getAttribute( "flag" );
 		String value = ((Element)terms).getAttribute( "value" );
 		
-		if( value == null || value.length() == 0 ) {
+		if( StringUtils.isEmpty(value) ) {
 			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
@@ -728,11 +727,11 @@ public class MessageListFunctions extends BasicFunction
 		String value = ((Element)terms).getAttribute( "date" );
 		String format = ((Element)terms).getAttribute( "format" );
 		
-		if( value == null || value.length() == 0 ) {
+		if( StringUtils.isEmpty(value) ) {
 			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
-		if( format == null || format.length() == 0 ) {
+		if( StringUtils.isEmpty(format) ) {
 			throw( new XPathException(this, "format not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
@@ -760,11 +759,11 @@ public class MessageListFunctions extends BasicFunction
 		String value = ((Element)terms).getAttribute( "date" );
 		String format = ((Element)terms).getAttribute( "format" );
 		
-		if( value == null || value.length() == 0 ) {
+		if( StringUtils.isEmpty(value) ) {
 			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
-		if( format == null || format.length() == 0 ) {
+		if( StringUtils.isEmpty(format) ) {
 			throw( new XPathException(this, "format not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
