@@ -946,7 +946,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getReader();
-            scan(docs, null, null, start, max, map, reader, field);
+            scan(docs, null, start, null, max, map, reader, field);
         } catch (IOException e) {
             LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
         } finally {
