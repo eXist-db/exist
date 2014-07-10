@@ -65,7 +65,6 @@ import org.exist.memtree.ReferenceNode;
 import org.exist.memtree.SAXAdapter;
 import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 
@@ -172,6 +171,7 @@ public class ExecuteFunction extends BasicFunction
 
                 //execute the statement
                 executeResult = stmt.execute( sql );
+                
             } else if( args.length == 4 ) {
 
                 preparedStmt = true;
@@ -192,6 +192,8 @@ public class ExecuteFunction extends BasicFunction
             } else {
                 //TODO throw exception
             }
+            
+            // DW: stmt can be null ?
 
 
             // execute the query statement
@@ -425,29 +427,33 @@ public class ExecuteFunction extends BasicFunction
     
     private void setParametersOnPreparedStatement( Statement stmt, Element parametersElement ) throws SQLException, XPathException
     {
-        if( parametersElement.getNamespaceURI().equals( SQLModule.NAMESPACE_URI ) && parametersElement.getLocalName().equals( PARAMETERS_ELEMENT_NAME ) ) {
-            NodeList paramElements = parametersElement.getElementsByTagNameNS( SQLModule.NAMESPACE_URI, PARAM_ELEMENT_NAME );
+        if (parametersElement.getNamespaceURI().equals(SQLModule.NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
+            NodeList paramElements = parametersElement.getElementsByTagNameNS(SQLModule.NAMESPACE_URI, PARAM_ELEMENT_NAME);
 
-            for( int i = 0; i < paramElements.getLength(); i++ ) {
-                Element param = ( (Element)paramElements.item( i ) );
+            for (int i = 0; i < paramElements.getLength(); i++) {
+                Element param = ((Element) paramElements.item(i));
                 Node child = param.getFirstChild();
-                if(child instanceof ReferenceNode) {
-                    child = ((ReferenceNode)child).getReference().getNode();
-                }
-                
-                final String  value = child.getNodeValue();
-                final String  type  = param.getAttributeNS( SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME );
-                final int sqlType = SQLUtils.sqlTypeFromString(type);
 
-                if(sqlType == Types.TIMESTAMP) {
-                    final DateTimeValue dv = new DateTimeValue(value);    
-                    final Timestamp timestampValue = new Timestamp(dv.getDate().getTime());
-                    ((PreparedStatement)stmt).setTimestamp(i+1, timestampValue);
-                } else {
-                    ((PreparedStatement)stmt).setObject(i+1, value, sqlType);
+                // Prevent NPE
+                if (child != null) {
+                    if (child instanceof ReferenceNode) {
+                        child = ((ReferenceNode) child).getReference().getNode();
+                    }
+
+                    final String value = child.getNodeValue();
+                    final String type = param.getAttributeNS(SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
+                    final int sqlType = SQLUtils.sqlTypeFromString(type);
+
+                    if (sqlType == Types.TIMESTAMP) {
+                        final DateTimeValue dv = new DateTimeValue(value);
+                        final Timestamp timestampValue = new Timestamp(dv.getDate().getTime());
+                        ((PreparedStatement) stmt).setTimestamp(i + 1, timestampValue);
+                        
+                    } else {
+                        ((PreparedStatement) stmt).setObject(i + 1, value, sqlType);
+                    }
                 }
 
-                
             }
         }
     }
