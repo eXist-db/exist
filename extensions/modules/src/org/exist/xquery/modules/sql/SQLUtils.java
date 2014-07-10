@@ -19,46 +19,47 @@ public final class SQLUtils {
     {
         sqlType = sqlType.toUpperCase();
 
-        if( sqlType.equals( "ARRAY" ) ) {
-            return( Types.ARRAY );
-        } else if( sqlType.equals( "BIGINT" ) ) {
-            return( Types.BIGINT );
-        } else if( sqlType.equals( "BINARY" ) ) {
-            return( Types.BINARY );
-        } else if( sqlType.equals( "BIT" ) ) {
-            return( Types.BIT );
-        } else if( sqlType.equals( "BLOB" ) ) {
-            return( Types.BLOB );
-        } else if( sqlType.equals( "BOOLEAN" ) ) {
-            return( Types.BOOLEAN );
-        } else if( sqlType.equals( "CHAR" ) ) {
-            return( Types.CHAR );
-        } else if( sqlType.equals( "CLOB" ) ) {
-            return( Types.CLOB );
-        } else if( sqlType.equals( "DECIMAL" ) ) {
-            return( Types.DECIMAL );
-        } else if( sqlType.equals( "DOUBLE" ) ) {
-            return( Types.DOUBLE );
-        } else if( sqlType.equals( "FLOAT" ) ) {
-            return( Types.FLOAT );
-        } else if( sqlType.equals( "LONGVARCHAR" ) ) {
-            return( Types.LONGVARCHAR );
-        } else if( sqlType.equals( "NUMERIC" ) ) {
-            return( Types.NUMERIC );
-        } else if( sqlType.equals( "SMALLINT" ) ) {
-            return( Types.SMALLINT );
-        } else if( sqlType.equals( "TINYINT" ) ) {
-            return( Types.TINYINT );
-        } else if( sqlType.equals( "INTEGER" ) ) {
-            return( Types.INTEGER );
-        } else if( sqlType.equals( "VARCHAR" ) ) {
-            return( Types.VARCHAR );
-        } else if(sqlType.equals("SQLXML")) {
-            return Types.SQLXML;
-        } else if(sqlType.equals("TIMESTAMP")) {
-            return Types.TIMESTAMP;
-        } else {
-            return( Types.VARCHAR ); //default
+        switch (sqlType) {
+            case "ARRAY":
+                return (Types.ARRAY);
+            case "BIGINT":
+                return (Types.BIGINT);
+            case "BINARY":
+                return (Types.BINARY);
+            case "BIT":
+                return (Types.BIT);
+            case "BLOB":
+                return (Types.BLOB);
+            case "BOOLEAN":
+                return (Types.BOOLEAN);
+            case "CHAR":
+                return (Types.CHAR);
+            case "CLOB":
+                return (Types.CLOB);
+            case "DECIMAL":
+                return (Types.DECIMAL);
+            case "DOUBLE":
+                return (Types.DOUBLE);
+            case "FLOAT":
+                return (Types.FLOAT);
+            case "LONGVARCHAR":
+                return (Types.LONGVARCHAR);
+            case "NUMERIC":
+                return (Types.NUMERIC);
+            case "SMALLINT":
+                return (Types.SMALLINT);
+            case "TINYINT":
+                return (Types.TINYINT);
+            case "INTEGER":
+                return (Types.INTEGER);
+            case "VARCHAR":
+                return (Types.VARCHAR);
+            case "SQLXML":
+                return Types.SQLXML;
+            case "TIMESTAMP":
+                return Types.TIMESTAMP;
+            default:
+                return (Types.VARCHAR); //default
         }
     }
 
@@ -71,86 +72,86 @@ public final class SQLUtils {
      */
     public static int sqlTypeToXMLType( int sqlType )
     {
-        switch( sqlType ) {
+        switch (sqlType) {
 
             case Types.ARRAY: {
-                return( Type.NODE );
+                return (Type.NODE);
             }
 
             case Types.BIGINT: {
-                return( Type.INT );
+                return (Type.INT);
             }
 
             case Types.BINARY: {
-                return( Type.BASE64_BINARY );
+                return (Type.BASE64_BINARY);
             }
 
             case Types.BIT: {
-                return( Type.INT );
+                return (Type.INT);
             }
 
             case Types.BLOB: {
-                return( Type.BASE64_BINARY );
+                return (Type.BASE64_BINARY);
             }
 
             case Types.BOOLEAN: {
-                return( Type.BOOLEAN );
+                return (Type.BOOLEAN);
             }
 
             case Types.CHAR: {
-                return( Type.STRING );
+                return (Type.STRING);
             }
 
             case Types.CLOB: {
-                return( Type.STRING );
+                return (Type.STRING);
             }
 
             case Types.DECIMAL: {
-                return( Type.DECIMAL );
+                return (Type.DECIMAL);
             }
 
             case Types.DOUBLE: {
-                return( Type.DOUBLE );
+                return (Type.DOUBLE);
             }
 
             case Types.FLOAT: {
-                return( Type.FLOAT );
+                return (Type.FLOAT);
             }
 
             case Types.LONGVARCHAR: {
-                return( Type.STRING );
+                return (Type.STRING);
             }
 
             case Types.NUMERIC: {
-                return( Type.NUMBER );
+                return (Type.NUMBER);
             }
 
             case Types.SMALLINT: {
-                return( Type.INT );
+                return (Type.INT);
             }
 
             case Types.TINYINT: {
-                return( Type.INT );
+                return (Type.INT);
             }
 
             case Types.INTEGER: {
-                return( Type.INTEGER );
+                return (Type.INTEGER);
             }
 
             case Types.VARCHAR: {
-                return( Type.STRING );
+                return (Type.STRING);
             }
 
             case Types.SQLXML: {
-                return(Type.NODE);
+                return (Type.NODE);
             }
-                
+
             case Types.TIMESTAMP: {
                 return Type.DATE_TIME;
             }
 
             default: {
-                return( Type.ANY_TYPE );
+                return (Type.ANY_TYPE);
             }
         }
     }
