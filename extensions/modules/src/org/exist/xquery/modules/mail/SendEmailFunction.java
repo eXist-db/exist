@@ -22,16 +22,10 @@
 
 package org.exist.xquery.modules.mail;
 
-import org.apache.log4j.Logger;
-import org.exist.dom.QName;
-import org.exist.util.Base64Encoder;
-import org.exist.util.MimeTable;
-import org.exist.xquery.*;
-import org.exist.xquery.functions.system.GetVersion;
-import org.exist.xquery.value.*;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.*;
 import javax.activation.DataHandler;
 import javax.mail.*;
 import javax.mail.internet.*;
@@ -41,10 +35,16 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.util.Base64Encoder;
+import org.exist.util.MimeTable;
+import org.exist.xquery.*;
+import org.exist.xquery.functions.system.GetVersion;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 //send-email specific imports
 
@@ -363,7 +363,7 @@ public class SendEmailFunction extends BasicFunction
 
             //First line sent to us from the SMTP server should be "220 blah blah", 220 indicates okay
             smtpResult = smtpIn.readLine();
-            if(!smtpResult.substring(0, 3).toString().equals("220"))
+            if(!smtpResult.substring(0, 3).equals("220"))
             {
                 String errMsg = "Error - SMTP Server not ready: '" + smtpResult + "'";
                 LOG.error(errMsg);
@@ -376,7 +376,7 @@ public class SendEmailFunction extends BasicFunction
 
             //get "HELLO" response, should be "250 blah blah"
             smtpResult = smtpIn.readLine();
-            if(!smtpResult.substring(0, 3).toString().equals("250"))
+            if(!smtpResult.substring(0, 3).equals("250"))
             {
                 String errMsg = "Error - SMTP HELO Failed: '" + smtpResult + "'";
                 LOG.error(errMsg);
@@ -441,36 +441,31 @@ public class SendEmailFunction extends BasicFunction
 
             //Get "MAIL FROM:" response
             smtpResult = smtpIn.readLine();
-            if(!smtpResult.substring(0, 3).toString().equals("250"))
+            if(!smtpResult.substring(0, 3).equals("250"))
             {
                 LOG.error("Error - SMTP MAIL FROM failed: " + smtpResult);
                 return false;
             }
 
             //RCPT TO should be issued for each to, cc and bcc recipient
-            List<String> allrecipients = new ArrayList<String>();
+            List<String> allrecipients = new ArrayList<>();
             allrecipients.addAll(mail.getTo());
             allrecipients.addAll(mail.getCC());
             allrecipients.addAll(mail.getBCC());
 
-            for(int x = 0; x < allrecipients.size(); x++)
-            {
+            for (String recipient : allrecipients) {
                 //Send "RCPT TO:"
                 //Check format of to address does it include a name as well as the email address?
-                if(((String)allrecipients.get(x)).indexOf("<") != -1)
-                {
+                if (((String) recipient).contains("<")) {
                     //yes, just send the email address
-                    smtpOut.println("RCPT TO:<" + ((String)allrecipients.get(x)).substring(((String)allrecipients.get(x)).indexOf("<") + 1, ((String)allrecipients.get(x)).indexOf(">")) + ">");
-                }
-                else
-                {
-                    smtpOut.println("RCPT TO:<" + ((String)allrecipients.get(x)) + ">");
+                    smtpOut.println("RCPT TO:<" + ((String) recipient).substring(((String) recipient).indexOf("<") + 1, ((String) recipient).indexOf(">")) + ">");
+                } else {
+                    smtpOut.println("RCPT TO:<" + ((String) recipient) + ">");
                 }
                 smtpOut.flush();
-
                 //Get "RCPT TO:" response
                 smtpResult = smtpIn.readLine();
-                if(!smtpResult.substring(0, 3).toString().equals("250"))
+                if(!smtpResult.substring(0, 3).equals("250"))
                 {
                     LOG.error("Error - SMTP RCPT TO failed: " + smtpResult);
                 }
@@ -483,7 +478,7 @@ public class SendEmailFunction extends BasicFunction
 
             //Get "DATA" response, should be "354 blah blah"
             smtpResult = smtpIn.readLine();
-            if(!smtpResult.substring(0, 3).toString().equals("354"))
+            if(!smtpResult.substring(0, 3).equals("354"))
             {
                 LOG.error("Error - SMTP DATA failed: " + smtpResult);
                 return false;
@@ -494,7 +489,7 @@ public class SendEmailFunction extends BasicFunction
 
             //Get end message response, should be "250 blah blah"
             smtpResult = smtpIn.readLine();
-            if(!smtpResult.substring(0, 3).toString().equals("250"))
+            if(!smtpResult.substring(0, 3).equals("250"))
             {
                 LOG.error("Error - Message not accepted: " + smtpResult);
                 return false;
@@ -584,14 +579,14 @@ public class SendEmailFunction extends BasicFunction
         }
 
         // TODO - need to put out a multipart/mixed boundary here when HTML, text and attachment present
-        if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+        if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
         {
             out.println("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "_alt\";");
             out.println("--" + MultipartBoundary + "_alt");
         }
 
         //text email
-        if(!aMail.getText().toString().equals(""))
+        if(!aMail.getText().equals(""))
         {
             out.println("Content-Type: text/plain; charset=" + charset);
             out.println("Content-Transfer-Encoding: 8bit");
@@ -602,9 +597,9 @@ public class SendEmailFunction extends BasicFunction
 
             if(multipartBoundary != null)
             {
-                if(!aMail.getXHTML().toString().equals("") || aMail.attachmentIterator().hasNext())
+                if(!aMail.getXHTML().equals("") || aMail.attachmentIterator().hasNext())
                 {
-                    if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+                    if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
                     {
                         out.println("--" + MultipartBoundary + "_alt");
                     }
@@ -615,7 +610,7 @@ public class SendEmailFunction extends BasicFunction
                 }
                 else
                 {
-                    if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+                    if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
                     {
                         out.println("--" + MultipartBoundary + "_alt--");
                     }
@@ -628,7 +623,7 @@ public class SendEmailFunction extends BasicFunction
         }
 
         //HTML email
-        if(!aMail.getXHTML().toString().equals(""))
+        if(!aMail.getXHTML().equals(""))
         {
                 out.println("Content-Type: text/html; charset=" + charset);
                 out.println("Content-Transfer-Encoding: 8bit");
@@ -642,7 +637,7 @@ public class SendEmailFunction extends BasicFunction
                 {
                     if(aMail.attachmentIterator().hasNext())
                     {
-                        if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+                        if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
                         {
                             out.println("--" + MultipartBoundary + "_alt--");
                             out.println("--" + multipartBoundary);
@@ -654,7 +649,7 @@ public class SendEmailFunction extends BasicFunction
                     }
                     else
                     {
-                        if(!aMail.getText().toString().equals("") && !aMail.getXHTML().toString().equals("") && aMail.attachmentIterator().hasNext())
+                        if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
                         {
                             out.println("--" + MultipartBoundary + "_alt--");
                         }
@@ -741,7 +736,7 @@ public class SendEmailFunction extends BasicFunction
      */
     private List<Mail> parseMailElement(List<Element> mailElements) throws TransformerException
     {
-        List<Mail> mails = new ArrayList<Mail>();
+        List<Mail> mails = new ArrayList<>();
 
         for(Element mailElement : mailElements)
         {
@@ -758,63 +753,55 @@ public class SendEmailFunction extends BasicFunction
                     //Parse each of the child nodes
                     if(child.getNodeType() == Node.ELEMENT_NODE && child.hasChildNodes())
                     {
-                        if(child.getLocalName().equals("from"))
-                        {
+                        switch (child.getLocalName()) {
+                            case "from":
                                 mail.setFrom(child.getFirstChild().getNodeValue());
-                        }
-                        if(child.getLocalName().equals("reply-to"))
-                        {
+                                break;
+                            case "reply-to":
                                 mail.setReplyTo(child.getFirstChild().getNodeValue());
-                        }
-                        else if(child.getLocalName().equals("to"))
-                        {
+                                break;
+                            case "to":
                                 mail.addTo(child.getFirstChild().getNodeValue());
-                        }
-                        else if(child.getLocalName().equals("cc"))
-                        {
+                                break;
+                            case "cc":
                                 mail.addCC(child.getFirstChild().getNodeValue());
-                        }
-                        else if(child.getLocalName().equals("bcc"))
-                        {
+                                break;
+                            case "bcc":
                                 mail.addBCC(child.getFirstChild().getNodeValue());
-                        }
-                        else if(child.getLocalName().equals("subject"))
-                        {
+                                break;
+                            case "subject":
                                 mail.setSubject(child.getFirstChild().getNodeValue());
-                        }
-                        else if(child.getLocalName().equals("message"))
-                        {
-                            //If the message node, then parse the child text and xhtml nodes
-                            Node bodyPart = child.getFirstChild();
-                            while(bodyPart != null)
-                            {
-                                if(bodyPart.getLocalName().equals("text"))
+                                break;
+                            case "message":
+                                //If the message node, then parse the child text and xhtml nodes
+                                Node bodyPart = child.getFirstChild();
+                                while(bodyPart != null)
                                 {
+                                    if(bodyPart.getLocalName().equals("text"))
+                                    {
                                         mail.setText(bodyPart.getFirstChild().getNodeValue());
-                                }
-                                else if(bodyPart.getLocalName().equals("xhtml"))
-                                {
-                                    //Convert everything inside <xhtml></xhtml> to text
-                                    TransformerFactory transFactory = TransformerFactory.newInstance();
-                                    Transformer transformer = transFactory.newTransformer();
-                                    DOMSource source = new DOMSource(bodyPart.getFirstChild());
-                                    StringWriter strWriter = new StringWriter();
-                                    StreamResult result = new StreamResult(strWriter);
-                                    transformer.transform(source, result);
-
-                                    mail.setXHTML(strWriter.toString());
-                                }
-
-                                //next body part
-                                bodyPart = bodyPart.getNextSibling();
-                            }
-
-                        }
-                        else if(child.getLocalName().equals("attachment"))
-                        {
-                            Element attachment = (Element)child;
-                            MailAttachment ma = new MailAttachment(attachment.getAttribute("filename"), attachment.getAttribute("mimetype"), attachment.getFirstChild().getNodeValue());
-                            mail.addAttachment(ma);
+                                    }
+                                    else if(bodyPart.getLocalName().equals("xhtml"))
+                                    {
+                                        //Convert everything inside <xhtml></xhtml> to text
+                                        TransformerFactory transFactory = TransformerFactory.newInstance();
+                                        Transformer transformer = transFactory.newTransformer();
+                                        DOMSource source = new DOMSource(bodyPart.getFirstChild());
+                                        StringWriter strWriter = new StringWriter();
+                                        StreamResult result = new StreamResult(strWriter);
+                                        transformer.transform(source, result);
+                                        
+                                        mail.setXHTML(strWriter.toString());
+                                    }
+                                    
+                                    //next body part
+                                    bodyPart = bodyPart.getNextSibling();
+                                }   break;
+                            case "attachment":
+                                Element attachment = (Element)child;
+                                MailAttachment ma = new MailAttachment(attachment.getAttribute("filename"), attachment.getAttribute("mimetype"), attachment.getFirstChild().getNodeValue());
+                                mail.addAttachment(ma);
+                                break;
                         }
                     }
 
@@ -854,7 +841,7 @@ public class SendEmailFunction extends BasicFunction
      */
     private List<Message> parseMessageElement(Session session, List<Element> mailElements)
             throws IOException, MessagingException, TransformerException {
-        List<Message> mails = new ArrayList<Message>();
+        List<Message> mails = new ArrayList<>();
 
         for (Element mailElement : mailElements) {
             //Make sure that message has a Mail node
@@ -863,11 +850,11 @@ public class SendEmailFunction extends BasicFunction
                 // create a message
                 MimeMessage msg = new MimeMessage(session);
 
-                ArrayList<InternetAddress> replyTo = new ArrayList<InternetAddress>();
+                ArrayList<InternetAddress> replyTo = new ArrayList<>();
                 boolean fromWasSet = false;
                 MimeBodyPart body = null;
                 Multipart multibody = null;
-                ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>();
+                ArrayList<MimeBodyPart> attachments = new ArrayList<>();
                 String firstContent = null;
                 String firstContentType = null;
                 String firstCharset = null;
@@ -878,128 +865,132 @@ public class SendEmailFunction extends BasicFunction
                 while (child != null) {
                     //Parse each of the child nodes
                     if (child.getNodeType() == Node.ELEMENT_NODE && child.hasChildNodes()) {
-                        if (child.getLocalName().equals("from")) {
-                            // set the from and to address
-                            InternetAddress[] addressFrom = {new InternetAddress(child.getFirstChild().getNodeValue())};
-                            msg.addFrom(addressFrom);
-
-                            fromWasSet = true;
-                        } else if (child.getLocalName().equals("reply-to")) {
-                            // As we can only set the reply-to, not add them, let's keep
-                            // all of them in a list
-                            replyTo.add(new InternetAddress(child.getFirstChild().getNodeValue()));
-                            msg.setReplyTo(replyTo.toArray(new InternetAddress[0]));
-                        } else if (child.getLocalName().equals("to")) {
-                            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(child.getFirstChild().getNodeValue()));
-                        } else if (child.getLocalName().equals("cc")) {
-                            msg.addRecipient(Message.RecipientType.CC, new InternetAddress(child.getFirstChild().getNodeValue()));
-                        } else if (child.getLocalName().equals("bcc")) {
-                            msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(child.getFirstChild().getNodeValue()));
-                        } else if (child.getLocalName().equals("subject")) {
-                            msg.setSubject(child.getFirstChild().getNodeValue());
-                        } else if (child.getLocalName().equals("header")) {
-                            // Optional : You can also set your custom headers in the Email if you Want
-                            msg.addHeader(((Element) child).getAttribute("name"), child.getFirstChild().getNodeValue());
-                        } else if (child.getLocalName().equals("message")) {
-                            //If the message node, then parse the child text and xhtml nodes
-                            Node bodyPart = child.getFirstChild();
-                            while (bodyPart != null) {
-                                if (bodyPart.getNodeType() != Node.ELEMENT_NODE)
-                                    continue;
-
-                                Element elementBodyPart = (Element) bodyPart;
-                                String content = null;
-                                String contentType = null;
-
-                                if (bodyPart.getLocalName().equals("text")) {
-                                    // Setting the Subject and Content Type
-                                    content = bodyPart.getFirstChild().getNodeValue();
-                                    contentType = "plain";
-                                } else if (bodyPart.getLocalName().equals("xhtml")) {
-                                    //Convert everything inside <xhtml></xhtml> to text
-                                    TransformerFactory transFactory = TransformerFactory.newInstance();
-                                    Transformer transformer = transFactory.newTransformer();
-                                    DOMSource source = new DOMSource(bodyPart.getFirstChild());
-                                    StringWriter strWriter = new StringWriter();
-                                    StreamResult result = new StreamResult(strWriter);
-                                    transformer.transform(source, result);
-
-                                    content = strWriter.toString();
-                                    contentType = "html";
-                                } else if (bodyPart.getLocalName().equals("generic")) {
-                                    // Setting the Subject and Content Type
-                                    content = elementBodyPart.getFirstChild().getNodeValue();
-                                    contentType = elementBodyPart.getAttribute("type");
-                                }
-
-                                // Now, time to store it
-                                if (content != null && contentType != null && contentType.length() > 0) {
-                                    String charset = elementBodyPart.getAttribute("charset");
-                                    String encoding = elementBodyPart.getAttribute("encoding");
-
-                                    if (body != null && multibody == null) {
-                                        multibody = new MimeMultipart("alternative");
-                                        multibody.addBodyPart(body);
+                        switch (child.getLocalName()) {
+                            case "from":
+                                // set the from and to address
+                                InternetAddress[] addressFrom = {new InternetAddress(child.getFirstChild().getNodeValue())};
+                                msg.addFrom(addressFrom);
+                                fromWasSet = true;
+                                break;
+                            case "reply-to":
+                                // As we can only set the reply-to, not add them, let's keep
+                                // all of them in a list
+                                replyTo.add(new InternetAddress(child.getFirstChild().getNodeValue()));
+                                msg.setReplyTo(replyTo.toArray(new InternetAddress[0]));
+                                break;
+                            case "to":
+                                msg.addRecipient(Message.RecipientType.TO, new InternetAddress(child.getFirstChild().getNodeValue()));
+                                break;
+                            case "cc":
+                                msg.addRecipient(Message.RecipientType.CC, new InternetAddress(child.getFirstChild().getNodeValue()));
+                                break;
+                            case "bcc":
+                                msg.addRecipient(Message.RecipientType.BCC, new InternetAddress(child.getFirstChild().getNodeValue()));
+                                break;
+                            case "subject":
+                                msg.setSubject(child.getFirstChild().getNodeValue());
+                                break;
+                            case "header":
+                                // Optional : You can also set your custom headers in the Email if you Want
+                                msg.addHeader(((Element) child).getAttribute("name"), child.getFirstChild().getNodeValue());
+                                break;
+                            case "message":
+                                //If the message node, then parse the child text and xhtml nodes
+                                Node bodyPart = child.getFirstChild();
+                                while (bodyPart != null) {
+                                    if (bodyPart.getNodeType() != Node.ELEMENT_NODE)
+                                        continue;
+                                    
+                                    Element elementBodyPart = (Element) bodyPart;
+                                    String content = null;
+                                    String contentType = null;
+                                    
+                                    if (bodyPart.getLocalName().equals("text")) {
+                                        // Setting the Subject and Content Type
+                                        content = bodyPart.getFirstChild().getNodeValue();
+                                        contentType = "plain";
+                                    } else if (bodyPart.getLocalName().equals("xhtml")) {
+                                        //Convert everything inside <xhtml></xhtml> to text
+                                        TransformerFactory transFactory = TransformerFactory.newInstance();
+                                        Transformer transformer = transFactory.newTransformer();
+                                        DOMSource source = new DOMSource(bodyPart.getFirstChild());
+                                        StringWriter strWriter = new StringWriter();
+                                        StreamResult result = new StreamResult(strWriter);
+                                        transformer.transform(source, result);
+                                        
+                                        content = strWriter.toString();
+                                        contentType = "html";
+                                    } else if (bodyPart.getLocalName().equals("generic")) {
+                                        // Setting the Subject and Content Type
+                                        content = elementBodyPart.getFirstChild().getNodeValue();
+                                        contentType = elementBodyPart.getAttribute("type");
                                     }
-
-                                    if (charset == null || charset.length() == 0) {
-                                        charset = "UTF-8";
+                                    
+                                    // Now, time to store it
+                                    if (content != null && contentType != null && contentType.length() > 0) {
+                                        String charset = elementBodyPart.getAttribute("charset");
+                                        String encoding = elementBodyPart.getAttribute("encoding");
+                                        
+                                        if (body != null && multibody == null) {
+                                            multibody = new MimeMultipart("alternative");
+                                            multibody.addBodyPart(body);
+                                        }
+                                        
+                                        if (StringUtils.isEmpty(charset)) {
+                                            charset = "UTF-8";
+                                        }
+                                        
+                                        if (StringUtils.isEmpty(encoding)) {
+                                            encoding = "quoted-printable";
+                                        }
+                                        
+                                        if (body == null) {
+                                            firstContent = content;
+                                            firstCharset = charset;
+                                            firstContentType = contentType;
+                                            firstEncoding = encoding;
+                                        }
+                                        body = new MimeBodyPart();
+                                        body.setText(content, charset, contentType);
+                                        if (encoding != null) {
+                                            body.setHeader("Content-Transfer-Encoding", encoding);
+                                        }
+                                        if (multibody != null)
+                                            multibody.addBodyPart(body);
                                     }
-
-                                    if (encoding == null || encoding.length() == 0) {
-                                        encoding = "quoted-printable";
-                                    }
-
-                                    if (body == null) {
-                                        firstContent = content;
-                                        firstCharset = charset;
-                                        firstContentType = contentType;
-                                        firstEncoding = encoding;
-                                    }
-                                    body = new MimeBodyPart();
-                                    body.setText(content, charset, contentType);
-                                    if (encoding != null) {
-                                        body.setHeader("Content-Transfer-Encoding", encoding);
-                                    }
-                                    if (multibody != null)
-                                        multibody.addBodyPart(body);
-                                }
-
-                                //next body part
-                                bodyPart = bodyPart.getNextSibling();
-                            }
-
-                        } else if (child.getLocalName().equals("attachment")) {
-                            Element attachment = (Element) child;
-                            MimeBodyPart part;
-                            // if mimetype indicates a binary resource, assume the content is base64 encoded
-                            if (MimeTable.getInstance().isTextContent(attachment.getAttribute("mimetype"))) {
-                                part = new MimeBodyPart();
-                            } else {
-                                part = new PreencodedMimeBodyPart("base64");
-                            }
-
-                            StringBuilder content = new StringBuilder();
-                            Node attachChild = attachment.getFirstChild();
-                            while (attachChild != null) {
-                                if (attachChild.getNodeType() == Node.ELEMENT_NODE) {
-                                    TransformerFactory transFactory = TransformerFactory.newInstance();
-                                    Transformer transformer = transFactory.newTransformer();
-                                    DOMSource source = new DOMSource(attachChild);
-                                    StringWriter strWriter = new StringWriter();
-                                    StreamResult result = new StreamResult(strWriter);
-                                    transformer.transform(source, result);
-
-                                    content.append(strWriter.toString());
+                                    
+                                    //next body part
+                                    bodyPart = bodyPart.getNextSibling();
+                                }   break;
+                            case "attachment":
+                                Element attachment = (Element) child;
+                                MimeBodyPart part;
+                                // if mimetype indicates a binary resource, assume the content is base64 encoded
+                                if (MimeTable.getInstance().isTextContent(attachment.getAttribute("mimetype"))) {
+                                    part = new MimeBodyPart();
                                 } else {
-                                    content.append(attachChild.getNodeValue());
-                                }
-                                attachChild = attachChild.getNextSibling();
-                            }
-                            part.setDataHandler(new DataHandler(new ByteArrayDataSource(content.toString(), attachment.getAttribute("mimetype"))));
+                                    part = new PreencodedMimeBodyPart("base64");
+                                }   StringBuilder content = new StringBuilder();
+                            Node attachChild = attachment.getFirstChild();
+                                while (attachChild != null) {
+                                    if (attachChild.getNodeType() == Node.ELEMENT_NODE) {
+                                        TransformerFactory transFactory = TransformerFactory.newInstance();
+                                        Transformer transformer = transFactory.newTransformer();
+                                        DOMSource source = new DOMSource(attachChild);
+                                        StringWriter strWriter = new StringWriter();
+                                        StreamResult result = new StreamResult(strWriter);
+                                        transformer.transform(source, result);
+                                        
+                                        content.append(strWriter.toString());
+                                    } else {
+                                        content.append(attachChild.getNodeValue());
+                                    }
+                                    attachChild = attachChild.getNextSibling();
+                                }   part.setDataHandler(new DataHandler(new ByteArrayDataSource(content.toString(), attachment.getAttribute("mimetype"))));
                             part.setFileName(attachment.getAttribute("filename"));
 //                            part.setHeader("Content-Transfer-Encoding", "base64");
-                            attachments.add(part);
+                                attachments.add(part);
+                                break;
                         }
                     }
 
@@ -1302,13 +1293,13 @@ public class SendEmailFunction extends BasicFunction
     {
         private String from = "";				//Who is the mail from
         private String replyTo = null;                          //Who should you reply to
-        private List<String> to = new ArrayList<String>();      //Who is the mail going to
-        private List<String> cc = new ArrayList<String>();	//Carbon Copy to
-        private List<String> bcc = new ArrayList<String>();	//Blind Carbon Copy to
+        private final List<String> to = new ArrayList<>();      //Who is the mail going to
+        private final List<String> cc = new ArrayList<>();	//Carbon Copy to
+        private final List<String> bcc = new ArrayList<>();	//Blind Carbon Copy to
         private String subject = "";				//Subject of the mail
         private String text = "";				//Body text of the mail
         private String xhtml = "";                              //Body XHTML of the mail
-        private List<MailAttachment> attachment = new ArrayList<MailAttachment>();	//Any attachments
+        private final List<MailAttachment> attachment = new ArrayList<>();	//Any attachments
 
         //From
         public void setFrom(String from)
