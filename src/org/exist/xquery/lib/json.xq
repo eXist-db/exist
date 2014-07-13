@@ -12,9 +12,47 @@
  :       <p>An empty element becomes 'null', i.e. &lt;e/&gt; becomes {"e": null}.</p>
  :       <p>An element with a single text child becomes a property with the value of the text child, i.e.
  :       &lt;e&gt;text&lt;/e&gt; becomes {"e": "text"}</p>
- :       <p>If the attribute json:literal="true" is present on an element, then its text value is considered literal and not quoted as a string. Useful for boolean and numberic values!</p>
+ :       <p>If the attribute json:literal="true" is present on an element, then its text value
+ :         is considered literal and not quoted as a string. Useful for boolean and numberic
+ :         values! The json:annotate-json-literals function can be used to assist in this. </p>
  :)
 module namespace json="http://www.json.org";
+
+(:~
+: Helper function that annotates
+: elements with `json:literal="true"`
+: if their QNames are present in $literals
+:
+: @param $src One or more nodes to consider for annotation
+: @param $literals The QNames of the elements to annotate
+:
+: @return The $src annotated with json:literal="true" as requested
+:)
+declare function json:annotate-json-literals($src as node()*, $literals as xs:QName+) as node()* {
+    for $n in $src
+    return
+      typeswitch($n)
+          case $d as document-node()
+          return
+            document {
+              json:annotate-json-literals($d/*, $literals)
+            }
+            
+          case $e as element()
+          return
+            element { node-name($e) } {
+              if(node-name($e) = $literals)then
+                attribute json:literal { "true" }
+              else(),
+              $e/@*,
+              json:annotate-json-literals($e/node(), $literals)
+            }
+        
+        default
+        return
+          $n
+};
+
 
 (:~
  :   Helper function: output element content for elements with more than one child node or attribute.

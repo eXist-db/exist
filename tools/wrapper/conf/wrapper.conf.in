@@ -241,5 +241,5 @@ wrapper.ntservice.interactive=false
 #********************************************************************
 # Timeouts
 #********************************************************************
-# DWES: still valid?
 wrapper.ping.timeout=120
+wrapper.startup.timeout=300
