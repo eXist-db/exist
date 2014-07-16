@@ -60,7 +60,13 @@ public abstract class Function extends PathExpr {
     // The parent expression from which this function is called.
     private Expression parent;
 
-    private boolean argumentsChecked = false;
+    /**
+     * Flag to indicate if argument types are statically checked.
+     * This is set to true by default (meaning: no further checks needed).
+     * Method {@link #setArguments(java.util.List)} will set it to false
+     * (unless overwritten), thus enforcing a check.
+     */
+    protected boolean argumentsChecked = true;
 
     /**
      * Internal constructor. Subclasses should <b>always</b> call this and
@@ -173,8 +179,13 @@ public abstract class Function extends PathExpr {
     /**
      * Set the (static) arguments for this function from a list of expressions.
      * 
-     * This will also check the type and cardinality of the
-     * passed argument expressions.
+     * This will also trigger a check on the type and cardinality of the
+     * passed argument expressions. By default, the method sets the
+     * argumentsChecked property to false, thus triggering the analyze method to
+     * perform a type check.
+     *
+     * Classes overwriting this method are typically optimized functions and will
+     * handle type checks for arguments themselves.
      * 
      * @param arguments
      * @throws XPathException
