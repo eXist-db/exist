@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2013 The eXist-db Project
+ *  Copyright (C) 2001-2014 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
  */
 package org.exist.client;
 
@@ -46,6 +45,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -2682,7 +2682,14 @@ public class InteractiveClient {
         builder.append(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db"));
         builder.append(" version ");
         builder.append(SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-        builder.append(", Copyright (C) 2001-2013 The eXist-db Project");
+	if (!"".equals(SystemProperties.getInstance().getSystemProperty("git-commit", ""))) {
+	    builder.append(" (");
+	    builder.append(SystemProperties.getInstance().getSystemProperty("git-commit", "(unknown Git commit ID)"));
+	    builder.append(") ");
+	}
+        builder.append(", Copyright (C) 2001-");
+	builder.append(Calendar.getInstance().get(Calendar.YEAR));
+	builder.append(" The eXist-db Project");
         builder.append(EOL);
         builder.append("eXist-db comes with ABSOLUTELY NO WARRANTY.");
         builder.append(EOL);

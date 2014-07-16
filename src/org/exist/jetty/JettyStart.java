@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2001-2014 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id$
  */
 package org.exist.jetty;
 
@@ -134,8 +133,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 + SystemProperties.getInstance().getSystemProperty("product-build", "unknown") + "]");
         logger.info("[eXist Home : " 
                 + SystemProperties.getInstance().getSystemProperty("exist.home", "unknown") + "]");
-        logger.info("[SVN Revision : " 
-                + SystemProperties.getInstance().getSystemProperty("svn-revision", "unknown") + "]");
+        logger.info("[Git commmit : " 
+                + SystemProperties.getInstance().getSystemProperty("git-commit", "unknown") + "]");
         
         logger.info("[Operating System : " 
                 + System.getProperty("os.name") + " " 
