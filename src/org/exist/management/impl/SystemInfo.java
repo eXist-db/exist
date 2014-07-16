@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-08 The eXist Project
+ *  Copyright (C) 2008-2014 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
  */
 package org.exist.management.impl;
 
@@ -30,6 +29,7 @@ import org.exist.SystemProperties;
  * Class SystemInfo
  * 
  * @author wessels
+ * @author ljo
  */
 public class SystemInfo implements SystemInfoMBean {
 
@@ -48,7 +48,12 @@ public class SystemInfo implements SystemInfoMBean {
 
     @Override
     public String getSvnRevision() {
-        return SystemProperties.getInstance().getSystemProperty("svn-revision","unknown");
+        return getGitCommit();
+    }
+
+    @Override
+    public String getGitCommit() {
+        return SystemProperties.getInstance().getSystemProperty("git-commit", "unknown Git commit ID");
     }
 
     @Override

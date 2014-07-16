@@ -123,7 +123,7 @@
         <echo message="-------------------------"/>
         <echo message="eXist ${project.version} build"/>
         <echo message="-------------------------"/>
-        <echo message="Git revision ${git.commit}"/>
+        <echo message="Git commit ID: ${git.commit}"/>
         <echo message=""/>
         <echo message="${ant.version}"/>
         <echo message="-------------------------"/>
@@ -277,7 +277,7 @@
         description="Create eXist-db unsigned jar files">
         <filter token="version" value="${project.version}"/>
         <filter token="build" value="${DSTAMP}"/>
-        <filter token="revision" value="${git.commit}"/>
+        <filter token="git.commit" value="${git.commit}"/>
 
         <!--copy file="${src}/CatalogManager.properties" todir="${build.classes}"/-->
         <copy todir="${build.classes}/org/exist/client">
@@ -351,7 +351,7 @@
                 <attribute name="Project-Version" value="${project.version}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="Project-CodeName" value="${project.codename}"/>
-                <attribute name="Git-Revision" value="${git.commit}"/>
+                <attribute name="Git-commit" value="${git.commit}"/>
             </manifest>
             <exclude name="org/exist/*.xsl"/>
             <exclude name="org/exist/ant/**"/>
@@ -377,7 +377,7 @@
                 <attribute name="Project-Version" value="${project.version}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="Project-CodeName" value="${project.codename}"/>
-                <attribute name="Git-Revision" value="${git.commit}"/>
+                <attribute name="Git-commit" value="${git.commit}"/>
             </manifest>
             <include name="org/exist/start/**"/>
         </jar>
@@ -388,7 +388,7 @@
                 <attribute name="Project-Version" value="${project.version}"/>
                 <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="Project-CodeName" value="${project.codename}"/>
-                <attribute name="Git-Revision" value="${git.commit}"/>
+                <attribute name="Git-commit" value="${git.commit}"/>
             </manifest>
             <include name="org/exist/*.xsl"/>
             <include name="org/exist/ant/**"/>
