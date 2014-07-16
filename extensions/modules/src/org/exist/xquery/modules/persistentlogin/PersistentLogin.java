@@ -199,7 +199,7 @@ public class PersistentLogin {
             long now = System.currentTimeMillis();
             for (Iterator<Map.Entry<String, Long>> i = invalidatedTokens.entrySet().iterator(); i.hasNext(); ) {
                 Map.Entry<String, Long> entry = i.next();
-                if (entry.getValue() > now) {
+                if (entry.getValue() < now) {
                     i.remove();
                 }
             }
