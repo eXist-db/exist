@@ -66,7 +66,7 @@ public class IndentingXMLWriter extends XMLWriter {
             indent();
         }
         super.startElement(namespaceURI, localName, qname);
-        level++;
+        addIndent();
         afterTag = true;
         sameline = true;
     }
@@ -80,7 +80,7 @@ public class IndentingXMLWriter extends XMLWriter {
             indent();
         }
         super.startElement(qname);
-        level++;
+        addIndent();
         afterTag = true;
         sameline = true;
     }
@@ -90,10 +90,7 @@ public class IndentingXMLWriter extends XMLWriter {
      */
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
-        level--;
-        if (afterTag && !sameline && !isInlineTag(namespaceURI, localName)){
-            indent();
-        }
+        endIndent(namespaceURI, localName);
         super.endElement(namespaceURI, localName, qname);
         sameline = false;
         afterTag = true;
@@ -104,10 +101,7 @@ public class IndentingXMLWriter extends XMLWriter {
      */
     @Override
     public void endElement(final QName qname) throws TransformerException {
-        level--;
-        if (afterTag && !sameline && !isInlineTag(qname.getNamespaceURI(), qname.getLocalPart())){
-            indent();
-        }
+        endIndent(qname.getNamespaceURI(), qname.getLocalPart());
         super.endElement(qname);
         sameline = false;
         afterTag = true;
@@ -197,6 +191,17 @@ public class IndentingXMLWriter extends XMLWriter {
         super.characters("\n");
         super.characters(indentChars.subSequence(0, spaces));
         sameline = false;
+    }
+
+    protected void addIndent() {
+        level++;
+    }
+
+    protected void endIndent(String namespaceURI, String localName) throws TransformerException {
+        level--;
+        if (afterTag && !sameline && !isInlineTag(namespaceURI, localName)){
+            indent();
+        }
     }
 
     protected static boolean isWhiteSpace(final char ch) {
