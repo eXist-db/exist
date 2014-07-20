@@ -196,9 +196,9 @@ public class TEXTWriter extends XMLWriter {
     protected void writeDoctype(final String rootElement) throws TransformerException {
         // empty
     }
-    
-    private void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
-        
+
+    @Override
+    protected void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
         final int len = s.length();
         writeCharSeq(s, 0, len);
     }
