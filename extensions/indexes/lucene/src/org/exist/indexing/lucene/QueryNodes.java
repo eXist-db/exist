@@ -195,8 +195,6 @@ public class QueryNodes {
 
 		BinaryDocValues nodeIdValues;
 
-		byte[] buf = new byte[1024];
-
 		Database db;
 		LuceneIndexWorker worker;
 		
@@ -249,7 +247,7 @@ public class QueryNodes {
 		@Override
 		public void collect(int doc) {
             //in some cases can be null
-            if (this.docIdValues == null || this.nodeIdValues == null) return;
+            if (this.docIdValues == null) return;
 
 		    if (maxHits > 0 && totalHits > maxHits) {
 		        return;
@@ -266,11 +264,15 @@ public class QueryNodes {
 				// XXX: understand: check permissions here? No, it may slowdown,
 				// better to check final set
 
-				//BytesRef ref = new BytesRef(buf);
-                BytesRef ref = this.nodeIdValues.get(doc); //, ref);
-				int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
-				NodeId nodeId = db.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
-				// LOG.info("doc: " + docId + "; node: " + nodeId.toString() + "; units: " + units);
+                NodeId nodeId;
+                if (this.nodeIdValues == null) {
+                    nodeId = NodeId.DOCUMENT_NODE;
+                } else {
+                    BytesRef ref = this.nodeIdValues.get(doc); //, ref);
+                    int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
+                    nodeId = db.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+                    // LOG.info("doc: " + docId + "; node: " + nodeId.toString() + "; units: " + units);
+                }
 
 				collect(doc, storedDocument, nodeId, score);
 
@@ -315,8 +317,6 @@ public class QueryNodes {
 	private static class ComparatorCollector extends QueryFacetCollector {
 
         BinaryDocValues nodeIdValues;
-
-        byte[] buf = new byte[1024];
 
         Database db;
         LuceneIndexWorker worker;
@@ -399,7 +399,7 @@ public class QueryNodes {
 
 		@Override
 		public void collect(int doc) {
-		    if (this.nodeIdValues == null || this.docIdValues == null) return;
+		    if (this.docIdValues == null) return;
 
 			try {
 				final float score = scorer.score();
@@ -534,9 +534,11 @@ public class QueryNodes {
 		}
 		
 		private NodeId getNodeId(int doc) {
-			//BytesRef ref = new BytesRef(buf);
+            if (this.nodeIdValues == null) {
+                return NodeId.DOCUMENT_NODE;
+            }
 
-            BytesRef ref = this.nodeIdValues.get(doc); //, ref);
+            BytesRef ref = this.nodeIdValues.get(doc);
 			int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
 			return db.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
 		}
