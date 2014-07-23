@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2001-2014 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,13 +17,13 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id$
  */
 package org.exist.jetty;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.SocketException;
 import java.util.Observable;
 import java.util.Observer;
@@ -34,6 +34,7 @@ import javax.servlet.Servlet;
 
 import org.apache.log4j.Logger;
 
+import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -43,6 +44,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.component.LifeCycle;
+import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.xml.XmlConfiguration;
 
 import org.exist.SystemProperties;
@@ -131,8 +133,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 + SystemProperties.getInstance().getSystemProperty("product-build", "unknown") + "]");
         logger.info("[eXist Home : " 
                 + SystemProperties.getInstance().getSystemProperty("exist.home", "unknown") + "]");
-        logger.info("[SVN Revision : " 
-                + SystemProperties.getInstance().getSystemProperty("svn-revision", "unknown") + "]");
+        logger.info("[Git commmit : " 
+                + SystemProperties.getInstance().getSystemProperty("git-commit", "unknown") + "]");
         
         logger.info("[Operating System : " 
                 + System.getProperty("os.name") + " " 
@@ -177,6 +179,11 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         final Server server;
         try {
             server = new Server();
+            MBeanContainer mBeanContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+            server.getContainer().addEventListener(mBeanContainer);
+            server.addBean(mBeanContainer);
+            server.addBean(Log.getLog());
+
             final InputStream is = new FileInputStream(args[0]);
             final XmlConfiguration configuration = new XmlConfiguration(is);
             configuration.configure(server);

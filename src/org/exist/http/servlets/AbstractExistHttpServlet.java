@@ -101,11 +101,22 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
             if(confFile == null) {
                 confFile = "conf.xml";
             }
-            
-            dbHome = (dbHome == null) ? config.getServletContext().getRealPath(".") : config.getServletContext().getRealPath(dbHome);
+
+            if (dbHome == null) {
+                dbHome = config.getServletContext().getRealPath("/");
+            } else {
+                dbHome = config.getServletContext().getRealPath(dbHome);
+                if (dbHome == null) {
+                    // tomcat 8 workaround: returns null on getRealPath("WEB-INF").
+                    // try to detect it differently:
+                    String dir = config.getServletContext().getRealPath("/");
+                    if (dir != null) {
+                        dbHome = new File(dir, "WEB-INF").getAbsolutePath();
+                    }
+                }
+            }
             getLog().info("EXistServlet: exist.home=" + dbHome);
 
-            
             final File f = new File(dbHome + File.separator + confFile);
             getLog().info("Reading configuration from " + f.getAbsolutePath());
             if (!f.canRead()) {

@@ -295,13 +295,15 @@ public class LocationStep extends Step {
 				contextStep = contextInfo.getContextStep();
 				if (contextStep instanceof LocationStep) {
 					final LocationStep cStep = (LocationStep) contextStep;
-					
-					if (!Type.subTypeOf(getTest().getType(), cStep.getTest().getType()))
+
+                    // WM: the following checks will only work on simple filters like //a[self::b], so we
+                    // have to make sure they are not applied to more complex expression types
+					if (parent.getSubExpressionCount() == 1 && !Type.subTypeOf(getTest().getType(), cStep.getTest().getType()))
 						{throw new XPathException(this, 
 								ErrorCodes.XPST0005, "Got nothing from self::"+getTest()+", because parent node kind "+Type.getTypeName(cStep.getTest().getType()));}
 					
-					if (!cStep.getTest().isWildcardTest() && cStep.getTest() != getTest())
-						{throw new XPathException(this, 
+					if (parent.getSubExpressionCount() == 1 && !(cStep.getTest().isWildcardTest() || getTest().isWildcardTest()) && !cStep.getTest().equals(getTest()))
+						{throw new XPathException(this,
 								ErrorCodes.XPST0005, "Self::"+getTest()+" called on set of nodes which do not contain any nodes of this name.");}
 				}
 			}
@@ -568,7 +570,7 @@ public class LocationStep extends Step {
 						"Using structural index '" + index.toString() + "'");}
 			final NodeSelector selector = new SelfSelector(contextSet, contextId);
 			return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-					.getName(), selector);
+					.getName(), selector, this);
 		}
 	}
 
@@ -616,8 +618,7 @@ public class LocationStep extends Step {
 								"Using structural index '" + index.toString()
 										+ "'");}
 					// TODO : why a null selector here ? We have one below !
-					currentSet = index.findElementsByTagName(
-							ElementValue.ATTRIBUTE, docs, test.getName(), null);
+					currentSet = index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), null, this);
 					currentDocs = docs;
 					registerUpdateListener();
 				}
@@ -643,7 +644,7 @@ public class LocationStep extends Step {
 			if (!contextSet.getProcessInReverseOrder()) {
 				return index.findDescendantsByTagName(ElementValue.ATTRIBUTE,
 						test.getName(), axis, docs, contextSet,
-						contextId);
+						contextId, this);
 			} else {
 				NodeSelector selector;
 				switch (axis) {
@@ -657,8 +658,7 @@ public class LocationStep extends Step {
 					throw new IllegalArgumentException(
 							"Unsupported axis specified");
 				}
-				return index.findElementsByTagName(ElementValue.ATTRIBUTE,
-						docs, test.getName(), selector);
+				return index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), selector, this);
 			}
 		}
 	}
@@ -721,7 +721,7 @@ public class LocationStep extends Step {
 								"Using structural index '" + index.toString()
 										+ "'");}
 					currentSet = index.findElementsByTagName(
-							ElementValue.ELEMENT, docs, test.getName(), null);
+							ElementValue.ELEMENT, docs, test.getName(), null, this);
 					currentDocs = docs;
 					registerUpdateListener();
 				}
@@ -739,13 +739,13 @@ public class LocationStep extends Step {
 					contextSet.getLength() < INDEX_SCAN_THRESHOLD) {
 				return index.findDescendantsByTagName(ElementValue.ELEMENT,
 						test.getName(), axis, docs, contextSet,
-						contextId);
+						contextId, parent);
 			} else {
 				// if (contextSet instanceof VirtualNodeSet)
 				// ((VirtualNodeSet)contextSet).realize();
 				final NodeSelector selector = new ChildSelector(contextSet, contextId);
 				return index.findElementsByTagName(ElementValue.ELEMENT, docs,
-						test.getName(), selector);
+						test.getName(), selector, this);
 			}
 		}
 	}
@@ -795,7 +795,7 @@ public class LocationStep extends Step {
 								"Using structural index '" + index.toString()
 										+ "'");}
 					currentSet = index.findElementsByTagName(
-							ElementValue.ELEMENT, docs, test.getName(), null);
+							ElementValue.ELEMENT, docs, test.getName(), null, this);
 					currentDocs = docs;
 					registerUpdateListener();
 				}
@@ -824,7 +824,7 @@ public class LocationStep extends Step {
 			if (!contextSet.getProcessInReverseOrder() && (contextSet instanceof VirtualNodeSet || contextSet.getLength() < INDEX_SCAN_THRESHOLD)) {
 				return index.findDescendantsByTagName(ElementValue.ELEMENT,
 						test.getName(), axis, docs, contextSet,
-						contextId);
+						contextId, this);
 			} else {
 				NodeSelector selector;
 				switch (axis) {
@@ -840,7 +840,7 @@ public class LocationStep extends Step {
 							"Unsupported axis specified");
 				}
 				return index.findElementsByTagName(ElementValue.ELEMENT, docs,
-						test.getName(), selector);
+						test.getName(), selector, this);
 			}
 
 		}
@@ -915,7 +915,7 @@ public class LocationStep extends Step {
 								"Using structural index '" + index.toString()
 										+ "'");}
 					currentSet = index.findElementsByTagName(
-							ElementValue.ELEMENT, docs, test.getName(), null);
+							ElementValue.ELEMENT, docs, test.getName(), null, this);
 					currentDocs = docs;
 					registerUpdateListener();
 				}
@@ -1050,7 +1050,7 @@ public class LocationStep extends Step {
 								"Using structural index '" + index.toString()
 										+ "'");}
 					currentSet = index.findElementsByTagName(
-							ElementValue.ELEMENT, docs, test.getName(), null);
+							ElementValue.ELEMENT, docs, test.getName(), null, this);
 					currentDocs = docs;
 					registerUpdateListener();
 				}
@@ -1146,7 +1146,7 @@ public class LocationStep extends Step {
 								"Using structural index '" + index.toString()
 										+ "'");}
 					currentSet = index.findElementsByTagName(
-							ElementValue.ELEMENT, docs, test.getName(), null);
+							ElementValue.ELEMENT, docs, test.getName(), null, this);
 					currentDocs = docs;
 					registerUpdateListener();
 				}
@@ -1248,8 +1248,7 @@ public class LocationStep extends Step {
 								"OPTIMIZATION",
 								"Using structural index '" + index.toString()
 										+ "'");}
-					currentSet = index.findElementsByTagName(
-							ElementValue.ELEMENT, docs, test.getName(), null);
+					currentSet = index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null, this);
 					currentDocs = docs;
 					registerUpdateListener();
 				}
@@ -1320,7 +1319,7 @@ public class LocationStep extends Step {
 								"Using structural index '" + index.toString()
 										+ "'");}
 					currentSet = index.findElementsByTagName(
-							ElementValue.ELEMENT, docs, test.getName(), null);
+							ElementValue.ELEMENT, docs, test.getName(), null, this);
 					currentDocs = docs;
 					registerUpdateListener();
 				}
@@ -1906,7 +1905,7 @@ public class LocationStep extends Step {
 										+ "'");}
 					// TODO : why a null selector here ? We have one below !
 					currentSet = index.findElementsByTagName(
-							ElementValue.ATTRIBUTE, docs, test.getName(), null);
+							ElementValue.ATTRIBUTE, docs, test.getName(), null, this);
 					currentDocs = docs;
 					registerUpdateListener();
 				}

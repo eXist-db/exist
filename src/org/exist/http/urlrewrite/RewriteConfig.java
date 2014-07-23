@@ -125,7 +125,7 @@ public class RewriteConfig {
     public synchronized URLRewrite lookup(HttpServletRequest request) throws ServletException {
         final String path = request.getRequestURI().substring(request.getContextPath().length());
         
-        return lookup(path, request.getServerName(), false);
+        return lookup(path, request.getServerName(), false, null);
     }
 
     /**
@@ -137,7 +137,7 @@ public class RewriteConfig {
      * @return the URLRewrite instance for the mapping or null if none was found
      * @throws ServletException
      */
-    public synchronized URLRewrite lookup(String path, String serverName, boolean staticMapping) throws ServletException {
+    public synchronized URLRewrite lookup(String path, String serverName, boolean staticMapping, URLRewrite copyFrom) throws ServletException {
         final int p = path.lastIndexOf(';');
         if(p != Constants.STRING_NOT_FOUND)
             {path = path.substring(0, p);}
@@ -145,8 +145,11 @@ public class RewriteConfig {
             final Mapping m = mappings.get(i);
             final String matchedString = m.match(path);
             if (matchedString != null) {
-                final URLRewrite action = m.action;
-                
+                final URLRewrite action = m.action.copy();
+                if (copyFrom != null) {
+                    action.copyFrom(copyFrom);
+                }
+
                 /*
                  * If the URLRewrite is a ControllerForward, then test to see if there is a condition
                  * on the server name.  If there is a condition on the server name and the names do not
@@ -197,7 +200,7 @@ public class RewriteConfig {
             }
         } else {
             try {
-                final File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("."));
+                final File d = new File(urlRewrite.getConfig().getServletContext().getRealPath("/"));
                 final File configFile = new File(d, controllerConfig);
                 if (configFile.canRead()) {
                     final Document doc = parseConfig(configFile);

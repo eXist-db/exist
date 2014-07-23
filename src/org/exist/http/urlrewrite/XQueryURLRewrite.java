@@ -549,7 +549,7 @@ public class XQueryURLRewrite extends HttpServlet {
     protected void doRewrite(URLRewrite action, RequestWrapper request, HttpServletResponse response) throws IOException, ServletException {
         if (action.getTarget() != null && !(action instanceof Redirect)) {
             final String uri = action.resolve(request);
-            URLRewrite staticRewrite = rewriteConfig.lookup(uri, request.getServerName(), true);
+            URLRewrite staticRewrite = rewriteConfig.lookup(uri, request.getServerName(), true, action);
 
             if (staticRewrite != null) {
                 staticRewrite.copyFrom(action);
@@ -662,7 +662,7 @@ public class XQueryURLRewrite extends HttpServlet {
     }
     
     private SourceInfo getSourceInfo(DBBroker broker, RequestWrapper request, URLRewrite staticRewrite) throws ServletException {
-        final String moduleLoadPath = config.getServletContext().getRealPath(".");
+        final String moduleLoadPath = config.getServletContext().getRealPath("/");
         final String basePath = staticRewrite == null ? "." : staticRewrite.getTarget();
         if (basePath == null) {
             return getSource(broker, moduleLoadPath);

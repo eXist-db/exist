@@ -134,6 +134,7 @@ public class NGramSearch extends Function implements Optimizable {
 
     @Override
     public void setArguments(List<Expression> arguments) throws XPathException {
+        steps.clear();
         Expression path = arguments.get(0);
         steps.add(path);
 

@@ -170,14 +170,7 @@ public class DynamicNameCheck extends AbstractExpression {
     }
 
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("dynamic-name-check");
-        result.append("["); 
-        result.append(Type.getTypeName(test.nodeType));
-        result.append(", "); 
-        result.append(expression.toString());
-        result.append("]");
-        return result.toString();
+        return expression.toString();
     }
 
     public void setContextDocSet(DocumentSet contextSet) {

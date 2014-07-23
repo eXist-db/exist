@@ -660,8 +660,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (addressValues != null) {
                 //BytesRef ref = new BytesRef(buf);
                 BytesRef ref = addressValues.get(doc); //, ref);
-                final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
-                storedNode.setInternalAddress(address);
+                if (ref.offset < ref.bytes.length) {
+                    final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
+                    storedNode.setInternalAddress(address);
+                }
             }
         }
 
@@ -945,7 +947,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexReader reader = null;
         try {
             reader = index.getReader();
-            scan(docs, null, null, start, max, map, reader, field);
+            scan(docs, null, start, null, max, map, reader, field);
         } catch (IOException e) {
             LOG.warn("Error while scanning lucene index entries: " + e.getMessage(), e);
         } finally {

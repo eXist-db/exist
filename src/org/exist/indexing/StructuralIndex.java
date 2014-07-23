@@ -23,6 +23,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.NodeTest;
 
@@ -43,8 +44,13 @@ public interface StructuralIndex {
 
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector);
 
+    public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector, Expression parent);
+
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis,
         DocumentSet docs, NodeSet contextSet,  int contextId);
+
+    public NodeSet findDescendantsByTagName(byte type, QName qname, int axis,
+                                            DocumentSet docs, NodeSet contextSet,  int contextId, Expression parent);
 
     public NodeSet findAncestorsByTagName(byte type, QName qname, int axis,
             DocumentSet docs, NodeSet contextSet, int contextId);

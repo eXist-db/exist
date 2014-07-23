@@ -83,9 +83,13 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      * @return nodeset
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
+        return findElementsByTagName(type, docs, qname, selector, null);
+    }
+
+    public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector, Expression parent) {
         final Lock lock = index.btree.getLock();
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
-        final FindElementsCallback callback = new FindElementsCallback(type, result, docs, selector);
+        final FindElementsCallback callback = new FindElementsCallback(type, result, docs, selector, parent);
         // scan the document set to find document id ranges to query
         final List<Range> ranges = new ArrayList<Range>();
         Range next = null;
@@ -146,9 +150,13 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      * the index.
      */
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet, int contextId) {
+        return findDescendantsByTagName(type, qname, axis, docs, contextSet, contextId, null);
+    }
+
+    public NodeSet findDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet, int contextId, Expression parent) {
         final Lock lock = index.btree.getLock();
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
-        final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, result);
+        final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, result, parent);
         try {
             lock.acquire(Lock.READ_LOCK);
             for (final NodeProxy ancestor : contextSet) {
@@ -228,7 +236,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     		NodeSet contextSet, int contextId) {
         final Lock lock = index.btree.getLock();
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
-        final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, useSelfAsContext, result);
+        final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, useSelfAsContext, result, null);
         for (final NodeProxy ancestor : contextSet) {
             final DocumentImpl doc = ancestor.getDocument();
             final NodeId ancestorId = ancestor.getNodeId();
@@ -269,15 +277,20 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         DocumentSet docs;
         NewArrayNodeSet result;
         NodeSelector selector;
+        Expression parent;
 
-        FindElementsCallback(byte type, NewArrayNodeSet result, DocumentSet docs, NodeSelector selector) {
+        FindElementsCallback(byte type, NewArrayNodeSet result, DocumentSet docs, NodeSelector selector, Expression parent) {
             this.type = type;
             this.result = result;
             this.docs = docs;
             this.selector = selector;
+            this.parent = parent;
         }
 
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
+            if (parent != null) {
+                parent.getContext().proceed(parent);
+            }
             final byte[] key = value.getData();
             final NodeId nodeId = readNodeId(key, pointer);
             final DocumentImpl doc = docs.getDoc(readDocId(key));
@@ -307,17 +320,19 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         int contextId;
         NewArrayNodeSet result;
         boolean selfAsContext = false;
+        Expression parent;
 
-        FindDescendantsCallback(byte type, int axis, int contextId, NewArrayNodeSet result) {
-        	this(type, axis, contextId, false, result);
+        FindDescendantsCallback(byte type, int axis, int contextId, NewArrayNodeSet result, Expression parent) {
+        	this(type, axis, contextId, false, result, parent);
         };
         
-        FindDescendantsCallback(byte type, int axis, int contextId, boolean selfAsContext, NewArrayNodeSet result) {
+        FindDescendantsCallback(byte type, int axis, int contextId, boolean selfAsContext, NewArrayNodeSet result, Expression parent) {
             this.type = type;
             this.axis = axis;
             this.contextId = contextId;
             this.result = result;
             this.selfAsContext = selfAsContext;
+            this.parent = parent;
         }
 
         void setAncestor(DocumentImpl doc, NodeProxy ancestor) {
@@ -326,6 +341,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         }
 
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
+            if (parent != null) {
+                parent.getContext().proceed(parent);
+            }
             final NodeId nodeId = readNodeId(value.getData(), pointer);
 
             boolean match = axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS;

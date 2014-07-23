@@ -38,18 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.IntrospectionException;
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanException;
-import javax.management.MBeanInfo;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerConnection;
-import javax.management.MBeanServerFactory;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
+import javax.management.*;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.TabularData;
@@ -102,6 +91,10 @@ public class JMXtoXML {
             CATEGORIES.put("processes", new ObjectName[]{new ObjectName("org.exist.management.*:type=ProcessReport")});
             CATEGORIES.put("sanity", new ObjectName[]{new ObjectName("org.exist.management.*.tasks:type=SanityReport")});
 
+            // Jetty
+            CATEGORIES.put("jetty.threads", new ObjectName[] { new ObjectName("org.eclipse.jetty.util.thread:type=queuedthreadpool,id=0")});
+            CATEGORIES.put("jetty.nio", new ObjectName[] { new ObjectName("org.eclipse.jetty.server.nio:type=selectchannelconnector,id=0")});
+
             // Special case: all data
             CATEGORIES.put("all", new ObjectName[]{new ObjectName("org.exist.*:*"), new ObjectName("java.lang:*")});
 
@@ -124,11 +117,19 @@ public class JMXtoXML {
 
     public final static QName JMX_ELEMENT = new QName("jmx", JMX_NAMESPACE, JMX_PREFIX);
 
+    public final static QName JMX_RESULT = new QName("result", JMX_NAMESPACE, JMX_PREFIX);
+
+    private static final QName JMX_RESULT_TYPE_ATTR = new QName("class", JMX_NAMESPACE, JMX_PREFIX);
+
     private static final QName JMX_CONNECTION_ATTR = new QName("connection");
 
     private static final QName JMX_ERROR = new QName("error", JMX_NAMESPACE, JMX_PREFIX);
 
+    private static final QName VERSION_ATTR = new QName("version");
+
     public static final long PING_TIMEOUT = -99;
+
+    public static final int VERSION = 1;
 
     private final MBeanServerConnection platformConnection = ManagementFactory.getPlatformMBeanServer();
     private MBeanServerConnection connection;
@@ -248,6 +249,7 @@ public class JMXtoXML {
             builder.startDocument();
 
             builder.startElement(JMX_ELEMENT, null);
+            builder.addAttribute(VERSION_ATTR, Integer.toString(VERSION));
             if (url != null) {
                 builder.addAttribute(JMX_CONNECTION_ATTR, url.toString());
             }
@@ -285,6 +287,59 @@ public class JMXtoXML {
         }
     }
 
+    public Element invoke(String objectName, String operation, String[] args) throws InstanceNotFoundException, MalformedObjectNameException, MBeanException, IOException, ReflectionException, IntrospectionException {
+        ObjectName name = new ObjectName(objectName);
+        MBeanServerConnection conn = connection;
+        MBeanInfo info;
+        try {
+            info = conn.getMBeanInfo(name);
+        } catch (InstanceNotFoundException e) {
+            conn = platformConnection;
+            info = conn.getMBeanInfo(name);
+        }
+        MBeanOperationInfo[] operations = info.getOperations();
+        for (MBeanOperationInfo op: operations) {
+            if (operation.equals(op.getName())) {
+                MBeanParameterInfo[] sig = op.getSignature();
+                Object[] params = new Object[sig.length];
+                String[] types = new String[sig.length];
+                for (int i = 0; i < sig.length; i++) {
+                    String type = sig[i].getType();
+                    types[i] = type;
+                    params[i] = mapParameter(type, args[i]);
+                }
+                Object result = conn.invoke(name, operation, params, types);
+
+                final MemTreeBuilder builder = new MemTreeBuilder();
+
+                try {
+                    builder.startDocument();
+
+                    builder.startElement(JMX_ELEMENT, null);
+                    builder.addAttribute(VERSION_ATTR, Integer.toString(VERSION));
+                    if (url != null) {
+                        builder.addAttribute(JMX_CONNECTION_ATTR, url.toString());
+                    }
+
+                    builder.startElement(JMX_RESULT, null);
+                    builder.addAttribute(JMX_RESULT_TYPE_ATTR, op.getReturnType());
+                    serializeObject(builder, result);
+                    builder.endElement();
+
+                    builder.endElement();
+
+                    builder.endDocument();
+
+                } catch (final Exception e) {
+                    e.printStackTrace();
+                    LOG.warn("Could not generate XML report from JMX: " + e.getMessage());
+                }
+                return (Element) builder.getDocument().getNode(1);
+            }
+        }
+        return null;
+    }
+
     private void queryMBeans(MemTreeBuilder builder, ObjectName query)
             throws IOException, InstanceNotFoundException, IntrospectionException, ReflectionException,
             SAXException, AttributeNotFoundException, MBeanException, MalformedObjectNameException, NullPointerException {
@@ -300,7 +355,6 @@ public class JMXtoXML {
 
         for (final ObjectName name : beans) {
             final MBeanInfo info = conn.getMBeanInfo(name);
-
             String className = info.getClassName();
             final int p = className.lastIndexOf('.');
             if (p > -1 && p + 1 < className.length()) {
@@ -378,6 +432,22 @@ public class JMXtoXML {
                 builder.endElement();
             }
             builder.endElement();
+        }
+    }
+
+    private Object mapParameter(String type, String value) {
+        if (type.equals("int") || type.equals(Integer.class.getName())) {
+            return Integer.parseInt(value);
+        } else if (type.equals("long") || type.equals(Long.class.getName())) {
+            return Long.parseLong(value);
+        } else if (type.equals("float") || type.equals(Float.class.getName())) {
+            return Float.parseFloat(value);
+        } else if (type.equals("double") || type.equals(Double.class.getName())) {
+            return Double.parseDouble(value);
+        } else if (type.equals("boolean") || type.equals(Boolean.class.getName())) {
+            return Boolean.parseBoolean(value);
+        } else {
+            return value;
         }
     }
 

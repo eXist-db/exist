@@ -578,18 +578,18 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private void indexText(NodeId nodeId, QName qname, String text) {
-        String[] ngram = tokenize(text);
-        int len = ngram.length;
-        for (int i = 0; i < len; i++) {
-            int offset = text.offsetByCodePoints(0, i);
-            QNameTerm key = new QNameTerm(qname, ngram[i]);
+        final String[] ngram = tokenize(text);
+        final int len = text.length();
+        for (int i = 0, j = 0, cp; i < len; i += Character.charCount(cp), j++) {
+            cp = text.codePointAt(i);
+            final QNameTerm key = new QNameTerm(qname, ngram[j]);
             OccurrenceList list = ngrams.get(key);
             if (list == null) {
                 list = new OccurrenceList();
-                list.add(nodeId, offset);
+                list.add(nodeId, i);
                 ngrams.put(key, list);
             } else {
-                list.add(nodeId, offset);
+                list.add(nodeId, i);
             }
         }
     }

@@ -780,7 +780,7 @@ public class DocumentImpl extends NodeImpl implements Resource, Document, Docume
             docs.add(this);
             final NodeProxy p = new NodeProxy(this, root.getNodeId(), root.getInternalAddress());
             final NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
-            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
+            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector, null);
         } catch (final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
         } finally {
@@ -999,7 +999,7 @@ public class DocumentImpl extends NodeImpl implements Resource, Document, Docume
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
             final QName qname = new QName(localName, namespaceURI, null);
-            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null);
+            return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null, null);
         } catch (final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
             //TODO : throw exception ?

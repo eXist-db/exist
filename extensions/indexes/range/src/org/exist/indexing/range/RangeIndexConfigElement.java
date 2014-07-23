@@ -262,8 +262,11 @@ public class RangeIndexConfigElement {
     }
 
     public boolean match(NodePath other) {
-        if (isQNameIndex)
-            return other.getLastComponent().equalsSimple(path.getLastComponent());
+        if (isQNameIndex) {
+            final QName qn1 = path.getLastComponent();
+            final QName qn2 = other.getLastComponent();
+            return qn1.getNameType() == qn2.getNameType() && qn2.equalsSimple(qn1);
+        }
         return other.match(path);
     }
 
