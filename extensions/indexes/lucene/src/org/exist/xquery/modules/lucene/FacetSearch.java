@@ -155,7 +155,7 @@ public class FacetSearch extends BasicFunction {
         NodeImpl report = null;
         try {
             // Only match documents that match these URLs 
-            List<String> toBeMatchedURIs = new ArrayList<String>();
+            List<String> toBeMatchedURIs = new ArrayList<>();
 
             Sequence pathSeq = getSignature() == signatures[0] ? args[0] : contextSequence;
             if (pathSeq == null)
@@ -213,9 +213,31 @@ public class FacetSearch extends BasicFunction {
             Sort sortCriteria) throws XPathException {
         
     	final DBBroker broker = context.getBroker();
-    	
+
+        MutableDocumentSet docs = new DefaultDocumentSet(1031);
+        try {
+            for (String uri : toBeMatchedURIs) {
+                XmldbURI url = XmldbURI.xmldbUriFor(uri);
+                Collection col = broker.getCollection(url);
+                if (col != null) {
+                    col.allDocs(broker, docs, true);
+                } else {
+                    col = broker.getCollection(url.removeLastSegment());
+
+                    if (col != null) {
+                        DocumentImpl doc = col.getDocument(broker, url.lastSegment());
+                        if (doc != null)
+                            docs.add(doc);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            LuceneIndexWorker.LOG.error(ex.getMessage(), ex);
+            throw new XPathException(this, ex);
+        }
+
     	final IndexController indexController = broker.getIndexController();
-    	
+
         // Get the lucene worker
         final LuceneIndexWorker indexWorker = 
         		(LuceneIndexWorker) indexController.getWorkerByIndexId(LuceneIndex.ID);
@@ -234,31 +256,8 @@ public class FacetSearch extends BasicFunction {
 
             final Set<String> fieldsToLoad = new HashSet<>();
             
-            final QueryParser parser;
-            if (queryText.startsWith("ALL:")) {
-            	
-            	Database db = index.getDatabase();
-            	
-            	List<QName> qnames = indexWorker.getDefinedIndexes(null);
-            	
-            	String[] names = new String[qnames.size()];
-            	
-            	int i = 0;
-            	for (QName qname : qnames) {
-            		final String field = LuceneUtil.encodeQName(qname, db.getSymbols());
-            		
-            		names[i++] = field;
-            		fieldsToLoad.add(field);
-            	}
-            	
-            	parser = new MultiFieldQueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, names, searchAnalyzer);
-            
-            	queryText = queryText.substring(4);
-            } else {
-                // Setup query Version, default field, analyzer
-                parser = new QueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, "", searchAnalyzer);
-            }
-            
+            final QueryParser parser = new QueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, "", searchAnalyzer);
+
             final Query query = parser.parse(queryText);
                        
             final MemTreeBuilder builder = new MemTreeBuilder();
@@ -268,23 +267,6 @@ public class FacetSearch extends BasicFunction {
             final int nodeNr = builder.startElement("", "results", "results", null);
             
             builder.namespaceNode("exist", "http://exist.sourceforge.net/NS/exist");
-            
-            MutableDocumentSet docs = new DefaultDocumentSet(1031);
-            for (String uri : toBeMatchedURIs) {
-                XmldbURI url = XmldbURI.xmldbUriFor(uri);
-            	Collection col = broker.getCollection(url);
-            	if (col != null) {
-            		col.allDocs(broker, docs, true);
-            	} else {
-                    col = broker.getCollection(url.removeLastSegment());
-
-                    if (col != null) {
-                        DocumentImpl doc = col.getDocument(broker, url.lastSegment());
-                        if (doc != null)
-                            docs.add(doc);
-            		}
-            	}
-            }
             
             QName bq = null;
             
