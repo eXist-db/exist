@@ -42,7 +42,11 @@ public class ZipModule extends AbstractInternalModule {
         new FunctionDef(ZipEntryFunctions.signatures[0], ZipEntryFunctions.class),
         new FunctionDef(ZipEntryFunctions.signatures[1], ZipEntryFunctions.class),
         new FunctionDef(ZipEntryFunctions.signatures[2], ZipEntryFunctions.class),
-        new FunctionDef(ZipEntryFunctions.signatures[3], ZipEntryFunctions.class)
+        new FunctionDef(ZipEntryFunctions.signatures[3], ZipEntryFunctions.class),
+        new FunctionDef(ZipFileFunctions.signatures[0], ZipFileFunctions.class),
+        new FunctionDef(ZipFileFunctions.signatures[1], ZipFileFunctions.class)
+
+
     };
 
     public ZipModule(Map<String, List<? extends Object>> parameters) {
