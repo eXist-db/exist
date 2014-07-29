@@ -166,6 +166,44 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return (namespaceMappings.size() > 0);
     }
 
+    /**
+     * Serializes a (persistent DOM) Element to a byte array
+     *
+     * data = signature childCount nodeIdUnitsLength nodeId attributesCount localNameId namespace? prefixData?
+     *
+     * signature = 0x20 | localNameLength | hasNamespace? | isDirty?
+     *
+     * localNameLength = noContent OR intContent OR shortContent OR byteContent
+     * noContent = 0x0
+     * intContent = 0x1
+     * shortContent = 0x2
+     * byteContent = 0x3
+     *
+     * hasNamespace = 0x10
+     *
+     * isDirty = 0x8
+     *
+     * childCount = [int] (4 bytes) The number of child nodes
+     * nodeIdUnitsLength = [short] (2 bytes) The number of units of the element's NodeId
+     * nodeId = @see org.exist.numbering.DLNBase#serialize(byte[], int)
+     * attributesCount = [short] (2 bytes) The number of attributes
+     *
+     * localNameId = [int] (4 bytes) | [short] (2 bytes) | [byte] 1 byte. The Id of the element's local name from SymbolTable (symbols.dbx)
+     *
+     * namespace = namespaceUriId namespacePrefixLength elementNamespacePrefix?
+     * namespaceUriId = [short] (2 bytes) The Id of the namespace URI from SymbolTable (symbols.dbx)
+     * namespacePrefixLength = [short] (2 bytes)
+     * elementNamespacePrefix = eUtf8
+     *
+     * eUtf8 = @see org.exist.util.UTF8#encode(java.lang.String, byte[], int)
+     *
+     * prefixData = namespaceMappingsCount namespaceMapping+
+     * namespaceMappingsCount = [short] (2 bytes)
+     * namespaceMapping = namespacePrefix namespaceUriId
+     * namespacePrefix = jUtf8
+     *
+     * jUtf8 = @see java.io.DataOutputStream#writeUTF(java.lang.String)
+     */
     @Override
     public byte[] serialize() {
         if (nodeId == null)
@@ -188,6 +226,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 }
                 prefixData = bout.toByteArray();
             }
+
             final short id = symbols.getSymbol(this);
             final boolean hasNamespace = nodeName.needsNamespaceDecl();
             short nsId = 0;
