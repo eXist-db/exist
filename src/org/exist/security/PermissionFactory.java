@@ -56,9 +56,17 @@ public class PermissionFactory {
         final Subject currentSubject = sm.getDatabase().getSubject();
         final int mode = Permission.DEFAULT_RESOURCE_PERM & ~ currentSubject.getUserMask();
         
-        return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
+        return createSimpleACLPermission(currentSubject, mode);
     }
-    
+
+    private static SimpleACLPermission createSimpleACLPermission(Subject currentSubject, int mode) {
+
+        Group group = currentSubject.getDefaultGroup();
+        int groupId = (group != null) ? group.getId() : Group.UNDEFINED_ID;
+
+        return new SimpleACLPermission(sm, currentSubject.getId(), groupId, mode);
+    }
+
     /**
      * Get the Default Collection permissions for the current Subject
      * this includes incorporating their umask
@@ -70,7 +78,7 @@ public class PermissionFactory {
         final Subject currentSubject = sm.getDatabase().getSubject();
         final int mode = Permission.DEFAULT_COLLECTION_PERM & ~ currentSubject.getUserMask();
         
-        return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
+        return createSimpleACLPermission(currentSubject, mode);
     }
     
     /**
@@ -78,7 +86,7 @@ public class PermissionFactory {
      */
     public static Permission getPermission(int mode) {
         final Subject currentSubject = sm.getDatabase().getSubject();
-        return new SimpleACLPermission(sm, currentSubject.getId(), currentSubject.getDefaultGroup().getId(), mode);
+        return createSimpleACLPermission(currentSubject, mode);
     }
     
     /**
