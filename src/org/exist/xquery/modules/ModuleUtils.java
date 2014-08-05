@@ -277,6 +277,11 @@ public class ModuleUtils {
             }
 
             final SAXAdapter adapter = new SAXAdapter();
+
+            // allow multiple attributes of the same name attached to the same element
+            // to enhance resilience against bad HTML. The last attribute value wins.
+            adapter.setReplaceAttributeFlag(true);
+
             reader.setContentHandler(adapter);
             reader.parse(srcHtml);
             final Document doc = adapter.getDocument();
