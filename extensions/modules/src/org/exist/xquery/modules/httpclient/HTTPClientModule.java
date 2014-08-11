@@ -44,7 +44,8 @@ public class HTTPClientModule extends AbstractInternalModule
     public final static String         INCLUSION_DATE                 = "2007-09-06";
     public final static String         RELEASED_IN_VERSION            = "eXist-1.2";
 
-    public final static String         HTTP_MODULE_PERSISTENT_STATE = "_eXist_httpclient_module_persistent_state";
+    public final static String         HTTP_MODULE_PERSISTENT_STATE   = "_eXist_httpclient_module_persistent_state";
+    public final static String         HTTP_MODULE_PERSISTENT_OPTIONS = "_eXist_httpclient_module_persistent_options";
 
 	
     private final static FunctionDef[] functions                      = {
@@ -57,7 +58,8 @@ public class HTTPClientModule extends AbstractInternalModule
         new FunctionDef( POSTFunction.signatures[1], POSTFunction.class ),
         new FunctionDef( HEADFunction.signature, HEADFunction.class ),
         new FunctionDef( OPTIONSFunction.signature, OPTIONSFunction.class ),
-        new FunctionDef( ClearFunction.signatures[0], ClearFunction.class )
+        new FunctionDef( ClearFunction.signatures[0], ClearFunction.class ),
+        new FunctionDef( SetOptionsFunction.signatures[0], SetOptionsFunction.class)
     };
 	
 
