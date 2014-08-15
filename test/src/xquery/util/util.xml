@@ -269,7 +269,7 @@ return
     <test output="text">
         <task>util:system-property</task>
         <code>util:system-property("vendor")</code>
-        <expected>eXist Project</expected>
+        <expected>eXist-db Project</expected>
     </test>
     <test output="text">
         <task>util:system-property</task>
