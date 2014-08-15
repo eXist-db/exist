@@ -94,52 +94,58 @@ public class ParsingFunctions extends BasicFunction {
 			xmlContent = "<root>" + xmlContent + "</root>";
 		}
 		
-		final StringReader reader = new StringReader(xmlContent);		
-		final ValidationReport report = new ValidationReport();
-		final SAXAdapter adapter = new SAXAdapter(context);
-		try {
-			final SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setNamespaceAware(true);
-			final InputSource src = new InputSource(reader);
-
-			XMLReader xr = null;
-
-			if (xr == null) {
-				final SAXParser parser = factory.newSAXParser();
-				xr = parser.getXMLReader();
-			}
-
-			xr.setErrorHandler(report);
-			xr.setContentHandler(adapter);
-			xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-			xr.parse(src);
-		} catch (final ParserConfigurationException e) {
-			throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while constructing XML parser: "
-					+ e.getMessage(), args[0], e);
-		} catch (final SAXException e) {
-			logger.debug("Error while parsing XML: " + e.getMessage(), e);
-		} catch (final IOException e) {
-			throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + e.getMessage(),
-					args[0], e);
-		}
-
-		if (report.isValid()) {
-			if (isCalledAs("parse-xml-fragment")) {
-				resultSequence = new ValueSequence();
-				NodeList children = adapter.getDocument().getDocumentElement().getChildNodes();
-				for (int i = 0, il = children.getLength(); i < il; i++) {
-	                Node child = children.item(i);
-	                resultSequence.add((NodeValue)child);
-				}
-				
-				return resultSequence;
-			} else {
-				return (DocumentImpl) adapter.getDocument();	
-			}
-		} else {
-			final MemTreeBuilder builder = context.getDocumentBuilder();
-			final NodeImpl result = Shared.writeReport(report, builder);
-			throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + report.toString(), result);
-		}
+		final StringReader reader = new StringReader(xmlContent);
+        final InputSource src = new InputSource(reader);
+        
+        return parse(src, context, args);
 	}
+
+    private Sequence parse(final InputSource src, XQueryContext theContext, Sequence[] args) throws XPathException {
+        Sequence resultSequence;
+        final ValidationReport report = new ValidationReport();
+        final SAXAdapter adapter = new SAXAdapter(theContext);
+        try {
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+                      
+            XMLReader xr = null;
+            
+            if (xr == null) {
+                final SAXParser parser = factory.newSAXParser();
+                xr = parser.getXMLReader();
+            }
+            
+            xr.setErrorHandler(report);
+            xr.setContentHandler(adapter);
+            xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+            xr.parse(src);
+            
+        } catch (final ParserConfigurationException e) {
+            throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while constructing XML parser: "  + e.getMessage(), args[0], e);
+        } catch (final SAXException e) {
+            logger.debug("Error while parsing XML: " + e.getMessage(), e);
+        } catch (final IOException e) {
+            throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + e.getMessage(),
+                    args[0], e);
+        }
+        
+        if (report.isValid()) {
+            if (isCalledAs("parse-xml-fragment")) {
+                resultSequence = new ValueSequence();
+                NodeList children = adapter.getDocument().getDocumentElement().getChildNodes();
+                for (int i = 0, il = children.getLength(); i < il; i++) {
+                    Node child = children.item(i);
+                    resultSequence.add((NodeValue)child);
+                }
+                
+                return resultSequence;
+            } else {
+                return (DocumentImpl) adapter.getDocument();
+            }
+        } else {
+            final MemTreeBuilder builder = theContext.getDocumentBuilder();
+            final NodeImpl result = Shared.writeReport(report, builder);
+            throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + report.toString(), result);
+        }
+    }
 }
