@@ -369,6 +369,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 broker.flush();
             }
             transact.commit(transaction);
+            
+            // Release lock, as reported http://markmail.org/message/pau6hoaeybg2bvch 
+            doc.getUpdateLock().release(Permission.READ);
+            
             return (int) mods;
         } catch (final ParserConfigurationException e) {
             transact.abort(transaction);
