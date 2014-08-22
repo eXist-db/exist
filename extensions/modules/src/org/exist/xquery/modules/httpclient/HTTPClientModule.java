@@ -23,6 +23,9 @@ package org.exist.xquery.modules.httpclient;
 
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.httpclient.HttpConnectionManager;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -46,6 +49,7 @@ public class HTTPClientModule extends AbstractInternalModule
 
     public final static String         HTTP_MODULE_PERSISTENT_STATE = "_eXist_httpclient_module_persistent_state";
 
+    public final static HttpConnectionManager MANAGER = new MultiThreadedHttpConnectionManager();
 	
     private final static FunctionDef[] functions                      = {
         new FunctionDef( GETFunction.signatures[0], GETFunction.class ),
