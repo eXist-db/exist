@@ -95,7 +95,7 @@ public class QuartzSchedulerImpl implements Scheduler {
         defaultQuartzProperties.setProperty("org.quartz.scheduler.rmi.proxy", "false");
         defaultQuartzProperties.setProperty("org.quartz.scheduler.wrapJobExecutionInUserTransaction", "false");
         defaultQuartzProperties.setProperty("org.quartz.scheduler.skipUpdateCheck", "true");
-        defaultQuartzProperties.setProperty("org.quartz.threadPool.class", "org.quartz.threadPool.class");
+        defaultQuartzProperties.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
         defaultQuartzProperties.setProperty("org.quartz.threadPool.threadCount", "4");
         defaultQuartzProperties.setProperty("org.quartz.threadPool.threadPriority", "5");
         defaultQuartzProperties.setProperty("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", "true");
