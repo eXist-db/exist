@@ -91,7 +91,7 @@ public class SplashScreen extends JFrame implements Observer {
         getContentPane().add(statusLabel, BorderLayout.SOUTH);
         // show it
         setSize(new Dimension(icon.getIconWidth() + 40, icon.getIconHeight() + 50));
-        //pack();
+        pack();
         this.setLocationRelativeTo(null);
         setVisible(true);
     }
