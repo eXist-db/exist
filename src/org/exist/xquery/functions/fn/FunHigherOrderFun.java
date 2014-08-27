@@ -136,7 +136,7 @@ public class FunHigherOrderFun extends BasicFunction {
 			throws XPathException {
         Sequence result = new ValueSequence();
         if (isCalledAs("map")) {
-            final FunctionReference ref = (FunctionReference) args[0];
+            final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
             ref.analyze(cachedContextInfo);
             for (final SequenceIterator i = args[1].iterate(); i.hasNext(); ) {
                 final Item item = i.nextItem();
@@ -144,7 +144,7 @@ public class FunHigherOrderFun extends BasicFunction {
                 result.addAll(r);
             }
         } else if (isCalledAs("for-each")) {
-            final FunctionReference ref = (FunctionReference) args[1];
+            final FunctionReference ref = (FunctionReference) args[1].itemAt(0);
             ref.analyze(cachedContextInfo);
             for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                 final Item item = i.nextItem();
@@ -156,10 +156,10 @@ public class FunHigherOrderFun extends BasicFunction {
             Sequence seq;
             // Hack: switch parameters for backwards compatibility
             if (Type.subTypeOf(args[1].getItemType(), Type.FUNCTION_REFERENCE)) {
-                ref = (FunctionReference) args[1];
+                ref = (FunctionReference) args[1].itemAt(0);
                 seq = args[0];
             } else {
-                ref = (FunctionReference) args[0];
+                ref = (FunctionReference) args[0].itemAt(0);
                 seq = args[1];
             }
 
@@ -171,7 +171,7 @@ public class FunHigherOrderFun extends BasicFunction {
 	        		{result.add(item);}
 	        }
         } else if (isCalledAs("fold-left")) {
-            final FunctionReference ref = (FunctionReference) args[2];
+            final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
             ref.analyze(cachedContextInfo);
         	Sequence zero = args[1];
         	Sequence input = args[0];
@@ -186,7 +186,7 @@ public class FunHigherOrderFun extends BasicFunction {
         	}
         	result = zero;
         } else if (isCalledAs("fold-right")) {
-            final FunctionReference ref = (FunctionReference) args[2];
+            final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
             ref.analyze(cachedContextInfo);
         	final Sequence zero = args[1];
         	final Sequence input = args[0];
@@ -202,7 +202,7 @@ public class FunHigherOrderFun extends BasicFunction {
         		result.addAll(r);
         	}
         } else if (isCalledAs("for-each-pair")) {
-            final FunctionReference ref = (FunctionReference) args[2];
+            final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
             ref.analyze(cachedContextInfo);
             final SequenceIterator i1 = args[0].iterate();
             final SequenceIterator i2 = args[1].iterate();
