@@ -1176,7 +1176,7 @@ public class BrokerPool implements Database {
         //initialize configurations watcher trigger
         if(collection != null) {
             final CollectionConfigurationManager manager = getConfigurationManager();
-            final CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(broker, collection);
+            final CollectionConfiguration collConf = manager.getOrCreateCollectionConfiguration(this, collection);
             
             final DocumentTriggerProxy triggerProxy = new DocumentTriggerProxy(ConfigurationDocumentTrigger.class); //, collection.getURI());
             collConf.documentTriggers().add(triggerProxy);
@@ -1971,13 +1971,6 @@ public class BrokerPool implements Database {
 					} catch (final EXistException e) {
 	                    LOG.warn("Error during plugin manager shutdown: " + e.getMessage(), e);
 					}
-                
-                // closing down external indexes
-                try {
-                    indexManager.shutdown();
-                } catch (final DBException e) {
-                    LOG.warn("Error during index shutdown: " + e.getMessage(), e);
-                }
 
                 //TODO : replace the following code by get()/release() statements ?
                 // WM: deadlock risk if not all brokers returned properly.
@@ -2001,6 +1994,16 @@ public class BrokerPool implements Database {
                     broker.setSubject(securityManager.getSystemSubject());
                     broker.shutdown();
                 }
+
+                // closing down external indexes
+                try {
+                    //XXX: bad position, down there broker.shutdown should handle index shutdown too
+                    indexManager.sync();
+                    indexManager.shutdown();
+                } catch (final DBException e) {
+                    LOG.warn("Error during index shutdown: " + e.getMessage(), e);
+                }
+
                 collectionCacheMgr.deregisterCache(collectionCache);
 
                 // do not write a checkpoint if some threads did not return before shutdown

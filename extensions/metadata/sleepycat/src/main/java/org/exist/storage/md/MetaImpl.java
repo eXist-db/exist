@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012-2013 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.storage.md;
 
@@ -76,18 +74,18 @@ public class MetaImpl implements Meta {
 	}
 
 	public Object getValue() {
-		try {
-			DocumentImpl doc = MetaData._.getDocument(value);
-			if (doc != null) return doc;
-		} catch (Exception e) {
-			//LOG
-		}
+//		try {
+//			DocumentImpl doc = MetaData._.getDocument(value);
+//			if (doc != null) return doc;
+//		} catch (Exception e) {
+//			//LOG
+//		}
 		return value;
 	}
 	
 	public void setValue(Object value) {
 		if (value instanceof DocumentImpl) {
-			this.value = MetaData._.getMetas((DocumentImpl) value).getUUID();
+			this.value = MetaData.get().getMetas((DocumentImpl) value).getUUID();
 			//TODO: set link to master doc?
 		} else
 			this.value = value.toString(); 
@@ -98,6 +96,6 @@ public class MetaImpl implements Meta {
 	}
 	
 	public void delete() {
-	    MetaDataImpl._.delMeta(object, key);
+	    MetaDataImpl.instance.delMeta(object, key);
 	}
 }

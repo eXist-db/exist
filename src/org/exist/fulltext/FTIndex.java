@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.backup.RawDataBackup;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
@@ -55,15 +56,19 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
 
     private File dataFile;
 
-    private BFile db;
+    private BFile bf;
 
     public FTIndex() {
         //Nothing to do
     }
 
+    public String getIndexId() {
+        return ID;
+    }
+
     @Override
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
-        super.configure(pool, dataDir, config);
+    public void configure(Database db, String dataDir, Element config) throws DatabaseConfigurationException {
+        super.configure(db, dataDir, config);
         String fileName = FILE_NAME;
         if (config.hasAttribute(CONFIG_ATTR_FILE))
             {fileName = config.getAttribute(CONFIG_ATTR_FILE);}
@@ -77,7 +82,7 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
         final double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
         LOG.debug("Creating '" + dataFile.getName() + "'...");
         try {
-            db = new BFile(pool, (byte)0, false, dataFile, pool.getCacheManager(),
+            bf = new BFile(getDatabase(), (byte)0, false, dataFile, getDatabase().getCacheManager(),
                 cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         } catch (final DBException e) {
             throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.getAbsolutePath() + ": " +
@@ -87,18 +92,18 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public void close() throws DBException {
-        db.close();
+        bf.close();
     }
 
     @Override
     public void sync() throws DBException {
-        db.flush();
+        bf.flush();
     }
 
     @Override
     public void remove() throws DBException {
-        db.closeAndRemove();
-        db = null;
+        bf.closeAndRemove();
+        bf = null;
     }
 
     @Override
@@ -118,12 +123,12 @@ public class FTIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public BFile getBFile() {
-        return db;
+        return bf;
     }
 
     public void backupToArchive(RawDataBackup backup) throws IOException {
-        final OutputStream os = backup.newEntry(db.getFile().getName());
-        db.backupToStream(os);
+        final OutputStream os = backup.newEntry(bf.getFile().getName());
+        bf.backupToStream(os);
         backup.closeEntry();
     }
 }

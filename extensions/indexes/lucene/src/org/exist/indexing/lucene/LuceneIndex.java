@@ -1,3 +1,22 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2014 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.indexing.lucene;
 
 import org.apache.log4j.Logger;
@@ -11,12 +30,17 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.exist.Database;
+import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.RawBackupSupport;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
@@ -32,13 +56,17 @@ import org.apache.lucene.util.Version;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     
-    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_44;
+    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_48;
 
-    private static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
+    protected static final Logger LOG = Logger.getLogger(LuceneIndexWorker.class);
 
     public final static String ID = LuceneIndex.class.getName();
 
-	private static final String DIR_NAME = "lucene";
+    private static final String DIR_NAME = "lucene";
+
+    public static final boolean DEBUG = false;
+    
+    protected SymbolTable symbols = null;
 
     protected Directory directory;
     protected Analyzer defaultAnalyzer;
@@ -49,8 +77,6 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected int writerUseCount = 0;
     protected IndexReader cachedReader = null;
     protected int readerUseCount = 0;
-    protected IndexReader cachedWritingReader = null;
-    protected int writingReaderUseCount = 0;
     protected IndexSearcher cachedSearcher = null;
     protected int searcherUseCount = 0;
     
@@ -60,13 +86,14 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected Directory taxonomyDirectory;
 
     protected TaxonomyWriter cachedTaxonomyWriter = null;
-    protected int taxonomyWriterUseCount = 0;
-
     protected TaxonomyReader cachedTaxonomyReader = null;
-    protected int taxonomyReaderUseCount = 0;
 
     public LuceneIndex() {
         //Nothing special to do
+    }
+    
+    public String getIndexId() {
+    	return ID;
     }
 
     public String getDirName() {
@@ -74,21 +101,21 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     @Override
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
-        super.configure(pool, dataDir, config);
-        if (LOG.isDebugEnabled())
-            LOG.debug("Configuring Lucene index");
+    public void configure(Database db, String dataDir, Element config) throws DatabaseConfigurationException {
+        super.configure(db, dataDir, config);
+
+        LOG.debug("Configuring Lucene index");
 
         String bufferSizeParam = config.getAttribute("buffer");
-        if (bufferSizeParam != null)
+        if (bufferSizeParam != null) {
             try {
                 bufferSize = Double.parseDouble(bufferSizeParam);
             } catch (NumberFormatException e) {
                 LOG.warn("Invalid buffer size setting for lucene index: " + bufferSizeParam, e);
             }
+        }
 
-        if (LOG.isDebugEnabled())
-            LOG.debug("Using buffer size: " + bufferSize);
+        LOG.debug("Using buffer size: " + bufferSize);
         
         NodeList nl = config.getElementsByTagName("analyzer");
         if (nl.getLength() > 0) {
@@ -96,23 +123,26 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             defaultAnalyzer = AnalyzerConfig.configureAnalyzer(node);
         }
 
-        if (defaultAnalyzer == null)
+        if (defaultAnalyzer == null) {
             defaultAnalyzer = new StandardAnalyzer(LUCENE_VERSION_IN_USE);
-        if (LOG.isDebugEnabled())
-            LOG.debug("Using default analyzer: " + defaultAnalyzer.getClass().getName());
+        }
+
+        LOG.debug("Using default analyzer: " + defaultAnalyzer.getClass().getName());
     }
 
     @Override
     public void open() throws DatabaseConfigurationException {
         File dir = new File(getDataDir(), getDirName());
-        if (LOG.isDebugEnabled())
-            LOG.debug("Opening Lucene index directory: " + dir.getAbsolutePath());
+
+        LOG.debug("Opening Lucene index directory: " + dir.getAbsolutePath());
+
         if (dir.exists()) {
             if (!dir.isDirectory())
-                throw new DatabaseConfigurationException("Lucene index location is not a directory: " +
-                    dir.getAbsolutePath());
-        } else
+                throw new DatabaseConfigurationException("Lucene index location is not a directory: " + dir.getAbsolutePath());
+        } else {
             dir.mkdirs();
+        }
+
         IndexWriter writer = null;
         try {
             directory = FSDirectory.open(dir);
@@ -121,11 +151,21 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             writer = getWriter();
             
         } catch (IOException e) {
-            throw new DatabaseConfigurationException("Exception while reading lucene index directory: " +
-                e.getMessage(), e);
+            throw new DatabaseConfigurationException("Exception while reading lucene index directory: " + e.getMessage(), e);
         } finally {
             releaseWriter(writer);
         }
+        
+        //init size must be prime
+        try {
+            symbols = new SymbolTable(1031, new File(dir, "symbols.dbx"));
+        } catch (EXistException e) {
+            throw new DatabaseConfigurationException("Symbols table can not be initialized.", e);
+        }
+    }
+    
+    public SymbolTable getSymbolTable() {
+        return symbols;
     }
 
     @Override
@@ -142,6 +182,8 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             }
             taxonomyDirectory.close();
             directory.close();
+            
+            symbols.close();
         } catch (IOException e) {
             throw new DBException("Caught exception while closing lucene indexes: " + e.getMessage());
         }
@@ -187,13 +229,6 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public synchronized IndexWriter getWriter(boolean exclusive) throws IOException {
-        while (writingReaderUseCount > 0) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                //Nothing special to do
-            }
-        }
         if (singleWriter) {
             while (writerUseCount > 0) {
                 try {
@@ -236,23 +271,24 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     protected void commit() {
-    	if (!needsCommit) {
-            return;
-        }
+    	if (!needsCommit) return;
+
         try {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Committing lucene index");
-            }
-            
+            LOG.debug("Committing lucene index");
+
         	if (cachedWriter != null) {
         	    cachedTaxonomyWriter.commit();
                 cachedWriter.commit();
+
+                LOG.debug("Commit lucene index");
             }
             needsCommit = false;
+
         } catch(CorruptIndexException cie) {
-            LOG.error("Detected corrupt Lucence index on writer release and commit: " + cie.getMessage(), cie);
+            LOG.error("Detected corrupt Lucene index on writer release and commit: " + cie.getMessage(), cie);
+
         } catch(IOException ioe) {
-            LOG.error("Detected Lucence index issue on writer release and commit: " + ioe.getMessage(), ioe);
+            LOG.error("Detected Lucene index issue on writer release and commit: " + ioe.getMessage(), ioe);
         }
     }
     
@@ -269,68 +305,21 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public synchronized void releaseReader(IndexReader reader) {
-        if (reader == null)
-            return;
+        if (reader == null) return;
         if (reader != cachedReader)
             throw new IllegalStateException("IndexReader was not obtained from getReader().");
+
         readerUseCount--;
         notifyAll();
-    }
-
-    protected synchronized IndexReader getWritingReader() throws IOException {
-        while (writerUseCount > 0) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                //Nothing special to do
-            }
-        }
-        if (cachedWriter != null) {
-        	try {
-                cachedWriter.close();
-            } catch (IOException e) {
-                LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-            } finally {
-                cachedWriter = null;
-            }
-        }
-        if (cachedWritingReader != null) {
-            writingReaderUseCount++;
-        } else {
-            cachedWritingReader = DirectoryReader.open(directory);
-            writingReaderUseCount = 1;
-        }
-        notifyAll();
-        return cachedWritingReader;
-    }
-
-    protected synchronized void releaseWritingReader(IndexReader reader) {
-        if (reader == null)
-            return;
-        if (reader != cachedWritingReader)
-            throw new IllegalStateException("IndexReader was not obtained from getWritingReader().");
-        writingReaderUseCount--;
-        if (writingReaderUseCount == 0) {
-            try {
-                cachedWritingReader.close();
-            } catch (IOException e) {
-                LOG.warn("Exception while closing lucene index: " + e.getMessage(), e);
-            } finally {
-                cachedWritingReader = null;
-            }
-        }
-        notifyAll();
-
-        waitForReadersAndReopen();
     }
 
     private void waitForReadersAndReopen() {
         while (readerUseCount > 0 || searcherUseCount > 0) {
             try {
-                // DW: feedback: ".wait invoked outside a synchronized context"
                 wait();
             } catch (InterruptedException e) {
                 //Nothing special to do
+                return;
             }
         }
         reopenReaders();
@@ -342,10 +331,10 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         try {
             cachedTaxonomyReader.close();
         	cachedReader.close();
-        	
+
         	cachedTaxonomyReader = null;
         	cachedReader = null;
-  
+
         	//XXX: understand - is it right to comment close out? ... Closed by "cachedReader.close();"?
 //        	if (cachedSearcher != null)
 //        		cachedSearcher.close();
@@ -357,10 +346,15 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     public synchronized IndexSearcher getSearcher() throws IOException {
     	commit();
+
         if (cachedSearcher != null) {
+
             searcherUseCount++;
+
         } else {
+
             cachedSearcher = new IndexSearcher(getReader());
+
             readerUseCount--;
             searcherUseCount = 1;
         }
@@ -368,21 +362,19 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public synchronized void releaseSearcher(IndexSearcher searcher) {
-        if (searcher == null)
-            return;
+        if (searcher == null) return;
         if (searcher != cachedSearcher)
             throw new IllegalStateException("IndexSearcher was not obtained from getWritingReader().");
+
         searcherUseCount--;
         notifyAll();
     }
     
-    //DirectoryTaxonomyWriter taxoWriter = new DirectoryTaxonomyWriter(taxoDir);
-    
-    public synchronized TaxonomyWriter getTaxonomyWriter() throws IOException {
+    public synchronized TaxonomyWriter getTaxonomyWriter() {
         return cachedTaxonomyWriter;
     }
 
-    public synchronized TaxonomyReader getTaxonomyReader() throws IOException {
+    public synchronized TaxonomyReader getTaxonomyReader() {
         return cachedTaxonomyReader;
     }
 
@@ -402,4 +394,18 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 		}
 	}
 	
+    
+    public LuceneConfig defineConfig(Collection col) {
+
+        CollectionConfigurationManager confManager = getDatabase().getConfigurationManager();
+
+        CollectionConfiguration colConf = confManager.getOrCreateCollectionConfiguration(getDatabase(), col);
+        IndexSpec indexConf = colConf.getIndexConfiguration();
+        
+        LuceneConfig conf = new LuceneConfig();
+        
+        indexConf.addCustomIndexSpec(this, conf);
+        
+        return conf;
+    }
 }

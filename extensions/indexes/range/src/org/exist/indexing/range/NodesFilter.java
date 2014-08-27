@@ -11,8 +11,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.NodeSetIterator;
 import org.exist.indexing.lucene.LuceneUtil;
-import org.exist.numbering.NodeId;
-import org.exist.util.ByteConversion;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -53,7 +51,7 @@ public class NodesFilter extends Filter {
                 BytesRef lowerBound = new BytesRef(LuceneUtil.createId(node.getDoc().getDocId(), node.getNodeId()));
                 BytesRef upperBound = new BytesRef(LuceneUtil.createId(node.getDoc().getDocId(), node.getNodeId().nextSibling()));
 
-                if (termsEnum.seekCeil(lowerBound, false) != TermsEnum.SeekStatus.END) {
+                if (termsEnum.seekCeil(lowerBound) != TermsEnum.SeekStatus.END) {
                     do {
                         BytesRef nextId = termsEnum.term();
                         if (nextId.compareTo(upperBound) < 0) {
@@ -71,15 +69,15 @@ public class NodesFilter extends Filter {
         }
     }
 
-    private static boolean startsWith(byte[] key, int offset, int length, byte[] prefix) {
-        if (length < prefix.length) {
-            return false;
-        }
-        for (int i = 0; i < prefix.length; i++) {
-            if (key[offset + i] != prefix[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
+//    private static boolean startsWith(byte[] key, int offset, int length, byte[] prefix) {
+//        if (length < prefix.length) {
+//            return false;
+//        }
+//        for (int i = 0; i < prefix.length; i++) {
+//            if (key[offset + i] != prefix[i]) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 }

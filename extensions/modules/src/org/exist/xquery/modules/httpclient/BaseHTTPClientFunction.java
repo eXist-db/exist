@@ -83,6 +83,7 @@ import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 
+import static org.exist.xquery.modules.httpclient.HTTPClientModule.MANAGER;
 
 /**
  * Base class for HTTP client methods
@@ -169,7 +170,7 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
         
         Sequence encodedResponse = null;
 
-        final HttpClient http = new HttpClient();
+        final HttpClient http = new HttpClient(MANAGER);
 
         FeaturesAndProperties defaultFeaturesAndProperties = (FeaturesAndProperties) context.getXQueryContextVar(HTTP_MODULE_PERSISTENT_OPTIONS);
         if (defaultFeaturesAndProperties != null) {

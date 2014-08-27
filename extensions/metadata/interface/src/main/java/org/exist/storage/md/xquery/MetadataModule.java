@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.storage.md.xquery;
 
@@ -38,11 +36,14 @@ public class MetadataModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2012-04-01";
     public final static String RELEASED_IN_VERSION = "eXist-2.0";
 
+    public final static String DEPRECATED_AFTER_2_2 = "it will removed after 2.2";
+
 	public static final FunctionDef[] functions = {
-		new FunctionDef( Reindex.signature, Reindex.class ),
+		new FunctionDef( Check.signature, Check.class ),
 
 		new FunctionDef( DocumentByPair.signatures[0], DocumentByPair.class ),
 		new FunctionDef( DocumentByUUID.signatures[0], DocumentByUUID.class ),
+
 		new FunctionDef( Keys.signatures[0], Keys.class ),
 		new FunctionDef( Keys.signatures[1], Keys.class ),
 		
@@ -59,8 +60,7 @@ public class MetadataModule extends AbstractInternalModule {
         new FunctionDef( UUID.signatures[0], UUID.class ),
 		new FunctionDef( UUID.signatures[1], UUID.class ),
 
-		new FunctionDef( Search.signatures[0], Search.class ),
-        new FunctionDef( Search.signatures[1], Search.class )
+        new FunctionDef( Reindex.signatures[0], Reindex.class )
 	};
 	
 	public MetadataModule(Map<String, List<? extends Object>> parameters) throws XPathException {

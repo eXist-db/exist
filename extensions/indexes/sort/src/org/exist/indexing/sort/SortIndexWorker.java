@@ -15,6 +15,7 @@ import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
 import org.exist.storage.lock.Lock;
 import org.exist.util.*;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
@@ -381,7 +382,19 @@ public class SortIndexWorker implements IndexWorker {
         return false;
     }
 
-    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map<?,?> hints) {
         return new Occurrences[0];
+    }
+
+	@Override
+	public void indexCollection(Collection col) {
+	}
+
+    @Override
+    public void indexBinary(BinaryDocument doc) {
+    }
+
+    @Override
+    public void removeIndex(XmldbURI url) {
     }
 }

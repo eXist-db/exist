@@ -22,6 +22,7 @@
 package org.exist.dom;
 
 import org.exist.EXistException;
+import org.exist.Resource;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.numbering.NodeId;
@@ -68,7 +69,7 @@ import java.util.Iterator;
  *  
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist, Iterable<NodeImpl> { //Comparable<DocumentImpl>, 
+public class DocumentImpl extends NodeImpl implements Resource, Document, DocumentAtExist, Iterable<NodeImpl> { //Comparable<DocumentImpl>, 
 
     public final static int UNKNOWN_DOCUMENT_ID = -1;
     

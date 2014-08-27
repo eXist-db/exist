@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.storage.md.xquery;
 
@@ -55,7 +53,7 @@ public class PairGet extends BasicFunction {
 			NAME,
 			DESCRIPTION,
 			new SequenceType[] { 
-				 new FunctionParameterSequenceType("document", Type.ITEM, Cardinality.EXACTLY_ONE, "The document."),
+				 new FunctionParameterSequenceType("resource", Type.ITEM, Cardinality.EXACTLY_ONE, "The resource or resource's url."),
 				 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key."),
 			}, 
 			RETURN
@@ -64,7 +62,7 @@ public class PairGet extends BasicFunction {
 			NAME,
 			DESCRIPTION_UUID,
 			new SequenceType[] { 
-				 new FunctionParameterSequenceType("uuid", Type.STRING, Cardinality.EXACTLY_ONE, "The key/value pair uuid."),
+				 new FunctionParameterSequenceType("uuid", Type.STRING, Cardinality.EXACTLY_ONE, "The key-value pair ID."),
 			}, 
 			RETURN
 		),
@@ -72,10 +70,11 @@ public class PairGet extends BasicFunction {
 			NAME_URL,
 			DESCRIPTION,
 			new SequenceType[] { 
-				 new FunctionParameterSequenceType("document", Type.STRING, Cardinality.EXACTLY_ONE, "The document's URL."),
+				 new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource's URL."),
 				 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key."),
 			}, 
-			RETURN
+			RETURN,
+            MetadataModule.DEPRECATED_AFTER_2_2
 		)
 	};
 
@@ -99,9 +98,11 @@ public class PairGet extends BasicFunction {
 
 			} else {
 				if (args[0] instanceof DocumentImpl) {
-					metas = MetaData.get().getMetas(((DocumentImpl)args[0]));
-					
-				} else
+                    metas = MetaData.get().getMetas(((DocumentImpl) args[0]));
+
+                } else if (args[0] instanceof XmldbURI) {
+                        metas = MetaData.get().getMetas(((DocumentImpl)args[0]));
+                } else
 					throw new XPathException(this, "Unsupported type "+args[0].getItemType());
 			}
 		

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012-2013 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.storage.md;
 
@@ -54,7 +52,7 @@ public class MetasImpl implements Metas {
 	private MetasImpl() {}
 
 	protected MetasImpl(DocumentAtExist doc) {
-		update(doc);
+		setURL(doc.getURI().toString());
 		
 		if (doc.getUUID() == null)
 			uuid = (new UUID()).toString();
@@ -63,7 +61,7 @@ public class MetasImpl implements Metas {
 	}
 	
 	protected MetasImpl(Collection col) {
-		update(col);
+		setURL(col.getURI().toString());
 		uuid = (new UUID()).toString();
 	}
 
@@ -88,38 +86,34 @@ public class MetasImpl implements Metas {
     public Meta put(String key, Object value) {
 		MetaImpl m = (MetaImpl)get(key);
 		if (m == null)
-			return MetaDataImpl._.addMeta(this, key, value);
+			return MetaDataImpl.instance.addMeta(this, key, value);
 		
 		else {
 			m.setValue(value);
 
-			MetaDataImpl._.addMeta(m);
+			MetaDataImpl.instance.addMeta(m);
 		}
-		MetaDataImpl._.indexMetas(this);
+		MetaDataImpl.instance.indexMetas(this);
 		
 		return m;
 	}
 
 	public Meta get(String key) {
-		return MetaDataImpl._.getMeta(this, key);
+		return MetaDataImpl.instance.getMeta(this, key);
 	}
 
     public void delete(String key) {
-        MetaDataImpl._.delMeta(uuid, key);
+        MetaDataImpl.instance.delMeta(uuid, key);
     }
 
-    protected void update(DocumentAtExist doc) {
-		uri = doc.getURI().toString();
-	}
-	
-	protected void update(Collection col) {
-		uri = col.getURI().toString();
+    protected void setURL(String url) {
+		this.uri = url;
 	}
 
 	public List<Meta> metas() {
 		List<Meta> metas = new ArrayList<Meta>();
 		
-		EntityCursor<MetaImpl> sub = MetaDataImpl._.getMetaKeys(this);
+		EntityCursor<MetaImpl> sub = MetaDataImpl.instance.getMetaKeys(this);
 		try {
 			
 			for (MetaImpl m : sub) {
@@ -138,10 +132,10 @@ public class MetasImpl implements Metas {
 //	}
 
 	public void delete() {
-	    MetaDataImpl._.delMetas(this);
+	    MetaDataImpl.instance.delMetas(this);
 	}
 
 	public void restore(String uuid, String key, String value) {
-		MetaDataImpl._._addMeta(this, uuid, key, value);
+		MetaDataImpl.instance._addMeta(this, uuid, key, value);
 	}
 }

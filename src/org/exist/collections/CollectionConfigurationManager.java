@@ -20,6 +20,7 @@
 package org.exist.collections;
 
 import org.apache.log4j.Logger;
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.memtree.SAXAdapter;
@@ -287,8 +288,8 @@ public class CollectionConfigurationManager {
                     } catch (final CollectionConfigurationException e) {
                         final String message = "Failed to read configuration document " + confDoc.getFileURI() + " in " + configCollection.getURI() + ". "
                                 + e.getMessage();
-                        LOG.error(message);
-                        System.out.println(message);
+                        LOG.error(message, e);
+                        //System.out.println(message);
                     }
                     
                     latch.write(new Callable<Void>() {
@@ -309,7 +310,7 @@ public class CollectionConfigurationManager {
         }
     }
 
-    public CollectionConfiguration getOrCreateCollectionConfiguration(final DBBroker broker, Collection collection) {
+    public CollectionConfiguration getOrCreateCollectionConfiguration(final Database db, Collection collection) {
         final CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
         path.append(collection.getURI().getRawCollectionPath());
         
@@ -334,7 +335,7 @@ public class CollectionConfigurationManager {
                     return conf;
                 }
 
-                conf = new CollectionConfiguration(broker.getBrokerPool());
+                conf = new CollectionConfiguration(db);
                 configurations.put(path, conf);
 
                 return conf;

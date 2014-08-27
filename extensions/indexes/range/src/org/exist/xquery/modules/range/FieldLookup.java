@@ -24,17 +24,13 @@ package org.exist.xquery.modules.range;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.VirtualNodeSet;
 import org.exist.indexing.range.RangeIndex;
 import org.exist.indexing.range.RangeIndexWorker;
-import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
-import org.exist.xquery.util.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

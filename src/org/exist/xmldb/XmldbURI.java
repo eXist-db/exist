@@ -536,6 +536,22 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         return (segments);
     }
 
+    public String[] stringPathSegments() {
+        String name = getRawCollectionPath();
+
+        if ((name == null) || "".equals(name)) {
+            return (new String[0]);
+        }
+        String[] split = name.split("/");
+        int fix = ("".equals(split[0])) ? 1 : 0;
+        String[] segments = new String[split.length - fix];
+
+        for (int i = fix; i < split.length; i++) {
+            segments[i - fix] = split[i];
+        }
+        return segments;
+    }
+
     /**
      * This function returns a string with everything after the last / removed.
      *

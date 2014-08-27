@@ -4,7 +4,6 @@ import org.exist.dom.AttrImpl;
 import org.exist.dom.CharacterDataImpl;
 import org.exist.dom.QName;
 import org.exist.storage.NodePath;
-import org.exist.util.XMLString;
 
 import java.util.*;
 

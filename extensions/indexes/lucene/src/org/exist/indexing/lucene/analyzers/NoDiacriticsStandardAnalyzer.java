@@ -1,3 +1,22 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2014 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.indexing.lucene.analyzers;
 
 import org.apache.lucene.analysis.*;
@@ -11,6 +30,7 @@ import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
 import org.apache.lucene.analysis.util.WordlistLoader;
 import org.apache.lucene.util.Version;
+import org.exist.indexing.lucene.LuceneIndex;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -42,7 +62,7 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
      * @param stopWords stop words */
     public NoDiacriticsStandardAnalyzer(Version matchVersion, CharArraySet stopWords) {
         super(matchVersion, stopWords);
-        replaceInvalidAcronym = matchVersion.onOrAfter(Version.LUCENE_43);
+        replaceInvalidAcronym = matchVersion.onOrAfter(LuceneIndex.LUCENE_VERSION_IN_USE);
     }
 
     /** Builds an analyzer with the default stop words ({@link

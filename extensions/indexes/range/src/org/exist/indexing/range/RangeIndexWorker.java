@@ -49,6 +49,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
 import org.exist.xquery.value.*;
@@ -81,7 +82,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private final RangeIndex index;
     private final DBBroker broker;
-    private IndexController controller;
     private DocumentImpl currentDoc;
     private int mode = 0;
     private List<RangeIndexDoc> nodesToWrite;
@@ -205,9 +205,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
-        this.controller = controller;
-        LOG.debug("Configuring lucene index...");
-        return new RangeIndexConfig(configNodes, namespaces);
+        LOG.debug("Configuring range index...");
+        return RangeIndexConfigXML.parse(configNodes, namespaces);
     }
 
     @Override
@@ -460,7 +459,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     if (field.isNamed())
                         contentField = field.getName();
                     else
-                        contentField = LuceneUtil.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
+                        contentField = LuceneUtil.encodeQName(pending.getQName(), index.getDatabase().getSymbols());
                     Field fld = pending.getConfig().convertToField(contentField, field.getContent().toString());
                     if (fld != null) {
                         doc.add(fld);
@@ -492,7 +491,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             searcher = index.getSearcher();
             for (QName qname : qnames) {
                 Query query;
-                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                String field = LuceneUtil.encodeQName(qname, index.getDatabase().getSymbols());
                 if (keys.length > 1) {
                     BooleanQuery bool = new BooleanQuery();
                     for (AtomicValue key: keys) {
@@ -614,16 +613,18 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public void collect(int doc) throws IOException {
+            if (this.docIdValues == null || this.nodeIdValues == null || this.addressValues == null) return;
+
             int docId = (int) this.docIdValues.get(doc);
             DocumentImpl storedDocument = docs.getDoc(docId);
             if (storedDocument == null) {
                 return;
             }
-            BytesRef ref = new BytesRef(buf);
-            this.nodeIdValues.get(doc, ref);
+            //BytesRef ref = new BytesRef(buf);
+            BytesRef ref = this.nodeIdValues.get(doc); //, ref);
 
             int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
-            NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+            NodeId nodeId = index.getDatabase().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
 
             // if a context set is specified, we can directly check if the
             // matching node is a descendant of one of the nodes
@@ -657,8 +658,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         private void getAddress(int doc, NodeProxy storedNode) {
             if (addressValues != null) {
-                BytesRef ref = new BytesRef(buf);
-                addressValues.get(doc, ref);
+                //BytesRef ref = new BytesRef(buf);
+                BytesRef ref = addressValues.get(doc); //, ref);
                 if (ref.offset < ref.bytes.length) {
                     final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
                     storedNode.setInternalAddress(address);
@@ -706,7 +707,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             reader = index.getReader();
             for (FieldInfo info: MultiFields.getMergedFieldInfos(reader)) {
                 if (!FIELD_DOC_ID.equals(info.name)) {
-                    QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
+                    QName name = LuceneUtil.decodeQName(info.name, index.getDatabase().getSymbols());
                     if (name != null && (qname == null || matchQName(qname, name)))
                         indexes.add(name);
                 }
@@ -924,7 +925,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 //    }
 
     @Override
-    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map hints) {
+    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map<?,?> hints) {
         List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
         qnames = getDefinedIndexes(qnames);
         //Expects a StringValue
@@ -962,7 +963,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             reader = index.getReader();
             for (QName qname : qnames) {
-                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                String field = LuceneUtil.encodeQName(qname, index.getDatabase().getSymbols());
                 scan(docs, nodes, start, end, max, map, reader, field);
             }
         } catch (IOException e) {
@@ -1011,10 +1012,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             continue;
                         NodeId nodeId = null;
                         if (nodes != null) {
-                            BytesRef nodeIdRef = new BytesRef(buf);
-                            nodeIdValues.get(docsEnum.docID(), nodeIdRef);
+                            //BytesRef nodeIdRef = new BytesRef(buf);
+                            BytesRef nodeIdRef = nodeIdValues.get(docsEnum.docID()); //, nodeIdRef);
                             int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
-                            nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
+                            nodeId = index.getDatabase().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                         }
                         if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
                             Occurrences oc = map.get(term);
@@ -1029,5 +1030,17 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             } while(termsIter.next() != null);
         }
+    }
+
+	@Override
+	public void indexCollection(Collection col) {
+	}
+
+    @Override
+    public void indexBinary(BinaryDocument doc) {
+    }
+
+    @Override
+    public void removeIndex(XmldbURI url) {
     }
 }

@@ -1,5 +1,3 @@
-package org.exist.storage.btree;
-
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-05 The eXist Project
@@ -71,9 +69,10 @@ package org.exist.storage.btree;
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package org.exist.storage.btree;
 
 import org.apache.log4j.Logger;
-import org.exist.storage.BrokerPool;
+import org.exist.Database;
 import org.exist.storage.journal.Lsn;
 import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
@@ -134,8 +133,8 @@ public abstract class Paged {
     private byte[] tempPageData = null;
     private byte[] tempHeaderData = null;
 	
-    public Paged(BrokerPool pool) {
-        fileHeader = createFileHeader(pool.getPageSize());
+    public Paged(Database db) {
+        fileHeader = createFileHeader(db.getPageSize());
         tempPageData = new byte[fileHeader.pageSize];
         tempHeaderData = new byte[fileHeader.pageHeaderSize];
     }
@@ -261,7 +260,7 @@ public abstract class Paged {
             raf.close();
         } catch (final IOException e) {
             //TODO : forward the exception ? -pb
-            LOG.error("Failed to close data file: " + file.getAbsolutePath());
+            LOG.error("Failed to close data file: " + file.getAbsolutePath(), e);
         }
         file.delete();
     }

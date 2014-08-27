@@ -59,7 +59,7 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
     }
     
     public DocumentTriggers(DBBroker broker, Collection collection) throws TriggerException {
-        this(broker, null, collection, collection.isTriggersEnabled() ? collection.getConfiguration(broker) : null);
+        this(broker, null, collection, collection.isTriggersEnabled(broker) ? collection.getConfiguration(broker) : null);
     }
 
     public DocumentTriggers(DBBroker broker, Indexer indexer, Collection collection, CollectionConfiguration config) throws TriggerException {
