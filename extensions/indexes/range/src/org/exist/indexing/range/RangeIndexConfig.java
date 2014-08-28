@@ -163,6 +163,18 @@ public class RangeIndexConfig {
         return false;
     }
 
+    public int getType(String field) {
+        for (RangeIndexConfigElement conf : paths.values()) {
+            if (conf.isComplex()) {
+                int type = conf.getType(field);
+                if (type != Type.ITEM) {
+                    return type;
+                }
+            }
+        }
+        return Type.ITEM;
+    }
+
     private class PathIterator implements Iterator<RangeIndexConfigElement> {
 
         private RangeIndexConfigElement nextConfig;
