@@ -15,7 +15,7 @@ declare variable $tt:COLLECTION_CONFIG :=
                 <create qname="dateTime" type="xs:dateTime"/>
                 <create qname="entry">
                     <field name="date" match="date2" type="xs:date"/>
-                    <field name="int" match="int2" type="xs:integer"/>
+                    <field name="int2" match="int2" type="xs:integer"/>
                 </create>
                 <create qname="string-lc" type="xs:string" case="no"/>
                 <create qname="string" type="xs:string"/>
@@ -311,6 +311,13 @@ declare
     %test:assertEquals("E2")
 function tt:int-equals-type-conversion($n as xs:double) {
     collection($tt:COLLECTION)//entry[int = $n]/id/string()
+};
+
+declare 
+    %test:args("X2")
+    %test:assertError
+function tt:int-field-wrong-type($n as xs:string) {
+    collection($tt:COLLECTION)//entry[int2 = $n]/id/string()
 };
 
 declare
