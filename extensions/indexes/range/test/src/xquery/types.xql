@@ -11,11 +11,13 @@ declare variable $tt:COLLECTION_CONFIG :=
             <fulltext default="none" attributes="false"/>
             <range>
                 <create qname="date" type="xs:date"/>
+                <create qname="date4" type="xs:date" converter="org.exist.indexing.range.conversion.DateConverter"/>
                 <create qname="time" type="xs:time"/>
                 <create qname="dateTime" type="xs:dateTime"/>
                 <create qname="entry">
                     <field name="date" match="date2" type="xs:date"/>
                     <field name="int2" match="int2" type="xs:integer"/>
+                    <field name="date3" match="date3" type="xs:date" converter="org.exist.indexing.range.conversion.DateConverter"/>
                 </create>
                 <create qname="string-lc" type="xs:string" case="no"/>
                 <create qname="string" type="xs:string"/>
@@ -30,6 +32,8 @@ declare variable $tt:XML :=
             <id>E1</id>
             <date>1918-02-11</date>
             <date2>1918-02-11</date2>
+            <date3>1918</date3>
+            <date4>1918</date4>
             <time>09:00:00Z</time>
             <dateTime>1918-02-11T09:00:00Z</dateTime>
             <string-lc>UPPERCASE</string-lc>
@@ -41,6 +45,8 @@ declare variable $tt:XML :=
             <id>E2</id>
             <date>2012-01-20</date>
             <date2>2012-01-20</date2>
+            <date3>800-12-1</date3>
+            <date4>800-12-1</date4>
             <time>10:00:00Z</time>
             <dateTime>2012-01-20T10:00:00Z</dateTime>
             <string-lc>lowercase</string-lc>
@@ -52,6 +58,8 @@ declare variable $tt:XML :=
             <id>E3</id>
             <date>2013-02-04</date>
             <date2>2013-02-04</date2>
+            <date3>2000-01-01</date3>
+            <date4>2000-01-01</date4>
             <time>10:00:00+01:00</time>
             <dateTime>2012-01-20T11:00:00+01:00</dateTime>
             <string-lc>MiXeDmOdE</string-lc>
@@ -474,4 +482,22 @@ declare
     %test:assertEquals("E2")
 function tt:ends-with($string as xs:string) {
     collection($tt:COLLECTION)//entry[ends-with(string, $string)]/id/string()
+};
+
+declare 
+    %test:args("1918-01-01")
+    %test:assertEquals("E1")
+    %test:args("0800-12-01")
+    %test:assertEquals("E2")
+function tt:date-normalized($date as xs:date) {
+    collection($tt:COLLECTION)//entry[date3 = $date]/id/string()
+};
+
+declare 
+    %test:args("1918-01-01")
+    %test:assertEquals("E1")
+    %test:args("0800-12-01")
+    %test:assertEquals("E2")
+function tt:date-field-normalized($date as xs:date) {
+    collection($tt:COLLECTION)//entry[date4 = $date]/id/string()
 };
