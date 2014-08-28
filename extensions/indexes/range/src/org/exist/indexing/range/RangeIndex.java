@@ -35,7 +35,7 @@ import org.exist.storage.DBBroker;
  */
 public class RangeIndex extends LuceneIndex {
 
-    private static final Logger LOG = Logger.getLogger(RangeIndex.class);
+    protected static final Logger LOG = Logger.getLogger(RangeIndex.class);
 
     public final static String ID = RangeIndex.class.getName();
 
