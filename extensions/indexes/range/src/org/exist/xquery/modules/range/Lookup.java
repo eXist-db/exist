@@ -278,10 +278,16 @@ public class Lookup extends Function implements Optimizable {
     }
 
     private AtomicValue[] getKeys(Sequence contextSequence) throws XPathException {
+        RangeIndexConfigElement config = findConfiguration(contextSequence);
+        int targetType = config != null ? config.getType() : Type.ITEM;
         Sequence keySeq = getArgument(1).eval(contextSequence);
         AtomicValue[] keys = new AtomicValue[keySeq.getItemCount()];
         for (int i = 0; i < keys.length; i++) {
-            keys[i] = (AtomicValue) keySeq.itemAt(i);
+            if (targetType == Type.ITEM) {
+                keys[i] = (AtomicValue) keySeq.itemAt(i);
+            } else {
+                keys[i] = keySeq.itemAt(i).convertTo(targetType);
+            }
         }
         return keys;
     }

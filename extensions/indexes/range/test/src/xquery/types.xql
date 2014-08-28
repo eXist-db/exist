@@ -15,9 +15,11 @@ declare variable $tt:COLLECTION_CONFIG :=
                 <create qname="dateTime" type="xs:dateTime"/>
                 <create qname="entry">
                     <field name="date" match="date2" type="xs:date"/>
+                    <field name="int2" match="int2" type="xs:integer"/>
                 </create>
                 <create qname="string-lc" type="xs:string" case="no"/>
                 <create qname="string" type="xs:string"/>
+                <create qname="int" type="xs:integer"/>
             </range>
         </index>
     </collection>;
@@ -32,6 +34,8 @@ declare variable $tt:XML :=
             <dateTime>1918-02-11T09:00:00Z</dateTime>
             <string-lc>UPPERCASE</string-lc>
             <string>UPPERCASE</string>
+            <int>1</int>
+            <int2>1</int2>
         </entry>
         <entry>
             <id>E2</id>
@@ -41,6 +45,8 @@ declare variable $tt:XML :=
             <dateTime>2012-01-20T10:00:00Z</dateTime>
             <string-lc>lowercase</string-lc>
             <string>lowercase</string>
+            <int>2</int>
+            <int2>2</int2>
         </entry>
         <entry>
             <id>E3</id>
@@ -50,6 +56,8 @@ declare variable $tt:XML :=
             <dateTime>2012-01-20T11:00:00+01:00</dateTime>
             <string-lc>MiXeDmOdE</string-lc>
             <string>MiXeDmOdE</string>
+            <int>3</int>
+            <int2>3</int2>
         </entry>
     </test>;
 
@@ -94,6 +102,23 @@ declare
     %test:assertEquals("<id>E2</id>")
     %test:args("1918-02-11")
     %test:assertEquals("<id>E1</id>")
+function tt:eq-date-type-conversion($date as xs:string) {
+    collection($tt:COLLECTION)//entry[date = $date]/id
+};
+
+declare 
+    %test:stats
+    %test:args("2012-01-20")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function tt:eq-date-type-conversion-optimize($date as xs:string) {
+    collection($tt:COLLECTION)//entry[date = $date]
+};
+
+declare 
+    %test:args("2012-01-20")
+    %test:assertEquals("<id>E2</id>")
+    %test:args("1918-02-11")
+    %test:assertEquals("<id>E1</id>")
 function tt:eq-date-field($date as xs:date) {
     collection($tt:COLLECTION)//entry[date2 = $date]/id
 };
@@ -103,6 +128,23 @@ declare
     %test:args("2012-01-20")
     %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
 function tt:eq-date-field-optimize($date as xs:date) {
+    collection($tt:COLLECTION)//entry[date2 = $date]
+};
+
+declare 
+    %test:args("2012-01-20")
+    %test:assertEquals("<id>E2</id>")
+    %test:args("1918-02-11")
+    %test:assertEquals("<id>E1</id>")
+function tt:eq-date-field-type-conversion($date as xs:string) {
+    collection($tt:COLLECTION)//entry[date2 = $date]/id
+};
+
+declare 
+    %test:stats
+    %test:args("2012-01-20")
+    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+function tt:eq-date-field-type-conversion-optimize($date as xs:string) {
     collection($tt:COLLECTION)//entry[date2 = $date]
 };
 
@@ -248,6 +290,34 @@ declare
     %test:assertEquals("E1")
 function tt:lt-dateTime($dateTime as xs:dateTime) {
     collection($tt:COLLECTION)//entry[dateTime < $dateTime]/id/string()
+};
+
+declare 
+    %test:args("2")
+    %test:assertEquals("E2")
+function tt:int-equals-type-conversion($n as xs:string) {
+    collection($tt:COLLECTION)//entry[int = $n]/id/string()
+};
+
+declare 
+    %test:args("2")
+    %test:assertEquals("E2")
+function tt:int-field-type-conversion($n as xs:string) {
+    collection($tt:COLLECTION)//entry[int2 = $n]/id/string()
+};
+
+declare 
+    %test:args(2.4)
+    %test:assertEquals("E2")
+function tt:int-equals-type-conversion($n as xs:double) {
+    collection($tt:COLLECTION)//entry[int = $n]/id/string()
+};
+
+declare 
+    %test:args("X2")
+    %test:assertError
+function tt:int-field-wrong-type($n as xs:string) {
+    collection($tt:COLLECTION)//entry[int2 = $n]/id/string()
 };
 
 declare
