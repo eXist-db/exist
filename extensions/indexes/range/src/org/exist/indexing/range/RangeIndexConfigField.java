@@ -44,6 +44,7 @@ public class RangeIndexConfigField {
     private NodePath path = null;
     private NodePath relPath = null;
     private int type = Type.STRING;
+    private org.exist.indexing.range.conversion.TypeConverter typeConverter = null;
     protected boolean includeNested = false;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
     protected boolean caseSensitive = true;
@@ -76,6 +77,19 @@ public class RangeIndexConfigField {
                 throw new DatabaseConfigurationException("Invalid type declared for range index on " + match + ": " + typeStr);
             }
         }
+        String custom = elem.getAttribute("converter");
+        if (custom != null && custom.length() > 0) {
+            try {
+                Class customClass = Class.forName(custom);
+                typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.newInstance();
+            } catch (ClassNotFoundException e) {
+                RangeIndex.LOG.warn("Class for custom-type not found: " + custom);
+            } catch (InstantiationException e) {
+                RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
+            } catch (IllegalAccessException e) {
+                RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
+            }
+        }
         String nested = elem.getAttribute("nested");
         includeNested = (nested == null || nested.equalsIgnoreCase("yes"));
         path.setIncludeDescendants(includeNested);
@@ -106,6 +120,10 @@ public class RangeIndexConfigField {
 
     public int getType() {
         return type;
+    }
+
+    public org.exist.indexing.range.conversion.TypeConverter getTypeConverter() {
+        return typeConverter;
     }
 
     public boolean match(NodePath other) {
