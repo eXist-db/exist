@@ -165,9 +165,11 @@ public class RangeIndexConfig {
 
     public int getType(String field) {
         for (RangeIndexConfigElement conf : paths.values()) {
-            int type = conf.getType(field);
-            if (type != Type.ITEM) {
-                return type;
+            if (conf.isComplex()) {
+                int type = conf.getType(field);
+                if (type != Type.ITEM) {
+                    return type;
+                }
             }
         }
         return Type.ITEM;
