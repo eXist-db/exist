@@ -123,7 +123,7 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
         if (field != null) {
             return field.getType();
         }
-        return Type.STRING;
+        return Type.ITEM;
     }
 
     @Override
