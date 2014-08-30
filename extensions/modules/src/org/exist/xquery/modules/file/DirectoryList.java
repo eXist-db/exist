@@ -126,8 +126,6 @@ public class DirectoryList extends BasicFunction {
             logger.debug("Listing matching files in directory: " + baseDir);
         }
 
-        Sequence xmlResponse = null;
-
         MemTreeBuilder builder = context.getDocumentBuilder();
 
         builder.startDocument();
@@ -137,7 +135,7 @@ public class DirectoryList extends BasicFunction {
         for (SequenceIterator i = patterns.iterate(); i.hasNext();) {
             String pattern = i.nextItem().getStringValue();
             File[] scannedFiles = DirectoryScanner.scanDir(baseDir, pattern);
-            String relDir = null;
+            
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Found: " + scannedFiles.length);
@@ -150,10 +148,11 @@ public class DirectoryList extends BasicFunction {
 
                 String relPath = file.toString().substring(baseDir.toString().length() + 1);
 
-                int p = relPath.lastIndexOf(File.separatorChar);
+                int lastSeparatorPosition = relPath.lastIndexOf(File.separatorChar);
 
-                if (p >= 0) {
-                    relDir = relPath.substring(0, p);
+                String relDir = null;
+                if (lastSeparatorPosition >= 0) {
+                    relDir = relPath.substring(0, lastSeparatorPosition);
                     relDir = relDir.replace(File.separatorChar, '/');
                 }
 
@@ -180,7 +179,7 @@ public class DirectoryList extends BasicFunction {
 
         builder.endElement();
 
-        xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
+        Sequence xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
 
         return (xmlResponse);
     }
