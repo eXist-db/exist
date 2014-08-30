@@ -2,4 +2,4 @@ language: java
 jdk:
  - openjdk7
  - oraclejdk7
-script: ./build.sh clean clean-all all
+script: ./build.sh travis
