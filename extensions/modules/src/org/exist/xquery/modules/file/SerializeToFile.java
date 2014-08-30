@@ -54,7 +54,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 public class SerializeToFile extends BasicFunction 
@@ -179,9 +178,11 @@ public class SerializeToFile extends BasicFunction
 
                 //do the serialization
                 serializeXML(args[0].iterate(), outputProperties, file, doAppend);
+                
             } else if(isCalledAs(FN_SERIALIZE_BINARY_LN)) {
                 final boolean doAppend = (args.length > 2) && "true".equals(args[2].itemAt(0).getStringValue());
                 serializeBinary((BinaryValue)args[0].itemAt(0), file, doAppend);
+                
             } else {
                 throw new XPathException(this, "Unknown function name");
             }
@@ -240,8 +241,10 @@ public class SerializeToFile extends BasicFunction
                 
             } catch(final SAXException e) {
                 throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e);
+                
             } catch(final IOException e) {
                 throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e);
+                
             } finally {
                 if(writer != null) {
                     try {
