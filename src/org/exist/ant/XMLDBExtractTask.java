@@ -370,13 +370,14 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
     }
 
 
+    // not used anymore
     public void setType( String type )
     {
         this.type = type;
 
-        if( !"xml".equalsIgnoreCase( type ) & !"binary".equalsIgnoreCase( type ) ) {
-            throw( new BuildException( "non-xml or non-binary resource types are not supported currently" ) );
-        }
+        //if( !"xml".equalsIgnoreCase( type ) & !"binary".equalsIgnoreCase( type ) ) {
+        //    throw( new BuildException( "non-xml or non-binary resource types are not supported currently" ) );
+        //}
     }
 
 
