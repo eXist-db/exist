@@ -273,9 +273,9 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
             if( dest.isDirectory() ) {
                 String fname = res.getId();
 
-                if( !fname.endsWith( "." + type ) ) {
-                    fname += "." + type;
-                }
+//                if( !fname.endsWith( "." + type ) ) {
+//                    fname += "." + type;
+//                }
                 final File file = new File( dest, fname );
                 writer = new OutputStreamWriter( new FileOutputStream( file ), encoding );
 
@@ -328,9 +328,9 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
 
                 String fname = res.getId();
 
-                if( !fname.endsWith( "." + type ) ) {
-                    fname += "";
-                }
+//                if( !fname.endsWith( "." + type ) ) {
+//                    fname += "";
+//                }
                 dest = new File( dest, fname );
 
             }
@@ -370,13 +370,14 @@ public class XMLDBExtractTask extends AbstractXMLDBTask
     }
 
 
+    // not used anymore
     public void setType( String type )
     {
         this.type = type;
 
-        if( !"xml".equalsIgnoreCase( type ) & !"binary".equalsIgnoreCase( type ) ) {
-            throw( new BuildException( "non-xml or non-binary resource types are not supported currently" ) );
-        }
+        //if( !"xml".equalsIgnoreCase( type ) & !"binary".equalsIgnoreCase( type ) ) {
+        //    throw( new BuildException( "non-xml or non-binary resource types are not supported currently" ) );
+        //}
     }
 
 
