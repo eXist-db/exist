@@ -173,7 +173,7 @@ public class Optimize extends Pragma {
         }
     }
 
-    public void before(XQueryContext context, Expression expression) throws XPathException {
+    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
         if (innerExpr != null)
             {return;}
         innerExpr = expression;
