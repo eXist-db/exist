@@ -17,10 +17,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
@@ -33,8 +31,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.serializer.Receiver;
-import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
@@ -156,7 +152,7 @@ public class Sync extends BasicFunction {
 				}
 			}
 			
-			subcollections = new ArrayList<XmldbURI>(collection.getChildCollectionCount(context.getBroker()));
+			subcollections = new ArrayList<>(collection.getChildCollectionCount(context.getBroker()));
 			for (Iterator<XmldbURI> i = collection.collectionIterator(context.getBroker()); i.hasNext(); ) {
 				subcollections.add(i.next());
 			}
@@ -195,15 +191,15 @@ public class Sync extends BasicFunction {
                 processRepoDesc(targetFile, doc, sax, output);
             } else {
                 OutputStream os = new FileOutputStream(targetFile);
-                Writer writer = new OutputStreamWriter(os, "UTF-8");
-                sax.setOutput(writer, DEFAULT_PROPERTIES);
-                Serializer serializer = context.getBroker().getSerializer();
-                serializer.reset();
-                serializer.setProperties(DEFAULT_PROPERTIES);
-
-                serializer.setSAXHandlers(sax, sax);
-                serializer.toSAX(doc);
-                writer.close();
+                            try (Writer writer = new OutputStreamWriter(os, "UTF-8")) {
+                                sax.setOutput(writer, DEFAULT_PROPERTIES);
+                                Serializer serializer = context.getBroker().getSerializer();
+                                serializer.reset();
+                                serializer.setProperties(DEFAULT_PROPERTIES);
+                                
+                                serializer.setSAXHandlers(sax, sax);
+                                serializer.toSAX(doc);
+                            }
             }
 		} catch (IOException e) {
 			reportError(output, "IO error while saving file: " + targetFile.getAbsolutePath());
@@ -228,24 +224,23 @@ public class Sync extends BasicFunction {
             Document original = builder.parse(targetFile);
 
             OutputStream os = new FileOutputStream(targetFile);
-            Writer writer = new OutputStreamWriter(os, "UTF-8");
-            sax.setOutput(writer, DEFAULT_PROPERTIES);
-
-            StreamSource stylesource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));
-
-            final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
-            TransformerHandler handler = factory.newTransformerHandler(stylesource);
-            handler.getTransformer().setParameter("original", original.getDocumentElement());
-            handler.setResult(new SAXResult(sax));
-
-            final Serializer serializer = context.getBroker().getSerializer();
-            serializer.reset();
-            serializer.setProperties(DEFAULT_PROPERTIES);
-            serializer.setSAXHandlers(handler, handler);
-
-            serializer.toSAX(doc);
-
-            writer.close();
+            try (Writer writer = new OutputStreamWriter(os, "UTF-8")) {
+                sax.setOutput(writer, DEFAULT_PROPERTIES);
+                
+                StreamSource stylesource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));
+                
+                final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
+                TransformerHandler handler = factory.newTransformerHandler(stylesource);
+                handler.getTransformer().setParameter("original", original.getDocumentElement());
+                handler.setResult(new SAXResult(sax));
+                
+                final Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+                serializer.setProperties(DEFAULT_PROPERTIES);
+                serializer.setSAXHandlers(handler, handler);
+                
+                serializer.toSAX(doc);
+            }
         } catch (ParserConfigurationException e) {
             reportError(output, "Parser exception while saving file " + targetFile.getAbsolutePath() + ": " + e.getMessage());
         } catch (SAXException e) {
@@ -271,14 +266,15 @@ public class Sync extends BasicFunction {
 			output.addAttribute(new QName("modified"), 
 					new DateTimeValue(new Date(binary.getMetadata().getLastModified())).getStringValue());
 			
-			OutputStream os = new FileOutputStream(targetFile);
-			InputStream is = context.getBroker().getBinaryResource(binary);
-			int c;
-			byte buf[] = new byte[4096];
-			while ((c = is.read(buf)) > -1) {
-				os.write(buf, 0, c);
-			}
-			os.close();
+                        InputStream is;
+                    try (OutputStream os = new FileOutputStream(targetFile)) {
+                        is = context.getBroker().getBinaryResource(binary);
+                        int c;
+                        byte buf[] = new byte[4096];
+                        while ((c = is.read(buf)) > -1) {
+                            os.write(buf, 0, c);
+                        }
+                    }
 			is.close();
 		} catch (IOException e) {
 			reportError(output, "IO error while saving file: " + targetFile.getAbsolutePath());
