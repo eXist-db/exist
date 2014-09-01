@@ -326,6 +326,9 @@ public class FieldLookup extends Function implements Optimizable {
     }
 
     public int getType(Sequence contextSequence, String field) {
+        if (contextSequence == null) {
+            return Type.ITEM;
+        }
         for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             final Collection collection = i.next();
             if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
