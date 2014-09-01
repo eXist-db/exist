@@ -51,7 +51,12 @@ public abstract class AbstractMapType extends FunctionReference
 
     public abstract int getItemCount();
 
-    public abstract int getItemType();
+    public abstract int getKeyType();
+
+    @Override
+    public int getItemType() {
+        return Type.MAP;
+    };
 
     @Override
     public int getType() {
