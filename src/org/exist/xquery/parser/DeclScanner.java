@@ -197,6 +197,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"FUNCTION_INLINE",
 		"FUNCTION_TEST",
 		"MAP_TEST",
+		"MAP_LOOKUP",
 		"PROLOG",
 		"OPTION",
 		"ATOMIC_TYPE",

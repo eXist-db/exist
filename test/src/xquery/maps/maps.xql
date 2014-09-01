@@ -6,13 +6,13 @@ import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:o
 
 declare variable $mt:daysOfWeek :=
     map {
-        "Su" := "Sunday",
-        "Mo" := "Monday",
-        "Tu" := "Tuesday",
-        "We" := "Wednesday",
-        "Th" := "Thursday",
-        "Fr" := "Friday",
-        "Sa" := "Saturday"
+        "Su" : "Sunday",
+        "Mo" : "Monday",
+        "Tu" : "Tuesday",
+        "We" : "Wednesday",
+        "Th" : "Thursday",
+        "Fr" : "Friday",
+        "Sa" : "Saturday"
     };
     
 declare %test:assertEquals("Wednesday") function mt:createLiteral1() {
@@ -21,13 +21,13 @@ declare %test:assertEquals("Wednesday") function mt:createLiteral1() {
 
 declare %test:assertEquals("Wednesday") function mt:createWithIntKeys() {
     let $map := map {
-        1 := "Sunday",
-        2 := "Monday",
-        3 := "Tuesday",
-        4 := "Wednesday",
-        5 := "Thursday",
-        6 := "Friday",
-        7 := "Saturday"
+        1 : "Sunday",
+        2 : "Monday",
+        3 : "Tuesday",
+        4 : "Wednesday",
+        5 : "Thursday",
+        6 : "Friday",
+        7 : "Saturday"
     }
     return
         $map(4)
@@ -35,7 +35,7 @@ declare %test:assertEquals("Wednesday") function mt:createWithIntKeys() {
 
 declare %test:assertEquals(20) function mt:createWithFunctionValue() {
     let $fn := function($p) { $p * 2 }
-    let $map := map { "callback" := $fn }
+    let $map := map { "callback" : $fn }
     return
         map:get($map, "callback")(10)
 };
@@ -49,10 +49,31 @@ declare %test:assertEquals("Sunday") function mt:createWithEntry() {
 
 declare %test:assertXPath("count($result) = 8") %test:assertXPath("7 = $result") 
 function mt:createFromTwoMaps() {
-    let $week := map{0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 4:="Donnerstag", 5:="Freitag", 6:="Samstag"}
-    let $map := map:new(($week, map { 7 := "Sonntag" }))
+    let $week := map{0: "Sonntag", 1: "Montag", 2: "Dienstag", 3: "Mittwoch", 4: "Donnerstag", 5: "Freitag", 6: "Samstag"}
+    let $map := map:new(($week, map { 7 : "Sonntag" }))
     return
         map:keys($map)
+};
+
+declare 
+    %test:assertEquals("Sonntag", "Dienstag", "Donnerstag", "Samstag")
+function mt:for-each-entry() {
+    let $week := map{0: "Sonntag", 1: "Montag", 2: "Dienstag", 3: "Mittwoch", 4: "Donnerstag", 5: "Freitag", 6: "Samstag"}
+    return
+        map:for-each-entry($week, function($key, $value) {
+            if ($key mod 2 = 0) then
+                $value
+            else
+                ()
+        })
+};
+
+declare 
+    %test:assertEquals(3)
+function mt:for-each-entry2() {
+    let $nm := map:new(map:for-each-entry(map{"a":1, "b":2}, function($k, $v){map:entry($k, $v+1)}))
+    return
+        $nm?b
 };
 
 declare %test:assertEquals("Sunday") function mt:createWithSingleKey() {
@@ -62,30 +83,30 @@ declare %test:assertEquals("Sunday") function mt:createWithSingleKey() {
 };
 
 declare %test:assertEquals("Samstag", "Sonnabend") function mt:overwriteKeyInNewMap() {
-    let $week := map {0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 4:="Donnerstag", 5:="Freitag", 6:="Samstag"}
-    let $map := map:new(($week, map { 6 := "Sonnabend" }))
+    let $week := map {0: "Sonntag", 1: "Montag", 2: "Dienstag", 3: "Mittwoch", 4: "Donnerstag", 5: "Freitag", 6: "Samstag"}
+    let $map := map:new(($week, map { 6 :  "Sonnabend" }))
     return
         ($week(6), $map(6))
 };
 
 declare %test:assertEmpty function mt:mapEmptyValue() {
-    let $map := map {0:= (), 1 := ("One", "Two") }
+    let $map := map {0: (), 1 : ("One", "Two") }
     return
         $map(0)
 };
 
 declare %test:assertEquals("One", "Two") function mt:mapSequenceValue() {
-    let $map := map {0:= (), 1 := ("One", "Two") }
+    let $map := map {0: (), 1 : ("One", "Two") }
     return
         $map(1)
 };
 
 declare %test:assertEquals("Heinz", "Roland", "Uschi", "Verona") function mt:keyTypeDate () {
     let $map := map { 
-        xs:date("1975-03-19") := "Uschi", 
-        xs:date("1980-01-22") := "Verona",
-        xs:date("1960-06-14") := "Heinz",
-        xs:date("1963-10-21") := "Roland"
+        xs:date("1975-03-19") : "Uschi", 
+        xs:date("1980-01-22") : "Verona",
+        xs:date("1960-06-14") : "Heinz",
+        xs:date("1963-10-21") : "Roland"
     }
     for $key in map:keys($map)
     let $name := $map($key)
@@ -95,13 +116,13 @@ declare %test:assertEquals("Heinz", "Roland", "Uschi", "Verona") function mt:key
 };
 
 declare %test:assertEquals(0, "One") function mt:mixedKeyTypes() {
-    let $map := map{ "Zero" := 0, 1 := "One" }
+    let $map := map{ "Zero" : 0, 1 : "One" }
     return
         ($map("Zero"), $map(1))
 };
 
 declare %test:assertTrue function mt:containsOnEmptyValue() {
-    let $map := map{0:= () }
+    let $map := map{0: () }
     return
         map:contains($map, 0)
 };
@@ -165,19 +186,19 @@ declare %test:assertTrue function mt:containsSingleKey() {
 };
 
 declare %test:assertEquals("Hello world") function mt:computedKeyValue() {
-    let $map := map { 2 + 1 := concat("Hello ", "world") }
+    let $map := map { 2 + 1 : concat("Hello ", "world") }
     return
         $map(3)
 };
 
 declare %test:assertEquals("false", "true") function mt:immutability() {
     let $map := map {
-        "Su" := "Sunday",
-        "Mo" := "Monday",
-        "Tu" := "Tuesday",
-        "We" := "Wednesday",
-        "Th" := "Thursday",
-        "Fr" := "Friday"
+        "Su" : "Sunday",
+        "Mo" : "Monday",
+        "Tu" : "Tuesday",
+        "We" : "Wednesday",
+        "Th" : "Thursday",
+        "Fr" : "Friday"
     }
     let $map2 := map:new(($map, map:entry("Sa", "Saturday")))
     return
@@ -186,12 +207,12 @@ declare %test:assertEquals("false", "true") function mt:immutability() {
 
 declare %test:assertTrue function mt:immutability2() {
     let $map := map {
-        "Su" := "Sunday",
-        "Mo" := "Monday",
-        "Tu" := "Tuesday",
-        "We" := "Wednesday",
-        "Th" := "Thursday",
-        "Fr" := "Friday"
+        "Su" : "Sunday",
+        "Mo" : "Monday",
+        "Tu" : "Tuesday",
+        "We" : "Wednesday",
+        "Th" : "Thursday",
+        "Fr" : "Friday"
     }
     let $map2 := map:remove($map, "Fr")
     return
@@ -200,12 +221,12 @@ declare %test:assertTrue function mt:immutability2() {
 
 declare %test:assertFalse function mt:immutability3() {
     let $map := map {
-        "Su" := "Sunday",
-        "Mo" := "Monday",
-        "Tu" := "Tuesday",
-        "We" := "Wednesday",
-        "Th" := "Thursday",
-        "Fr" := "Friday"
+        "Su" : "Sunday",
+        "Mo" : "Monday",
+        "Tu" : "Tuesday",
+        "We" : "Wednesday",
+        "Th" : "Thursday",
+        "Fr" : "Friday"
     }
     let $map2 := map:remove($map, "Fr")
     return
@@ -214,13 +235,13 @@ declare %test:assertFalse function mt:immutability3() {
 
 declare %test:assertTrue function mt:immutability4() {
 
-    let $daysOfWeek :=  map {   "Sunday" := 1,
-                                 "Monday" := 2,
-                                 "Tuesday" := 3,
-                                 "Wednesday" := 4,
-                                 "Thursday" := 5,
-                                 "Friday" := 6,
-                                 "Saturday" := 7
+    let $daysOfWeek :=  map {   "Sunday" : 1,
+                                 "Monday" : 2,
+                                 "Tuesday" : 3,
+                                 "Wednesday" : 4,
+                                 "Thursday" : 5,
+                                 "Friday" : 6,
+                                 "Saturday" : 7
                              }
     let $workDays := map:remove($daysOfWeek, "Sunday")
 
@@ -228,7 +249,7 @@ declare %test:assertTrue function mt:immutability4() {
 };
 
 declare %test:assertEquals("Sunday") function mt:sequenceType1() {
-    let $map := map { 1 := "Sunday" }
+    let $map := map { 1 : "Sunday" }
     return
         map:get(mt:mapTest($map), 1)
 };
@@ -241,15 +262,15 @@ declare
     %test:assertError("EXMPDY001")
     %test:name("Throw error if key is not a single atomic value")
 function mt:wrongCardinality() {
-    let $map := map { (1, 2) := "illegal" }
+    let $map := map { (1, 2) : "illegal" }
     return
         $map(1)
 };
 
 declare
-	%test:assertEquals("two")
+    %test:assertEquals("two")
 function mt:nestedMaps() {
-	let $map := map { 1:= map { 1:= "one", 2:= "two" } }
+    let $map := map { 1: map { 1: "one", 2: "two" } }
     return
         $map(1)(2)
 };
@@ -257,7 +278,7 @@ function mt:nestedMaps() {
 declare
     %test:assertEquals("Monday")
 function mt:nestedMaps2() {
-	let $map := map { "week" := map { "days" := $mt:daysOfWeek } }
+    let $map := map { "week" := map { "days" : $mt:daysOfWeek } }
     return
         $map("week")("days")("Mo")
 };
@@ -265,7 +286,7 @@ function mt:nestedMaps2() {
 declare
     %test:assertEquals(2)
 function mt:qnameKeys() {
-    let $map := map { xs:QName("mt:one") := 1, xs:QName("mt:two") := 2 }
+    let $map := map { xs:QName("mt:one") : 1, xs:QName("mt:two") : 2 }
     return
         $map(xs:QName("mt:two"))
 };
@@ -273,7 +294,7 @@ function mt:qnameKeys() {
 declare
     %test:assertEquals(2)
 function mt:longKeys() {
-    let $map := map { xs:long(1) := 1, xs:long(2) := 2 }
+    let $map := map { xs:long(1) : 1, xs:long(2) : 2 }
     return
         $map(2)
 };
@@ -283,8 +304,8 @@ declare
     %test:assertEquals(3)
     %test:args("Three")
     %test:assertEmpty
-function mt:doubleKeys($key) {
-    let $map := map { xs:double(1.1) := 1, xs:double(2) := 2 }
+function mt:doubleKeys($key as xs:double) {
+    let $map := map { xs:double(1.1) : 1, xs:double(2) : 2 }
     return
         map:new(($map, map:entry(xs:double(2), 3)))($key)
 };
@@ -292,7 +313,7 @@ function mt:doubleKeys($key) {
 declare
     %test:assertEquals(2, "value")
 function mt:mixedNumeric() {
-    let $map := map { 1.1 := 1, 2 := 2, "key" := "value" }
+    let $map := map { 1.1 : 1, 2 : 2, "key" : "value" }
     return
         ($map(2), $map("key"))
 };
@@ -308,10 +329,79 @@ function mt:pathExpr() as element(c)+ {
         </a>
     let $map :=
         map {
-            "a" := $test//c,
-            "b" := ($test//c)
+            "a" : $test//c,
+            "b" : ($test//c)
         }
     return
         ($map("a"), $map("b"))
 };
 
+declare 
+    %test:assertEquals("What were you thinking?")
+function mt:lookupUnaryOperator() {
+    let $errors := ( 
+      map { "level" : 1, "text" : "Boys will be boys ..." },
+      map { "level" : 2, "text" : "What were you thinking?" },
+      map { "level" : 3, "text" : "Call the cops!" }
+    )
+    return $errors[?level = 2]?text
+};
+
+declare 
+    %test:assertEquals("W0342", "M0535")
+function mt:lookupMultipleMaps() {
+    let $maps := ( map { "id" : "W0342" }, map { "id" : "M0535" } )
+    return $maps?id
+};
+
+declare 
+    %test:assertEquals("W0342", "M0535")
+function mt:lookupMultipleMaps2() {
+    ( map { "id" : "W0342" }, map { "id" : "M0535" } )?id
+};
+
+declare 
+    %test:assertEquals("large")
+function mt:lookupNestedMap() {
+    let $map := map { 
+        "name": "sofa", "keys": map { "price": 200.0, "size": "large" }
+    }
+    return
+        $map?keys?size
+};
+
+declare 
+    %test:args("One")
+    %test:assertEquals(1)
+    %test:args("Two")
+    %test:assertEquals("2")
+function mt:lookupParenthesized($key as xs:string) {
+    let $map := map { "one": 1, "two": "2" }
+    return
+        $map?(lower-case($key))
+};
+
+declare 
+    %test:assertEquals(1)
+function mt:lookupStringLiteral() {
+    let $map := map { "some key": 1, "another key": "2" }
+    return
+        $map?"some key"
+};
+
+declare 
+    %test:assertError
+function mt:lookupWrongType() {
+    let $map := map { "one": 1, "two": "2" }
+    let $str := "Hello"
+    return
+        ($map, $str)?one
+};
+
+declare 
+    %test:assertEquals(1)
+function mt:compat() {
+    let $map := map { "one":= 1, "two":= "2" }
+    return
+        $map("one")
+};

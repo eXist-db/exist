@@ -24,7 +24,7 @@ public class SingleKeyMapType extends AbstractMapType {
     }
 
     @Override
-    public int getItemType() {
+    public int getKeyType() {
         return key.getType();
     }
 
