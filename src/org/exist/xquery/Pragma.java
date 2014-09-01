@@ -43,7 +43,7 @@ public abstract class Pragma {
         return null;
     }
     
-    public abstract void before(XQueryContext context, Expression expression) throws XPathException;
+    public abstract void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException;
     
     public abstract void after(XQueryContext context, Expression expression) throws XPathException;
 

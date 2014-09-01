@@ -22,15 +22,19 @@
 package org.exist.xquery.modules.range;
 
 import org.exist.Namespaces;
+import org.exist.collections.Collection;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.range.*;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.pragmas.*;
 import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -68,7 +72,7 @@ public class OptimizeFieldPragma extends Pragma {
     }
 
     @Override
-    public void before(XQueryContext context, Expression expression) throws XPathException {
+    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
         LocationStep locationStep = (LocationStep) expression;
         if (locationStep.hasPredicates()) {
             Expression parentExpr = locationStep.getParentExpression();
@@ -80,7 +84,7 @@ public class OptimizeFieldPragma extends Pragma {
             // get path of path expression before the predicates
             NodePath contextPath = RangeQueryRewriter.toNodePath(RangeQueryRewriter.getPrecedingSteps(locationStep));
 
-            rewritten = tryRewriteToFields(locationStep, preds, contextPath);
+            rewritten = tryRewriteToFields(locationStep, preds, contextPath, contextSequence);
             axis = locationStep.getAxis();
         }
     }
@@ -90,7 +94,7 @@ public class OptimizeFieldPragma extends Pragma {
 
     }
 
-    private Expression tryRewriteToFields(LocationStep locationStep, List<Predicate> preds, NodePath contextPath) throws XPathException {
+    private Expression tryRewriteToFields(LocationStep locationStep, List<Predicate> preds, NodePath contextPath, Sequence contextSequence) throws XPathException {
         // without context path, we cannot rewrite the entire query
         if (contextPath != null) {
             List<Expression> args = null;
@@ -98,7 +102,7 @@ public class OptimizeFieldPragma extends Pragma {
             SequenceConstructor arg1 = null;
 
             List<Predicate> notOptimizable = new ArrayList<Predicate>(preds.size());
-            List<Object> configs = locationStep.getContext().getBroker().getBrokerPool().getConfigurationManager().getCustomIndexSpecs(RangeIndex.ID);
+            List<RangeIndexConfig> configs = getConfigurations(contextSequence);
             // walk through the predicates attached to the current location step
             // check if expression can be optimized
             for (final Predicate pred : preds) {
@@ -196,9 +200,8 @@ public class OptimizeFieldPragma extends Pragma {
     /**
      * Scan all index configurations to find one matching path.
      */
-    private RangeIndexConfigElement findConfiguration(NodePath path, boolean complex, List<Object> configs) {
-        for (Object configObj : configs) {
-            final RangeIndexConfig config = (RangeIndexConfig) configObj;
+    private RangeIndexConfigElement findConfiguration(NodePath path, boolean complex, List<RangeIndexConfig> configs) {
+        for (RangeIndexConfig config : configs) {
             final RangeIndexConfigElement rice = config.find(path);
             if (rice != null && ((complex && rice.isComplex()) ||
                     (!complex && !rice.isComplex()))) {
@@ -206,5 +209,23 @@ public class OptimizeFieldPragma extends Pragma {
             }
         }
         return null;
+    }
+
+    private List<RangeIndexConfig> getConfigurations(Sequence contextSequence) {
+        List<RangeIndexConfig> configs = new ArrayList<RangeIndexConfig>();
+        for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            final Collection collection = i.next();
+            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
+                continue;
+            }
+            IndexSpec idxConf = collection.getIndexConfiguration(context.getBroker());
+            if (idxConf != null) {
+                final RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
+                if (config != null) {
+                    configs.add(config);
+                }
+            }
+        }
+        return configs;
     }
 }

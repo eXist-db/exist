@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.Sequence;
 
 public class TimerPragma extends Pragma {
 
@@ -66,7 +67,7 @@ public class TimerPragma extends Pragma {
         }
     }
 
-    public void before(XQueryContext context, Expression expression) throws XPathException {
+    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
         start = System.currentTimeMillis();
     }
 }

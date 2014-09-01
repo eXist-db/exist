@@ -22,6 +22,7 @@ package org.exist.xquery.pragmas;
 import org.exist.xquery.*;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.xquery.value.Sequence;
 
 public class ForceIndexUse extends Pragma {
 	
@@ -35,7 +36,7 @@ public class ForceIndexUse extends Pragma {
     	super(qname, contents);
     }
     
-    public void before(XQueryContext context, Expression expression) throws XPathException {    	
+    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
     }
     
     public void after(XQueryContext context, Expression expression) throws XPathException {
