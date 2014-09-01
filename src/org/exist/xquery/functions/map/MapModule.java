@@ -24,7 +24,8 @@ public class MapModule extends AbstractInternalModule {
             new FunctionDef(MapFunction.signatures[4], MapFunction.class),
             new FunctionDef(MapFunction.signatures[5], MapFunction.class),
             new FunctionDef(MapFunction.signatures[6], MapFunction.class),
-            new FunctionDef(MapFunction.signatures[7], MapFunction.class)
+            new FunctionDef(MapFunction.signatures[7], MapFunction.class),
+            new FunctionDef(MapFunction.signatures[8], MapFunction.class)
     };
 
     public MapModule(Map<String, List<? extends Object>> parameters) {

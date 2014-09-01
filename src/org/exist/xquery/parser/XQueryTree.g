@@ -51,6 +51,7 @@ header {
 	import org.exist.xquery.update.*;
 	import org.exist.storage.ElementValue;
 	import org.exist.xquery.functions.map.MapExpr;
+	import org.exist.xquery.functions.map.MapLookup;
 }
 
 /**
@@ -1885,6 +1886,10 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
     step=functionDecl [path]
 	{ path.add(step); }
+	|
+	step = mapLookup [null]
+	step=postfixExpr [step]
+	{ path.add(step); }
 	;
 	
 pathExpr [PathExpr path]
@@ -2374,6 +2379,8 @@ throws PermissionDeniedException, EXistException, XPathException
 				step = new DynamicFunctionCall(context, step, params, isPartial);
 			}
 		)
+		|
+		step = mapLookup [step]
 	)*
 ;
 
@@ -2391,6 +2398,26 @@ throws PermissionDeniedException, EXistException, XPathException
         }
 	)
 	;
+
+mapLookup [Expression leftExpr]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+:
+    #(
+        lookup:MAP_LOOKUP
+        {
+            PathExpr lookupExpr = new PathExpr(context);
+        }
+        ( expr [lookupExpr] )*
+        {
+            if (lookupExpr.getLength() == 0) {
+                step = new MapLookup(context, leftExpr, lookup.getText());
+            } else {
+                step = new MapLookup(context, leftExpr, lookupExpr);
+            }
+        }
+    )
+    ;
 
 functionCall [PathExpr path]
 returns [Expression step]
