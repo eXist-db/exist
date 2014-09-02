@@ -79,6 +79,7 @@ public class MailModule extends AbstractInternalModule {
         new FunctionDef(MessageListFunctions.signatures[1], MessageListFunctions.class),
         new FunctionDef(MessageListFunctions.signatures[2], MessageListFunctions.class),
         new FunctionDef(MessageListFunctions.signatures[3], MessageListFunctions.class),
+        new FunctionDef(MessageFunctions.signatures[0], MessageFunctions.class),
 
         new FunctionDef(SendEmailFunction.signatures[0], SendEmailFunction.class),
 
