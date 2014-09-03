@@ -739,7 +739,11 @@ public class SecurityManagerImpl implements SecurityManager {
         public final void execute( JobExecutionContext jec ) throws JobExecutionException {
             final JobDataMap jobDataMap = jec.getJobDetail().getJobDataMap();
 
-            final SecurityManagerImpl sm = ( SecurityManagerImpl )jobDataMap.get( SecurityManagerImpl.class.getName() );
+            final Properties params = (Properties) jobDataMap.get("params");
+            if (params == null) {
+                return;
+            }
+            final SecurityManagerImpl sm = ( SecurityManagerImpl )params.get( SecurityManagerImpl.class.getName() );
 
             if (sm == null)
             	{return;}
