@@ -150,6 +150,7 @@ imaginaryTokenDefinitions
 	FUNCTION_TEST
 	MAP_TEST
 	MAP_LOOKUP
+	ARRAY
 	PROLOG
 	OPTION
 	ATOMIC_TYPE 
@@ -1014,13 +1015,13 @@ stepExpr throws XPathException
 	=> axisStep
 	|
 	( ( "element" | "attribute" | "text" | "document" | "processing-instruction" | "namespace" |
-	"comment" | "ordered" | "unordered" | "map" ) LCURLY ) => 
+	"comment" | "ordered" | "unordered" | "map" | "array" ) LCURLY ) =>
 	postfixExpr
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => postfixExpr
 	|
 	( MOD | DOLLAR | ( qName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
-	  XML_PI | QUESTION )
+	  XML_PI | QUESTION | LPPAREN)
 	=> postfixExpr
 	|
 	axisStep
@@ -1156,6 +1157,8 @@ primaryExpr throws XPathException
 	|
 	( "unordered" LCURLY ) => unorderedExpr
 	|
+	( LPPAREN | ( "array" LCURLY ) ) => arrayConstructor
+	|
 	( "map" LCURLY ) => mapExpr
 	|
 	directConstructor
@@ -1184,6 +1187,19 @@ mapAssignment throws XPathException
 	:
 	exprSingle COLON^ ( EQ! )? exprSingle
 	;
+
+arrayConstructor throws XPathException
+    :
+    LPPAREN! (exprSingle ( COMMA! exprSingle )* )? RPPAREN!
+    {
+        #arrayConstructor = #(#[ARRAY, "["], #arrayConstructor);
+    }
+    |
+    "array"! LCURLY! (expr )? RCURLY!
+    {
+        #arrayConstructor = #(#[ARRAY, "array"], #arrayConstructor);
+    }
+    ;
 
 orderedExpr throws XPathException
 	:
@@ -1920,6 +1936,8 @@ reservedKeywords returns [String name]
 	"xpointer" { name = "xpointer"; }
 	|
 	"map" { name = "map"; }
+	|
+	"array" { name = "array"; }
 	;
 
 /**

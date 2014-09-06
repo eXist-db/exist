@@ -53,6 +53,7 @@ header {
 	import org.exist.storage.ElementValue;
 	import org.exist.xquery.functions.map.MapExpr;
 	import org.exist.xquery.functions.map.MapLookup;
+	import org.exist.xquery.functions.array.ArrayConstructor;
 }
 
 /**
@@ -1857,6 +1858,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	step=mapExpr [path]
 	|
+	step=arrayConstr [path]
+	|
 	#(
 		PARENTHESIZED
 		{ PathExpr pathExpr= new PathExpr(context); }
@@ -2341,6 +2344,8 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
     (
+        step = mapLookup [step]
+        |
 		#(
         	PREDICATE
 			{
@@ -2375,8 +2380,6 @@ throws PermissionDeniedException, EXistException, XPathException
 				step = new DynamicFunctionCall(context, step, params, isPartial);
 			}
 		)
-		|
-		step = mapLookup [step]
 	)*
 ;
 
@@ -3100,5 +3103,31 @@ throws XPathException, PermissionDeniedException, EXistException
 				{ expr.map(key, value); }
 			)
 		)*
+	)
+	;
+
+arrayConstr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+		t:ARRAY
+		{
+		    String type = t.getText();
+		    ArrayConstructor array;
+		    if (type.equals("[")) {
+		        array = new ArrayConstructor(context, ArrayConstructor.ConstructorType.SQUARE_ARRAY);
+		    } else {
+		        array = new ArrayConstructor(context, ArrayConstructor.ConstructorType.CURLY_ARRAY);
+		    }
+		    path.add(array);
+		    step = array;
+		}
+		(
+		    { PathExpr arg = new PathExpr(context); }
+		    expr[arg]
+		    { array.addArgument(arg); }
+        )*
 	)
 	;

@@ -1,9 +1,9 @@
 package org.exist.xquery.functions.map;
 
-import com.trifork.clj_ds.IPersistentMap;
-import com.trifork.clj_ds.ITransientMap;
-import com.trifork.clj_ds.PersistentHashMap;
-import com.trifork.clj_ds.PersistentTreeMap;
+import com.github.krukow.clj_lang.IPersistentMap;
+import com.github.krukow.clj_lang.ITransientMap;
+import com.github.krukow.clj_lang.PersistentHashMap;
+import com.github.krukow.clj_lang.PersistentTreeMap;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 

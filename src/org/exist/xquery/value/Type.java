@@ -111,6 +111,7 @@ public class Type {
     public final static int JAVA_OBJECT = 100;
     public final static int FUNCTION_REFERENCE = 101;
     public final static int MAP = 102;
+    public final static int ARRAY = 103;
 
     /**
      * Special type constant to indicate that an item has been
@@ -193,6 +194,7 @@ public class Type {
         defineSubType(NCNAME, ENTITY);
 
         defineSubType(FUNCTION_REFERENCE, MAP);
+        defineSubType(FUNCTION_REFERENCE, ARRAY);
     }
 
     private final static Int2ObjectHashMap<String[]> typeNames = new Int2ObjectHashMap<String[]>(100);
@@ -218,6 +220,7 @@ public class Type {
         defineBuiltInType(JAVA_OBJECT, "object");
         defineBuiltInType(FUNCTION_REFERENCE, "function");
         defineBuiltInType(MAP, "map");
+        defineBuiltInType(ARRAY, "array");
         defineBuiltInType(NUMBER, "numeric");
         
         defineBuiltInType(ANY_TYPE, "xs:anyType");
