@@ -87,7 +87,7 @@
             </classpath>
         </taskdef>
         <fetch dest="${apps.dir}" url="${apps.repo}/pkg.zip?abbrev=${xar}&amp;zip=yes"
-            failonerror="false" maxtime="120">
+            failonerror="false" maxtime="360">
             <patternset>
                 <include name="**/*.xar"/>
             </patternset>
