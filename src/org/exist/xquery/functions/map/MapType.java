@@ -51,10 +51,10 @@ public class MapType extends AbstractMapType {
     }
 
     public void add(AbstractMapType other) {
-        if (other.getItemCount() == 1) {
+        if (other.size() == 1) {
             setKeyType(other.getKey().getType());
             map = map.assoc(other.getKey(), other.getValue());
-        } else if (other.getItemCount() > 0) {
+        } else if (other.size() > 0) {
             setKeyType(other.getKeyType());
             if (map instanceof PersistentHashMap) {
                 ITransientMap<AtomicValue, Sequence> tmap = ((PersistentHashMap)map).asTransient();
@@ -106,13 +106,13 @@ public class MapType extends AbstractMapType {
     }
 
     @Override
-    public Iterator<Map.Entry<AtomicValue, Sequence>> iterator() {
-        return map.iterator();
+    public int size() {
+        return map.count();
     }
 
     @Override
-    public int getItemCount() {
-        return map.count();
+    public Iterator<Map.Entry<AtomicValue, Sequence>> iterator() {
+        return map.iterator();
     }
 
     @Override
