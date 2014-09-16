@@ -2,7 +2,7 @@
 setlocal
 
 rem
-rem Copyright (c) 1999, 2013 Tanuki Software, Ltd.
+rem Copyright (c) 1999, 2014 Tanuki Software, Ltd.
 rem http://www.tanukisoftware.com
 rem All rights reserved.
 rem
@@ -15,7 +15,7 @@ rem Java Service Wrapper general passthrough startup script.
 rem
 rem -----------------------------------------------------------------------------
 rem These settings can be modified to fit the needs of your application
-rem Optimized for use with version 3.5.23 of the Wrapper.
+rem Optimized for use with version 3.5.25 of the Wrapper.
 
 rem The base name for the Wrapper binary.
 set _WRAPPER_BASE=wrapper
@@ -31,7 +31,7 @@ rem  this script.  It will not be possible to specify a configuration file on th
 rem  command line if _PASS_THROUGH is set. 
 rem If a relative path is specified, please note that the location is based on the 
 rem location.
-set _WRAPPER_CONF_DEFAULT=../conf/wrapper.conf
+set _WRAPPER_CONF_DEFAULT="../conf/%_WRAPPER_BASE%.conf"
 
 rem Makes it possible to override the Wrapper configuration file by specifying it
 rem  as the first parameter.
