@@ -1,14 +1,14 @@
 #! /bin/sh
 
 ##  eXist Native XML Database
-##  Copyright (C) 2004-2012 The eXist-db Project
+##  Copyright (C) 2004-2014 The eXist-db Project
 ##  http://exist-db.org
 ##  wolf, ljo
 ##
-##  $Id$
+## 
 
 #
-# Copyright (c) 1999, 2013 Tanuki Software, Ltd.
+# Copyright (c) 1999, 2014 Tanuki Software, Ltd.
 # http://www.tanukisoftware.com
 # All rights reserved.
 #
@@ -23,7 +23,7 @@
 
 #-----------------------------------------------------------------------------
 # These settings can be modified to fit the needs of your application
-# Optimized for use with version 3.5.23 of the Wrapper.
+# Optimized for use with version 3.5.25 of the Wrapper.
 
 # Application
 APP_NAME="@app.name@"
@@ -100,6 +100,9 @@ WAIT_FOR_STARTED_TIMEOUT=120
 # flag for using upstart when installing (rather than init.d rc.d)
 USE_UPSTART=
 
+# flag for using systemd when installing
+USE_SYSTEMD=
+
 # When installing on On Mac OSX platforms, the following domain will be used to
 #  prefix the plist file name.
 PLIST_DOMAIN=org.existdb.wrapper
@@ -137,13 +140,20 @@ RUN_LEVEL=20
 # Do not modify anything beyond this point
 #-----------------------------------------------------------------------------
 
+# check if we are running under Cygwin terminal
+CYGWIN=`uname -o`
+if [ "$CYGWIN" = "Cygwin" ]
+then
+  eval echo `gettext 'This script is not compatible with Cygwin.  Please use the Wrapper batch files to control the Wrapper.'`
+  exit 1
+fi
+
 if [ -n "$FIXED_COMMAND" ]
 then
     COMMAND="$FIXED_COMMAND"
 else
     COMMAND="$1"
 fi
-
 
 # Required for HP-UX Startup
 if [ `uname -s` = "HP-UX" -o `uname -s` = "HP-UX64" ] ; then
@@ -301,8 +311,12 @@ then
     APP_PLIST_BASE=${PLIST_DOMAIN}.${APP_NAME}
     APP_PLIST=${APP_PLIST_BASE}.plist
 else
-    DIST_ARCH=
-    DIST_ARCH=`uname -p 2>/dev/null | $TREXE "[A-Z]" "[a-z]" | $TREXE -d ' '`
+    if [ "$DIST_OS" = "linux" ]
+    then
+        DIST_ARCH=
+    else
+        DIST_ARCH=`uname -p 2>/dev/null | $TREXE "[A-Z]" "[a-z]" | $TREXE -d ' '`
+    fi
     if [ "X$DIST_ARCH" = "X" ]
     then
         DIST_ARCH="unknown"
@@ -864,7 +878,7 @@ launchinternal() {
         prepAdditionalParams "$@"
 
         # The string passed to eval must handles spaces in paths correctly.
-        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" wrapper.daemonize=TRUE $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.23 $ADDITIONAL_PARA"
+        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" wrapper.daemonize=TRUE $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.25 $ADDITIONAL_PARA"
         eval $COMMAND_LINE
     else
         eval echo `gettext '$APP_LONG_NAME is already running.'`
@@ -887,7 +901,7 @@ console() {
         prepAdditionalParams "$@"
 
         # The string passed to eval must handles spaces in paths correctly.
-        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" $ANCHORPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.23 $ADDITIONAL_PARA"
+        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" $ANCHORPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.25 $ADDITIONAL_PARA"
         eval $COMMAND_LINE
     else
         eval echo `gettext '$APP_LONG_NAME is already running.'`
@@ -1009,7 +1023,7 @@ start() {
         prepAdditionalParams "$@"
 
         # The string passed to eval must handles spaces in paths correctly.
-        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" wrapper.daemonize=TRUE $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.23 $ADDITIONAL_PARA"
+        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.name=\"$APP_NAME\" wrapper.displayname=\"$APP_LONG_NAME\" wrapper.daemonize=TRUE $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.25 $ADDITIONAL_PARA"
         eval $COMMAND_LINE
     else
         eval echo `gettext '$APP_LONG_NAME is already running.'`
@@ -1113,6 +1127,15 @@ status() {
     fi
 }
 
+# Make sure APP_NAME is less than 14 characters, otherwise in AIX, the command
+# "lsitab" will fail
+validateAppNameLength() {
+    if [ ${#APP_NAME} -gt 14 ] ; then
+        eval echo `gettext ' APP_NAME (${APP_NAME}) must be less than 14 characters long'`
+        exit 1
+    fi
+}
+
 installUpstart() {
     eval echo `gettext ' Installing the $APP_LONG_NAME daemon using upstart..'`
     if [ -f "${REALDIR}/${APP_NAME}.install" ] ; then 
@@ -1127,6 +1150,30 @@ installUpstart() {
         echo "stop on runlevel [!2345]" >> "/etc/init/${APP_NAME}.conf"
         echo "env LANG=${LANG}" >> "/etc/init/${APP_NAME}.conf"
        echo "exec \"${REALPATH}\" upstartinternal" >> "/etc/init/${APP_NAME}.conf"
+    fi
+}
+
+installSystemd() {
+    eval echo `gettext ' Installing the $APP_LONG_NAME daemon using systemd..'`
+    if [ -f "${REALDIR}/${APP_NAME}.service" ] ; then 
+        eval echo `gettext ' a custom service file ${APP_NAME}.service found'`
+        cp "${REALDIR}/${APP_NAME}.service" "/etc/systemd/system/${APP_NAME}.service"
+    else
+        eval echo `gettext ' creating default service file..'`
+        echo "[Unit]"                            > "/etc/systemd/system/${APP_NAME}.service"
+        echo "Description=${APP_LONG_NAME}"     >> "/etc/systemd/system/${APP_NAME}.service"
+        echo "After=syslog.target"              >> "/etc/systemd/system/${APP_NAME}.service"
+        echo ""                                 >> "/etc/systemd/system/${APP_NAME}.service"
+        echo "[Service]"                        >> "/etc/systemd/system/${APP_NAME}.service"
+        echo "Type=forking"                     >> "/etc/systemd/system/${APP_NAME}.service"
+        echo "ExecStart=\"${REALPATH}\" start"  >> "/etc/systemd/system/${APP_NAME}.service"
+        echo "ExecStop=\"${REALPATH}\" stop"    >> "/etc/systemd/system/${APP_NAME}.service"
+        echo ""                                 >> "/etc/systemd/system/${APP_NAME}.service"
+        echo "[Install]"                        >> "/etc/systemd/system/${APP_NAME}.service"
+        echo "WantedBy=multi-user.target"       >> "/etc/systemd/system/${APP_NAME}.service"
+
+        systemctl daemon-reload
+        systemctl enable "${APP_NAME}.service"
     fi
 }
 
@@ -1157,6 +1204,8 @@ installdaemon() {
                 if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" -o -f "/etc/init/${APP_NAME}.conf" ] ; then
                     eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                     exit 1
+                elif [ -n "$USE_SYSTEMD" -a -d "/etc/systemd" ] ; then
+                        installSystemd
                 else
                     if [ -n "$USE_UPSTART" -a -d "/etc/init" ] ; then
                         installUpstart
@@ -1172,6 +1221,8 @@ installdaemon() {
                 if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
                     eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                     exit 1
+                elif [ -n "$USE_SYSTEMD" -a -d "/etc/systemd" ] ; then
+                        installSystemd
                 else
                     eval echo `gettext ' Installing the $APP_LONG_NAME daemon..'`
                     ln -s "$REALPATH" "/etc/init.d/$APP_NAME"
@@ -1183,7 +1234,9 @@ installdaemon() {
                     eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
                     exit 1
                 else
-                    if [ -n "$USE_UPSTART" -a -d "/etc/init" ] ; then
+                    if [ -n "$USE_SYSTEMD" -a -d "/etc/systemd" ] ; then
+                        installSystemd
+                    elif [ -n "$USE_UPSTART" -a -d "/etc/init" ] ; then
                         installUpstart
                     else 
                         eval echo `gettext ' Installing the $APP_LONG_NAME daemon using init.d..'`
@@ -1226,6 +1279,7 @@ installdaemon() {
             fi
         elif [ "$DIST_OS" = "aix" ] ; then
             eval echo `gettext 'Detected AIX:'`
+            validateAppNameLength
             if [ -f "/etc/rc.d/init.d/$APP_NAME" ] ; then
                 eval echo `gettext ' The $APP_LONG_NAME daemon is already installed as rc.d script.'`
                 exit 1
@@ -1243,7 +1297,6 @@ installdaemon() {
                 done
                 /usr/bin/mkssys -s "$APP_NAME" -p "$REALPATH" -a "launchdinternal" -u 0 -f 9 -n 15 -S
                 /usr/sbin/mkitab "$APP_NAME":2:once:"/usr/bin/startsrc -s \"${APP_NAME}\" >/dev/console 2>&1"
-                
             fi
         elif [ "$DIST_OS" = "freebsd" ] ; then
             eval echo `gettext 'Detected FreeBSD:'`                
@@ -1364,6 +1417,12 @@ removedaemon() {
                     /sbin/chkconfig "$APP_NAME" off
                     /sbin/chkconfig --del "$APP_NAME"
                     rm -f "/etc/init.d/$APP_NAME"
+                elif [ -f "/etc/systemd/system/${APP_NAME}.service" ] ; then
+                    stopit "0"
+                    eval echo `gettext ' Removing $APP_LONG_NAME daemon from systemd...'`
+                    systemctl stop "${APP_NAME}.service"
+                    rm "/etc/systemd/system/${APP_NAME}.service"
+                    systemctl daemon-reload
                 elif [ -f "/etc/init/${APP_NAME}.conf" ] ; then
                     stopit "0"
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon from upstart...'`
@@ -1379,6 +1438,12 @@ removedaemon() {
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
                     insserv -r "/etc/init.d/$APP_NAME"
                     rm -f "/etc/init.d/$APP_NAME"
+                elif [ -f "/etc/systemd/system/${APP_NAME}.service" ] ; then
+                    stopit "0"
+                    eval echo `gettext ' Removing $APP_LONG_NAME daemon from systemd...'`
+                    systemctl stop "${APP_NAME}.service"
+                    rm "/etc/systemd/system/${APP_NAME}.service"
+                    systemctl daemon-reload
                 else
                     eval echo `gettext ' The $APP_LONG_NAME daemon is not currently installed.'`
                     exit 1
@@ -1390,6 +1455,12 @@ removedaemon() {
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon from init.d...'`
                     update-rc.d -f "$APP_NAME" remove
                     rm -f "/etc/init.d/$APP_NAME"
+                elif [ -f "/etc/systemd/system/${APP_NAME}.service" ] ; then
+                    stopit "0"
+                    eval echo `gettext ' Removing $APP_LONG_NAME daemon from systemd...'`
+                    systemctl stop "${APP_NAME}.service"
+                    rm "/etc/systemd/system/${APP_NAME}.service"
+                    systemctl daemon-reload
                 elif [ -f "/etc/init/${APP_NAME}.conf" ] ; then
                     stopit "0"
                     eval echo `gettext ' Removing $APP_LONG_NAME daemon from upstart...'`
@@ -1425,6 +1496,7 @@ removedaemon() {
             fi
         elif [ "$DIST_OS" = "aix" ] ; then
             eval echo `gettext 'Detected AIX:'`
+            validateAppNameLength
             if [ -f "/etc/rc.d/init.d/$APP_NAME" -o -L "/etc/rc.d/init.d/$APP_NAME" -o -n "`/usr/sbin/lsitab $APP_NAME`" -o -n "`/usr/bin/lssrc -S -s $APP_NAME`" ] ; then
                 stopit "0"
                 eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
