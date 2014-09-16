@@ -365,7 +365,7 @@ Section 4 - GPLv2 License Agreement
     END OF TERMS AND CONDITIONS
 
 
-Section 4 - 3rd Party Components
+Section 5 - 3rd Party Components
 
 (1) The Software Program includes software and documentation components
 developed in part by Silver Egg Technology, Inc.("SET") prior to 2001
