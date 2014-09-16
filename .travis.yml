@@ -1,6 +1,6 @@
 language: java
 jdk:
-# - oraclejdk8
+ - oraclejdk8
  - openjdk7
  - oraclejdk7
 script: ./build.sh travis
