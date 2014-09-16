@@ -49,9 +49,9 @@ public abstract class AbstractMapType extends FunctionReference
 
     public abstract AbstractMapType remove(AtomicValue key);
 
-    public abstract int getItemCount();
-
     public abstract int getKeyType();
+
+    public abstract int size();
 
     @Override
     public int getItemType() {
