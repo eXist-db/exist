@@ -141,7 +141,7 @@ RUN_LEVEL=20
 #-----------------------------------------------------------------------------
 
 # check if we are running under Cygwin terminal
-CYGWIN=`uname -o`
+CYGWIN=`uname -o 2> /dev/null`
 if [ "$CYGWIN" = "Cygwin" ]
 then
   eval echo `gettext 'This script is not compatible with Cygwin.  Please use the Wrapper batch files to control the Wrapper.'`
