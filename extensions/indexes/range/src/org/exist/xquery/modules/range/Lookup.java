@@ -155,11 +155,14 @@ public class Lookup extends Function implements Optimizable {
         this.contextPath = contextPath;
     }
 
-    public void setFallback(Expression expression) {
+    public void setFallback(Expression expression, int optimizeAxis) {
         if (expression instanceof InternalFunctionCall) {
             expression = ((InternalFunctionCall)expression).getFunction();
         }
         this.fallback = expression;
+        // we need to know the axis at this point. the optimizer will call
+        // getOptimizeAxis before analyze
+        this.axis = optimizeAxis;
     }
 
     public Expression getFallback() {
@@ -416,7 +419,7 @@ public class Lookup extends Function implements Optimizable {
 
     @Override
     public int getOptimizeAxis() {
-        return Constants.DESCENDANT_AXIS;
+        return axis;
     }
 
     @Override
