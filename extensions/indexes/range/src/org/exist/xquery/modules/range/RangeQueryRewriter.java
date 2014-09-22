@@ -49,6 +49,8 @@ public class RangeQueryRewriter extends QueryRewriter {
 
                 final List<Predicate> preds = locationStep.getPredicates();
 
+                // will become true if optimizable expression is found
+                boolean canOptimize = false;
                 // get path of path expression before the predicates
                 NodePath contextPath = toNodePath(getPrecedingSteps(locationStep));
                 // process the remaining predicates
@@ -64,6 +66,22 @@ public class RangeQueryRewriter extends QueryRewriter {
                         // no optimizable steps found
                         continue;
                     }
+
+                    // check if inner steps are on an axis we can optimize
+                    final int axis;
+                    if (innerExpr instanceof InternalFunctionCall) {
+                        InternalFunctionCall fcall = (InternalFunctionCall) innerExpr;
+                        axis = ((Optimizable) fcall.getFunction()).getOptimizeAxis();
+                    } else {
+                        axis = ((Optimizable) innerExpr).getOptimizeAxis();
+                    }
+                    if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
+                            axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
+                            axis == Constants.DESCENDANT_ATTRIBUTE_AXIS || axis == Constants.SELF_AXIS
+                    )) {
+                        continue;
+                    }
+
                     // compute left hand path
                     NodePath innerPath = toNodePath(steps);
                     if (innerPath == null) {
@@ -82,17 +100,20 @@ public class RangeQueryRewriter extends QueryRewriter {
                         // collect arguments
                         Lookup func = rewrite(innerExpr, path);
                         // preserve original comparison: may need it for in-memory lookups
-                        func.setFallback(innerExpr);
+                        func.setFallback(innerExpr, axis);
                         func.setLocation(innerExpr.getLine(), innerExpr.getColumn());
 
                         pred.replace(innerExpr, new InternalFunctionCall(func));
+                        canOptimize = true;
                     }
                 }
 
-                // Step 2: return an OptimizeFieldPragma to handle field lookups and optimize the entire
-                // path expression. If the pragma can optimize the path expression, the original code will
-                // not be called.
-                return new OptimizeFieldPragma(OptimizeFieldPragma.OPTIMIZE_RANGE_PRAGMA, null, getContext());
+                if (canOptimize) {
+                    // Step 2: return an OptimizeFieldPragma to handle field lookups and optimize the entire
+                    // path expression. If the pragma can optimize the path expression, the original code will
+                    // not be called.
+                    return new OptimizeFieldPragma(OptimizeFieldPragma.OPTIMIZE_RANGE_PRAGMA, null, getContext());
+                }
             }
         }
         return null;
