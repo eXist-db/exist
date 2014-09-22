@@ -281,6 +281,9 @@ public class FieldLookup extends Function implements Optimizable {
                     operators[i] = operator;
                 }
             }
+            if (operators.length != fields.getItemCount()) {
+                throw new XPathException(this, "Number of operators specified must correspond to number of fields queried");
+            }
             Sequence[] keys = new Sequence[getArgumentCount() - j];
             SequenceIterator fieldIter = fields.unorderedIterator();
             for (int i = j; i < getArgumentCount(); i++) {
@@ -295,6 +298,9 @@ public class FieldLookup extends Function implements Optimizable {
                 }
             }
 
+            if (keys.length < fields.getItemCount()) {
+                throw new XPathException(this, "Number of keys to look up must correspond to number of fields specified");
+            }
             RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
 
             try {
