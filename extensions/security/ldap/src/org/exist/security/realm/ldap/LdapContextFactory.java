@@ -100,6 +100,10 @@ public class LdapContextFactory implements Configurable {
             throw new IllegalStateException("An LDAP URL must be specified of the form ldap://<hostname>:<port>");
         }
 
+        if(password != null && "".equals(password.trim())) {
+            throw new IllegalStateException("Password for LDAP authentication may not be empty.");
+        }
+
         if (username != null && principalPattern != null) {
             username = principalPatternFormat.format(new String[] { username });
         }
