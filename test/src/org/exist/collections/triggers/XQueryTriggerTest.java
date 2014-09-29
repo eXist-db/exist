@@ -38,7 +38,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -249,6 +253,14 @@ public class XQueryTriggerTest {
 
     private final static String documentURI = "[uri/text() = '/db/testXQueryTrigger/test.xml']";
     private final static String binaryURI = "[uri/text() = '/db/testXQueryTrigger/1x1.gif']";
+    
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            System.out.println("\nStarting test: " + description.getMethodName());
+        }
+    };
     
     /** just start the DB and create the test collection */
     @BeforeClass
