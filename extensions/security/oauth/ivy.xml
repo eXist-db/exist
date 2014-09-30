@@ -4,6 +4,9 @@
 <ivy-module version="2.0">
     <info organisation="org.exist" module="security.oauth"/>
     <dependencies>
-        <dependency org="org.scribe" name="scribe" rev="1.3.5" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.scribe" name="scribe" rev="1.3.5" conf="*->*,!sources,!javadoc">
+            <exclude org="commons-codec" name="commons-codec"/>
+        </dependency>
+        <dependency org="org.json" name="json" rev="20140107" conf="*->*,!sources,!javadoc"/>
     </dependencies>
 </ivy-module>
