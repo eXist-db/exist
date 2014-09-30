@@ -31,7 +31,11 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -73,6 +77,14 @@ public class SAXTriggerTest {
     private final static String BASE_URI = "xmldb:exist://";
 
     private final static String testCollection = "/db/triggers";
+    
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            System.out.println("\nStarting test: " + description.getMethodName());
+        }
+    };
 
     @Test
     public void test() throws EXistException {
