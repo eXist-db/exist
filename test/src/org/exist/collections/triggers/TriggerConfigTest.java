@@ -38,6 +38,10 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import java.util.LinkedList;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 /**
  * Test proper configuration of triggers in collection.xconf, in particular if there's
@@ -82,6 +86,14 @@ public class TriggerConfigTest {
     public TriggerConfigTest(String testCollection) {
         this.testCollection = testCollection;
     }
+    
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            System.out.println("\nStarting test: " + description.getMethodName());
+        }
+    };
 
     @Test
     public void storeDocument() {
