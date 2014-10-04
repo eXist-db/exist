@@ -22,7 +22,7 @@
 package org.exist.xquery.value;
 
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 
 import java.util.Comparator;
 

@@ -49,7 +49,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;

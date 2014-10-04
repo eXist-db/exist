@@ -22,9 +22,9 @@
  */
 package org.exist.xquery;
 
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;

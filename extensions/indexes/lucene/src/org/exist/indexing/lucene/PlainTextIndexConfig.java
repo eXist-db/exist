@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.lucene.document.Field;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

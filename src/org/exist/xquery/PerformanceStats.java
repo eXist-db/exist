@@ -24,7 +24,7 @@ package org.exist.xquery;
 
 import org.exist.Database;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.HashMap;

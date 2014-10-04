@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.dom.persistent.ElementAtExist;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.AnalyzeContextInfo;

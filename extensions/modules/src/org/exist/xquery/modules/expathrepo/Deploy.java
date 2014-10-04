@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.repo.Deployment;
 import org.exist.repo.PackageLoader;
 import org.exist.security.PermissionDeniedException;

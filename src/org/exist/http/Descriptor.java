@@ -36,7 +36,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.SingleInstanceConfiguration;
 import org.w3c.dom.Document;

@@ -21,7 +21,7 @@
  */
 package org.exist.interpreter;
 
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Option;
 import org.exist.xquery.TerminatedException;

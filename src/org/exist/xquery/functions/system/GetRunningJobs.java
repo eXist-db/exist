@@ -25,7 +25,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
 import org.exist.xquery.BasicFunction;

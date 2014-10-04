@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.QName;

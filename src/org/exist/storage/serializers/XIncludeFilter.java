@@ -26,7 +26,7 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.QName;
 import org.exist.dom.persistent.StoredNode;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
@@ -282,7 +282,7 @@ public class XIncludeFilter implements Receiver {
 
         Map<String, String> params = null;
         DocumentImpl doc = null;
-        org.exist.memtree.DocumentImpl memtreeDoc = null;
+        org.exist.dom.memtree.DocumentImpl memtreeDoc = null;
         boolean xqueryDoc = false;
         
         if (docUri != null) {
@@ -489,7 +489,7 @@ public class XIncludeFilter implements Receiver {
         serializer.createContainerElements = createContainerElements;
     }
 
-    private org.exist.memtree.DocumentImpl parseExternal(URI externalUri) throws IOException, ResourceError, PermissionDeniedException, ParserConfigurationException, SAXException {
+    private org.exist.dom.memtree.DocumentImpl parseExternal(URI externalUri) throws IOException, ResourceError, PermissionDeniedException, ParserConfigurationException, SAXException {
         final URLConnection con = externalUri.toURL().openConnection();
         if(con instanceof HttpURLConnection)
         {
@@ -515,8 +515,8 @@ public class XIncludeFilter implements Receiver {
         final SAXAdapter adapter = new SAXAdapter();
         reader.setContentHandler(adapter);
         reader.parse(src);
-        final org.exist.memtree.DocumentImpl doc =
-                (org.exist.memtree.DocumentImpl)adapter.getDocument();
+        final org.exist.dom.memtree.DocumentImpl doc =
+                (org.exist.dom.memtree.DocumentImpl)adapter.getDocument();
         doc.setDocumentURI(externalUri.toString());
         return doc;
     }

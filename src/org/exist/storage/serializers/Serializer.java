@@ -1069,10 +1069,10 @@ public abstract class Serializer implements XMLReader {
 		if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
 			{serializeToReceiver((NodeProxy)v, generateDocEvents, true);}
 		else
-			{serializeToReceiver((org.exist.memtree.NodeImpl)v, generateDocEvents);}
+			{serializeToReceiver((org.exist.dom.memtree.NodeImpl)v, generateDocEvents);}
 	}
 	
-	protected void serializeToReceiver(org.exist.memtree.NodeImpl n, boolean generateDocEvents)
+	protected void serializeToReceiver(org.exist.dom.memtree.NodeImpl n, boolean generateDocEvents)
 	throws SAXException {
 		if (generateDocEvents)
 			{receiver.startDocument();}

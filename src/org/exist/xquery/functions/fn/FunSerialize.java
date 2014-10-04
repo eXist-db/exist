@@ -2,9 +2,9 @@ package org.exist.xquery.functions.fn;
 
 import org.exist.Namespaces;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;

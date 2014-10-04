@@ -1,5 +1,9 @@
 package org.exist.xquery.modules.mail;
 
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentImpl;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -15,7 +19,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.*;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;

@@ -139,7 +139,7 @@ public class ElementBuilder<K> {
 	 */
 	public ElementBuilder<K> node(Node node) {
 		checkDone();
-		if (node instanceof org.exist.memtree.NodeImpl) ((org.exist.memtree.NodeImpl) node).expand();
+		if (node instanceof org.exist.dom.memtree.NodeImpl) ((org.exist.dom.memtree.NodeImpl) node).expand();
 		
 		switch (node.getNodeType()) {
 			

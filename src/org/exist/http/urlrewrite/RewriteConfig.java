@@ -8,7 +8,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.xquery.regex.JDK15RegexTranslator;
 import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.Constants;

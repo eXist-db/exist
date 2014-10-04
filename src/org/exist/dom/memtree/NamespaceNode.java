@@ -20,7 +20,7 @@
  *
  *  $Id$
  */
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -57,7 +57,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
     }
 
     /* (non-Javadoc)
-     * @see org.exist.memtree.NodeImpl#getNodeType()
+     * @see org.exist.dom.memtree.NodeImpl#getNodeType()
      */
     public short getNodeType()
     {
@@ -70,7 +70,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
 
 
     /* (non-Javadoc)
-     * @see org.exist.memtree.NodeImpl#getType()
+     * @see org.exist.dom.memtree.NodeImpl#getType()
      */
     public int getType()
     {

@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
 import java.io.IOException;
 import java.io.StringWriter;

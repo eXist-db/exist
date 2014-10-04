@@ -30,7 +30,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.exist.dom.persistent.ElementAtExist;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;

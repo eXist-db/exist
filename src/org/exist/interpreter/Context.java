@@ -16,7 +16,7 @@ import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
@@ -783,7 +783,7 @@ public interface Context {
 	 *
 	 * @throws  XPathException
 	 */
-	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) throws XPathException;
+	public DocumentImpl storeTemporaryDoc(org.exist.dom.memtree.DocumentImpl doc) throws XPathException;
 
 	public void setAttribute(String attribute, Object value);
 

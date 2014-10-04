@@ -37,8 +37,8 @@ import javax.xml.transform.sax.TransformerHandler;
 
 import junit.framework.Assert;
 
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.w3c.tests.TestCase;

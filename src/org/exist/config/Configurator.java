@@ -61,7 +61,7 @@ import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementAtExist;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;

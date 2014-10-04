@@ -64,9 +64,9 @@ import org.exist.dom.persistent.QName;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.interpreter.Context;
-import org.exist.memtree.InMemoryXMLStreamReader;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.InMemoryXMLStreamReader;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.repo.ExistRepository;
 import org.exist.security.AuthenticationException;
@@ -3251,7 +3251,7 @@ public class XQueryContext implements BinaryValueManager, Context
      *
      * @throws  XPathException
      */
-    public DocumentImpl storeTemporaryDoc( org.exist.memtree.DocumentImpl doc ) throws XPathException
+    public DocumentImpl storeTemporaryDoc( org.exist.dom.memtree.DocumentImpl doc ) throws XPathException
     {
         try {
             final DocumentImpl targetDoc = getBroker().storeTempResource( doc );

@@ -28,7 +28,7 @@ import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.QName;
 import org.exist.dom.persistent.TextImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.FastQSort;
 import org.exist.util.XMLString;
 import org.exist.xquery.BasicFunction;

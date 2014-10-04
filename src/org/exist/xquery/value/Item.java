@@ -23,7 +23,7 @@ package org.exist.xquery.value;
 import java.util.Properties;
 
 import org.exist.dom.persistent.StoredNode;
-import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;

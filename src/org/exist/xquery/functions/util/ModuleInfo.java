@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.xquery.BasicFunction;

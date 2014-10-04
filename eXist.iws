@@ -236,7 +236,7 @@
         <option value="$PROJECT_DIR$/src/org/exist/util/serializer/DOMStreamer.java" />
         <option value="$PROJECT_DIR$/test/src/org/exist/xmldb/ResourceTest.java" />
         <option value="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/BaseHTTPClientFunction.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/memtree/SAXAdapter.java" />
+        <option value="$PROJECT_DIR$/src/org/exist/dom/memtree/SAXAdapter.java" />
         <option value="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractCompressFunction.java" />
         <option value="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractExtractFunction.java" />
         <option value="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/org/xml/sax/ContentHandler.class" />
@@ -1890,7 +1890,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/memtree/DocumentBuilderReceiver.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/dom/memtree/DocumentBuilderReceiver.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="42" column="0" selection-start="1424" selection-end="1424" vertical-scroll-proportion="0.022692889" vertical-offset="0" max-vertical-offset="0" />
       </provider>
@@ -1900,7 +1900,7 @@
         <state line="8" column="13" selection-start="335" selection-end="335" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/exist/memtree/MemTreeBuilder.java">
+    <entry file="file://$PROJECT_DIR$/src/org/exist/dom/memtree/MemTreeBuilder.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="43" column="13" selection-start="1325" selection-end="1325" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
       </provider>

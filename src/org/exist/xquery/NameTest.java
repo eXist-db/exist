@@ -2,8 +2,8 @@ package org.exist.xquery;
 
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.ReferenceNode;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.ReferenceNode;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;

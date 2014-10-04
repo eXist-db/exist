@@ -20,7 +20,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.persistent.DocumentSet;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
