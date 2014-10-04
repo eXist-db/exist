@@ -788,7 +788,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	 * @throws LockException
 	 */
 	public abstract DocumentImpl storeTempResource(
-			org.exist.memtree.DocumentImpl doc) throws EXistException,
+			org.exist.dom.memtree.DocumentImpl doc) throws EXistException,
 			PermissionDeniedException, LockException;
 		
 	/**

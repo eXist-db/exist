@@ -44,9 +44,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xquery.BasicFunction;

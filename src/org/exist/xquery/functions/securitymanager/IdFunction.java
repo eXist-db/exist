@@ -22,7 +22,7 @@
 package org.exist.xquery.functions.securitymanager;
 
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.Subject;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -67,7 +67,7 @@ public class IdFunction extends BasicFunction {
      * 
      * @return An in-memory document describing the accounts
      */
-    private org.exist.memtree.DocumentImpl functionId() throws XPathException {
+    private org.exist.dom.memtree.DocumentImpl functionId() throws XPathException {
         final MemTreeBuilder builder = context.getDocumentBuilder();
         builder.startDocument();
 

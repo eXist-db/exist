@@ -1,4 +1,4 @@
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
 import org.xml.sax.SAXException;
 

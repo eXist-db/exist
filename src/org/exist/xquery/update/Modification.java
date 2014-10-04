@@ -36,8 +36,8 @@ import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeIndexListener;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.StoredNode;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
@@ -201,7 +201,7 @@ public abstract class Modification extends AbstractExpression
                         else
                             {item = builder.getDocument().getNode(last + 1);}
 					} else {
-						((org.exist.memtree.NodeImpl)item).deepCopy();
+						((org.exist.dom.memtree.NodeImpl)item).deepCopy();
 					}
 				}
 				out.add(item);

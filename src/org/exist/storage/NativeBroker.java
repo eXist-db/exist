@@ -48,7 +48,7 @@ import org.exist.fulltext.FTIndex;
 import org.exist.fulltext.FTIndexWorker;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StructuralIndex;
-import org.exist.memtree.DOMIndexer;
+import org.exist.dom.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
 import org.exist.security.*;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -1819,7 +1819,7 @@ public class NativeBroker extends DBBroker {
      * @return The document stored in the temp collection
      */
     @Override
-    public DocumentImpl storeTempResource(final org.exist.memtree.DocumentImpl doc)
+    public DocumentImpl storeTempResource(final org.exist.dom.memtree.DocumentImpl doc)
         throws EXistException, PermissionDeniedException, LockException {
         //store the currentUser
         final Subject currentUser = getSubject();

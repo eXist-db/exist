@@ -32,8 +32,8 @@ import org.apache.log4j.Logger;
 
 import org.exist.Namespaces;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;

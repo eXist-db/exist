@@ -21,6 +21,12 @@
  */
 package org.exist.repo;
 
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.InMemoryNodeSet;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
@@ -30,7 +36,6 @@ import org.exist.collections.IndexInfo;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.GroupAider;

@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;

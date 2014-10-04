@@ -173,7 +173,7 @@ public class FunInScopePrefixes extends BasicFunction {
 					//get the top-most ancestor
 					final Stack<Element> stack = new Stack<Element>(); 
 					do {
- 						if (node.getParentNode() == null || node.getParentNode() instanceof org.exist.memtree.DocumentImpl)
+ 						if (node.getParentNode() == null || node.getParentNode() instanceof org.exist.dom.memtree.DocumentImpl)
  							{stack.add((Element)node);}
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
@@ -207,8 +207,8 @@ public class FunInScopePrefixes extends BasicFunction {
 			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
 		}		
 		
-		if (element instanceof org.exist.memtree.ElementImpl) {
-			((org.exist.memtree.ElementImpl)element).getNamespaceMap(prefixes);
+		if (element instanceof org.exist.dom.memtree.ElementImpl) {
+			((org.exist.dom.memtree.ElementImpl)element).getNamespaceMap(prefixes);
 		
 		} else {
 			final ElementImpl elementImpl = (org.exist.dom.persistent.ElementImpl) element;

@@ -1,5 +1,7 @@
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.easymock.classextension.EasyMock;
 import static org.easymock.classextension.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.verify;

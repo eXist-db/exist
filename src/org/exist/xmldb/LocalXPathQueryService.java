@@ -134,10 +134,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	public ResourceSet query(XMLResource res, String query, String sortBy)
 		throws XMLDBException {
 		final Node n = ((LocalXMLResource) res).root;
-		if (n != null && n instanceof org.exist.memtree.NodeImpl) {
+		if (n != null && n instanceof org.exist.dom.memtree.NodeImpl) {
 			
 			final XmldbURI[] docs = new XmldbURI[] { XmldbURI.create(res.getParentCollection().getName()) };
-			return doQuery(query, docs, (org.exist.memtree.NodeImpl)n, sortBy);
+			return doQuery(query, docs, (org.exist.dom.memtree.NodeImpl)n, sortBy);
 		}
 		final NodeProxy node = ((LocalXMLResource) res).getNode();
 		if (node == null) {

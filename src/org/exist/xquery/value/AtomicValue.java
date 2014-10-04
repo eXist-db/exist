@@ -26,7 +26,7 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.StoredNode;
-import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.Indexable;
@@ -181,7 +181,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Item#copyTo(org.exist.storage.DBBroker, org.exist.memtree.DocumentBuilderReceiver)
+	 * @see org.exist.xquery.value.Item#copyTo(org.exist.storage.DBBroker, org.exist.dom.memtree.DocumentBuilderReceiver)
 	 */
 	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
 		try {

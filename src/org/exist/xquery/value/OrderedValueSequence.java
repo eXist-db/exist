@@ -24,8 +24,8 @@ package org.exist.xquery.value;
 import org.exist.dom.persistent.AVLTreeNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.util.FastQSort;
 import org.exist.xquery.Constants;
@@ -178,7 +178,7 @@ public class OrderedValueSequence extends AbstractSequence {
 					if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
 
 	                    // found an in-memory document
-	                    final org.exist.memtree.DocumentImpl doc = ((NodeImpl)v).getDocument();
+	                    final org.exist.dom.memtree.DocumentImpl doc = ((NodeImpl)v).getDocument();
                         if (doc==null) {
                             continue;
                         }

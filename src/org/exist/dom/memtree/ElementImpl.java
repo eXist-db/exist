@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -682,7 +682,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
                     result.append( " " );
                 }
                 final Node natt = theAttrs.item( i );
-                if( "org.exist.memtree.AttributeImpl".equals( natt.getClass().getName() ) ) {
+                if( "org.exist.dom.memtree.AttributeImpl".equals( natt.getClass().getName() ) ) {
                     result.append( ( (AttributeImpl)natt ).toString() );
                 } else {
                     result.append( ( (NamespaceNode)natt ).toString() );

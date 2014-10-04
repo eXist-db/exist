@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.ReferenceNode;
+import org.exist.dom.memtree.ReferenceNode;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Comment;

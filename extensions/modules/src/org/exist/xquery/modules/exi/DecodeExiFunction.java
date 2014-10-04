@@ -23,9 +23,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.AppendingSAXAdapter;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.AppendingSAXAdapter;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes.JavaErrorCode;

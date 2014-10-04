@@ -415,7 +415,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     @Override
     public void save() throws PermissionDeniedException, ConfigurationException {
         //ignore in-memory nodes
-        if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
+        if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.dom.memtree"))
             {return;} 
         synchronized (this) {
             try {
@@ -436,7 +436,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     @Override
     public void save(final DBBroker broker) throws PermissionDeniedException, ConfigurationException {
         //ignore in-memory nodes
-        if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
+        if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.dom.memtree"))
             {return;} 
         synchronized(this) {
             try {

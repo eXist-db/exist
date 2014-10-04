@@ -1744,7 +1744,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return ""; //UNDERSTAND: is it ok?
     }
 
-    //Please, keep in sync with org.exist.memtree.ElementImpl
+    //Please, keep in sync with org.exist.dom.memtree.ElementImpl
     protected XmldbURI calculateBaseURI() {
         XmldbURI baseURI = null;
         final String nodeBaseURI = _getAttributeNS(Namespaces.XML_NS, "base");

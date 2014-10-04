@@ -22,8 +22,8 @@
  */
 package org.exist.util.serializer;
 
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.ReferenceNode;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.ReferenceNode;
 import org.exist.storage.serializers.Serializer;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;

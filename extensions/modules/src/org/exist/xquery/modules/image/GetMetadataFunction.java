@@ -32,8 +32,8 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;

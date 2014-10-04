@@ -195,7 +195,7 @@ public class ZipEntryFunctions extends BasicFunction {
         return new StringValue(builder.toString());
     }
 
-    private org.exist.memtree.DocumentImpl extractHtmlEntry(ZipInputStream zis, ZipEntry zipEntry) throws XPathException {
+    private org.exist.dom.memtree.DocumentImpl extractHtmlEntry(ZipInputStream zis, ZipEntry zipEntry) throws XPathException {
         try {
             return ModuleUtils.htmlToXHtml(context, zipEntry.getName(), new StreamSource(zis), null, null);
         } catch(SAXException saxe) {

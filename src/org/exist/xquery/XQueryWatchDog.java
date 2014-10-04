@@ -26,7 +26,7 @@ import java.text.NumberFormat;
 import org.apache.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xquery.util.ExpressionDumper;

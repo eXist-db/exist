@@ -24,7 +24,7 @@ package org.exist.xquery.functions.securitymanager;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.AbstractUnixStylePermission;
@@ -292,7 +292,7 @@ public class PermissionsFunction extends BasicFunction {
         return result;
     }
 
-    private org.exist.memtree.DocumentImpl functionGetPermissions(final XmldbURI pathUri) throws XPathException {
+    private org.exist.dom.memtree.DocumentImpl functionGetPermissions(final XmldbURI pathUri) throws XPathException {
         try {
             return permissionsToXml(getPermissions(pathUri));
         } catch(final PermissionDeniedException pde) {
@@ -480,7 +480,7 @@ public class PermissionsFunction extends BasicFunction {
         return permissions;
     }
 
-    private org.exist.memtree.DocumentImpl permissionsToXml(final Permission permission) {
+    private org.exist.dom.memtree.DocumentImpl permissionsToXml(final Permission permission) {
         final MemTreeBuilder builder = context.getDocumentBuilder();
         builder.startDocument();
 

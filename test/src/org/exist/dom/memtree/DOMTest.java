@@ -4,8 +4,11 @@
  * To change the template for this generated file go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
 import java.io.StringReader;
 import java.io.StringWriter;
 

@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.ScheduledJobInfo.TriggerState;
 import org.exist.storage.BrokerPool;

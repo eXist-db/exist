@@ -51,8 +51,8 @@ import org.exist.indexing.*;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextDoc;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
@@ -749,7 +749,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             //System.out.println(builder.getDocument().toString());
             
             // TODO check
-            report = ((org.exist.memtree.DocumentImpl) builder.getDocument()).getNode(nodeNr);
+            report = ((org.exist.dom.memtree.DocumentImpl) builder.getDocument()).getNode(nodeNr);
 
 
         } catch (Exception ex){

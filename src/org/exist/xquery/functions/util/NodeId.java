@@ -25,7 +25,7 @@ package org.exist.xquery.functions.util;
 import org.apache.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;

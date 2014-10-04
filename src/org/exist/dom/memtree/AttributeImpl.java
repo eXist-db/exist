@@ -19,7 +19,7 @@
  *
  *  $Id$
  */
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
 import org.exist.dom.persistent.QName;
 import org.exist.numbering.NodeId;
@@ -85,7 +85,7 @@ public class AttributeImpl extends NodeImpl implements Attr {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.memtree.NodeImpl#getType()
+     * @see org.exist.dom.memtree.NodeImpl#getType()
      */
     @Override
     public int getType() {

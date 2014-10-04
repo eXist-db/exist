@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.exist.dom.persistent.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
 
 public class FunctionTrace extends BasicFunction {

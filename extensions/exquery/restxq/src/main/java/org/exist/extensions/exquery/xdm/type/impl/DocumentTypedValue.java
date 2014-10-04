@@ -41,7 +41,7 @@ public class DocumentTypedValue extends AbstractTypedValue<Document> {
         super(Type.DOCUMENT, document);
     }
     
-    public DocumentTypedValue(final org.exist.memtree.DocumentImpl document) {
+    public DocumentTypedValue(final org.exist.dom.memtree.DocumentImpl document) {
         super(Type.DOCUMENT, document);
     }   
 }

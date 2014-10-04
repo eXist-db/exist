@@ -23,7 +23,7 @@ package org.exist.dom.persistent;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -792,7 +792,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#copyTo(org.exist.storage.DBBroker, org.exist.memtree.DocumentBuilderReceiver)
+     * @see org.exist.xquery.value.Item#copyTo(org.exist.storage.DBBroker, org.exist.dom.memtree.DocumentBuilderReceiver)
      */
     public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
         NodeImpl node = null;

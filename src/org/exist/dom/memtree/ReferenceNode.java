@@ -20,7 +20,7 @@
  *
  *  $Id$
  */
-package org.exist.memtree;
+package org.exist.dom.memtree;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;

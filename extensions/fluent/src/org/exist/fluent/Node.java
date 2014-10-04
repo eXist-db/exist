@@ -155,7 +155,7 @@ public class Node extends Item {
 				throw new DatabaseException("unable to compare nodes", e);
 			}
 		} else if (nv1.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-			org.exist.memtree.NodeImpl n1 = (org.exist.memtree.NodeImpl) nv1, n2 = (org.exist.memtree.NodeImpl) nv2;
+			org.exist.dom.memtree.NodeImpl n1 = (org.exist.dom.memtree.NodeImpl) nv1, n2 = (org.exist.dom.memtree.NodeImpl) nv2;
 			if (n1.getDocument() != n2.getDocument())
 				throw new DatabaseException("can't compare document order of in-memory nodes created separately");
 			try {
@@ -217,7 +217,7 @@ public class Node extends Item {
 				}
 			});
 		} catch (ClassCastException e) {
-			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
+			if (getDOMNode() instanceof org.exist.dom.memtree.NodeImpl) {
 				throw new UnsupportedOperationException("appends to in-memory nodes are not supported");
 			} else {
 				throw new UnsupportedOperationException("cannot append to a " + Type.getTypeName(item.getType()));
@@ -320,7 +320,7 @@ public class Node extends Item {
 				}
 			});
 		} catch (ClassCastException e) {
-			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
+			if (getDOMNode() instanceof org.exist.dom.memtree.NodeImpl) {
 				throw new UnsupportedOperationException("replacement of in-memory nodes is not supported");
 			} else {
 				throw new UnsupportedOperationException("cannot replace a " + Type.getTypeName(item.getType()));
@@ -355,7 +355,7 @@ public class Node extends Item {
 				}
 			});
 		} catch (ClassCastException e) {
-			if (getDOMNode() instanceof org.exist.memtree.ElementImpl) {
+			if (getDOMNode() instanceof org.exist.dom.memtree.ElementImpl) {
 				throw new UnsupportedOperationException("updates on in-memory nodes are not supported");
 			} else {
 				throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
