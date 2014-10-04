@@ -297,7 +297,6 @@ public class XQueryFunctionsTest {
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
-        database.setProperty("configuration", "../../conf.xml");
         DatabaseManager.registerDatabase(database);
 
         rootCollection =
