@@ -22,6 +22,7 @@
 package org.exist.storage.md;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.exist.collections.Collection;
@@ -41,18 +42,7 @@ import org.exist.xmldb.XmldbURI;
 public class CollectionEvents implements CollectionTrigger {
 
 	@Override
-	public void configure(DBBroker broker, Collection parent, Map parameters) throws TriggerException {
-	}
-
-	@Override
-	public void prepare(int event, DBBroker broker, Txn txn,
-			Collection collection, Collection newCollection)
-			throws TriggerException {
-	}
-
-	@Override
-	public void finish(int event, DBBroker broker, Txn txn,
-			Collection collection, Collection newCollection) {
+	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
 	}
 
 	@Override
