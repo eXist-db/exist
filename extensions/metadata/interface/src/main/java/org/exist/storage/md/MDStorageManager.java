@@ -71,7 +71,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	public final static String PREFIX_VALUE = PREFIX+":"+VALUE;
 	public final static String PREFIX_VALUE_IS_DOCUMENT = PREFIX+":"+VALUE_IS_DOCUMENT;
 
-	protected static MDStorageManager _ = null;
+	protected static MDStorageManager inst = null;
 	
 	MetaData md;
 	
@@ -88,7 +88,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 			throw new PermissionDeniedException(e);
 		}
 
-		_ = this;
+		inst = this;
 		
 		Database db = manager.getDatabase();
 		

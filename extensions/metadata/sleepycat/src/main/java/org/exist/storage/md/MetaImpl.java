@@ -77,7 +77,7 @@ public class MetaImpl implements Meta {
 
 	public Object getValue() {
 		try {
-			DocumentImpl doc = MetaData._.getDocument(value);
+			DocumentImpl doc = MetaData.inst.getDocument(value);
 			if (doc != null) return doc;
 		} catch (Exception e) {
 			//LOG
@@ -87,7 +87,7 @@ public class MetaImpl implements Meta {
 	
 	public void setValue(Object value) {
 		if (value instanceof DocumentImpl) {
-			this.value = MetaData._.getMetas((DocumentImpl) value).getUUID();
+			this.value = MetaData.inst.getMetas((DocumentImpl) value).getUUID();
 			//TODO: set link to master doc?
 		} else
 			this.value = value.toString(); 
@@ -98,6 +98,6 @@ public class MetaImpl implements Meta {
 	}
 	
 	public void delete() {
-	    MetaDataImpl._.delMeta(object, key);
+	    MetaDataImpl.inst.delMeta(object, key);
 	}
 }

@@ -88,24 +88,24 @@ public class MetasImpl implements Metas {
     public Meta put(String key, Object value) {
 		MetaImpl m = (MetaImpl)get(key);
 		if (m == null)
-			return MetaDataImpl._.addMeta(this, key, value);
+			return MetaDataImpl.inst.addMeta(this, key, value);
 		
 		else {
 			m.setValue(value);
 
-			MetaDataImpl._.addMeta(m);
+			MetaDataImpl.inst.addMeta(m);
 		}
-		MetaDataImpl._.indexMetas(this);
+		MetaDataImpl.inst.indexMetas(this);
 		
 		return m;
 	}
 
 	public Meta get(String key) {
-		return MetaDataImpl._.getMeta(this, key);
+		return MetaDataImpl.inst.getMeta(this, key);
 	}
 
     public void delete(String key) {
-        MetaDataImpl._.delMeta(uuid, key);
+        MetaDataImpl.inst.delMeta(uuid, key);
     }
 
     protected void update(DocumentAtExist doc) {
@@ -119,7 +119,7 @@ public class MetasImpl implements Metas {
 	public List<Meta> metas() {
 		List<Meta> metas = new ArrayList<Meta>();
 		
-		EntityCursor<MetaImpl> sub = MetaDataImpl._.getMetaKeys(this);
+		EntityCursor<MetaImpl> sub = MetaDataImpl.inst.getMetaKeys(this);
 		try {
 			
 			for (MetaImpl m : sub) {
@@ -134,14 +134,14 @@ public class MetasImpl implements Metas {
 	}
 
 //	public EntityCursor<MetaImpl> keys() {
-//		return MetaDataImpl._.getMetaKeys(this);
+//		return MetaDataImpl.inst.getMetaKeys(this);
 //	}
 
 	public void delete() {
-	    MetaDataImpl._.delMetas(this);
+	    MetaDataImpl.inst.delMetas(this);
 	}
 
 	public void restore(String uuid, String key, String value) {
-		MetaDataImpl._._addMeta(this, uuid, key, value);
+		MetaDataImpl.inst._addMeta(this, uuid, key, value);
 	}
 }
