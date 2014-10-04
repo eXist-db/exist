@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 
 import java.net.URISyntaxException;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.SchemaType;

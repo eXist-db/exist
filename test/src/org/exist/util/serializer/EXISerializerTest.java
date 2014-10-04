@@ -15,7 +15,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.easymock.Capture;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.Attributes;

@@ -31,7 +31,7 @@ import java.util.Stack;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;

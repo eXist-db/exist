@@ -26,7 +26,7 @@ import javax.xml.transform.sax.TemplatesHandler;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.XPathException;
-import org.exist.dom.ElementAtExist;
+import org.exist.dom.persistent.ElementAtExist;
 import org.exist.memtree.SAXAdapter;
 import org.w3c.dom.Document;
 

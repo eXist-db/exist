@@ -30,11 +30,11 @@ import org.exist.numbering.NodeId;
 import org.exist.xquery.Expression;
 //import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
-import org.exist.dom.NodeListImpl;
-import org.exist.dom.QName;
-import org.exist.dom.DocumentAtExist;
-import org.exist.dom.ElementAtExist;
-import org.exist.dom.NodeAtExist;
+import org.exist.dom.persistent.NodeListImpl;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.DocumentAtExist;
+import org.exist.dom.persistent.ElementAtExist;
+import org.exist.dom.persistent.NodeAtExist;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLStylesheet;
 import org.exist.xslt.expression.Element;
@@ -249,7 +249,7 @@ public class XSLElement implements ElementAtExist, Names {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.dom.i.NodeAtExist#getDocumentAtExist()
+	 * @see org.exist.dom.persistent.i.NodeAtExist#getDocumentAtExist()
 	 */
 	public DocumentAtExist getDocumentAtExist() {
 		return element.getDocumentAtExist();
@@ -686,14 +686,14 @@ public class XSLElement implements ElementAtExist, Names {
 
 	
 	/* (non-Javadoc)
-	 * @see org.exist.dom.QNameable#getQName()
+	 * @see org.exist.dom.persistent.QNameable#getQName()
 	 */
 	public QName getQName() {
 		return element.getQName();
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.dom.i.NodeAtExist#getNodeNumber()
+	 * @see org.exist.dom.persistent.i.NodeAtExist#getNodeNumber()
 	 */
 	public int getNodeNumber() {
 		return element.getNodeNumber();
@@ -707,7 +707,7 @@ public class XSLElement implements ElementAtExist, Names {
 	}
 
 //	/* (non-Javadoc)
-//	 * @see org.exist.dom.i.NodeAtExist#matchChildren(org.exist.xquery.NodeTest)
+//	 * @see org.exist.dom.persistent.i.NodeAtExist#matchChildren(org.exist.xquery.NodeTest)
 //	 */
 //	public Boolean matchChildren(NodeTest test) throws XPathException {
 //		return element.matchChildren(test);
@@ -718,7 +718,7 @@ public class XSLElement implements ElementAtExist, Names {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.dom.i.ElementAtExist#getNamespaceMap()
+	 * @see org.exist.dom.persistent.i.ElementAtExist#getNamespaceMap()
 	 */
 	public Map<String, String> getNamespaceMap() {
 		return element.getNamespaceMap();
@@ -726,7 +726,7 @@ public class XSLElement implements ElementAtExist, Names {
 
 	
 	/* (non-Javadoc)
-	 * @see org.exist.dom.i.NodeAtExist#getNodeId()
+	 * @see org.exist.dom.persistent.i.NodeAtExist#getNodeId()
 	 */
 	public NodeId getNodeId() {
 		return element.getNodeId();

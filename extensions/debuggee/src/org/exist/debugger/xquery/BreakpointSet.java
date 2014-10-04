@@ -24,7 +24,7 @@ package org.exist.debugger.xquery;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.dbgp.packets.Command;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;

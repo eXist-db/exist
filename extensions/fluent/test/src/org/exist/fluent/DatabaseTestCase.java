@@ -1,11 +1,12 @@
 package org.exist.fluent;
 
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import java.io.File;
 import java.lang.annotation.*;
 import java.util.Iterator;
 
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.fluent.Database;
 import org.exist.fluent.DatabaseException;
 import org.exist.fluent.Transaction;

@@ -22,8 +22,8 @@
 package org.exist.storage.dom;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeHandle;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;

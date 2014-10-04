@@ -22,10 +22,10 @@
 package org.exist.storage.lock;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 
 /**

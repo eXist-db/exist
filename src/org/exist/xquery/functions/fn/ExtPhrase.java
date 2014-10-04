@@ -31,10 +31,10 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.EXistException;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.analysis.TextToken;

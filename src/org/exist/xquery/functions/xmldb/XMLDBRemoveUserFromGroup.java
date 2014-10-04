@@ -23,7 +23,7 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
@@ -71,7 +71,7 @@ public class XMLDBRemoveUserFromGroup extends BasicFunction {
     /*
      * (non-Javadoc)
      *
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet,
      *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     @Override

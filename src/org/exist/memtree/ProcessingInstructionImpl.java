@@ -25,7 +25,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;

@@ -30,7 +30,7 @@ import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;

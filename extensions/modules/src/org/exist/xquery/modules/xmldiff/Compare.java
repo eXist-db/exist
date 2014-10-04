@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 
 import org.custommonkey.xmlunit.Diff;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;

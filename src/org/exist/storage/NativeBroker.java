@@ -20,6 +20,19 @@
  */
 package org.exist.storage;
 
+import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.DocumentMetadata;
+import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Indexer;
@@ -31,7 +44,6 @@ import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.*;
-import org.exist.dom.*;
 import org.exist.fulltext.FTIndex;
 import org.exist.fulltext.FTIndexWorker;
 import org.exist.indexing.StreamListener;

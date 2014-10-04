@@ -23,7 +23,7 @@
 package org.exist.storage;
 
 import org.exist.collections.Collection;
-import org.exist.dom.SymbolTable;
+import org.exist.dom.persistent.SymbolTable;
 import org.exist.storage.btree.Value;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;

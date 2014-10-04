@@ -21,9 +21,9 @@
  */
 package org.exist.performance.xquery;
 
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.QName;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.OrderedValuesIndex;
 import org.exist.security.PermissionDeniedException;

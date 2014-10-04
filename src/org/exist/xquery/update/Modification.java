@@ -29,13 +29,13 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeIndexListener;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeIndexListener;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
@@ -364,7 +364,7 @@ public abstract class Modification extends AbstractExpression
 		}
 
 		/* (non-Javadoc)
-		 * @see org.exist.dom.NodeIndexListener#nodeChanged(org.exist.dom.NodeImpl)
+		 * @see org.exist.dom.persistent.NodeIndexListener#nodeChanged(org.exist.dom.persistent.NodeImpl)
 		 */
 		public void nodeChanged(StoredNode node) {
 			final long address = node.getInternalAddress();

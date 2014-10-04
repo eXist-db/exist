@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl.xquery;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.extensions.exquery.restxq.impl.ResourceFunctionExecutorImpl;
 import org.exist.extensions.exquery.restxq.impl.adapters.EXQueryErrorCode;
 import org.exist.xquery.BasicFunction;

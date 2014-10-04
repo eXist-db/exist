@@ -29,7 +29,7 @@ package org.exist.extensions.exquery.restxq.impl.xquery;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.extensions.exquery.restxq.impl.RestXqServiceRegistryManager;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;

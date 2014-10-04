@@ -22,7 +22,7 @@
 package org.exist.xquery.modules.sort;
 
 import org.exist.EXistException;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.indexing.sort.SortIndex;
 import org.exist.indexing.sort.SortIndexWorker;
 import org.exist.util.LockException;

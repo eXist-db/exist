@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.mina.core.session.IoSession;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XQueryContext;
 

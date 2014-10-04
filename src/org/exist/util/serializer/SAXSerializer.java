@@ -26,8 +26,8 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.exist.Namespaces;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.XMLString;
 import org.exist.util.serializer.json.JSONWriter;
@@ -280,7 +280,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.util.serializer.Receiver#startElement(org.exist.dom.QName)
+     * @see org.exist.util.serializer.Receiver#startElement(org.exist.dom.persistent.QName)
      */
     @Override
     public void startElement(final QName qname, final AttrList attribs) throws SAXException {
@@ -390,7 +390,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
+     * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.persistent.QName)
      */
     @Override
     public void endElement(final QName qname) throws SAXException {
@@ -418,7 +418,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.QName, java.lang.String)
+     * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.persistent.QName, java.lang.String)
      */
     @Override
     public void attribute(final QName qname, final String value) throws SAXException {

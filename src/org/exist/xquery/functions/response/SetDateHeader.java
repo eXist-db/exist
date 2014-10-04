@@ -24,7 +24,7 @@ package org.exist.xquery.functions.response;
 
 import org.apache.log4j.Logger;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -68,7 +68,7 @@ public class SetDateHeader extends Function
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException
     {

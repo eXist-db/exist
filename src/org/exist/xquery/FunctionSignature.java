@@ -25,7 +25,7 @@ package org.exist.xquery;
 import java.util.HashMap;
 import java.util.Map;
 import org.exist.Namespaces;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;

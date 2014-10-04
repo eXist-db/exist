@@ -49,7 +49,7 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.management.impl.SanityReport;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.ConfigurationHelper;

@@ -38,8 +38,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.DocumentAtExist;
-import org.exist.dom.ElementAtExist;
+import org.exist.dom.persistent.DocumentAtExist;
+import org.exist.dom.persistent.ElementAtExist;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;

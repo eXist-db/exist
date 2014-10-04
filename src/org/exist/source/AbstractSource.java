@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.parser.DeclScanner;
 import org.exist.xquery.parser.XQueryLexer;

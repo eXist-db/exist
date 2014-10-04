@@ -1,8 +1,8 @@
 package org.exist.xquery.functions.inspect;
 
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;

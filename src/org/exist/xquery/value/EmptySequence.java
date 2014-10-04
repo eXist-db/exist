@@ -20,7 +20,7 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.XPathException;
 
 public class EmptySequence extends AbstractSequence {

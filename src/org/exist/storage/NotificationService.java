@@ -22,8 +22,8 @@
 package org.exist.storage;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 
 import java.util.IdentityHashMap;

@@ -23,7 +23,7 @@ package org.exist.util.hashtable;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 
 /**
  * @author Pieter Deelen

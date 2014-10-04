@@ -26,8 +26,8 @@ import org.apache.log4j.Logger;
 import java.text.Collator;
 
 import org.exist.Namespaces;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.ReferenceNode;
 import org.exist.xquery.Cardinality;

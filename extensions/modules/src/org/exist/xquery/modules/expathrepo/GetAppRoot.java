@@ -1,6 +1,6 @@
 package org.exist.xquery.modules.expathrepo;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.repo.Deployment;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;

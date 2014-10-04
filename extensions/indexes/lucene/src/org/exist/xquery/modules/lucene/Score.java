@@ -28,9 +28,9 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
-import org.exist.dom.QName;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.Match;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.Match;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 

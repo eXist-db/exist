@@ -21,6 +21,17 @@
  */
 package org.exist.indexing.lucene;
 
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.AttrImpl;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -36,7 +47,6 @@ import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfigur
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.*;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.indexing.*;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextDoc;

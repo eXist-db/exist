@@ -23,7 +23,7 @@ package org.exist.xquery.functions.securitymanager;
 
 import java.util.Collections;
 import java.util.List;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;

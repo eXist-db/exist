@@ -22,10 +22,10 @@ package org.exist.xquery.value;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.EmptyNodeSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;

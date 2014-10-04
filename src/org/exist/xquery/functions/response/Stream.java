@@ -30,7 +30,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

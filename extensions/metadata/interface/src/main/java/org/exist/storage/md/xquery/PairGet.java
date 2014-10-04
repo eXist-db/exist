@@ -21,9 +21,9 @@
  */
 package org.exist.storage.md.xquery;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.md.Meta;
 import org.exist.storage.md.MetaData;
 import org.exist.storage.md.Metas;

@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.util.Occurrences;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;

@@ -79,7 +79,7 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.log4j.Logger;
 import org.exist.SystemProperties;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
 import org.exist.security.Permission;

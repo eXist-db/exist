@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.xquery.AnalyzeContextInfo;

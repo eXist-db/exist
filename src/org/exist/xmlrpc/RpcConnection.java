@@ -21,6 +21,18 @@
  */
 package org.exist.xmlrpc;
 
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.DocumentMetadata;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.DocumentTypeImpl;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.SortedNodeSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -37,7 +49,6 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;

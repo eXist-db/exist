@@ -25,8 +25,8 @@ package org.exist.xquery.functions.util;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.Indexable;
 import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.AnalyzeContextInfo;

@@ -25,7 +25,7 @@ import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.exist.xquery.XPathException;

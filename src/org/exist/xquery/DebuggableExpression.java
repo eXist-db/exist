@@ -25,7 +25,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.parser.XQueryAST;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.security.xacml.XACMLSource;
 
 public class DebuggableExpression implements Expression, RewritableExpression {

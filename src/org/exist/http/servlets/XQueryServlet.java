@@ -68,7 +68,7 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
 import org.exist.debuggee.DebuggeeFactory;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.persistent.XMLUtil;
 
 /**
  * Servlet to generate HTML output from an XQuery file.

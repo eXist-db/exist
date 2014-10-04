@@ -6,7 +6,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
-import org.exist.dom.BinaryDocument;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.test.TestConstants;

@@ -23,7 +23,7 @@ package org.exist.xquery.functions.util;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;

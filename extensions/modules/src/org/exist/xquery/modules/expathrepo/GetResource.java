@@ -4,7 +4,7 @@ import java.io.File;
 
 import javax.xml.transform.stream.StreamSource;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.repo.ExistRepository;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;

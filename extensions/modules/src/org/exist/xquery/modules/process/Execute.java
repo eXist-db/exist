@@ -1,6 +1,6 @@
 package org.exist.xquery.modules.process;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.ElementImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.*;

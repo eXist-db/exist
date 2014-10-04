@@ -39,7 +39,7 @@ import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.GroupImpl;
 import org.exist.security.internal.SecurityManagerImpl;

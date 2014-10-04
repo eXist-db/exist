@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.functions.system;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.xquery.BasicFunction;

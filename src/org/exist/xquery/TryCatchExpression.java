@@ -29,7 +29,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import org.exist.Namespaces;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 
 import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.ErrorCodes.ErrorCode;
@@ -110,7 +110,7 @@ public class TryCatchExpression extends AbstractExpression {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {

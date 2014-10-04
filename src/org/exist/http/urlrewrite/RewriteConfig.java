@@ -4,7 +4,7 @@ import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;

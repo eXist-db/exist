@@ -22,9 +22,9 @@
  */
 package org.exist.storage;
 
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.XQueryContext;
 
 

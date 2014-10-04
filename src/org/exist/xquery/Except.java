@@ -42,7 +42,7 @@ public class Except extends CombiningExpression {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.CombiningExpression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     * @see org.exist.xquery.CombiningExpression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {

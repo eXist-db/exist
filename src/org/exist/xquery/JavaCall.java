@@ -28,7 +28,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.xquery.value.Item;

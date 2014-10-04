@@ -21,6 +21,9 @@
  */
 package org.exist.xquery.xqts;
 
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.NodeProxy;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
@@ -28,7 +31,6 @@ import java.util.*;
 import junit.framework.Assert;
 
 import org.custommonkey.xmlunit.Diff;
-import org.exist.dom.*;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;

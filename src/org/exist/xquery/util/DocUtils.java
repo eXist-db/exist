@@ -30,8 +30,8 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 import org.exist.Namespaces;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;

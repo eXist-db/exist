@@ -23,10 +23,10 @@ package org.exist.xquery.functions.fn;
 
 import java.util.Iterator;
 
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;

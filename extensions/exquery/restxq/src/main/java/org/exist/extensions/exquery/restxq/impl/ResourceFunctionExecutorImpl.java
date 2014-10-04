@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
 import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.TypeAdapter;

@@ -8,8 +8,8 @@
 
 package org.exist.atom.util;
 
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeListImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeListImpl;
 import org.exist.storage.txn.Txn;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

@@ -33,11 +33,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.StoredNode;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;

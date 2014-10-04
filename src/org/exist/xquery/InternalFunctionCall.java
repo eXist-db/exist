@@ -3,8 +3,8 @@ package org.exist.xquery;
 import java.io.Writer;
 import java.util.List;
 
-import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.xquery.parser.XQueryAST;

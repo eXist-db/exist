@@ -12,7 +12,7 @@ import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;

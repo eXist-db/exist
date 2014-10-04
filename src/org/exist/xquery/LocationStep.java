@@ -21,7 +21,15 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.*;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.VirtualNodeSet;
+import org.exist.dom.persistent.ExtNodeSet;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.NodeVisitor;
 import org.exist.indexing.StructuralIndex;
 import org.exist.memtree.InMemoryNodeSet;
 import org.exist.memtree.NodeImpl;

@@ -22,7 +22,7 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;

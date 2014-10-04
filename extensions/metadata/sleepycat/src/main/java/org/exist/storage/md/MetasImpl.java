@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentAtExist;
+import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.xmldb.XmldbURI;
 
 import com.eaio.uuid.UUID;

@@ -21,8 +21,8 @@
  */
 package org.exist.xslt.expression;
 
-import org.exist.dom.QName;
-import org.exist.dom.QNameable;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.QNameable;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;

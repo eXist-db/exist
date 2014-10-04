@@ -23,7 +23,7 @@ package org.exist.indexing.range;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.value.Type;

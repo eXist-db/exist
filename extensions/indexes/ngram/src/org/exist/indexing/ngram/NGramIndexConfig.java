@@ -21,7 +21,7 @@
  */
 package org.exist.indexing.ngram;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.storage.ElementValue;
 

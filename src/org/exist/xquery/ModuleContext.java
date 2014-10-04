@@ -22,8 +22,8 @@
 package org.exist.xquery;
 
 import org.exist.debuggee.DebuggeeJoint;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Subject;
 import org.exist.storage.UpdateListener;

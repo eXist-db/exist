@@ -1,8 +1,12 @@
 package org.exist.indexing.sort;
 
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;

@@ -27,9 +27,9 @@ import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
 
-import org.exist.dom.AVLTreeNodeSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.AVLTreeNodeSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;

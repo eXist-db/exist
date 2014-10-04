@@ -21,6 +21,10 @@
  */
 package org.exist.memtree;
 
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.DocumentTypeImpl;
+import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;
 
 import org.w3c.dom.DOMException;
@@ -29,11 +33,10 @@ import org.w3c.dom.Node;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.dom.*;
-import org.exist.dom.CommentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ProcessingInstructionImpl;
-import org.exist.dom.TextImpl;
+import org.exist.dom.persistent.CommentImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.ProcessingInstructionImpl;
+import org.exist.dom.persistent.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -64,7 +67,7 @@ public class DOMIndexer {
     private DBBroker                   broker;
     private Txn                        transaction;
     private DocumentImpl               doc;
-    private org.exist.dom.DocumentImpl targetDoc;
+    private org.exist.dom.persistent.DocumentImpl targetDoc;
     private IndexSpec                  indexSpec   = null;
     private Stack<ElementImpl>         stack       = new Stack<ElementImpl>();
     private TextImpl                   text        = new TextImpl();
@@ -74,7 +77,7 @@ public class DOMIndexer {
     private ProcessingInstructionImpl  pi          = new ProcessingInstructionImpl();
 
     public DOMIndexer(DBBroker broker, Txn transaction, DocumentImpl doc,
-            org.exist.dom.DocumentImpl targetDoc) {
+            org.exist.dom.persistent.DocumentImpl targetDoc) {
         this.broker      = broker;
         this.transaction = transaction;
         this.doc         = doc;
@@ -205,7 +208,7 @@ public class DOMIndexer {
 
             case Node.CDATA_SECTION_NODE: {
                 last = stack.peek();
-                final org.exist.dom.CDATASectionImpl cdata = (org.exist.dom.CDATASectionImpl)NodePool.getInstance().borrowNode( Node.CDATA_SECTION_NODE );
+                final org.exist.dom.persistent.CDATASectionImpl cdata = (org.exist.dom.persistent.CDATASectionImpl)NodePool.getInstance().borrowNode( Node.CDATA_SECTION_NODE );
                 cdata.setData( doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr] );
                 cdata.setOwnerDocument( targetDoc );
                 last.appendChildInternal( prevNode, cdata );

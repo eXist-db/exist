@@ -4,7 +4,7 @@ package org.exist.storage.lock;
 import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
-import org.exist.dom.BinaryDocument;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.xmldb.XmldbURI;

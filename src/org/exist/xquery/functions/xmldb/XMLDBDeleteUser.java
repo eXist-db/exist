@@ -22,7 +22,7 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.security.Subject;
 import org.exist.security.Account;
 import org.exist.xmldb.LocalCollection;
@@ -75,7 +75,7 @@ public class XMLDBDeleteUser extends BasicFunction {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet,
 	 *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence args[], Sequence contextSequence)

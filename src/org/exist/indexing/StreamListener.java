@@ -21,9 +21,9 @@
  */
 package org.exist.indexing;
 
-import org.exist.dom.AttrImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.CharacterDataImpl;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.CharacterDataImpl;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 

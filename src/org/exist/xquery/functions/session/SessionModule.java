@@ -23,7 +23,7 @@ package org.exist.xquery.functions.session;
 
 import java.util.List;
 import java.util.Map;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.AbstractInternalModule;

@@ -30,7 +30,7 @@ import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.value.Sequence;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;

@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.util.NumberFormatter;
 import org.exist.xquery.value.*;

@@ -23,9 +23,9 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
 import org.exist.collections.Collection;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;

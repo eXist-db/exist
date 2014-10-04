@@ -27,7 +27,7 @@ import junit.framework.Assert;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

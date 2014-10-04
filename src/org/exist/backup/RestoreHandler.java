@@ -22,7 +22,7 @@
 package org.exist.backup;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentAtExist;
+import org.exist.dom.persistent.DocumentAtExist;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 

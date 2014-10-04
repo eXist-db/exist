@@ -21,7 +21,7 @@
  */
 package org.exist.storage;
 
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

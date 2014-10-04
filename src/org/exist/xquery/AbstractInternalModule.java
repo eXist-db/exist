@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 //import org.apache.log4j.Logger;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.value.Sequence;
 
 /**
@@ -113,7 +113,7 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getClassForFunction(org.exist.dom.QName)
+     * @see org.exist.xquery.Module#getClassForFunction(org.exist.dom.persistent.QName)
      */
     @Override
     public FunctionDef getFunctionDef(QName qname, int arity) {
@@ -184,7 +184,7 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
+     * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.persistent.QName)
      */
     @Override
     public Variable resolveVariable(QName qname) throws XPathException {

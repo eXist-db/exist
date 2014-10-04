@@ -12,10 +12,10 @@ import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;

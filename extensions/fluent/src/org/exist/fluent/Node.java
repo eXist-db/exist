@@ -1,5 +1,10 @@
 package org.exist.fluent;
 
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.StoredNode;
 import java.io.IOException;
 import java.util.*;
 
@@ -7,7 +12,6 @@ import javax.xml.datatype.*;
 
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.*;
-import org.exist.dom.*;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;

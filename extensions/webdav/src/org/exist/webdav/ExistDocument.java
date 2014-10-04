@@ -30,9 +30,9 @@ import java.net.URISyntaxException;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.LockToken;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockToken;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -337,7 +337,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Retrieve Locktoken from document metadata
-            org.exist.dom.LockToken token = document.getMetadata().getLockToken();
+            org.exist.dom.persistent.LockToken token = document.getMetadata().getLockToken();
             if (token == null) {
 
                 if (LOG.isDebugEnabled()) {

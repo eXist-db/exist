@@ -34,12 +34,12 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.StreamFilter;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.CharacterDataImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeHandle;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.Signatures;
@@ -352,7 +352,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     public String getAttributeValue(String namespaceURI, String localName) {
         readAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
-            final org.exist.dom.QName qn = attributes.getQName(i);
+            final org.exist.dom.persistent.QName qn = attributes.getQName(i);
             if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalName().equals(localName))
                 {return attributes.getValue(i);}
         }
@@ -373,7 +373,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         return attributes.getQName(i).toJavaQName();
     }
 
-    public org.exist.dom.QName getAttributeQName(int i) {
+    public org.exist.dom.persistent.QName getAttributeQName(int i) {
         if (state != START_ELEMENT)
             {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
@@ -535,7 +535,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         return qname;
     }
 
-    public org.exist.dom.QName getQName() {
+    public org.exist.dom.persistent.QName getQName() {
         if (state == START_ELEMENT || state == END_ELEMENT) {
             if (nodeId == null)
                 {readNodeId();}
@@ -577,7 +577,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
 
     /**
      * Deserialize the node at the current position of the cursor and return
-     * it as a {@link org.exist.dom.StoredNode}.
+     * it as a {@link org.exist.dom.persistent.StoredNode}.
      *
      * @return the node at the current position.
      */
