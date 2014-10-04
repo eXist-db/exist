@@ -142,7 +142,7 @@ public class FunIdRef extends Function {
                     {processInMem = true;}
                 else {
                     MutableDocumentSet ndocs = new DefaultDocumentSet();
-                    ndocs.add(((NodeProxy)node).getDocument());
+                    ndocs.add(((NodeProxy)node).getOwnerDocument());
                     docs = ndocs;
                 }
                 contextSequence = node;

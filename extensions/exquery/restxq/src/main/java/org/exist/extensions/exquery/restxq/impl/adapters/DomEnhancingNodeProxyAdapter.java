@@ -35,6 +35,7 @@ import net.sf.cglib.proxy.NoOp;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.value.Type;
@@ -101,20 +102,10 @@ public class DomEnhancingNodeProxyAdapter {
         
         final NodeProxy enhancedNodeProxy = (NodeProxy)enhancer.create(
             new Class[] {
-                DocumentImpl.class,
-                NodeId.class,
-                short.class,
-                long.class,
-                Match.class,
-                ContextItem.class
+                NodeHandle.class
             },
             new Object[] {
-                nodeProxy.getDoc(),
-                nodeProxy.getNodeId(),
-                nodeProxy.getNodeType(),
-                nodeProxy.getInternalAddress(),
-                nodeProxy.getMatches(),
-                nodeProxy.getContext()
+                nodeProxy
             });
         
         return enhancedNodeProxy;

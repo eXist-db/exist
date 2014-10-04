@@ -2,7 +2,6 @@ package org.exist.dom.persistent;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.txn.Txn;
-import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -24,6 +23,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
     /**
      * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
      */
+    @Override
     public Node appendChild(Node child) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "not implemented on class " + getClass().getName());
@@ -83,7 +83,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      * @param newChild
      * @throws DOMException
      */
-    public StoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
+    public IStoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "not implemented on class " + getClass().getName());
     }
@@ -248,9 +248,9 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
             "getBaseURI() not implemented on class " + getClass().getName());
     }
 
-    protected XmldbURI calculateBaseURI() {
-        return null;
-    }
+//    protected XmldbURI calculateBaseURI() {
+//        return null;
+//    }
 
     /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
      */

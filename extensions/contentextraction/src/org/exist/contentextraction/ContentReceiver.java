@@ -22,11 +22,11 @@
 package org.exist.contentextraction;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
@@ -215,7 +215,7 @@ public class ContentReceiver implements Receiver {
     }
 
     @Override
-    public void setCurrentNode(StoredNode node) {
+    public void setCurrentNode(NodeHandle node) {
     }
 
     /**

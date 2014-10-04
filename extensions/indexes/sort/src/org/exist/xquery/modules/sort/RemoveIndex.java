@@ -48,7 +48,7 @@ public class RemoveIndex extends BasicFunction {
                     throw new XPathException(this, "Second argument to remove should be a persistent node, not " +
                         "an in-memory node.");
                 NodeProxy proxy = (NodeProxy) nv;
-                index.remove(id, proxy.getDocument());
+                index.remove(id, proxy.getOwnerDocument());
             } else {
                 index.remove(id);
             }

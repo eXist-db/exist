@@ -28,9 +28,9 @@ import org.exist.dom.persistent.CharacterDataImpl;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.collections.Collection;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexController;
@@ -135,10 +135,11 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    @Override
+    public IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
             {return null;}
-        final IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(broker);
+        final IndexSpec indexConf = node.getOwnerDocument().getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
             final FulltextIndexSpec config = indexConf.getFulltextIndexSpec();
             if (config == null)
@@ -153,8 +154,8 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
             if (reindexRequired) {
-                StoredNode topMost = null;
-                StoredNode currentNode = node;
+                IStoredNode topMost = null;
+                IStoredNode currentNode = node;
                 while (currentNode != null) {
                     if (config.hasQNameIndex(currentNode.getQName()))
                         {topMost = currentNode;}

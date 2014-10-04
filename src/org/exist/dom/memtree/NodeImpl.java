@@ -40,14 +40,13 @@ import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
 import org.exist.dom.persistent.NodeAtExist;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.Receiver;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.MemoryNodeSet;
@@ -807,9 +806,10 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         // nothing to do
     }
 
-    protected XmldbURI calculateBaseURI() {
-    	return null;
-    }
+//    protected XmldbURI calculateBaseURI() {
+//    	return null;
+//    }
+    
 
     public abstract void selectAttributes( NodeTest test, Sequence result ) throws XPathException;
     
@@ -1221,7 +1221,7 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
         return( false );
     }
 
-    public void nodeMoved( NodeId oldNodeId, StoredNode newNode ) {
+    public void nodeMoved( NodeId oldNodeId, NodeHandle newNode ) {
         // can not be applied to in-memory nodes
     }
 

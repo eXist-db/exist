@@ -6,10 +6,10 @@ import org.exist.dom.persistent.QName;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.SymbolTable;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.ExtNodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
@@ -149,7 +149,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         try {
             lock.acquire(Lock.READ_LOCK);
             for (final NodeProxy ancestor : contextSet) {
-                final DocumentImpl doc = ancestor.getDocument();
+                final DocumentImpl doc = ancestor.getOwnerDocument();
                 final NodeId ancestorId = ancestor.getNodeId();
                 callback.setAncestor(doc, ancestor);
                 byte[] fromKey, toKey;
@@ -188,7 +188,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                     {parentId = descendant.getNodeId();}
                 else
                     {parentId = descendant.getNodeId().getParentId();}
-                final DocumentImpl doc = descendant.getDocument();
+                final DocumentImpl doc = descendant.getOwnerDocument();
                 while (parentId != NodeId.DOCUMENT_NODE) {
                     final byte[] key = computeKey(type, qname, doc.getDocId(), parentId);
                     final long address = index.btree.findValue(new Value(key));
@@ -227,7 +227,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
         final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, useSelfAsContext, result, null);
         for (final NodeProxy ancestor : contextSet) {
-            final DocumentImpl doc = ancestor.getDocument();
+            final DocumentImpl doc = ancestor.getOwnerDocument();
             final NodeId ancestorId = ancestor.getNodeId();
             final List<QName> qnames = getQNamesForDoc(doc);
             try {
@@ -392,7 +392,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    public IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert, boolean includeSelf) {
         // if a node is inserted, we do not need to reindex the parent
         return insert ? null : node;
     }
@@ -604,9 +604,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     private void addNode(QName qname, NodeProxy proxy) {
-        if (document.getDocId() != proxy.getDocument().getDocId()) {
+        if (document.getDocId() != proxy.getOwnerDocument().getDocId()) {
     		throw new IllegalArgumentException("Document id ('" + document.getDocId() + "') and proxy id ('" +
-    				proxy.getDocument().getDocId() + "') differ !");
+    				proxy.getOwnerDocument().getDocId() + "') differ !");
     	}
         //Is this qname already pending ?
         List<NodeProxy> buf = pending.get(qname);

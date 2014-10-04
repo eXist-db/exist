@@ -140,6 +140,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         return pool;
     }
 
+    @Override
     public BrokerPool getDatabase() {
         return pool;
     }
@@ -193,6 +194,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return an <code>int</code> value
      */
+    @Override
     public int getDocId() {
         return docId;
     }
@@ -239,6 +241,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return a <code>XmldbURI</code> value
      */
+    @Override
     public XmldbURI getURI() {
         if(collection == null) {
             return fileURI;
@@ -486,10 +489,10 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     /**
      * The method <code>appendChild</code>
      *
-     * @param child a <code>StoredNode</code> value
+     * @param child a <code>NodeHandle</code> value
      * @exception DOMException if an error occurs
      */
-    public void appendChild(StoredNode child) throws DOMException {
+    public void appendChild(NodeHandle child) throws DOMException {
         ++children;
         resizeChildList();
         childAddress[children - 1] = child.getInternalAddress();
@@ -602,6 +605,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @param other an <code>DocumentImpl</code> value
      * @return an <code>int</code> value
      */
+    @Override
     public final int compareTo(Object other) {
         if (!(other instanceof DocumentImpl)) {
             return Constants.INFERIOR;
@@ -619,14 +623,16 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @see org.exist.dom.persistent.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
     @Override
-    public StoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
-        if (!(oldChild instanceof StoredNode))
-            {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");}
-        final StoredNode oldNode = (StoredNode) oldChild;
-        final StoredNode newNode = (StoredNode) newChild;
-        final StoredNode previousNode = (StoredNode) oldNode.getPreviousSibling();
-        if (previousNode == null)
-            {throw new DOMException(DOMException.NOT_FOUND_ERR, "No previous sibling for the old child");}
+    public IStoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
+        if (!(oldChild instanceof StoredNode)) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
+        }
+        final IStoredNode oldNode = (IStoredNode) oldChild;
+        final IStoredNode newNode = (IStoredNode) newChild;
+        final IStoredNode previousNode = (IStoredNode) oldNode.getPreviousSibling();
+        if (previousNode == null) {
+            throw new DOMException(DOMException.NOT_FOUND_ERR, "No previous sibling for the old child");
+        }
         DBBroker broker = null;
         try {
             broker = pool.get(null);
@@ -704,8 +710,9 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>long</code> value
      */
     public long getFirstChildAddress() {
-        if (children == 0)
-            {return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;}
+        if (children == 0) {
+            return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
+        }
         return childAddress[0];
     }
 
@@ -735,15 +742,16 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     /**
      * The method <code>getPreviousSibling</code>
      *
-     * @param node a <code>StoredNode</code> value
+     * @param node a <code>NodeHanle</code> value
      * @return a <code>Node</code> value
      */
-    protected Node getPreviousSibling(StoredNode node) {
+    protected Node getPreviousSibling(NodeHandle node) {
         final NodeList cl = getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
-            final StoredNode next = (StoredNode) cl.item(i);
-            if (StorageAddress.equals(node.getInternalAddress(), next.getInternalAddress()))
-                {return i == 0 ? null : cl.item(i - 1);}
+            final NodeHandle next = (NodeHandle) cl.item(i);
+            if (StorageAddress.equals(node.getInternalAddress(), next.getInternalAddress())) {
+                return i == 0 ? null : cl.item(i - 1);
+            }
         }
         return null;
     }
@@ -751,15 +759,16 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     /**
      * The method <code>getFollowingSibling</code>
      *
-     * @param node a <code>StoredNode</code> value
+     * @param node a <code>NodeHandle</code> value
      * @return a <code>Node</code> value
      */
-    protected Node getFollowingSibling(StoredNode node) {
+    protected Node getFollowingSibling(NodeHandle node) {
         final NodeList cl = getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
-            final StoredNode next = (StoredNode) cl.item(i);
-            if (StorageAddress.equals(node.getInternalAddress(), next.getInternalAddress()))
-                {return i == children - 1 ? null : cl.item(i + 1);}
+            final NodeHandle next = (NodeHandle) cl.item(i);
+            if (StorageAddress.equals(node, next)) {
+                return i == children - 1 ? null : cl.item(i + 1);
+            }
         }
         return null;
     }
@@ -767,11 +776,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     /**
      * The method <code>findElementsByTagName</code>
      *
-     * @param root a <code>StoredNode</code> value
+     * @param root a <code>NodeHandle</code> value
      * @param qname a <code>QName</code> value
      * @return a <code>NodeList</code> value
      */
-    protected NodeList findElementsByTagName(StoredNode root, QName qname) {
+    protected NodeList findElementsByTagName(NodeHandle root, QName qname) {
         DBBroker broker = null;
         try {
             broker = pool.get(null);
@@ -800,6 +809,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return a <code>DocumentType</code> value
      */
+    @Override
     public DocumentType getDoctype() {
         return getMetadata().getDocType();
     }
@@ -818,6 +828,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return a <code>Document</code> value
      */
+    @Override
     public Document getOwnerDocument() {
         return this;
     }
@@ -837,6 +848,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return a <code>QName</code> value
      */
+    @Override
     public QName getQName() {
         return QName.DOCUMENT_QNAME;
     }
@@ -846,6 +858,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return a <code>short</code> value
      */
+    @Override
     public short getNodeType() {
         return Node.DOCUMENT_NODE;
     }
@@ -855,6 +868,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return a <code>Node</code> value
      */
+    @Override
     public Node getPreviousSibling() {
         //Documents don't have siblings
         return null;
@@ -865,6 +879,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return a <code>Node</code> value
      */
+    @Override
     public Node getNextSibling() {
         //Documents don't have siblings
         return null;
@@ -877,6 +892,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return an <code>Attr</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public Attr createAttribute(String name) throws DOMException {
         final AttrImpl attr = new AttrImpl(new QName(name, "", null), getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
@@ -891,6 +907,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return an <code>Attr</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
         String name;
         String prefix;
@@ -914,6 +931,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return an <code>Element</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public Element createElement(String tagName) throws DOMException {
         final ElementImpl element = new ElementImpl(new QName(tagName, "", null), getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
@@ -928,6 +946,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return an <code>Element</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
         String name;
         String prefix;
@@ -950,6 +969,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @param data a <code>String</code> value
      * @return a <code>Text</code> value
      */
+    @Override
     public Text createTextNode(String data) {
         final TextImpl text = new TextImpl(data);
         text.setOwnerDocument(this);
@@ -965,6 +985,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return an <code>Element</code> value
      */
+    @Override
     public Element getDocumentElement() {
         final NodeList cl = getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
@@ -980,6 +1001,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @param tagname a <code>String</code> value
      * @return a <code>NodeList</code> value
      */
+    @Override
     public NodeList getElementsByTagName(String tagname) {
         return getElementsByTagNameNS("", tagname);
     }
@@ -991,6 +1013,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @param localName a <code>String</code> value
      * @return a <code>NodeList</code> value
      */
+    @Override
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
         DBBroker broker = null;
         try {
@@ -1011,6 +1034,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getParentNode()
      */
+    @Override
     public Node getParentNode() {
         //Documents don't have parents
         return null;
@@ -1101,6 +1125,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>CDATASection</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public CDATASection createCDATASection(String data) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createCDATASection not implemented on class " + getClass().getName());        
     }
@@ -1111,6 +1136,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @param data a <code>String</code> value
      * @return a <code>Comment</code> value
      */
+    @Override
     public Comment createComment(String data) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createComment not implemented on class " + getClass().getName());
     }
@@ -1121,6 +1147,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>DocumentFragment</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public DocumentFragment createDocumentFragment() throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createDocumentFragment not implemented on class " + getClass().getName());
     }
@@ -1132,6 +1159,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return an <code>EntityReference</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public EntityReference createEntityReference(String name) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createEntityReference not implemented on class " + getClass().getName());
     }
@@ -1144,6 +1172,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>ProcessingInstruction</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public ProcessingInstruction createProcessingInstruction(String target, String data)
             throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "createProcessingInstruction not implemented on class " + getClass().getName());
@@ -1155,6 +1184,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @param elementId a <code>String</code> value
      * @return an <code>Element</code> value
      */
+    @Override
     public Element getElementById(String elementId) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getElementById not implemented on class " + getClass().getName());
     }
@@ -1164,6 +1194,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return an <code>org.w3c.dom.DOMImplementation</code> value
      */
+    @Override
     public org.w3c.dom.DOMImplementation getImplementation() {
         return new StoredDOMImplementation();
     }
@@ -1173,6 +1204,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return a <code>boolean</code> value
      */
+    @Override
     public boolean getStrictErrorChecking() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getStrictErrorChecking not implemented on class " + getClass().getName());
     }
@@ -1184,6 +1216,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>Node</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public Node adoptNode(Node node) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "adoptNode not implemented on class " + getClass().getName());
     }
@@ -1196,6 +1229,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>Node</code> value
      * @exception DOMException if an error occurs
      */
+    @Override
     public Node importNode(Node importedNode, boolean deep) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "importNode not implemented on class " + getClass().getName());
     }
@@ -1217,54 +1251,63 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @param strict a <code>boolean</code> value
      */
+    @Override
     public void setStrictErrorChecking(boolean strict) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setStrictErrorChecking not implemented on class " + getClass().getName());
     }
 
     /** ? @see org.w3c.dom.Document#getInputEncoding()
      */
+    @Override
     public String getInputEncoding() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "String getInputEncoding not implemented on class " + getClass().getName());
     }
 
     /** ? @see org.w3c.dom.Document#getXmlEncoding()
      */
+    @Override
     public String getXmlEncoding() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlEncoding not implemented on class " + getClass().getName());
     }
 
     /** ? @see org.w3c.dom.Document#getXmlStandalone()
      */
+    @Override
     public boolean getXmlStandalone() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlStandalone not implemented on class " + getClass().getName());
     }
 
     /** ? @see org.w3c.dom.Document#setXmlStandalone(boolean)
      */
+    @Override
     public void setXmlStandalone(boolean xmlStandalone) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlStandalone not implemented on class " + getClass().getName());		
     }
 
     /** ? @see org.w3c.dom.Document#getXmlVersion()
      */
+    @Override
     public String getXmlVersion() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlVersion not implemented on class " + getClass().getName());
     }
 
     /** ? @see org.w3c.dom.Document#setXmlVersion(java.lang.String)
      */
+    @Override
     public void setXmlVersion(String xmlVersion) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setXmlVersion not implemented on class " + getClass().getName());		
     }
 
     /** ? @see org.w3c.dom.Document#getDocumentURI()
      */
+    @Override
     public String getDocumentURI() {
         return getBaseURI();
     }
 
     /** ? @see org.w3c.dom.Document#setDocumentURI(java.lang.String)
      */
+    @Override
     public void setDocumentURI(String documentURI) {
         //TODO : non-writable -pb
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "setDocumentURI not implemented on class " + getClass().getName());	
@@ -1272,18 +1315,21 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
 
     /** ? @see org.w3c.dom.Document#getDomConfig()
      */
+    @Override
     public DOMConfiguration getDomConfig() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getDomConfig not implemented on class " + getClass().getName());
     }
 
     /** ? @see org.w3c.dom.Document#normalizeDocument()
      */
+    @Override
     public void normalizeDocument() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "normalizeDocument not implemented on class " + getClass().getName());	
     }
 
     /** ? @see org.w3c.dom.Document#renameNode(org.w3c.dom.Node, java.lang.String, java.lang.String)
      */
+    @Override
     public Node renameNode(Node n, String namespaceURI, String qualifiedName) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "renameNode not implemented on class " + getClass().getName());
     }
@@ -1434,9 +1480,10 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         // TODO Auto-generated method stub
         return false;
     }
-
-	public Object getUUID() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    
+    @Override
+    public Object getUUID() {
+            // TODO Auto-generated method stub
+            return null;
+    }
 }

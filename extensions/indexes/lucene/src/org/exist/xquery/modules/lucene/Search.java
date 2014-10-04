@@ -107,7 +107,7 @@ public class Search extends BasicFunction {
                 Item item = i.nextItem();
                 if (Type.subTypeOf(item.getType(), Type.NODE)) {
                 	if (((NodeValue)item).isPersistentSet()) {
-                		path = ((NodeProxy)item).getDocument().getURI().toString();
+                		path = ((NodeProxy)item).getOwnerDocument().getURI().toString();
                 	} else {
                 		path = item.getStringValue();
                 	}

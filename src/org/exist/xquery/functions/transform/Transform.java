@@ -381,9 +381,9 @@ public class Transform extends BasicFunction {
                     {
 						//as this is a persistent node (e.g. a stylesheet stored in the db)
 						//set the URI Resolver as a DatabaseResolver
-						factory.setURIResolver(new EXistURIResolver(root.getDocument().getCollection().getURI().toString()));
+						factory.setURIResolver(new EXistURIResolver(root.getOwnerDocument().getCollection().getURI().toString()));
 					
-						final String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() + "://" + root.getDocument().getURI();
+						final String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() + "://" + root.getOwnerDocument().getURI();
 						templates = getSource(factory, uri);
 					}
 				}

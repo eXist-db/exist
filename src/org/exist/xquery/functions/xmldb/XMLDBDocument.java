@@ -28,9 +28,9 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -228,6 +228,7 @@ public class XMLDBDocument extends Function {
     protected void registerUpdateListener() {
         if (listener == null) {
             listener = new UpdateListener() {
+                @Override
                 public void documentUpdated(DocumentImpl document, int event) {
                     // clear all
                     cachedArgs = null;
@@ -235,14 +236,16 @@ public class XMLDBDocument extends Function {
                     cachedDocs = null;
                 }
 
+                @Override
                 public void unsubscribe() {
                     XMLDBDocument.this.listener = null;
                 }
 
-                public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+                public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
                     // not relevant
                 }
 
+                @Override
                 public void debug() {
 		    logger.debug("UpdateListener: Line: " + getLine() + ": " + XMLDBDocument.this.toString());
                 }

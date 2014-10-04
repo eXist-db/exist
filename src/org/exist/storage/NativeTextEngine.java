@@ -36,7 +36,8 @@ import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.dom.persistent.SymbolTable;
 import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.fulltext.ElementContent;
@@ -288,7 +289,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
     }
 
-    public void storeText(StoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
+    @Override
+    public void storeText(IStoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
         //TODO : case conversion should be handled by the tokenizer -pb
         TextToken token;
         ElementContent.TextSpan span = text.getFirst();
@@ -329,7 +331,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         // TODO Auto-generated method stub      
     }
 
-    public void removeNode(StoredNode node, NodePath currentPath, String content) {
+    @Override
+    public void removeNode(NodeHandle node, NodePath currentPath, String content) {
         // TODO Auto-generated method stub      
     }
 

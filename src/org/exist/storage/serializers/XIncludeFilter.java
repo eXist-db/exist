@@ -24,8 +24,8 @@ package org.exist.storage.serializers;
 import org.apache.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -586,7 +586,7 @@ public class XIncludeFilter implements Receiver {
         return parameters;
     }
 
-    public void setCurrentNode(StoredNode node) {
+    public void setCurrentNode(NodeHandle node) {
         //ignored
     }
     

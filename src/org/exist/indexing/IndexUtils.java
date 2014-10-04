@@ -2,29 +2,28 @@ package org.exist.indexing;
 
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
+import org.exist.storage.dom.INodeIterator;
 import org.exist.storage.txn.Txn;
 import org.w3c.dom.Node;
-
-import java.util.Iterator;
 
 /**
  * Various utility methods to be used by Index implementations.
  */
 public class IndexUtils {
 
-    public static void scanNode(DBBroker broker, Txn transaction, StoredNode node, StreamListener listener) {
-        final Iterator<StoredNode> iterator = broker.getNodeIterator(node);
+    public static void scanNode(DBBroker broker, Txn transaction, IStoredNode node, StreamListener listener) {
+        final INodeIterator iterator = broker.getNodeIterator(node);
         iterator.next();
         final NodePath path = node.getPath();
         scanNode(transaction, iterator, node, listener, path);
     }
 
-    private static void scanNode(Txn transaction, Iterator<StoredNode> iterator,
-            StoredNode node, StreamListener listener, NodePath currentPath) {
+    private static void scanNode(Txn transaction, INodeIterator iterator,
+            IStoredNode node, StreamListener listener, NodePath currentPath) {
         switch (node.getNodeType()) {
         case Node.ELEMENT_NODE:
             if (listener != null) {
@@ -33,7 +32,7 @@ public class IndexUtils {
             if (node.hasChildNodes()) {
                 final int childCount = node.getChildCount();
                 for (int i = 0; i < childCount; i++) {
-                    final StoredNode child = iterator.next();
+                    final IStoredNode child = iterator.next();
                     if (child.getNodeType() == Node.ELEMENT_NODE)
                         {currentPath.addComponent(child.getQName());}
                     scanNode(transaction, iterator, child, listener, currentPath);

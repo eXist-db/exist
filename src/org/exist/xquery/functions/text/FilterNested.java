@@ -58,7 +58,7 @@ public class FilterNested extends BasicFunction {
         final ExtArrayNodeSet inSet = (ExtArrayNodeSet) args[0].toNodeSet();
         final NodeSet filtered = new ExtArrayNodeSet();
         for (final NodeProxy p : inSet) {
-            if (inSet.hasDescendantsInSet(p.getDocument(), p.getNodeId(), false, -1) == null)
+            if (inSet.hasDescendantsInSet(p.getOwnerDocument(), p.getNodeId(), false, -1) == null)
                 {filtered.add(p);}
         }
         return filtered;

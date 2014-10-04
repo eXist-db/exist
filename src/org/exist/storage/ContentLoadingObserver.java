@@ -24,7 +24,7 @@ package org.exist.storage;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.storage.btree.DBException;
 import org.exist.util.ReadOnlyException;
@@ -51,7 +51,7 @@ public interface ContentLoadingObserver {
 	/**
 	 * The given node is being removed from the database. 
 	 */
-	public void removeNode(StoredNode node, NodePath currentPath, String content );
+	public void removeNode(NodeHandle node, NodePath currentPath, String content );
 
 	/** set the current document; generally called before calling an operation */
 	public void setDocument(DocumentImpl document);

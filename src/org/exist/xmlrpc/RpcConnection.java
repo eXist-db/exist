@@ -2882,7 +2882,7 @@ public class RpcConnection implements RpcAPI {
                             entry = new Vector<String>();
                             if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                                 p = (NodeProxy) next;
-                                entry.addElement(p.getDocument().getURI().toString());
+                                entry.addElement(p.getOwnerDocument().getURI().toString());
                                 entry.addElement(p.getNodeId().toString());
                             } else {
                                 entry.addElement("temp_xquery/" + next.hashCode());
@@ -3001,7 +3001,7 @@ public class RpcConnection implements RpcAPI {
                             entry = new ArrayList<String>();
                             if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                                 p = (NodeProxy) next;
-                                entry.add(p.getDocument().getURI().toString());
+                                entry.add(p.getOwnerDocument().getURI().toString());
                                 entry.add(p.getNodeId().toString());
                             } else {
                                 entry.add("temp_xquery/"
@@ -4571,13 +4571,13 @@ public class RpcConnection implements RpcAPI {
                     final NodeValue nv = (NodeValue) item;
                     if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         p = (NodeProxy) nv;
-                        docName = p.getDocument().getURI().toString();
-                        doctype = p.getDocument().getDoctype();
+                        docName = p.getOwnerDocument().getURI().toString();
+                        doctype = p.getOwnerDocument().getDoctype();
                         if (map.containsKey(docName)) {
                             counter = map.get(docName);
                             counter.inc();
                         } else {
-                            counter = new NodeCount(p.getDocument());
+                            counter = new NodeCount(p.getOwnerDocument());
                             map.put(docName, counter);
                         }
                         if (doctype == null)
@@ -4665,13 +4665,13 @@ public class RpcConnection implements RpcAPI {
                     final NodeValue nv = (NodeValue) item;
                     if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         p = (NodeProxy) nv;
-                        docName = p.getDocument().getURI().toString();
-                        doctype = p.getDocument().getDoctype();
+                        docName = p.getOwnerDocument().getURI().toString();
+                        doctype = p.getOwnerDocument().getDoctype();
                         if (map.containsKey(docName)) {
                             counter = map.get(docName);
                             counter.inc();
                         } else {
-                            counter = new NodeCount(p.getDocument());
+                            counter = new NodeCount(p.getOwnerDocument());
                             map.put(docName, counter);
                         }
                         if (doctype == null)

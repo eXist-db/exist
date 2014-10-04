@@ -1,8 +1,5 @@
 package org.exist.dom.persistent;
 
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.StoredNode;
-import org.exist.dom.persistent.NodeVisitor;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -54,7 +51,7 @@ public class NodeTest extends XMLTestCase {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                StoredNode node = (StoredNode) children.item(i);
+                IStoredNode node = (IStoredNode) children.item(i);
                 System.out.println(node.getNodeId() + ": " + node.getNodeName());
             }
         } catch (Exception e) {
@@ -79,7 +76,7 @@ public class NodeTest extends XMLTestCase {
             
             System.out.println("Testing getChildNodes() ...");
             NodeList cl = rootNode.getChildNodes();
-            assertEquals(((StoredNode)rootNode).getChildCount(), cl.getLength());
+            assertEquals(((IStoredNode)rootNode).getChildCount(), cl.getLength());
             assertEquals(4, cl.getLength());
         	assertEquals(cl.item(0).getNodeName(), "a");
         	assertEquals(cl.item(1).getNodeName(), "b");
@@ -229,7 +226,8 @@ public class NodeTest extends XMLTestCase {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
             StoredNode rootNode = (StoredNode) doc.getDocumentElement();
             NodeVisitor visitor = new NodeVisitor() {
-                public boolean visit(StoredNode node) {
+                @Override
+                public boolean visit(IStoredNode node) {
                     System.out.println(node.getNodeId() + "\t" + node.getNodeName());
                     return true;
                 };

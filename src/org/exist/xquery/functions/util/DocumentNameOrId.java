@@ -125,7 +125,7 @@ public class DocumentNameOrId extends BasicFunction {
                 final NodeValue node = (NodeValue) args[0].itemAt(0);
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     final NodeProxy proxy = (NodeProxy) node;
-                    doc = proxy.getDocument();
+                    doc = proxy.getOwnerDocument();
                     doc.getUpdateLock().acquire(Lock.READ_LOCK);
                 }
             } else if(Type.subTypeOf(args[0].getItemType(), Type.STRING)) {

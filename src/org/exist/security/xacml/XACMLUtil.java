@@ -57,9 +57,9 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -148,13 +148,14 @@ public class XACMLUtil implements UpdateListener
 	}
 
 
-    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
-        // not relevant
-    }
+        @Override
+        public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
+            // not relevant
+        }
 
-    public void unsubscribe() {
-        // not relevant
-    }
+        public void unsubscribe() {
+            // not relevant
+        }
 
     /**
 	 * Returns true if the specified document is in the policy collection.

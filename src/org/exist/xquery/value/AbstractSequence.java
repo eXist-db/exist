@@ -23,8 +23,8 @@ package org.exist.xquery.value;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
@@ -153,7 +153,8 @@ public abstract class AbstractSequence implements Sequence {
         return EmptyNodeSet.EMPTY_COLLECTION_ITERATOR;
     }
 
-    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+    @Override
+    public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
         //Nothing to do
     }
 

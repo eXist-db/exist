@@ -39,6 +39,7 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeIndexListener;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.StoredNode;
@@ -354,39 +355,23 @@ public abstract class Modification {
 
 	final static class IndexListener implements NodeIndexListener {
 
-		StoredNode[] nodes;
+		NodeHandle[] nodes;
 
-		public IndexListener(StoredNode[] nodes) {
+		public IndexListener(NodeHandle[] nodes) {
 			this.nodes = nodes;
 		}
 
 		/* (non-Javadoc)
 		 * @see org.exist.dom.persistent.NodeIndexListener#nodeChanged(org.exist.dom.persistent.NodeImpl)
 		 */
-		public void nodeChanged(StoredNode node) {
-			final long address = node.getInternalAddress();
+                @Override
+		public void nodeChanged(NodeHandle node) {
 			for (int i = 0; i < nodes.length; i++) {
-				if (StorageAddress.equals(nodes[i].getInternalAddress(), address)) {
+				if (StorageAddress.equals(nodes[i], node)) {
 					nodes[i] = node;
 				}
 			}
 		}
-
-		/* (non-Javadoc)
-		 * @see org.exist.dom.persistent.NodeIndexListener#nodeChanged(long, long)
-		 */
-		public void nodeChanged(long oldAddress, long newAddress) {
-			// Ignore the address change
-			// TODO: is this really save?
-			
-//			for (int i = 0; i < nodes.length; i++) {
-//				if (StorageAddress.equals(nodes[i].getInternalAddress(), oldAddress)) {
-//					nodes[i].setInternalAddress(newAddress);
-//				}
-//			}
-
-		}
-
 	}
 
 	final static class NodeComparator implements Comparator<StoredNode> {

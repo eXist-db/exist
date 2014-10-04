@@ -57,6 +57,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeIndexListener;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.http.BadRequestException;
@@ -100,14 +101,14 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 
 	final static class NodeListener implements NodeIndexListener {
 
-		StoredNode node;
+		NodeHandle node;
 
-		public NodeListener(StoredNode node) {
+		public NodeListener(NodeHandle node) {
 			this.node = node;
 		}
 
 		@Override
-		public void nodeChanged(StoredNode newNode) {
+		public void nodeChanged(NodeHandle newNode) {
 			final long address = newNode.getInternalAddress();
 			if (StorageAddress.equals(node.getInternalAddress(), address)) {
 				node = newNode;

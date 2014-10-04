@@ -31,5 +31,5 @@ package org.exist.dom.persistent;
 public interface NodeVisitor {
 
     @Deprecated
-    public boolean visit(StoredNode node);
+    public boolean visit(IStoredNode node);
 }

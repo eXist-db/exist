@@ -67,7 +67,7 @@ public class FTMatchListener extends AbstractMatchListener {
             if (proxy.getNodeId().isDescendantOf(nextMatch.getNodeId())) {
                 if (ancestors == null)
                     {ancestors = new ExtArrayNodeSet();}
-                ancestors.add(new NodeProxy(proxy.getDocument(), nextMatch.getNodeId()));
+                ancestors.add(new NodeProxy(proxy.getOwnerDocument(), nextMatch.getNodeId()));
             }
             nextMatch = nextMatch.getNextMatch();
         }

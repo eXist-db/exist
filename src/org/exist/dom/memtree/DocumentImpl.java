@@ -159,13 +159,15 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
+    @Override
     public Database getDatabase() {
-        if (db == null)
+        if (db == null) {
             try {
                 db = BrokerPool.getInstance();
             } catch (final EXistException e) {
                 throw new NullPointerException();
             }
+        }
         return db;
     }
 
@@ -317,6 +319,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         addChars(nodeNum, ch);
     }
 
+    @Override
     public boolean hasReferenceNodes() {
         return (references != null) && (references[0] != null);
     }
@@ -394,9 +397,11 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return nodeKind[nodeNum];
     }
 
+    @Override
     public String getStringValue() {
-    	if (document == null)
-    		{return "";}
+    	if (document == null) {
+            return "";
+        }
     	
     	return super.getStringValue();
     }
@@ -484,6 +489,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return new NamespaceNode(this, nodeNum);
     }
 
+    @Override
     public NodeImpl getNode( int nodeNum ) throws DOMException {
         if (nodeNum == 0) {
             return this;
@@ -539,6 +545,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#getDoctype()
      */
+    @Override
     public DocumentType getDoctype() {
         return null;
     }
@@ -548,24 +555,29 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#getImplementation()
      */
+    @Override
     public DOMImplementation getImplementation() {
         return (
             new DOMImplementation() {
 
+                @Override
                 public Document createDocument(String namespaceURI, 
                     String qualifiedName, DocumentType doctype) throws DOMException {
                     return null;
                 }
 
+                @Override
                 public DocumentType createDocumentType( String qualifiedName, 
                         String publicId, String systemId ) throws DOMException {
                     return null;
                 }
 
+                @Override
                 public Object getFeature( String feature, String version ) {
                     return null;
                 }
 
+                @Override
                 public boolean hasFeature( String feature, String version ) {
                     return ("XML".equals(feature) && ("1.0".equals(version) ||
                         "2.0".equals(version)));
@@ -579,6 +591,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#getDocumentElement()
      */
+    @Override
     public Element getDocumentElement() {
         if( size == 1 ) {
             return null;
@@ -604,6 +617,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return null;
     }
 
+    @Override
     public Node getLastChild() {
         return getFirstChild();
     }
@@ -640,6 +654,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return count;
     }
 
+    @Override
     public int getFirstChildFor(int nodeNumber) {
         final short level = treeLevel[nodeNumber];
         final int nextNode = nodeNumber + 1;
@@ -845,6 +860,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     *
     * @see org.w3c.dom.Document#createElement(java.lang.String)
     */
+    @Override
     public Element createElement(String tagName) throws DOMException {
         QName qn;
         try {
@@ -862,6 +878,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createDocumentFragment()
      */
+    @Override
     public DocumentFragment createDocumentFragment() {
         // TODO Auto-generated method stub
         return null;
@@ -872,7 +889,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createTextNode(java.lang.String)
      */
-    public Text createTextNode(String arg0) {
+    @Override
+    public Text createTextNode(String data) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -882,7 +900,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createComment(java.lang.String)
      */
-    public Comment createComment(String arg0) {
+    @Override
+    public Comment createComment(String data) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -892,7 +911,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createCDATASection(java.lang.String)
      */
-    public CDATASection createCDATASection(String arg0) throws DOMException {
+    @Override
+    public CDATASection createCDATASection(String data) throws DOMException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -903,7 +923,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#createProcessingInstruction(java.lang.String,
      *           java.lang.String)
      */
-    public ProcessingInstruction createProcessingInstruction(String arg0, String arg1)
+    @Override
+    public ProcessingInstruction createProcessingInstruction(String target, String data)
             throws DOMException {
         // TODO Auto-generated method stub
         return null;
@@ -914,7 +935,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createAttribute(java.lang.String)
      */
-    public Attr createAttribute(String arg0) throws DOMException {
+    @Override
+    public Attr createAttribute(String name) throws DOMException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -924,7 +946,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#createEntityReference(java.lang.String)
      */
-    public EntityReference createEntityReference(String arg0) throws DOMException {
+    @Override
+    public EntityReference createEntityReference(String name) throws DOMException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -934,12 +957,13 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#getElementsByTagName(java.lang.String)
      */
-    public NodeList getElementsByTagName(String name) {
+    @Override
+    public NodeList getElementsByTagName(String tagname) {
         final NodeListImpl nl = new NodeListImpl();
         for (int i = 1; i < size; i++) {
             if (nodeKind[i] == Node.ELEMENT_NODE) {
                 final QName qn = nodeName[i];
-                if (qn.getStringValue().equals(name)) {
+                if (qn.getStringValue().equals(tagname)) {
                     nl.add(getNode(i));
                 }
             }
@@ -952,7 +976,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#importNode(org.w3c.dom.Node, boolean)
      */
-    public Node importNode(Node arg0, boolean arg1) throws DOMException {
+    @Override
+    public Node importNode(Node importedNode, boolean deep) throws DOMException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -963,7 +988,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#createElementNS(java.lang.String,
      *           java.lang.String)
      */
-    public Element createElementNS(String arg0, String arg1) throws DOMException {
+    @Override
+    public Element createElementNS(String namespaceURI, String qualifiedName) throws DOMException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -974,7 +1000,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#createAttributeNS(java.lang.String,
      *           java.lang.String)
      */
-    public Attr createAttributeNS(String arg0, String arg1) throws DOMException {
+    @Override
+    public Attr createAttributeNS(String namespaceURI, String qualifiedName) throws DOMException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -985,6 +1012,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Document#getElementsByTagNameNS(java.lang.String,
      *           java.lang.String)
      */
+    @Override
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
         final NodeListImpl nl = new NodeListImpl();
         for (int i = 1; i < size; i++) {
@@ -1003,7 +1031,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @see org.w3c.dom.Document#getElementById(java.lang.String)
      */
-    public Element getElementById(String arg0) {
+    @Override
+    public Element getElementById(String elementId) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -1400,6 +1429,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return (getChildCount() > 0);
     }
 
+    @Override
     public NodeList getChildNodes() {
         final NodeListImpl nl = new NodeListImpl(1);
         final Element el = getDocumentElement();
@@ -1423,6 +1453,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public String getInputEncoding() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -1433,6 +1464,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public String getXmlEncoding() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -1443,6 +1475,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public boolean getXmlStandalone() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return false;
@@ -1455,6 +1488,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public void setXmlStandalone( boolean xmlStandalone ) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
     }
@@ -1464,6 +1498,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public String getXmlVersion() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -1476,6 +1511,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public void setXmlVersion(String xmlVersion) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
     }
@@ -1485,6 +1521,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public boolean getStrictErrorChecking() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return false;
@@ -1495,6 +1532,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @param  strictErrorChecking  DOCUMENT ME!
      */
+    @Override
     public void setStrictErrorChecking( boolean strictErrorChecking ) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
     }
@@ -1504,6 +1542,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public String getDocumentURI() {
         return documentURI;
     }
@@ -1513,6 +1552,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @param  documentURI  DOCUMENT ME!
      */
+    @Override
     public void setDocumentURI(String documentURI) {
         this.documentURI = documentURI;
     }
@@ -1526,6 +1566,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public Node adoptNode(Node source) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -1536,6 +1577,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public DOMConfiguration getDomConfig() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -1544,6 +1586,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     /**
      * ? @see org.w3c.dom.Document#normalizeDocument()
      */
+    @Override
     public void normalizeDocument() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
     }
@@ -1559,6 +1602,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public Node renameNode(Node n, String namespaceURI, String qualifiedName)
             throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
@@ -1625,6 +1669,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return(result.toString());
     }
 
+    @Override
     public int getNextNodeNumber(int nextNode) throws DOMException {
         return document.next[nextNode];
     }
@@ -1646,8 +1691,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return 0;
     }
 
-	@Override
-	public Object getUUID() {
-		return null;
-	}
+    @Override
+    public Object getUUID() {
+            return null;
+    }
 }
