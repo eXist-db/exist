@@ -64,7 +64,7 @@ public class CollectionEvents implements CollectionTrigger {
 	public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException {
 //		System.out.println("afterCreateCollection "+collection.getURI());
 		try {
-			MDStorageManager._.md.addMetas(collection);
+			MDStorageManager.inst.md.addMetas(collection);
 		} catch (Throwable e) {
 			MDStorageManager.LOG.fatal(e);
 		}
@@ -78,7 +78,7 @@ public class CollectionEvents implements CollectionTrigger {
 	public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
 //		System.out.println("afterCopyCollection "+collection.getURI());
 		try {
-			MDStorageManager._.md.copyMetas(oldUri, collection);
+			MDStorageManager.inst.md.copyMetas(oldUri, collection);
 		} catch (Throwable e) {
 			MDStorageManager.LOG.fatal(e);
 		}
@@ -90,7 +90,7 @@ public class CollectionEvents implements CollectionTrigger {
 		try {
 	        for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
 	            DocumentImpl doc = i.next();
-	            MDStorageManager._.md.moveMetas(
+	            MDStorageManager.inst.md.moveMetas(
             		collection.getURI().append(doc.getFileURI()), 
             		newUri.append(doc.getFileURI())
         		);
@@ -103,13 +103,13 @@ public class CollectionEvents implements CollectionTrigger {
 	@Override
 	public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException {
 //		System.out.println("afterMoveCollection "+oldUri+" to "+collection.getURI());
-		MDStorageManager._.md.moveMetas(oldUri, collection.getURI());
+		MDStorageManager.inst.md.moveMetas(oldUri, collection.getURI());
 	}
 	
 	private void deleteCollectionRecursive(DBBroker broker, Collection collection) throws PermissionDeniedException {
         for(Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
             DocumentImpl doc = i.next();
-            MDStorageManager._.md.delMetas(doc.getURI());
+            MDStorageManager.inst.md.delMetas(doc.getURI());
         }
 
 		final XmldbURI uri = collection.getURI();
@@ -145,7 +145,7 @@ public class CollectionEvents implements CollectionTrigger {
 	public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 //		System.out.println("afterDeleteCollection "+uri);
 		try {
-			MDStorageManager._.md.delMetas(uri);
+			MDStorageManager.inst.md.delMetas(uri);
 		} catch (Throwable e) {
 			MDStorageManager.LOG.fatal(e);
 		}
