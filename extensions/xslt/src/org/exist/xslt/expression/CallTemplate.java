@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;

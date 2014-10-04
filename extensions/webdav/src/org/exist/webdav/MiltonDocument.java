@@ -410,7 +410,7 @@ public class MiltonDocument extends MiltonResource
     public LockResult lock(LockTimeout timeout, LockInfo lockInfo)
             throws NotAuthorizedException, PreConditionFailedException, LockedException {
 
-        org.exist.dom.LockToken inputToken = convertToken(timeout, lockInfo);
+        org.exist.dom.persistent.LockToken inputToken = convertToken(timeout, lockInfo);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug(String.format("Lock: %s", resourceXmldbUri));
@@ -418,7 +418,7 @@ public class MiltonDocument extends MiltonResource
         
         LockResult lr = null;
         try {
-            org.exist.dom.LockToken existLT = existDocument.lock(inputToken);
+            org.exist.dom.persistent.LockToken existLT = existDocument.lock(inputToken);
 
             // Process result
             LockToken mltonLT = convertToken(existLT);
@@ -450,7 +450,7 @@ public class MiltonDocument extends MiltonResource
 
         LockResult lr = null;
         try {
-            org.exist.dom.LockToken existLT = existDocument.refreshLock(token);
+            org.exist.dom.persistent.LockToken existLT = existDocument.refreshLock(token);
 
             // Process result
             LockToken mltonLT = convertToken(existLT);
@@ -500,7 +500,7 @@ public class MiltonDocument extends MiltonResource
             LOG.debug(String.format("getCurrentLock: %s", resourceXmldbUri));
         }
         
-        org.exist.dom.LockToken existLT = existDocument.getCurrentLock();
+        org.exist.dom.persistent.LockToken existLT = existDocument.getCurrentLock();
 
         if (existLT == null) {
             LOG.debug("No database lock token.");

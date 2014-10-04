@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
 
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
 
 import org.exist.memtree.NodeImpl;
 import org.exist.storage.md.MetaData;

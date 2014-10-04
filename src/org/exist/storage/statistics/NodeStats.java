@@ -1,8 +1,8 @@
 package org.exist.storage.statistics;
 
 import org.exist.Namespaces;
-import org.exist.dom.QName;
-import org.exist.dom.SymbolTable;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.SymbolTable;
 import org.exist.storage.NodePath;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;

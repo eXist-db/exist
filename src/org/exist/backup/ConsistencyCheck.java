@@ -28,10 +28,10 @@ import org.exist.storage.StorageAddress;
 import org.w3c.dom.Node;
 
 import org.exist.collections.Collection;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.NodeId;
@@ -275,7 +275,7 @@ public class ConsistencyCheck
 
     /**
      * Check if data for the given XML document exists. Tries to load the document's root element.
-     * This check is certainly not as comprehensive as {@link #checkXMLTree(org.exist.dom.DocumentImpl)},
+     * This check is certainly not as comprehensive as {@link #checkXMLTree(org.exist.dom.persistent.DocumentImpl)},
      * but much faster.
      *
      * @param doc the document object to check

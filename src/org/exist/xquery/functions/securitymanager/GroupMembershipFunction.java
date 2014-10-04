@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.EXistException;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.storage.DBBroker;

@@ -34,7 +34,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;

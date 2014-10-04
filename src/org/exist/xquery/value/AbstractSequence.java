@@ -21,10 +21,10 @@
 package org.exist.xquery.value;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.EmptyNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;

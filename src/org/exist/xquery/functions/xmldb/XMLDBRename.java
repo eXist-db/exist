@@ -24,7 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.log4j.Logger;
 
 import java.net.URISyntaxException;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;

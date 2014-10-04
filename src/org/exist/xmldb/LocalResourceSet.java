@@ -30,8 +30,8 @@ import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.SortedNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.SortedNodeSet;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

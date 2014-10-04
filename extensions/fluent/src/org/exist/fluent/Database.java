@@ -1,5 +1,12 @@
 package org.exist.fluent;
 
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.StoredNode;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.*;
@@ -9,7 +16,6 @@ import org.exist.EXistException;
 import org.exist.backup.*;
 import org.exist.collections.*;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.security.*;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;

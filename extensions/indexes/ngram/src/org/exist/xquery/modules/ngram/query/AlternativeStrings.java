@@ -4,10 +4,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.QName;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.ngram.NGramSearch;

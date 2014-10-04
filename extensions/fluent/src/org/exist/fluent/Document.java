@@ -1,9 +1,11 @@
 package org.exist.fluent;
 
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentMetadata;
+import org.exist.dom.persistent.BinaryDocument;
 import java.io.*;
 import java.util.*;
 
-import org.exist.dom.*;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;

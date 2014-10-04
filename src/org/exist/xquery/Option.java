@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.exist.Namespaces;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 
 /**
  * Represents an XQuery option declared via "declare option".

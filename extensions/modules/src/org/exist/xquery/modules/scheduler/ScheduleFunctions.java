@@ -25,7 +25,7 @@ package org.exist.xquery.modules.scheduler;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.UserJavaJob;
 import org.exist.scheduler.UserJob;

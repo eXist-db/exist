@@ -26,7 +26,7 @@ import java.io.Writer;
 import java.util.Iterator;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;

@@ -25,7 +25,7 @@ package org.exist.util.sorters;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 
 /**
  * check sort(NodeProxy)

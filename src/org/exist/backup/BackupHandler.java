@@ -22,7 +22,7 @@
 package org.exist.backup;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentAtExist;
+import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.util.serializer.SAXSerializer;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;

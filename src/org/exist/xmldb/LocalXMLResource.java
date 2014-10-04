@@ -22,9 +22,9 @@
 package org.exist.xmldb;
 
 import org.exist.EXistException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.XMLUtil;
 import org.exist.memtree.AttributeImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;

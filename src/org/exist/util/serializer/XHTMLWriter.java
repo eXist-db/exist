@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.Writer;
 import javax.xml.transform.TransformerException;
 import org.exist.Namespaces;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.util.hashtable.ObjectHashSet;
 
 /**

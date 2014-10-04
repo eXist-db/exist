@@ -1,8 +1,8 @@
 package org.exist.versioning;
 
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.util.serializer.AttrList;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.serializers.CustomMatchListener;

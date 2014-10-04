@@ -48,12 +48,12 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.ProcessingInstructionImpl;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.ProcessingInstructionImpl;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.XMLUtil;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.http.servlets.SessionWrapper;

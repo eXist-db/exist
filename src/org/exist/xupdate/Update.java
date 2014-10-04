@@ -22,11 +22,16 @@
  */
 package org.exist.xupdate;
 
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.StoredNode;
 import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -60,7 +65,7 @@ public class Update extends Modification {
     /*
      * (non-Javadoc)
      * 
-     * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
+     * @see org.exist.xupdate.Modification#process(org.exist.dom.persistent.DocumentSet)
      */
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException, TriggerException {

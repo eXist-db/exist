@@ -41,10 +41,10 @@ import javax.xml.parsers.SAXParserFactory;
 import org.exist.EXistException;
 
 import org.exist.Namespaces;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.ReferenceNode;
 import org.exist.memtree.SAXAdapter;

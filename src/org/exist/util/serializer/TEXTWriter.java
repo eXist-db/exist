@@ -24,7 +24,7 @@ import java.io.Writer;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.util.XMLString;
 import org.exist.util.serializer.encodings.CharacterSet;
 

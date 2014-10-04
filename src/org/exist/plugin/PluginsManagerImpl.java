@@ -34,7 +34,7 @@ import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
 import org.exist.config.*;
 import org.exist.config.annotation.*;
-import org.exist.dom.DocumentAtExist;
+import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;

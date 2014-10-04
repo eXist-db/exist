@@ -31,7 +31,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.IntegerValue;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 
 public class PauseFunction extends BasicFunction {
 

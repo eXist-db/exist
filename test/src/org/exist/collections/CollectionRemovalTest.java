@@ -21,7 +21,7 @@
  */
 package org.exist.collections;
 
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;

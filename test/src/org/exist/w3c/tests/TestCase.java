@@ -41,7 +41,7 @@ import junit.framework.Assert;
 import org.custommonkey.xmlunit.Diff;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.Subject;

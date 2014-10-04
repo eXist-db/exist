@@ -21,9 +21,9 @@
  */
 package org.exist.versioning.xquery;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.InMemoryXMLStreamReader;
 import org.exist.memtree.MemTreeBuilder;

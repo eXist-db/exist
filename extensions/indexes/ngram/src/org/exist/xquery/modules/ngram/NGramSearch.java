@@ -29,12 +29,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.EmptyNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.QName;
 import org.exist.indexing.ngram.NGramIndex;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.storage.ElementValue;

@@ -22,7 +22,7 @@ package org.exist.collections;
 import org.exist.Indexer;
 import org.exist.Namespaces;
 import org.exist.collections.triggers.DocumentTriggers;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;

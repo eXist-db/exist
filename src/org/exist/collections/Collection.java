@@ -21,6 +21,13 @@
  */
 package org.exist.collections;
 
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.DocumentMetadata;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DefaultDocumentSet;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,7 +43,6 @@ import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.*;
-import org.exist.dom.*;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;

@@ -22,8 +22,8 @@
 package org.exist.xquery.functions.securitymanager;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;

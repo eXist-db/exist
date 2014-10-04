@@ -21,7 +21,7 @@
  */
 package org.exist.util.serializer;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;

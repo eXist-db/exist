@@ -32,9 +32,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;

@@ -41,7 +41,7 @@ import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.*;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;

@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.InputStream;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;

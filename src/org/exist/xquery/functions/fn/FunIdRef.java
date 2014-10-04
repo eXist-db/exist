@@ -23,13 +23,13 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.log4j.Logger;
 
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.QName;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;

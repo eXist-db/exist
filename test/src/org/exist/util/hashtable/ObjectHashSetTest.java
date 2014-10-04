@@ -2,7 +2,7 @@ package org.exist.util.hashtable;
 
 import java.util.Iterator;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 
 public class ObjectHashSetTest extends AbstractHashSetTest<ObjectHashSet, Object> {
 	

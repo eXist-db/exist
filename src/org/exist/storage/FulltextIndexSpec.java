@@ -21,7 +21,7 @@
 package org.exist.storage;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

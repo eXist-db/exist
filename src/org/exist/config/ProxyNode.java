@@ -21,7 +21,9 @@
  */
 package org.exist.config;
 
-import org.exist.dom.*;
+import org.exist.dom.persistent.NodeAtExist;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.numbering.NodeId;
 import org.w3c.dom.*;
 
@@ -309,7 +311,7 @@ public class ProxyNode<E extends NodeAtExist> implements NodeAtExist, Proxy<E> {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.dom.QNameable#getQName()
+	 * @see org.exist.dom.persistent.QNameable#getQName()
 	 */
 	public QName getQName() {
 		return getProxyObject().getQName();

@@ -24,7 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;

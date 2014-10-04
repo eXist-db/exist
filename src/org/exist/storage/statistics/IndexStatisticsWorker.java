@@ -1,13 +1,13 @@
 package org.exist.storage.statistics;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;

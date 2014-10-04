@@ -27,7 +27,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.util.DirectoryScanner;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;

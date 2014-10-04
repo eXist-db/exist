@@ -42,10 +42,10 @@ import org.xml.sax.SAXException;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.dom.DocumentAtExist;
-import org.exist.dom.NodeListImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentAtExist;
+import org.exist.dom.persistent.NodeListImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
 import org.exist.numbering.NodeId;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.storage.BrokerPool;
@@ -1378,7 +1378,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         }
     }
 
-    public org.exist.dom.DocumentImpl makePersistent() throws XPathException {
+    public org.exist.dom.persistent.DocumentImpl makePersistent() throws XPathException {
         if (size <= 1) {
             return null;
         }

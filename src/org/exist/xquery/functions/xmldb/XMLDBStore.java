@@ -34,7 +34,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -131,7 +131,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence evalWithCollection(Collection collection, Sequence args[],
 		Sequence contextSequence)

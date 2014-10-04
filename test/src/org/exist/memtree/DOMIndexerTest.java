@@ -106,7 +106,7 @@ public class DOMIndexerTest {
             //TODO : unlock the collection here ?
             collection.store(null, broker, info, XML, false);
             @SuppressWarnings("unused")
-			org.exist.dom.DocumentImpl doc = info.getDocument();
+			org.exist.dom.persistent.DocumentImpl doc = info.getDocument();
             broker.flush();
             broker.saveCollection(null, collection);
         } finally {

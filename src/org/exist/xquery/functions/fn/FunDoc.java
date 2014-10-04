@@ -23,10 +23,10 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.log4j.Logger;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.*;

@@ -23,6 +23,18 @@ package org.exist.storage;
 
 //import java.io.EOFException;
 
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.SymbolTable;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;
 
 import org.exist.xquery.XQueryWatchDog;
@@ -30,7 +42,6 @@ import org.w3c.dom.Node;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexUtils;
 import org.exist.indexing.IndexWorker;
@@ -186,7 +197,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.storage.ContentLoadingObserver#setDocument(org.exist.dom.DocumentImpl)
+     * @see org.exist.storage.ContentLoadingObserver#setDocument(org.exist.dom.persistent.DocumentImpl)
      */
     public void setDocument(DocumentImpl document) {
         for (byte section = 0; section <= IDX_QNAME; section++) {
@@ -667,7 +678,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
 
     /* Drop all index entries for the given document.
-     * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.dom.DocumentImpl)
+     * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.dom.persistent.DocumentImpl)
      */
     //TODO : note that this is *not* this.doc -pb
     public void dropIndex( DocumentImpl document ) throws ReadOnlyException

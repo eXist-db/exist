@@ -1,10 +1,10 @@
 package org.exist.xquery.modules.ngram.utils;
 
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.NodeSetIterator;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.NodeSetIterator;
 import org.exist.xquery.XPathException;
 
 public final class NodeSets {

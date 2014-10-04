@@ -23,7 +23,7 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 
 /**
  * Defines an XQuery library module. A module consists of function definitions

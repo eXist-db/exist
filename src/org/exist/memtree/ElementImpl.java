@@ -30,10 +30,10 @@ import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
 
 import org.exist.Namespaces;
-import org.exist.dom.ElementAtExist;
-import org.exist.dom.NamedNodeMapImpl;
-import org.exist.dom.NodeListImpl;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.ElementAtExist;
+import org.exist.dom.persistent.NamedNodeMapImpl;
+import org.exist.dom.persistent.NodeListImpl;
+import org.exist.dom.persistent.QName;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
@@ -561,7 +561,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     	return "";//UNDERSTAND: is it ok?
     }
 
-    //please, keep in sync with org.exist.dom.ElementImpl
+    //please, keep in sync with org.exist.dom.persistent.ElementImpl
     protected XmldbURI calculateBaseURI() {
     	XmldbURI baseURI = null;
     	

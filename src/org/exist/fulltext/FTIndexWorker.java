@@ -21,8 +21,17 @@
  */
 package org.exist.fulltext;
 
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;

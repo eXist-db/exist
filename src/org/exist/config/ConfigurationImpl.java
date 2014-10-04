@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.exist.dom.ElementAtExist;
+import org.exist.dom.persistent.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.w3c.dom.NamedNodeMap;

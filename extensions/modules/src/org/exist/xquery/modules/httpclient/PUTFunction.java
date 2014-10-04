@@ -28,7 +28,7 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 
 import org.apache.log4j.Logger;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;

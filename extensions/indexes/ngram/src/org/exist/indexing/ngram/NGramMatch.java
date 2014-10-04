@@ -1,6 +1,6 @@
 package org.exist.indexing.ngram;
 
-import org.exist.dom.Match;
+import org.exist.dom.persistent.Match;
 import org.exist.numbering.NodeId;
 
 public class NGramMatch extends Match {

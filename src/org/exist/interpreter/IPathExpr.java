@@ -24,7 +24,7 @@ package org.exist.interpreter;
 import java.io.Writer;
 import java.util.List;
 
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.Expression;
 
 public interface IPathExpr extends Expression {

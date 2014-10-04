@@ -1,7 +1,7 @@
 package org.exist.xquery;
 
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
 import org.exist.memtree.NodeImpl;
 import org.exist.memtree.ReferenceNode;
 import org.exist.xquery.util.ExpressionDumper;
@@ -25,7 +25,7 @@ public class NameTest extends TypeTest {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
+	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.persistent.NodeProxy)
 	 */
 	public boolean matches(NodeProxy proxy) {
 		Node node = null;

@@ -28,7 +28,7 @@ package org.exist.extensions.exquery.restxq.impl.adapters;
 
 import java.util.Iterator;
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;

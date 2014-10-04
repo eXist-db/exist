@@ -26,7 +26,7 @@ import org.exist.util.serializer.AttrList;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.performance.actions.Action;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;

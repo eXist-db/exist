@@ -23,9 +23,22 @@ package org.exist.storage;
 
 //import java.io.EOFException;
 
+import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.VirtualNodeSet;
+import org.exist.dom.persistent.SymbolTable;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.fulltext.ElementContent;
 import org.exist.fulltext.FTMatch;
 import org.exist.numbering.NodeId;
@@ -378,7 +391,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     }
 
     /* Drop all index entries for the given document.
-     * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.dom.DocumentImpl)
+     * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.dom.persistent.DocumentImpl)
      */
     public void dropIndex(DocumentImpl document) {
         invertedIndex.dropIndex(document);
@@ -566,7 +579,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     }
 
     /* Return all nodes for wich the matcher matches.
-     * @see org.exist.storage.TextSearchEngine#getNodes(org.exist.xquery.XQueryContext, org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.storage.TermMatcher, java.lang.CharSequence)
+     * @see org.exist.storage.TextSearchEngine#getNodes(org.exist.xquery.XQueryContext, org.exist.dom.persistent.DocumentSet, org.exist.dom.persistent.NodeSet, org.exist.storage.TermMatcher, java.lang.CharSequence)
      */
     public NodeSet getNodes(XQueryContext context, DocumentSet docs,
             NodeSet contextSet, int axis, QName qname, TermMatcher matcher,

@@ -22,13 +22,18 @@
  */
 package org.exist.storage;
 
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StructuralIndex;

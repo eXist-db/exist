@@ -22,7 +22,7 @@
 package org.exist.xquery.functions.securitymanager;
 
 import java.util.Set;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.security.AXSchemaType;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Principal;

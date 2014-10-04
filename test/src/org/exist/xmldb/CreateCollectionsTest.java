@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.exist.dom.XMLUtil;
+import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.Account;
 import org.exist.util.XMLFilenameFilter;
 import org.junit.After;

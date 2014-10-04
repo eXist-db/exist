@@ -21,7 +21,7 @@
 */
 package org.exist.xquery;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 
 /**
  * Represents a local variable as declared by for and let.

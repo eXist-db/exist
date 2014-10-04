@@ -24,7 +24,7 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 
-import org.exist.dom.QName;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.GroupedValueSequence;
 import org.exist.xquery.value.GroupedValueSequenceTable;
@@ -98,7 +98,7 @@ public class LetExpr extends BindingExpression {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem,
             Sequence resultSequence, GroupedValueSequenceTable groupedSequence) 

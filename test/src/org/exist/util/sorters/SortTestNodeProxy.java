@@ -22,7 +22,7 @@
 
 package org.exist.util.sorters;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 
 /**
  * Mock NodeProxy.

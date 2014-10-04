@@ -21,9 +21,9 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.dom.AVLTreeNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.AVLTreeNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
@@ -187,7 +187,7 @@ public class OrderedValueSequence extends AbstractSequence {
                         // persistent node. We scan the current sequence and replace all
                         // in-memory nodes with their new persistent node objects.
                         final DocumentImpl expandedDoc = doc.expandRefs(null);
-                        final org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
+                        final org.exist.dom.persistent.DocumentImpl newDoc = expandedDoc.makePersistent();
                         if (newDoc != null) {
                             NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
                             for (int j = i; j < count; j++) {

@@ -21,8 +21,8 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
@@ -59,7 +59,7 @@ public class AnyNodeTest implements NodeTest {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
+     * @see org.exist.xquery.NodeTest#matches(org.exist.dom.persistent.NodeProxy)
      */
     public boolean matches(NodeProxy proxy) {
         final int type = proxy.getType();

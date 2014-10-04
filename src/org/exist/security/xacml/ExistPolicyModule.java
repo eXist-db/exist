@@ -5,8 +5,8 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 

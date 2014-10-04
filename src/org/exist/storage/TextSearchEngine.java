@@ -20,6 +20,12 @@
  */
 package org.exist.storage;
 
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -29,7 +35,6 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.fulltext.ElementContent;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.SimpleTokenizer;

@@ -22,13 +22,13 @@ package org.exist.xquery.value;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
@@ -245,7 +245,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                     // persistent node. We scan the current sequence and replace all
                     // in-memory nodes with their new persistent node objects.
                     final DocumentImpl expandedDoc = doc.expandRefs(null);
-                    final org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
+                    final org.exist.dom.persistent.DocumentImpl newDoc = expandedDoc.makePersistent();
                     if (newDoc != null) {
                         NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
                         for (int j = i; j <= size; j++) {
@@ -511,7 +511,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             if (Type.subTypeOf(values[i].getType(), Type.NODE)) {
                 node = (NodeValue) values[i];
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                    {docs.add((org.exist.dom.DocumentImpl) node.getOwnerDocument());}
+                    {docs.add((org.exist.dom.persistent.DocumentImpl) node.getOwnerDocument());}
             }
         }
         return docs;

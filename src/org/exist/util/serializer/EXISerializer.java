@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.QName;
+import org.exist.dom.persistent.StoredNode;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;

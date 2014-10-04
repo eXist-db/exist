@@ -23,7 +23,7 @@ package org.exist.config;
 
 import java.util.Map;
 
-import org.exist.dom.ElementAtExist;
+import org.exist.dom.persistent.ElementAtExist;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NodeList;

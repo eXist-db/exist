@@ -35,7 +35,7 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeFactory;
-import org.exist.dom.SymbolTable;
+import org.exist.dom.persistent.SymbolTable;
 import org.exist.indexing.IndexManager;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.DLNFactory;
