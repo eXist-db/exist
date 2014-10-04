@@ -38,10 +38,10 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class MetaData implements MetaStorage {
 
-	protected static MetaData _ = null;
+	protected static MetaData inst = null;
 	
 	public static MetaData get() {
-		return _;
+		return inst;
 	}
 	
 	protected final static Logger LOG = Logger.getLogger(MetaData.class);
