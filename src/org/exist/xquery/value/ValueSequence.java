@@ -721,8 +721,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                     final NodeValue node = (NodeValue) values[pos];
                     if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         final NodeProxy p = (NodeProxy) node;
-                        if (!p.getDocument().getCollection().equals(oldCollection)) {
-                            nextCollection = p.getDocument().getCollection();
+                        if (!p.getOwnerDocument().getCollection().equals(oldCollection)) {
+                            nextCollection = p.getOwnerDocument().getCollection();
                             break;
                         }
                     }

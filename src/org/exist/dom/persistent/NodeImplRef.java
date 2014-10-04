@@ -7,11 +7,21 @@ package org.exist.dom.persistent;
  */
 public class NodeImplRef {	
 
-    public NodeImplRef() {this.node = null;}
-    public NodeImplRef(StoredNode node) {this.node = node;}
-    public void setNode(StoredNode node) {this.node = node;}    
-    public StoredNode getNode() {return this.node;}
-
-    private StoredNode node;
-
+    private IStoredNode node;
+    
+    public NodeImplRef() {
+        this.node = null;
+    }
+    
+    public NodeImplRef(IStoredNode node) {
+        this.node = node;
+    }
+    
+    public void setNode(IStoredNode node) {
+        this.node = node;
+    }    
+    
+    public IStoredNode getNode() {
+        return this.node;
+    }
 }

@@ -22,18 +22,19 @@
  */
 package org.exist.storage;
 
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection;
+import org.exist.collections.Collection.SubCollectionEntry;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StructuralIndex;
@@ -42,6 +43,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.btree.BTreeCallback;
+import org.exist.storage.dom.INodeIterator;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -52,17 +54,13 @@ import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
 
 import javax.xml.stream.XMLStreamException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
-
-import org.exist.collections.Collection.SubCollectionEntry;
 
 /**
  * This is the base class for all database backends. All the basic database
@@ -358,7 +356,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @param node
      * @return NodeIterator of node.
      */
-    public Iterator<StoredNode> getNodeIterator(StoredNode node) {
+    public INodeIterator getNodeIterator(NodeHandle node) {
         throw new RuntimeException("not implemented for this storage backend");
     }
 
@@ -417,7 +415,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * If addWhitespace is set to true, an extra space character will be added
      * between adjacent elements in mixed content nodes.
      */
-    public String getNodeValue(StoredNode node, boolean addWhitespace) {
+    public String getNodeValue(IStoredNode node, boolean addWhitespace) {
         throw new RuntimeException("not implemented for this storage backend");
     }
 
@@ -446,9 +444,9 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      * @param nodeId
      *            the node's unique identifier
      */
-    public abstract StoredNode objectWith(Document doc, NodeId nodeId);
+    public abstract IStoredNode objectWith(Document doc, NodeId nodeId);
 
-    public abstract StoredNode objectWith(NodeProxy p);
+    public abstract IStoredNode objectWith(NodeProxy p);
 
     /**
      * Remove the collection and all its subcollections from the database.
@@ -537,18 +535,18 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *            to itself if it is an element (currently used by the Broker to
      *            determine if a node's content should be fulltext-indexed).
      */
-    public abstract void storeNode(Txn transaction, StoredNode node,
+    public abstract void storeNode(Txn transaction, IStoredNode node,
         NodePath currentPath, IndexSpec indexSpec, boolean index);
 
-    public void storeNode(Txn transaction, StoredNode node, NodePath currentPath, IndexSpec indexSpec) {
+    public void storeNode(Txn transaction, IStoredNode node, NodePath currentPath, IndexSpec indexSpec) {
         storeNode(transaction, node, currentPath, indexSpec, true);
     }
 
-    public void endElement(final StoredNode node, NodePath currentPath, String content) {
+    public void endElement(final IStoredNode node, NodePath currentPath, String content) {
         endElement(node, currentPath, content, false);
     }
 
-    public abstract void endElement(final StoredNode node, NodePath currentPath, String content, boolean remove);
+    public abstract void endElement(final IStoredNode node, NodePath currentPath, String content, boolean remove);
 
     /**
      * Store a document (descriptor) into the database.
@@ -741,7 +739,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	 * @param node
 	 *            Description of the Parameter
 	 */
-	public abstract void updateNode(Txn transaction, StoredNode node, boolean reindex);
+	public abstract void updateNode(Txn transaction, IStoredNode node, boolean reindex);
 
 	/**
 	 * Is the database running read-only? Returns false by default. Storage
@@ -762,18 +760,18 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	}
 
 	public abstract void insertNodeAfter(Txn transaction,
-			final StoredNode previous, final StoredNode node);
+			final NodeHandle previous, final IStoredNode node);
     
-    public abstract void indexNode(Txn transaction, StoredNode node, NodePath currentPath);    
+    public abstract void indexNode(Txn transaction, IStoredNode node, NodePath currentPath);    
 
-	public void indexNode(Txn transaction, StoredNode node) {
+	public void indexNode(Txn transaction, IStoredNode node) {
 		indexNode(transaction, node, null);
 	}
 
-	public abstract void removeNode(Txn transaction, StoredNode node,
+	public abstract void removeNode(Txn transaction, IStoredNode node,
 			NodePath currentPath, String content);
 
-	public abstract void removeAllNodes(Txn transaction, StoredNode node,
+	public abstract void removeAllNodes(Txn transaction, IStoredNode node,
 			NodePath currentPath, StreamListener listener);
 
 	public abstract void endRemove(Txn transaction);

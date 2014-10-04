@@ -24,8 +24,8 @@ package org.exist.xquery;
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
@@ -288,7 +288,8 @@ public abstract class DeferredFunctionCall implements Sequence {
     }
 
 
-    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+    @Override
+    public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
         // not applicable
     }
 

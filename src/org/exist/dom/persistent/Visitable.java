@@ -21,7 +21,7 @@
  */
 package org.exist.dom.persistent;
 
-import java.util.Iterator;
+import org.exist.storage.dom.INodeIterator;
 
 /**
  * Visitor pattern: interface to be implemented by a visitable node.
@@ -41,5 +41,5 @@ import java.util.Iterator;
      * @deprecated
      */
     @Deprecated
-    public boolean accept(Iterator<StoredNode> iterator, NodeVisitor visitor);  
+    public boolean accept(INodeIterator iterator, NodeVisitor visitor);  
 }

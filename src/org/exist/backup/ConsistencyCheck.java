@@ -31,7 +31,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.NodeId;
@@ -396,7 +396,7 @@ public class ConsistencyCheck
                                             }
                                         }
 
-                                        final StoredNode node = reader.getNode();
+                                        final IStoredNode node = reader.getNode();
                                         if( node.getNodeType() != Node.ELEMENT_NODE ) {
                                             return( new org.exist.backup.ErrorReport.ResourceError( ErrorReport.INCORRECT_NODE_TYPE, "Expected an element node, received node of type " + node.getNodeType() ) );
                                         }

@@ -1,7 +1,7 @@
 package org.exist.indexing;
 
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.w3c.dom.Document;
@@ -16,7 +16,7 @@ import org.xml.sax.SAXException;
 public class AbstractMatchListener implements MatchListener {
 
     protected Receiver nextListener;
-    protected StoredNode currentNode = null;
+    protected NodeHandle currentNode = null;
 
     @Override
     public void setNextInChain(Receiver next) {
@@ -39,13 +39,13 @@ public class AbstractMatchListener implements MatchListener {
     }
 
     @Override
-    public void setCurrentNode(StoredNode node) {
+    public void setCurrentNode(NodeHandle node) {
         this.currentNode = node;
         if (nextListener != null)
             {getNextInChain().setCurrentNode(node);}
     }
 
-    protected StoredNode getCurrentNode() {
+    protected NodeHandle getCurrentNode() {
         return currentNode;
     }
 

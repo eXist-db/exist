@@ -88,14 +88,14 @@ public class PatchFunction extends BasicFunction {
                 reader = new InMemoryXMLStreamReader(node.getDocument(), node.getDocument());
             } else {
                 NodeProxy proxy = (NodeProxy) nv;
-                reader = context.getBroker().newXMLStreamReader(new NodeProxy(proxy.getDocument(), NodeId.DOCUMENT_NODE, proxy.getDocument().getFirstChildAddress()), false);
+                reader = context.getBroker().newXMLStreamReader(new NodeProxy(proxy.getOwnerDocument(), NodeId.DOCUMENT_NODE, proxy.getOwnerDocument().getFirstChildAddress()), false);
             }
 
             nv = (NodeValue) args[1].itemAt(0);
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                 throw new XPathException("patch cannot be applied to in-memory documents");
             NodeProxy diffProxy = (NodeProxy) nv;
-            DocumentImpl diff = diffProxy.getDocument();
+            DocumentImpl diff = diffProxy.getOwnerDocument();
         
             MemTreeBuilder builder = context.getDocumentBuilder();
             DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);

@@ -29,11 +29,12 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
@@ -58,7 +59,6 @@ import org.exist.xquery.value.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.exist.security.PermissionDeniedException;
 
 /**
  * @author wolf
@@ -204,18 +204,22 @@ public class ExtCollection extends Function {
         if (listener == null) {
             listener = new UpdateListener() {
 
+                @Override
                 public void documentUpdated(DocumentImpl document, int event) {
                     //Nothing to do (previously was cache management)
                 }
 
+                @Override
                 public void unsubscribe() {
                     ExtCollection.this.listener = null;
                 }
 
-                public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+                @Override
+                public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
                     // not relevant
                 }
 
+                @Override
                 public void debug() {
                     LOG.debug("UpdateListener: Line: " + getLine() + ": " +
                         ExtCollection.this.toString());

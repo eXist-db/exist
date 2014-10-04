@@ -146,7 +146,7 @@ public class FunId extends Function {
                     {processInMem = true;}
                 else {
                     MutableDocumentSet ndocs = new DefaultDocumentSet();
-                    ndocs.add(((NodeProxy)node).getDocument());
+                    ndocs.add(((NodeProxy)node).getOwnerDocument());
                     docs = ndocs;
                 }
                 contextSequence = node;
@@ -208,7 +208,7 @@ public class FunId extends Function {
 		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Constants.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
 		NodeProxy p;
 		for (final NodeProxy n : attribs) {
-			p = new NodeProxy(n.getDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
+			p = new NodeProxy(n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
 			result.add(p);
 		}
 	}

@@ -22,8 +22,8 @@ package org.exist.xquery.value;
 
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -266,7 +266,7 @@ public interface Sequence {
      * @param oldNodeId
      * @param newNode
      */
-    void nodeMoved(NodeId oldNodeId, StoredNode newNode);
+    void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Peristent nodes and NOT also in-memory nodes
 
     public boolean isCacheable();
     

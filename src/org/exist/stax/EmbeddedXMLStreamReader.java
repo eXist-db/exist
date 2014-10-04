@@ -38,6 +38,7 @@ import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.CharacterDataImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
@@ -581,8 +582,8 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
      *
      * @return the node at the current position.
      */
-    public StoredNode getNode() {
-        final StoredNode node = StoredNode.deserialize(current.data(), current.start(), current.getLength(), document);
+    public IStoredNode getNode() {
+        final IStoredNode node = StoredNode.deserialize(current.data(), current.start(), current.getLength(), document);
         node.setOwnerDocument(document);
         node.setInternalAddress(current.getAddress());
         return node;
@@ -595,7 +596,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
      *
      * @return the last node in document sequence before the current node
      */
-    public StoredNode getPreviousNode() {
+    public IStoredNode getPreviousNode() {
         final StoredNode node = StoredNode.deserialize(previous.data(), previous.start(), previous.getLength(), document);
         node.setOwnerDocument(document);
         node.setInternalAddress(previous.getAddress());

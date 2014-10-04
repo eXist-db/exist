@@ -47,6 +47,7 @@ import org.exist.storage.NodePath;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.Signatures;
 import org.exist.storage.btree.Value;
+import org.exist.storage.dom.INodeIterator;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -436,7 +437,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @param child
      * @throws DOMException
      */
-    public void appendChildInternal(StoredNode prevNode, StoredNode child) throws DOMException {
+    public void appendChildInternal(IStoredNode prevNode, NodeHandle child) throws DOMException {
         NodeId childId;
         if (prevNode == null) {
             childId = getNodeId().newChild();
@@ -520,7 +521,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             StreamListener listener = null;
             //May help getReindexRoot() to make some useful things
             broker.getIndexController().setDocument(ownerDocument);
-            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
+            IStoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
             broker.getIndexController().setMode(StreamListener.STORE);
             // only reindex if reindexRoot is an ancestor of the current node
             if (reindexRoot == null) {
@@ -536,10 +537,10 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 } else {
                     if (child > 1 && child <= children) {
                         final NodeList cl = getChildNodes();
-                        final StoredNode last = (StoredNode) cl.item(child - 2);
+                        final IStoredNode last = (IStoredNode) cl.item(child - 2);
                         insertAfter(transaction, nodes, last);
                     } else {
-                        final StoredNode last = (StoredNode) getLastChild();
+                        final IStoredNode last = (IStoredNode) getLastChild();
                         appendChildren(transaction, last.getNodeId().nextSibling(), null,
                                 new NodeImplRef(getLastNode(last)), path, nodes, listener);
                     }
@@ -777,11 +778,11 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             DBBroker broker = null;
             try {
                 broker = ownerDocument.getBrokerPool().get(null);
-                final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
+                final INodeIterator iterator = broker.getNodeIterator(this);
                 iterator.next();
                 final int ccount = getChildCount();
                 for (int i = 0; i < ccount; i++) {
-                    final StoredNode next = iterator.next();
+                    final IStoredNode next = iterator.next();
                     if (next.getNodeType() != Node.ATTRIBUTE_NODE)
                         {break;}
                     map.setNamedItem(next);
@@ -812,7 +813,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
+            final INodeIterator iterator = broker.getNodeIterator(this);
             iterator.next();
             return findAttribute(qname, iterator, this);
         } catch (final EXistException e) {
@@ -824,9 +825,9 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return null;
     }
 
-    private AttrImpl findAttribute(String qname, Iterator<StoredNode> iterator, StoredNode current) {
+    private AttrImpl findAttribute(String qname, INodeIterator iterator, IStoredNode current) {
     	final int ccount = current.getChildCount();
-        StoredNode next;
+        IStoredNode next;
         for (int i = 0; i < ccount; i++) {
             next = iterator.next();
             if (next.getNodeType() != Node.ATTRIBUTE_NODE)
@@ -841,7 +842,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
+            final INodeIterator iterator = broker.getNodeIterator(this);
             iterator.next();
             return findAttribute(qname, iterator, this);
         } catch (final EXistException e) {
@@ -853,10 +854,10 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return null;
     }
 
-    private AttrImpl findAttribute(QName qname, Iterator<StoredNode> iterator, StoredNode current) {
+    private AttrImpl findAttribute(QName qname, INodeIterator iterator, IStoredNode current) {
         final int ccount = current.getChildCount();
         for (int i = 0; i < ccount; i++) {
-            final StoredNode next = iterator.next();
+            final IStoredNode next = iterator.next();
             if (next.getNodeType() != Node.ATTRIBUTE_NODE)
                 {break;}
             if (next.getQName().equalsSimple(qname))
@@ -953,9 +954,9 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
+            final INodeIterator iterator = broker.getNodeIterator(this);
             iterator.next();
-            StoredNode next;
+            IStoredNode next;
             for (int i = 0; i < getChildCount(); i++) {
                 next = iterator.next();
                 if (next.getNodeType() != Node.ATTRIBUTE_NODE)
@@ -1218,7 +1219,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     public Node insertBefore(Node newChild, Node refChild) throws DOMException {
         if (refChild == null)
             {return appendChild(newChild);}
-        if (!(refChild instanceof StoredNode))
+        if (!(refChild instanceof IStoredNode))
             {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");}
         final NodeListImpl nl = new NodeListImpl();
         nl.add(newChild);
@@ -1260,7 +1261,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             appendChildren(transaction, nodes, -1);
             return;
         }
-        if (!(refChild instanceof StoredNode))
+        if (!(refChild instanceof IStoredNode))
             {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");}
         DBBroker broker = null;
         try {
@@ -1269,13 +1270,13 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             StreamListener listener = null;
             //May help getReindexRoot() to make some useful things
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
+            final IStoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
             broker.getIndexController().setMode(StreamListener.STORE);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
             }
-            final StoredNode following = (StoredNode) refChild;
-            final StoredNode previous = (StoredNode) following.getPreviousSibling();
+            final IStoredNode following = (IStoredNode)refChild;
+            final IStoredNode previous = (IStoredNode)following.getPreviousSibling();
             if (previous == null) {
                 // there's no sibling node before the new node
                 final NodeId newId = following.getNodeId().insertBefore();
@@ -1310,7 +1311,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             appendChildren(null, nodes, -1);
             return;
         }
-        if (!(refChild instanceof StoredNode))
+        if (!(refChild instanceof IStoredNode))
             {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type: ");}
         DBBroker broker = null;
         try {
@@ -1319,13 +1320,13 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             StreamListener listener = null;
             //May help getReindexRoot() to make some useful things
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
+            final IStoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
             broker.getIndexController().setMode(StreamListener.STORE);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
             }
-            final StoredNode previous = (StoredNode) refChild;
-            final StoredNode following = (StoredNode) previous.getNextSibling();
+            final IStoredNode previous = (IStoredNode) refChild;
+            final IStoredNode following = (IStoredNode) previous.getNextSibling();
             final NodeId followingId = following == null ? null : following.getNodeId();
             final NodeId newNodeId = previous.getNodeId().insertNode(followingId);
             appendChildren(transaction, newNodeId, followingId, new NodeImplRef(getLastNode(previous)), path, nodes, listener);
@@ -1358,7 +1359,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         try {
             broker = ownerDocument.getBrokerPool().get(null);
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
+            final IStoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
             broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
@@ -1366,12 +1367,12 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
             }
             // TODO: fix once range index has been moved to new architecture
-            final StoredNode valueReindexRoot = broker.getValueIndex().getReindexRoot(this, path);
+            final IStoredNode valueReindexRoot = broker.getValueIndex().getReindexRoot(this, path);
             broker.getValueIndex().reindex(valueReindexRoot);
-            StoredNode last = this;
+            IStoredNode last = this;
             int i = nodes.getLength();
             for (; i > 0; i--) {
-                StoredNode child = (StoredNode) nodes.item(i - 1);
+                IStoredNode child = (IStoredNode) nodes.item(i - 1);
                 if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     last = child;
                     break;
@@ -1387,7 +1388,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             broker.getIndexController().getStreamListener();
             broker.endRemove(transaction);
             children = i;
-            final NodeId newNodeId = last == this ? nodeId.newChild() : last.nodeId.nextSibling();
+            final NodeId newNodeId = last == this ? nodeId.newChild() : last.getNodeId().nextSibling();
             //Append new content
             appendChildren(transaction, newNodeId, null, new NodeImplRef(last), path, newContent, listener);
             broker.updateNode(transaction, this, false);
@@ -1411,14 +1412,14 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @throws DOMException
      */
     @Override
-    public StoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
-        if (!(oldChild instanceof StoredNode))
+    public IStoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
+        if (!(oldChild instanceof IStoredNode))
             {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");}
-        if (!(newChild instanceof StoredNode))
+        if (!(newChild instanceof IStoredNode))
             {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");}
-        StoredNode oldNode = (StoredNode) oldChild;
-        final StoredNode newNode = (StoredNode) newChild;
-        if (!oldNode.nodeId.getParentId().equals(nodeId))
+        IStoredNode oldNode = (IStoredNode) oldChild;
+        final IStoredNode newNode = (IStoredNode) newChild;
+        if (!oldNode.getNodeId().getParentId().equals(nodeId))
             {throw new DOMException(DOMException.NOT_FOUND_ERR,
                     "Node is not a child of this element");}
         if (newNode.getNodeType() == Node.ATTRIBUTE_NODE) {
@@ -1429,7 +1430,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 attr.setType(AttrImpl.ID);
             }
         }
-        StoredNode previousNode = (StoredNode) oldNode.getPreviousSibling();
+        IStoredNode previousNode = (IStoredNode) oldNode.getPreviousSibling();
         if (previousNode == null)
             {previousNode = this;}
         else
@@ -1442,18 +1443,18 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             //May help getReindexRoot() to make some useful things
             broker.getIndexController().setDocument(ownerDocument);
             //Check if the change affects any ancestor nodes, which then need to be reindexed later
-            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
+            IStoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
             //Remove indexes
             if (reindexRoot == null)
                 {reindexRoot = oldNode;}
             broker.getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_SOME_NODES);
             //TODO: fix once range index has been moved to new architecture
-            final StoredNode valueReindexRoot = broker.getValueIndex().getReindexRoot(this, oldPath);
+            final IStoredNode valueReindexRoot = broker.getValueIndex().getReindexRoot(this, oldPath);
             broker.getValueIndex().reindex(valueReindexRoot);
             //Remove the actual node data
             broker.removeNode(transaction, oldNode, oldPath, null);
             broker.endRemove(transaction);
-            newNode.nodeId = oldNode.nodeId;
+            newNode.setNodeId(oldNode.getNodeId());
             //Reinsert the new node data
             broker.insertNodeAfter(transaction, previousNode, newNode);
             final NodePath path = newNode.getPath(currentPath);
@@ -1479,10 +1480,10 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      */
     @Override
     public Node removeChild(Txn transaction, Node oldChild) throws DOMException {
-        if (!(oldChild instanceof StoredNode))
+        if (!(oldChild instanceof IStoredNode))
             {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");}
-        final StoredNode oldNode = (StoredNode) oldChild;
-        if (!oldNode.nodeId.getParentId().equals(nodeId))
+        final IStoredNode oldNode = (IStoredNode) oldChild;
+        if (!oldNode.getNodeId().getParentId().equals(nodeId))
             {throw new DOMException(DOMException.NOT_FOUND_ERR,
                 "node is not a child of this element");}
         final NodePath oldPath = oldNode.getPath();
@@ -1492,7 +1493,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             //May help getReindexRoot() to make some useful things
             broker = ownerDocument.getBrokerPool().get(null);
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
+            final IStoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
             broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
@@ -1526,12 +1527,12 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 try {
                     for (int i=0; i<removeList.getLength(); i++) {
                         final Node oldChild = removeList.item(i);
-                        if (!(oldChild instanceof StoredNode))
+                        if (!(oldChild instanceof IStoredNode))
                             {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");}
-                        final StoredNode old = (StoredNode) oldChild;
-                        if (!old.nodeId.isChildOf(nodeId))
+                        final IStoredNode old = (IStoredNode) oldChild;
+                        if (!old.getNodeId().isChildOf(nodeId))
                             {throw new DOMException(DOMException.NOT_FOUND_ERR, "node " +
-                                old.nodeId.getParentId() + 
+                                old.getNodeId().getParentId() + 
                                 " is not a child of element " + nodeId);}
                         final NodePath oldPath = old.getPath();
                         // remove old custom indexes
@@ -1553,15 +1554,15 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                     new NodeImplRef(this), path, appendList, listener);
             } else {
                 if (attributes == 0) {
-                    final StoredNode firstChild = (StoredNode) getFirstChild();
-                    final NodeId newNodeId = firstChild.nodeId.insertBefore();
+                    final IStoredNode firstChild = (IStoredNode) getFirstChild();
+                    final NodeId newNodeId = firstChild.getNodeId().insertBefore();
                     appendChildren(transaction, newNodeId, firstChild.getNodeId(),
                         new NodeImplRef(this), path, appendList, listener);
                 } else {
                     final AttribVisitor visitor = new AttribVisitor();
                     accept(visitor);
-                    final NodeId firstChildId = visitor.firstChild == null ? null : visitor.firstChild.nodeId;
-                    final NodeId newNodeId = visitor.lastAttrib.nodeId.insertNode(firstChildId);
+                    final NodeId firstChildId = visitor.firstChild == null ? null : visitor.firstChild.getNodeId();
+                    final NodeId newNodeId = visitor.lastAttrib.getNodeId().insertNode(firstChildId);
                     appendChildren(transaction, newNodeId, firstChildId, new NodeImplRef(visitor.lastAttrib),
                             path, appendList, listener);
                 }
@@ -1582,12 +1583,14 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
 
     @Deprecated
     private class AttribVisitor implements NodeVisitor {
-        private StoredNode lastAttrib = null;
-        private StoredNode firstChild = null;
-        public boolean visit(StoredNode node) {
+        private IStoredNode lastAttrib = null;
+        private IStoredNode firstChild = null;
+        
+        @Override
+        public boolean visit(IStoredNode node) {
             if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
                 lastAttrib = node;
-            } else if (node.nodeId.isChildOf(ElementImpl.this.nodeId)) {
+            } else if (node.getNodeId().isChildOf(ElementImpl.this.nodeId)) {
                 firstChild = node;
                 return false;
             }
@@ -1608,13 +1611,13 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      */
     @Override
     public Node replaceChild(Txn transaction, Node newChild, Node oldChild) throws DOMException {
-        if (!(oldChild instanceof StoredNode))
+        if (!(oldChild instanceof IStoredNode))
             {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");}
-        final StoredNode oldNode = (StoredNode) oldChild;
-        if (!oldNode.nodeId.getParentId().equals(nodeId))
+        final IStoredNode oldNode = (IStoredNode) oldChild;
+        if (!oldNode.getNodeId().getParentId().equals(nodeId))
             {throw new DOMException(DOMException.NOT_FOUND_ERR,
                 "Node is not a child of this element");}
-        StoredNode previous = (StoredNode) oldNode.getPreviousSibling();
+        IStoredNode previous = (IStoredNode) oldNode.getPreviousSibling();
         if (previous == null)
             {previous = this;}
         else
@@ -1627,7 +1630,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         try {
             broker = ownerDocument.getBrokerPool().get(null);
             broker.getIndexController().setDocument(ownerDocument);
-            final StoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
+            final IStoredNode reindexRoot = broker.getIndexController().getReindexRoot(oldNode, oldPath, false);
             broker.getIndexController().setMode(StreamListener.REMOVE_SOME_NODES);
             if (reindexRoot == null) {
                 listener = broker.getIndexController().getStreamListener();
@@ -1640,7 +1643,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             broker.flush();
             broker.getIndexController().setMode(StreamListener.STORE);
             listener = broker.getIndexController().getStreamListener();
-            newNode = appendChild(transaction, oldNode.nodeId, new NodeImplRef(previous),
+            newNode = appendChild(transaction, oldNode.getNodeId(), new NodeImplRef(previous),
                 getPath(), newChild, listener);
             //Reindex if required
             final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
@@ -1745,7 +1748,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     }
 
     //Please, keep in sync with org.exist.dom.memtree.ElementImpl
-    protected XmldbURI calculateBaseURI() {
+    private XmldbURI calculateBaseURI() {
         XmldbURI baseURI = null;
         final String nodeBaseURI = _getAttributeNS(Namespaces.XML_NS, "base");
         if (nodeBaseURI != null) {
@@ -1753,12 +1756,12 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             if (baseURI.isAbsolute())
                 {return baseURI;}
         }
-        final StoredNode parent = getParentStoredNode();
+        final IStoredNode parent = getParentStoredNode();
         if (parent != null) {
             if (nodeBaseURI == null) {
-                baseURI = parent.calculateBaseURI();
+                baseURI = ((ElementImpl)parent).calculateBaseURI();
             } else {
-                XmldbURI parentsBaseURI = parent.calculateBaseURI();
+                XmldbURI parentsBaseURI = ((ElementImpl)parent).calculateBaseURI();
                 if (nodeBaseURI.isEmpty())
                     {baseURI = parentsBaseURI;}
                 else {
@@ -1767,14 +1770,14 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             }
         } else {
             if (nodeBaseURI == null)
-                {return XmldbURI.create(getDocument().getBaseURI(), false);}
+                {return XmldbURI.create(getOwnerDocument().getBaseURI(), false);}
             else {
-                final String docBaseURI = getDocument().getBaseURI();
+                final String docBaseURI = getOwnerDocument().getBaseURI();
                 if (docBaseURI.endsWith("/")) {
-                    baseURI = XmldbURI.create(getDocument().getBaseURI(), false);
+                    baseURI = XmldbURI.create(getOwnerDocument().getBaseURI(), false);
                     baseURI.append(baseURI);
                 } else {
-                    baseURI = XmldbURI.create(getDocument().getBaseURI(), false);
+                    baseURI = XmldbURI.create(getOwnerDocument().getBaseURI(), false);
                     baseURI = baseURI.removeLastSegment();
                     baseURI.append(baseURI);
                 }
@@ -1812,9 +1815,9 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     @Override
     public boolean isSameNode(Node other) {
         // This function is used by Saxon in some circumstances, and this partial implementation is required for proper Saxon operation.
-        if (other instanceof StoredNode) {
-            return (this.nodeId == ((StoredNode)other).nodeId &&
-                this.ownerDocument.getDocId() == ((StoredNode)other).ownerDocument.getDocId());
+        if (other instanceof IStoredNode) {
+            return (this.nodeId == ((IStoredNode)other).getNodeId() &&
+                this.ownerDocument.getDocId() == ((IStoredNode)other).getOwnerDocument().getDocId());
         } 
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "isSameNode(Node other) not implemented on other class " + other.getClass().getName());
@@ -1878,12 +1881,12 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     }
 
     @Override
-    public boolean accept(Iterator<StoredNode> iterator, NodeVisitor visitor) {
+    public boolean accept(INodeIterator iterator, NodeVisitor visitor) {
         if (!visitor.visit(this))
             {return false;}
         if (hasChildNodes()) {
             final int ccount = getChildCount();
-            StoredNode next;
+            IStoredNode next;
             for (int i = 0; i < ccount; i++) {
                 next = iterator.next();
                 if (!next.accept(iterator, visitor))

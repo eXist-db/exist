@@ -31,9 +31,9 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.XQueryContext;
@@ -300,7 +300,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     }
 
     @Override
-    public void setCurrentNode(StoredNode node) {
+    public void setCurrentNode(NodeHandle node) {
         // ignored
     }
     

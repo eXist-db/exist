@@ -562,7 +562,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     }
 
     //please, keep in sync with org.exist.dom.persistent.ElementImpl
-    protected XmldbURI calculateBaseURI() {
+    private XmldbURI calculateBaseURI() {
     	XmldbURI baseURI = null;
     	
         final String nodeBaseURI = getAttributeNS( Namespaces.XML_NS, "base" );
@@ -581,10 +581,10 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         
         if (parent != -1) {
             if( nodeBaseURI == null ) {
-                baseURI = document.getNode( parent )
+                baseURI = ((ElementImpl)document.getNode( parent ))
                 	.calculateBaseURI();
             } else {
-                XmldbURI parentsBaseURI = document.getNode( parent )
+                XmldbURI parentsBaseURI = ((ElementImpl)document.getNode( parent ))
                 	.calculateBaseURI();
 
                 if (nodeBaseURI.isEmpty())

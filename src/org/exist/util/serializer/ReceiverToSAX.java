@@ -21,8 +21,8 @@
 */
 package org.exist.util.serializer;
 
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -183,7 +183,8 @@ public class ReceiverToSAX implements Receiver {
         // not supported with this receiver
     }
 
-    public void setCurrentNode(StoredNode node) {
+    @Override
+    public void setCurrentNode(NodeHandle node) {
         // just ignore
     }
     

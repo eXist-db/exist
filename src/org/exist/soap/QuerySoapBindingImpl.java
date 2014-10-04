@@ -389,7 +389,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 //				for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
                     p = (NodeProxy) i.nextItem();
                     ///TODO : use dedicated function in XmldbURI
-                    ppath = p.getDocument().getCollection().getURI().toString() + '/' + p.getDocument().getFileURI();
+                    ppath = p.getOwnerDocument().getCollection().getURI().toString() + '/' + p.getOwnerDocument().getFileURI();
                     if (ppath.equals(path))
                         {hitsByDoc.add(p);}
                 }
@@ -437,14 +437,14 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			        final NodeValue node = (NodeValue)item;
 			        if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			            final NodeProxy p = (NodeProxy)node;
-			            if ((documents = (TreeMap) collections.get(p.getDocument().getCollection().getURI())) == null) {
+			            if ((documents = (TreeMap) collections.get(p.getOwnerDocument().getCollection().getURI())) == null) {
 			                documents = new TreeMap();
-			                collections.put(p.getDocument().getCollection().getURI(), documents);
+			                collections.put(p.getOwnerDocument().getCollection().getURI(), documents);
 			            }
-			            if ((hits = (Integer) documents.get(p.getDocument().getFileURI())) == null)
-			                documents.put(p.getDocument().getFileURI(), Integer.valueOf(1));
+			            if ((hits = (Integer) documents.get(p.getOwnerDocument().getFileURI())) == null)
+			                documents.put(p.getOwnerDocument().getFileURI(), Integer.valueOf(1));
 			            else
-			                documents.put(p.getDocument().getFileURI(), Integer.valueOf(hits.intValue() + 1));
+			                documents.put(p.getOwnerDocument().getFileURI(), Integer.valueOf(hits.intValue() + 1));
 			        }
 			    }
 			}

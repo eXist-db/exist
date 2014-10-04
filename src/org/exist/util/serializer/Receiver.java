@@ -22,8 +22,8 @@
 package org.exist.util.serializer;
 
 import org.exist.Namespaces;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -68,7 +68,7 @@ public interface Receiver {
 
     public void highlightText(CharSequence seq) throws SAXException;
     
-    public void setCurrentNode(StoredNode node);
+    public void setCurrentNode(NodeHandle node);
     
     public Document getDocument();
 }

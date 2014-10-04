@@ -295,7 +295,7 @@ public class Item extends Resource {
 			if (item instanceof NodeProxy) {
 				NodeProxy proxy = (NodeProxy) item;
 				if (proxy.isDocument()) {
-					return serializer.serialize(proxy.getDocument());
+					return serializer.serialize(proxy.getOwnerDocument());
 				}
 			}
 			return serializer.serialize((NodeValue) item);

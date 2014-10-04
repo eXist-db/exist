@@ -23,9 +23,9 @@ package org.exist.xquery;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
@@ -138,22 +138,26 @@ public class RootNode extends Step {
     protected void registerUpdateListener() {
         if (listener == null) {
             listener = new UpdateListener() {
+                @Override
                 public void documentUpdated(DocumentImpl document, int event) {
                     // clear all
                     cachedDocs = null;
                     cached = null;
                 }
 
+                @Override
                 public void unsubscribe() {
                     RootNode.this.listener = null;
                 }
 
-                public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+                @Override
+                public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
                     // not relevant
                 }
 
+                @Override
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + RootNode.this.toString());                	
+                    LOG.debug("UpdateListener: Line: " + RootNode.this.toString());                	
                 }
             };
             context.registerUpdateListener(listener);

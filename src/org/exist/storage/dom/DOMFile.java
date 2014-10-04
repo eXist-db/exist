@@ -36,8 +36,8 @@ import org.apache.log4j.Logger;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.StoredNode;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
@@ -76,6 +76,7 @@ import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import org.exist.dom.persistent.StoredNode;
 
 /**
  * This is the main storage for XML nodes. Nodes are stored in document order.
@@ -1248,7 +1249,7 @@ public class DOMFile extends BTree implements Lockable {
             throws IOException, BTreeException {
         if (!lock.hasLock())
             {LOG.warn("The file doesn't own a lock");}
-        final DocumentImpl doc = node.getDocument();
+        final DocumentImpl doc = node.getOwnerDocument();
         final NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), node.getNodeId());
         // first try to find the node in the index
         final long pointer = findValue(nodeRef);
@@ -1260,12 +1261,12 @@ public class DOMFile extends BTree implements Lockable {
             do {
                 nodeID = nodeID.getParentId();
                 if (nodeID == null) {
-                    SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" +
+                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" +
                         nodeID + " not found.");
                     throw new BTreeException("Node " + nodeID + " not found.");
                 }
                 if (nodeID == NodeId.DOCUMENT_NODE) {
-                    SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" +
+                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" +
                             nodeID + " not found.");
                     throw new BTreeException("Node " + nodeID + " not found.");
                 }
@@ -1292,7 +1293,7 @@ public class DOMFile extends BTree implements Lockable {
                     {LOG.debug("Node " + node.getNodeId() + " could not be found. Giving up. This is usually not an error.");}
                 return KEY_NOT_FOUND;
             } catch (final XMLStreamException e) {
-                SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
+                SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" + node.getNodeId() + " not found.");
                 throw new BTreeException("Node " + node.getNodeId() + " not found.");
             }
         } else {
@@ -1799,7 +1800,7 @@ public class DOMFile extends BTree implements Lockable {
         buf.append("Pages used by ").append(doc.getURI());
         buf.append("; (docId: ").append(doc.getDocId()).append("): ");
         long pageNum = StorageAddress.pageFromPointer((
-            (StoredNode) doc.getFirstChild()).getInternalAddress());
+            (IStoredNode) doc.getFirstChild()).getInternalAddress());
         while (pageNum != Page.NO_PAGE) {
             final DOMPage page = getDOMPage(pageNum);
             final DOMFilePageHeader pageHeader = page.getPageHeader();
@@ -1887,7 +1888,7 @@ public class DOMFile extends BTree implements Lockable {
      * @param node
      * @return string value of the specified node
      */
-    public String getNodeValue(DBBroker broker, StoredNode node, boolean addWhitespace) {
+    public String getNodeValue(DBBroker broker, IStoredNode node, boolean addWhitespace) {
         if (!lock.hasLock())
             {LOG.warn("The file doesn't own a lock");}
         try {

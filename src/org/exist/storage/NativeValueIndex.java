@@ -31,10 +31,11 @@ import org.exist.dom.persistent.TextImpl;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.SymbolTable;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;
 
 import org.exist.xquery.XQueryWatchDog;
@@ -221,9 +222,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
      */
     public void storeElement(ElementImpl node, String content, int xpathType,
         byte indexType, boolean remove) {
-        if (doc.getDocId() != node.getDocId()) {
+        if (doc.getDocId() != node.getOwnerDocument().getDocId()) {
             throw( new IllegalArgumentException( "Document id ('" + doc.getDocId() +
-                "') and proxy id ('" + node.getDocId() + "') differ !"));
+                "') and proxy id ('" + node.getOwnerDocument().getDocId() + "') differ !"));
         }
         AtomicValue atomic = convertToAtomic(xpathType, content);
         //Ignore if the value can't be successfully atomized
@@ -278,8 +279,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
             return;
         }
 
-        if( ( doc != null ) && ( doc.getDocId() != node.getDocId() ) ) {
-            throw( new IllegalArgumentException( "Document id ('" + doc.getDocId() + "') and proxy id ('" + node.getDocId() + "') differ !" ) );
+        if( ( doc != null ) && ( doc.getDocId() != node.getOwnerDocument().getDocId() ) ) {
+            throw( new IllegalArgumentException( "Document id ('" + doc.getDocId() + "') and proxy id ('" + node.getOwnerDocument().getDocId() + "') differ !" ) );
         }
 
         AtomicValue atomic = convertToAtomic( xpathType, value );
@@ -323,12 +324,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    public StoredNode getReindexRoot( StoredNode node, NodePath nodePath )
+    public IStoredNode getReindexRoot(IStoredNode node, NodePath nodePath )
     {
-        doc = node.getDocument();
+        doc = node.getOwnerDocument();
         final NodePath   path        = new NodePath( nodePath );
-        StoredNode root        = null;
-        StoredNode currentNode = ( ( ( node.getNodeType() == Node.ELEMENT_NODE ) || ( node.getNodeType() == Node.ATTRIBUTE_NODE ) ) ? node : node.getParentStoredNode() );
+        IStoredNode root        = null;
+        IStoredNode currentNode = ( ( ( node.getNodeType() == Node.ELEMENT_NODE ) || ( node.getNodeType() == Node.ATTRIBUTE_NODE ) ) ? node : node.getParentStoredNode() );
 
         while( currentNode != null ) {
             final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration( broker, path );
@@ -348,7 +349,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    public void reindex( StoredNode node )
+    public void reindex(IStoredNode node )
     {
         if( node == null ) {
             return;
@@ -364,7 +365,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    public void removeNode( StoredNode node, NodePath currentPath, String content )
+    public void removeNode(NodeHandle node, NodePath currentPath, String content )
     {
         // TODO Auto-generated method stub
     }

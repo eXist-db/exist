@@ -176,8 +176,8 @@ public class FunDeepEqual extends CollatingFunction {
             switch(a.getType()) {
             case Type.DOCUMENT:
                 // NodeValue.getNode() doesn't seem to work for document nodes
-                na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getDocument();
-                nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getDocument();
+                na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getOwnerDocument();
+                nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getOwnerDocument();
                 return compareContents(na, nb);
             case Type.ELEMENT:
                 na = nva.getNode();

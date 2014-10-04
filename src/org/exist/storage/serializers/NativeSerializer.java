@@ -29,11 +29,11 @@ import org.exist.dom.persistent.CommentImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.exist.storage.dom.INodeIterator;
 
 /**
  * Serializer implementation for the native database backend.
@@ -71,13 +72,13 @@ public class NativeSerializer extends Serializer {
     protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent, boolean checkAttributes)
     throws SAXException {
     	if(Type.subTypeOf(p.getType(), Type.DOCUMENT) || p.getNodeId() == NodeId.DOCUMENT_NODE) {
-    			serializeToReceiver(p.getDocument(), generateDocEvent);
+    			serializeToReceiver(p.getOwnerDocument(), generateDocEvent);
     			return;
     	}
-    	setDocument(p.getDocument());
+    	setDocument(p.getOwnerDocument());
     	if (generateDocEvent) {receiver.startDocument();}
-        final Iterator<StoredNode> domIter = broker.getNodeIterator(new StoredNode(p));
-        serializeToReceiver(null, domIter, p.getDocument(), checkAttributes, p.getMatches(), new TreeSet<String>());
+        final INodeIterator domIter = broker.getNodeIterator(p);
+        serializeToReceiver(null, domIter, p.getOwnerDocument(), checkAttributes, p.getMatches(), new TreeSet<String>());
         if (generateDocEvent) {receiver.endDocument();}
     }
     
@@ -91,15 +92,15 @@ public class NativeSerializer extends Serializer {
 		
     	if (doc.getDoctype() != null){
 			if ("yes".equals(getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no"))) {
-				final StoredNode n = (StoredNode) doc.getDoctype();
+				final IStoredNode n = (IStoredNode)doc.getDoctype();
 				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), true, null, new TreeSet<String>());
 			}
 		}
     	
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
-    		final StoredNode node = (StoredNode) children.item(i);
-    		final Iterator<StoredNode> domIter = broker.getNodeIterator(node);
+    		final IStoredNode node = (IStoredNode) children.item(i);
+    		final INodeIterator domIter = broker.getNodeIterator(node);
     		domIter.next();
     		final NodeProxy p = new NodeProxy(node);
     		serializeToReceiver(node, domIter, (DocumentImpl)node.getOwnerDocument(), 
@@ -115,7 +116,7 @@ public class NativeSerializer extends Serializer {
     }
     
     
-    protected void serializeToReceiver(StoredNode node, Iterator<StoredNode> iter,
+    protected void serializeToReceiver(IStoredNode node, INodeIterator iter,
             DocumentImpl doc, boolean first, Match match, Set<String> namespaces) throws SAXException {
         if (node == null) 
         	{node = iter.next();}
@@ -185,9 +186,9 @@ public class NativeSerializer extends Serializer {
             final int children = node.getChildCount();
             int count = 0;
             // int childLen;
-            StoredNode child = null;
+            IStoredNode child = null;
             while (count < children) {
-                child = (StoredNode) iter.next();
+                child = iter.next();
                 if (child!=null && child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
                         {cdata = processAttribute(((AttrImpl) child).getValue(), node.getNodeId(), match);}
@@ -204,7 +205,7 @@ public class NativeSerializer extends Serializer {
             while (count < children) {
                 serializeToReceiver(child, iter, doc, false, match, namespaces);
                 if (++count < children) {
-                    child = (StoredNode) iter.next();
+                    child = iter.next();
                 } else
                     {break;}
             }
@@ -299,7 +300,7 @@ public class NativeSerializer extends Serializer {
         }
     }
 
-    private final String processAttribute(String data, NodeId nodeId, Match match) {
+    private String processAttribute(String data, NodeId nodeId, Match match) {
         if (match == null) {return data;}
         // prepare a regular expression to mark match-terms
         StringBuilder expr = null;

@@ -237,7 +237,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         } else {
             hasOne = true;
         }
-        getPart(proxy.getDocument(), true, initalSize).add(proxy);
+        getPart(proxy.getOwnerDocument(), true, initalSize).add(proxy);
         ++size;
         isSorted = false;
         setHasChanged();
@@ -265,7 +265,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         } else {
             hasOne = true;
         }
-        getPart(proxy.getDocument(), true, 
+        getPart(proxy.getOwnerDocument(), true, 
                 sizeHint != Constants.NO_SIZE_HINT ? sizeHint : initalSize).add(proxy);
         ++size;
         isSorted = false;
@@ -363,7 +363,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      */
     @Override
     public boolean contains(NodeProxy proxy) {
-        final Part part = getPart(proxy.getDocument(), false, 0);
+        final Part part = getPart(proxy.getOwnerDocument(), false, 0);
         return part == null ? false : part.contains(proxy.getNodeId());
     }
 
@@ -442,7 +442,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
      */
     @Override
     public NodeProxy get(NodeProxy p) {
-        final Part part = getPart(p.getDocument(), false, 0);
+        final Part part = getPart(p.getOwnerDocument(), false, 0);
         return part == null ? null : part.get(p.getNodeId());
     }
 
@@ -479,7 +479,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
         final NodeSet result = new ExtArrayNodeSet();
         Part part;
         for (final NodeProxy node : al) {
-            part = getPart(node.getDocument(), false, 0);
+            part = getPart(node.getOwnerDocument(), false, 0);
             if (part != null) {
                 part.getDescendantsInSet(result, node, childOnly, includeSelf, mode, contextId, copyMatches);
             }
@@ -994,7 +994,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             NodeId lastMarked = na.getNodeId();
             while (true) {
                 // first, try to find nodes belonging to the same doc
-                if (na.getDocument().getDocId() != nb.getDocument().getDocId()) {
+                if (na.getOwnerDocument().getDocId() != nb.getOwnerDocument().getDocId()) {
                     break;
                 }
                 // same document
@@ -1156,7 +1156,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             if(length == 0) {
                 return null;
             }
-            return array[0].getDocument();
+            return array[0].getOwnerDocument();
         }
 
         /**
@@ -1433,7 +1433,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
             if (indexType == Type.ANY_TYPE) {
                 for (int i = 0; i < length; i++) {
                     final NodeProxy node = array[i];
-                    if (node.getDocument().getCollection().isTempCollection()) {
+                    if (node.getOwnerDocument().getCollection().isTempCollection()) {
                         //Temporary nodes return default values
                         indexType = Type.ITEM;
                         break;
@@ -1496,7 +1496,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @param proxy a <code>NodeProxy</code> value
          */
         public void setPosition(NodeProxy proxy) {
-            partPos = ArrayUtils.binarySearch(documentIds, proxy.getDocument().getDocId(), partCount);
+            partPos = ArrayUtils.binarySearch(documentIds, proxy.getOwnerDocument().getDocId(), partCount);
             if (partPos >= 0) {
                 currentPart = parts[partPos];
                 int low = 0;
@@ -1657,7 +1657,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet implements DocumentSet {
          * @param node a <code>NodeProxy</code> value
          */
         public void setPosition(NodeProxy node) {
-            currentPart = getPart(node.getDocument(), false, -1);
+            currentPart = getPart(node.getOwnerDocument(), false, -1);
             int low = 0;
             int high = currentPart.length - 1;
             int mid;

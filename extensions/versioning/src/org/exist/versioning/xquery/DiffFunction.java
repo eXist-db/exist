@@ -71,8 +71,8 @@ public class DiffFunction extends BasicFunction {
         if (nv1.getImplementationType() != NodeValue.PERSISTENT_NODE ||
                 nv2.getImplementationType() != NodeValue.PERSISTENT_NODE)
             throw new XPathException(this, "diff function only works on persistent documents stored in the db");
-        DocumentImpl doc1 = ((NodeProxy)nv1).getDocument();
-        DocumentImpl doc2 = ((NodeProxy)nv2).getDocument();
+        DocumentImpl doc1 = ((NodeProxy)nv1).getOwnerDocument();
+        DocumentImpl doc2 = ((NodeProxy)nv2).getOwnerDocument();
 
         context.pushDocumentContext();
         try {

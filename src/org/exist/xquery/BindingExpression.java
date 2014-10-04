@@ -27,9 +27,9 @@ import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
@@ -190,8 +190,8 @@ public abstract class BindingExpression extends AbstractExpression implements Re
 
 				for (final NodeProxy current : nodes) {
 					int sizeHint = Constants.NO_SIZE_HINT;
-					if(lastDoc == null || current.getDocument() != lastDoc) {
-						lastDoc = current.getDocument();
+					if(lastDoc == null || current.getOwnerDocument() != lastDoc) {
+						lastDoc = current.getOwnerDocument();
 						sizeHint = nodes.getSizeHint(lastDoc);
 					}
 					ContextItem	context = current.getContext();                
@@ -316,17 +316,21 @@ public abstract class BindingExpression extends AbstractExpression implements Re
             this.sequence = sequence;
         }
         
+        @Override
         public void documentUpdated(DocumentImpl document, int event) {
         }
 
-        public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+        @Override
+        public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
             sequence.nodeMoved(oldNodeId, newNode);
         }
 
+        @Override
         public void unsubscribe() {
             BindingExpression.this.listener = null;
         }
 
+        @Override
         public void debug() {
         }
     }

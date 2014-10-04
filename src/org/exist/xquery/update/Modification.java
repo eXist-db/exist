@@ -38,6 +38,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
@@ -185,8 +186,8 @@ public abstract class Modification extends AbstractExpression
 				Item item = i.nextItem();
 				if (item.getType() == Type.DOCUMENT) {
 					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-						final StoredNode root = (StoredNode) ((NodeProxy)item).getDocument().getDocumentElement();
-						item = new NodeProxy(root.getDocument(), root.getNodeId(), root.getInternalAddress());
+						final NodeHandle root = (NodeHandle) ((NodeProxy)item).getOwnerDocument().getDocumentElement();
+						item = new NodeProxy(root);
 					} else {
 						item = (Item)((NodeValue) item).getOwnerDocument().getDocumentElement();
 					}
@@ -357,19 +358,19 @@ public abstract class Modification extends AbstractExpression
 
     final static class IndexListener implements NodeIndexListener {
 
-		StoredNode[] nodes;
+		final NodeHandle[] nodes;
 
-		public IndexListener(StoredNode[] nodes) {
+		public IndexListener(NodeHandle[] nodes) {
 			this.nodes = nodes;
 		}
 
 		/* (non-Javadoc)
 		 * @see org.exist.dom.persistent.NodeIndexListener#nodeChanged(org.exist.dom.persistent.NodeImpl)
 		 */
-		public void nodeChanged(StoredNode node) {
-			final long address = node.getInternalAddress();
+                @Override
+		public void nodeChanged(NodeHandle node) {
 			for (int i = 0; i < nodes.length; i++) {
-				if (StorageAddress.equals(nodes[i].getInternalAddress(), address)) {
+				if (StorageAddress.equals(nodes[i], node)) {
 					nodes[i] = node;
 				}
 			}

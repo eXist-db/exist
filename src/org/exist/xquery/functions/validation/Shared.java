@@ -138,7 +138,7 @@ public class Shared {
 
             if (item instanceof NodeProxy) {
                 final NodeProxy np = (NodeProxy) item;
-                final String url = "xmldb:exist://" + np.getDocument().getBaseURI();
+                final String url = "xmldb:exist://" + np.getOwnerDocument().getBaseURI();
                 LOG.debug("Document detected, adding URL " + url);
                 streamSource.setSystemId(url);
             }
@@ -218,7 +218,7 @@ public class Shared {
 
             if (item instanceof NodeProxy) {
                 final NodeProxy np = (NodeProxy) item;
-                url = np.getDocument().getBaseURI();
+                url = np.getOwnerDocument().getBaseURI();
                 LOG.debug("Document detected, adding URL " + url);
             }
 

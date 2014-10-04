@@ -37,6 +37,7 @@ import org.exist.dom.persistent.CommentImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
 import org.exist.dom.persistent.QName;
 import org.exist.dom.persistent.StoredNode;
@@ -271,7 +272,7 @@ public class Indexer extends Observable implements ContentHandler,
             if (!validate) {
                 broker.storeNode(transaction, comment, currentPath, indexSpec);
             }
-            document.appendChild(comment);
+            document.appendChild((NodeHandle)comment);
         } else {
             final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
@@ -433,7 +434,7 @@ public class Indexer extends Observable implements ContentHandler,
             if (!validate) {
                 broker.storeNode(transaction, pi, currentPath, indexSpec);
             }
-            document.appendChild(pi);
+            document.appendChild((NodeHandle)pi);
         } else {
             final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
@@ -630,7 +631,7 @@ public class Indexer extends Observable implements ContentHandler,
                 }
                 storeElement(node);
             }
-            document.appendChild(node);
+            document.appendChild((NodeHandle)node);
         }
         level++;
 

@@ -24,13 +24,14 @@ package org.exist.indexing.range;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.QName;
 import org.exist.dom.persistent.CharacterDataImpl;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -266,7 +267,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     @Override
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    public IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert, boolean includeSelf) {
 //        if (node.getNodeType() == Node.ATTRIBUTE_NODE)
 //            return null;
         if (config == null)
@@ -284,8 +285,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         if (reindexRequired) {
             p = new NodePath(path);
-            StoredNode topMost = null;
-            StoredNode currentNode = node;
+            IStoredNode topMost = null;
+            IStoredNode currentNode = node;
             if (currentNode.getNodeType() != Node.ELEMENT_NODE)
                 currentNode = currentNode.getParentStoredNode();
             while (currentNode != null) {
@@ -415,9 +416,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    protected void indexText(NodeId nodeId, QName qname, long address, NodePath path, RangeIndexConfigElement config, TextCollector collector) {
-        RangeIndexDoc pending = new RangeIndexDoc(nodeId, qname, path, collector, config);
-        pending.setAddress(address);
+    protected void indexText(NodeHandle nodeHandle, QName qname, NodePath path, RangeIndexConfigElement config, TextCollector collector) {
+        RangeIndexDoc pending = new RangeIndexDoc(nodeHandle.getNodeId(), qname, path, collector, config);
+        pending.setAddress(nodeHandle.getInternalAddress());
         nodesToWrite.add(pending);
         cachedNodesSize += collector.length();
         if (cachedNodesSize > maxCachedNodesSize)
@@ -664,7 +665,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
 
-        private void getAddress(int doc, NodeProxy storedNode) {
+        private void getAddress(int doc, NodeHandle storedNode) {
             if (addressValues != null) {
                 BytesRef ref = new BytesRef(buf);
                 addressValues.get(doc, ref);
@@ -848,7 +849,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         RangeIndexConfigElement configuration = configIter.next();
                         if (configuration.match(path)) {
                             SimpleTextCollector collector = new SimpleTextCollector(attrib.getValue());
-                            indexText(attrib.getNodeId(), attrib.getQName(), attrib.getInternalAddress(), path, configuration, collector);
+                            indexText(attrib, attrib.getQName(), path, configuration, collector);
                         }
                     }
                 }
@@ -874,7 +875,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             RangeIndexConfigElement configuration = configIter.next();
                             if (configuration.match(path)) {
                                 TextCollector collector = contentStack.pop();
-                                indexText(element.getNodeId(), element.getQName(), element.getInternalAddress(), path, configuration, collector);
+                                indexText(element, element.getQName(), path, configuration, collector);
                             }
                         }
                     }

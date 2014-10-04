@@ -207,7 +207,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         NodeProxy p;
         for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
             p = i.next();
-            ds.add(p.getDocument());
+            ds.add(p.getOwnerDocument());
         }
         return ds;
     }
@@ -373,7 +373,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * the node itself is contained in the node set.
      */
     public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,	boolean includeSelf, int level) {
-        return parentWithChild(proxy.getDocument(), proxy.getNodeId(), directParent, includeSelf);
+        return parentWithChild(proxy.getOwnerDocument(), proxy.getNodeId(), directParent, includeSelf);
     }
 
     /**
@@ -389,14 +389,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             final NodeProxy current = i.next();
             final NodeId parentID = current.getNodeId().getParentId();
             if (parentID != null && !(parentID.getTreeLevel() == 1 &&
-                    current.getDocument().getCollection().isTempCollection())) {
-                if (parent == null || parent.getDocument().getDocId() != 
-                        current.getDocument().getDocId() || !parent.getNodeId().equals(parentID)) {
+                    current.getOwnerDocument().getCollection().isTempCollection())) {
+                if (parent == null || parent.getOwnerDocument().getDocId() != 
+                        current.getOwnerDocument().getDocId() || !parent.getNodeId().equals(parentID)) {
                     if (parentID != NodeId.DOCUMENT_NODE) {
-                        parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE,
+                        parent = new NodeProxy(current.getOwnerDocument(), parentID, Node.ELEMENT_NODE,
                             StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
                     } else {
-                        parent = new NodeProxy(current.getDocument(), parentID, Node.DOCUMENT_NODE,
+                        parent = new NodeProxy(current.getOwnerDocument(), parentID, Node.DOCUMENT_NODE,
                             StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
                     }
                 }
@@ -432,8 +432,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             while (parentID != null) {
                 //Filter out the temporary nodes wrapper element
                 if (parentID != NodeId.DOCUMENT_NODE &&
-                    !(parentID.getTreeLevel() == 1  && current.getDocument().getCollection().isTempCollection())) {
-                    final NodeProxy parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
+                    !(parentID.getTreeLevel() == 1  && current.getOwnerDocument().getCollection().isTempCollection())) {
+                    final NodeProxy parent = new NodeProxy(current.getOwnerDocument(), parentID, Node.ELEMENT_NODE);
                     if (Expression.NO_CONTEXT_ID != contextId)
                         {parent.addContextNode(contextId, current);}
                     else
@@ -518,7 +518,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         final NodeSet newSet = new NewArrayNodeSet();
         for (final Iterator<NodeProxy> i = iterator(); i.hasNext();) {
             final NodeProxy p = i.next();
-            if (docs.contains(p.getDocument().getDocId()))
+            if (docs.contains(p.getOwnerDocument().getDocId()))
                 {newSet.add(p);}
         }
         return newSet;
@@ -578,8 +578,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                     context.addMatches(current);
                     if (Expression.NO_CONTEXT_ID != contextId)
                         {context.addContextNode(contextId, context);}
-                    if (lastDoc != null && lastDoc.getDocId() != context.getDocument().getDocId()) {
-                        lastDoc = context.getDocument();
+                    if (lastDoc != null && lastDoc.getDocId() != context.getOwnerDocument().getDocId()) {
+                        lastDoc = context.getOwnerDocument();
                         result.add(context, getSizeHint(lastDoc));
                     } else
                         {result.add(context);}
@@ -643,7 +643,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         if (indexType == Type.ANY_TYPE) {
             for (final Iterator<NodeProxy> i = iterator(); i.hasNext();) {
                 final NodeProxy node = i.next();
-                if (node.getDocument().getCollection().isTempCollection()) {
+                if (node.getOwnerDocument().getCollection().isTempCollection()) {
                     //Temporary nodes return default values
                     indexType = Type.ITEM;
                     break;
@@ -674,10 +674,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     }
 
     @Override
-    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+    public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
         final NodeProxy p = get((DocumentImpl)newNode.getOwnerDocument(), oldNodeId);
-        if (p != null)
-            {p.nodeMoved(oldNodeId, newNode);}
+        if (p != null) {
+            p.nodeMoved(oldNodeId, newNode);
+        }
     }
 
     /* (non-Javadoc)
@@ -697,7 +698,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             if(i > 0)
                 {result.append(", ");}
             final NodeProxy p = get(i);
-            result.append("[").append(p.getDocument().getDocId()).append(":").append(p.getNodeId()).append("]");
+            result.append("[").append(p.getOwnerDocument().getDocId()).append(":").append(p.getNodeId()).append("]");
         }
         result.append(")");
         return result.toString();
@@ -711,7 +712,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         CollectionIterator() {
             if (nodeIterator.hasNext()) {
                 final NodeProxy p = nodeIterator.next();
-                nextCollection = p.getDocument().getCollection();
+                nextCollection = p.getOwnerDocument().getCollection();
             }
         }
 
@@ -724,8 +725,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             nextCollection = null;
             while (nodeIterator.hasNext()) {
                 final NodeProxy p = nodeIterator.next();
-                if (!p.getDocument().getCollection().equals(oldCollection)) {
-                    nextCollection = p.getDocument().getCollection();
+                if (!p.getOwnerDocument().getCollection().equals(oldCollection)) {
+                    nextCollection = p.getOwnerDocument().getCollection();
                     break;
                 }
             }

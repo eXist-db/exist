@@ -47,6 +47,7 @@ import org.exist.util.pool.NodePool;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import org.exist.dom.persistent.NodeHandle;
 
 /**
  * Helper class to make a in-memory document fragment persistent. The class directly accesses the in-memory document structure and writes it into a
@@ -113,7 +114,7 @@ public class DOMIndexer {
         path.addComponent(ROOT_QNAME);
         stack.push(elem);
         broker.storeNode(transaction, elem, path, indexSpec);
-        targetDoc.appendChild(elem);
+        targetDoc.appendChild((NodeHandle)elem);
         elem.setChildCount(0);
         // store the document nodes
         int top = (doc.size > 1) ? 1 : -1;
@@ -177,7 +178,7 @@ public class DOMIndexer {
                     initElement( nodeNr, elem );
                     stack.push( elem );
                     broker.storeNode( transaction, elem, currentPath, indexSpec );
-                    targetDoc.appendChild( elem );
+                    targetDoc.appendChild( (NodeHandle)elem );
                     elem.setChildCount( 0 );
                 } else {
                     last = stack.peek();
@@ -222,7 +223,7 @@ public class DOMIndexer {
                 comment.setOwnerDocument( targetDoc );
                 if( stack.empty() ) {
                     comment.setNodeId( NodeId.DOCUMENT_NODE );
-                    targetDoc.appendChild( comment );
+                    targetDoc.appendChild( (NodeHandle)comment );
                     broker.storeNode( transaction, comment, null, indexSpec );
                 } else {
                     last = stack.peek();
@@ -240,7 +241,7 @@ public class DOMIndexer {
                 pi.setOwnerDocument( targetDoc );
                 if( stack.empty() ) {
                     pi.setNodeId( NodeId.DOCUMENT_NODE );
-                    targetDoc.appendChild( pi );
+                    targetDoc.appendChild( (NodeHandle)pi );
                 } else {
                     last = stack.peek();
                     last.appendChildInternal( prevNode, pi );

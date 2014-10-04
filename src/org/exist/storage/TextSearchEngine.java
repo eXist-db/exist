@@ -24,8 +24,8 @@ import org.exist.dom.persistent.QName;
 import org.exist.dom.persistent.CharacterDataImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -166,7 +166,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param node
 	 */
 	public abstract void storeText(CharacterDataImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
-    public abstract void storeText(StoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
+    public abstract void storeText(IStoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
 
 	public abstract void flush();
 	public abstract boolean close() throws DBException;

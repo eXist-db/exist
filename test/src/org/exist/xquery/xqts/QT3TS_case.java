@@ -168,7 +168,7 @@ public class QT3TS_case extends TestCase {
                 if (_name == null)
                     continue;
 
-                col = el.getDocument().getURI().removeLastSegment().toString();
+                col = el.getOwnerDocument().getURI().removeLastSegment().toString();
 
                 NodeList sources = el.getElementsByTagNameNS(QT_NS, "source");
                 for (int j = 0; j < sources.getLength(); j++) {

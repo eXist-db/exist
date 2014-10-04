@@ -24,7 +24,6 @@ package org.exist.dom.persistent;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
@@ -44,7 +43,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -165,18 +163,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         this.internalAddress = address;
         this.nodeId = nodeId;
     }
-    
-    public NodeProxy(DocumentImpl doc, NodeId nodeId, short nodeType, long address, Match match, ContextItem context) {
-        this.doc = doc;
-        this.nodeType = nodeType;
-        this.internalAddress = address;
-        this.nodeId = nodeId;
-        this.match = match;
-        this.context = context;
-    }
 
     public void update(ElementImpl element) {
-        this.doc = element.getDocument();
+        this.doc = element.getOwnerDocument();
         this.nodeType = UNKNOWN_NODE_TYPE;
         this.internalAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
         this.nodeId = element.getNodeId();
@@ -187,13 +176,13 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /**
      * Creates a new <code>NodeProxy</code> instance.
      *
-     * @param n a <code>StoredNode</code> value
+     * @param n a <code>NodeHandle</code> value
      */
     public NodeProxy(NodeHandle n) {
-        this(n.getDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
+        this(n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
         if (n instanceof NodeProxy) {
       	  this.match = ((NodeProxy) n).match;
-           //TODO : what about node's context ?
+          this.context = ((NodeProxy) n).context;
         }
     }
 
@@ -339,16 +328,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      *
      * @return a <code>Document</code> value
      */
-    public Document getOwnerDocument() {
-        return doc;
-    }
-
-    /**
-     * The method <code>getDocument</code>
-     *
-     * @return a <code>DocumentImpl</code> value
-     */
-    public final DocumentImpl getDocument()  {
+    @Override
+    public DocumentImpl getOwnerDocument() {
         return doc;
     }
 
@@ -688,9 +669,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * The method <code>nodeMoved</code>
      *
      * @param oldNodeId a <code>NodeId</code> value
-     * @param newNode a <code>StoredNode</code> value
+     * @param newNode a <code>NodeHandle</code> value
      */
-    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+    @Override
+    public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
         if (nodeId.equals(oldNodeId)) {
             // update myself
             nodeId = newNode.getNodeId();
@@ -1085,7 +1067,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,
             boolean includeSelf, int level) {
-        return parentWithChild(proxy.getDocument(), proxy.getNodeId(), directParent, includeSelf);
+        return parentWithChild(proxy.getOwnerDocument(), proxy.getNodeId(), directParent, includeSelf);
     }
 
     public NodeProxy parentWithChild(DocumentImpl otherDoc, NodeId otherId,
@@ -1180,7 +1162,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
             public Collection next() {
                 hasNext = false;
-                return NodeProxy.this.getDocument().getCollection();
+                return NodeProxy.this.getOwnerDocument().getCollection();
             }
 
             public void remove() {
@@ -1290,7 +1272,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             {ancestors.add(this);}
         NodeId parentID = nodeId.getParentId();
         while (parentID != null) {
-            final NodeProxy parent = new NodeProxy(getDocument(), parentID, Node.ELEMENT_NODE);
+            final NodeProxy parent = new NodeProxy(getOwnerDocument(), parentID, Node.ELEMENT_NODE);
             if (contextId != Expression.NO_CONTEXT_ID)
                 {parent.addContextNode(contextId, this);}
             else
@@ -1438,9 +1420,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         if (children.getLength() == 0)
             {return NodeSet.EMPTY_SET;}
         final NewArrayNodeSet result = new NewArrayNodeSet();
-        StoredNode child;
+        IStoredNode child;
         for (int i = 0; i < children.getLength(); i++) {
-            child = (StoredNode) children.item(i);
+            child = (IStoredNode) children.item(i);
             if (child.getQName().equals(qname)) {
                 final NodeProxy p = new NodeProxy(doc, child.getNodeId(), Node.ELEMENT_NODE, child.getInternalAddress());
                 if (Expression.NO_CONTEXT_ID != contextId)
@@ -1653,9 +1635,9 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         final NodeList children = node.getChildNodes();
         if (children.getLength() == 0)
             {return false;}
-        StoredNode child;
+        IStoredNode child;
         for (int i = 0; i < children.getLength(); i++) {
-            child = (StoredNode) children.item(i);
+            child = (IStoredNode) children.item(i);
             if (child.getQName().equals(qname)) {
             	return true;
             }

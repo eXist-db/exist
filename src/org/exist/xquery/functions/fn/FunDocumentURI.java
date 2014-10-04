@@ -92,7 +92,7 @@ public class FunDocumentURI extends Function {
                 final NodeProxy node = (NodeProxy) value;
                 //Returns the empty sequence if the node is not a document node. 
                 if (node.isDocument()) {
-                    final XmldbURI path = node.getDocument().getURI(); 
+                    final XmldbURI path = node.getOwnerDocument().getURI(); 
                     result = new AnyURIValue(path);
                 }
             } else {

@@ -68,8 +68,8 @@ public class NodeSetHelper {
         case NodeSet.DESCENDANT:
             for (final NodeProxy child : dl) {
                 int sizeHint = Constants.NO_SIZE_HINT;
-                if (lastDoc == null || child.getDocument() != lastDoc) {
-                    lastDoc = child.getDocument();
+                if (lastDoc == null || child.getOwnerDocument() != lastDoc) {
+                    lastDoc = child.getOwnerDocument();
                     sizeHint = dl.getSizeHint(lastDoc);
                 }
                 final NodeProxy parent = al.parentWithChild(child, true, false,
@@ -86,8 +86,8 @@ public class NodeSetHelper {
         case NodeSet.ANCESTOR:
             for (final NodeProxy child : dl) {
                 int sizeHint = Constants.NO_SIZE_HINT;
-                if (lastDoc == null || child.getDocument() != lastDoc) {
-                    lastDoc = child.getDocument();
+                if (lastDoc == null || child.getOwnerDocument() != lastDoc) {
+                    lastDoc = child.getOwnerDocument();
                     sizeHint = al.getSizeHint(lastDoc);
                 }
                 final NodeProxy parent = al.parentWithChild(child, true, false,
@@ -114,8 +114,8 @@ public class NodeSetHelper {
         switch (mode) {
         case NodeSet.DESCENDANT:
             for (final NodeProxy child : dl) {
-                if (lastDoc == null || child.getDocument() != lastDoc) {
-                    lastDoc = child.getDocument();
+                if (lastDoc == null || child.getOwnerDocument() != lastDoc) {
+                    lastDoc = child.getOwnerDocument();
                 }
                 final NodeProxy parent = al.parentWithChild(child, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);
                 if (parent != null) {
@@ -125,8 +125,8 @@ public class NodeSetHelper {
             break;
         case NodeSet.ANCESTOR:
             for (final NodeProxy child : dl) {
-                if (lastDoc == null || child.getDocument() != lastDoc) {
-                    lastDoc = child.getDocument();
+                if (lastDoc == null || child.getOwnerDocument() != lastDoc) {
+                    lastDoc = child.getOwnerDocument();
                 }
                 final NodeProxy parent = al.parentWithChild(child, true, false, NodeProxy.UNKNOWN_NODE_LEVEL);
                 if (parent != null) {
@@ -172,11 +172,11 @@ public class NodeSetHelper {
             for (final NodeProxy descendant : dl) {
                 int sizeHint = Constants.NO_SIZE_HINT;
                 // get a size hint for every new document encountered
-                if (lastDoc == null || descendant.getDocument() != lastDoc) {
-                    lastDoc = descendant.getDocument();
+                if (lastDoc == null || descendant.getOwnerDocument() != lastDoc) {
+                    lastDoc = descendant.getOwnerDocument();
                     sizeHint = dl.getSizeHint(lastDoc);
                 }
-                final NodeProxy ancestor = al.parentWithChild(descendant.getDocument(),
+                final NodeProxy ancestor = al.parentWithChild(descendant.getOwnerDocument(),
                     descendant.getNodeId(), false, includeSelf);
                 if (ancestor != null) {
                     if (Expression.NO_CONTEXT_ID != contextId)
@@ -191,11 +191,11 @@ public class NodeSetHelper {
             for (final NodeProxy descendant : dl) {
                 int sizeHint = Constants.NO_SIZE_HINT;
                 // get a size hint for every new document encountered
-                if (lastDoc == null || descendant.getDocument() != lastDoc) {
-                    lastDoc = descendant.getDocument();
+                if (lastDoc == null || descendant.getOwnerDocument() != lastDoc) {
+                    lastDoc = descendant.getOwnerDocument();
                     sizeHint = al.getSizeHint(lastDoc);
                 }
-                final NodeProxy ancestor = al.parentWithChild(descendant.getDocument(),
+                final NodeProxy ancestor = al.parentWithChild(descendant.getOwnerDocument(),
                     descendant.getNodeId(), false, includeSelf);
                 if (ancestor != null) {
                     if (Expression.NO_CONTEXT_ID != contextId)
@@ -221,11 +221,11 @@ public class NodeSetHelper {
             for (final NodeProxy descendant : dl) {
                 int sizeHint = Constants.NO_SIZE_HINT;
                 // get a size hint for every new document encountered
-                if (lastDoc == null || descendant.getDocument() != lastDoc) {
-                    lastDoc = descendant.getDocument();
+                if (lastDoc == null || descendant.getOwnerDocument() != lastDoc) {
+                    lastDoc = descendant.getOwnerDocument();
                     sizeHint = dl.getSizeHint(lastDoc);
                 }
-                final NodeProxy ancestor = al.parentWithChild(descendant.getDocument(),
+                final NodeProxy ancestor = al.parentWithChild(descendant.getOwnerDocument(),
                     descendant.getNodeId(), false, includeSelf);
                 if (ancestor != null) {
                     if (Expression.NO_CONTEXT_ID != contextId)
@@ -241,11 +241,11 @@ public class NodeSetHelper {
             for (final NodeProxy descendant : dl) {
                 int sizeHint = Constants.NO_SIZE_HINT;
                 // get a size hint for every new document encountered
-                if (lastDoc == null || descendant.getDocument() != lastDoc) {
-                    lastDoc = descendant.getDocument();
+                if (lastDoc == null || descendant.getOwnerDocument() != lastDoc) {
+                    lastDoc = descendant.getOwnerDocument();
                     sizeHint = al.getSizeHint(lastDoc);
                 }
-                final NodeProxy ancestor = al.parentWithChild(descendant.getDocument(),
+                final NodeProxy ancestor = al.parentWithChild(descendant.getOwnerDocument(),
                     descendant.getNodeId(), false, includeSelf);
                 if (ancestor != null) {
                     if (Expression.NO_CONTEXT_ID != contextId)
@@ -337,12 +337,12 @@ public class NodeSetHelper {
             boolean directParent, boolean includeSelf) {
         final NodeSet result = new NewArrayNodeSet(5);
         NodeId nodeId = child.getNodeId();
-        NodeProxy temp = ancestors.get(child.getDocument(), nodeId);
+        NodeProxy temp = ancestors.get(child.getOwnerDocument(), nodeId);
         if (includeSelf && temp != null)
             {result.add(temp);}
         while (nodeId != null && nodeId != NodeId.DOCUMENT_NODE) {
             nodeId = nodeId.getParentId();
-            temp = ancestors.get(child.getDocument(), nodeId);
+            temp = ancestors.get(child.getOwnerDocument(), nodeId);
             if (temp != null)
                 {result.add(temp);}
             else if (directParent)
@@ -373,13 +373,13 @@ public class NodeSetHelper {
         NodeProxy firstCandidate = null;
         while (true) {
             // first, try to find nodes belonging to the same doc
-            if (reference.getDocument().getDocId() < candidate.getDocument().getDocId()) {
+            if (reference.getOwnerDocument().getDocId() < candidate.getOwnerDocument().getDocId()) {
                 firstCandidate = null;
                 if (iReferences.hasNext())
                     {reference = (NodeProxy)iReferences.next();}
                 else
                     {break;}
-            } else if (reference.getDocument().getDocId() > candidate.getDocument().getDocId()) {
+            } else if (reference.getOwnerDocument().getDocId() > candidate.getOwnerDocument().getDocId()) {
                 firstCandidate = null;
                 if (iCandidates.hasNext())
                     {candidate = (NodeProxy)iCandidates.next();}
@@ -473,13 +473,13 @@ public class NodeSetHelper {
         // TODO : review : don't care about preceding siblings
         while (true) {
             // first, try to find nodes belonging to the same doc
-            if (reference.getDocument().getDocId() < candidate.getDocument().getDocId()) {
+            if (reference.getOwnerDocument().getDocId() < candidate.getOwnerDocument().getDocId()) {
                 firstCandidate = null;
                 if (iReferences.hasNext())
                     {reference = (NodeProxy)iReferences.next();}
                 else
                     {break;}
-            } else if (reference.getDocument().getDocId() > candidate.getDocument().getDocId()) {
+            } else if (reference.getOwnerDocument().getDocId() > candidate.getOwnerDocument().getDocId()) {
                 firstCandidate = null;
                 if (iCandidates.hasNext())
                     {candidate = (NodeProxy) iCandidates.next();}

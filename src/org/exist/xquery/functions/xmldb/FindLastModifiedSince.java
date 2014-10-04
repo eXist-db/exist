@@ -51,7 +51,7 @@ public class FindLastModifiedSince extends BasicFunction {
 		
 		for (final NodeSetIterator i = nodes.iterator(); i.hasNext(); ) {
 			final NodeProxy proxy = i.next();
-			final DocumentImpl doc = proxy.getDocument();
+			final DocumentImpl doc = proxy.getOwnerDocument();
 			final long modified = doc.getMetadata().getLastModified();
 			if (modified > lastModified)
 				{result.add(proxy);}

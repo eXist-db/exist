@@ -66,7 +66,7 @@ public class SortedNodeSet extends AbstractNodeSet {
         final MutableDocumentSet docs = new DefaultDocumentSet();
         for (final Iterator<NodeProxy> i = other.iterator(); i.hasNext();) {
             final NodeProxy p = i.next();
-            docs.add(p.getDocument());
+            docs.add(p.getOwnerDocument());
         }
         // TODO(pkaminsk2): why replicate XQuery.compile here?
         DBBroker broker = null;
@@ -165,7 +165,7 @@ public class SortedNodeSet extends AbstractNodeSet {
     @Override
     public Node item(int pos) {
         final NodeProxy p = ((IteratorItem) list.get(pos)).proxy;
-        return p == null ? null : p.getDocument().getNode(p);
+        return p == null ? null : p.getOwnerDocument().getNode(p);
     }
 
     //TODO : evaluate both semantics (item/itemAt)

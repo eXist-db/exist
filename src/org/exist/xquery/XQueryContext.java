@@ -59,9 +59,9 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.interpreter.Context;
 import org.exist.dom.memtree.InMemoryXMLStreamReader;
@@ -1212,7 +1212,7 @@ public class XQueryContext implements BinaryValueManager, Context
             reader = new InMemoryXMLStreamReader( node.getDocument(), node.getDocument() );
         } else {
             final NodeProxy proxy = (NodeProxy)nv;
-            reader = getBroker().newXMLStreamReader( new NodeProxy( proxy.getDocument(), NodeId.DOCUMENT_NODE, proxy.getDocument().getFirstChildAddress() ), false );
+            reader = getBroker().newXMLStreamReader( new NodeProxy( proxy.getOwnerDocument(), NodeId.DOCUMENT_NODE, proxy.getOwnerDocument().getFirstChildAddress() ), false );
         }
         return( reader );
     }
@@ -3619,17 +3619,12 @@ public class XQueryContext implements BinaryValueManager, Context
         }
 
 
-        public void nodeMoved( NodeId oldNodeId, StoredNode newNode )
-        {
-            for( int i = 0; i < listeners.size(); i++ ) {
-                final UpdateListener listener = (UpdateListener)listeners.get( i );
-
-                if( listener != null ) {
-                    listener.nodeMoved( oldNodeId, newNode );
-                }
+        @Override
+        public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
+            for(final UpdateListener listener : listeners) {
+                listener.nodeMoved(oldNodeId, newNode);
             }
         }
-
 
         public void debug() {
             

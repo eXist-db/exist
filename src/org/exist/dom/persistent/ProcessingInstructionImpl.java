@@ -125,7 +125,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         final StoredNode parent = getParentStoredNode();
         if (parent != null )
             {return parent.getBaseURI();}
-        return getDocument().getBaseURI();
+        return getOwnerDocument().getBaseURI();
     }
 
     /**

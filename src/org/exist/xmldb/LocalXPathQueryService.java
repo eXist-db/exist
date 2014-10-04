@@ -148,7 +148,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		} else {
 			final NodeSet set = new ExtArrayNodeSet(1);
 			set.add(node);
-			final XmldbURI[] docs = new XmldbURI[] { node.getDocument().getURI() };
+			final XmldbURI[] docs = new XmldbURI[] { node.getOwnerDocument().getURI() };
 			return doQuery(query, docs, set, sortBy);
 		}
 	}
@@ -167,7 +167,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		} else {
 			final NodeSet set = new ExtArrayNodeSet(1);
 			set.add(node);
-			final XmldbURI[] docs = new XmldbURI[] { node.getDocument().getURI() };
+			final XmldbURI[] docs = new XmldbURI[] { node.getOwnerDocument().getURI() };
 			return execute(docs, set, expression, null);
 		}
 	}

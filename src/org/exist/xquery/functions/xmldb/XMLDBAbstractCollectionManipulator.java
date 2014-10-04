@@ -96,7 +96,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         	logger.debug("Found node");
         	if(node.getImplementationType() == NodeValue.PERSISTENT_NODE)
         	{
-        		final org.exist.collections.Collection internalCol = ((NodeProxy)node).getDocument().getCollection();
+        		final org.exist.collections.Collection internalCol = ((NodeProxy)node).getOwnerDocument().getCollection();
         		logger.debug("Found node");
         		try
         		{

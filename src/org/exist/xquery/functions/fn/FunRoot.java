@@ -126,7 +126,7 @@ public class FunRoot extends Function {
 
             if (s.isPersistentSet()) {
                 final NodeProxy p = s.toNodeSet().get(0);
-                result.add(new NodeProxy(p.getDocument()));
+                result.add(new NodeProxy(p.getOwnerDocument()));
             } else {
                 if (seq.hasOne() && item.getType() == Type.ATTRIBUTE) {
                 	result.add(item);

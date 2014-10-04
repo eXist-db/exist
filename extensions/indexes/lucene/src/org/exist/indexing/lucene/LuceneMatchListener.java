@@ -21,12 +21,12 @@
  */
 package org.exist.indexing.lucene;
 
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.QName;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -90,7 +90,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         this.match = proxy.getMatches();
         setNextInChain(null);
 
-        IndexSpec indexConf = proxy.getDocument().getCollection().getIndexConfiguration(broker);
+        IndexSpec indexConf = proxy.getOwnerDocument().getCollection().getIndexConfiguration(broker);
         if (indexConf != null)
             config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
 
@@ -108,7 +108,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
             if (proxy.getNodeId().isDescendantOf(nextMatch.getNodeId())) {
                 if (ancestors == null)
                     ancestors = new NewArrayNodeSet();
-                ancestors.add(new NodeProxy(proxy.getDocument(), nextMatch.getNodeId()));
+                ancestors.add(new NodeProxy(proxy.getOwnerDocument(), nextMatch.getNodeId()));
             }
             nextMatch = nextMatch.getNextMatch();
         }
@@ -299,15 +299,15 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     private NodePath getPath(NodeProxy proxy) {
         NodePath path = new NodePath();
-        StoredNode node = (StoredNode) proxy.getNode();
+        IStoredNode node = (IStoredNode) proxy.getNode();
         walkAncestor(node, path);
         return path;
     }
 
-    private void walkAncestor(StoredNode node, NodePath path) {
+    private void walkAncestor(IStoredNode node, NodePath path) {
         if (node == null)
             return;
-        StoredNode parent = node.getParentStoredNode();
+        IStoredNode parent = node.getParentStoredNode();
         walkAncestor(parent, path);
         path.addComponent(node.getQName());
     }

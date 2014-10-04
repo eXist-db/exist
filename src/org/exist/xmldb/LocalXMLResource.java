@@ -95,7 +95,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
 	public LocalXMLResource(Subject user, BrokerPool pool, LocalCollection parent,
 			NodeProxy p) throws XMLDBException {
-		this(user, pool, parent, p.getDocument().getFileURI());
+		this(user, pool, parent, p.getOwnerDocument().getFileURI());
 		this.proxy = p;
 	}
 

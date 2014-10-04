@@ -24,8 +24,8 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -342,18 +342,18 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	public void setSelfAsContext(int contextId) throws XPathException {
 	}
 	
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#isPersistentSet()
-     */
-    public boolean isPersistentSet() {
-        return false;
-    }
+        /* (non-Javadoc)
+         * @see org.exist.xquery.value.Sequence#isPersistentSet()
+         */
+        public boolean isPersistentSet() {
+            return false;
+        }
 
-
-    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
-    }
+        @Override
+        public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
+        }
 	
-    /*
+        /*
 	public byte[] serialize(short collectionId)	throws EXistException {	
 		//TODO : pass the factory as an argument
 		return ValueIndexFactory.serialize(this, collectionId);

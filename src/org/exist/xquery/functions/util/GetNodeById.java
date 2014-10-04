@@ -82,7 +82,7 @@ public class GetNodeById extends BasicFunction {
         if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
             return ((NodeImpl) docNode).getDocument().getNodeById(nodeId);
         } else {
-            final DocumentImpl doc = ((NodeProxy)docNode).getDocument();
+            final DocumentImpl doc = ((NodeProxy)docNode).getOwnerDocument();
             return new NodeProxy(doc, nodeId);
         }
 	}

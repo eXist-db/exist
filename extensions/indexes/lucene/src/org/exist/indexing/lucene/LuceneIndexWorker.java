@@ -24,13 +24,13 @@ package org.exist.indexing.lucene;
 import org.exist.dom.persistent.QName;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.CharacterDataImpl;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.AttrImpl;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -212,7 +212,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return this.mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    public IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
             return null;
         if (config == null)
@@ -230,8 +230,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         if (reindexRequired) {
             p = new NodePath(path);
-            StoredNode topMost = null;
-            StoredNode currentNode = node;
+            IStoredNode topMost = null;
+            IStoredNode currentNode = node;
             if (currentNode.getNodeType() != Node.ELEMENT_NODE)
                 currentNode = currentNode.getParentStoredNode();
             while (currentNode != null) {

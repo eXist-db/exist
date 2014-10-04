@@ -1,21 +1,17 @@
 package org.exist.fluent;
 
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.TextImpl;
-import org.exist.dom.persistent.StoredNode;
-import java.io.File;
-import java.text.MessageFormat;
-import java.util.*;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.*;
 import org.exist.collections.*;
 import org.exist.collections.Collection;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.TextImpl;
 import org.exist.security.*;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.*;
@@ -26,6 +22,10 @@ import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+
+import java.io.File;
+import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * <p>The global entry point to an embedded instance of the <a href='http://exist-db.org'>eXist </a>database.
@@ -523,7 +523,8 @@ public class Database {
 		public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
 			stale(normalizePath(doc.getURI().getCollectionPath()));
 		}
-		public void removeNode(StoredNode node, NodePath currentPath, String content) {
+                @Override
+		public void removeNode(NodeHandle node, NodePath currentPath, String content) {
 			stale(normalizePath(((DocumentImpl) node.getOwnerDocument()).getURI().getCollectionPath()) + "#" + node.getNodeId());
 		}
 		public void flush() {}

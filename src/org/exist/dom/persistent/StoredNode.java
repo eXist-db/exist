@@ -34,10 +34,10 @@ import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
+import org.exist.storage.dom.INodeIterator;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 /**
@@ -45,7 +45,7 @@ import org.w3c.dom.Node;
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
-public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
+public class StoredNode extends NodeImpl implements Visitable, NodeHandle, IStoredNode {
 
     public final static int LENGTH_SIGNATURE_LENGTH = 1; //sizeof byte
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
@@ -56,7 +56,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
 
     private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
 
-    private short nodeType = NodeProxy.UNKNOWN_NODE_TYPE;
+    private final short nodeType;
 
     /**
      * Creates a new <code>StoredNode</code> instance.
@@ -81,24 +81,12 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     /**
      * Copy constructor: creates a copy of the other node.
      *
-     * @param other a <code>StoredNode</code> value
+     * @param other a <code>NodeHandle</code> value
      */
-    public StoredNode(StoredNode other) {
-        this.nodeType = other.nodeType;
-        this.nodeId = other.nodeId;
-        this.internalAddress = other.internalAddress;
-        this.ownerDocument = other.ownerDocument;
-    }
-
-    /**
-     * Creates a new <code>StoredNode</code> instance.
-     *
-     * @param other a <code>NodeProxy</code> value
-     */
-    public StoredNode(NodeProxy other) {
-        this.ownerDocument = other.getDocument();
+    public StoredNode(NodeHandle other) {
+        this.ownerDocument = other.getOwnerDocument();
         this.nodeType = other.getNodeType();
-        this.nodeId = other.getNodeId();    	
+        this.nodeId = other.getNodeId();
         this.internalAddress = other.getInternalAddress();
     }
 
@@ -111,6 +99,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     } 
 
+    @Override
     public byte[] serialize() {
         throw new DOMException(DOMException.INVALID_ACCESS_ERR, "Can't serialize " + getClass().getName());
     }
@@ -164,6 +153,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         }
     }
 
+    @Override
     public QName getQName() {
         switch(getNodeType()) {
         case Node.DOCUMENT_NODE:
@@ -185,8 +175,9 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      */
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof StoredNode))
-            {return false;}
+        if (!(obj instanceof StoredNode)) {
+            return false;
+        }
         return ((StoredNode)obj).nodeId.equals(nodeId);
     }
 
@@ -195,6 +186,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      *
      * @param dln a <code>NodeId</code> value
      */
+    @Override
     public void setNodeId(NodeId dln) {
         this.nodeId = dln;
     }
@@ -213,6 +205,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      *
      *@return    The internalAddress value
      */
+    @Override
     public long getInternalAddress() {
         return internalAddress;
     }
@@ -222,6 +215,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      *
      *@param  internalAddress  The new internalAddress value
      */
+    @Override
     public void setInternalAddress(long internalAddress) {
         this.internalAddress = internalAddress;
     }
@@ -236,6 +230,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         return true;
     }
 
+    @Override
     public void setDirty(boolean dirty) {
         //Nothing to do
     }
@@ -243,6 +238,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     /**
      * @see org.w3c.dom.Node#getNodeType()
      */
+    @Override
     public short getNodeType() {
         return this.nodeType;
     }
@@ -250,14 +246,12 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     /**
      * @see org.w3c.dom.Node#getOwnerDocument()
      */
-    public Document getOwnerDocument() {
+    @Override
+    public DocumentImpl getOwnerDocument() {
         return ownerDocument;
     }
 
-    public DocumentImpl getDocument() {
-        return ownerDocument;
-    }
-
+    @Override
     public DocumentAtExist getDocumentAtExist() {
         return ownerDocument;
     }
@@ -267,17 +261,15 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
      *
      *@param  ownerDocument  The new ownerDocument value
      */
+    @Override
     public void setOwnerDocument(DocumentImpl ownerDocument) {
         this.ownerDocument = ownerDocument;
-    }
-
-    public int getDocId() {
-        return ownerDocument.getDocId();
     }
 
     /**
      * @see org.w3c.dom.Node#getParentNode()
      */
+    @Override
     public Node getParentNode() {
         final NodeId parentId = nodeId.getParentId();
         if (parentId == NodeId.DOCUMENT_NODE)
@@ -288,6 +280,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         return ownerDocument.getNode(parentId);
     }
 
+    @Override
     public StoredNode getParentStoredNode() {
         final Node parent = getParentNode();
         return parent instanceof StoredNode ? (StoredNode) parent : null;
@@ -296,6 +289,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     /**
      * @see org.w3c.dom.Node#getPreviousSibling()
      */
+    @Override
     public Node getPreviousSibling() {
         final StoredNode parent = getParentStoredNode();
         if (parent == null) {return null;}
@@ -305,13 +299,14 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
                 broker = ownerDocument.getBrokerPool().get(null);
                 final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
-                StoredNode last = null;
+                IStoredNode last = null;
                 while (reader.hasNext()) {
                     final int status = reader.next();
                     final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                     if (status != XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == level) {
-                        if (currentId.equals(nodeId))
-                            {return last;}
+                        if (currentId.equals(nodeId)) {
+                            return last;
+                        }
                         last = reader.getNode();
                     }
                 }
@@ -339,6 +334,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     /**
      * @see org.w3c.dom.Node#getNextSibling()
      */
+    @Override
     public Node getNextSibling() {
         if (nodeId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
             {return null;}
@@ -376,7 +372,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         return ownerDocument.getNode(siblingId);
     }
 
-    protected StoredNode getLastNode(StoredNode node) {
+    protected IStoredNode getLastNode(IStoredNode node) {
         if (!node.hasChildNodes())
             {return node;}
         DBBroker broker = null;
@@ -415,6 +411,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         return next;
     }
 
+    @Override
     public NodePath getPath() {
         final NodePath path = new NodePath();
         if (getNodeType() == Node.ELEMENT_NODE)
@@ -427,6 +424,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         return path;
     }
 
+    @Override
     public NodePath getPath(NodePath parentPath) {
         if (getNodeType() == Node.ELEMENT_NODE)
             {parentPath.addComponent(getQName());}
@@ -449,6 +447,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     /**
      * Release all memory resources hold by this node. 
      */
+    @Override
     public void release() {
         ownerDocument = null;
         clear();
@@ -459,7 +458,7 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            final Iterator<StoredNode> iterator = broker.getNodeIterator(this);
+            final INodeIterator iterator = broker.getNodeIterator(this);
             iterator.next();
             return accept(iterator, visitor);
         } catch (final EXistException e) {
@@ -471,10 +470,12 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
         return false;
     }
 
-    public boolean accept(Iterator<StoredNode> iterator, NodeVisitor visitor) {
-        return visitor.visit(this);
+    @Override
+    public boolean accept(INodeIterator iterator, NodeVisitor visitor) {
+        return visitor.visit(this); //TODO iterator is not used here?
     }
 
+    @Override
     public int getNodeNumber() {
         return 0; //TODO: find a value for node number
     }
@@ -482,18 +483,21 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     @Deprecated
     private final static class PreviousSiblingVisitor implements NodeVisitor {
 
-        private StoredNode current;
-        private StoredNode last = null;
+        private final IStoredNode current;
+        private IStoredNode last = null;
         
-        public PreviousSiblingVisitor(StoredNode current) {
+        public PreviousSiblingVisitor(final IStoredNode current) {
             this.current = current;
         }
 
-        public boolean visit(StoredNode node) {
-            if (node.nodeId.equals(current.nodeId))
-                {return false;}
-            if (node.nodeId.getTreeLevel() == current.nodeId.getTreeLevel())
-                {last = node;}
+        @Override
+        public boolean visit(IStoredNode node) {
+            if (node.getNodeId().equals(current.getNodeId())) {
+                    return false;
+                }
+            if (node.getNodeId().getTreeLevel() == current.getNodeId().getTreeLevel()) {
+                last = node;
+            }
             return true;
         }
     }
@@ -501,15 +505,15 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle {
     @Override
     public int compareTo(Object other) {
         if( !(other instanceof StoredNode)) {
-            return(Constants.INFERIOR);
+            return Constants.INFERIOR;
         }
         final StoredNode n = (StoredNode)other;
         if(n.ownerDocument == ownerDocument) {
             return nodeId.compareTo(n.nodeId);
         } else if(ownerDocument.getDocId() < n.ownerDocument.getDocId()) {
-            return(Constants.INFERIOR);
+            return Constants.INFERIOR;
         } else {
-            return(Constants.SUPERIOR);
+            return Constants.SUPERIOR;
         }
     }
 }

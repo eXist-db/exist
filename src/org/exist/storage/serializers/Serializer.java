@@ -873,7 +873,7 @@ public abstract class Serializer implements XMLReader {
 	    }
 	    setXSLHandler(p, false);
 	    if (p.getNodeId() == NodeId.DOCUMENT_NODE) {
-		serializeToReceiver(p.getDocument(), "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
+		serializeToReceiver(p.getOwnerDocument(), "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
 	    } else {
 		serializeToReceiver(p, "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
 	    }
