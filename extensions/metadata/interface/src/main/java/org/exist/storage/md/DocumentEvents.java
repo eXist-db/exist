@@ -39,16 +39,6 @@ import org.exist.xmldb.XmldbURI;
 public class DocumentEvents extends FilteringTrigger {
 
 	@Override
-	public void prepare(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
-		//old, do nothing
-	}
-
-	@Override
-	public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
-		//old, do nothing
-	}
-
-	@Override
 	public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
 	}
 
