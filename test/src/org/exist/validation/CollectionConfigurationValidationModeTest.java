@@ -47,6 +47,10 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 /**
  *  Switch validation mode yes/no/auto per collection and validate.
@@ -71,6 +75,14 @@ public class CollectionConfigurationValidationModeTest {
 
     public CollectionConfigurationValidationModeTest() {
     }
+    
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            System.out.println("\nStarting test: " + description.getMethodName());
+        }
+    };
     
     public static void initLog4J(){
         Layout layout = new PatternLayout("%d [%t] %-5p (%F [%M]:%L) - %m %n");
