@@ -1227,7 +1227,7 @@ public class NativeBroker extends DBBroker {
             final File fsSourceDir = getCollectionFile(fsDir, collection.getURI(), false);
 
             // Need to move each collection in the source tree individually, so recurse.
-            moveCollectionRecursive(transaction, trigger, collection, destination, newName);
+            moveCollectionRecursive(transaction, trigger, collection, destination, newName, false);
 
             // For binary resources, though, just move the top level directory and all descendants come with it.
             moveBinaryFork(transaction, fsSourceDir, destination, newName);
@@ -1271,7 +1271,20 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void moveCollectionRecursive(final Txn transaction, final CollectionTrigger trigger, final Collection collection, final Collection destination, final XmldbURI newName) throws PermissionDeniedException, IOException, LockException, TriggerException {
+    //TODO bug the trigger param is reused as this is a recursive method, but in the current design triggers
+    // are only meant to be called once for each action and then destroyed!
+    /**
+     * @param transaction
+     * @param trigger
+     * @param collection
+     * @param destination
+     * @param newName
+     * @param fireTrigger Indicates whether the CollectionTrigger should be fired
+     *                    on the collection the first time this function is called.
+     *                    Triggers will always be fired for recursive calls of this
+     *                    function.
+     */
+    private void moveCollectionRecursive(final Txn transaction, final CollectionTrigger trigger, final Collection collection, final Collection destination, final XmldbURI newName, final boolean fireTrigger) throws PermissionDeniedException, IOException, LockException, TriggerException {
 
         final XmldbURI uri = collection.getURI();
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -1280,7 +1293,9 @@ public class NativeBroker extends DBBroker {
             final XmldbURI srcURI = collection.getURI();
             final XmldbURI dstURI = destination.getURI().append(newName);
 
-            trigger.beforeMoveCollection(this, transaction, collection, dstURI);
+            if(fireTrigger) {
+                trigger.beforeMoveCollection(this, transaction, collection, dstURI);
+            }
 
             final XmldbURI parentName = collection.getParentURI();
             final Collection parent = openCollection(parentName, Lock.WRITE_LOCK);
@@ -1317,7 +1332,9 @@ public class NativeBroker extends DBBroker {
                 lock.release(Lock.WRITE_LOCK);
             }
 
-            trigger.afterMoveCollection(this, transaction, collection, srcURI);
+            if(fireTrigger) {
+                trigger.afterMoveCollection(this, transaction, collection, srcURI);
+            }
 
             for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
                 final XmldbURI childName = i.next();
@@ -1327,7 +1344,7 @@ public class NativeBroker extends DBBroker {
                     LOG.warn("Child collection " + childName + " not found");
                 } else {
                     try {
-                        moveCollectionRecursive(transaction, trigger, child, collection, childName);
+                        moveCollectionRecursive(transaction, trigger, child, collection, childName, true);
                     } finally {
                         child.release(Lock.WRITE_LOCK);
                     }
