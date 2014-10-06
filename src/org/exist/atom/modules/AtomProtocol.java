@@ -99,23 +99,6 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 
 	// private static final String ENTRY_XPOINTER = "xpointer(/entry)";
 
-	final static class NodeListener implements NodeIndexListener {
-
-		NodeHandle node;
-
-		public NodeListener(NodeHandle node) {
-			this.node = node;
-		}
-
-		@Override
-		public void nodeChanged(NodeHandle newNode) {
-			final long address = newNode.getInternalAddress();
-			if (StorageAddress.equals(node.getInternalAddress(), address)) {
-				node = newNode;
-			}
-		}
-	}
-
 	/** Creates a new instance of AtomProtocol */
 	public AtomProtocol() {
 	}

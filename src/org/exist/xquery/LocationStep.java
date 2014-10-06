@@ -24,12 +24,10 @@ package org.exist.xquery;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.dom.persistent.ExtNodeSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.NodeVisitor;
 import org.exist.indexing.StructuralIndex;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.NodeImpl;
@@ -59,8 +57,6 @@ import org.exist.dom.persistent.NodeHandle;
  * @author wolf
  */
 public class LocationStep extends Step {
-
-	private static final int ATTR_DIRECT_SELECT_THRESHOLD = 10;
 
     private static final int INDEX_SCAN_THRESHOLD = 10000;
 
@@ -940,46 +936,6 @@ public class LocationStep extends Step {
 							"Unsupported axis specified");
 				}
 			}
-		}
-	}
-
-	@Deprecated
-	private class SiblingVisitor implements NodeVisitor {
-
-		private ExtNodeSet resultSet;
-		private NodeProxy contextNode;
-
-		public SiblingVisitor(ExtNodeSet resultSet) {
-			this.resultSet = resultSet;
-		}
-
-		public void setContext(NodeProxy contextNode) {
-			this.contextNode = contextNode;
-		}
-
-        @Override
-		public boolean visit(IStoredNode current) {
-			if (contextNode.getNodeId().getTreeLevel() == current.getNodeId()
-					.getTreeLevel()) {
-				final int cmp = current.getNodeId()
-						.compareTo(contextNode.getNodeId());
-				if (((axis == Constants.FOLLOWING_SIBLING_AXIS && cmp > 0) || (axis == Constants.PRECEDING_SIBLING_AXIS && cmp < 0))
-						&& test.matches(current)) {
-					NodeProxy sibling = resultSet.get(current
-							.getOwnerDocument(), current.getNodeId());
-					if (sibling == null) {
-						sibling = new NodeProxy(current);
-						if (Expression.NO_CONTEXT_ID != contextId) {
-							sibling.addContextNode(contextId, contextNode);
-						} else
-							{sibling.copyContext(contextNode);}
-						resultSet.add(sibling);
-						resultSet.setSorted(sibling.getOwnerDocument(), true);
-					} else if (Expression.NO_CONTEXT_ID != contextId)
-						{sibling.addContextNode(contextId, contextNode);}
-				}
-			}
-			return true;
 		}
 	}
 
