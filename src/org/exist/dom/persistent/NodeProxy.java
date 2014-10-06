@@ -76,14 +76,6 @@ import java.util.Properties;
  */
 public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, Comparable<Object> {
 
-    /*
-     * Special values for nodes gid :
-     * Chosen in order to facilitate fast arithmetic computations
-     */
-    public static final int DOCUMENT_NODE_GID = -1;
-    public static final int UNKNOWN_NODE_GID = 0;
-    public static final int DOCUMENT_ELEMENT_GID = 1;
-
     public static final short UNKNOWN_NODE_TYPE = -1;
 
     public static final int UNKNOWN_NODE_LEVEL = -1;

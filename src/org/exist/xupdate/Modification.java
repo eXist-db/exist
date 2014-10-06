@@ -373,19 +373,4 @@ public abstract class Modification {
 			}
 		}
 	}
-
-	final static class NodeComparator implements Comparator<StoredNode> {
-
-		/* (non-Javadoc)
-		* @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-		*/
-		public int compare(StoredNode n1, StoredNode n2) {
-			if (n1.getInternalAddress() == n2.getInternalAddress())
-				{return Constants.EQUAL;}
-			if (n1.getInternalAddress() < n2.getInternalAddress())
-				{return Constants.INFERIOR;}
-			else
-				{return Constants.SUPERIOR;}
-		}
-	}
 }

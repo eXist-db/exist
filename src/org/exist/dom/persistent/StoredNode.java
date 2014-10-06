@@ -480,28 +480,6 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle, IStor
         return 0; //TODO: find a value for node number
     }
 
-    @Deprecated
-    private final static class PreviousSiblingVisitor implements NodeVisitor {
-
-        private final IStoredNode current;
-        private IStoredNode last = null;
-        
-        public PreviousSiblingVisitor(final IStoredNode current) {
-            this.current = current;
-        }
-
-        @Override
-        public boolean visit(IStoredNode node) {
-            if (node.getNodeId().equals(current.getNodeId())) {
-                    return false;
-                }
-            if (node.getNodeId().getTreeLevel() == current.getNodeId().getTreeLevel()) {
-                last = node;
-            }
-            return true;
-        }
-    }
-
     @Override
     public int compareTo(Object other) {
         if( !(other instanceof StoredNode)) {
