@@ -261,7 +261,7 @@ public class Lookup extends Function implements Optimizable {
 
         try {
             preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
         //LOG.info("preselect for " + Arrays.toString(keys) + " on " + contextSequence.getItemCount() + "returned " + preselectResult.getItemCount() +
