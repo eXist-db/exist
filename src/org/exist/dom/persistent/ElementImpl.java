@@ -1581,7 +1581,6 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         }
     }
 
-    @Deprecated
     private class AttribVisitor implements NodeVisitor {
         private IStoredNode lastAttrib = null;
         private IStoredNode firstChild = null;

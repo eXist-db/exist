@@ -25,10 +25,8 @@ import org.exist.storage.dom.INodeIterator;
 
 /**
  * Visitor pattern: interface to be implemented by a visitable node.
- * @deprecated replaced by XMLStreamListener
  */
-    @Deprecated
-    public interface Visitable {
+public interface Visitable {
 
     /**
      * Visit the current node. For element nodes,
@@ -38,8 +36,6 @@ import org.exist.storage.dom.INodeIterator;
      * @param iterator an iterator positioned at the current node
      * @param visitor the visitor to call.
      * @return the value returned by the NodeVisitor.visit method.
-     * @deprecated
      */
-    @Deprecated
     public boolean accept(INodeIterator iterator, NodeVisitor visitor);  
 }
