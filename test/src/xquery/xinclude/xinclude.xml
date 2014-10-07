@@ -134,12 +134,12 @@
         <xpath>//p[. = 'Not found']</xpath>
     </test>
     <test>
-        <task>Simple XInclude loads external doc</task>
+        <task>Simple XInclude loads external doc (requires Internet access)</task>
         <code>util:expand(doc("/db/test/test6.xml"))</code>
         <xpath>//p[contains(., 'opinions')]</xpath>
     </test>
     <test>
-        <task>Simple XInclude on external doc using XPointer</task>
+        <task>Simple XInclude on external doc using XPointer (requires Internet access)</task>
         <code>util:expand(doc("/db/test/test7.xml"))</code>
         <xpath xmlns:comment="http://test.org">//comment:comment[contains(., 'namespace')]</xpath>
     </test>
