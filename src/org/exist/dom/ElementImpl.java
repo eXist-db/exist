@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist team
+ * Copyright (C) 2001-2014 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id$
  */
 package org.exist.dom;
 
@@ -1545,7 +1544,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             }
             final NodePath path = getPath();
             broker.getIndexController().setDocument(ownerDocument, StreamListener.STORE);
-            final StreamListener listener = broker.getIndexController().getStreamListener();
+            StoredNode reindexRoot = broker.getIndexController().getReindexRoot(this, path, true, true);
+            final StreamListener listener = reindexRoot == null ? broker.getIndexController().getStreamListener() : null;
             if (children == 0) {
                 appendChildren(transaction, nodeId.newChild(), null,
                     new NodeImplRef(this), path, appendList, listener);
@@ -1569,7 +1569,8 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
 
             broker.updateNode(transaction, this, true);
             broker.flush();
-
+            broker.getIndexController().reindex(transaction, reindexRoot,
+                    StreamListener.STORE);
         } catch (final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
