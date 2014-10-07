@@ -156,7 +156,7 @@ declare function t:run-test($test as element(test), $count as xs:integer) {
         { $test/@id }
         {
             if (not($OK)) then
-                ($test/task, $test/expected, <result>{$expanded}</result>)
+                ($test/task, $test/expected, $test/xpath, <result>{$expanded}</result>)
             else
                 ()
         }
