@@ -95,7 +95,7 @@ public class TwoParamFunctions extends BasicFunction {
        
         Sequence result;
         double calcValue=0;
-        final String functionName = getSignature().getName().getLocalName();
+        final String functionName = getSignature().getName().getLocalPart();
         
         final Sequence seqA = args[0].convertTo(Type.DOUBLE);
         final NumericValue valueA = (NumericValue)seqA.itemAt(0).convertTo(Type.DOUBLE);

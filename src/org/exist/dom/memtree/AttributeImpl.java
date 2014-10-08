@@ -93,11 +93,11 @@ public class AttributeImpl extends NodeImpl implements Attr {
     }
 
     /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getLocalName()
+     * @see org.w3c.dom.Node#getLocalPart()
      */
     @Override
     public String getLocalName() {
-        return getQName().getLocalName();
+        return getQName().getLocalPart();
     }
 
     /* (non-Javadoc)

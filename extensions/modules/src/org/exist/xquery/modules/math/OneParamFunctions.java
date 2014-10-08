@@ -176,7 +176,7 @@ public class OneParamFunctions extends BasicFunction {
             result = Sequence.EMPTY_SEQUENCE;
         else {          
             double calcValue=0;
-            String functionName = getSignature().getName().getLocalName();
+            String functionName = getSignature().getName().getLocalPart();
             if("abs".equals(functionName)) {
                 calcValue=Math.abs(value.getDouble());
                 

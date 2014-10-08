@@ -236,7 +236,7 @@ public class DOMIndexer {
 
             case Node.PROCESSING_INSTRUCTION_NODE: {
                 final QName qn = doc.nodeName[nodeNr];
-                pi.setTarget( qn.getLocalName() );
+                pi.setTarget( qn.getLocalPart() );
                 pi.setData( new String( doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr] ) );
                 pi.setOwnerDocument( targetDoc );
                 if( stack.empty() ) {
@@ -291,10 +291,10 @@ public class DOMIndexer {
         while( ( ns < doc.nextNamespace ) && ( doc.namespaceParent[ns] == nodeNr ) ) {
             final QName qn = doc.namespaceCode[ns];
 
-            if( "xmlns".equals( qn.getLocalName() ) ) {
+            if( "xmlns".equals( qn.getLocalPart() ) ) {
                 map.put( "", qn.getNamespaceURI() );
             } else {
-                map.put( qn.getLocalName(), qn.getNamespaceURI() );
+                map.put( qn.getLocalPart(), qn.getNamespaceURI() );
             }
             ++ns;
         }

@@ -448,10 +448,10 @@ public abstract class NodeImpl implements NodeAtExist, NodeValue {
     }
 
     /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getLocalName()
+     * @see org.w3c.dom.Node#getLocalPart()
      */
     public String getLocalName() {
-        throw( new RuntimeException( "Can not call getLocalName() on node type " + this.getNodeType() ) );
+        throw( new RuntimeException( "Can not call getLocalPart() on node type " + this.getNodeType() ) );
     }
 
     /* (non-Javadoc)

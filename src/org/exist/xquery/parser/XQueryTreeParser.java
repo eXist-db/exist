@@ -118,7 +118,7 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 	private boolean annotationValid(QName qname) {
 		String ns = qname.getNamespaceURI();
         if (ns.equals(Namespaces.XPATH_FUNCTIONS_NS)) {
-			String ln = qname.getLocalName();
+			String ln = qname.getLocalPart();
 			return ("private".equals(ln) || "public".equals(ln));
 		} else {
 			return !(ns.equals(Namespaces.XML_NS)
@@ -8921,7 +8921,7 @@ public XQueryTreeParser() {
 			
 			QName qname = QName.parse(staticContext, qna.getText());
 			if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI()) 
-			|| ("".equals(qname.getNamespaceURI()) && qname.getLocalName().equals("xmlns")))
+			|| ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals("xmlns")))
 			throw new XPathException("err:XQDY0044: the node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
 			
 			AST __t303 = _t;

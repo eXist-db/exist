@@ -39,7 +39,6 @@ import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -129,7 +128,7 @@ public class Lookup extends Function implements Optimizable {
 
     public static Lookup create(XQueryContext context, RangeIndex.Operator operator, NodePath contextPath) {
         for (FunctionSignature sig: signatures) {
-            if (sig.getName().getLocalName().equals(operator.toString())) {
+            if (sig.getName().getLocalPart().equals(operator.toString())) {
                 return new Lookup(context, sig, contextPath);
             }
         }
@@ -276,7 +275,7 @@ public class Lookup extends Function implements Optimizable {
     }
 
     private RangeIndex.Operator getOperator() {
-        final String calledAs = getSignature().getName().getLocalName();
+        final String calledAs = getSignature().getName().getLocalPart();
         return RangeIndexModule.OPERATOR_MAP.get(calledAs);
     }
 

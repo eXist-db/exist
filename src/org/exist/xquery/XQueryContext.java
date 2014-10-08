@@ -3447,7 +3447,7 @@ public class XQueryContext implements BinaryValueManager, Context
         if(dynamicOptions != null) {
             for(final Option option : dynamicOptions) {
                 if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
-                    properties.put(option.getQName().getLocalName(), option.getContents());
+                    properties.put(option.getQName().getLocalPart(), option.getContents());
                 }
             }
         }
@@ -3455,8 +3455,8 @@ public class XQueryContext implements BinaryValueManager, Context
         if( staticOptions != null ) {
             for(final Option option : staticOptions) {
                 if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
-                    if (!properties.containsKey(option.getQName().getLocalName()))
-                        {properties.put(option.getQName().getLocalName(), option.getContents());}
+                    if (!properties.containsKey(option.getQName().getLocalPart()))
+                        {properties.put(option.getQName().getLocalPart(), option.getContents());}
                 }
             }
         }

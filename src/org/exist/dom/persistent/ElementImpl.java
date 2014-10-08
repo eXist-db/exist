@@ -104,7 +104,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     public ElementImpl(org.exist.dom.QName nodeName, SymbolTable symbols) throws DOMException {
         super(Node.ELEMENT_NODE, nodeName);
         this.nodeName = nodeName;
-        if (symbols.getSymbol(nodeName.getLocalName()) < 0) {
+        if (symbols.getSymbol(nodeName.getLocalPart()) < 0) {
             throw new DOMException(DOMException.INVALID_ACCESS_ERR,
                     "Too many element/attribute names registered in the database. No of distinct names is limited to 16bit. Aborting store.");
         }
@@ -231,7 +231,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             }
 
             final short id = symbols.getSymbol(this);
-            final boolean hasNamespace = nodeName.needsNamespaceDecl();
+            final boolean hasNamespace = nodeName.hasNamespace();
             short nsId = 0;
             if (hasNamespace)
                 {nsId =  symbols.getNSSymbol(nodeName.getNamespaceURI());}
@@ -879,7 +879,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         final NamedNodeMap map = getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             final Node attr = attrs.item(i);
-            //Workaround: Xerces sometimes returns null for getLocalName() !!!!
+            //Workaround: Xerces sometimes returns null for getLocalPart() !!!!
             String localName = attr.getLocalName();
             if (localName == null)
                 {localName = attr.getNodeName();}

@@ -577,7 +577,7 @@ public class XQueryURLRewrite extends HttpServlet {
             rewrite = new PathForward(config, action, request.getRequestURI());
         } else if ("redirect".equals(action.getLocalName())) {
             rewrite = new Redirect(action, request.getRequestURI());
-//        } else if ("call".equals(action.getLocalName())) {
+//        } else if ("call".equals(action.getLocalPart())) {
 //            rewrite = new ModuleCall(action, queryContext, request.getRequestURI());
         }
         return rewrite;

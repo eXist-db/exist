@@ -310,7 +310,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             if(attribs != null) {
                 for (int i = 0; i < attribs.getLength(); i++) {
                     attrQName = attribs.getQName(i);
-                    if ("xmlns".equals(attrQName.getLocalName())) {
+                    if ("xmlns".equals(attrQName.getLocalPart())) {
                         if (nsSupport.getURI("") == null) {
                             uri = attribs.getValue(i);
                             if (enforceXHTML && !XHTML_NS.equals(uri)) {
@@ -324,7 +324,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
                         if("xmlns:".equals(prefix)) {
                             if (nsSupport.getURI(prefix) == null) {
                                 uri = attribs.getValue(i);
-                                prefix = attrQName.getLocalName();
+                                prefix = attrQName.getLocalPart();
                                 namespaceDecls.put(prefix, uri);
                                 nsSupport.declarePrefix(prefix, uri);
                             }
@@ -365,7 +365,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             if(attribs != null) {
                 // output attributes
                 for (int i = 0; i < attribs.getLength(); i++) {
-                    if (!attribs.getQName(i).getLocalName().startsWith("xmlns")) {
+                    if (!attribs.getQName(i).getLocalPart().startsWith("xmlns")) {
                         receiver.attribute(attribs.getQName(i), attribs.getValue(i));
                     }
                 }
@@ -423,7 +423,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     @Override
     public void attribute(final QName qname, final String value) throws SAXException {
         // ignore namespace declaration attributes
-        if((qname.getPrefix() != null && "xmlns".equals(qname.getPrefix())) || "xmlns".equals(qname.getLocalName())) {
+        if((qname.getPrefix() != null && "xmlns".equals(qname.getPrefix())) || "xmlns".equals(qname.getLocalPart())) {
             return;
         }
         

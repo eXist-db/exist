@@ -121,11 +121,11 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     }
 
     /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getLocalName()
+     * @see org.w3c.dom.Node#getLocalPart()
      */
     @Override
     public String getLocalName() {
-        return( getQName().getLocalName() );
+        return( getQName().getLocalPart() );
     }
 
     /* (non-Javadoc)
@@ -357,7 +357,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             QName name;
             while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
                 name = document.attrName[attr];
-                if( name.getLocalName().equals( localName ) && name.getNamespaceURI().equals( namespaceURI ) ) {
+                if( name.getLocalPart().equals( localName ) && name.getNamespaceURI().equals( namespaceURI ) ) {
                     return( document.attrValue[attr] );
                 }
                 ++attr;
@@ -368,7 +368,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             if( -1 < ns ) {
                 while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
                     final QName nsQName = document.namespaceCode[ns];
-                    if( nsQName.getLocalName().equals( localName ) ) {
+                    if( nsQName.getLocalPart().equals( localName ) ) {
                         return( nsQName.getNamespaceURI() );
                     }
                     ++ns;
@@ -401,7 +401,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             QName name;
             while( ( attr < document.nextAttr ) && ( document.attrParent[attr] == nodeNumber ) ) {
                 name = document.attrName[attr];
-                if( name.getLocalName().equals( localName ) && name.getNamespaceURI().equals( namespaceURI ) ) {
+                if( name.getLocalPart().equals( localName ) && name.getNamespaceURI().equals( namespaceURI ) ) {
                     return( new AttributeImpl( document, attr ) );
                 }
                 ++attr;
@@ -412,7 +412,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             if( -1 < ns ) {
                 while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
                     final QName nsQName = document.namespaceCode[ns];
-                    if( nsQName.getLocalName().equals( localName ) ) {
+                    if( nsQName.getLocalPart().equals( localName ) ) {
                         return( new NamespaceNode( document, ns ) );
                     }
                     ++ns;
@@ -529,7 +529,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
         if( -1 < ns ) {
             while( ( ns < document.nextNamespace ) && ( document.namespaceParent[ns] == nodeNumber ) ) {
                 final QName nsQName = document.namespaceCode[ns];
-                map.put( nsQName.getLocalName(), nsQName.getNamespaceURI() );
+                map.put( nsQName.getLocalPart(), nsQName.getNamespaceURI() );
                 ++ns;
             }
         }

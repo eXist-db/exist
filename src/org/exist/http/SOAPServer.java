@@ -251,7 +251,7 @@ public class SOAPServer
     	query.append("xquery version \"1.0\";").append(SEPERATOR);
     	query.append(SEPERATOR);
         query.append("import module namespace ").append(xqwsDescription.getNamespace()
-                .getLocalName()).append("=\"").append(xqwsDescription.getNamespace()
+                .getLocalPart()).append("=\"").append(xqwsDescription.getNamespace()
                 .getNamespaceURI()).append("\" at \"")
                 .append(xqwsDescription.getFileURI().toString())
                 .append("\";").append(SEPERATOR);
@@ -263,7 +263,7 @@ public class SOAPServer
         {
         	functionName = xqwsSOAPFunction.getNodeName();
         }
-        query.append(xqwsDescription.getNamespace().getLocalName())
+        query.append(xqwsDescription.getNamespace().getLocalPart())
                 .append(":").append(functionName).append("(");
         
         //add the arguments for the function call if any
@@ -1425,7 +1425,7 @@ public class SOAPServer
             //Create a simple XQuery wrapper to access the module
             String query = "xquery version \"1.0\";" + SEPERATOR;
             query += SEPERATOR;
-            query += "import module namespace " + xqwsNamespace.getLocalName() + "=\"" + xqwsNamespace.getNamespaceURI() + "\" at \"" + xqwsFileUri.toString() + "\";" + SEPERATOR;
+            query += "import module namespace " + xqwsNamespace.getLocalPart() + "=\"" + xqwsNamespace.getNamespaceURI() + "\" at \"" + xqwsFileUri.toString() + "\";" + SEPERATOR;
             query += SEPERATOR;
             query += "()";
             
@@ -1487,7 +1487,7 @@ public class SOAPServer
     			else
     			{
     				//Only a Single Function Description for showing function call results
-    				if(xqwsFunctions[f].getName().getLocalName().equals(functionName))
+    				if(xqwsFunctions[f].getName().getLocalPart().equals(functionName))
     				{
     					describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc, functionResult);
     					break;
@@ -1537,7 +1537,7 @@ public class SOAPServer
     		//Generate an XML snippet for each function
         	builderFunction.startElement(new QName("function", null, null), null);
         	builderFunction.startElement(new QName("name", null, null), null);
-        	builderFunction.characters(signature.getName().getLocalName());
+        	builderFunction.characters(signature.getName().getLocalPart());
         	builderFunction.endElement();
         	if(signature.getDescription() != null)
         	{
@@ -1551,7 +1551,7 @@ public class SOAPServer
         	{
         		builderFunction.startElement(new QName("parameter",null, null), null);
         		builderFunction.startElement(new QName("name",null, null), null);
-        		//builderFunction.characters(xqwsArguments[a].getNodeName().getLocalName()); //TODO: how to get parameter name?
+        		//builderFunction.characters(xqwsArguments[a].getNodeName().getLocalPart()); //TODO: how to get parameter name?
         		builderFunction.endElement();
         		builderFunction.startElement(new QName("type",null, null), null);
         		builderFunction.characters(Type.getTypeName(xqwsArguments[a].getPrimaryType()));

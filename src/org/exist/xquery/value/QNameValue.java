@@ -90,7 +90,7 @@ public class QNameValue extends AtomicValue {
         // WM: Changing the prefix is problematic (e.g. if a module
         // defines different prefixes than the main module). We should
         // keep the current in-scope prefix.
-//	    if((prefix == null || "".equals(prefix)) && qname.needsNamespaceDecl()) {
+//	    if((prefix == null || "".equals(prefix)) && qname.hasNamespace()) {
 //	    	prefix = context.getPrefixForURI(qname.getNamespaceURI());
 //			if (prefix != null)
 //				qname.setPrefix(prefix);
@@ -100,9 +100,9 @@ public class QNameValue extends AtomicValue {
 //	    }
 	    //TODO : check that the prefix matches the URI in the current context ?
 		if (prefix != null && prefix.length() > 0)
-			{return prefix + ':' + qname.getLocalName();}
+			{return prefix + ':' + qname.getLocalPart();}
 		else 
-			{return qname.getLocalName();}
+			{return qname.getLocalPart();}
 	}
 
 	/**

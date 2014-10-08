@@ -141,7 +141,7 @@ public class FunAnalyzeString extends BasicFunction {
             builder.startElement(QN_MATCH, null);
         } else {
             final AttributesImpl attributes = new AttributesImpl();
-            attributes.addAttribute("", QN_NR.getLocalName(), QN_NR.getLocalName(), "int", Integer.toString(group));
+            attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(group));
             builder.startElement(QN_GROUP, attributes);
         }
         

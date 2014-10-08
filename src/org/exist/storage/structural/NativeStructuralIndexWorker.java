@@ -550,9 +550,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             for (final QName qname : qnames) {
                 final String name;
                 if (qname.getNameType() == ElementValue.ATTRIBUTE) {
-                    name = "@" + qname.getLocalName();
+                    name = "@" + qname.getLocalPart();
                 } else {
-                    name = qname.getLocalName();
+                    name = qname.getLocalPart();
                 }
                 final byte[] fromKey = computeKey(qname.getNameType(), qname, doc.getDocId());
                 final byte[] toKey = computeKey(qname.getNameType(), qname, doc.getDocId() + 1);
@@ -659,7 +659,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     private byte[] computeKey(byte type, QName qname, int documentId, NodeId nodeId) {
         final SymbolTable symbols = index.getBrokerPool().getSymbols();
-        final short sym = symbols.getSymbol(qname.getLocalName());
+        final short sym = symbols.getSymbol(qname.getLocalPart());
         final short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
         final byte[] data = new byte[9 + nodeId.size()];
 
@@ -673,7 +673,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     private byte[] computeKey(byte type, QName qname, int documentId) {
         final SymbolTable symbols = index.getBrokerPool().getSymbols();
-        final short sym = symbols.getSymbol(qname.getLocalName());
+        final short sym = symbols.getSymbol(qname.getLocalPart());
         final short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
         final byte[] data = new byte[9];
 
@@ -694,7 +694,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     
     private byte[] computeDocKey(byte type, int documentId, QName qname) {
         final SymbolTable symbols = index.getBrokerPool().getSymbols();
-        final short sym = symbols.getSymbol(qname.getLocalName());
+        final short sym = symbols.getSymbol(qname.getLocalPart());
         final short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
         final byte[] data = new byte[10];
 

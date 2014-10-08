@@ -85,16 +85,16 @@ public class ConnectionFunctions extends AbstractRequestModuleFunction {
     public Sequence eval(final Sequence[] args, final HttpRequest request) throws XPathException {
         final Sequence result;
         
-        if(isCalledAs(qnAddress.getLocalName())) {
+        if(isCalledAs(qnAddress.getLocalPart())) {
             result = new StringValue(request.getAddress());
         
-        } else if(isCalledAs(qnRemoteHostname.getLocalName())) {
+        } else if(isCalledAs(qnRemoteHostname.getLocalPart())) {
             result = new StringValue(request.getRemoteHostname());
         
-        } else if(isCalledAs(qnRemoteAddress.getLocalName())) {
+        } else if(isCalledAs(qnRemoteAddress.getLocalPart())) {
             result = new StringValue(request.getRemoteAddress());
 
-        } else if(isCalledAs(qnRemotePort.getLocalName())) {
+        } else if(isCalledAs(qnRemotePort.getLocalPart())) {
             result = new IntegerValue(request.getRemotePort());
                
         } else {

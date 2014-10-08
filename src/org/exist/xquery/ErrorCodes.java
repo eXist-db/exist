@@ -237,7 +237,7 @@ public class ErrorCodes {
 
         @Override
         public String toString() {
-            return "(" + errorQName.getNamespaceURI() + "#" + errorQName.getLocalName() + "):" + description;
+            return "(" + errorQName.getNamespaceURI() + "#" + errorQName.getLocalPart() + "):" + description;
         }
 
         public String getDescription(){

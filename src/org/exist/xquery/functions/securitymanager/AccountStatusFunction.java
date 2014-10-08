@@ -80,13 +80,13 @@ public class AccountStatusFunction extends BasicFunction {
         
         final String username = args[0].getStringValue();
         
-        if(isCalledAs(qnIsAccountEnabled.getLocalName())) {
+        if(isCalledAs(qnIsAccountEnabled.getLocalPart())) {
             if(!currentUser.hasDbaRole() && !currentUser.getName().equals(username)) {
                 throw new XPathException("You must be a DBA or be enquiring about your own account!");
             }
             final Account account = securityManager.getAccount(username);
             return new BooleanValue(account.isEnabled());
-        } else if(isCalledAs(qnSetAccountEnabled.getLocalName())) {
+        } else if(isCalledAs(qnSetAccountEnabled.getLocalPart())) {
             if(!currentUser.hasDbaRole()) {
                 throw new XPathException("You must be a DBA to change the status of an account!");
             }

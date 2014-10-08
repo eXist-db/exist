@@ -523,9 +523,9 @@ public class VersioningTrigger extends FilteringTrigger {
             for (int i = 0; i < attributes.getLength(); i++) {
                 if (StandardDiff.NAMESPACE.equals(attributes.getURI(i))) {
                     String attrName = attributes.getLocalName(i);
-                    if (VersioningFilter.ATTR_KEY.getLocalName().equals(attrName))
+                    if (VersioningFilter.ATTR_KEY.getLocalPart().equals(attrName))
                         documentKey = attributes.getValue(i);
-                    else if (VersioningFilter.ATTR_REVISION.getLocalName().equals(attrName))
+                    else if (VersioningFilter.ATTR_REVISION.getLocalPart().equals(attrName))
                         documentRev = attributes.getValue(i);
                 }
             }

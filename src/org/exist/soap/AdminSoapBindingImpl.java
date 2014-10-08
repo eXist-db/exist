@@ -1263,7 +1263,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             final IndexedElement[] result = new IndexedElement[occurrences.length];
             for (int i = 0; i < occurrences.length; i++) {
                 final QName qname = (QName)occurrences[i].getTerm();
-                result[i] = new IndexedElement(qname.getLocalName(),qname.getNamespaceURI(),
+                result[i] = new IndexedElement(qname.getLocalPart(),qname.getNamespaceURI(),
                         qname.getPrefix() == null ? "" : qname.getPrefix(),
                         occurrences[i].getOccurrences());
             }

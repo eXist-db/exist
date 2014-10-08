@@ -240,7 +240,7 @@ public class PerformanceStats {
 
     @SuppressWarnings("unused")
 	private String createKey(QName qname, String source) {
-        return qname.getNamespaceURI() + ":" + qname.getLocalName() + ":" + source;
+        return qname.getNamespaceURI() + ":" + qname.getLocalPart() + ":" + source;
     }
 
     public boolean hasData() {

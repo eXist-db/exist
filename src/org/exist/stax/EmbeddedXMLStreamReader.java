@@ -354,7 +354,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         readAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
             final org.exist.dom.QName qn = attributes.getQName(i);
-            if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalName().equals(localName))
+            if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalPart().equals(localName))
                 {return attributes.getValue(i);}
         }
         return null;
@@ -398,7 +398,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         readAttributes();
         if (i > attributes.getLength())
             {throw new ArrayIndexOutOfBoundsException("index should be < " + attributes.getLength());}
-        return attributes.getQName(i).getLocalName();
+        return attributes.getQName(i).getLocalPart();
     }
 
     public String getAttributePrefix(int i) {

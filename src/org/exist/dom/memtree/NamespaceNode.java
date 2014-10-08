@@ -103,11 +103,11 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
 
 
     /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getLocalName()
+     * @see org.w3c.dom.Node#getLocalPart()
      */
     public String getLocalName()
     {
-        return( getQName().getLocalName() );
+        return( getQName().getLocalPart() );
     }
 
 

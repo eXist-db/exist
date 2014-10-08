@@ -54,8 +54,8 @@ public class NameTest extends TypeTest {
             if (!nodeName.getNamespaceURI().equals(name.getNamespaceURI()))
 				{return false;}
 		}
-		if (nodeName.getLocalName() != null) {
-			return nodeName.getLocalName().equals(name.getLocalName());
+		if (nodeName.getLocalPart() != null) {
+			return nodeName.getLocalPart().equals(name.getLocalPart());
 		}
 		return true;
 	}
@@ -67,8 +67,8 @@ public class NameTest extends TypeTest {
             if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI()))
 				{return false;}
 		}
-		if (nodeName.getLocalName() != null) {
-			return nodeName.getLocalName().equals(other.getLocalName());
+		if (nodeName.getLocalPart() != null) {
+			return nodeName.getLocalPart().equals(other.getLocalName());
 		}
 		return true;
 	}
@@ -83,13 +83,13 @@ public class NameTest extends TypeTest {
                     if (!nodeName.getNamespaceURI().equals(reader.getNamespaceURI()))
                         {return false;}
                 }
-                if (nodeName.getLocalName() != null) {
-                    return nodeName.getLocalName().equals(reader.getLocalName());
+                if (nodeName.getLocalPart() != null) {
+                    return nodeName.getLocalPart().equals(reader.getLocalName());
                 }
                 break;
             case XMLStreamReader.PROCESSING_INSTRUCTION :
-                if (nodeName.getLocalName() != null) {
-                    return nodeName.getLocalName().equals(reader.getPITarget());
+                if (nodeName.getLocalPart() != null) {
+                    return nodeName.getLocalPart().equals(reader.getPITarget());
                 }
                 break;
         }
@@ -100,7 +100,7 @@ public class NameTest extends TypeTest {
 	 * @see org.exist.xquery.NodeTest#isWildcardTest()
 	 */
 	public boolean isWildcardTest() {
-		return nodeName.getLocalName() == null || nodeName.getNamespaceURI() == null;
+		return nodeName.getLocalPart() == null || nodeName.getNamespaceURI() == null;
 	}
 
     @Override
@@ -113,7 +113,7 @@ public class NameTest extends TypeTest {
     }
 
     public void dump(ExpressionDumper dumper) {
-        if(nodeName.getLocalName() == null)
+        if(nodeName.getLocalPart() == null)
             {dumper.display(nodeName.getPrefix() + ":*");}
         else
             {dumper.display(nodeName.getStringValue());}        
@@ -134,10 +134,10 @@ public class NameTest extends TypeTest {
             result.append("}");
         }
         
-        if(nodeName.getLocalName() == null) {
+        if(nodeName.getLocalPart() == null) {
             result.append("*");
         } else {
-            result.append(nodeName.getLocalName());
+            result.append(nodeName.getLocalPart());
         }
         
         return result.toString();

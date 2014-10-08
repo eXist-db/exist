@@ -66,7 +66,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.*;
 import java.util.Date;
@@ -773,18 +772,18 @@ public class Deployment {
 
         @Override
         public void startElement(QName qname, AttrList attribs) {
-            stack.push(qname.getLocalName());
+            stack.push(qname.getLocalPart());
             AttrList newAttrs = attribs;
-            if (attribs != null && "permissions".equals(qname.getLocalName())) {
+            if (attribs != null && "permissions".equals(qname.getLocalPart())) {
                 newAttrs = new AttrList();
                 for (int i = 0; i < attribs.getLength(); i++) {
-                    if (!"password". equals(attribs.getQName(i).getLocalName())) {
+                    if (!"password". equals(attribs.getQName(i).getLocalPart())) {
                         newAttrs.addAttribute(attribs.getQName(i), attribs.getValue(i), attribs.getType(i));
                     }
                 }
             }
 
-            if (!"deployed".equals(qname.getLocalName())) {
+            if (!"deployed".equals(qname.getLocalPart())) {
                 super.startElement(qname, newAttrs);
             }
         }
@@ -800,10 +799,10 @@ public class Deployment {
         @Override
         public void endElement(QName qname) throws SAXException {
             stack.pop();
-            if ("meta".equals(qname.getLocalName())) {
+            if ("meta".equals(qname.getLocalPart())) {
                 addDeployTime();
             }
-            if (!"deployed".equals(qname.getLocalName())) {
+            if (!"deployed".equals(qname.getLocalPart())) {
                 super.endElement(qname);
             }
         }
@@ -823,7 +822,7 @@ public class Deployment {
         @Override
         public void attribute(QName qname, String value) throws SAXException {
             final String current = stack.peek();
-            if (!("permissions".equals(current) && "password".equals(qname.getLocalName()))) {
+            if (!("permissions".equals(current) && "password".equals(qname.getLocalPart()))) {
                 super.attribute(qname, value);
             }
         }

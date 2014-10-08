@@ -337,7 +337,7 @@ public class XSLElement implements ElementAtExist, Names {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.w3c.dom.Node#getLocalName()
+	 * @see org.w3c.dom.Node#getLocalPart()
 	 */
 	public String getLocalName() {
 		return element.getLocalName();

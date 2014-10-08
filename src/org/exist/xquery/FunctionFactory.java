@@ -67,7 +67,7 @@ public class FunctionFactory {
      */
     public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params,
         boolean optimizeStrFuncs) throws XPathException {
-        final String local = qname.getLocalName();
+        final String local = qname.getLocalPart();
         final String uri = qname.getNamespaceURI();
         Expression step = null;
         if (optimizeStrFuncs && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {

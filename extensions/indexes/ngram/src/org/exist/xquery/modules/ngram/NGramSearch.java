@@ -273,7 +273,7 @@ public class NGramSearch extends Function implements Optimizable {
     }
 
     private String getLocalName() {
-        return getSignature().getName().getLocalName();
+        return getSignature().getName().getLocalPart();
     }
 
     private NodeSet processMatches(

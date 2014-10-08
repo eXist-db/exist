@@ -4753,7 +4753,7 @@ public class RpcConnection implements RpcAPI {
             for (int i = 0; i < occurrences.length; i++) {
                 final QName qname = (QName)occurrences[i].getTerm();
                 final Vector<Object> temp = new Vector<Object>(4);
-                temp.addElement(qname.getLocalName());
+                temp.addElement(qname.getLocalPart());
                 temp.addElement(qname.getNamespaceURI());
                 temp.addElement(qname.getPrefix() == null ? "" : qname.getPrefix());
                 temp.addElement(Integer.valueOf(occurrences[i].getOccurrences()));

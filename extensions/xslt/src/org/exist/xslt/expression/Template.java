@@ -37,7 +37,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
 import org.exist.dom.QName;
@@ -46,7 +45,6 @@ import org.exist.xslt.expression.i.Parameted;
 import org.exist.xslt.pattern.Pattern;
 import org.exist.xslt.XSLExceptions;
 import org.w3c.dom.Attr;
-import org.w3c.dom.Node;
 
 /**
  * <!-- Category: declaration -->
@@ -172,7 +170,7 @@ public class Template extends Declaration implements Parameted, Comparable<Templ
 					LocationStep locationStep = (LocationStep) expr;
 					NodeTest test = locationStep.getTest();
 					if ((test.getName() == null) 
-							|| (test.getName().getLocalName() == null))
+							|| (test.getName().getLocalPart() == null))
 						priority = -0.5;
 					else if (locationStep.getPredicates().size() > 0)
 						priority = 0.25;

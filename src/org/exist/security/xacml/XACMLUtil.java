@@ -300,13 +300,13 @@ public class XACMLUtil implements UpdateListener
 		final int documentCount = (documentSet == null) ? 0 : documentSet.getDocumentCount();
 		if(documentCount == 0)
 		{
-			LOG.warn("Could not find " + attributeQName.getLocalName() + " '" +  attributeValue + "'", null);
+			LOG.warn("Could not find " + attributeQName.getLocalPart() + " '" +  attributeValue + "'", null);
 			return null;
 		}
 
 		if(documentCount > 1)
 		{
-			throw new ProcessingException("Too many applicable policies for " + attributeQName.getLocalName() + " '" +  attributeValue + "'");
+			throw new ProcessingException("Too many applicable policies for " + attributeQName.getLocalPart() + " '" +  attributeValue + "'");
 		}
 
 		return (DocumentImpl)documentSet.getDocumentIterator().next();

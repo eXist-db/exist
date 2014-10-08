@@ -146,7 +146,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
     }
 
     /**
-     * The method <code>getLocalName</code>
+     * The method <code>getLocalPart</code>
      *
      * @return a <code>String</code> value
      */

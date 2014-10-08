@@ -1868,7 +1868,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             len  = data.length;
             pos  = OFFSET_IDX_TYPE;
             final short namespaceId = symbols.getNSSymbol( qname.getNamespaceURI() );
-            final short localNameId = symbols.getSymbol( qname.getLocalName() );
+            final short localNameId = symbols.getSymbol( qname.getLocalPart() );
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.intToByte( collectionId, data, OFFSET_COLLECTION_ID );
             data[OFFSET_QNAME_TYPE] = qname.getNameType();
@@ -1900,7 +1900,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             data[QNameValue.OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.intToByte( collectionId, data, QNameValue.OFFSET_COLLECTION_ID );
             final short namespaceId            = symbols.getNSSymbol( qname.getNamespaceURI() );
-            final short localNameId            = symbols.getSymbol( qname.getLocalName() );
+            final short localNameId            = symbols.getSymbol( qname.getLocalPart() );
             data[QNameValue.OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte( namespaceId, data, QNameValue.OFFSET_NS_URI );
             ByteConversion.shortToByte( localNameId, data, QNameValue.OFFSET_LOCAL_NAME );

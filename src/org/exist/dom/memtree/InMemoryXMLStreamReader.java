@@ -226,7 +226,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         for( int i = 0; i < attrCount; i++ ) {
             final org.exist.dom.QName qname = doc.attrName[attrStart + i];
 
-            if( (namespaceURI == null || namespaceURI.equals( qname.getNamespaceURI() )) && localName.equals( qname.getLocalName() ) ) {
+            if( (namespaceURI == null || namespaceURI.equals( qname.getNamespaceURI() )) && localName.equals( qname.getLocalPart() ) ) {
                 return( doc.attrValue[attrStart + i] );
             }
         }
@@ -277,7 +277,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         if( state != START_ELEMENT ) {
             throw( new IllegalStateException( "Cursor is not at an element" ) );
         }
-        return( getAttributeQName( index ).getLocalName() );
+        return( getAttributeQName( index ).getLocalPart() );
     }
 
 
@@ -377,7 +377,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         }
         final int                 ns      = doc.alphaLen[currentNode];
         final org.exist.dom.QName nsQName = doc.namespaceCode[ns + index];
-        return( nsQName.getLocalName() );
+        return( nsQName.getLocalPart() );
     }
 
 
@@ -474,7 +474,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
 
     public String getLocalName()
     {
-        return( getQName().getLocalName() );
+        return( getQName().getLocalPart() );
     }
 
 
@@ -523,7 +523,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
     public String getPITarget()
     {
         final org.exist.dom.QName qn = doc.nodeName[currentNode];
-        return( ( qn != null ) ? qn.getLocalName() : null );
+        return( ( qn != null ) ? qn.getLocalPart() : null );
     }
 
 

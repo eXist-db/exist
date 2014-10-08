@@ -395,7 +395,7 @@ public abstract class Function extends PathExpr {
     }
 
     public boolean isCalledAs(String localName) {
-        return localName.equals(mySignature.getName().getLocalName());
+        return localName.equals(mySignature.getName().getLocalPart());
     }
 
     /* (non-Javadoc)

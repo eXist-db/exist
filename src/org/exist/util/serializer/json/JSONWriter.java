@@ -130,12 +130,12 @@ public class JSONWriter extends XMLWriter {
 
     @Override
     public void startElement(final QName qname) throws TransformerException {
-        if(JASON_NS.equals(qname.getNamespaceURI()) && VALUE.equals(qname.getLocalName())) {
+        if(JASON_NS.equals(qname.getNamespaceURI()) && VALUE.equals(qname.getLocalPart())) {
             processStartValue();
         } else if(useNSPrefix) {
-            processStartElement(qname.getPrefix() + '_' + qname.getLocalName(), false);
+            processStartElement(qname.getPrefix() + '_' + qname.getLocalPart(), false);
         } else {
-            processStartElement(qname.getLocalName(), false);
+            processStartElement(qname.getLocalPart(), false);
         }
     }
 
