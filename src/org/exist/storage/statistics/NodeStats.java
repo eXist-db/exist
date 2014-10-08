@@ -120,7 +120,7 @@ class NodeStats {
 
     protected void write(ByteBuffer buffer, SymbolTable symbols) {
         buffer.putShort(symbols.getNSSymbol(qname.getNamespaceURI()));
-        buffer.putShort(symbols.getSymbol(qname.getLocalName()));
+        buffer.putShort(symbols.getSymbol(qname.getLocalPart()));
         buffer.putInt(nodeCount);
         buffer.putInt(maxDepth);
 
@@ -175,7 +175,7 @@ class NodeStats {
 
     public void toSAX(ContentHandler handler) throws SAXException {
         final AttributesImpl attribs = new AttributesImpl();
-        attribs.addAttribute("", "name", "name", "CDATA", qname.getLocalName());
+        attribs.addAttribute("", "name", "name", "CDATA", qname.getLocalPart());
         attribs.addAttribute("", "namespace", "namespace", "CDATA", qname.getNamespaceURI());
         attribs.addAttribute("", "node-count", "node-count", "CDATA", Integer.toString(nodeCount));
         attribs.addAttribute("", "max-depth", "max-depth", "CDATA", Integer.toString(maxDepth));

@@ -32,7 +32,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1470,9 +1469,9 @@ public class RESTServer {
 
             // now declare variable
             if (prefix != null) {
-                context.declareVariable(q.getPrefix() + ":" + q.getLocalName(), sequence);
+                context.declareVariable(q.getPrefix() + ":" + q.getLocalPart(), sequence);
             } else {
-                context.declareVariable(q.getLocalName(), sequence);
+                context.declareVariable(q.getLocalPart(), sequence);
             }
         }
     }

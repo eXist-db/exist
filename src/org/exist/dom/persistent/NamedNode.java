@@ -77,7 +77,7 @@ public class NamedNode extends StoredNode implements QNameable {
 
     public void setNodeName(org.exist.dom.QName name, SymbolTable symbols) throws DOMException {
         nodeName = name;
-        if (symbols.getSymbol(nodeName.getLocalName()) < 0) {
+        if (symbols.getSymbol(nodeName.getLocalPart()) < 0) {
             throw new DOMException(DOMException.INVALID_ACCESS_ERR,
                     "Too many element/attribute names registered in the database. No of distinct names is limited to 16bit. Aborting store.");
         }

@@ -41,7 +41,6 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.FixedBitSet;
 import org.apache.lucene.util.NumericUtils;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
@@ -700,7 +699,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         List<QName> indexes = new ArrayList<QName>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
-                if (qname.getLocalName() == null || qname.getNamespaceURI() == null)
+                if (qname.getLocalPart() == null || qname.getNamespaceURI() == null)
                     getDefinedIndexesFor(qname, indexes);
                 else
                     indexes.add(qname);
@@ -797,8 +796,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static boolean matchQName(QName qname, QName candidate) {
         boolean match = true;
-        if (qname.getLocalName() != null)
-            match = qname.getLocalName().equals(candidate.getLocalName());
+        if (qname.getLocalPart() != null)
+            match = qname.getLocalPart().equals(candidate.getLocalPart());
         if (match && qname.getNamespaceURI() != null && qname.getNamespaceURI().length() > 0)
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
         return match;

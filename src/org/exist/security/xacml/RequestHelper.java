@@ -182,7 +182,7 @@ public class RequestHelper
 		addSourceAttributes(resourceAttributes, moduleSrc);
 		addValidURIAttribute(resourceAttributes, XACMLConstants.MODULE_NS_ATTRIBUTE, namespaceURI);
 		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_CATEGORY_ATTRIBUTE, XACMLConstants.FUNCTION_RESOURCE);
-		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, functionName.getLocalName());
+		addStringAttribute(resourceAttributes, XACMLConstants.RESOURCE_ID_ATTRIBUTE, functionName.getLocalPart());
 
 		final Set<Attribute> actionAttributes = createBasicAction(XACMLConstants.CALL_FUNCTION_ACTION);
 		final Set<Attribute> environmentAttributes = createEnvironment(context.getAccessContext());

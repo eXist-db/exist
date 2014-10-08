@@ -106,7 +106,7 @@ public class SystemTime extends Function
 		} else if( isCalledAs("system-time" ) ) {
 			result = result.convertTo( Type.TIME );
 		} else {
-			throw( new Error( "can't handle function " + mySignature.getName().getLocalName() ) );
+			throw( new Error( "can't handle function " + mySignature.getName().getLocalPart() ) );
 		}
 
 		if( context.getProfiler().isEnabled() ) {

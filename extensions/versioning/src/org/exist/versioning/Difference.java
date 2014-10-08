@@ -122,7 +122,7 @@ public abstract class Difference implements Comparable<Difference> {
                         }
                         if (!isClosed) {
                             attribs = new AttrList();
-                            if (nodes[i].qname.needsNamespaceDecl())
+                            if (nodes[i].qname.hasNamespace())
                                 attribs.addAttribute(ATTR_NAMESPACE, nodes[i].qname.getNamespaceURI());
                             attribs.addAttribute(ATTR_NAME, nodes[i].qname.getStringValue());
                             handler.startElement(ELEMENT_START, attribs);
@@ -131,7 +131,7 @@ public abstract class Difference implements Comparable<Difference> {
                         break;
                     case XMLStreamReader.END_ELEMENT:
                         attribs = new AttrList();
-                        if (nodes[i].qname.needsNamespaceDecl())
+                        if (nodes[i].qname.hasNamespace())
                             attribs.addAttribute(ATTR_NAMESPACE, nodes[i].qname.getNamespaceURI());
                         attribs.addAttribute(ATTR_NAME, nodes[i].qname.getStringValue());
                         handler.startElement(ELEMENT_END, attribs);

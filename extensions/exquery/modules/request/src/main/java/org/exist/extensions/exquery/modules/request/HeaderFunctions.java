@@ -83,12 +83,12 @@ public class HeaderFunctions extends AbstractRequestModuleFunction {
     public Sequence eval(final Sequence[] args, final HttpRequest request) throws XPathException {
         final Sequence result;
         
-        if(isCalledAs(qnHeaderNames.getLocalName())) {
+        if(isCalledAs(qnHeaderNames.getLocalPart())) {
             result = new ValueSequence();
             for(final String parameterName : request.getHeaderNames()) {
                 result.add(new StringValue(parameterName));
             }
-        } else if(isCalledAs(qnHeader.getLocalName())) {
+        } else if(isCalledAs(qnHeader.getLocalPart())) {
             final String headerName = args[0].getStringValue();
             
             if(getSignature().getArgumentCount() == 1) {

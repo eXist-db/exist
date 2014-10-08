@@ -91,7 +91,7 @@ public class NoParamFunctions extends BasicFunction {
         
         
         Sequence result;
-        String functionName = getSignature().getName().getLocalName();
+        String functionName = getSignature().getName().getLocalPart();
         if("e".equals(functionName)) {
             result=new DoubleValue(Math.E);
             

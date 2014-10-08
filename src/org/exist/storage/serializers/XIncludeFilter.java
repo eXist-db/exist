@@ -170,11 +170,11 @@ public class XIncludeFilter implements Receiver {
 	 */
     public void endElement(QName qname) throws SAXException {
         if (XINCLUDE_NS.equals(qname.getNamespaceURI())) {
-            if (XI_FALLBACK.equals(qname.getLocalName())) {
+            if (XI_FALLBACK.equals(qname.getLocalPart())) {
                 inFallback = false;
                 // clear error
                 error = null;
-            } else if (XI_INCLUDE.equals(qname.getLocalName()) && error != null) {
+            } else if (XI_INCLUDE.equals(qname.getLocalPart()) && error != null) {
                 // found an error, but there was no fallback element.
                 // throw the exception now
                 final Exception e = error;
@@ -226,7 +226,7 @@ public class XIncludeFilter implements Receiver {
 	 */
 	public void startElement(QName qname, AttrList attribs) throws SAXException {
 		if (qname.getNamespaceURI() != null && qname.getNamespaceURI().equals(XINCLUDE_NS)) {
-			if (qname.getLocalName().equals(XI_INCLUDE)) {
+			if (qname.getLocalPart().equals(XI_INCLUDE)) {
                 if (LOG.isDebugEnabled())
                     {LOG.debug("processing include ...");}
                 try {
@@ -236,7 +236,7 @@ public class XIncludeFilter implements Receiver {
                         {LOG.debug(resourceError.getMessage(), resourceError);}
                     error = resourceError;
 				}
-            } else if (qname.getLocalName().equals(XI_FALLBACK)) {
+            } else if (qname.getLocalPart().equals(XI_FALLBACK)) {
                 inFallback = true;
             }
         } else if (!inFallback || error != null) {

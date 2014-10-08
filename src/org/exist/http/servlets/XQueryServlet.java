@@ -423,7 +423,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 //        URI baseUri;
 //        try {
 //            baseUri = new URI(request.getScheme(),
-//                    null/*user info?*/, request.getLocalName(), request.getLocalPort(),
+//                    null/*user info?*/, request.getLocalPart(), request.getLocalPort(),
 //                    request.getRequestURI(), null, null);
 //        } catch(URISyntaxException e) {
 //            baseUri = null;

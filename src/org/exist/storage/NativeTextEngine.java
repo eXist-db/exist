@@ -1709,7 +1709,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 SymbolTable.LENGTH_LOCAL_NAME;
             data = new byte[len];
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-            final short localNameId = symbols.getSymbol(qname.getLocalName());
+            final short localNameId = symbols.getSymbol(qname.getLocalPart());
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             data[OFFSET_QNAME_TYPE] = qname.getNameType();
@@ -1722,7 +1722,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 LENGTH_QNAME_TYPE + SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME;
             data = new byte[len];
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-            final short localNameId = symbols.getSymbol(qname.getLocalName());
+            final short localNameId = symbols.getSymbol(qname.getLocalPart());
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             data[OFFSET_QNAME_TYPE] = qname.getNameType();

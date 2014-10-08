@@ -75,7 +75,7 @@ public class FunctionTrace extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-    	logger.info("Entering " + SystemModule.PREFIX + ":" + getName().getLocalName());
+    	logger.info("Entering " + SystemModule.PREFIX + ":" + getName().getLocalPart());
         if (isCalledAs("clear-trace")) {
         	logger.info("Entering the " + SystemModule.PREFIX + ":clear-trace XQuery function");
             context.getBroker().getBrokerPool().getPerformanceStats().clear();
@@ -93,7 +93,7 @@ public class FunctionTrace extends BasicFunction {
 
         } else if (isCalledAs("tracing-enabled")) {
         	logger.info("Entering the " + SystemModule.PREFIX + ":tracing-enabled XQuery function");
-        	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
+        	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalPart());
             return BooleanValue.valueOf(context.getBroker().getBrokerPool().getPerformanceStats().isEnabled());
             
         } else {
@@ -105,10 +105,10 @@ public class FunctionTrace extends BasicFunction {
             final BrokerPool brokerPool = context.getBroker().getBrokerPool();
             brokerPool.getPerformanceStats().toXML(builder);
             builder.endDocument();
-        	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
+        	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalPart());
             return (NodeValue)builder.getDocument().getDocumentElement();
         }
-    	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalName());
+    	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalPart());
         return Sequence.EMPTY_SEQUENCE;
     }
 }

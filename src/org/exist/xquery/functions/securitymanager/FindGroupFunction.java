@@ -123,7 +123,7 @@ public class FindGroupFunction extends BasicFunction {
         final DBBroker broker = getContext().getBroker();
         final Subject currentUser = broker.getSubject();
         
-        if(!isCalledAs(qnGetUserGroups.getLocalName()) && currentUser.getName().equals(SecurityManager.GUEST_USER)) {
+        if(!isCalledAs(qnGetUserGroups.getLocalPart()) && currentUser.getName().equals(SecurityManager.GUEST_USER)) {
             throw new XPathException("You must be an authenticated user");
         }
 
@@ -132,23 +132,23 @@ public class FindGroupFunction extends BasicFunction {
 
         final Sequence result;
         
-        if(isCalledAs(qnGetUserPrimaryGroup.getLocalName())) {
+        if(isCalledAs(qnGetUserPrimaryGroup.getLocalPart())) {
             final String username = args[0].getStringValue();
             result = new StringValue(securityManager.getAccount(username).getPrimaryGroup());
-        } else if(isCalledAs(qnGroupExists.getLocalName())) {
+        } else if(isCalledAs(qnGroupExists.getLocalPart())) {
             final String groupName = args[0].getStringValue();
             result = BooleanValue.valueOf(securityManager.hasGroup(groupName));
         } else {
             final List<String> groupNames;
-            if(isCalledAs(qnListGroups.getLocalName()) || isCalledAs(qnGetGroups.getLocalName())) {
+            if(isCalledAs(qnListGroups.getLocalPart()) || isCalledAs(qnGetGroups.getLocalPart())) {
                 groupNames = securityManager.findAllGroupNames();
-            } else if(isCalledAs(qnFindGroupsByGroupname.getLocalName())) {
+            } else if(isCalledAs(qnFindGroupsByGroupname.getLocalPart())) {
                 final String startsWith = args[0].getStringValue();
                 groupNames = securityManager.findGroupnamesWhereGroupnameStarts(startsWith);
-            } else if(isCalledAs(qnFindGroupsWhereGroupnameContains.getLocalName())) {
+            } else if(isCalledAs(qnFindGroupsWhereGroupnameContains.getLocalPart())) {
                 final String fragment = args[0].getStringValue();
                 groupNames = securityManager.findGroupnamesWhereGroupnameContains(fragment);
-            } else if(isCalledAs(qnGetUserGroups.getLocalName())) {
+            } else if(isCalledAs(qnGetUserGroups.getLocalPart())) {
                 final String username = args[0].getStringValue();
 
                 if(!currentUser.hasDbaRole() && !currentUser.getName().equals(username)) {

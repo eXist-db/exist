@@ -56,7 +56,7 @@ public class LuceneUtil {
      */
     public static String encodeQName(QName qname, SymbolTable symbols) {
         short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-        short localNameId = symbols.getSymbol(qname.getLocalName());
+        short localNameId = symbols.getSymbol(qname.getLocalPart());
         long nameId = qname.getNameType() | (namespaceId & 0xFFFF) << 16 | (localNameId & 0xFFFFFFFFL) << 32;
         return Long.toHexString(nameId);
     }

@@ -340,11 +340,11 @@ public class Type {
 	public static int getType(QName qname) throws XPathException {
 		final String uri = qname.getNamespaceURI();
 		if (uri.equals(Namespaces.SCHEMA_NS))
-			{return getType("xs:" + qname.getLocalName());}
+			{return getType("xs:" + qname.getLocalPart());}
 		else if (uri.equals(Namespaces.XPATH_DATATYPES_NS))
-			{return getType("xdt:" + qname.getLocalName());}
+			{return getType("xdt:" + qname.getLocalPart());}
 		else
-			{return getType(qname.getLocalName());}
+			{return getType(qname.getLocalPart());}
 	}
 
 	/**

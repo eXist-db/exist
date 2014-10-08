@@ -1018,7 +1018,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         for (int i = 1; i < size; i++) {
             if (nodeKind[i] == Node.ELEMENT_NODE) {
                 final QName qn = nodeName[i];
-                if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalName().equals(localName)) {
+                if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalPart().equals(localName)) {
                     nl.add(getNode(i));
                 }
             }
@@ -1131,7 +1131,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         case Node.PROCESSING_INSTRUCTION_NODE:
             final QName qn   = document.nodeName[nr];
             final String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
-            receiver.processingInstruction(qn.getLocalName(), data);
+            receiver.processingInstruction(qn.getLocalPart(), data);
             break;
         case NodeImpl.NAMESPACE_NODE:
             receiver.addNamespaceNode(document.namespaceCode[nr]);
@@ -1341,10 +1341,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             if (-1 < ns) {
                 while ((ns < document.nextNamespace) && (document.namespaceParent[ns] == nr)) {
                     final QName nsQName = document.namespaceCode[ns];
-                    if ("xmlns".equals(nsQName.getLocalName())) {
+                    if ("xmlns".equals(nsQName.getLocalPart())) {
                         receiver.startPrefixMapping("", nsQName.getNamespaceURI());
                     } else {
-                        receiver.startPrefixMapping(nsQName.getLocalName(), nsQName.getNamespaceURI());
+                        receiver.startPrefixMapping(nsQName.getLocalPart(), nsQName.getNamespaceURI());
                     }
                     ++ns;
                 }
@@ -1376,7 +1376,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         case Node.PROCESSING_INSTRUCTION_NODE:
             final QName qn = document.nodeName[nr];
             final String data = new String(document.characters, document.alpha[nr], document.alphaLen[nr]);
-            receiver.processingInstruction(qn.getLocalName(), data);
+            receiver.processingInstruction(qn.getLocalPart(), data);
             break;
         case Node.CDATA_SECTION_NODE:
             receiver.cdataSection(document.characters, document.alpha[nr], document.alphaLen[nr]);
@@ -1396,10 +1396,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             if (-1 < ns) {
                 while ((ns < document.nextNamespace) && (document.namespaceParent[ns] == nr)) {
                     final QName nsQName = document.namespaceCode[ns];
-                    if ("xmlns".equals( nsQName.getLocalName())) {
+                    if ("xmlns".equals( nsQName.getLocalPart())) {
                         receiver.endPrefixMapping("");
                     } else {
-                        receiver.endPrefixMapping(nsQName.getLocalName());
+                        receiver.endPrefixMapping(nsQName.getLocalPart());
                     }
                     ++ns;
                 }

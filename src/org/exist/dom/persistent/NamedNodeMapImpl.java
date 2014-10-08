@@ -80,7 +80,7 @@ public class NamedNodeMapImpl extends ArrayList<Node> implements NamedNodeMap {
     private int indexOf(org.exist.dom.QName name) {
         for (int i = 0; i < size(); i++) {
             final Node temp = get(i);
-            if (temp.getLocalName().equals(name.getLocalName())
+            if (temp.getLocalName().equals(name.getLocalPart())
                     && temp.getNamespaceURI().equals(name.getNamespaceURI()))
                 {return i;}
         }

@@ -87,19 +87,19 @@ public class EXISerializer implements ContentHandler, Receiver {
 			for(int x=0; x < attribs.size; x++) {
 				final QName attribQName = attribs.getQName(x);
 				attributes.addAttribute(attribQName.getNamespaceURI(),
-						attribQName.getLocalName(),
+						attribQName.getLocalPart(),
 						attribQName.getStringValue(),
 						UNKNOWN_TYPE,
 						attribs.getValue(x));
 			}
 		}
-		encoder.startElement(qname.getNamespaceURI(), qname.getLocalName(), null, attributes);
+		encoder.startElement(qname.getNamespaceURI(), qname.getLocalPart(), null, attributes);
 		
 	}
 
 	@Override
 	public void endElement(QName qname) throws SAXException {
-		encoder.endElement(qname.getNamespaceURI(), qname.getLocalName(), null);
+		encoder.endElement(qname.getNamespaceURI(), qname.getLocalPart(), null);
 		
 	}
 

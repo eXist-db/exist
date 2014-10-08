@@ -83,9 +83,9 @@ public class UMaskFunction extends BasicFunction {
         
         final String username = args[0].getStringValue();
         
-        if(isCalledAs(qnGetUMask.getLocalName())) {
+        if(isCalledAs(qnGetUMask.getLocalPart())) {
             return getUMask(broker, username);
-        } else if(isCalledAs(qnSetUMask.getLocalName())) {
+        } else if(isCalledAs(qnSetUMask.getLocalPart())) {
             final int umask = ((IntegerValue)args[1].itemAt(0)).getInt();
             setUMask(broker, currentUser, username, umask);
             return Sequence.EMPTY_SEQUENCE;

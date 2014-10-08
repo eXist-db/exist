@@ -116,7 +116,7 @@ public class DynamicNameCheck extends AbstractExpression {
     // TODO should be moved to QName
     private String getPrefixedNodeName(QName name) {
         final String prefix = name.getPrefix();
-        final String localName = name.getLocalName();
+        final String localName = name.getLocalPart();
         if (prefix == null) {
             final String namespaceURI = name.getNamespaceURI();
             if (namespaceURI == null) {

@@ -599,7 +599,7 @@ public class Eval extends BasicFunction {
 				//TODO : cleanly seperate the statically know docollection and documents
 				pathes[0] = XmldbURI.create(value.getStringValue());
 				innerContext.setStaticallyKnownDocuments(pathes);
-			} /*else if (child.getNodeType() == Node.ELEMENT_NODE &&	"mapModule".equals(child.getLocalName())) {
+			} /*else if (child.getNodeType() == Node.ELEMENT_NODE &&	"mapModule".equals(child.getLocalPart())) {
 				Element elem = (Element) child;
 				//TODO : error check
 				if (elem.getAttribute("namespace") != null && elem.getAttribute("uri") != null) {

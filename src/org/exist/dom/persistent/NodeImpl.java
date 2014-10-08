@@ -363,7 +363,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      */
     //TODO : remove default value
     public String getLocalName() {
-        return getQName().getLocalName();
+        return getQName().getLocalPart();
     }
 
     /**

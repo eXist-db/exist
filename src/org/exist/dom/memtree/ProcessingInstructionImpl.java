@@ -53,7 +53,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
     public String getTarget()
     {
         final QName qn = document.nodeName[nodeNumber];
-        return( ( qn != null ) ? qn.getLocalName() : null );
+        return( ( qn != null ) ? qn.getLocalPart() : null );
     }
 
 

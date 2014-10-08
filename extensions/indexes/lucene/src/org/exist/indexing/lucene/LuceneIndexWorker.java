@@ -949,7 +949,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         List<QName> indexes = new ArrayList<>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
-                if (qname.getLocalName() == null || qname.getNamespaceURI() == null)
+                if (qname.getLocalPart() == null || qname.getNamespaceURI() == null)
                     getDefinedIndexesFor(qname, indexes);
                 else
                     indexes.add(qname);
@@ -980,8 +980,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static boolean matchQName(QName qname, QName candidate) {
         boolean match = true;
-        if (qname.getLocalName() != null)
-            match = qname.getLocalName().equals(candidate.getLocalName());
+        if (qname.getLocalPart() != null)
+            match = qname.getLocalPart().equals(candidate.getLocalPart());
         if (match && qname.getNamespaceURI() != null && qname.getNamespaceURI().length() > 0)
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
         return match;
@@ -1183,7 +1183,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 @Override
                 public void metadata(QName key, Object value) {
                     if (value instanceof String) {
-                        String name = key.getLocalName();//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
+                        String name = key.getLocalPart();//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
                         Field fld = new Field(name, value.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
                         metas.add(fld);
                         //System.out.println(" "+name+" = "+value.toString());

@@ -101,7 +101,7 @@ public class ProxyNode<E extends NodeAtExist> implements NodeAtExist, Proxy<E> {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.w3c.dom.Node#getLocalName()
+	 * @see org.w3c.dom.Node#getLocalPart()
 	 */
 	public String getLocalName() {
 		return getProxyObject().getLocalName();
