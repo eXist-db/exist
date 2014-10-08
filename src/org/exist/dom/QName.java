@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.dom.persistent;
+package org.exist.dom;
 
 import org.exist.interpreter.Context;
 import org.exist.storage.ElementValue;

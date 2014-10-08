@@ -376,7 +376,7 @@ public class QueryService implements Cloneable {
 		if (bindVariables) {
 			for (Map.Entry<QName, Object> entry : bindings.entrySet()) {
 				context.declareVariable(
-						new org.exist.dom.persistent.QName(entry.getKey().getLocalPart(), entry.getKey().getNamespaceURI(), entry.getKey().getPrefix()),
+						new org.exist.dom.QName(entry.getKey().getLocalPart(), entry.getKey().getNamespaceURI(), entry.getKey().getPrefix()),
 						convertValue(entry.getValue()));
 			}
 			if (params != null) for (int i = 0; i < params.length; i++) {
@@ -576,7 +576,7 @@ public class QueryService implements Cloneable {
 			super(broker.getBrokerPool(), accessCtx);
 		}
 
-		@Override public Variable resolveVariable(org.exist.dom.persistent.QName qname) throws XPathException {
+		@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {
 			Variable var = super.resolveVariable(qname);
 			if (var == null) {
 				requiredVariables.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
@@ -585,7 +585,7 @@ public class QueryService implements Cloneable {
 			return var;
 		}
 
-		@Override public UserDefinedFunction resolveFunction(org.exist.dom.persistent.QName qname, int argCount) throws XPathException {
+		@Override public UserDefinedFunction resolveFunction(org.exist.dom.QName qname, int argCount) throws XPathException {
 			UserDefinedFunction func = super.resolveFunction(qname, argCount);
 			if (func == null) {
 				requiredFunctions.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));

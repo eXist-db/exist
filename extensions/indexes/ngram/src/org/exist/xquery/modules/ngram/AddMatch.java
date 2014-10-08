@@ -7,7 +7,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramMatch;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;

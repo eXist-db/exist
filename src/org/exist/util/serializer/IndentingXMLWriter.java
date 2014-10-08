@@ -23,7 +23,7 @@ import java.io.Writer;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 
 public class IndentingXMLWriter extends XMLWriter {
@@ -72,7 +72,7 @@ public class IndentingXMLWriter extends XMLWriter {
     }
     
     /* (non-Javadoc)
-     * @see org.exist.util.serializer.XMLWriter#startElement(org.exist.dom.persistent.QName)
+     * @see org.exist.util.serializer.XMLWriter#startElement(org.exist.dom.QName)
      */
     @Override
     public void startElement(final QName qname) throws TransformerException {
@@ -100,7 +100,7 @@ public class IndentingXMLWriter extends XMLWriter {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.util.serializer.XMLWriter#endElement(org.exist.dom.persistent.QName)
+     * @see org.exist.util.serializer.XMLWriter#endElement(org.exist.dom.QName)
      */
     @Override
     public void endElement(final QName qname) throws TransformerException {

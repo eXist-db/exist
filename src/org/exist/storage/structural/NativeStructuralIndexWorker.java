@@ -2,7 +2,7 @@ package org.exist.storage.structural;
 
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
@@ -119,7 +119,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     /**
      * Internal helper class used by
-     * {@link NativeStructuralIndexWorker#findElementsByTagName(byte, org.exist.dom.persistent.DocumentSet, org.exist.dom.persistent.QName, org.exist.xquery.NodeSelector)}.
+     * {@link NativeStructuralIndexWorker#findElementsByTagName(byte, org.exist.dom.persistent.DocumentSet, org.exist.dom.QName, org.exist.xquery.NodeSelector)}.
      */
     private static class Range {
         int start = -1;

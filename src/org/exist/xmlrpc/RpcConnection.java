@@ -21,7 +21,7 @@
  */
 package org.exist.xmlrpc;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentSet;

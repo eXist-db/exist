@@ -16,7 +16,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import junit.framework.TestCase;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.util.serializer.DOMSerializer;
 import org.junit.Test;
 import org.w3c.dom.Document;

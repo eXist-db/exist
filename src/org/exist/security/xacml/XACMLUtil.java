@@ -59,7 +59,7 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;

@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.FunctionSignature;

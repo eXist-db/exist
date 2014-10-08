@@ -23,7 +23,7 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.ExtendedDOMSerializer;
 import org.exist.xquery.Cardinality;

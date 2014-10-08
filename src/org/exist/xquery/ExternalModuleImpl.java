@@ -24,7 +24,7 @@ package org.exist.xquery;
 
 import java.util.*;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.source.Source;
 import org.exist.xquery.value.Sequence;
 import org.exist.storage.DBBroker;
@@ -157,7 +157,7 @@ public class ExternalModuleImpl implements ExternalModule {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getSignatureForFunction(org.exist.dom.persistent.QName)
+     * @see org.exist.xquery.Module#getSignatureForFunction(org.exist.dom.QName)
      */
     public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
         final ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
@@ -177,7 +177,7 @@ public class ExternalModuleImpl implements ExternalModule {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Module#declareVariable(org.exist.dom.persistent.QName, java.lang.Object)
+     * @see org.exist.xquery.Module#declareVariable(org.exist.dom.QName, java.lang.Object)
      */
     public Variable declareVariable(QName qname, Object value) throws XPathException {
         final Sequence val = XPathUtil.javaObjectToXPath(value, mContext);
@@ -210,7 +210,7 @@ public class ExternalModuleImpl implements ExternalModule {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.persistent.QName)
+     * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
      */
     public Variable resolveVariable(QName qname) throws XPathException {
         final VariableDeclaration decl = mGlobalVariables.get(qname);

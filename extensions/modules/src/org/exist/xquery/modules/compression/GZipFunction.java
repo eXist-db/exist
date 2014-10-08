@@ -27,7 +27,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;

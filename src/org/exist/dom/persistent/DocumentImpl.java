@@ -780,7 +780,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @param qname a <code>QName</code> value
      * @return a <code>NodeList</code> value
      */
-    protected NodeList findElementsByTagName(NodeHandle root, QName qname) {
+    protected NodeList findElementsByTagName(NodeHandle root, org.exist.dom.QName qname) {
         DBBroker broker = null;
         try {
             broker = pool.get(null);
@@ -849,8 +849,8 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>QName</code> value
      */
     @Override
-    public QName getQName() {
-        return QName.DOCUMENT_QNAME;
+    public org.exist.dom.QName getQName() {
+        return org.exist.dom.QName.DOCUMENT_QNAME;
     }
 
     /**
@@ -894,7 +894,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     @Override
     public Attr createAttribute(String name) throws DOMException {
-        final AttrImpl attr = new AttrImpl(new QName(name, "", null), getBrokerPool().getSymbols());
+        final AttrImpl attr = new AttrImpl(new org.exist.dom.QName(name, "", null), getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -919,7 +919,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             prefix = qualifiedName.substring(0, p);
             name = qualifiedName.substring(p); 
         }
-        final AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
+        final AttrImpl attr = new AttrImpl(new org.exist.dom.QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -933,7 +933,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     @Override
     public Element createElement(String tagName) throws DOMException {
-        final ElementImpl element = new ElementImpl(new QName(tagName, "", null), getBrokerPool().getSymbols());
+        final ElementImpl element = new ElementImpl(new org.exist.dom.QName(tagName, "", null), getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -958,7 +958,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             prefix = qualifiedName.substring(0, p); 
             name = qualifiedName.substring(p);
         }
-        final ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
+        final ElementImpl element = new ElementImpl(new org.exist.dom.QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -1020,7 +1020,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             broker = pool.get(null);
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
-            final QName qname = new QName(localName, namespaceURI, null);
+            final org.exist.dom.QName qname = new org.exist.dom.QName(localName, namespaceURI, null);
             return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null, null);
         } catch (final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);

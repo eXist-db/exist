@@ -22,12 +22,12 @@
 package org.exist.util.serializer;
 
 import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 
 /**
  * Represents a list of attributes. Each attribute is defined by
- * a {@link org.exist.dom.persistent.QName} and a value. Instances
+ * a {@link org.exist.dom.QName} and a value. Instances
  * of this class can be passed to 
  * {@link org.exist.util.serializer.Receiver#startElement(QName, AttrList)}.
  * 

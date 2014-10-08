@@ -3,7 +3,7 @@ package org.exist.versioning;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;

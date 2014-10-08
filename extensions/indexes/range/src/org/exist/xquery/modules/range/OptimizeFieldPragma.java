@@ -24,7 +24,7 @@ package org.exist.xquery.modules.range;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.indexing.range.*;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;

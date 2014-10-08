@@ -41,7 +41,7 @@ import org.exist.Database;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexWorker.LuceneMatch;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;

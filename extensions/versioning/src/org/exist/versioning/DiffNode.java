@@ -1,7 +1,7 @@
 package org.exist.versioning;
 
 import org.exist.numbering.NodeId;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 
 public class DiffNode {
 

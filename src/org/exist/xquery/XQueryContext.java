@@ -61,7 +61,7 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.interpreter.Context;
 import org.exist.dom.memtree.InMemoryXMLStreamReader;

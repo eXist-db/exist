@@ -24,5 +24,5 @@ package org.exist.dom.persistent;
  * @author Sebastian Bossung, Technische Universitaet Hamburg-Harburg
  */
 public interface QNameable {
-    QName getQName();
+    org.exist.dom.QName getQName();
 }

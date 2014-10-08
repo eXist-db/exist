@@ -21,7 +21,7 @@
  */
 package org.exist.debuggee;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.CompiledXQuery;
 
 /**

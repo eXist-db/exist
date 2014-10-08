@@ -37,7 +37,7 @@ import org.apache.lucene.util.ArrayUtil;
 import org.exist.Database;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.TerminatedException;
 

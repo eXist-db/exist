@@ -22,7 +22,7 @@
 package org.exist.xquery;
 
 import org.exist.Namespaces;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 
 /**
  *

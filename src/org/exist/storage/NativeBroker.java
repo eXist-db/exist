@@ -33,7 +33,7 @@ import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.EXistException;
 import org.exist.Indexer;

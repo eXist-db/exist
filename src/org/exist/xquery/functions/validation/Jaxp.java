@@ -40,7 +40,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 
 import org.exist.Namespaces;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;

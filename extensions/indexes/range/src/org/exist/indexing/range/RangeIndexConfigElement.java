@@ -5,7 +5,7 @@ import org.apache.lucene.collation.CollationKeyAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.storage.NodePath;
 import org.exist.util.Collations;

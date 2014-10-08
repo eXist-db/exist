@@ -353,7 +353,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
     public String getAttributeValue(String namespaceURI, String localName) {
         readAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
-            final org.exist.dom.persistent.QName qn = attributes.getQName(i);
+            final org.exist.dom.QName qn = attributes.getQName(i);
             if (qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalName().equals(localName))
                 {return attributes.getValue(i);}
         }
@@ -374,7 +374,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         return attributes.getQName(i).toJavaQName();
     }
 
-    public org.exist.dom.persistent.QName getAttributeQName(int i) {
+    public org.exist.dom.QName getAttributeQName(int i) {
         if (state != START_ELEMENT)
             {throw new IllegalStateException("Cursor is not at an element");}
         readAttributes();
@@ -536,7 +536,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         return qname;
     }
 
-    public org.exist.dom.persistent.QName getQName() {
+    public org.exist.dom.QName getQName() {
         if (state == START_ELEMENT || state == END_ELEMENT) {
             if (nodeId == null)
                 {readNodeId();}

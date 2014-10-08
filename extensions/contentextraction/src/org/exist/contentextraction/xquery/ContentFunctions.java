@@ -29,7 +29,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.exist.contentextraction.ContentExtraction;
 import org.exist.contentextraction.ContentExtractionException;
 import org.exist.contentextraction.ContentReceiver;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.storage.NodePath;
 import org.exist.xquery.BasicFunction;

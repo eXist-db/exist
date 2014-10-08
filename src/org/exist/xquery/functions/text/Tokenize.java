@@ -23,7 +23,7 @@
 package org.exist.xquery.functions.text;
 
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.TextToken;
 import org.exist.xquery.BasicFunction;

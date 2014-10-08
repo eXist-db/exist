@@ -23,7 +23,7 @@ package org.exist.security.realm.ldap.xquery;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;

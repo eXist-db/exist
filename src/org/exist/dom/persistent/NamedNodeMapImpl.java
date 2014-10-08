@@ -53,17 +53,17 @@ public class NamedNodeMapImpl extends ArrayList<Node> implements NamedNodeMap {
     }
 
     public Node getNamedItem(String name) {
-        final int i = indexOf(new QName(name));
+        final int i = indexOf(new org.exist.dom.QName(name));
         return (i < 0) ? null : get(i);
     }
 
     public Node getNamedItemNS(String namespaceURI, String name) {
-        final int i = indexOf(new QName(name, namespaceURI, null));
+        final int i = indexOf(new org.exist.dom.QName(name, namespaceURI, null));
         return (i < 0) ? null : get(i);
     }
 
     public Node removeNamedItem(String name) throws DOMException {
-        final int i = indexOf(new QName(name));
+        final int i = indexOf(new org.exist.dom.QName(name));
         final Node node = get(i);
         remove(i);
         return node;
@@ -71,13 +71,13 @@ public class NamedNodeMapImpl extends ArrayList<Node> implements NamedNodeMap {
 
     public Node removeNamedItemNS(String namespaceURI, String name)
             throws DOMException {
-        final int i = indexOf(new QName(name, namespaceURI, null));
+        final int i = indexOf(new org.exist.dom.QName(name, namespaceURI, null));
         final Node node = get(i);
         remove(i);
         return node;
     }
 
-    private int indexOf(QName name) {
+    private int indexOf(org.exist.dom.QName name) {
         for (int i = 0; i < size(); i++) {
             final Node temp = get(i);
             if (temp.getLocalName().equals(name.getLocalName())

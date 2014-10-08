@@ -22,7 +22,7 @@
 package org.exist.xquery.xqts;
 
 import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
 import java.io.IOException;
 import java.io.StringWriter;

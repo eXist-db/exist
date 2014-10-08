@@ -21,7 +21,7 @@
  */
 package org.exist.dom.memtree;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;

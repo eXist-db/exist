@@ -22,7 +22,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 
 /**
  * Used to uniquely identify a function by its function name and arity.

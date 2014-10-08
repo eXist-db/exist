@@ -20,7 +20,7 @@
 package org.exist.xquery.modules.math;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;

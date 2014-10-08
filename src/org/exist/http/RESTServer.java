@@ -60,7 +60,7 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.XMLUtil;
 import static org.exist.http.RESTServerParameter.*;
 import org.exist.http.servlets.HttpRequestWrapper;

@@ -30,7 +30,7 @@ import java.io.IOException;
 
 import java.net.MalformedURLException;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;

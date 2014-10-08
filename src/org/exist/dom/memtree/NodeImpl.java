@@ -42,7 +42,7 @@ import org.exist.dom.persistent.EmptyNodeSet;
 import org.exist.dom.persistent.NodeAtExist;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;

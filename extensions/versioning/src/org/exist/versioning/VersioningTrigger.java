@@ -44,7 +44,7 @@ import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;

@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.Module;

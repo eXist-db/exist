@@ -23,7 +23,7 @@
 package org.exist.xquery.functions.request;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;

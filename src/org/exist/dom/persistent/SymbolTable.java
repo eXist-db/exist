@@ -140,9 +140,9 @@ public class SymbolTable {
      * @param localName
      * @param prefix
      */
-    public synchronized QName getQName(short type, String namespaceURI, String localName, String prefix) {
+    public synchronized org.exist.dom.QName getQName(short type, String namespaceURI, String localName, String prefix) {
         final byte itype = type == Node.ATTRIBUTE_NODE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
-        QName qn = namePool.get(itype, namespaceURI, localName, prefix);
+        org.exist.dom.QName qn = namePool.get(itype, namespaceURI, localName, prefix);
         if(qn == null) {
             qn = namePool.add(itype, namespaceURI, localName, prefix);
         }

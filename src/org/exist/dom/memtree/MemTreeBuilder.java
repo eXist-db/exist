@@ -29,7 +29,7 @@ import org.xml.sax.Attributes;
 import org.exist.Indexer;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XQueryContext;
 

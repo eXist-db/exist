@@ -31,7 +31,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.DateTimeValue;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.memtree.MemTreeBuilder;

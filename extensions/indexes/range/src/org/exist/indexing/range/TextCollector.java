@@ -2,7 +2,7 @@ package org.exist.indexing.range;
 
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.CharacterDataImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.XMLString;
 import org.exist.xquery.value.Type;

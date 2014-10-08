@@ -33,7 +33,7 @@ import org.w3c.dom.DOMException;
 //TODO : rename as StoredNamedNode ? -pb
 public class NamedNode extends StoredNode implements QNameable {
 
-    protected QName nodeName = null;
+    protected org.exist.dom.QName nodeName = null;
     
     public NamedNode(short nodeType) {
         super(nodeType);
@@ -42,7 +42,7 @@ public class NamedNode extends StoredNode implements QNameable {
     /**
      * @param nodeType
      */
-    public NamedNode(short nodeType, QName qname) {
+    public NamedNode(short nodeType, org.exist.dom.QName qname) {
         super(nodeType);
         this.nodeName = qname;
     }
@@ -54,7 +54,7 @@ public class NamedNode extends StoredNode implements QNameable {
      * @param qname 
      * @param nodeType 
      */
-    public NamedNode(short nodeType, NodeId nodeId, QName qname) {
+    public NamedNode(short nodeType, NodeId nodeId, org.exist.dom.QName qname) {
         super(nodeType, nodeId);
         this.nodeName = qname;
     }
@@ -67,15 +67,15 @@ public class NamedNode extends StoredNode implements QNameable {
     /* (non-Javadoc)
      * @see org.exist.dom.persistent.NodeImpl#getQName()
      */
-    public QName getQName() {
+    public org.exist.dom.QName getQName() {
         return nodeName;
     }
 
-    public void setNodeName(QName name) {
+    public void setNodeName(org.exist.dom.QName name) {
         nodeName = name;
     }
 
-    public void setNodeName(QName name, SymbolTable symbols) throws DOMException {
+    public void setNodeName(org.exist.dom.QName name, SymbolTable symbols) throws DOMException {
         nodeName = name;
         if (symbols.getSymbol(nodeName.getLocalName()) < 0) {
             throw new DOMException(DOMException.INVALID_ACCESS_ERR,

@@ -1,7 +1,7 @@
 package org.expath.httpclient.model.exist;
 
 import org.apache.http.Header;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.XQueryContext;

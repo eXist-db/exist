@@ -7,7 +7,7 @@ import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;

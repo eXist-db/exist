@@ -25,7 +25,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 
 import org.apache.log4j.Logger;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;

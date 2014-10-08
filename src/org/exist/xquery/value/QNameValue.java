@@ -23,14 +23,14 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
 /**
- * Wrapper class around a {@link org.exist.dom.persistent.QName} value which extends
+ * Wrapper class around a {@link org.exist.dom.QName} value which extends
  * {@link org.exist.xquery.value.AtomicValue}.
  * 
  * @author wolf

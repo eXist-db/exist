@@ -23,7 +23,7 @@
 package org.exist.xquery.functions.util;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.util.Base64Decoder;
 import org.exist.util.Base64Encoder;
 import org.exist.xquery.BasicFunction;

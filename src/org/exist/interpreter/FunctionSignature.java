@@ -21,7 +21,7 @@
  */
 package org.exist.interpreter;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.value.SequenceType;
 
 public interface FunctionSignature {

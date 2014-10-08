@@ -22,7 +22,7 @@
 
 package org.exist.xquery.modules.scheduler;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.UserJob;
 import org.exist.security.Subject;

@@ -35,7 +35,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.GroupAider;

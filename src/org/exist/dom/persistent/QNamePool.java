@@ -35,17 +35,17 @@ import org.exist.util.hashtable.AbstractHashtable;
  */
 public class QNamePool extends AbstractHashtable {
 
-    private QName[] values;
-    private QName temp = new QName("", "");
+    private org.exist.dom.QName[] values;
+    private org.exist.dom.QName temp = new org.exist.dom.QName("", "");
 
     public QNamePool() {
         super(512);
-        values = new QName[tabSize];
+        values = new org.exist.dom.QName[tabSize];
     }
 
     public QNamePool(int iSize) {
         super(iSize);
-        values = new QName[tabSize];
+        values = new org.exist.dom.QName[tabSize];
     }
 
     /**
@@ -58,7 +58,7 @@ public class QNamePool extends AbstractHashtable {
      * @param prefix
      * @return QName object
      */
-    public QName get(byte type, String namespaceURI, String localName, String prefix) {
+    public org.exist.dom.QName get(byte type, String namespaceURI, String localName, String prefix) {
         temp.setLocalName(localName);
         temp.setNamespaceURI(namespaceURI);
         temp.setPrefix(prefix);
@@ -87,7 +87,7 @@ public class QNamePool extends AbstractHashtable {
      * Add a QName, consisting of namespace, local name and prefix, to the
      * pool.
      */
-    public QName add(byte type, String namespaceURI, String localName, String prefix) {
+    public org.exist.dom.QName add(byte type, String namespaceURI, String localName, String prefix) {
         temp.setLocalName(localName);
         temp.setNamespaceURI(namespaceURI);
         temp.setPrefix(prefix);
@@ -96,7 +96,7 @@ public class QNamePool extends AbstractHashtable {
             return insert(temp);
         } catch(final HashtableOverflowException e) {
             // just clear the pool and try again
-            values = new QName[tabSize];
+            values = new org.exist.dom.QName[tabSize];
             items = 0;
             try {
                 return insert(temp);
@@ -104,11 +104,11 @@ public class QNamePool extends AbstractHashtable {
                 //Doh ! Report something here !
             }
             // should never happen, but just to be sure
-            return new QName(temp);
+            return new org.exist.dom.QName(temp);
         }
     }
 
-    protected QName insert(QName value) throws HashtableOverflowException {
+    protected org.exist.dom.QName insert(org.exist.dom.QName value) throws HashtableOverflowException {
         if (value == null)
             {throw new IllegalArgumentException("Illegal value: null");}
         int idx = value.hashCode() % tabSize;
@@ -117,7 +117,7 @@ public class QNamePool extends AbstractHashtable {
         int bucket = -1;
         // look for an empty bucket
         if (values[idx] == null) {
-            values[idx] = new QName(value);
+            values[idx] = new org.exist.dom.QName(value);
             ++items;
             return values[idx];
         } else if (values[idx] == REMOVED) {
@@ -140,7 +140,7 @@ public class QNamePool extends AbstractHashtable {
                     // store key into the empty bucket first found
                     idx = bucket;
                 }
-                values[idx] = new QName(value);
+                values[idx] = new org.exist.dom.QName(value);
                 ++items;
                 return values[idx];
             } else if (values[idx].equals(value)) {
@@ -152,7 +152,7 @@ public class QNamePool extends AbstractHashtable {
         // should never happen, but just to be sure:
         // if the key has not been inserted yet, do it now
         if (bucket > -1) {
-            values[bucket] = new QName(value);
+            values[bucket] = new org.exist.dom.QName(value);
             ++items;
             return values[bucket];
         }
@@ -167,12 +167,12 @@ public class QNamePool extends AbstractHashtable {
     }
 
     @Override
-    public Iterator<QName> iterator() {
+    public Iterator<org.exist.dom.QName> iterator() {
         return null;
     }
 
     @Override
-    public Iterator<QName> valueIterator() {
+    public Iterator<org.exist.dom.QName> valueIterator() {
         return null;
     }
 }

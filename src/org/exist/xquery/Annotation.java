@@ -1,6 +1,6 @@
 package org.exist.xquery;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 
 /**
  * Represents an XQuery 3.0 Annotation
