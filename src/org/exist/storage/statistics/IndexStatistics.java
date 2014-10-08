@@ -2,7 +2,7 @@ package org.exist.storage.statistics;
 
 import org.apache.log4j.Logger;
 import org.exist.backup.RawDataBackup;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.RawBackupSupport;

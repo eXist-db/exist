@@ -39,7 +39,7 @@ import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.indexing.StreamListener;

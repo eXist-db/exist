@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.FastQSort;

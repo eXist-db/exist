@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.exist.debugger.model.Breakpoint;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.Variable;

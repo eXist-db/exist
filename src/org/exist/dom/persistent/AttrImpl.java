@@ -61,7 +61,7 @@ public class AttrImpl extends NamedNode implements Attr {
     	super(Node.ATTRIBUTE_NODE);
     }
 
-    public AttrImpl (QName name, SymbolTable symbols) throws DOMException {
+    public AttrImpl (org.exist.dom.QName name, SymbolTable symbols) throws DOMException {
         super( Node.ATTRIBUTE_NODE, name);
         if (symbols != null && symbols.getSymbol(nodeName.getLocalName()) < 0) {
             throw new DOMException(DOMException.INVALID_ACCESS_ERR,
@@ -69,7 +69,7 @@ public class AttrImpl extends NamedNode implements Attr {
         }
     }
 
-    public AttrImpl (QName name, String str, SymbolTable symbols) throws DOMException {
+    public AttrImpl (org.exist.dom.QName name, String str, SymbolTable symbols) throws DOMException {
         this(name, symbols);
         this.value = new XMLString( str.toCharArray() );
     }

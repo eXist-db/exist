@@ -21,7 +21,7 @@
  */
 package org.exist;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 
 /**
  * Global namespace declarations.

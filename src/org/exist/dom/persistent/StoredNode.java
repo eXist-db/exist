@@ -154,16 +154,16 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle, IStor
     }
 
     @Override
-    public QName getQName() {
+    public org.exist.dom.QName getQName() {
         switch(getNodeType()) {
         case Node.DOCUMENT_NODE:
-            return QName.DOCUMENT_QNAME;
+            return org.exist.dom.QName.DOCUMENT_QNAME;
         case Node.TEXT_NODE:
-            return QName.TEXT_QNAME;
+            return org.exist.dom.QName.TEXT_QNAME;
         case Node.COMMENT_NODE:
-            return QName.COMMENT_QNAME;
+            return org.exist.dom.QName.COMMENT_QNAME;
         case Node.DOCUMENT_TYPE_NODE:
-            return QName.DOCTYPE_QNAME;
+            return org.exist.dom.QName.DOCTYPE_QNAME;
         default:
             LOG.error("Unknown node type: " + getNodeType()); 
             return null;

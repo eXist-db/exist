@@ -1,6 +1,6 @@
 package org.exist.xquery.modules.range;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.indexing.range.RangeIndexWorker;
 import org.exist.util.Occurrences;
 import org.exist.xquery.*;

@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 
 import java.util.List;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;

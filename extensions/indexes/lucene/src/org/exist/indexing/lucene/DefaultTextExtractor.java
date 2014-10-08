@@ -21,7 +21,7 @@
  */
 package org.exist.indexing.lucene;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.util.XMLString;
 
 public class DefaultTextExtractor extends AbstractTextExtractor {

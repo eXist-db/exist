@@ -29,7 +29,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import org.exist.Namespaces;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 
 import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.ErrorCodes.ErrorCode;

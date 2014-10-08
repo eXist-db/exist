@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.*;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;

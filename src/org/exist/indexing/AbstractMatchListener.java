@@ -1,7 +1,7 @@
 package org.exist.indexing;
 
 import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.w3c.dom.Document;

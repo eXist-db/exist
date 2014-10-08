@@ -22,7 +22,7 @@
 package org.exist.dom.memtree;
 
 import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;

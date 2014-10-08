@@ -23,7 +23,7 @@ package org.exist.interpreter;
 
 import java.util.List;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;

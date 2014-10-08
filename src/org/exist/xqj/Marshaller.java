@@ -30,7 +30,7 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.ElementImpl;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;

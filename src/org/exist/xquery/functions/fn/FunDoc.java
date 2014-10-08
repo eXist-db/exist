@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.*;

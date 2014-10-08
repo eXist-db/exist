@@ -15,7 +15,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;

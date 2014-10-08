@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;

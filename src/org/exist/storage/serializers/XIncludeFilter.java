@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -166,7 +166,7 @@ public class XIncludeFilter implements Receiver {
 	}
 
 	/**
-	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.persistent.QName)
+	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
 	 */
     public void endElement(QName qname) throws SAXException {
         if (XINCLUDE_NS.equals(qname.getNamespaceURI())) {
@@ -214,7 +214,7 @@ public class XIncludeFilter implements Receiver {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.persistent.QName, java.lang.String)
+	 * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.QName, java.lang.String)
 	 */
 	public void attribute(QName qname, String value) throws SAXException {
         if (!inFallback || error != null)
@@ -222,7 +222,7 @@ public class XIncludeFilter implements Receiver {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.util.serializer.Receiver#startElement(org.exist.dom.persistent.QName, org.exist.util.serializer.AttrList)
+	 * @see org.exist.util.serializer.Receiver#startElement(org.exist.dom.QName, org.exist.util.serializer.AttrList)
 	 */
 	public void startElement(QName qname, AttrList attribs) throws SAXException {
 		if (qname.getNamespaceURI() != null && qname.getNamespaceURI().equals(XINCLUDE_NS)) {

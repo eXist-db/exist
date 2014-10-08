@@ -28,7 +28,7 @@ import org.exist.backup.BackupDescriptor;
 import org.exist.backup.BackupDirectory;
 import org.exist.backup.FileSystemBackupDescriptor;
 import org.exist.backup.ZipArchiveBackupDescriptor;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.BasicFunction;

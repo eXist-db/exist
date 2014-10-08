@@ -16,7 +16,7 @@
 	import org.exist.EXistException;
 	import org.exist.dom.persistent.DocumentSet;
 	import org.exist.dom.persistent.DocumentImpl;
-	import org.exist.dom.persistent.QName;
+	import org.exist.dom.QName;
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.xquery.*;
 	import org.exist.xquery.value.*;

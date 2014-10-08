@@ -3,7 +3,7 @@ package org.exist.indexing;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.ExtNodeSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.NodeTest;

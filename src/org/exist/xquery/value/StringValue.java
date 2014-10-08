@@ -25,7 +25,7 @@ import java.text.Collator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.util.UTF8;
 import org.exist.util.XMLChar;

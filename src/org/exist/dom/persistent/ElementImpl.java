@@ -101,7 +101,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      *
      * @param nodeName Description of the Parameter
      */
-    public ElementImpl(QName nodeName, SymbolTable symbols) throws DOMException {
+    public ElementImpl(org.exist.dom.QName nodeName, SymbolTable symbols) throws DOMException {
         super(Node.ELEMENT_NODE, nodeName);
         this.nodeName = nodeName;
         if (symbols.getSymbol(nodeName.getLocalName()) < 0) {
@@ -351,7 +351,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return node;
     }
 
-    public static QName readQName(Value value, DocumentImpl document, NodeId nodeId) {
+    public static org.exist.dom.QName readQName(Value value, DocumentImpl document, NodeId nodeId) {
         final byte[] data = value.data();
         int offset = value.start();
         final byte idSizeType = (byte) (data[offset] & 0x03);
@@ -378,7 +378,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         String namespace = "";
         if (nsId != 0)
             {namespace = document.getBrokerPool().getSymbols().getNamespace(nsId);}
-        return new QName(name, namespace, prefix == null ? "" : prefix);
+        return new org.exist.dom.QName(name, namespace, prefix == null ? "" : prefix);
     }
 
     public static void readNamespaceDecls(List<String[]> namespaces, Value value, DocumentImpl document, NodeId nodeId) {
@@ -598,7 +598,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                     // create new element
                     final ElementImpl elem =
                         new ElementImpl(
-                            new QName(child.getLocalName() == null ?
+                            new org.exist.dom.QName(child.getLocalName() == null ?
                                 child.getNodeName() : child.getLocalName(),
                             child.getNamespaceURI(),
                             child.getPrefix()),
@@ -666,7 +666,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                     final String prefix = (Namespaces.XML_NS.equals(ns) ? "xml" : attr.getPrefix());
                     String name = attr.getLocalName();
                     if (name == null) {name = attr.getName();}
-                    final QName attrName = new QName(name, ns, prefix);
+                    final org.exist.dom.QName attrName = new org.exist.dom.QName(name, ns, prefix);
                     final AttrImpl attrib = new AttrImpl(attrName, attr.getValue(), broker.getBrokerPool().getSymbols());
                     attrib.setNodeId(newNodeId);
                     attrib.setOwnerDocument(owner);
@@ -743,14 +743,14 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#getAttributeNS(java.lang.String, java.lang.String)
      */
     public String getAttributeNS(String namespaceURI, String localName) {
-        final Attr attr = findAttribute(new QName(localName, namespaceURI));
+        final Attr attr = findAttribute(new org.exist.dom.QName(localName, namespaceURI));
         return attr != null ? attr.getValue() : "";
         //XXX: if not present must return null
     }
 
     @Deprecated //move as soon as getAttributeNS null issue resolved 
     public String _getAttributeNS(String namespaceURI, String localName) {
-        final Attr attr = findAttribute(new QName(localName, namespaceURI));
+        final Attr attr = findAttribute(new org.exist.dom.QName(localName, namespaceURI));
         return attr != null ? attr.getValue() : null;
     }
 
@@ -765,7 +765,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
      */
     public Attr getAttributeNodeNS(String namespaceURI, String localName) {
-        return findAttribute(new QName(localName, namespaceURI));
+        return findAttribute(new org.exist.dom.QName(localName, namespaceURI));
     }
 
     /**
@@ -800,7 +800,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 final Map.Entry<String, String> entry = i.next();
                 final String prefix = entry.getKey().toString();
                 final String ns = entry.getValue().toString();
-                final QName attrName = new QName(prefix, Namespaces.XMLNS_NS, "xmlns");
+                final org.exist.dom.QName attrName = new org.exist.dom.QName(prefix, Namespaces.XMLNS_NS, "xmlns");
                 final AttrImpl attr = new AttrImpl(attrName, ns, null);
                 attr.setOwnerDocument(ownerDocument);
                 map.setNamedItem(attr);
@@ -838,7 +838,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return null;
     }
 
-    private AttrImpl findAttribute(QName qname) {
+    private AttrImpl findAttribute(org.exist.dom.QName qname) {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
@@ -854,7 +854,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return null;
     }
 
-    private AttrImpl findAttribute(QName qname, INodeIterator iterator, IStoredNode current) {
+    private AttrImpl findAttribute(org.exist.dom.QName qname, INodeIterator iterator, IStoredNode current) {
         final int ccount = current.getChildCount();
         for (int i = 0; i < ccount; i++) {
             final IStoredNode next = iterator.next();
@@ -932,7 +932,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
      */
     public NodeList getElementsByTagName(String tagName) {
-        final QName qname = new QName(tagName, "", null);
+        final org.exist.dom.QName qname = new org.exist.dom.QName(tagName, "", null);
         return ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
     }
 
@@ -940,7 +940,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#getElementsByTagNameNS(java.lang.String, java.lang.String)
      */
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-        final QName qname = new QName(localName, namespaceURI, null);
+        final org.exist.dom.QName qname = new org.exist.dom.QName(localName, namespaceURI, null);
         return ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
     }
 
@@ -1005,7 +1005,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
      */
     public boolean hasAttributeNS(String namespaceURI, String localName) {
-        return findAttribute(new QName(localName, namespaceURI)) != null;
+        return findAttribute(new org.exist.dom.QName(localName, namespaceURI)) != null;
     }
 
     /**

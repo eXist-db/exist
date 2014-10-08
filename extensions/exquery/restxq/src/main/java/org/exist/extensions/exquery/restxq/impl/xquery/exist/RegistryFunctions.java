@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.extensions.exquery.restxq.impl.xquery.*;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.extensions.exquery.restxq.impl.ExistXqueryRegistry;
 import org.exist.extensions.exquery.restxq.impl.RestXqServiceRegistryManager;
 import org.exist.security.Permission;

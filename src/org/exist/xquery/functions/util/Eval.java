@@ -44,7 +44,7 @@ import org.exist.Namespaces;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.dom.memtree.SAXAdapter;

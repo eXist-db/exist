@@ -1,6 +1,6 @@
 package org.exist.dom;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 
 /**
  * Interface for Nodes in eXist

@@ -22,7 +22,7 @@
 package org.exist.xquery.functions.xmldb;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.securitymanager.GetPrincipalMetadataFunction;
 import org.exist.xquery.value.*;

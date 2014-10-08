@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 
 import java.util.Date;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.EXistResource;
 import org.exist.xquery.Cardinality;

@@ -1402,7 +1402,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         }
     }
 
-    public NodeSet directSelectChild(QName qname, int contextId) {
+    public NodeSet directSelectChild(org.exist.dom.QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             {return NodeSet.EMPTY_SET;}
         final NodeImpl node = (NodeImpl) getNode();
@@ -1618,7 +1618,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         }
     }
 
-    public boolean directMatchChild(QName qname, int contextId) {
+    public boolean directMatchChild(org.exist.dom.QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             {return false;}
         final NodeImpl node = (NodeImpl) getNode();

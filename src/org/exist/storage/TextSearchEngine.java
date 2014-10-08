@@ -20,7 +20,7 @@
  */
 package org.exist.storage;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.CharacterDataImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;

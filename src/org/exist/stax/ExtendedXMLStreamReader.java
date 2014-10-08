@@ -29,9 +29,9 @@ public interface ExtendedXMLStreamReader extends XMLStreamReader {
 
     public final static String PROPERTY_NODE_ID = "node-id";
     
-    public org.exist.dom.persistent.QName getAttributeQName(int i);
+    public org.exist.dom.QName getAttributeQName(int i);
 
-    public org.exist.dom.persistent.QName getQName();
+    public org.exist.dom.QName getQName();
 
     public NodeId getAttributeId(int i);
 }

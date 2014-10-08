@@ -20,14 +20,7 @@
  */
 package org.exist.dom.persistent;
 
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.AbstractNodeSet;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.ExtNodeSet;
-import org.exist.dom.persistent.NodeSetHelper;
-import org.exist.dom.persistent.QName;
-import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

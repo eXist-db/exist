@@ -224,7 +224,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
         final int attrStart = doc.alpha[currentNode];
 
         for( int i = 0; i < attrCount; i++ ) {
-            final org.exist.dom.persistent.QName qname = doc.attrName[attrStart + i];
+            final org.exist.dom.QName qname = doc.attrName[attrStart + i];
 
             if( (namespaceURI == null || namespaceURI.equals( qname.getNamespaceURI() )) && localName.equals( qname.getLocalName() ) ) {
                 return( doc.attrValue[attrStart + i] );
@@ -243,7 +243,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
     }
 
 
-    public org.exist.dom.persistent.QName getAttributeQName( int index )
+    public org.exist.dom.QName getAttributeQName( int index )
     {
         if( state != START_ELEMENT ) {
             throw( new IllegalStateException( "Cursor is not at an element" ) );
@@ -376,7 +376,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
             throw( new ArrayIndexOutOfBoundsException( "bad namespace index" ) );
         }
         final int                 ns      = doc.alphaLen[currentNode];
-        final org.exist.dom.persistent.QName nsQName = doc.namespaceCode[ns + index];
+        final org.exist.dom.QName nsQName = doc.namespaceCode[ns + index];
         return( nsQName.getLocalName() );
     }
 
@@ -387,7 +387,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
             throw( new ArrayIndexOutOfBoundsException( "bad namespace index" ) );
         }
         final int                 ns      = doc.alphaLen[currentNode];
-        final org.exist.dom.persistent.QName nsQName = doc.namespaceCode[ns + index];
+        final org.exist.dom.QName nsQName = doc.namespaceCode[ns + index];
         return( nsQName.getNamespaceURI() );
     }
 
@@ -457,7 +457,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
     }
 
 
-    public org.exist.dom.persistent.QName getQName()
+    public org.exist.dom.QName getQName()
     {
         if( ( state == START_ELEMENT ) || ( state == END_ELEMENT ) ) {
             return( doc.nodeName[currentNode] );
@@ -522,7 +522,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader
 
     public String getPITarget()
     {
-        final org.exist.dom.persistent.QName qn = doc.nodeName[currentNode];
+        final org.exist.dom.QName qn = doc.nodeName[currentNode];
         return( ( qn != null ) ? qn.getLocalName() : null );
     }
 

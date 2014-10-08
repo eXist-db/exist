@@ -40,7 +40,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.ErrorCodes;
 import org.exist.xslt.XSLContext;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xslt.expression.i.Parameted;
 import org.exist.xslt.pattern.Pattern;

@@ -22,7 +22,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.w3c.dom.Node;
 
 import javax.xml.stream.XMLStreamReader;

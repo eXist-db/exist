@@ -22,7 +22,7 @@
  */
 package org.exist.xquery.functions.text;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;

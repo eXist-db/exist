@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.indexing.StructuralIndex;
 import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.xmldb.XmldbURI;

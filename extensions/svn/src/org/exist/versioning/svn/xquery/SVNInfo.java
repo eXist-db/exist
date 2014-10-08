@@ -21,7 +21,7 @@
  */
 package org.exist.versioning.svn.xquery;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.io.Resource;
 import org.exist.versioning.svn.WorkingCopy;

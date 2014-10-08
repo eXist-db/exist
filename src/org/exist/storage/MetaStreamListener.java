@@ -21,7 +21,7 @@
  */
 package org.exist.storage;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

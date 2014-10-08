@@ -11,7 +11,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.BytesRef;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.SymbolTable;
 import org.exist.numbering.NodeId;
 import org.exist.storage.BrokerPool;

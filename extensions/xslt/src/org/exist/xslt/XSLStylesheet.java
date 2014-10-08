@@ -46,7 +46,7 @@ import org.exist.xquery.value.ValueSequence;
 import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.dom.persistent.ElementAtExist;
 import org.exist.dom.persistent.NodeAtExist;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.NamespaceNodeAtExist;
 import org.exist.dom.Validation;
 import org.exist.interpreter.ContextAtExist;

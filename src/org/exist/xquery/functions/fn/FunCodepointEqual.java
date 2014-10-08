@@ -20,7 +20,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;

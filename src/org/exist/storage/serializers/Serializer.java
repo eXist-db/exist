@@ -51,7 +51,7 @@ import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.http.servlets.RequestWrapper;

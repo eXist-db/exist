@@ -33,7 +33,7 @@ import org.exist.Namespaces;
 import org.exist.dom.persistent.ElementAtExist;
 import org.exist.dom.persistent.NamedNodeMapImpl;
 import org.exist.dom.persistent.NodeListImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;

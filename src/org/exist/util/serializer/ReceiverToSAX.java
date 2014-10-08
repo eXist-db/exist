@@ -22,7 +22,7 @@
 package org.exist.util.serializer;
 
 import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -101,7 +101,7 @@ public class ReceiverToSAX implements Receiver {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.util.serializer.Receiver#startElement(org.exist.dom.persistent.QName, org.exist.util.serializer.AttrList)
+	 * @see org.exist.util.serializer.Receiver#startElement(org.exist.dom.QName, org.exist.util.serializer.AttrList)
 	 */
 	public void startElement(QName qname, AttrList attribs) throws SAXException {
 		final AttributesImpl a = new AttributesImpl();
@@ -117,7 +117,7 @@ public class ReceiverToSAX implements Receiver {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.persistent.QName)
+	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
 	 */
 	public void endElement(QName qname) throws SAXException {
 		contentHandler.endElement(qname.getNamespaceURI(), qname.getLocalName(), qname.getStringValue());
@@ -138,7 +138,7 @@ public class ReceiverToSAX implements Receiver {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.persistent.QName, java.lang.String)
+	 * @see org.exist.util.serializer.Receiver#attribute(org.exist.dom.QName, java.lang.String)
 	 */
 	public void attribute(QName qname, String value) throws SAXException {
 		contentHandler.characters(value.toCharArray(), 0, value.length());

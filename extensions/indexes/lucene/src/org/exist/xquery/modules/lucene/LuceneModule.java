@@ -24,7 +24,7 @@ package org.exist.xquery.modules.lucene;
 import java.util.List;
 import java.util.Map;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.FunctionDef;

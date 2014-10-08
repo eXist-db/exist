@@ -27,7 +27,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;

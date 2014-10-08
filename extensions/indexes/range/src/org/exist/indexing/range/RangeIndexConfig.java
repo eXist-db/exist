@@ -9,7 +9,7 @@ import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.Version;
 import org.exist.dom.persistent.NodeListImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;

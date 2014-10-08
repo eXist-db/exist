@@ -1,6 +1,6 @@
 package org.exist.xquery.functions.inspect;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.xacml.AccessContext;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunOnFunctions;

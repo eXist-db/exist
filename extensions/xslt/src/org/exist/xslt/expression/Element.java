@@ -27,7 +27,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;

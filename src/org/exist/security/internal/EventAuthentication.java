@@ -26,7 +26,7 @@ import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.Subject;
 
 /**

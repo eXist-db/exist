@@ -209,7 +209,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      *
      *@param  name  The new nodeName value
      */
-    public void setNodeName(QName name) {
+    public void setNodeName(org.exist.dom.QName name) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "setNodeName(QName name) not implemented on class " + getClass().getName());
     }
@@ -333,7 +333,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      * @see org.w3c.dom.Node#getPrefix()
      */
     public String getPrefix() {
-        final QName nodeName = getQName();
+        final org.exist.dom.QName nodeName = getQName();
         final String prefix = nodeName.getPrefix();
         return prefix == null ? "" : prefix;
     }
@@ -345,7 +345,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      *@exception  DOMException  Description of the Exception
      */
     public void setPrefix(String prefix) throws DOMException {
-        final QName nodeName = getQName();
+        final org.exist.dom.QName nodeName = getQName();
         if (nodeName != null)
             {nodeName.setPrefix(prefix);}
     }

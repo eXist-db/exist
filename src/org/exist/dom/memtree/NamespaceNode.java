@@ -29,7 +29,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
 
 import org.exist.Namespaces;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.QNameable;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;

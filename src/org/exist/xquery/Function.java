@@ -25,7 +25,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;

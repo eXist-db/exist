@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;

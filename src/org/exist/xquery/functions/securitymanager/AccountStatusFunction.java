@@ -22,7 +22,7 @@
 package org.exist.xquery.functions.securitymanager;
 
 import org.exist.config.ConfigurationException;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;

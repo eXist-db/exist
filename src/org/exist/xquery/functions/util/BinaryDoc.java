@@ -28,7 +28,7 @@ import java.net.URISyntaxException;
 import org.apache.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.QName;
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
