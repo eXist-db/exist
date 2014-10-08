@@ -23,6 +23,8 @@ package org.exist;
 
 import org.exist.dom.QName;
 
+import javax.xml.XMLConstants;
+
 /**
  * Global namespace declarations.
  * 
@@ -31,10 +33,11 @@ import org.exist.dom.QName;
  */
 public interface Namespaces {
 
-	public final static String SCHEMA_NS = "http://www.w3.org/2001/XMLSchema";	
-    public final static String DTD_NS = "http://www.w3.org/TR/REC-xml";	
-	public final static String SCHEMA_DATATYPES_NS = "http://www.w3.org/2001/XMLSchema-datatypes";	
-	public final static String SCHEMA_INSTANCE_NS = "http://www.w3.org/2001/XMLSchema-instance";	
+    public final static String DTD_NS = XMLConstants.XML_DTD_NS_URI;
+
+	public final static String SCHEMA_NS = XMLConstants.W3C_XML_SCHEMA_NS_URI;
+    public final static String SCHEMA_DATATYPES_NS = "http://www.w3.org/2001/XMLSchema-datatypes";
+	public final static String SCHEMA_INSTANCE_NS = XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
     
     // Move this here from Function.BUILTIN_FUNCTION_NS? /ljo
 	public final static String XPATH_FUNCTIONS_NS = "http://www.w3.org/2005/xpath-functions";	
@@ -57,8 +60,9 @@ public interface Namespaces {
 	public final static String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 	public final static String DC_NS = "http://purl.org/dc/elements/1.1/";
 
-	public final static String XML_NS = "http://www.w3.org/XML/1998/namespace";	
-	public final static String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
+
+    public final static String XML_NS = XMLConstants.XML_NS_URI;
+	public final static String XMLNS_NS = XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
 	
 	/** QName representing xml:id */
 	public final static QName XML_ID_QNAME = new QName("id", XML_NS, "xml");
