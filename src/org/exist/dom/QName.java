@@ -37,17 +37,19 @@ import javax.xml.XMLConstants;
  */
 public class QName implements Comparable<QName> {
 
+    private final static String WILDCARD = "*";
+    private final static char COLON = ':';
+
     public final static QName EMPTY_QNAME = new QName("", XMLConstants.NULL_NS_URI);
     public final static QName DOCUMENT_QNAME = EMPTY_QNAME;
     public final static QName TEXT_QNAME = EMPTY_QNAME;
     public final static QName COMMENT_QNAME = EMPTY_QNAME;
     public final static QName DOCTYPE_QNAME = EMPTY_QNAME;
 
-    private final static char COLON = ':';
 
-    private final String localPart;
-    private final String namespaceURI;
-    private final String prefix;
+    protected final String localPart;
+    protected final String namespaceURI;
+    protected final String prefix;
 
     //TODO : use ElementValue.UNKNOWN and type explicitly ?
     private final byte nameType; // = ElementValue.ELEMENT;
@@ -326,7 +328,7 @@ public class QName implements Comparable<QName> {
     }
 
     public final void isValid() throws XPathException {
-    	if (localPart != null && !XMLChar.isValidNCName(localPart)) {
+    	if ((!(this instanceof WildcardLocalPartQName)) && !XMLChar.isValidNCName(localPart)) {
             throw new XPathException(ErrorCodes.XPTY0004, "Invalid localPart '" +  localPart + "' for QName '" + this + "'.");
         }
         
@@ -353,5 +355,31 @@ public class QName implements Comparable<QName> {
 
     public static QName fromJavaQName(final javax.xml.namespace.QName jQn) {
         return new QName(jQn.getLocalPart(), jQn.getNamespaceURI(), jQn.getPrefix());
+    }
+
+    public interface PartialQName{}
+
+    public static class WildcardNamespaceURIQName extends QName implements PartialQName {
+        public WildcardNamespaceURIQName(final String localPart) {
+            super(localPart, WILDCARD);
+        }
+
+        public WildcardNamespaceURIQName(final String localPart, final byte nameType) {
+            super(localPart, WILDCARD, nameType);
+        }
+    }
+
+    public static class WildcardLocalPartQName extends QName implements PartialQName {
+        public WildcardLocalPartQName(final String namespaceURI) {
+            super(WILDCARD, namespaceURI);
+        }
+
+        public WildcardLocalPartQName(final String namespaceURI, final byte nameType) {
+            super(WILDCARD, namespaceURI, nameType);
+        }
+
+        public WildcardLocalPartQName(final String namespaceURI, final String prefix) {
+            super(WILDCARD, namespaceURI, prefix);
+        }
     }
 }

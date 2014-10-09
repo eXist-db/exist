@@ -5346,7 +5346,7 @@ public XQueryTreeParser() {
 			value = nc.getText();
 			if (sl != null)
 			value = sl.getText();
-			QName qname= new QName(value);
+			QName qname= new QName.WildcardNamespaceURIQName(value);
 			if (!"".equals(value))
 			type.setNodeName(qname);
 			
@@ -7276,7 +7276,7 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 							try {
-								QName qname= new QName(nc1.getText());
+								QName qname= new QName.WildcardNamespaceURIQName(nc1.getText());
 								test= new NameTest(Type.ELEMENT, qname);
 								if (axis == Constants.ATTRIBUTE_AXIS)
 									test.setType(Type.ATTRIBUTE);
@@ -7301,7 +7301,7 @@ public XQueryTreeParser() {
 				
 							try {
 								String namespaceURI= staticContext.getURIForPrefix(nc.getText());
-								QName qname= new QName(null, namespaceURI, nc.getText());
+								QName qname= new QName.WildcardLocalPartQName(namespaceURI, nc.getText());
 								test= new NameTest(Type.ELEMENT, qname);
 								if (axis == Constants.ATTRIBUTE_AXIS)
 									test.setType(Type.ATTRIBUTE);
@@ -7717,7 +7717,7 @@ public XQueryTreeParser() {
 				_t = __t228;
 				_t = _t.getNextSibling();
 				
-				qname = new QName(nc2.getText(), null, ElementValue.ATTRIBUTE);
+				qname = new QName.WildcardNamespaceURIQName(nc2.getText(), ElementValue.ATTRIBUTE);
 						
 				break;
 			}
@@ -7736,7 +7736,7 @@ public XQueryTreeParser() {
 							String namespaceURI= staticContext.getURIForPrefix(nc3.getText());
 							if (namespaceURI == null)
 								throw new EXistException("No namespace defined for prefix " + nc3.getText());
-							qname= new QName(null, namespaceURI, ElementValue.ATTRIBUTE);
+							qname= new QName.WildcardLocalPartQName(namespaceURI, ElementValue.ATTRIBUTE);
 						
 				break;
 			}
