@@ -1132,7 +1132,7 @@ public class XPathQueryTest extends XMLTestCase {
 
     
     // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1460791&group_id=17691&atid=117691
-    public void bugtestDescendantOrSelfBUG1460791() throws Exception {
+    public void testDescendantOrSelfBUG1460791() throws Exception {
         String xQuery = "declare option exist:serialize \"method=xml indent=no\"; let $test:=<z><a>aaa</a><z>zzz</z></z> "
                 +"return ( <one>{$test//z}</one>, <two>{$test/descendant-or-self::node()/child::z}</two> )";
         
