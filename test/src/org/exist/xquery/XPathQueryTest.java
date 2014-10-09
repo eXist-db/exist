@@ -494,15 +494,15 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "numbers2.xml", "//n:price/parent::n:item[@id = '3']", 1);
             ResourceSet result =
                     queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/parent::n:*/string(@id)", 1);
-            assertEquals(result.getResource(0).getContent().toString(), "3");
+            assertEquals("3", result.getResource(0).getContent().toString());
             result = queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/parent::*:item/string(@id)", 1);
-            assertEquals(result.getResource(0).getContent().toString(), "3");
+            assertEquals("3", result.getResource(0).getContent().toString());
             result = queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/../string(@id)", 1);
-            assertEquals(result.getResource(0).getContent().toString(), "3");
+            assertEquals("3", result.getResource(0).getContent().toString());
             result = queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/parent::n:item/string(@id)", 1);
-            assertEquals(result.getResource(0).getContent().toString(), "3");
+            assertEquals("3", result.getResource(0).getContent().toString());
             queryResource(service, "numbers2.xml",
-                    "for $price in //n:price where $price/parent::*[@id = '3']/n:stock = '5' return $price", 1);
+                "for $price in //n:price where $price/parent::*[@id = '3']/n:stock = '5' return $price", 1);
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -897,14 +897,14 @@ public class XPathQueryTest extends XMLTestCase {
             
             // positional predicate on sequence of atomic values
             result = queryResource(service, "numbers.xml", "('test', 'pass')[2]", 1);
-            assertEquals(result.getResource(0).getContent().toString(), "pass");
+            assertEquals("pass", result.getResource(0).getContent().toString());
             result = queryResource(service, "numbers.xml", "let $credentials := ('test', 'pass') let $user := $credentials[1] return $user", 1);
-            assertEquals(result.getResource(0).getContent().toString(), "test");
+            assertEquals("test", result.getResource(0).getContent().toString());
             result = queryResource(service, "numbers.xml", "let $credentials := ('test', 'pass') let $user := $credentials[2] return $user", 1);
-            assertEquals(result.getResource(0).getContent().toString(), "pass");
+            assertEquals("pass", result.getResource(0).getContent().toString());
             
             result = queryResource(service, "numbers.xml", "let $els := <els><el>text1</el><el>text2</el></els> return $els/el[xs:string(.) eq 'text1'] ", 1);
-            assertEquals(result.getResource(0).getContent().toString(), "<el>text1</el>");
+            assertEquals("<el>text1</el>", result.getResource(0).getContent().toString());
             
         } catch (XMLDBException e) {
             fail(e.getMessage());
@@ -1132,7 +1132,7 @@ public class XPathQueryTest extends XMLTestCase {
 
     
     // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1460791&group_id=17691&atid=117691
-    public void bugtestDescendantOrSelfBUG1460791() throws Exception {
+    public void testDescendantOrSelfBUG1460791() throws Exception {
         String xQuery = "declare option exist:serialize \"method=xml indent=no\"; let $test:=<z><a>aaa</a><z>zzz</z></z> "
                 +"return ( <one>{$test//z}</one>, <two>{$test/descendant-or-self::node()/child::z}</two> )";
         
@@ -1694,7 +1694,7 @@ public class XPathQueryTest extends XMLTestCase {
             CompiledExpression expr = service.compile("declare variable $local:node external; $local:node//string");
             service.declareVariable("local:node", doc.getDocumentElement());
             ResourceSet result = service.execute(expr);
-            assertEquals(result.getSize(), 3);
+            assertEquals(4, result.getSize());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -2230,8 +2230,7 @@ public class XPathQueryTest extends XMLTestCase {
             ResourceSet result = service.query(query);
             assertEquals(1, result.getSize());
             printResult(result);
-            assertXMLEqual(result.getResource(0).getContent().toString(),
-                    "<test><test:name xmlns:test=\"http://test.org\"/><test:name xmlns:test=\"http://test.org\"/></test>");
+            assertXMLEqual("<test><test:name xmlns:test=\"http://test.org\"/><test:name xmlns:test=\"http://test.org\"/></test>", result.getResource(0).getContent().toString());
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
