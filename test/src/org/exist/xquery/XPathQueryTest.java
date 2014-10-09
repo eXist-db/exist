@@ -211,6 +211,25 @@ public class XPathQueryTest {
     }
 
     @Test
+    public void childWildcards() throws XMLDBException {
+        final String docName = "testChildWildcards.xml";
+        final XQueryService service =
+            storeXMLStringAndGetQueryService(docName, "<test xmlns=\"http://test\"/>");
+
+        service.setNamespace("t", "http://test");
+
+        queryResource(service, docName, "/t:test", 1); //make sure all is well!
+
+        queryResource(service, docName, "/*", 1);
+        queryResource(service, docName, "/t:*", 1);
+        queryResource(service, docName, "/*:test", 1);
+
+        queryResource(service, docName, "/child::*", 1);
+        queryResource(service, docName, "/child::t:*", 1);
+        queryResource(service, docName, "/child::*:test", 1);
+    }
+
+    @Test
     public void pathExpression() throws XMLDBException {
         final XQueryService service =
                 storeXMLStringAndGetQueryService("numbers.xml", numbers);

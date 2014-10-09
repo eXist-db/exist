@@ -42,53 +42,69 @@ public class NameTest extends TypeTest {
 	}
 
 	public boolean matches(Node other) {
-        if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
-            {return matches(((ReferenceNode)other).getReference());}
-        if(!isOfType(other.getNodeType()))
-			{return false;}
-		return matchesName(other);
+        if (other.getNodeType() == NodeImpl.REFERENCE_NODE) {
+            return matches(((ReferenceNode)other).getReference());
+        }
+
+        if(!isOfType(other.getNodeType())) {
+            return false;
+        }
+
+        return matchesName(other);
 	}
 
 	public boolean matches(QName name) {
-		if (nodeName.getNamespaceURI() != null) {
-            if (!nodeName.getNamespaceURI().equals(name.getNamespaceURI()))
-				{return false;}
+		if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
+            if (!nodeName.getNamespaceURI().equals(name.getNamespaceURI())) {
+                return false;
+            }
 		}
-		if (nodeName.getLocalPart() != null) {
+
+		if(!(nodeName instanceof QName.WildcardLocalPartQName)) {
 			return nodeName.getLocalPart().equals(name.getLocalPart());
 		}
+
 		return true;
 	}
 	
     public boolean matchesName(Node other) {
-        if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
-            {return matchesName(((ReferenceNode)other).getReference().getNode());}
-        if (nodeName.getNamespaceURI() != null) {
-            if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI()))
-				{return false;}
+        if (other.getNodeType() == NodeImpl.REFERENCE_NODE) {
+            return matchesName(((ReferenceNode)other).getReference().getNode());
+        }
+
+        if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
+            if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI())) {
+                return false;
+            }
 		}
-		if (nodeName.getLocalPart() != null) {
+
+        if(!(nodeName instanceof QName.WildcardLocalPartQName)) {
 			return nodeName.getLocalPart().equals(other.getLocalName());
 		}
+
 		return true;
 	}
 
     public boolean matches(XMLStreamReader reader) {
         final int ev = reader.getEventType();
-        if (!isOfEventType(ev))
-            {return false;}
+        if (!isOfEventType(ev)) {
+            return false;
+        }
+
         switch (ev) {
             case XMLStreamReader.START_ELEMENT :
-                if (nodeName.getNamespaceURI() != null) {
+                if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
                     if (!nodeName.getNamespaceURI().equals(reader.getNamespaceURI()))
                         {return false;}
                 }
-                if (nodeName.getLocalPart() != null) {
+
+                if(!(nodeName instanceof QName.WildcardLocalPartQName)) {
                     return nodeName.getLocalPart().equals(reader.getLocalName());
                 }
                 break;
+
             case XMLStreamReader.PROCESSING_INSTRUCTION :
-                if (nodeName.getLocalPart() != null) {
+                if(!(nodeName instanceof QName.WildcardLocalPartQName)) {
                     return nodeName.getLocalPart().equals(reader.getPITarget());
                 }
                 break;
@@ -100,7 +116,7 @@ public class NameTest extends TypeTest {
 	 * @see org.exist.xquery.NodeTest#isWildcardTest()
 	 */
 	public boolean isWildcardTest() {
-		return nodeName.getLocalPart() == null || nodeName.getNamespaceURI() == null;
+        return nodeName instanceof QName.PartialQName;
 	}
 
     @Override
@@ -113,10 +129,7 @@ public class NameTest extends TypeTest {
     }
 
     public void dump(ExpressionDumper dumper) {
-        if(nodeName.getLocalPart() == null)
-            {dumper.display(nodeName.getPrefix() + ":*");}
-        else
-            {dumper.display(nodeName.getStringValue());}        
+        dumper.display(nodeName.getStringValue());
     }    
 
 	/* (non-Javadoc)
@@ -128,17 +141,13 @@ public class NameTest extends TypeTest {
         if(nodeName.getPrefix() != null) {
             result.append(nodeName.getPrefix());
             result.append(":");
-        } else if(nodeName.getNamespaceURI() != null) {
+        } else if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
             result.append("{");
             result.append(nodeName.getNamespaceURI());
             result.append("}");
         }
-        
-        if(nodeName.getLocalPart() == null) {
-            result.append("*");
-        } else {
-            result.append(nodeName.getLocalPart());
-        }
+
+        result.append(nodeName.getLocalPart());
         
         return result.toString();
     }
