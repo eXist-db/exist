@@ -183,9 +183,13 @@ public class LuceneIndexConfig {
                             " in index definition");
                 }
             }
-            QName qname = new QName(localName, namespaceURI, prefix);
-            if (isAttribute)
-                qname.setNameType(ElementValue.ATTRIBUTE);
+
+            final QName qname;
+            if (isAttribute) {
+                qname = new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
+            } else {
+                qname = new QName(localName, namespaceURI, prefix);
+            }
             return qname;
         } catch (IllegalArgumentException e) {
             throw new DatabaseConfigurationException("Lucene index configuration error: " + e.getMessage(), e);

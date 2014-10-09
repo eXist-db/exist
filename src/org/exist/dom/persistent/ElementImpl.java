@@ -37,6 +37,7 @@ import javax.xml.stream.XMLStreamException;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.exist.dom.QName;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -675,7 +676,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                         attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
                         attrib.setType(AttrImpl.ID);
                     } else {
-                        attrName.setNameType(ElementValue.ATTRIBUTE);
+                        attrib.setQName(new QName(attrib.getQName(), ElementValue.ATTRIBUTE));
                     }
                     broker.insertNodeAfter(transaction, last.getNode(), attrib);
                     broker.indexNode(transaction, attrib, lastPath);

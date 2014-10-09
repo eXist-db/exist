@@ -14,6 +14,7 @@
 	import java.util.TreeSet;
 	import java.util.HashMap;
 	import java.util.Stack;
+	import javax.xml.XMLConstants;
 	import org.exist.storage.BrokerPool;
 	import org.exist.storage.DBBroker;
 	import org.exist.storage.analysis.Tokenizer;
@@ -5234,8 +5235,8 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 									try {
-					                    QName qname= QName.parse(staticContext, qn2.getText(), "");
-					                    qname.setNameType(ElementValue.ATTRIBUTE);
+				QName qname = QName.parse(staticContext, qn2.getText(), XMLConstants.DEFAULT_NS_PREFIX);
+				qname = new QName(qname, ElementValue.ATTRIBUTE);
 										type.setNodeName(qname);
 									} catch (XPathException e) {
 										e.setLocation(lattr.getLine(), lattr.getColumn());
@@ -5345,8 +5346,7 @@ public XQueryTreeParser() {
 			value = nc.getText();
 			if (sl != null)
 			value = sl.getText();
-			QName qname= new QName(value, "", null);
-			qname.setNamespaceURI(null);
+			QName qname= new QName(value);
 			if (!"".equals(value))
 			type.setNodeName(qname);
 			
@@ -7249,12 +7249,12 @@ public XQueryTreeParser() {
 							try {
 								QName qname= QName.parse(staticContext, qn.getText());
 								if (axis == Constants.ATTRIBUTE_AXIS) {
-					                //qname.setNamespaceURI(null);
-					                test= new NameTest(Type.ATTRIBUTE, qname);
-					                qname.setNameType(ElementValue.ATTRIBUTE);
-					            } else {
-					                test= new NameTest(Type.ELEMENT, qname);
-					            }
+					        qname = new QName(qname, ElementValue.ATTRIBUTE);
+					        test= new NameTest(Type.ATTRIBUTE, qname);
+				
+				} else {
+				test= new NameTest(Type.ELEMENT, qname);
+				}
 								ast = qn;
 							} catch(XPathException ex1) {
 								ex1.setLocation(qn.getLine(), qn.getColumn());
@@ -7276,8 +7276,7 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 							try {
-								QName qname= new QName(nc1.getText(), null, null);
-								qname.setNamespaceURI(null);
+								QName qname= new QName(nc1.getText());
 								test= new NameTest(Type.ELEMENT, qname);
 								if (axis == Constants.ATTRIBUTE_AXIS)
 									test.setType(Type.ATTRIBUTE);
@@ -7446,9 +7445,9 @@ public XQueryTreeParser() {
 					match(_t,QNAME);
 					_t = _t.getNextSibling();
 					
-										QName qname= QName.parse(staticContext, qn3.getText());
+										QName qname = QName.parse(staticContext, qn3.getText());
+										qname = new QName(qname, ElementValue.ATTRIBUTE);
 										test= new NameTest(Type.ATTRIBUTE, qname);
-										qname.setNameType(ElementValue.ATTRIBUTE);
 										axis= Constants.ATTRIBUTE_AXIS;
 									
 					break;
@@ -7702,7 +7701,7 @@ public XQueryTreeParser() {
 				_t = _t.getNextSibling();
 				
 				qname= QName.parse(staticContext, attr.getText(), "");
-				qname.setNameType(ElementValue.ATTRIBUTE);
+				qname = new QName(qname, ElementValue.ATTRIBUTE);
 				
 				break;
 			}
@@ -7718,9 +7717,7 @@ public XQueryTreeParser() {
 				_t = __t228;
 				_t = _t.getNextSibling();
 				
-				qname= new QName(nc2.getText(), null, null);
-				qname.setNamespaceURI(null);
-				qname.setNameType(ElementValue.ATTRIBUTE);
+				qname = new QName(nc2.getText(), null, ElementValue.ATTRIBUTE);
 						
 				break;
 			}
@@ -7739,8 +7736,7 @@ public XQueryTreeParser() {
 							String namespaceURI= staticContext.getURIForPrefix(nc3.getText());
 							if (namespaceURI == null)
 								throw new EXistException("No namespace defined for prefix " + nc3.getText());
-							qname= new QName(null, namespaceURI, null);
-							qname.setNameType(ElementValue.ATTRIBUTE);
+							qname= new QName(null, namespaceURI, ElementValue.ATTRIBUTE);
 						
 				break;
 			}
@@ -8921,7 +8917,7 @@ public XQueryTreeParser() {
 			
 			QName qname = QName.parse(staticContext, qna.getText());
 			if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI()) 
-			|| ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals("xmlns")))
+			|| ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals(XMLConstants.XMLNS_ATTRIBUTE)))
 			throw new XPathException("err:XQDY0044: the node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
 			
 			AST __t303 = _t;
@@ -9273,7 +9269,7 @@ public XQueryTreeParser() {
 					}
 					c.addAttribute(attrib); 
 					if (attrib.isNamespaceDeclaration()) {
-					String nsPrefix = attrib.getQName().equals("xmlns") ?
+					String nsPrefix = attrib.getQName().equals(XMLConstants.XMLNS_ATTRIBUTE) ?
 					"" : QName.extractLocalName(attrib.getQName());
 					staticContext.declareInScopeNamespace(nsPrefix,attrib.getLiteralValue());
 					}

@@ -1,7 +1,5 @@
 package org.exist.dom;
 
-import org.exist.dom.QName;
-
 /**
  * Interface for Nodes in eXist
  * used for both persistent and
@@ -20,4 +18,7 @@ public interface INode<T extends org.w3c.dom.Document> extends org.w3c.dom.Node,
      * @return The qualified name of the Node
      */
     public QName getQName();
+
+    //TODO try and get rid of this eventually (AR)?
+    public void setQName(QName qname);
 }

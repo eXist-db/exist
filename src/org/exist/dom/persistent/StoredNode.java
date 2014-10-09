@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.exist.EXistException;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -154,20 +155,24 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle, IStor
     }
 
     @Override
-    public org.exist.dom.QName getQName() {
+    public QName getQName() {
         switch(getNodeType()) {
         case Node.DOCUMENT_NODE:
-            return org.exist.dom.QName.DOCUMENT_QNAME;
+            return QName.DOCUMENT_QNAME;
         case Node.TEXT_NODE:
-            return org.exist.dom.QName.TEXT_QNAME;
+            return QName.TEXT_QNAME;
         case Node.COMMENT_NODE:
-            return org.exist.dom.QName.COMMENT_QNAME;
+            return QName.COMMENT_QNAME;
         case Node.DOCUMENT_TYPE_NODE:
-            return org.exist.dom.QName.DOCTYPE_QNAME;
+            return QName.DOCTYPE_QNAME;
         default:
             LOG.error("Unknown node type: " + getNodeType()); 
             return null;
         }
+    }
+
+    public void setQName(QName qname) {
+        //do nothing
     }
 
     /**

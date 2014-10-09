@@ -166,10 +166,12 @@ public class NGramSearch extends Function implements Optimizable {
                     LocationStep outerStep = (LocationStep) outerExpr;
                     NodeTest test = outerStep.getTest();
                     if (!test.isWildcardTest() && test.getName() != null) {
-                        contextQName = new QName(test.getName());
                         if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS
-                            || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                            contextQName.setNameType(ElementValue.ATTRIBUTE);
+                            || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                            contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                        } else {
+                            contextQName = new QName(test.getName());
+                        }
                         contextStep = firstStep;
                         axis = outerStep.getAxis();
                         optimizeSelf = true;
@@ -178,10 +180,12 @@ public class NGramSearch extends Function implements Optimizable {
             } else if (lastStep != null && firstStep != null) {
                 NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
-                    contextQName = new QName(test.getName());
                     if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS
-                        || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                        contextQName.setNameType(ElementValue.ATTRIBUTE);
+                        || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                        contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                    } else {
+                        contextQName = new QName(test.getName());
+                    }
                     axis = firstStep.getAxis();
                     optimizeChild = steps.size() == 1 &&
                         (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);

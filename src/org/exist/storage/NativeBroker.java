@@ -402,7 +402,7 @@ public class NativeBroker extends DBBroker {
         //TODO : do not care about the current code redundancy : this will move in the (near) future
         // TODO : move to NativeValueIndex
         if(RangeIndexSpec.hasRangeIndex(indexType)) {
-            node.getQName().setNameType(ElementValue.ELEMENT);
+            node.setQName(new QName(node.getQName(), ElementValue.ELEMENT));
             if(content == null) {
                 //NodeProxy p = new NodeProxy(node);
                 //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
@@ -418,7 +418,7 @@ public class NativeBroker extends DBBroker {
 
         // TODO : move to NativeValueIndexByQName 
         if(RangeIndexSpec.hasQNameIndex(indexType)) {
-            node.getQName().setNameType(ElementValue.ELEMENT);
+            node.setQName(new QName(node.getQName(), ElementValue.ELEMENT));
             if(content == null) {
                 //NodeProxy p = new NodeProxy(node);
                 //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
@@ -3198,11 +3198,10 @@ public class NativeBroker extends DBBroker {
             }
         }.run();
         notifyRemoveNode(node, currentPath, content);
-        QName qname;
+        final QName qname;
         switch(node.getNodeType()) {
             case Node.ELEMENT_NODE:
-                qname = node.getQName();
-                qname.setNameType(ElementValue.ELEMENT);
+                qname = new QName(node.getQName(), ElementValue.ELEMENT);
                 final GeneralRangeIndexSpec spec1 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec1 != null) {
                     valueIndex.setDocument(doc);
@@ -3215,9 +3214,9 @@ public class NativeBroker extends DBBroker {
                         NativeValueIndex.IDX_QNAME, false);
                 }
                 break;
+
             case Node.ATTRIBUTE_NODE:
-                qname = node.getQName();
-                qname.setNameType(ElementValue.ATTRIBUTE);
+                qname = new QName(node.getQName(), ElementValue.ATTRIBUTE);
                 currentPath.addComponent(qname);
                 //Strange : does it mean that the node is added 2 times under 2 different identities ?
                 AttrImpl attr;
@@ -3253,6 +3252,7 @@ public class NativeBroker extends DBBroker {
                 }
                 currentPath.removeLastComponent();
                 break;
+
             case Node.TEXT_NODE:
                 break;
         }
@@ -3801,7 +3801,7 @@ public class NativeBroker extends DBBroker {
                     break;
 
                 case Node.ATTRIBUTE_NODE:
-                    final QName qname = node.getQName();
+                    final QName qname = new QName(node.getQName(), ElementValue.ATTRIBUTE);
                     if(currentPath != null) {
                         currentPath.addComponent(qname);
                     }
@@ -3835,7 +3835,6 @@ public class NativeBroker extends DBBroker {
                     }
                     final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
                     tempProxy.setIndexType(indexType);
-                    qname.setNameType(ElementValue.ATTRIBUTE);
                     final AttrImpl attr = (AttrImpl) node;
                     attr.setIndexType(indexType);
                     switch(attr.getType()) {

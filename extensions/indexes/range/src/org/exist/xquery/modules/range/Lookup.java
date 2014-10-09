@@ -193,28 +193,32 @@ public class Lookup extends Function implements Optimizable {
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
                     LocationStep outerStep = (LocationStep) outerExpr;
                     NodeTest test = outerStep.getTest();
-                    if (test.getName() == null)
+                    if (test.getName() == null) {
                         contextQName = new QName(null, null, null);
-                    else if (test.isWildcardTest())
+                    } else if (test.isWildcardTest()) {
                         contextQName = test.getName();
-                    else
+                    } else {
                         contextQName = new QName(test.getName());
-                    if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                        contextQName.setNameType(ElementValue.ATTRIBUTE);
+                    }
+                    if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                        contextQName = new QName(contextQName.getLocalPart(), contextQName.getNamespaceURI(), contextQName.getPrefix(), ElementValue.ATTRIBUTE);
+                    }
                     contextStep = firstStep;
                     axis = outerStep.getAxis();
                     optimizeSelf = true;
                 }
             } else if (lastStep != null && firstStep != null) {
                 NodeTest test = lastStep.getTest();
-                if (test.getName() == null)
+                if(test.getName() == null) {
                     contextQName = new QName(null, null, null);
-                else if (test.isWildcardTest())
+                } else if(test.isWildcardTest()) {
                     contextQName = test.getName();
-                else
+                } else {
                     contextQName = new QName(test.getName());
-                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                    contextQName.setNameType(ElementValue.ATTRIBUTE);
+                }
+                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                    contextQName = new QName(contextQName.getLocalPart(), contextQName.getNamespaceURI(), contextQName.getPrefix(), ElementValue.ATTRIBUTE);
+                }
                 axis = firstStep.getAxis();
                 optimizeChild = steps.size() == 1 &&
                         (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);

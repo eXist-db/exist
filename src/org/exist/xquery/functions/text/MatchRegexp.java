@@ -149,9 +149,11 @@ public class MatchRegexp extends Function implements Optimizable {
                     final LocationStep outerStep = (LocationStep) outerExpr;
                     final NodeTest test = outerStep.getTest();
                     if (!test.isWildcardTest() && test.getName() != null) {
-                        contextQName = new QName(test.getName());
-                        if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                            {contextQName.setNameType(ElementValue.ATTRIBUTE);}
+                        if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                            contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                        } else {
+                            contextQName = new QName(test.getName());
+                        }
                         contextStep = firstStep;
                         axis = outerStep.getAxis();
                         optimizeSelf = true;
@@ -160,9 +162,11 @@ public class MatchRegexp extends Function implements Optimizable {
             } else if (firstStep != null && lastStep != null) {
                 final NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
-                    contextQName = new QName(test.getName());
-                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                        {contextQName.setNameType(ElementValue.ATTRIBUTE);}
+                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                        contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                    } else {
+                        contextQName = new QName(test.getName());
+                    }
                     contextStep = lastStep;
                     axis = firstStep.getAxis();
 

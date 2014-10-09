@@ -349,7 +349,7 @@ public class FunctionFactory {
             Module _module_ = context.getModule(Namespaces.XPATH_FUNCTIONS_NS);
             if(_module_ != null) {
                 module = _module_;
-                qname.setNamespaceURI(Namespaces.XPATH_FUNCTIONS_NS);
+                qname = new QName(qname.getLocalPart(), Namespaces.XPATH_FUNCTIONS_NS, qname.getPrefix());
                 def = ((InternalModule) module).getFunctionDef(qname, params.size());
             }
         }

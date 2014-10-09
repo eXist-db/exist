@@ -199,10 +199,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     final NodeTest     test      = outerStep.getTest();
 
                     if( !test.isWildcardTest() && ( test.getName() != null ) ) {
-                        contextQName = new QName( test.getName() );
+
 
                         if( ( outerStep.getAxis() == Constants.ATTRIBUTE_AXIS ) || ( outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS ) ) {
-                            contextQName.setNameType( ElementValue.ATTRIBUTE );
+                            contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                        } else {
+                            contextQName = new QName(test.getName());
                         }
                         contextStep  = firstStep;
                         axis         = outerStep.getAxis();
@@ -213,10 +215,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 final NodeTest test = lastStep.getTest();
 
                 if( !test.isWildcardTest() && ( test.getName() != null ) ) {
-                    contextQName = new QName( test.getName() );
+
 
                     if( ( lastStep.getAxis() == Constants.ATTRIBUTE_AXIS ) || ( lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS ) ) {
-                        contextQName.setNameType( ElementValue.ATTRIBUTE );
+                        contextQName = new QName( test.getName(), ElementValue.ATTRIBUTE );
+                    } else {
+                        contextQName = new QName( test.getName() );
                     }
                     contextStep = lastStep;
                     axis        = firstStep.getAxis();

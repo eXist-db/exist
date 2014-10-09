@@ -742,9 +742,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         final byte type = key[5];
         final short sym = ByteConversion.byteToShortH(key, 6);
         final short nsSym = ByteConversion.byteToShortH(key, 8);
-        final QName qname = new QName(symbols.getName(sym), symbols.getNamespace(nsSym));
-        qname.setNameType(type);
-        return qname;
+        return new QName(symbols.getName(sym), symbols.getNamespace(nsSym), type);
     }
 
     private class NativeStructuralStreamListener extends AbstractStreamListener {

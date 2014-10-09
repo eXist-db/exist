@@ -47,9 +47,7 @@ public class MicroXmlWriter extends IndentingXMLWriter {
     }
 
     private QName removePrefix(final QName qname) {
-        qname.setNamespaceURI("");
-        qname.setPrefix("");
-        return qname;
+        return new QName(qname.getLocalPart());
     }
 
     private CharSequence removeRestrictedChars(final CharSequence charSeq) {
