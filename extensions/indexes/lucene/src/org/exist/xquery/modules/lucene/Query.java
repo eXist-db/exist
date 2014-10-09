@@ -129,17 +129,20 @@ public class Query extends Function implements Optimizable {
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
                     LocationStep outerStep = (LocationStep) outerExpr;
                     NodeTest test = outerStep.getTest();
-                    if (test.getName() == null)
-                        contextQName = new QName(null, null, null);
-                    else if (test.isWildcardTest())
-                        contextQName = test.getName();
-                    else
-                        contextQName = new QName(test.getName());
+
+                    final byte contextQNameType;
                     if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-                        contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                        contextQNameType = ElementValue.ATTRIBUTE;
                     } else {
-                        contextQName = new QName(test.getName());
+                        contextQNameType = ElementValue.ELEMENT;
                     }
+
+                    if (test.getName() == null) {
+                        contextQName = new QName(null, null, contextQNameType);
+                    } else {
+                        contextQName = new QName(test.getName(), contextQNameType);
+                    }
+
                     contextStep = firstStep;
                     axis = outerStep.getAxis();
                     optimizeSelf = true;
