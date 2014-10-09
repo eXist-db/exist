@@ -3202,6 +3202,7 @@ public class NativeBroker extends DBBroker {
         switch(node.getNodeType()) {
             case Node.ELEMENT_NODE:
                 qname = new QName(node.getQName(), ElementValue.ELEMENT);
+                node.setQName(qname);
                 final GeneralRangeIndexSpec spec1 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec1 != null) {
                     valueIndex.setDocument(doc);
@@ -3217,6 +3218,7 @@ public class NativeBroker extends DBBroker {
 
             case Node.ATTRIBUTE_NODE:
                 qname = new QName(node.getQName(), ElementValue.ATTRIBUTE);
+                node.setQName(qname);
                 currentPath.addComponent(qname);
                 //Strange : does it mean that the node is added 2 times under 2 different identities ?
                 AttrImpl attr;
@@ -3801,7 +3803,7 @@ public class NativeBroker extends DBBroker {
                     break;
 
                 case Node.ATTRIBUTE_NODE:
-                    final QName qname = new QName(node.getQName(), ElementValue.ATTRIBUTE);
+                    final QName qname = new QName(node.getQName());
                     if(currentPath != null) {
                         currentPath.addComponent(qname);
                     }
@@ -3835,6 +3837,7 @@ public class NativeBroker extends DBBroker {
                     }
                     final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
                     tempProxy.setIndexType(indexType);
+                    node.setQName(new QName(qname, ElementValue.ATTRIBUTE));
                     final AttrImpl attr = (AttrImpl) node;
                     attr.setIndexType(indexType);
                     switch(attr.getType()) {
