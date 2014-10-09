@@ -245,7 +245,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final boolean mixedContent = config.matchMixedElement(path);
                 if (mixedContent || config.hasQNameIndex(element.getQName())) {
                     final ElementContent contentBuf = contentStack.pop();
-                    element.getQName().setNameType(ElementValue.ELEMENT);
+                    element.setQName(new QName(element.getQName(), ElementValue.ELEMENT));
                     engine.storeText(element, contentBuf,
                             mixedContent ? NativeTextEngine.FOURTH_OPTION : NativeTextEngine.TEXT_BY_QNAME,
                             null, mode == REMOVE_ALL_NODES);

@@ -24,6 +24,7 @@ package org.exist.dom.persistent;
 
 import java.util.Iterator;
 
+import org.exist.dom.QName;
 import org.exist.util.hashtable.AbstractHashtable;
 
 /**
@@ -36,7 +37,7 @@ import org.exist.util.hashtable.AbstractHashtable;
 public class QNamePool extends AbstractHashtable {
 
     private org.exist.dom.QName[] values;
-    private org.exist.dom.QName temp = new org.exist.dom.QName("", "");
+    //private org.exist.dom.QName temp = new org.exist.dom.QName("", "");
 
     public QNamePool() {
         super(512);
@@ -59,10 +60,11 @@ public class QNamePool extends AbstractHashtable {
      * @return QName object
      */
     public org.exist.dom.QName get(byte type, String namespaceURI, String localName, String prefix) {
-        temp.setLocalPart(localName);
-        temp.setNamespaceURI(namespaceURI);
-        temp.setPrefix(prefix);
-        temp.setNameType(type);
+        final QName temp = new QName(localName, namespaceURI, prefix, type);
+//        temp.setLocalPart(localName);
+//        temp.setNamespaceURI(namespaceURI);
+//        temp.setPrefix(prefix);
+//        temp.setNameType(type);
         int idx = temp.hashCode() % tabSize;
         if (idx < 0)
             {idx *= -1;}
@@ -88,10 +90,11 @@ public class QNamePool extends AbstractHashtable {
      * pool.
      */
     public org.exist.dom.QName add(byte type, String namespaceURI, String localName, String prefix) {
-        temp.setLocalPart(localName);
-        temp.setNamespaceURI(namespaceURI);
-        temp.setPrefix(prefix);
-        temp.setNameType(type);
+        final QName temp = new QName(localName, namespaceURI, prefix, type);
+//        temp.setLocalPart(localName);
+//        temp.setNamespaceURI(namespaceURI);
+//        temp.setPrefix(prefix);
+//        temp.setNameType(type);
         try {
             return insert(temp);
         } catch(final HashtableOverflowException e) {

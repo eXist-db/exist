@@ -37,6 +37,8 @@ import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.XSLContext;
 import org.w3c.dom.Attr;
 
+import javax.xml.XMLConstants;
+
 /**
  * <!-- Category: instruction -->
  * <xsl:copy
@@ -119,9 +121,9 @@ public class Copy extends Declaration {
     	            if (item instanceof QNameValue) {
     	                qn = ((QNameValue)item).getQName();
     	            } else {
-    	                qn = ((QNameable)item).getQName();
-    	                if (qn.getPrefix() == null && context.getInScopeNamespace("") != null) {
-    	                     qn.setNamespaceURI(context.getInScopeNamespace(""));
+                        qn = ((QNameable)item).getQName();
+    	                if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
+                            qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
     	                }
     	            }
     				int nodeNr = builder.startElement(qn, null);

@@ -17,6 +17,8 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.BrokerPool;
 import org.exist.util.ByteConversion;
 
+import javax.xml.XMLConstants;
+
 public class LuceneUtil {
 
     public static final String FIELD_NODE_ID = "nodeId";
@@ -75,9 +77,7 @@ public class LuceneUtil {
             byte type = (byte) (l & 0xFFL);
             String namespaceURI = symbols.getNamespace(namespaceId);
             String localName = symbols.getName(localNameId);
-            QName qname = new QName(localName, namespaceURI, "");
-            qname.setNameType(type);
-            return qname;
+            return new QName(localName, namespaceURI, XMLConstants.DEFAULT_NS_PREFIX, type);
         } catch (NumberFormatException e) {
             return null;
         }

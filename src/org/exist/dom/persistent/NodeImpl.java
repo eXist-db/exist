@@ -1,6 +1,7 @@
 package org.exist.dom.persistent;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.storage.txn.Txn;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
@@ -346,9 +347,13 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      */
     public void setPrefix(String prefix) throws DOMException {
         final org.exist.dom.QName nodeName = getQName();
-        if (nodeName != null)
-            {nodeName.setPrefix(prefix);}
+        if (nodeName != null) {
+            setQName(new QName(nodeName.getLocalPart(), nodeName.getNamespaceURI(), prefix));
+        }
     }
+
+    //TODO compare to adding to QNameable (AR)
+    public abstract void setQName(QName qname);
 
     /**
      * @see org.w3c.dom.Node#getNamespaceURI()

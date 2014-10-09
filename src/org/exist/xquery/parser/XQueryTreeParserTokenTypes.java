@@ -14,6 +14,7 @@
 	import java.util.TreeSet;
 	import java.util.HashMap;
 	import java.util.Stack;
+	import javax.xml.XMLConstants;
 	import org.exist.storage.BrokerPool;
 	import org.exist.storage.DBBroker;
 	import org.exist.storage.analysis.Tokenizer;

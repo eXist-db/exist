@@ -50,9 +50,12 @@ public class NGramIndexConfig {
                         " in index definition");
                 }
             }
-            qname = new QName(localName, namespaceURI, prefix);
-            if (isAttribute)
-                qname.setNameType(ElementValue.ATTRIBUTE);
+
+            if (isAttribute) {
+                qname = new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
+            } else {
+                qname = new QName(localName, namespaceURI, prefix);
+            }
         } catch (IllegalArgumentException e) {
             throw new DatabaseConfigurationException("NGram index configuration: " + e.getMessage(), e);
         }

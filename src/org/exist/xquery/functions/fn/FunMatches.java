@@ -180,9 +180,12 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             if (firstStep != null && lastStep != null) {
 	            final NodeTest test = lastStep.getTest();
 	            if (!test.isWildcardTest() && test.getName() != null) {
-	                contextQName = new QName(test.getName());
-	                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-	                    {contextQName.setNameType(ElementValue.ATTRIBUTE);}
+
+	                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                        contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                    } else {
+                        contextQName = new QName(test.getName());
+                    }
 	                contextStep = lastStep;
 	                axis = firstStep.getAxis();
 	                if (axis == Constants.SELF_AXIS && steps.size() > 1) {

@@ -853,6 +853,11 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         return org.exist.dom.QName.DOCUMENT_QNAME;
     }
 
+    @Override
+    public void setQName(org.exist.dom.QName qname) {
+        //do nothing
+    }
+
     /**
      * The method <code>getNodeType</code>
      *

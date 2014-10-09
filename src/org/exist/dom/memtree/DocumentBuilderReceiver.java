@@ -308,33 +308,28 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         if(checkNS) {
             final XQueryContext context = builder.getContext();
             if(qname.getPrefix() == null) {
-            	if (qname.getNamespaceURI() == null || qname.getNamespaceURI().isEmpty()) {
+            	if (!qname.hasNamespace()) {
             		return qname;
-            	
             	} else if (isElement) {
-	                return qname; 
-
+	                return qname;
             	} else {
 	                final String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
-
 	                context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
-	                qname.setPrefix(prefix);
-	                return qname; 
+	                return new QName(qname.getLocalPart(), qname.getNamespaceURI(), prefix);
 	            }
             }
-        	if(qname.getPrefix().isEmpty() && qname.getNamespaceURI() == null)
-                {return qname;}
+
+            if(qname.getPrefix().isEmpty() && qname.getNamespaceURI() == null) {
+                return qname;
+            }
 
             final String inScopeNamespace = context.getInScopeNamespace(qname.getPrefix());
             if(inScopeNamespace == null) {
                 context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
-                
             } else if(!inScopeNamespace.equals(qname.getNamespaceURI())) {
-                
                 final String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
-
                 context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
-                qname.setPrefix(prefix);
+                return new QName(qname.getLocalPart(), qname.getNamespaceURI(), prefix);
             }
         }
         return qname;

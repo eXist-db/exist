@@ -45,12 +45,24 @@ public class QName implements Comparable<QName> {
 
     private final static char COLON = ':';
 
-    private String localPart = null;
-    private String namespaceURI = null;
-    private String prefix = null;
+    private final String localPart;
+    private final String namespaceURI;
+    private final String prefix;
 
     //TODO : use ElementValue.UNKNOWN and type explicitly ?
-    private byte nameType = ElementValue.ELEMENT;
+    private final byte nameType; // = ElementValue.ELEMENT;
+
+
+    public QName(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
+        this.localPart = localPart;
+        if(namespaceURI == null) {
+            this.namespaceURI = XMLConstants.NULL_NS_URI;
+        } else {
+            this.namespaceURI = namespaceURI;
+        }
+        this.prefix = prefix;
+        this.nameType = nameType;
+    }
 
     /**
      * Construct a QName. The prefix might be null for the default namespace or if no prefix 
@@ -62,22 +74,23 @@ public class QName implements Comparable<QName> {
      * @param prefix
      */
     public QName(final String localPart, final String namespaceURI, final String prefix) {
-        this.localPart = localPart;
-        if(namespaceURI == null) {
-            this.namespaceURI = XMLConstants.NULL_NS_URI;
-        } else {
-            this.namespaceURI = namespaceURI;
-        }
-        this.prefix = prefix;
+        this(localPart, namespaceURI, prefix, ElementValue.ELEMENT);
+    }
+
+    public QName(final String localPart, final String namespaceURI, final byte nameType) {
+        this(localPart, namespaceURI, null, nameType);
     }
 
     public QName(final String localPart, final String namespaceURI) {
         this(localPart, namespaceURI, null);
     }
 
+    public QName(final QName other, final byte nameType) {
+        this(other.localPart, other.namespaceURI, other.prefix, nameType);
+    }
+
     public QName(final QName other) {
-        this(other.localPart, other.namespaceURI, other.prefix);
-        this.nameType = other.nameType;
+        this(other.localPart, other.namespaceURI, other.prefix, other.nameType);
     }
 
     public QName(final String name) {
@@ -88,16 +101,8 @@ public class QName implements Comparable<QName> {
         return localPart;
     }
 
-    public void setLocalPart(final String localPart) {
-        this.localPart = localPart;
-    }
-
     public String getNamespaceURI() {
         return namespaceURI;
-    }
-
-    public void setNamespaceURI(final String namespaceURI) {
-        this.namespaceURI = namespaceURI;
     }
 
     /**
@@ -110,14 +115,6 @@ public class QName implements Comparable<QName> {
 
     public String getPrefix() {
         return prefix;
-    }
-
-    public void setPrefix(final String prefix) {
-        this.prefix = prefix;
-    }
-
-    public void setNameType(final byte nameType) {
-        this.nameType = nameType;
     }
 
     public byte getNameType() {

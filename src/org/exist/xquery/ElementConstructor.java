@@ -35,6 +35,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.XMLConstants;
 import java.util.Iterator;
 
 /**
@@ -223,13 +224,13 @@ public class ElementConstructor extends NodeConstructor {
             			String prefix = context.getPrefixForURI(namespaceURI);
             			
             			if (prefix != null) {
-            				attrQName.setPrefix(prefix);
+                            attrQName = new QName(attrQName.getLocalPart(), attrQName.getNamespaceURI(), prefix);
             			} else {
             				//generate prefix
             				for (final int n = 1; i < 100; i++) {
             					prefix = "eXnsp"+n;
             		            if (context.getURIForPrefix(prefix) == null) {
-            		            	attrQName.setPrefix(prefix);
+                                    attrQName = new QName(attrQName.getLocalPart(), attrQName.getNamespaceURI(), prefix);
             		            	break;
             		            }
             		            
@@ -256,6 +257,7 @@ public class ElementConstructor extends NodeConstructor {
             if(!qnameSeq.hasOne())
             	{throw new XPathException(this, ErrorCodes.XPTY0004, "Type error: the node name should evaluate to a single item");}
             final Item qnitem = qnameSeq.itemAt(0);
+
             QName qn;
             if (qnitem instanceof QNameValue) {
                 qn = ((QNameValue)qnitem).getQName();
@@ -276,8 +278,8 @@ public class ElementConstructor extends NodeConstructor {
                      qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
                  }
                  */
-                if (qn.getPrefix() == null && context.getInScopeNamespace("") != null) {
-                     qn.setNamespaceURI(context.getInScopeNamespace(""));
+                if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
+                     qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
                 }
              }
 

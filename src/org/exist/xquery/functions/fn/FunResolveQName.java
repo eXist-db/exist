@@ -130,8 +130,7 @@ public class FunResolveQName extends BasicFunction {
                                              + "' was found.", args[0]);
                 }
                 final String localPart = QName.extractLocalName(qnameString);
-                final QName qn = new QName(localPart, uri);
-                qn.setPrefix(prefix);
+                final QName qn = new QName(localPart, uri, prefix);
         
                 final QNameValue result = new QNameValue(context, qn);
                 if (context.getProfiler().isEnabled()) 

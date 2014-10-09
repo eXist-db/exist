@@ -351,7 +351,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (nextAttr == attrName.length) {
             growAttributes();
         }
-        qname.setNameType(ElementValue.ATTRIBUTE);
+        qname = new QName(qname.getLocalPart(), qname.getNamespaceURI(), qname.getPrefix(), ElementValue.ATTRIBUTE);
         attrParent[nextAttr] = nodeNum;
         attrName[nextAttr]   = namePool.getSharedName(qname);
         attrValue[nextAttr]  = value;

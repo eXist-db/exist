@@ -388,8 +388,7 @@ public class TryCatchExpression extends AbstractExpression {
         if (':' == message.charAt(8)) {
 
             final String[] data = extractLocalName(xpe.getMessage());
-            final ErrorCode errorCode = new ErrorCode(new QName(data[0], "err"), data[1]);
-            errorCode.getErrorQName().setPrefix("err");
+            final ErrorCode errorCode = new ErrorCode(data[0], data[1]);
             LOG.debug("Parsed string '" + xpe.getMessage() + "' for Errorcode. "
                     + "Qname='" + data[0] + "' message='" + data[1] + "'");
             return errorCode;
