@@ -22,10 +22,10 @@
  */
 package org.exist.dom.persistent;
 
-import java.util.Iterator;
-
 import org.exist.dom.QName;
-import org.exist.util.hashtable.AbstractHashtable;
+import org.exist.util.hashtable.AbstractHashSet;
+
+import java.util.Iterator;
 
 /**
  * A pool for QNames. This is a temporary pool for QName objects to avoid
@@ -34,19 +34,22 @@ import org.exist.util.hashtable.AbstractHashtable;
  * 
  * @author wolf
  */
-public class QNamePool extends AbstractHashtable {
+public class QNamePool extends AbstractHashSet<QName> {
 
+    private final static int DEFAULT_POOL_SIZE = 512;
     private org.exist.dom.QName[] values;
-    //private org.exist.dom.QName temp = new org.exist.dom.QName("", "");
 
     public QNamePool() {
-        super(512);
-        values = new org.exist.dom.QName[tabSize];
+        super(DEFAULT_POOL_SIZE);
+        values = new QName[tabSize];
     }
 
-    public QNamePool(int iSize) {
-        super(iSize);
-        values = new org.exist.dom.QName[tabSize];
+    /**
+     * @param size The size of the QName pool
+     */
+    public QNamePool(final int size) {
+        super(size);
+        values = new QName[tabSize];
     }
 
     /**
@@ -59,68 +62,70 @@ public class QNamePool extends AbstractHashtable {
      * @param prefix
      * @return QName object
      */
-    public org.exist.dom.QName get(byte type, String namespaceURI, String localName, String prefix) {
-        final QName temp = new QName(localName, namespaceURI, prefix, type);
-//        temp.setLocalPart(localName);
-//        temp.setNamespaceURI(namespaceURI);
-//        temp.setPrefix(prefix);
-//        temp.setNameType(type);
-        int idx = temp.hashCode() % tabSize;
-        if (idx < 0)
-            {idx *= -1;}
-        if (values[idx] == null)
-            {return null;} // key does not exist
-        else if (values[idx].equals(temp)) {
-            return values[idx];
+    public final QName get(final byte type, final String namespaceURI, final String localName, final String prefix) {
+        int idx = QName.hashCode(localName, namespaceURI, prefix, type) % tabSize;
+        if (idx < 0) {
+            idx *= -1;
         }
-        final int rehashVal = rehash(idx);
-        for (int i = 0; i < tabSize; i++) {
-            idx = (idx + rehashVal) % tabSize;
-            if (values[idx] == null) {
-                return null; // key not found
-            } else if (values[idx].equals(temp)) {
-                return values[idx];
+
+        if (values[idx] == null) {
+            return null;  // key does not exist
+        } else if (values[idx].equals(localName, namespaceURI, prefix, type)) {
+            return values[idx]; //no hash-collision
+        } else {
+
+            //hash-collision rehash
+            final int rehashVal = rehash(idx);
+            for(int i = 0; i < tabSize; i++) {
+                idx = (idx + rehashVal) % tabSize;
+                if(values[idx] == null) {
+                    return null; // key not found
+                } else if(values[idx].equals(localName, namespaceURI, prefix, type)) {
+                    return values[idx];
+                }
             }
+            return null;
         }
-        return null;
     }
 
     /**
      * Add a QName, consisting of namespace, local name and prefix, to the
      * pool.
      */
-    public org.exist.dom.QName add(byte type, String namespaceURI, String localName, String prefix) {
-        final QName temp = new QName(localName, namespaceURI, prefix, type);
-//        temp.setLocalPart(localName);
-//        temp.setNamespaceURI(namespaceURI);
-//        temp.setPrefix(prefix);
-//        temp.setNameType(type);
+    public final QName add(final byte type, final String namespaceURI, final String localName, final String prefix) {
+        final QName qn = new QName(localName, namespaceURI, prefix, type);
         try {
-            return insert(temp);
+            return insert(qn);
         } catch(final HashtableOverflowException e) {
-            // just clear the pool and try again
-            values = new org.exist.dom.QName[tabSize];
-            items = 0;
+            clear();
             try {
-                return insert(temp);
+                return insert(qn);
             } catch (final HashtableOverflowException e1) {
-                //Doh ! Report something here !
+                throw new RuntimeException(e1);
             }
-            // should never happen, but just to be sure
-            return new org.exist.dom.QName(temp);
         }
     }
 
-    protected org.exist.dom.QName insert(org.exist.dom.QName value) throws HashtableOverflowException {
-        if (value == null)
-            {throw new IllegalArgumentException("Illegal value: null");}
+    private void clear() {
+        // just clear the pool and try again
+        values = new QName[tabSize];
+        items = 0;
+    }
+
+    private QName insert(final QName value) throws HashtableOverflowException {
+        if (value == null) {
+            throw new IllegalArgumentException("Illegal value: null");
+        }
+
         int idx = value.hashCode() % tabSize;
-        if (idx < 0)
-            {idx *= -1;}
+        if (idx < 0) {
+            idx *= -1;
+        }
+
         int bucket = -1;
         // look for an empty bucket
         if (values[idx] == null) {
-            values[idx] = new org.exist.dom.QName(value);
+            values[idx] = value;
             ++items;
             return values[idx];
         } else if (values[idx] == REMOVED) {
@@ -131,6 +136,7 @@ public class QNamePool extends AbstractHashtable {
             // duplicate value
             return values[idx];
         }
+
         //System.out.println("Hash collision: " + value + " with " + values[idx]);
         final int rehashVal = rehash(idx);
         int rehashCnt = 1;
@@ -143,7 +149,7 @@ public class QNamePool extends AbstractHashtable {
                     // store key into the empty bucket first found
                     idx = bucket;
                 }
-                values[idx] = new org.exist.dom.QName(value);
+                values[idx] = value;
                 ++items;
                 return values[idx];
             } else if (values[idx].equals(value)) {
@@ -155,27 +161,24 @@ public class QNamePool extends AbstractHashtable {
         // should never happen, but just to be sure:
         // if the key has not been inserted yet, do it now
         if (bucket > -1) {
-            values[bucket] = new org.exist.dom.QName(value);
+            values[bucket] = value;
             ++items;
             return values[bucket];
+        } else {
+            throw new HashtableOverflowException();
         }
-        throw new HashtableOverflowException();
     }
 
-    protected int rehash(int iVal) {
+    protected int rehash(final int iVal) {
         int retVal = (iVal + iVal / 2) % tabSize;
-        if (retVal == 0)
-            {retVal = 1;}
+        if (retVal == 0) {
+            retVal = 1;
+        }
         return retVal;
     }
 
     @Override
     public Iterator<org.exist.dom.QName> iterator() {
-        return null;
-    }
-
-    @Override
-    public Iterator<org.exist.dom.QName> valueIterator() {
         return null;
     }
 }
