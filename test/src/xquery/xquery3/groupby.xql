@@ -305,7 +305,8 @@ function groupby:collation2() {
     }</out>
 };
 
-declare 
+declare
+    %test:pending
     %test:assertEqualsPermutation("40:3", "80:3", "20:5")
 function groupby:whereClause() {
     for $x in $groupby:works//employee 
@@ -362,6 +363,7 @@ function groupby:useCase2() {
 };
 
 declare
+    %test:pending
     %test:assertEquals('<result><group><state>CA</state><category>clothes</category><total-revenue>2550</total-revenue></group><group><state>CA</state><category>kitchen</category><total-revenue>6500</total-revenue></group><group><state>MA</state><category>clothes</category><total-revenue>100</total-revenue></group><group><state>MA</state><category>kitchen</category><total-revenue>14000</total-revenue></group></result>')
 function groupby:useCase3() {
     <result>{
@@ -381,7 +383,7 @@ function groupby:useCase3() {
     }</result>
 };
 
-declare 
+declare
     %test:assertEquals('<result><state name="CA"><category name="clothes"><product name="socks" total-qty="510"/></category><category name="kitchen"><product name="broiler" total-qty="20"/><product name="toaster" total-qty="150"/></category></state><state name="MA"><category name="clothes"><product name="shirt" total-qty="10"/></category><category name="kitchen"><product name="blender" total-qty="250"/><product name="toaster" total-qty="50"/></category></state><state name="WA"><category name="clothes"/><category name="kitchen"/></state></result>')
 function groupby:useCase4() {
     <result>{
