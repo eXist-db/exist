@@ -54,8 +54,8 @@ declare function test:suite($functions as function(*)+) {
                         util:system-time() - $startTime
                     return
                         <testsuite package="{$module}" timestamp="{util:system-dateTime()}"
-                            failures="{count($results/failure)}" tests="{count($results)}"
-                            time="{$elapsed}">
+                            failures="{count($results/failure)}" pending="{count($results/skipped)}"
+                            tests="{count($results)}" time="{$elapsed}">
                             { $results }
                         </testsuite>
                 else
@@ -113,12 +113,19 @@ declare %private function test:call-func-with-annotation($functions as function(
  : using the supplied parameters.
  :)
 declare %private function test:run-tests($func as function(*), $meta as element(function)) {
-    let $argsAnnot := $meta/annotation[matches(@name, ":args?")][not(preceding-sibling::annotation[1][matches(@name, ":args?")])]
-    return
-        if ($argsAnnot) then
-            $argsAnnot ! test:test($func, $meta, .)
-        else
-            test:test($func, $meta, ())
+    if($meta/annotation[ends-with(@name,  ":pending")])then
+      test:print-result($meta, (), <report>{
+        element pending {
+          $meta/annotation[ends-with(@name,  ":pending")]/value ! text()
+        }
+      }</report>)
+    else
+      let $argsAnnot := $meta/annotation[matches(@name, ":args?")][not(preceding-sibling::annotation[1][matches(@name, ":args?")])]
+      return
+          if ($argsAnnot) then
+              $argsAnnot ! test:test($func, $meta, .)
+          else
+              test:test($func, $meta, ())
 };
 
 (:~
