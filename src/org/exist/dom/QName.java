@@ -159,19 +159,16 @@ public class QName implements Comparable<QName> {
      */
     @Override
     public int compareTo(final QName other) {
-        if(nameType != other.nameType) {
-            return nameType < other.nameType ? Constants.INFERIOR : Constants.SUPERIOR;
+        return compareTo(other.localPart, other.namespaceURI, other.nameType);
+    }
+
+    private int compareTo(final String localPart, final String namespaceURI, final byte nameType) {
+        if(this.nameType !=nameType) {
+            return this.nameType < nameType ? Constants.INFERIOR : Constants.SUPERIOR;
         }
 
-        int c;
-        if (namespaceURI == null) {
-            c = other.namespaceURI == null ? Constants.EQUAL : Constants.INFERIOR;
-        } else if (other.namespaceURI == null) {
-            c = Constants.SUPERIOR;
-        } else {
-            c = namespaceURI.compareTo(other.namespaceURI);
-        }
-        return c == Constants.EQUAL ? localPart.compareTo(other.localPart) : c;
+        final int c = this.namespaceURI.compareTo(namespaceURI);
+        return c == Constants.EQUAL ? this.localPart.compareTo(localPart) : c;
     }
 
     /** 
@@ -185,19 +182,24 @@ public class QName implements Comparable<QName> {
         if(obj == null || !(obj instanceof QName)) {
             return false;
         }
-        
+
         final QName other = (QName) obj;
-        final int cmp = compareTo(other);
+        return equals(other.localPart, other.namespaceURI, other.prefix, other.nameType);
+    }
+
+    /**
+     * Utility method also used by org.exist.dom.persistent.QNamePool#add(String, String, String, byte)
+     */
+    public boolean equals(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
+        final int cmp = compareTo(localPart, namespaceURI, nameType);
         if(cmp != 0) {
             return false;
-        }
-        
-        if(prefix == null) {
-            return other.prefix == null ? true : false;
-        } else if(other.prefix == null) {
+        } else if(this.prefix == null) {
+            return prefix == null;
+        } else if(prefix == null) {
             return false;
         } else {
-            return prefix.equals(other.prefix);
+            return this.prefix.equals(prefix);
         }
     }
 
@@ -227,6 +229,13 @@ public class QName implements Comparable<QName> {
      */
     @Override
     public int hashCode() {
+        return hashCode(localPart, namespaceURI, prefix, nameType);
+    }
+
+    /**
+     * Utility method also used by org.exist.dom.persistent.QNamePool#add(String, String, String, byte)
+     */
+    public static int hashCode(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
         int h = nameType + 31 + localPart.hashCode();
         h += 31 * h + (namespaceURI == null ? 1 : namespaceURI.hashCode());
         h += 31 * h + (prefix == null ? 1 : prefix.hashCode());
