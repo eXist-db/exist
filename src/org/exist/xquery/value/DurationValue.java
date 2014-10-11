@@ -44,6 +44,7 @@ public class DurationValue extends ComputableValue {
 	public final static int DAY = 2;
 	public final static int HOUR = 3;
 	public final static int MINUTE = 4;
+    public final static int SIGN = 5;
 	
 	protected final Duration duration;
 	private Duration canonicalDuration;
@@ -217,6 +218,7 @@ public class DurationValue extends ComputableValue {
 			case DAY: r = duration.getDays(); break;
 			case HOUR: r = duration.getHours(); break;
 			case MINUTE: r = duration.getMinutes(); break;
+            case SIGN: r = duration.getSign(); break;
 			default:
 				throw new IllegalArgumentException("Invalid argument to method getPart");
 		}
