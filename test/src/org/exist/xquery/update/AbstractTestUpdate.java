@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Adam Retter <adam@exist-db.org>
  */
-public abstract class AbstractUpdateTest {
+public abstract class AbstractTestUpdate {
 
     private static String uri = XmldbURI.LOCAL_DB;
     private static JettyStart server = null;
