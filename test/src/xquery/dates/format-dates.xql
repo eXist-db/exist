@@ -61,6 +61,48 @@ function fd:format-dateTime($date as xs:dateTime) {
 };
 
 declare
+    %test:args("2012-06-26+02:00")
+    %test:assertEquals("20120626GMT+02:00")
+function fd:format-date-z($date as xs:date) {
+    format-date($date, "[Y0001][M01][D01][z]")
+};
+
+declare
+    %test:args("2012-06-26+02:00")
+    %test:assertEquals("20120626+02:00")
+function fd:format-date-Z($date as xs:date) {
+    format-date($date, "[Y0001][M01][D01][Z]")
+};
+
+declare
+    %test:args("2012-06-26T23:14:22.566+02:00")
+    %test:assertEquals("20120626231422GMT+02:00")
+function fd:format-dateTime-z($date as xs:dateTime) {
+    format-dateTime($date, "[Y0001][M01][D01][H01][m01][s01][z]")
+};
+
+declare
+    %test:args("2012-06-26T23:14:22.566+02:00")
+    %test:assertEquals("20120626231422+02:00")
+function fd:format-dateTime-Z($date as xs:dateTime) {
+    format-dateTime($date, "[Y0001][M01][D01][H01][m01][s01][Z]")
+};
+
+declare
+    %test:args("2012-06-26T23:14:22.566")
+    %test:assertEquals("20120626231422")
+function fd:format-dateTime-no-tz-z($date as xs:dateTime) {
+    format-dateTime($date, "[Y0001][M01][D01][H01][m01][s01][z]")
+};
+
+declare
+    %test:args("2012-06-26T23:14:22.566")
+    %test:assertEquals("20120626231422")
+function fd:format-dateTime-no-tz-Z($date as xs:dateTime) {
+    format-dateTime($date, "[Y0001][M01][D01][H01][m01][s01][Z]")
+};
+
+declare
     %test:args("17:45:50")
     %test:assertEquals("17:45:50")
     %test:args("09:45:50")
