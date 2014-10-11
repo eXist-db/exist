@@ -1,0 +1,18 @@
+<!--
+    Ivy module to retrieve jar for OpenId
+-->
+<ivy-module version="2.0">
+    <info organisation="org.exist" module="security.openid"/>
+    <dependencies>
+        <dependency org="org.openid4java" name="openid4java" rev="0.9.8" conf="*->default">
+		
+		<!-- already provided by eXist -->
+		<exclude org="commons-logging" name="commons-logging"/>
+        	<exclude org="org.apache.httpcomponents" name="*"/> 
+		<exclude org="net.sourceforge.nekohtml" name="nekohtml"/>
+        	<exclude org="xerces" name="xercesImpl"/>
+        	<exclude org="xml-apis" name="xml-apis"/>
+
+	</dependency>
+    </dependencies>
+</ivy-module>
