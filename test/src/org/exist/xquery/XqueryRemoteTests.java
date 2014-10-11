@@ -22,10 +22,9 @@
  */
 package org.exist.xquery;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+import junit.framework.JUnit4TestAdapter;
 import org.exist.xmldb.XmldbURI;
+import junit.framework.Test;
 
 public class XqueryRemoteTests {
     
@@ -34,12 +33,7 @@ public class XqueryRemoteTests {
     }
 
     public static Test suite() {
-        TestSuite suite = new TestSuite("Test for org.exist.xquery");
-        //$JUnit-BEGIN$
-	// jetty.port.standalone
         XPathQueryTest.setURI("xmldb:exist://localhost:" + System.getProperty("jetty.port") + "/xmlrpc" + XmldbURI.ROOT_COLLECTION);
-        suite.addTestSuite(XPathQueryTest.class);
-        //$JUnit-END$
-        return suite;
+        return new JUnit4TestAdapter(XPathQueryTest.class);
     }
 }
