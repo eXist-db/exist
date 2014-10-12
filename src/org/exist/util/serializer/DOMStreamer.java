@@ -221,7 +221,11 @@ public class DOMStreamer {
             if(localName == null) {
                 localName = QName.extractLocalName(node.getNodeName());
             }
-            contentHandler.startElement(node.getNamespaceURI(), localName,
+            String namespaceURI = node.getNamespaceURI();
+            if(namespaceURI == null) {
+                namespaceURI = XMLConstants.NULL_NS_URI;
+            }
+            contentHandler.startElement(namespaceURI, localName,
                 node.getNodeName(), saxAttrs);
             break;
         case Node.TEXT_NODE :
@@ -262,7 +266,15 @@ public class DOMStreamer {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             final ElementInfo info = stack.pop();
             nsSupport.popContext();
-            contentHandler.endElement(node.getNamespaceURI(), node.getLocalName(), node.getNodeName());
+            String localName = node.getLocalName();
+            if(localName == null) {
+                localName = QName.extractLocalName(node.getNodeName());
+            }
+            String namespaceURI = node.getNamespaceURI();
+            if(namespaceURI == null) {
+                namespaceURI = XMLConstants.NULL_NS_URI;
+            }
+            contentHandler.endElement(namespaceURI, localName, node.getNodeName());
             if(info.prefixes != null) {
                 for(int i = 0; i < info.prefixes.length; i++) {
                     contentHandler.endPrefixMapping(info.prefixes[i]);
