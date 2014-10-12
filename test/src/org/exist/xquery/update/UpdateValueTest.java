@@ -8,7 +8,7 @@ import org.xmldb.api.modules.XQueryService;
 /**
  * @author Adam Retter <adam@exist-db.org>
  */
-public class UpdateValueTest extends AbstractUpdateTest {
+public class UpdateValueTest extends AbstractTestUpdate {
 
     @Test
     public void updateNamespacedAttribute() throws XMLDBException {
