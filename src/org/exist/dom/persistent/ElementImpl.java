@@ -861,7 +861,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             final IStoredNode next = iterator.next();
             if (next.getNodeType() != Node.ATTRIBUTE_NODE)
                 {break;}
-            if (next.getQName().equalsSimple(qname))
+            if (next.getQName().equals(qname))
                 {return (AttrImpl) next;}
         }
         return null;
@@ -1424,7 +1424,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             {throw new DOMException(DOMException.NOT_FOUND_ERR,
                     "Node is not a child of this element");}
         if (newNode.getNodeType() == Node.ATTRIBUTE_NODE) {
-            if (newNode.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
+            if (newNode.getQName().equals(Namespaces.XML_ID_QNAME)) {
                 // an xml:id attribute. Normalize the attribute and set its type to ID
                 final AttrImpl attr = (AttrImpl) newNode;
                 attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));

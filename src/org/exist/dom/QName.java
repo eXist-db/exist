@@ -112,7 +112,7 @@ public class QName implements Comparable<QName> {
      * 
      */
     public boolean hasNamespace() {
-        return namespaceURI != null && namespaceURI.length() > 0;
+        return !namespaceURI.equals(XMLConstants.NULL_NS_URI);
     }
 
     public String getPrefix() {
@@ -159,69 +159,27 @@ public class QName implements Comparable<QName> {
      */
     @Override
     public int compareTo(final QName other) {
-        return compareTo(other.localPart, other.namespaceURI, other.nameType);
-    }
-
-    private int compareTo(final String localPart, final String namespaceURI, final byte nameType) {
-        if(this.nameType !=nameType) {
-            return this.nameType < nameType ? Constants.INFERIOR : Constants.SUPERIOR;
-        }
-
-        final int c = this.namespaceURI.compareTo(namespaceURI);
-        return c == Constants.EQUAL ? this.localPart.compareTo(localPart) : c;
+        final int c = namespaceURI.compareTo(other.namespaceURI);
+        return c == Constants.EQUAL ? localPart.compareTo(other.localPart) : c;
     }
 
     /** 
      * Checks two QNames for equality. Two QNames are equal
-     * if their namespace URIs, local names and prefixes are equal.
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if(obj == null || !(obj instanceof QName)) {
-            return false;
-        }
-
-        final QName other = (QName) obj;
-        return equals(other.localPart, other.namespaceURI, other.prefix, other.nameType);
-    }
-
-    /**
-     * Utility method also used by org.exist.dom.persistent.QNamePool#add(String, String, String, byte)
-     */
-    public boolean equals(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
-        final int cmp = compareTo(localPart, namespaceURI, nameType);
-        if(cmp != 0) {
-            return false;
-        } else if(this.prefix == null) {
-            return prefix == null;
-        } else if(prefix == null) {
-            return false;
-        } else {
-            return this.prefix.equals(prefix);
-        }
-    }
-
-    /** 
-     * Checks two QNames for simply equality. Two QNames are simply equal
      * if their namespace URIs and local names are equal.
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    public boolean equalsSimple(final QName other) {
-        int c;
-        if (namespaceURI == null) {
-            c = other.namespaceURI == null ? Constants.EQUAL : Constants.INFERIOR;
-        } else if (other.namespaceURI == null) {
-            c = Constants.SUPERIOR;
+    @Override
+    public boolean equals(final Object other) {
+        if(other == this) {
+            return true;
+        } else if(other == null || !(other instanceof QName)) {
+            return false;
         } else {
-            c = namespaceURI.compareTo(other.namespaceURI);
+            final QName qnOther = (QName)other;
+            return this.namespaceURI.equals(qnOther.namespaceURI)
+                && this.localPart.equals(qnOther.localPart);
         }
-        if (c == Constants.EQUAL) {
-            return localPart.equals(other.localPart);
-        }
-        return false;
     }
 
     /* (non-Javadoc)
@@ -229,17 +187,7 @@ public class QName implements Comparable<QName> {
      */
     @Override
     public int hashCode() {
-        return hashCode(localPart, namespaceURI, prefix, nameType);
-    }
-
-    /**
-     * Utility method also used by org.exist.dom.persistent.QNamePool#add(String, String, String, byte)
-     */
-    public static int hashCode(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
-        int h = nameType + 31 + localPart.hashCode();
-        h += 31 * h + (namespaceURI == null ? 1 : namespaceURI.hashCode());
-        h += 31 * h + (prefix == null ? 1 : prefix.hashCode());
-        return h;
+        return namespaceURI.hashCode() ^ localPart.hashCode();
     }
 
     public javax.xml.namespace.QName toJavaQName() {

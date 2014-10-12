@@ -129,7 +129,7 @@ public class PerformanceStats {
         public boolean equals(Object obj) {
         	if (obj != null && obj instanceof FunctionStats) {
                 final FunctionStats ostats = (FunctionStats) obj;
-                return qname.equalsSimple(ostats.qname) &&
+                return qname.equals(ostats.qname) &&
                         source.equals(ostats.source);
 			}
         	return false;

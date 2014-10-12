@@ -57,7 +57,7 @@ class NodeStats {
         if (children != null) {
             for (int i = 0; i < children.length; i++) {
                 final NodeStats child = children[i];
-                if (child.qname.equalsSimple(qn)) {
+                if (child.qname.equals(qn)) {
                     return child;
                 }
             }
@@ -108,7 +108,7 @@ class NodeStats {
     }
 
     protected void getMaxParentDepth(QName name, NodeStats max) {
-        if (parent != null && qname != null && qname.equalsSimple(name)) {
+        if (parent != null && qname != null && qname.equals(name)) {
             max.maxDepth = Math.max(parent.maxDepth, max.maxDepth);
         }
         if (children != null) {
