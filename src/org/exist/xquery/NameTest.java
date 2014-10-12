@@ -123,7 +123,7 @@ public class NameTest extends TypeTest {
     public boolean equals(Object obj) {
         if (obj instanceof NameTest) {
             final NameTest other = (NameTest) obj;
-            return other.nodeType == nodeType && other.nodeName.equalsSimple(nodeName);
+            return other.nodeType == nodeType && other.nodeName.equals(nodeName);
         }
         return false;
     }

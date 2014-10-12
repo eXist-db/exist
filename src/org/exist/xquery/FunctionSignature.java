@@ -270,7 +270,7 @@ public class FunctionSignature {
             return getArgumentCount() == other.getArgumentCount();
         }
         
-        if(name.equalsSimple(other.name)) {
+        if(name.equals(other.name)) {
             return getArgumentCount() == other.getArgumentCount();
         }
         

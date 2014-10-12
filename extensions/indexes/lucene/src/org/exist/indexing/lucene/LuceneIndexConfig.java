@@ -200,7 +200,7 @@ public class LuceneIndexConfig {
         if (isQNameIndex) {
             final QName qn1 = path.getLastComponent();
             final QName qn2 = other.getLastComponent();
-            return qn1.getNameType() == qn2.getNameType() && qn2.equalsSimple(qn1);
+            return qn1.getNameType() == qn2.getNameType() && qn2.equals(qn1);
         }
         return path.match(other);
     }

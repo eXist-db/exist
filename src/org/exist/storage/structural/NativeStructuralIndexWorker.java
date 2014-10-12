@@ -1,5 +1,6 @@
 package org.exist.storage.structural;
 
+import org.exist.dom.TypedQNameComparator;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -43,7 +44,10 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     private NativeStructuralIndex index;
     private int mode = 0;
     private DocumentImpl document;
-    private Map<QName, List<NodeProxy>> pending = new TreeMap<QName, List<NodeProxy>>();
+
+    //TODO throw away this Comparator or use a different data struct here when we have moved
+    //nameType out of QName
+    private Map<QName, List<NodeProxy>> pending = new TreeMap<>(new TypedQNameComparator());
 
     public NativeStructuralIndexWorker(NativeStructuralIndex index) {
         this.index = index;

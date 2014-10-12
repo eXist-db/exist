@@ -1474,7 +1474,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     private final class IndexScanCallback implements BTreeCallback{
         private DocumentSet docs;
         private NodeSet contextSet;
-        private Map map = new TreeMap();
+        private Map<String, Occurrences> map = new TreeMap<>();
         private XMLString word = new XMLString(64);
         private boolean byQName;
 

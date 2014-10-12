@@ -3218,23 +3218,23 @@ public class XQueryContext implements BinaryValueManager, Context
         } else if( Namespaces.EXIST_NS.equals( qname.getNamespaceURI() ) ) {
             contents = StringValue.trimWhitespace( contents );
 
-            if( TimerPragma.TIMER_PRAGMA.equalsSimple( qname ) ) {
+            if( TimerPragma.TIMER_PRAGMA.equals(qname) ) {
                 return( new TimerPragma( qname, contents ) );
             }
 
-            if( Optimize.OPTIMIZE_PRAGMA.equalsSimple( qname ) ) {
+            if( Optimize.OPTIMIZE_PRAGMA.equals(qname) ) {
                 return( new Optimize( this, qname, contents, true ) );
             }
 
-            if( ForceIndexUse.EXCEPTION_IF_INDEX_NOT_USED_PRAGMA.equalsSimple( qname ) ) {
+            if( ForceIndexUse.EXCEPTION_IF_INDEX_NOT_USED_PRAGMA.equals(qname) ) {
                 return( new ForceIndexUse( qname, contents ) );
             }
 
-            if( ProfilePragma.PROFILING_PRAGMA.equalsSimple( qname ) ) {
+            if( ProfilePragma.PROFILING_PRAGMA.equals(qname) ) {
                 return( new ProfilePragma( qname, contents ) );
             }
 
-            if( NoIndexPragma.NO_INDEX_PRAGMA.equalsSimple( qname ) ) {
+            if( NoIndexPragma.NO_INDEX_PRAGMA.equals(qname) ) {
                 return( new NoIndexPragma( qname, contents ) );
             }
         }

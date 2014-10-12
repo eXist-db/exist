@@ -195,7 +195,7 @@ public class MemTreeBuilder
 
     private int getAttribType( QName qname, String type )
     {
-        if( qname.equalsSimple( Namespaces.XML_ID_QNAME ) ) {
+        if( qname.equals(Namespaces.XML_ID_QNAME) ) {
 
             // an xml:id attribute.
             return( AttributeImpl.ATTR_CDATA_TYPE );

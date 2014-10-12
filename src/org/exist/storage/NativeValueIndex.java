@@ -23,6 +23,7 @@ package org.exist.storage;
 
 //import java.io.EOFException;
 
+import org.exist.dom.TypedQNameComparator;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
@@ -1778,9 +1779,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
             this.value = atomic;
         }
 
+        final static TypedQNameComparator comparator = new TypedQNameComparator();
+
         public int compareTo( QNameKey other )
         {
-            final int cmp = qname.compareTo( other.qname );
+            final int cmp = comparator.compare(qname, other.qname);
 
             if( cmp == 0 ) {
                 return( value.compareTo( other.value ) );

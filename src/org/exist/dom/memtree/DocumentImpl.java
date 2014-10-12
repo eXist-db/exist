@@ -338,7 +338,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         while ((nodeNum > 0) && (prevAttr > -1) && (attrParent[prevAttr] == nodeNum)) {
             attrN = prevAttr--;
             final QName prevQn = attrName[attrN];
-            if (prevQn.equalsSimple(qname)) {
+            if (prevQn.equals(qname)) {
                 if (replaceAttribute) {
                     attrValue[attrN] = value;
                     attrType[attrN] = type;
