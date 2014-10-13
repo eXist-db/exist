@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,21 +21,18 @@
  */
 package org.exist.dom.memtree;
 
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.QName;
-import org.exist.dom.persistent.DocumentTypeImpl;
-import org.exist.dom.persistent.StoredNode;
 import org.apache.log4j.Logger;
-
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Node;
-
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.CommentImpl;
+import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -43,56 +40,61 @@ import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.exist.util.pool.NodePool;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
 
+import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-import org.exist.dom.persistent.NodeHandle;
 
 /**
- * Helper class to make a in-memory document fragment persistent. The class directly accesses the in-memory document structure and writes it into a
- * temporary doc on the database. This is much faster than first serializing the document tree to SAX and passing it to {@link
- * org.exist.collections.Collection#store(org.exist.storage.txn.Txn, org.exist.storage.DBBroker, org.exist.collections.IndexInfo,
- * org.xml.sax.InputSource, boolean)}.
+ * Helper class to make a in-memory document fragment persistent. The class
+ * directly accesses the in-memory document structure and writes it into a
+ * temporary doc on the database. This is much faster than first serializing
+ * the document tree to SAX and passing it to {@link org.exist.collections.Collection#store(org.exist.storage.txn.Txn, org.exist.storage.DBBroker, org.exist.collections.IndexInfo, org.xml.sax.InputSource, boolean)}.
  *
  * <p>As the in-memory document fragment may not be a well-formed XML doc (having more than one root element), a wrapper element is put around the
  * content nodes.</p>
  *
- * @author  wolf
+ * @author wolf
  */
 public class DOMIndexer {
-    private static final Logger        LOG         = Logger.getLogger(DOMIndexer.class);
 
-    public final static QName          ROOT_QNAME  = new QName("temp", Namespaces.EXIST_NS, "exist");
+    private final static Logger LOG = Logger.getLogger(DOMIndexer.class);
+    private final static QName ROOT_QNAME = new QName("temp", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
 
-    private DBBroker                   broker;
-    private Txn                        transaction;
-    private DocumentImpl               doc;
-    private org.exist.dom.persistent.DocumentImpl targetDoc;
-    private IndexSpec                  indexSpec   = null;
-    private Stack<ElementImpl>         stack       = new Stack<ElementImpl>();
-    private TextImpl                   text        = new TextImpl();
-    private StoredNode                 prevNode    = null;
+    private final DBBroker broker;
+    private final Txn transaction;
+    private final DocumentImpl doc;
+    private final org.exist.dom.persistent.DocumentImpl targetDoc;
+    private final IndexSpec indexSpec;
 
-    private CommentImpl                comment     = new CommentImpl();
-    private ProcessingInstructionImpl  pi          = new ProcessingInstructionImpl();
+    private final Stack<ElementImpl> stack = new Stack<>();
+    private StoredNode prevNode = null;
 
-    public DOMIndexer(DBBroker broker, Txn transaction, DocumentImpl doc,
-            org.exist.dom.persistent.DocumentImpl targetDoc) {
-        this.broker      = broker;
+    private final TextImpl text = new TextImpl();
+    private final CommentImpl comment = new CommentImpl();
+    private final ProcessingInstructionImpl pi = new ProcessingInstructionImpl();
+
+    public DOMIndexer(final DBBroker broker, final Txn transaction, final DocumentImpl doc,
+                      org.exist.dom.persistent.DocumentImpl targetDoc) {
+        this.broker = broker;
         this.transaction = transaction;
-        this.doc         = doc;
-        this.targetDoc   = targetDoc;
+        this.doc = doc;
+        this.targetDoc = targetDoc;
         final CollectionConfiguration config = targetDoc.getCollection().getConfiguration(broker);
-        if (config != null) {
+        if(config != null) {
             this.indexSpec = config.getIndexConfiguration();
+        } else {
+            this.indexSpec = null;
         }
     }
 
     /**
      * Scan the DOM tree once to determine its structure.
      *
-     * @throws  EXistException
+     * @throws EXistException
      */
     public void scan() throws EXistException {
         //Creates a dummy DOCTYPE
@@ -109,16 +111,16 @@ public class DOMIndexer {
         elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
         elem.setOwnerDocument(targetDoc);
         elem.setChildCount(doc.getChildCount());
-        elem.addNamespaceMapping("exist", Namespaces.EXIST_NS);
+        elem.addNamespaceMapping(Namespaces.EXIST_NS_PREFIX, Namespaces.EXIST_NS);
         final NodePath path = new NodePath();
         path.addComponent(ROOT_QNAME);
         stack.push(elem);
         broker.storeNode(transaction, elem, path, indexSpec);
-        targetDoc.appendChild((NodeHandle)elem);
+        targetDoc.appendChild((NodeHandle) elem);
         elem.setChildCount(0);
         // store the document nodes
         int top = (doc.size > 1) ? 1 : -1;
-        while (top > 0) {
+        while(top > 0) {
             store(top, path);
             top = doc.getNextSiblingFor(top);
         }
@@ -128,27 +130,26 @@ public class DOMIndexer {
         path.removeLastComponent();
     }
 
-    private void store( int top, NodePath currentPath )
-    {
+    private void store(final int top, final NodePath currentPath) {
         int nodeNr = top;
 
-        while( nodeNr > 0 ) {
-            startNode( nodeNr, currentPath );
-            int nextNode = doc.getFirstChildFor( nodeNr );
+        while(nodeNr > 0) {
+            startNode(nodeNr, currentPath);
+            int nextNode = doc.getFirstChildFor(nodeNr);
 
-            while( nextNode == -1 ) {
-                endNode( nodeNr, currentPath );
+            while(nextNode == -1) {
+                endNode(nodeNr, currentPath);
 
-                if( top == nodeNr ) {
+                if(top == nodeNr) {
                     break;
                 }
-                nextNode = doc.getNextSiblingFor( nodeNr );
+                nextNode = doc.getNextSiblingFor(nodeNr);
 
-                if( nextNode == -1 ) {
-                    nodeNr = doc.getParentNodeFor( nodeNr );
+                if(nextNode == -1) {
+                    nodeNr = doc.getParentNodeFor(nodeNr);
 
-                    if( ( nodeNr == -1 ) || ( top == nodeNr ) ) {
-                        endNode( nodeNr, currentPath );
+                    if((nodeNr == -1) || (top == nodeNr)) {
+                        endNode(nodeNr, currentPath);
                         nextNode = -1;
                         break;
                     }
@@ -162,97 +163,94 @@ public class DOMIndexer {
     /**
      * DOCUMENT ME!
      *
-     * @param  nodeNr
-     * @param  currentPath  DOCUMENT ME!
+     * @param nodeNr
+     * @param currentPath DOCUMENT ME!
      */
-    private void startNode( int nodeNr, NodePath currentPath )
-    {
-        ElementImpl last;
-
-        switch( doc.nodeKind[nodeNr] ) {
+    private void startNode(final int nodeNr, final NodePath currentPath) {
+        switch(doc.nodeKind[nodeNr]) {
 
             case Node.ELEMENT_NODE: {
-                final ElementImpl elem = (ElementImpl)NodePool.getInstance().borrowNode( Node.ELEMENT_NODE );
-                if( stack.empty() ) {
-                    elem.setNodeId( broker.getBrokerPool().getNodeFactory().createInstance() );
-                    initElement( nodeNr, elem );
-                    stack.push( elem );
-                    broker.storeNode( transaction, elem, currentPath, indexSpec );
-                    targetDoc.appendChild( (NodeHandle)elem );
-                    elem.setChildCount( 0 );
+                final ElementImpl elem = (ElementImpl) NodePool.getInstance().borrowNode(Node.ELEMENT_NODE);
+                if(stack.empty()) {
+                    elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
+                    initElement(nodeNr, elem);
+                    stack.push(elem);
+                    broker.storeNode(transaction, elem, currentPath, indexSpec);
+                    targetDoc.appendChild((NodeHandle) elem);
+                    elem.setChildCount(0);
                 } else {
-                    last = stack.peek();
-                    initElement( nodeNr, elem );
-                    last.appendChildInternal( prevNode, elem );
-                    stack.push( elem );
-                    broker.storeNode( transaction, elem, currentPath, indexSpec );
-                    elem.setChildCount( 0 );
+                    final ElementImpl last = stack.peek();
+                    initElement(nodeNr, elem);
+                    last.appendChildInternal(prevNode, elem);
+                    stack.push(elem);
+                    broker.storeNode(transaction, elem, currentPath, indexSpec);
+                    elem.setChildCount(0);
                 }
-                setPrevious( null );
-                currentPath.addComponent( elem.getQName() );
-                storeAttributes( nodeNr, elem, currentPath );
+                setPrevious(null);
+                currentPath.addComponent(elem.getQName());
+                storeAttributes(nodeNr, elem, currentPath);
                 break;
             }
 
             case Node.TEXT_NODE: {
-                if( ( prevNode != null ) && ( ( prevNode.getNodeType() == Node.TEXT_NODE ) || ( prevNode.getNodeType() == Node.CDATA_SECTION_NODE ) ) ) {
+                if((prevNode != null) && ((prevNode.getNodeType() == Node.TEXT_NODE) || (prevNode.getNodeType() == Node.CDATA_SECTION_NODE))) {
                     break;
                 }
-                last = stack.peek();
-                text.setData( new String( doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr] ) );
-                text.setOwnerDocument( targetDoc );
-                last.appendChildInternal( prevNode, text );
-                setPrevious( text );
-                broker.storeNode( transaction, text, null, indexSpec );
+                final ElementImpl last = stack.peek();
+                text.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
+                text.setOwnerDocument(targetDoc);
+                last.appendChildInternal(prevNode, text);
+                setPrevious(text);
+                broker.storeNode(transaction, text, null, indexSpec);
                 break;
             }
 
             case Node.CDATA_SECTION_NODE: {
-                last = stack.peek();
-                final org.exist.dom.persistent.CDATASectionImpl cdata = (org.exist.dom.persistent.CDATASectionImpl)NodePool.getInstance().borrowNode( Node.CDATA_SECTION_NODE );
-                cdata.setData( doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr] );
-                cdata.setOwnerDocument( targetDoc );
-                last.appendChildInternal( prevNode, cdata );
-                setPrevious( cdata );
-                broker.storeNode( transaction, cdata, null, indexSpec );
+                final ElementImpl last = stack.peek();
+                final org.exist.dom.persistent.CDATASectionImpl cdata = (org.exist.dom.persistent.CDATASectionImpl) NodePool.getInstance().borrowNode(Node.CDATA_SECTION_NODE);
+                cdata.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
+                cdata.setOwnerDocument(targetDoc);
+                last.appendChildInternal(prevNode, cdata);
+                setPrevious(cdata);
+                broker.storeNode(transaction, cdata, null, indexSpec);
                 break;
             }
 
             case Node.COMMENT_NODE: {
-                comment.setData( doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr] );
-                comment.setOwnerDocument( targetDoc );
-                if( stack.empty() ) {
-                    comment.setNodeId( NodeId.DOCUMENT_NODE );
-                    targetDoc.appendChild( (NodeHandle)comment );
-                    broker.storeNode( transaction, comment, null, indexSpec );
+                comment.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
+                comment.setOwnerDocument(targetDoc);
+                if(stack.empty()) {
+                    comment.setNodeId(NodeId.DOCUMENT_NODE);
+                    targetDoc.appendChild((NodeHandle) comment);
+                    broker.storeNode(transaction, comment, null, indexSpec);
                 } else {
-                    last = stack.peek();
-                    last.appendChildInternal( prevNode, comment );
-                    broker.storeNode( transaction, comment, null, indexSpec );
-                    setPrevious( comment );
+                    final ElementImpl last = stack.peek();
+                    last.appendChildInternal(prevNode, comment);
+                    broker.storeNode(transaction, comment, null, indexSpec);
+                    setPrevious(comment);
                 }
                 break;
             }
 
             case Node.PROCESSING_INSTRUCTION_NODE: {
                 final QName qn = doc.nodeName[nodeNr];
-                pi.setTarget( qn.getLocalPart() );
-                pi.setData( new String( doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr] ) );
-                pi.setOwnerDocument( targetDoc );
-                if( stack.empty() ) {
-                    pi.setNodeId( NodeId.DOCUMENT_NODE );
-                    targetDoc.appendChild( (NodeHandle)pi );
+                pi.setTarget(qn.getLocalPart());
+                pi.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
+                pi.setOwnerDocument(targetDoc);
+                if(stack.empty()) {
+                    pi.setNodeId(NodeId.DOCUMENT_NODE);
+                    targetDoc.appendChild((NodeHandle) pi);
                 } else {
-                    last = stack.peek();
-                    last.appendChildInternal( prevNode, pi );
-                    setPrevious( pi );
+                    final ElementImpl last = stack.peek();
+                    last.appendChildInternal(prevNode, pi);
+                    setPrevious(pi);
                 }
-                broker.storeNode( transaction, pi, null, indexSpec );
+                broker.storeNode(transaction, pi, null, indexSpec);
                 break;
             }
 
             default: {
-                LOG.debug( "Skipped indexing of in-memory node of type " + doc.nodeKind[nodeNr] );
+                LOG.debug("Skipped indexing of in-memory node of type " + doc.nodeKind[nodeNr]);
             }
         }
     }
@@ -261,101 +259,90 @@ public class DOMIndexer {
     /**
      * DOCUMENT ME!
      *
-     * @param  nodeNr
-     * @param  elem
+     * @param nodeNr
+     * @param elem
      */
-    private void initElement( int nodeNr, ElementImpl elem )
-    {
-        final short attribs = (short)doc.getAttributesCountFor( nodeNr );
-        elem.setOwnerDocument( targetDoc );
-        elem.setAttributes( attribs );
-        elem.setChildCount( doc.getChildCountFor( nodeNr ) + attribs );
-        elem.setNodeName( doc.nodeName[nodeNr], broker.getBrokerPool().getSymbols() );
-        final Map<String, String> ns = getNamespaces( nodeNr );
-
-        if( ns != null ) {
-            elem.setNamespaceMappings( ns );
+    private void initElement(final int nodeNr, final ElementImpl elem) {
+        final short attribs = (short) doc.getAttributesCountFor(nodeNr);
+        elem.setOwnerDocument(targetDoc);
+        elem.setAttributes(attribs);
+        elem.setChildCount(doc.getChildCountFor(nodeNr) + attribs);
+        elem.setNodeName(doc.nodeName[nodeNr], broker.getBrokerPool().getSymbols());
+        final Map<String, String> ns = getNamespaces(nodeNr);
+        if(ns != null) {
+            elem.setNamespaceMappings(ns);
         }
     }
 
 
-    private Map<String, String> getNamespaces( int nodeNr )
-    {
+    private Map<String, String> getNamespaces(final int nodeNr) {
         int ns = doc.alphaLen[nodeNr];
 
-        if( ns < 0 ) {
-            return( null );
+        if(ns < 0) {
+            return null;
         }
-        final Map<String, String> map = new HashMap<String, String>();
 
-        while( ( ns < doc.nextNamespace ) && ( doc.namespaceParent[ns] == nodeNr ) ) {
+        final Map<String, String> map = new HashMap<>();
+
+        while((ns < doc.nextNamespace) && (doc.namespaceParent[ns] == nodeNr)) {
             final QName qn = doc.namespaceCode[ns];
 
-            if( "xmlns".equals( qn.getLocalPart() ) ) {
-                map.put( "", qn.getNamespaceURI() );
+            if(XMLConstants.XMLNS_ATTRIBUTE.equals(qn.getLocalPart())) {
+                map.put("", qn.getNamespaceURI());
             } else {
-                map.put( qn.getLocalPart(), qn.getNamespaceURI() );
+                map.put(qn.getLocalPart(), qn.getNamespaceURI());
             }
             ++ns;
         }
-        return( map );
+
+        return map;
     }
 
 
     /**
      * DOCUMENT ME!
      *
-     * @param   nodeNr
-     * @param   elem
-     * @param   path    DOCUMENT ME!
-     *
-     * @throws  DOMException
+     * @param nodeNr
+     * @param elem
+     * @param path   DOCUMENT ME!
+     * @throws DOMException
      */
-    private void storeAttributes( int nodeNr, ElementImpl elem, NodePath path ) throws DOMException
-    {
+    private void storeAttributes(final int nodeNr, final ElementImpl elem, final NodePath path) throws DOMException {
         int attr = doc.alpha[nodeNr];
-
-        if( -1 < attr ) {
-
-            while( ( attr < doc.nextAttr ) && ( doc.attrParent[attr] == nodeNr ) ) {
-                final QName    qn     = doc.attrName[attr];
-                final AttrImpl attrib = (AttrImpl)NodePool.getInstance().borrowNode( Node.ATTRIBUTE_NODE );
-                attrib.setNodeName( qn, broker.getBrokerPool().getSymbols() );
-                attrib.setValue( doc.attrValue[attr] );
-                attrib.setOwnerDocument( targetDoc );
-                elem.appendChildInternal( prevNode, attrib );
-                setPrevious( attrib );
-                broker.storeNode( transaction, attrib, path, indexSpec );
+        if(attr > - 1) {
+            while((attr < doc.nextAttr) && (doc.attrParent[attr] == nodeNr)) {
+                final QName qn = doc.attrName[attr];
+                final AttrImpl attrib = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
+                attrib.setNodeName(qn, broker.getBrokerPool().getSymbols());
+                attrib.setValue(doc.attrValue[attr]);
+                attrib.setOwnerDocument(targetDoc);
+                elem.appendChildInternal(prevNode, attrib);
+                setPrevious(attrib);
+                broker.storeNode(transaction, attrib, path, indexSpec);
                 ++attr;
             }
         }
     }
 
-
     /**
      * DOCUMENT ME!
      *
-     * @param  nodeNr
-     * @param  currentPath  DOCUMENT ME!
+     * @param nodeNr
+     * @param currentPath DOCUMENT ME!
      */
-    private void endNode( int nodeNr, NodePath currentPath )
-    {
-        if( doc.nodeKind[nodeNr] == Node.ELEMENT_NODE ) {
+    private void endNode(final int nodeNr, final NodePath currentPath) {
+        if(doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
             final ElementImpl last = stack.pop();
-            broker.endElement( last, currentPath, null );
+            broker.endElement(last, currentPath, null);
             currentPath.removeLastComponent();
-            setPrevious( last );
+            setPrevious(last);
         }
     }
 
-
-    private void setPrevious( StoredNode previous )
-    {
-        if( prevNode != null ) {
-
-            if( ( prevNode.getNodeType() == Node.TEXT_NODE ) || ( prevNode.getNodeType() == Node.COMMENT_NODE ) || ( prevNode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE ) ) {
-
-                if( ( previous == null ) || ( prevNode.getNodeType() != previous.getNodeType() ) ) {
+    private void setPrevious(final StoredNode previous) {
+        if(prevNode != null) {
+            if((prevNode.getNodeType() == Node.TEXT_NODE) || (prevNode.getNodeType() == Node.COMMENT_NODE) || (prevNode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE)) {
+                if((previous == null) || (prevNode.getNodeType() != previous.getNodeType())) {
                     prevNode.clear();
                 }
             }
