@@ -10,6 +10,7 @@
 	<!-- import common targets -->
 	<import file="../../build.xml"/>
 	<import file="../../build/scripts/macosx.xml"/>
+    <import file="git-support.xml"/>
     
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
         <classpath>
@@ -139,9 +140,9 @@
         <move file="${apps.dir}/expath-pkg.xml" tofile="${apps.dir}/${app.name}.xml"/>
     </target>
     
-    <target depends="prepare-installer,launcher-exe,commandline-installer" name="installer" description="Create installer">
+    <target depends="git.details, prepare-installer,launcher-exe,commandline-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}-rev${git.commit}.jar"/>
+        <property name="inst-jar" value="installer/${project.name}-setup-${project.version}-${git.commit}.jar"/>
         <izpack input="installer/install.xml"
             output="${inst-jar}"
             basedir="." izPackDir="${izpack.dir}"
@@ -175,20 +176,20 @@
 
         <echo message="${git.commit}"/>
         <launch4j configFile="installer/launch4j-start.xml" fileVersion="${project.version.numeric}.${git.commit}"
-            txtFileVersion="${project.version}-rev${git.commit}"
+            txtFileVersion="${project.version}-${git.commit}"
             productVersion="${project.version.numeric}.${git.commit}"/-->
     </target>
 
-	<target depends="installer" name="installer-exe" description="Create .exe from installer">
+	<target depends="git.details,installer" name="installer-exe" description="Create .exe from installer">
 		<taskdef name="launch4j"
 			classname="net.sf.launch4j.ant.Launch4jTask"
 			classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
-		<property name="inst-jar" value="installer/${project.name}-setup-${project.version}-rev${git.commit}.jar"/>
-		<property name="inst-exe" value="installer/${project.name}-setup-${project.version}-rev${git.commit}.exe"/>
+		<property name="inst-jar" value="installer/${project.name}-setup-${project.version}-${git.commit}.jar"/>
+		<property name="inst-exe" value="installer/${project.name}-setup-${project.version}-${git.commit}.exe"/>
 
 		<launch4j configFile="installer/launch4j.xml" jar="${inst-jar}" 
 			outfile="${inst-exe}" fileVersion="${project.version.numeric}.${git.commit}"
-			txtFileVersion="${project.version}-rev${git.commit}"
+			txtFileVersion="${project.version}-${git.commit}"
 			productVersion="${project.version.numeric}.${git.commit}"/>
 	</target>
 

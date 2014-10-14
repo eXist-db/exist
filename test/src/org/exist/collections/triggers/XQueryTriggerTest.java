@@ -264,551 +264,419 @@ public class XQueryTriggerTest {
     
     /** just start the DB and create the test collection */
     @BeforeClass
-    public static void startDB() {
-        try {
-            // initialize driver
-            Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            Database database = (Database) cl.newInstance();
-            database.setProperty("create-database", "true");
-            DatabaseManager.registerDatabase(database);
+    public static void startDB() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        // initialize driver
+        final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        final Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
 
-            root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-            CollectionManagementService service = (CollectionManagementService) root
-                    .getService("CollectionManagementService", "1.0");
-            testCollection = service.createCollection(TEST_COLLECTION);
-            assertNotNull(testCollection);
-        } catch (ClassNotFoundException e) {
-        	fail(e.getMessage());
-        } catch (InstantiationException e) {
-        	fail(e.getMessage());
-        } catch (IllegalAccessException e) {
-        	fail(e.getMessage());
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-        	fail(e.getMessage());
-        }
+        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+        final CollectionManagementService service = (CollectionManagementService) root
+                .getService("CollectionManagementService", "1.0");
+        testCollection = service.createCollection(TEST_COLLECTION);
+        assertNotNull(testCollection);
     }
 
     @AfterClass
-    public static void shutdownDB() {
+    public static void shutdownDB() throws XMLDBException {
         TestUtils.cleanupDB();
-        try {
-            Collection root = DatabaseManager.getCollection("xmldb:exist://" + XmldbURI.ROOT_COLLECTION, "admin", "");
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            mgr.shutdown();
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+        final Collection root = DatabaseManager.getCollection("xmldb:exist://" + XmldbURI.ROOT_COLLECTION, "admin", "");
+        final DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+        mgr.shutdown();
         testCollection = null;
     }
 
     /** create "log" document that will be updated by the trigger,
      * and store the XQuery module implementing the trigger under test */
     @Before
-    public void storePreliminaryDocuments() {
+    public void storePreliminaryDocuments() throws XMLDBException {
         TestUtils.cleanupDB();
-    	try {
-            CollectionManagementService service = (CollectionManagementService) root
-                    .getService("CollectionManagementService", "1.0");
-            testCollection = service.createCollection(TEST_COLLECTION);
-            assertNotNull(testCollection);
+        final CollectionManagementService service = (CollectionManagementService) root
+                .getService("CollectionManagementService", "1.0");
+        testCollection = service.createCollection(TEST_COLLECTION);
+        assertNotNull(testCollection);
 
-            XMLResource doc = (XMLResource) testCollection.createResource(LOG_NAME, "XMLResource" );
-			doc.setContent(EMPTY_LOG);
-			testCollection.storeResource(doc);
-	
-			BinaryResource module = (BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
-			((EXistResource)module).setMimeType("application/xquery");
-			module.setContent(MODULE.getBytes());
-			testCollection.storeResource(module);
+        final XMLResource doc = (XMLResource) testCollection.createResource(LOG_NAME, "XMLResource" );
+        doc.setContent(EMPTY_LOG);
+        testCollection.storeResource(doc);
 
-    	} catch (XMLDBException e) {
-    		fail(e.getMessage());
-        }    	
+        final BinaryResource module = (BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
+        ((EXistResource)module).setMimeType("application/xquery");
+        module.setContent(MODULE.getBytes());
+        testCollection.storeResource(module);
     }
 
     /** test a trigger fired by storing a new Document  */
     @Test
-    public void documentCreate() {
-    	
-    	ResourceSet result;
-    	
-    	try {    		
-    		// configure the Collection with the trigger under test
-			IndexQueryService idxConf = (IndexQueryService)
-			testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-			
-			// this will fire the trigger
-			XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
-			doc.setContent(DOCUMENT_CONTENT);
-			testCollection.storeResource(doc);
-			
-    		// remove the trigger for the Collection under test
-			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
+    public void documentCreate() throws XMLDBException {
+        // configure the Collection with the trigger under test
+        final IndexQueryService idxConf = (IndexQueryService)
+        testCollection.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-	        XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
-	        	        
-	        result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
-	        
-	        result = service.query(AFTER+CREATE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
+        // this will fire the trigger
+        final XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
+        doc.setContent(DOCUMENT_CONTENT);
+        testCollection.storeResource(doc);
 
-	        result = service.query(EVENTS);
-	        assertEquals(2, result.getSize());	        
+        // remove the trigger for the Collection under test
+        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-	        //TODO: document itself
+        final XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+
+        ResourceSet result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(AFTER+CREATE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(EVENTS);
+        assertEquals(2, result.getSize());
+
+        //TODO: document itself
 //	        result = service.query(afterCreate+objDocument+documentURI+"/document/test");
 //	        assertEquals(1, result.getSize());	        	        
 //	        assertXMLEqual(DOCUMENT_CONTENT, ((XMLResource)result.getResource(0)).getContent().toString());
-	        
-    	} catch (Exception e) {
-            e.printStackTrace();
-    		fail(e.getMessage());    		
-    	}
-			
     }
 
     /** test a trigger fired by a Document Update */
     @Test
-    public void documentUpdate() {
-    	
-    	ResourceSet result;
-    	
-    	try {
-			IndexQueryService idxConf = (IndexQueryService)
-			testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-	       
-			XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
-			doc.setContent(DOCUMENT_CONTENT);
-			testCollection.storeResource(doc);
+    public void documentUpdate() throws XMLDBException {
+        final IndexQueryService idxConf = (IndexQueryService)
+            testCollection.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-			//TODO : trigger UPDATE events !
-	        XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
-	        update.updateResource(DOCUMENT_NAME, DOCUMENT_UPDATE);
-	        
-	        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
+        final XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
+        doc.setContent(DOCUMENT_CONTENT);
+        testCollection.storeResource(doc);
 
-	        XPathQueryService service = (XPathQueryService) testCollection
-    		.getService("XPathQueryService", "1.0");	        
-	        // this is necessary to compare with MODIFIED_DOCUMENT_CONTENT ; TODO better compare with XML diff tool
-	        service.setProperty(OutputKeys.INDENT, "no");
+        //TODO : trigger UPDATE events !
+        final XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
+        update.updateResource(DOCUMENT_NAME, DOCUMENT_UPDATE);
 
-	        result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
-	        
-	        result = service.query(AFTER+CREATE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
+        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-	        result = service.query(BEFORE+UPDATE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
-	        
-	        result = service.query(AFTER+UPDATE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
+        final XPathQueryService service = (XPathQueryService) testCollection
+            .getService("XPathQueryService", "1.0");
+        // this is necessary to compare with MODIFIED_DOCUMENT_CONTENT ; TODO better compare with XML diff tool
+        service.setProperty(OutputKeys.INDENT, "no");
 
-	        result = service.query(EVENTS);
-	        assertEquals(4, result.getSize());	        
+        ResourceSet result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(AFTER+CREATE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(BEFORE+UPDATE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(AFTER+UPDATE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(EVENTS);
+        assertEquals(4, result.getSize());
 	        
 	        //TODO: document itself	        
 //	        result = service.query("/events/event[@id = 'trigger2']/document/test");
 //	        assertEquals(2, result.getSize());	        
 //	        assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());	        
 //	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(1).getContent().toString());
-
-    	} catch (Exception e) {
-    		fail(e.getMessage());    		
-    	}	
-        
     }
 
     /** test a trigger fired by a Document Delete */
     @Test
-    public void documentDelete() {
-    	
-    	ResourceSet result;
-    	
-    	try {
-			IndexQueryService idxConf = (IndexQueryService)
-			testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-	
-			XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
-			doc.setContent(DOCUMENT_CONTENT);
-			testCollection.storeResource(doc);
+    public void documentDelete() throws XMLDBException {
+        final IndexQueryService idxConf = (IndexQueryService)
+            testCollection.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-			testCollection.removeResource(testCollection.getResource(DOCUMENT_NAME));
+        final XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
+            doc.setContent(DOCUMENT_CONTENT);
+        testCollection.storeResource(doc);
 
-			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
-			
-	        XPathQueryService service = (XPathQueryService) testCollection
-	        	.getService("XPathQueryService", "1.0");
+        testCollection.removeResource(testCollection.getResource(DOCUMENT_NAME));
 
-	        service.setProperty(OutputKeys.INDENT, "no");        
+        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-	        result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
-	        
-	        result = service.query(AFTER+CREATE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
+        final XPathQueryService service = (XPathQueryService) testCollection
+            .getService("XPathQueryService", "1.0");
 
-	        result = service.query(BEFORE+DELETE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
-	        
-	        result = service.query(AFTER+DELETE+DOCUMENT+documentURI);
-	        assertEquals(1, result.getSize());
+        service.setProperty(OutputKeys.INDENT, "no");
 
-	        result = service.query(EVENTS);
-	        assertEquals(4, result.getSize());	        
+        ResourceSet result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
 
-	        //TODO: document itself	        
+        result = service.query(AFTER+CREATE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(BEFORE+DELETE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(AFTER+DELETE+DOCUMENT+documentURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(EVENTS);
+        assertEquals(4, result.getSize());
+
+        //TODO: document itself
 //	        result = service.query("/events/event[@id = 'trigger3']/document/test");
 //	        assertEquals(1, result.getSize());
-//	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(0).getContent().toString());        
-			
-    	} catch (Exception e) {
-            e.printStackTrace();
-    		fail(e.getMessage());    		
-    	}
+//	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(0).getContent().toString());
     }
     
 	/** test a trigger fired by creating a new Binary Document  */
     @Test
-    public void documentBinaryCreate() {
-    	
-    	ResourceSet result;
-    	
-    	try {    		
-    		// configure the Collection with the trigger under test
-			IndexQueryService idxConf = (IndexQueryService)
-			testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-			
-			// this will fire the trigger
-			Resource res = testCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
-			Base64Decoder dec = new Base64Decoder();
-			dec.translate(BINARY_DOCUMENT_CONTENT);
-			res.setContent(dec.getByteArray());
-			testCollection.storeResource(res);
-			
-    		// remove the trigger for the Collection under test
-			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
+    public void documentBinaryCreate() throws XMLDBException {
+        // configure the Collection with the trigger under test
+        final IndexQueryService idxConf = (IndexQueryService)
+            testCollection.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-	        XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
-	        //TODO : understand why it is necessary !
-	        service.setProperty(OutputKeys.INDENT, "no");
+        // this will fire the trigger
+        final Resource res = testCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
+        Base64Decoder dec = new Base64Decoder();
+        dec.translate(BINARY_DOCUMENT_CONTENT);
+        res.setContent(dec.getByteArray());
+        testCollection.storeResource(res);
 
-	        result = service.query(BEFORE+CREATE+DOCUMENT+binaryURI);
-	        assertEquals(1, result.getSize());
-	        
-	        result = service.query(AFTER+CREATE+DOCUMENT+binaryURI);
-	        assertEquals(1, result.getSize());
+        // remove the trigger for the Collection under test
+        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-	        result = service.query(EVENTS);
-	        assertEquals(2, result.getSize());
+        final XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+        //TODO : understand why it is necessary !
+        service.setProperty(OutputKeys.INDENT, "no");
+
+        ResourceSet result = service.query(BEFORE+CREATE+DOCUMENT+binaryURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(AFTER+CREATE+DOCUMENT+binaryURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(EVENTS);
+        assertEquals(2, result.getSize());
 
 	        //TODO: document itself	        
 //	        result = service.query("/events/event[@id = 'trigger1'][@type = 'finish'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'CREATE-DOCUMENT']/document");
 //	        assertEquals(1, result.getSize());
 //	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());
-	        
-    	}
-    	catch(Exception e)
-    	{
-            e.printStackTrace();
-    		fail(e.getMessage());    		
-    	}
     }
 
     /** test a trigger fired by a Binary Document Delete */
     @Test
-    public void documentBinaryDelete() {
-    	
-    	ResourceSet result;
-    	
-    	try {
-			IndexQueryService idxConf = (IndexQueryService)
-			testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-	
-			// this will fire the trigger
-			Resource res = testCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
-			Base64Decoder dec = new Base64Decoder();
-			dec.translate(BINARY_DOCUMENT_CONTENT);
-			res.setContent(dec.getByteArray());
-			testCollection.storeResource(res);
+    public void documentBinaryDelete() throws XMLDBException {
+        final IndexQueryService idxConf = (IndexQueryService)
+            testCollection.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-			testCollection.removeResource(testCollection.getResource(BINARY_DOCUMENT_NAME));
+        // this will fire the trigger
+        final Resource res = testCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
+        final Base64Decoder dec = new Base64Decoder();
+        dec.translate(BINARY_DOCUMENT_CONTENT);
+        res.setContent(dec.getByteArray());
+        testCollection.storeResource(res);
 
-			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
-			
-	        XPathQueryService service = (XPathQueryService) testCollection
-	        	.getService("XPathQueryService", "1.0");
+        testCollection.removeResource(testCollection.getResource(BINARY_DOCUMENT_NAME));
 
-	        service.setProperty(OutputKeys.INDENT, "no");        
+        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-	        result = service.query(BEFORE+CREATE+DOCUMENT+binaryURI);
-	        assertEquals(1, result.getSize());
-	        
-	        result = service.query(AFTER+CREATE+DOCUMENT+binaryURI);
-	        assertEquals(1, result.getSize());
+        final XPathQueryService service = (XPathQueryService) testCollection
+            .getService("XPathQueryService", "1.0");
 
-	        result = service.query(BEFORE+DELETE+DOCUMENT+binaryURI);
-	        assertEquals(1, result.getSize());
-	        
-	        result = service.query(AFTER+DELETE+DOCUMENT+binaryURI);
-	        assertEquals(1, result.getSize());
+        service.setProperty(OutputKeys.INDENT, "no");
 
-	        result = service.query(EVENTS);
-	        assertEquals(4, result.getSize());
+        ResourceSet result = service.query(BEFORE+CREATE+DOCUMENT+binaryURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(AFTER+CREATE+DOCUMENT+binaryURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(BEFORE+DELETE+DOCUMENT+binaryURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(AFTER+DELETE+DOCUMENT+binaryURI);
+        assertEquals(1, result.getSize());
+
+        result = service.query(EVENTS);
+        assertEquals(4, result.getSize());
 	        
 	        //TODO: document itself	        
 //	        result = service.query("/events/event[@id = 'trigger3'][@type = 'prepare'][collection = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "'][uri = '" + DBBroker.ROOT_COLLECTION +  "/" + TEST_COLLECTION + "/" + BINARY_DOCUMENT_NAME + "'][event = 'DELETE-DOCUMENT']/document");
 //	        assertEquals(1, result.getSize());
-//	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());        
-			
-    	} catch (Exception e) {
-            e.printStackTrace();
-    		fail(e.getMessage());    		
-    	}
+//	        assertEquals("<document>" + BINARY_DOCUMENT_CONTENT + "</document>", result.getResource(0).getContent().toString());
     }
     
     /** test a trigger fired by a Collection manipulations */
     @Test
-    public void collectionCreate() {
-		IndexQueryService idxConf;
-		try {
-			idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-			
-            CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
-            Collection collection = service.createCollection("test");
-            assertNotNull(collection);
+    public void collectionCreate() throws XMLDBException {
+        final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-    		// remove the trigger for the Collection under test
-			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
-            
-	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
-	        
-	        ResourceSet result;
-	        
-	        result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        final CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        final Collection collection = service.createCollection("test");
+        assertNotNull(collection);
 
-	        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
-	        
-	        result = query.query(EVENTS);
-	        assertEquals(2, result.getSize());
+        // remove the trigger for the Collection under test
+        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-		} catch (XMLDBException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+        final XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
+
+        ResourceSet result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query(EVENTS);
+        assertEquals(2, result.getSize());
     }
 
     /** test a trigger fired by a Collection manipulations */
     @Test @Ignore
-    public void collectionCopy() {
-		IndexQueryService idxConf;
-		try {
-			idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-			
-			XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
-			XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
-			
-			CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
-            Collection src = service.createCollection("test");
-            assertNotNull(src);
+    public void collectionCopy() throws XMLDBException, URISyntaxException {
+        final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-            Collection dst = service.createCollection("test-dst");
-            assertNotNull(dst);
+        final XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
+        final XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
 
-            service.copy(srcURI, dstURI, null);
+        final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+        final Collection src = service.createCollection("test");
+        assertNotNull(src);
 
-            // remove the trigger for the Collection under test
-			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
-            
-	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
-	        	        
-	        ResourceSet result;
-	        
-	        result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        final Collection dst = service.createCollection("test-dst");
+        assertNotNull(dst);
 
-	        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        service.copy(srcURI, dstURI, null);
 
-	        result = query.query(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
-	        assertEquals(1, result.getSize());
+        // remove the trigger for the Collection under test
+        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-	        result = query.query(AFTER+CREATE+COLLECTION+testDstCollectionURI);
-	        assertEquals(1, result.getSize());
+        final XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
 
-	        result = query.query(BEFORE+COPY+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        ResourceSet result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
 
-	        result = query.query(AFTER+COPY+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
 
-	        result = query.query(EVENTS);
-	        assertEquals(6, result.getSize());
+        result = query.query(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
+        assertEquals(1, result.getSize());
 
-            
-		} catch (XMLDBException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+        result = query.query(AFTER+CREATE+COLLECTION+testDstCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query(BEFORE+COPY+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query(AFTER+COPY+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query(EVENTS);
+        assertEquals(6, result.getSize());
     }
     
     /** test a trigger fired by a Collection manipulations */
     @Test
-    public void collectionMove() {
-		IndexQueryService idxConf;
-		try {
-			idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-			
-			XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
-			XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
-			
-			CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
-            Collection src = service.createCollection("test");
-            assertNotNull(src);
+    public void collectionMove() throws XMLDBException, URISyntaxException {
+        final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-            Collection dst = service.createCollection("test-dst");
-            assertNotNull(dst);
+        XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test");
+        XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/test-dst");
 
-            service.move(srcURI, dstURI, null);
+        final CollectionManagementServiceImpl service = (CollectionManagementServiceImpl) testCollection.getService("CollectionManagementService", "1.0");
+        final Collection src = service.createCollection("test");
+        assertNotNull(src);
 
-            // remove the trigger for the Collection under test
-			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
-            
-	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
-	        	        
-	        ResourceSet result;
-	        
-	        result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        final Collection dst = service.createCollection("test-dst");
+        assertNotNull(dst);
 
-	        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        service.move(srcURI, dstURI, null);
 
-	        result = query.query(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
-	        assertEquals(1, result.getSize());
+        // remove the trigger for the Collection under test
+        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-	        result = query.query(AFTER+CREATE+COLLECTION+testDstCollectionURI);
-	        assertEquals(1, result.getSize());
+        final XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
 
-	        result = query.query(AFTER+MOVE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        ResourceSet result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
 
-	        result = query.query(AFTER+MOVE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
 
-	        result = query.query(EVENTS);
-	        assertEquals(6, result.getSize());
+        result = query.query(BEFORE+CREATE+COLLECTION+testDstCollectionURI);
+        assertEquals(1, result.getSize());
 
-            
-		} catch (XMLDBException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+        result = query.query(AFTER+CREATE+COLLECTION+testDstCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query(AFTER+MOVE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query(AFTER+MOVE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query(EVENTS);
+        assertEquals(6, result.getSize());
     }
     
     /** test a trigger fired by a Collection manipulations */
     @Test
-    public void collectionDelete() {
-		IndexQueryService idxConf;
-		try {
-			idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-			
-            CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
-            Collection collection = service.createCollection("test");
-            assertNotNull(collection);
+    public void collectionDelete() throws XMLDBException {
+        final IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
 
-            service.removeCollection("test");
+        final CollectionManagementService service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        final Collection collection = service.createCollection("test");
+        assertNotNull(collection);
 
-    		// remove the trigger for the Collection under test
-			idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);			
-            
-	        XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
+        service.removeCollection("test");
 
-	        ResourceSet result;
-	        
-	        result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        // remove the trigger for the Collection under test
+        idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-	        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        final XPathQueryService query = (XPathQueryService) root.getService("XPathQueryService", "1.0");
 
-	        result = query.query(BEFORE+DELETE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        ResourceSet result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
 
-	        result = query.query(AFTER+DELETE+COLLECTION+testCollectionURI);
-	        assertEquals(1, result.getSize());
+        result = query.query(AFTER+CREATE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
 
-	        result = query.query("/events/event");
-	        assertEquals(4, result.getSize());
-	        
-            
-		} catch (XMLDBException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+        result = query.query(BEFORE+DELETE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query(AFTER+DELETE+COLLECTION+testCollectionURI);
+        assertEquals(1, result.getSize());
+
+        result = query.query("/events/event");
+        assertEquals(4, result.getSize());
     }
 
 
     @Test
-    public void storeDocument_invalidTriggerForPrepare()
-    {
-        //replace the valid trigger with the invalid trigger
-        try
-        {
-            BinaryResource invalidModule = (BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
-            ((EXistResource)invalidModule).setMimeType("application/xquery");
-            invalidModule.setContent(INVALID_MODULE.getBytes());
-            testCollection.storeResource(invalidModule);
+    public void storeDocument_invalidTriggerForPrepare() throws XMLDBException {
+        final BinaryResource invalidModule = (BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
+        ((EXistResource)invalidModule).setMimeType("application/xquery");
+        invalidModule.setContent(INVALID_MODULE.getBytes());
+        testCollection.storeResource(invalidModule);
 
-            // configure the Collection with the trigger under test
-            IndexQueryService idxConf = null;
-
-            idxConf = (IndexQueryService)testCollection.getService("IndexQueryService", "1.0");
-			idxConf.configureCollection(COLLECTION_CONFIG);
-        }
-        catch(XMLDBException xdbe)
-        {
-            fail(xdbe.getMessage());
-        }
-
+        // configure the Collection with the trigger under test
+        final IndexQueryService idxConf = (IndexQueryService)testCollection.getService("IndexQueryService", "1.0");
+        idxConf.configureCollection(COLLECTION_CONFIG);
         
         final int max_store_attempts = 10;
         int count_prepare_exceptions = 0;
-        for(int i = 0; i < max_store_attempts; i++)
-        {
-            try
-            {
+        for(int i = 0; i < max_store_attempts; i++) {
+            try {
                 // this will fire the trigger
-                XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource");
+                final XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource");
                 doc.setContent(DOCUMENT_CONTENT);
                 testCollection.storeResource(doc);
-            }
-            catch(XMLDBException xdbe)
-            {
-               if(xdbe.getCause() instanceof TriggerException)
-               {
-                   if(xdbe.getCause().getMessage().equals(XQueryTrigger.PEPARE_EXCEIPTION_MESSAGE))
-                   {
+            } catch(XMLDBException xdbe) {
+               if(xdbe.getCause() instanceof TriggerException) {
+                   if(xdbe.getCause().getMessage().equals(XQueryTrigger.PEPARE_EXCEIPTION_MESSAGE)) {
                         count_prepare_exceptions++;
                    }
                }
