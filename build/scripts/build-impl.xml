@@ -37,12 +37,10 @@
     <property name="jvmarg" value="-Xmx128000k -Xms32000k -Djetty.home=${jetty.dir} -Dexist.home=${basedir}"/>
     <property name="xmldb.src" value="undefined"/>
     <property name="dist.dir" value="${dist}/${project.name}-${project.version}"/>
-
-    <condition property="git.commit" value="${git.commit}" else="">
-      <isset property="git.commit" />      
-    </condition>
+        
     <!-- import common targets -->
     <!-- <import file="../../build.xml"/> -->
+    <import file="git-support.xml"/>
     <import file="./junit.xml"/>
     <import file="./antlr3.xml"/>
     
@@ -115,7 +113,7 @@
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->
-    <target name="prepare">
+    <target name="prepare" depends="git.details">
 
         <tstamp/>
         <property file="VERSION.txt"/>
@@ -273,7 +271,7 @@
     <!-- ================================================================== -->
     <!-- Create jar files                    				    -->
     <!-- ================================================================== -->
-    <target name="jar" depends="compile,compile-aspectj"
+    <target name="jar" depends="git.details,compile,compile-aspectj"
         description="Create eXist-db unsigned jar files">
         <filter token="version" value="${project.version}"/>
         <filter token="build" value="${DSTAMP}"/>
