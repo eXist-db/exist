@@ -2,6 +2,7 @@ package org.exist.dom.persistent;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.dom.QNameable;
 import org.exist.storage.txn.Txn;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
@@ -210,7 +211,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      *
      *@param  name  The new nodeName value
      */
-    public void setNodeName(org.exist.dom.QName name) {
+    public void setNodeName(QName name) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "setNodeName(QName name) not implemented on class " + getClass().getName());
     }
@@ -334,7 +335,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      * @see org.w3c.dom.Node#getPrefix()
      */
     public String getPrefix() {
-        final org.exist.dom.QName nodeName = getQName();
+        final QName nodeName = getQName();
         final String prefix = nodeName.getPrefix();
         return prefix == null ? "" : prefix;
     }
@@ -346,7 +347,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
      *@exception  DOMException  Description of the Exception
      */
     public void setPrefix(String prefix) throws DOMException {
-        final org.exist.dom.QName nodeName = getQName();
+        final QName nodeName = getQName();
         if (nodeName != null) {
             setQName(new QName(nodeName.getLocalPart(), nodeName.getNamespaceURI(), prefix));
         }

@@ -22,7 +22,7 @@
 
 package org.exist.dom.persistent;
 
-import org.exist.dom.persistent.QNameable;
+import org.exist.dom.QNameable;
 import org.exist.numbering.NodeId;
 //import org.exist.xquery.NodeTest;
 //import org.exist.xquery.XPathException;

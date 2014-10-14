@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.persistent.NodeListImpl;
+import org.exist.dom.NodeListImpl;
 import org.w3c.dom.*;
 
 /**

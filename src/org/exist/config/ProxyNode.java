@@ -311,7 +311,7 @@ public class ProxyNode<E extends NodeAtExist> implements NodeAtExist, Proxy<E> {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.dom.persistent.QNameable#getQName()
+	 * @see org.exist.dom.QNameable#getQName()
 	 */
 	public QName getQName() {
 		return getProxyObject().getQName();

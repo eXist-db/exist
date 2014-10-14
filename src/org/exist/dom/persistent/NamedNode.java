@@ -23,6 +23,7 @@
 package org.exist.dom.persistent;
 
 import org.exist.dom.QName;
+import org.exist.dom.QNameable;
 import org.exist.numbering.NodeId;
 import org.w3c.dom.DOMException;
 

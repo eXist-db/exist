@@ -218,7 +218,7 @@ public class QNamePool extends AbstractHashSet<QName> {
 
 
     @Override
-    public Iterator<org.exist.dom.QName> iterator() {
+    public Iterator<QName> iterator() {
         return null;
     }
 }

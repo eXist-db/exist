@@ -39,10 +39,11 @@ public class AbstractMatchListener implements MatchListener {
     }
 
     @Override
-    public void setCurrentNode(NodeHandle node) {
+    public void setCurrentNode(final NodeHandle node) {
         this.currentNode = node;
-        if (nextListener != null)
-            {getNextInChain().setCurrentNode(node);}
+        if (nextListener != null) {
+            getNextInChain().setCurrentNode(node);
+        }
     }
 
     protected NodeHandle getCurrentNode() {

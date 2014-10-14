@@ -33,7 +33,7 @@ import java.util.TimeZone;
 import junit.framework.Assert;
 
 import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeListImpl;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;

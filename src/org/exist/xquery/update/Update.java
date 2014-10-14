@@ -27,7 +27,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeListImpl;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.security.Permission;

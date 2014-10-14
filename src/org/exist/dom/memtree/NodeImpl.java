@@ -22,32 +22,26 @@
  */
 package org.exist.dom.memtree;
 
-import org.exist.xquery.*;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.UserDataHandler;
-
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.LexicalHandler;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
+import org.exist.dom.QNameable;
 import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
 import org.exist.dom.persistent.NodeAtExist;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.Receiver;
+import org.exist.xquery.Constants;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.MemoryNodeSet;
 import org.exist.xquery.value.NodeValue;
@@ -57,12 +51,22 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
 import org.exist.xquery.value.ValueSequence;
+import org.xml.sax.ContentHandler;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.UserDataHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
+
 
 import java.util.Iterator;
 import java.util.Properties;
 
 
-public abstract class NodeImpl implements NodeAtExist, NodeValue {
+public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExist {
 
     public final static short REFERENCE_NODE = 100;
     public final static short NAMESPACE_NODE = 101;

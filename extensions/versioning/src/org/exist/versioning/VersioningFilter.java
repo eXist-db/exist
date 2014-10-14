@@ -29,9 +29,9 @@ public class VersioningFilter extends CustomMatchListener {
     @Override
     public void startElement(QName qname, AttrList attribs) throws SAXException {
         if (elementStack == 0) {
-            NodeHandle node = getCurrentNode();
+            final NodeHandle node = getCurrentNode();
             if (node != null) {
-                DocumentImpl doc = node.getOwnerDocument();
+                final DocumentImpl doc = node.getOwnerDocument();
                 XmldbURI uri = doc.getURI();
                 if (!uri.startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
                     

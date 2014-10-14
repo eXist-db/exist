@@ -30,7 +30,7 @@ import org.exist.numbering.NodeId;
 import org.exist.xquery.Expression;
 //import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
-import org.exist.dom.persistent.NodeListImpl;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.dom.persistent.ElementAtExist;
@@ -686,7 +686,7 @@ public class XSLElement implements ElementAtExist, Names {
 
 	
 	/* (non-Javadoc)
-	 * @see org.exist.dom.persistent.QNameable#getQName()
+	 * @see org.exist.dom.QNameable#getQName()
 	 */
 	public QName getQName() {
 		return element.getQName();

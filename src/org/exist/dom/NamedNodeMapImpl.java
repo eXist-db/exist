@@ -17,7 +17,7 @@
  *
  * $Id:
  */
-package org.exist.dom.persistent;
+package org.exist.dom;
 
 import java.util.ArrayList;
 
@@ -33,51 +33,60 @@ public class NamedNodeMapImpl extends ArrayList<Node> implements NamedNodeMap {
         super();
     }
 
+    @Override
     public int getLength() {
         return size();
     }
 
-    public Node setNamedItem(Node arg) throws DOMException {
+    @Override
+    public Node setNamedItem(final Node arg) throws DOMException {
         add(arg);
         return arg;
     }
 
-    public Node setNamedItemNS(Node arg) throws DOMException {
+    @Override
+    public Node setNamedItemNS(final Node arg) throws DOMException {
         return setNamedItem(arg);
     }
 
+    @Override
     public Node item(int index) {
-        if (index < size())
-            {return get(index);}
+        if (index < size()) {
+            return get(index);
+        }
         return null;
     }
 
-    public Node getNamedItem(String name) {
-        final int i = indexOf(new org.exist.dom.QName(name));
+    @Override
+    public Node getNamedItem(final String name) {
+        final int i = indexOf(new QName(name));
         return (i < 0) ? null : get(i);
     }
 
-    public Node getNamedItemNS(String namespaceURI, String name) {
-        final int i = indexOf(new org.exist.dom.QName(name, namespaceURI, null));
+    @Override
+    public Node getNamedItemNS(final String namespaceURI, final String name) {
+        final int i = indexOf(new QName(name, namespaceURI, null));
         return (i < 0) ? null : get(i);
     }
 
-    public Node removeNamedItem(String name) throws DOMException {
-        final int i = indexOf(new org.exist.dom.QName(name));
+    @Override
+    public Node removeNamedItem(final String name) throws DOMException {
+        final int i = indexOf(new QName(name));
         final Node node = get(i);
         remove(i);
         return node;
     }
 
-    public Node removeNamedItemNS(String namespaceURI, String name)
+    @Override
+    public Node removeNamedItemNS(final String namespaceURI, final String name)
             throws DOMException {
-        final int i = indexOf(new org.exist.dom.QName(name, namespaceURI, null));
+        final int i = indexOf(new QName(name, namespaceURI, null));
         final Node node = get(i);
         remove(i);
         return node;
     }
 
-    private int indexOf(org.exist.dom.QName name) {
+    private int indexOf(final QName name) {
         for (int i = 0; i < size(); i++) {
             final Node temp = get(i);
             if (temp.getLocalName().equals(name.getLocalPart())

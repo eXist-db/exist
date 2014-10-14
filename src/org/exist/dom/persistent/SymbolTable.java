@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
+import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ElementValue;
 import org.exist.storage.io.VariableByteInput;
@@ -140,9 +141,9 @@ public class SymbolTable {
      * @param localName
      * @param prefix
      */
-    public synchronized org.exist.dom.QName getQName(short type, String namespaceURI, String localName, String prefix) {
+    public synchronized QName getQName(short type, String namespaceURI, String localName, String prefix) {
         final byte itype = type == Node.ATTRIBUTE_NODE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
-        org.exist.dom.QName qn = namePool.get(itype, namespaceURI, localName, prefix);
+        QName qn = namePool.get(itype, namespaceURI, localName, prefix);
         if(qn == null) {
             qn = namePool.add(itype, namespaceURI, localName, prefix);
         }
