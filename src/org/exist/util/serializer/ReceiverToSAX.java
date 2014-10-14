@@ -21,7 +21,7 @@
 */
 package org.exist.util.serializer;
 
-import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
 import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
@@ -184,7 +184,7 @@ public class ReceiverToSAX implements Receiver {
     }
 
     @Override
-    public void setCurrentNode(NodeHandle node) {
+    public void setCurrentNode(INodeHandle node) {
         // just ignore
     }
     

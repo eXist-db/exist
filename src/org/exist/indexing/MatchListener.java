@@ -1,5 +1,6 @@
 package org.exist.indexing;
 
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.util.serializer.Receiver;
 
 /**
@@ -13,7 +14,7 @@ import org.exist.util.serializer.Receiver;
  * Class {@link org.exist.indexing.AbstractMatchListener} provides default implementations
  * for all methods.
  */
-public interface MatchListener extends Receiver {
+public interface MatchListener extends Receiver<NodeHandle> {
 
     /**
      * Register the next receiver in the chain. All

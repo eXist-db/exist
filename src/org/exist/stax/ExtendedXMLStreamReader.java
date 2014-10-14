@@ -21,6 +21,7 @@
  */
 package org.exist.stax;
 
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 
 import javax.xml.stream.XMLStreamReader;
@@ -29,9 +30,9 @@ public interface ExtendedXMLStreamReader extends XMLStreamReader {
 
     public final static String PROPERTY_NODE_ID = "node-id";
     
-    public org.exist.dom.QName getAttributeQName(int i);
+    public QName getAttributeQName(int i);
 
-    public org.exist.dom.QName getQName();
+    public QName getQName();
 
     public NodeId getAttributeId(int i);
 }

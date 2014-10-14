@@ -22,9 +22,9 @@
 package org.exist.storage.serializers;
 
 import org.apache.log4j.Logger;
+import org.exist.dom.INodeHandle;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
@@ -586,7 +586,7 @@ public class XIncludeFilter implements Receiver {
         return parameters;
     }
 
-    public void setCurrentNode(NodeHandle node) {
+    public void setCurrentNode(INodeHandle node) {
         //ignored
     }
     

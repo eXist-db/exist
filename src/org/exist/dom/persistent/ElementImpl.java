@@ -37,7 +37,8 @@ import javax.xml.stream.XMLStreamException;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.exist.dom.QName;
+import org.exist.dom.*;
+import org.exist.dom.NamedNodeMapImpl;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -102,7 +103,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      *
      * @param nodeName Description of the Parameter
      */
-    public ElementImpl(org.exist.dom.QName nodeName, SymbolTable symbols) throws DOMException {
+    public ElementImpl(QName nodeName, SymbolTable symbols) throws DOMException {
         super(Node.ELEMENT_NODE, nodeName);
         this.nodeName = nodeName;
         if (symbols.getSymbol(nodeName.getLocalPart()) < 0) {
@@ -352,7 +353,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return node;
     }
 
-    public static org.exist.dom.QName readQName(Value value, DocumentImpl document, NodeId nodeId) {
+    public static QName readQName(Value value, DocumentImpl document, NodeId nodeId) {
         final byte[] data = value.data();
         int offset = value.start();
         final byte idSizeType = (byte) (data[offset] & 0x03);
@@ -379,7 +380,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         String namespace = "";
         if (nsId != 0)
             {namespace = document.getBrokerPool().getSymbols().getNamespace(nsId);}
-        return new org.exist.dom.QName(name, namespace, prefix == null ? "" : prefix);
+        return new QName(name, namespace, prefix == null ? "" : prefix);
     }
 
     public static void readNamespaceDecls(List<String[]> namespaces, Value value, DocumentImpl document, NodeId nodeId) {
@@ -459,7 +460,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     public Node appendChild(Node child) throws DOMException {
         final TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
         final Txn transaction = transact.beginTransaction();
-        final NodeListImpl nl = new NodeListImpl();
+        final org.exist.dom.NodeListImpl nl = new org.exist.dom.NodeListImpl();
         nl.add(child);
         DBBroker broker = null;
         try {
@@ -488,18 +489,18 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     }
 
     private NodeList checkForAttributes(Txn transaction, NodeList nodes) throws DOMException {
-        NodeListImpl attribs = null;
-        NodeListImpl rest = null;
+        org.exist.dom.NodeListImpl attribs = null;
+        org.exist.dom.NodeListImpl rest = null;
         for (int i = 0; i < nodes.getLength(); i++) {
             final Node next = nodes.item(i);
             if (next.getNodeType() == Node.ATTRIBUTE_NODE) {
                 if (!next.getNodeName().startsWith("xmlns")) {
                     if (attribs == null)
-                        {attribs = new NodeListImpl();}
+                        {attribs = new org.exist.dom.NodeListImpl();}
                     attribs.add(next);
                 }
             } else if (attribs != null) {
-                if (rest == null) {rest = new NodeListImpl();}
+                if (rest == null) {rest = new org.exist.dom.NodeListImpl();}
                 rest.add(next);
             }
         }
@@ -599,7 +600,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                     // create new element
                     final ElementImpl elem =
                         new ElementImpl(
-                            new org.exist.dom.QName(child.getLocalName() == null ?
+                            new QName(child.getLocalName() == null ?
                                 child.getNodeName() : child.getLocalName(),
                             child.getNamespaceURI(),
                             child.getPrefix()),
@@ -607,7 +608,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                         );
                     elem.setNodeId(newNodeId);
                     elem.setOwnerDocument(owner);
-                    final NodeListImpl ch = new NodeListImpl();
+                    final org.exist.dom.NodeListImpl ch = new org.exist.dom.NodeListImpl();
                     final NamedNodeMap attribs = child.getAttributes();
                     int numActualAttribs = 0;
                     for (int i = 0; i < attribs.getLength(); i++) {
@@ -667,7 +668,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                     final String prefix = (Namespaces.XML_NS.equals(ns) ? "xml" : attr.getPrefix());
                     String name = attr.getLocalName();
                     if (name == null) {name = attr.getName();}
-                    final org.exist.dom.QName attrName = new org.exist.dom.QName(name, ns, prefix);
+                    final QName attrName = new QName(name, ns, prefix);
                     final AttrImpl attrib = new AttrImpl(attrName, attr.getValue(), broker.getBrokerPool().getSymbols());
                     attrib.setNodeId(newNodeId);
                     attrib.setOwnerDocument(owner);
@@ -744,14 +745,14 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#getAttributeNS(java.lang.String, java.lang.String)
      */
     public String getAttributeNS(String namespaceURI, String localName) {
-        final Attr attr = findAttribute(new org.exist.dom.QName(localName, namespaceURI));
+        final Attr attr = findAttribute(new QName(localName, namespaceURI));
         return attr != null ? attr.getValue() : "";
         //XXX: if not present must return null
     }
 
     @Deprecated //move as soon as getAttributeNS null issue resolved 
     public String _getAttributeNS(String namespaceURI, String localName) {
-        final Attr attr = findAttribute(new org.exist.dom.QName(localName, namespaceURI));
+        final Attr attr = findAttribute(new QName(localName, namespaceURI));
         return attr != null ? attr.getValue() : null;
     }
 
@@ -766,7 +767,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
      */
     public Attr getAttributeNodeNS(String namespaceURI, String localName) {
-        return findAttribute(new org.exist.dom.QName(localName, namespaceURI));
+        return findAttribute(new QName(localName, namespaceURI));
     }
 
     /**
@@ -774,7 +775,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      */
     @Override
     public NamedNodeMap getAttributes() {
-        final NamedNodeMapImpl map = new NamedNodeMapImpl();
+        final org.exist.dom.NamedNodeMapImpl map = new NamedNodeMapImpl();
         if (getAttributesCount() > 0) {
             DBBroker broker = null;
             try {
@@ -801,7 +802,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
                 final Map.Entry<String, String> entry = i.next();
                 final String prefix = entry.getKey().toString();
                 final String ns = entry.getValue().toString();
-                final org.exist.dom.QName attrName = new org.exist.dom.QName(prefix, Namespaces.XMLNS_NS, "xmlns");
+                final QName attrName = new QName(prefix, Namespaces.XMLNS_NS, "xmlns");
                 final AttrImpl attr = new AttrImpl(attrName, ns, null);
                 attr.setOwnerDocument(ownerDocument);
                 map.setNamedItem(attr);
@@ -839,7 +840,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return null;
     }
 
-    private AttrImpl findAttribute(org.exist.dom.QName qname) {
+    private AttrImpl findAttribute(QName qname) {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
@@ -855,7 +856,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return null;
     }
 
-    private AttrImpl findAttribute(org.exist.dom.QName qname, INodeIterator iterator, IStoredNode current) {
+    private AttrImpl findAttribute(QName qname, INodeIterator iterator, IStoredNode current) {
         final int ccount = current.getChildCount();
         for (int i = 0; i < ccount; i++) {
             final IStoredNode next = iterator.next();
@@ -876,7 +877,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @throws DOMException
      */
     private NodeList findDupAttributes(NodeList attrs) throws DOMException {
-        NodeListImpl dupList = null;
+        org.exist.dom.NodeListImpl dupList = null;
         final NamedNodeMap map = getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             final Node attr = attrs.item(i);
@@ -887,7 +888,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             final Node duplicate = map.getNamedItemNS(attr.getNamespaceURI(), localName);
             if (duplicate != null) {
                 if (dupList == null)
-                    {dupList = new NodeListImpl();}
+                    {dupList = new org.exist.dom.NodeListImpl();}
                 dupList.add(duplicate);
             }
         }
@@ -904,7 +905,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
 
     @Override
     public NodeList getChildNodes() {
-        final NodeListImpl childList = new NodeListImpl(1);
+        final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(1);
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
@@ -933,7 +934,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
      */
     public NodeList getElementsByTagName(String tagName) {
-        final org.exist.dom.QName qname = new org.exist.dom.QName(tagName, "", null);
+        final QName qname = new QName(tagName, "", null);
         return ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
     }
 
@@ -941,7 +942,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#getElementsByTagNameNS(java.lang.String, java.lang.String)
      */
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
-        final org.exist.dom.QName qname = new org.exist.dom.QName(localName, namespaceURI, null);
+        final QName qname = new QName(localName, namespaceURI, null);
         return ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
     }
 
@@ -1006,7 +1007,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
      */
     public boolean hasAttributeNS(String namespaceURI, String localName) {
-        return findAttribute(new org.exist.dom.QName(localName, namespaceURI)) != null;
+        return findAttribute(new QName(localName, namespaceURI)) != null;
     }
 
     /**
@@ -1222,7 +1223,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
             {return appendChild(newChild);}
         if (!(refChild instanceof IStoredNode))
             {throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");}
-        final NodeListImpl nl = new NodeListImpl();
+        final org.exist.dom.NodeListImpl nl = new org.exist.dom.NodeListImpl();
         nl.add(newChild);
         final TransactionManager transact = ownerDocument.getBrokerPool().getTransactionManager();
         final Txn transaction = transact.beginTransaction();

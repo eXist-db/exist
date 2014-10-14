@@ -43,7 +43,7 @@ import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentAtExist;
-import org.exist.dom.persistent.NodeListImpl;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
@@ -137,8 +137,10 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     protected String           documentURI      = null;
 
     // reference nodes (link to an external, persistent document fragment)
-    protected NodeProxy[]      references       = null;
-    protected int              nextRef          = 0;
+    protected NodeProxy[] references = null;
+    protected int nextReferenceIdx = 0;
+    // end reference nodes
+
     protected long             docId;
     boolean                    explicitCreation = false;
     
@@ -199,7 +201,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         size       = 0;
         nextChar   = 0;
         nextAttr   = 0;
-        nextRef    = 0;
+        nextReferenceIdx = 0;
         references = null;
     }
 
@@ -306,11 +308,11 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         if (nodeKind == null) {
             init();
         }
-        if (( references == null ) || ( nextRef == references.length)) {
+        if (( references == null ) || ( nextReferenceIdx == references.length)) {
             growReferences();
         }
-        references[nextRef] = proxy;
-        alpha[nodeNum] = nextRef++;
+        references[nextReferenceIdx] = proxy;
+        alpha[nodeNum] = nextReferenceIdx++;
     }
 
     public void replaceReferenceNode(int nodeNum, CharSequence ch) {
@@ -1184,7 +1186,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     public DocumentImpl expandRefs(NodeImpl rootNode) throws DOMException {
         try {
-            if (nextRef == 0) {
+            if (nextReferenceIdx == 0) {
                 computeNodeIds();
                 return( this );
             }
@@ -1287,7 +1289,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         size             = newDoc.size;
         documentRootNode = newDoc.documentRootNode;
         references       = newDoc.references;
-        nextRef          = newDoc.nextRef;
+        nextReferenceIdx = newDoc.nextReferenceIdx;
     }
 
     /**

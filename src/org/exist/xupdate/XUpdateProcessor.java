@@ -33,7 +33,7 @@ import antlr.collections.AST;
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.NodeListImpl;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeSetHelper;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;

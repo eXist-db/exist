@@ -22,6 +22,7 @@
 package org.exist.dom.persistent;
 
 import org.exist.Namespaces;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
@@ -61,7 +62,7 @@ public class AttrImpl extends NamedNode implements Attr {
     	super(Node.ATTRIBUTE_NODE);
     }
 
-    public AttrImpl (org.exist.dom.QName name, SymbolTable symbols) throws DOMException {
+    public AttrImpl (QName name, SymbolTable symbols) throws DOMException {
         super( Node.ATTRIBUTE_NODE, name);
         if (symbols != null && symbols.getSymbol(nodeName.getLocalPart()) < 0) {
             throw new DOMException(DOMException.INVALID_ACCESS_ERR,
@@ -69,7 +70,7 @@ public class AttrImpl extends NamedNode implements Attr {
         }
     }
 
-    public AttrImpl (org.exist.dom.QName name, String str, SymbolTable symbols) throws DOMException {
+    public AttrImpl (QName name, String str, SymbolTable symbols) throws DOMException {
         this(name, symbols);
         this.value = new XMLString( str.toCharArray() );
     }

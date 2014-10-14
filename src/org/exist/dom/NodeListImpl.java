@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package org.exist.dom.persistent;
+package org.exist.dom;
 
 import java.util.ArrayList;
 
@@ -30,36 +30,50 @@ public class NodeListImpl extends ArrayList<Node> implements NodeList {
         super();
     }
 
-    public NodeListImpl(int initialCapacity) {
+    public NodeListImpl(final int initialCapacity) {
         super(initialCapacity);
     }
 
-    public boolean add(Node node) {
-        if (node == null)
-            {return false;}
+    @Override
+    public boolean add(final Node node) {
+        if (node == null) {
+            return false;
+        }
         return super.add(node);
     }
 
-    public boolean addAll(NodeList other) {
-        if (other.getLength() == 0)
-            {return false;}
-        boolean result = true;
-        for (int i = 0; i < other.getLength(); i++) {
-            if (!add(other.item(i))) {
-                result = false;
-                break;
+    /**
+     * Add all elements of the other NodeList to
+     * this NodeList
+     *
+     * @return true if all elements were added, false
+     *   if none or only some were added.
+     */
+    public boolean addAll(final NodeList other) {
+        if (other.getLength() == 0) {
+            return false;
+        } else {
+            boolean result = true;
+            for(int i = 0; i < other.getLength(); i++) {
+                if(!add(other.item(i))) {
+                    result = false;
+                    break;
+                }
             }
+            return result;
         }
-        return result;
     }
 
+    @Override
     public int getLength() {
         return size();
     }
 
+    @Override
     public Node item(int pos) {
-        if (pos >= size())
-            {return null;}
-        return (Node) get(pos);
+        if (pos >= size()) {
+            return null;
+        }
+        return get(pos);
     }
 }

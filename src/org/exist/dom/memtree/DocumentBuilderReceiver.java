@@ -22,24 +22,22 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.dom.INodeHandle;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.util.serializer.AttrList;
+import org.exist.util.serializer.Receiver;
+import org.exist.xquery.XQueryContext;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.QName;
-import org.exist.util.serializer.AttrList;
-import org.exist.util.serializer.Receiver;
-import org.exist.xquery.XQueryContext;
-
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -300,7 +298,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     }
 
     @Override
-    public void setCurrentNode(NodeHandle node) {
+    public void setCurrentNode(INodeHandle node) {
         // ignored
     }
     
@@ -313,7 +311,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
             	} else if (isElement) {
 	                return qname;
             	} else {
-	                final String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
+	                final String prefix = generatePrefix(context, context.getInScopePrefix(qname.getNamespaceURI()));
 	                context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
 	                return new QName(qname.getLocalPart(), qname.getNamespaceURI(), prefix);
 	            }
@@ -327,7 +325,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
             if(inScopeNamespace == null) {
                 context.declareInScopeNamespace(qname.getPrefix(), qname.getNamespaceURI());
             } else if(!inScopeNamespace.equals(qname.getNamespaceURI())) {
-                final String prefix = generatePrfix(context, context.getInScopePrefix(qname.getNamespaceURI()));
+                final String prefix = generatePrefix(context, context.getInScopePrefix(qname.getNamespaceURI()));
                 context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
                 return new QName(qname.getLocalPart(), qname.getNamespaceURI(), prefix);
             }
@@ -335,7 +333,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         return qname;
     }
     
-    private String generatePrfix(XQueryContext context, String prefix) {
+    private String generatePrefix(XQueryContext context, String prefix) {
         int i = 0;
         while (prefix == null) {
             prefix = "XXX";

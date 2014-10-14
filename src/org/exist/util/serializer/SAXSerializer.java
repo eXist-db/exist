@@ -27,7 +27,7 @@ import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.exist.Namespaces;
-import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.XMLString;
@@ -574,7 +574,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     }
 
     @Override
-    public void setCurrentNode(final NodeHandle node) {
+    public void setCurrentNode(final INodeHandle node) {
         // just ignore.
     }
 

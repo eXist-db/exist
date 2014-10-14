@@ -23,6 +23,7 @@ package org.exist.dom.persistent;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
@@ -1402,7 +1403,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         }
     }
 
-    public NodeSet directSelectChild(org.exist.dom.QName qname, int contextId) {
+    public NodeSet directSelectChild(QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             {return NodeSet.EMPTY_SET;}
         final NodeImpl node = (NodeImpl) getNode();
@@ -1618,7 +1619,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         }
     }
 
-    public boolean directMatchChild(org.exist.dom.QName qname, int contextId) {
+    public boolean directMatchChild(QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             {return false;}
         final NodeImpl node = (NodeImpl) getNode();

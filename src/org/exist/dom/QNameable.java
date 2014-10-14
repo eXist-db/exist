@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-2014 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -18,11 +18,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.exist.dom.persistent;
+package org.exist.dom;
 
 /**
  * @author Sebastian Bossung, Technische Universitaet Hamburg-Harburg
  */
 public interface QNameable {
-    org.exist.dom.QName getQName();
+    QName getQName();
 }

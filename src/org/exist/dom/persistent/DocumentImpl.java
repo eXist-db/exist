@@ -22,6 +22,7 @@
 package org.exist.dom.persistent;
 
 import org.exist.EXistException;
+import org.exist.dom.QName;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.numbering.NodeId;
@@ -723,7 +724,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     @Override
     public NodeList getChildNodes() {
-        final NodeListImpl list = new NodeListImpl();
+        final org.exist.dom.NodeListImpl list = new org.exist.dom.NodeListImpl();
         DBBroker broker = null;
         try {
             broker = pool.get(null);
@@ -780,7 +781,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @param qname a <code>QName</code> value
      * @return a <code>NodeList</code> value
      */
-    protected NodeList findElementsByTagName(NodeHandle root, org.exist.dom.QName qname) {
+    protected NodeList findElementsByTagName(NodeHandle root, QName qname) {
         DBBroker broker = null;
         try {
             broker = pool.get(null);
@@ -849,12 +850,12 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>QName</code> value
      */
     @Override
-    public org.exist.dom.QName getQName() {
-        return org.exist.dom.QName.DOCUMENT_QNAME;
+    public QName getQName() {
+        return QName.DOCUMENT_QNAME;
     }
 
     @Override
-    public void setQName(org.exist.dom.QName qname) {
+    public void setQName(QName qname) {
         //do nothing
     }
 
@@ -899,7 +900,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     @Override
     public Attr createAttribute(String name) throws DOMException {
-        final AttrImpl attr = new AttrImpl(new org.exist.dom.QName(name, "", null), getBrokerPool().getSymbols());
+        final AttrImpl attr = new AttrImpl(new QName(name, "", null), getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -924,7 +925,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             prefix = qualifiedName.substring(0, p);
             name = qualifiedName.substring(p); 
         }
-        final AttrImpl attr = new AttrImpl(new org.exist.dom.QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
+        final AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -938,7 +939,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      */
     @Override
     public Element createElement(String tagName) throws DOMException {
-        final ElementImpl element = new ElementImpl(new org.exist.dom.QName(tagName, "", null), getBrokerPool().getSymbols());
+        final ElementImpl element = new ElementImpl(new QName(tagName, "", null), getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -963,7 +964,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             prefix = qualifiedName.substring(0, p); 
             name = qualifiedName.substring(p);
         }
-        final ElementImpl element = new ElementImpl(new org.exist.dom.QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
+        final ElementImpl element = new ElementImpl(new QName(name, namespaceURI, prefix), getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -1025,7 +1026,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             broker = pool.get(null);
             final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(this);
-            final org.exist.dom.QName qname = new org.exist.dom.QName(localName, namespaceURI, null);
+            final QName qname = new QName(localName, namespaceURI, null);
             return broker.getStructuralIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, null, null);
         } catch (final Exception e) {
             LOG.warn("Exception while finding elements: " + e.getMessage(), e);
