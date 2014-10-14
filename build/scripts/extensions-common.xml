@@ -6,6 +6,8 @@ to add: -pre-compile steps
 
    <description>Reusable build script for all exist-db extensions </description>
 
+   <import file="git-support.xml"/>
+
    <!-- must be overridden by scripts -->
    <property name="extension.name" value="NONAME"/>
 
@@ -191,7 +193,7 @@ to add: -pre-compile steps
       </javac>
    </target>
 
-   <target name="dist" description="Generate distributable" if="${extension.include}">
+   <target name="dist" depends="git.details" description="Generate distributable" if="${extension.include}">
 
       <echo>Generating jar for '${extension.name}'</echo>
 
@@ -239,7 +241,7 @@ to add: -pre-compile steps
       <antcall target="clean-3rd-party"/>
    </target>
 
-   <target name="javadoc" description="Generate javadoc" if="${extension.include}">
+   <target name="javadoc" depends="git.details" description="Generate javadoc" if="${extension.include}">
       <echo>Generating javadoc for '${extension.name}'</echo>
 
       <mkdir dir="${build.javadoc.dir}"/>

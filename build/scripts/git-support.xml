@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project basedir="../.." name="git" default="git.details">
+        
+        <available file="${basedir}/.git" type="dir" property="git.present"/>
+
+        <target name="git.details" description="Setup ${git.branch} and ${git.revision} properties" if="git.present">
+                <exec executable="git" outputproperty="git.branch" failifexecutionfails="false">
+                        <arg value="rev-parse"/>
+                        <arg value="--abbrev-ref"/>
+                        <arg value="HEAD"/>
+                </exec>
+                <exec executable="git" outputproperty="git.revision" failifexecutionfails="false">
+                        <arg value="rev-parse"/>
+                        <arg value="--short"/>
+                        <arg value="HEAD"/>
+                </exec>
+                
+                <condition property="git.commit" value="${git.commit}" else="${git.branch}-${git.revision}">
+                        <isset property="git.commit" />      
+                </condition>
+        </target>
+        
+</project>
