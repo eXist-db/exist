@@ -47,6 +47,7 @@ tools/wrapper/conf/wrapper.conf
 tools/wrapper/conf/wrapper.conf.install
 tools/wrapper/logs/
 uninstall/
+VERSION.txt
 webapp/WEB-INF/betterform-config.xml
 webapp/WEB-INF/betterform-version.info
 webapp/WEB-INF/dwr.xml
