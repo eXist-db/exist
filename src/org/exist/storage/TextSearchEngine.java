@@ -21,7 +21,7 @@
 package org.exist.storage;
 
 import org.exist.dom.QName;
-import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.IStoredNode;
@@ -165,7 +165,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param indexSpec
 	 * @param node
 	 */
-	public abstract void storeText(CharacterDataImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
+	public abstract void storeText(AbstractCharacterData node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
     public abstract void storeText(IStoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
 
 	public abstract void flush();

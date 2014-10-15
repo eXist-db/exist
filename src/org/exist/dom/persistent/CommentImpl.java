@@ -11,7 +11,7 @@ import org.w3c.dom.Node;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class CommentImpl extends CharacterDataImpl implements Comment {
+public class CommentImpl extends AbstractCharacterData implements Comment {
 
     public CommentImpl() {
         super(Node.COMMENT_NODE);

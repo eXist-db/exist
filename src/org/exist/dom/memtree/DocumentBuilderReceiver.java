@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-10 The eXist-db project
+ *  Copyright (C) 2001-2014 The eXist-db project
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -36,6 +36,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
+import javax.xml.XMLConstants;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -43,28 +44,26 @@ import java.util.HashMap;
 /**
  * Builds an in-memory DOM tree from SAX {@link org.exist.util.serializer.Receiver} events.
  *
- * @author  Wolfgang <wolfgang@exist-db.org>
+ * @author Wolfgang <wolfgang@exist-db.org>
  */
 public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
 
     private MemTreeBuilder builder = null;
+    private final boolean explicitNSDecl;
 
     private Map<String, String> namespaces = null;
-    private boolean explicitNSDecl = false;
-    
     public boolean checkNS = false;
-    
+
     public DocumentBuilderReceiver() {
-        super();
+        this(null);
     }
 
-    public DocumentBuilderReceiver(MemTreeBuilder builder) {
+    public DocumentBuilderReceiver(final MemTreeBuilder builder) {
         this(builder, false);
     }
 
-    public DocumentBuilderReceiver(MemTreeBuilder builder, boolean declareNamespaces) {
-        super();
-        this.builder        = builder;
+    public DocumentBuilderReceiver(final MemTreeBuilder builder, final boolean declareNamespaces) {
+        this.builder = builder;
         this.explicitNSDecl = declareNamespaces;
     }
 
@@ -77,16 +76,10 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         return builder.getContext();
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
-     */
     @Override
     public void setDocumentLocator(Locator locator) {
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startDocument()
-     */
     @Override
     public void startDocument() throws SAXException {
         if(builder == null) {
@@ -95,53 +88,41 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endDocument()
-     */
     @Override
     public void endDocument() throws SAXException {
         builder.endDocument();
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
-     */
     @Override
-    public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
+    public void startPrefixMapping(final String prefix, final String namespaceURI) throws SAXException {
         if(prefix == null || prefix.length() == 0) {
             builder.setDefaultNamespace(namespaceURI);
         }
-        if (!explicitNSDecl) {
+        if(!explicitNSDecl) {
             return;
         }
         if(namespaces == null) {
-            namespaces = new HashMap<String, String>();
+            namespaces = new HashMap<>();
         }
         namespaces.put(prefix, namespaceURI);
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
-     */
     @Override
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(final String prefix) throws SAXException {
         if(prefix == null || prefix.length() == 0) {
-            builder.setDefaultNamespace("");
+            builder.setDefaultNamespace(XMLConstants.NULL_NS_URI);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-     */
     @Override
-    public void startElement(String namespaceURI, String localName, String qName,
-            Attributes attrs) throws SAXException {
+    public void startElement(final String namespaceURI, final String localName, final String qName,
+                             final Attributes attrs) throws SAXException {
         builder.startElement(namespaceURI, localName, qName, attrs);
         declareNamespaces();
     }
 
     private void declareNamespaces() {
-        if (explicitNSDecl && namespaces != null) {
+        if(explicitNSDecl && namespaces != null) {
             for(final Map.Entry<String, String> entry : namespaces.entrySet()) {
                 builder.namespaceNode(entry.getKey(), entry.getValue());
             }
@@ -150,53 +131,47 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     }
 
     @Override
-    public void startElement(QName qname, AttrList attribs) {
+    public void startElement(QName qname, final AttrList attribs) {
         qname = checkNS(true, qname);
         builder.startElement(qname, null);
         declareNamespaces();
-        if (attribs != null) {
-            for (int i = 0; i < attribs.getLength(); i++) {
-                builder.addAttribute( attribs.getQName(i), attribs.getValue(i));
+        if(attribs != null) {
+            for(int i = 0; i < attribs.getLength(); i++) {
+                builder.addAttribute(attribs.getQName(i), attribs.getValue(i));
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
-    public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
+    public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
         builder.endElement();
     }
 
     @Override
-    public void endElement(QName qname) throws SAXException {
+    public void endElement(final QName qname) throws SAXException {
         builder.endElement();
     }
 
-    public void addReferenceNode(NodeProxy proxy) throws SAXException {
+    public void addReferenceNode(final NodeProxy proxy) throws SAXException {
         builder.addReferenceNode(proxy);
     }
 
-    public void addNamespaceNode(QName qname) throws SAXException {
+    public void addNamespaceNode(final QName qname) throws SAXException {
         builder.namespaceNode(qname);
     }
 
     @Override
-    public void characters(CharSequence seq) throws SAXException {
+    public void characters(final CharSequence seq) throws SAXException {
         builder.characters(seq);
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#characters(char[], int, int)
-     */
     @Override
-    public void characters(char[] ch, int start, int len) throws SAXException {
+    public void characters(final char[] ch, final int start, final int len) throws SAXException {
         builder.characters(ch, start, len);
     }
 
     @Override
-    public void attribute(QName qname, String value) throws SAXException {
+    public void attribute(QName qname, final String value) throws SAXException {
         try {
             qname = checkNS(false, qname);
             builder.addAttribute(qname, value);
@@ -205,116 +180,81 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
-     */
     @Override
-    public void ignorableWhitespace(char[] ch, int start, int len) throws SAXException {
+    public void ignorableWhitespace(final char[] ch, final int start, final int len) throws SAXException {
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
-     */
     @Override
-    public void processingInstruction(String target, String data) throws SAXException {
+    public void processingInstruction(final String target, final String data) throws SAXException {
         builder.processingInstruction(target, data);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.util.serializer.Receiver#cdataSection(char[], int, int)
-     */
     @Override
-    public void cdataSection(char[] ch, int start, int len) throws SAXException {
+    public void cdataSection(final char[] ch, final int start, final int len) throws SAXException {
         builder.cdataSection(new String(ch, start, len));
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
-     */
     @Override
-    public void skippedEntity(String arg0) throws SAXException {
+    public void skippedEntity(final String name) throws SAXException {
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#endCDATA()
-     */
     @Override
     public void endCDATA() throws SAXException {
-        // TODO ignored
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#endDTD()
-     */
     @Override
     public void endDTD() throws SAXException {
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#startCDATA()
-     */
     @Override
     public void startCDATA() throws SAXException {
-        // TODO Ignored
     }
 
     @Override
-    public void documentType(String name, String publicId, String systemId) throws SAXException {
+    public void documentType(final String name, final String publicId, final String systemId) throws SAXException {
         builder.documentType(name, publicId, systemId);
     }
-    
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
-     */
+
     @Override
-    public void comment(char[] ch, int start, int length) throws SAXException {
+    public void comment(final char[] ch, final int start, final int length) throws SAXException {
         builder.comment(ch, start, length);
     }
-    
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
-     */
-    @Override
-    public void endEntity(String name) throws SAXException{
-    }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
-     */
     @Override
-    public void startEntity(String name) throws SAXException {
-    }
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
-     */
-    @Override
-    public void startDTD(String name, String publicId, String systemId) throws SAXException {
+    public void endEntity(final String name) throws SAXException {
     }
 
     @Override
-    public void highlightText(CharSequence seq) {
+    public void startEntity(final String name) throws SAXException {
+    }
+
+    @Override
+    public void startDTD(final String name, final String publicId, final String systemId) throws SAXException {
+    }
+
+    @Override
+    public void highlightText(final CharSequence seq) {
         // not supported with this receiver
     }
 
     @Override
-    public void setCurrentNode(INodeHandle node) {
+    public void setCurrentNode(final INodeHandle node) {
         // ignored
     }
-    
-    public QName checkNS(boolean isElement, QName qname) {
+
+    private QName checkNS(boolean isElement, final QName qname) {
         if(checkNS) {
             final XQueryContext context = builder.getContext();
             if(qname.getPrefix() == null) {
-            	if (!qname.hasNamespace()) {
-            		return qname;
-            	} else if (isElement) {
-	                return qname;
-            	} else {
-	                final String prefix = generatePrefix(context, context.getInScopePrefix(qname.getNamespaceURI()));
-	                context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
-	                return new QName(qname.getLocalPart(), qname.getNamespaceURI(), prefix);
-	            }
+                if(!qname.hasNamespace()) {
+                    return qname;
+                } else if(isElement) {
+                    return qname;
+                } else {
+                    final String prefix = generatePrefix(context, context.getInScopePrefix(qname.getNamespaceURI()));
+                    context.declareInScopeNamespace(prefix, qname.getNamespaceURI());
+                    return new QName(qname.getLocalPart(), qname.getNamespaceURI(), prefix);
+                }
             }
 
             if(qname.getPrefix().isEmpty() && qname.getNamespaceURI() == null) {
@@ -332,10 +272,10 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         }
         return qname;
     }
-    
-    private String generatePrefix(XQueryContext context, String prefix) {
+
+    private String generatePrefix(final XQueryContext context, String prefix) {
         int i = 0;
-        while (prefix == null) {
+        while(prefix == null) {
             prefix = "XXX";
             if(i > 0) {
                 prefix += String.valueOf(i);

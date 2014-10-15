@@ -22,124 +22,66 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
 
-import org.exist.Namespaces;
-import org.exist.dom.QName;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
-
 
 /**
  * A dynamically constructed namespace node. Used to track namespace declarations in elements. Implements Attr, so it can be treated as a normal
  * attribute.
  *
- * @author  wolf
+ * @author wolf
  */
-public class NamespaceNode extends NodeImpl implements Attr
-{
+public class NamespaceNode extends NodeImpl implements Attr {
+
     /**
      * Creates a new NamespaceNode object.
      *
-     * @param  doc
-     * @param  nodeNumber
+     * @param doc
+     * @param nodeNumber
      */
-    public NamespaceNode( DocumentImpl doc, int nodeNumber )
-    {
-        super( doc, nodeNumber );
+    public NamespaceNode(final DocumentImpl doc, final int nodeNumber) {
+        super(doc, nodeNumber);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.dom.memtree.NodeImpl#getNodeType()
-     */
     @Override
-    public short getNodeType()
-    {
+    public short getNodeType() {
         //TOUNDERSTAND : return value
         //XQuery doesn't support namespace nodes
         //so, mapping as an attribute at *serialization tile*  makes sense
         //however, the Query parser should not accept them in constructors !
-        return( NodeImpl.NAMESPACE_NODE);
-    }
-
-    /* (non-Javadoc)
-     * @see org.exist.dom.memtree.NodeImpl#getType()
-     */
-    @Override
-    public int getType()
-    {
-        return( Type.NAMESPACE );
+        return NodeImpl.NAMESPACE_NODE;
     }
 
     @Override
-    public String getPrefix()
-    {
-        return( getQName().getPrefix() );
+    public int getType() {
+        return Type.NAMESPACE;
     }
 
     @Override
-    public String getNamespaceURI()
-    {
-        return( Namespaces.XMLNS_NS );
+    public boolean getSpecified() {
+        return true;
     }
 
     @Override
-    public boolean getSpecified()
-    {
-        return( true );
+    public String getName() {
+        return getQName().getStringValue();
     }
 
     @Override
-    public QName getQName()
-    {
-        return( document.namespaceCode[nodeNumber] );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getLocalPart()
-     */
-    @Override
-    public String getLocalName()
-    {
-        return( getQName().getLocalPart() );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNodeName()
-     */
-    @Override
-    public String getNodeName()
-    {
-        return( getQName().getStringValue() );
+    public String getValue() {
+        return getQName().getNamespaceURI();
     }
 
     @Override
-    public String getName()
-    {
-        return( getQName().getStringValue() );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Attr#getValue()
-     */
-    @Override
-    public String getValue()
-    {
-        return( getQName().getNamespaceURI() );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Attr#setValue(java.lang.String)
-     */
-    @Override
-    public void setValue( String value ) throws DOMException
-    {
+    public void setValue(final String value) throws DOMException {
     }
 
     @Override
@@ -153,82 +95,55 @@ public class NamespaceNode extends NodeImpl implements Attr
     }
 
     @Override
-    public String getNodeValue() throws DOMException
-    {
-        return( getQName().getNamespaceURI() );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Attr#getOwnerElement()
-     */
-    @Override
-    public Element getOwnerElement()
-    {
-        return( (Element)document.getNode( document.namespaceParent[nodeNumber] ) );
-    }
-
-    /**
-     * ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public TypeInfo getSchemaTypeInfo()
-    {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
-    }
-
-    /**
-     * ? @see org.w3c.dom.Attr#isId()
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public boolean isId()
-    {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( false );
+    public String getNodeValue() throws DOMException {
+        return getQName().getNamespaceURI();
     }
 
     @Override
-    public int getItemType()
-    {
-        return( Type.NAMESPACE );
+    public Element getOwnerElement() {
+        return ((Element) document.getNode(document.namespaceParent[nodeNumber]));
     }
 
     @Override
-    public String toString()
-    {
+    public TypeInfo getSchemaTypeInfo() {
+        return null;
+    }
+
+    @Override
+    public boolean isId() {
+        return false;
+    }
+
+    @Override
+    public int getItemType() {
+        return Type.NAMESPACE;
+    }
+
+    @Override
+    public String toString() {
         final StringBuilder result = new StringBuilder();
-        result.append( "in-memory#" );
-        result.append( "namespace {" );
-        result.append( getPrefix() );
-        result.append( "}" );
-        result.append( "{" );
-        result.append( getValue() );
-        result.append( "} " );
-        return( result.toString() );
+        result.append("in-memory#");
+        result.append("namespace {");
+        result.append(getPrefix());
+        result.append("}");
+        result.append("{");
+        result.append(getValue());
+        result.append("} ");
+        return result.toString();
     }
 
     @Override
-    public void selectAttributes(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
+    public void selectAttributes(final NodeTest test, final Sequence result)
+        throws XPathException {
     }
 
     @Override
-    public void selectChildren(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
+    public void selectChildren(final NodeTest test, final Sequence result)
+        throws XPathException {
     }
 
     @Override
-    public void selectDescendantAttributes(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
+    public void selectDescendantAttributes(final NodeTest test, final Sequence result)
+        throws XPathException {
     }
 }

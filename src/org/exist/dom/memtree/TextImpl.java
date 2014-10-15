@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-2014 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -22,221 +22,61 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.xquery.value.Type;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
 
+public class TextImpl extends AbstractCharacterData implements Text {
 
-public class TextImpl extends NodeImpl implements Text
-{
-    public TextImpl( DocumentImpl doc, int nodeNumber )
-    {
-        super( doc, nodeNumber );
+    public TextImpl(final DocumentImpl doc, final int nodeNumber) {
+        super(doc, nodeNumber);
     }
 
-//    public boolean hasChildNodes() {
-//        return false;
-//    }
+    @Override
+    public int getItemType() {
+        return Type.TEXT;
+    }
 
     @Override
-    public String getStringValue()
-    {
+    public Text splitText(final int offset) throws DOMException {
+        return null;
+    }
+
+    @Override
+    public String getNodeValue() throws DOMException {
+        return getData();
+    }
+
+    @Override
+    public String getStringValue() {
         //Quick and (not so ?) dirty...
-        return( getData() );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Text#splitText(int)
-     */
-    @Override
-    public Text splitText( int arg0 ) throws DOMException
-    {
-        // _TODO_ Auto-generated method stub
-        return( null );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#getData()
-     */
-    @Override
-    public String getData() throws DOMException
-    {
-        return( new String( document.characters, document.alpha[nodeNumber], document.alphaLen[nodeNumber] ) );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#setData(java.lang.String)
-     */
-    @Override
-    public void setData( String arg0 ) throws DOMException
-    {
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#getLength()
-     */
-    @Override
-    public int getLength()
-    {
-        return( document.alphaLen[nodeNumber] );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNodeValue()
-     */
-    @Override
-    public String getNodeValue() throws DOMException
-    {
-        return( getData() );
+        return getData();
     }
 
     @Override
-    public String getLocalName()
-    {
-        return( "" );
+    public boolean isElementContentWhitespace() {
+        return false;
     }
 
     @Override
-    public String getNamespaceURI()
-    {
-        return( "" );
+    public String getWholeText() {
+        return null;
     }
 
     @Override
-    public Node getFirstChild()
-    {
-        return( null );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#substringData(int, int)
-     */
-    @Override
-    public String substringData( int arg0, int arg1 ) throws DOMException
-    {
-        // _TODO_ Auto-generated method stub
-        return( null );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#appendData(java.lang.String)
-     */
-    @Override
-    public void appendData( String arg0 ) throws DOMException
-    {
-        // _TODO_ Auto-generated method stub
-
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#insertData(int, java.lang.String)
-     */
-    @Override
-    public void insertData( int arg0, String arg1 ) throws DOMException
-    {
-        // _TODO_ Auto-generated method stub
-
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#deleteData(int, int)
-     */
-    @Override
-    public void deleteData( int arg0, int arg1 ) throws DOMException
-    {
-        // _TODO_ Auto-generated method stub
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#replaceData(int, int, java.lang.String)
-     */
-    @Override
-    public void replaceData( int arg0, int arg1, String arg2 ) throws DOMException
-    {
-        // _TODO_ Auto-generated method stub
-    }
-
-    /**
-     * ? @see org.w3c.dom.Text#isElementContentWhitespace()
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public boolean isElementContentWhitespace()
-    {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( false );
-    }
-
-    /**
-     * ? @see org.w3c.dom.Text#getWholeText()
-     *
-     * @return  DOCUMENT ME!
-     */
-    @Override
-    public String getWholeText()
-    {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
-    }
-
-    /**
-     * ? @see org.w3c.dom.Text#replaceWholeText(java.lang.String)
-     *
-     * @param   content  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  DOMException  DOCUMENT ME!
-     */
-    @Override
-    public Text replaceWholeText( String content ) throws DOMException
-    {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return( null );
+    public Text replaceWholeText(String content) throws DOMException {
+        return null;
     }
 
     @Override
-    public int getItemType()
-    {
-        return( Type.TEXT );
-    }
-
-    @Override
-    public String toString()
-    {
+    public String toString() {
         final StringBuilder result = new StringBuilder();
-        result.append( "in-memory#" );
-        result.append( "text {" );
-        result.append( getData() );
-        result.append( "} " );
-        return( result.toString() );
-    }
-
-    @Override
-    public void selectAttributes(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void selectChildren(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void selectDescendantAttributes(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
+        result.append("in-memory#");
+        result.append("text {");
+        result.append(getData());
+        result.append("} ");
+        return (result.toString());
     }
 
 }

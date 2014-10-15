@@ -28,29 +28,29 @@ import org.exist.util.XMLString;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
 
-public abstract class CharacterDataImpl extends StoredNode implements CharacterData {
+public abstract class AbstractCharacterData extends StoredNode implements CharacterData {
 
     protected XMLString cdata = null;
 
-    public CharacterDataImpl( short nodeType ) {
+    public AbstractCharacterData(short nodeType) {
         super( nodeType );
     }
 
-    public CharacterDataImpl( short nodeType, NodeId nodeId) {
+    public AbstractCharacterData(short nodeType, NodeId nodeId) {
         super( nodeType, nodeId );
     }
 
-    public CharacterDataImpl( short nodeType, NodeId nodeId, String data ) {
+    public AbstractCharacterData(short nodeType, NodeId nodeId, String data) {
         super( nodeType, nodeId );
         cdata = new XMLString(data.toCharArray());
     }
 
-    public CharacterDataImpl( short nodeType, String data ) {
+    public AbstractCharacterData(short nodeType, String data) {
         super( nodeType );
         cdata = new XMLString(data.toCharArray());
     }
 
-    public CharacterDataImpl( short nodeType, char[] data, int start, int howmany ) {
+    public AbstractCharacterData(short nodeType, char[] data, int start, int howmany) {
         super( nodeType );
         cdata = new XMLString(data, start, howmany);
     }

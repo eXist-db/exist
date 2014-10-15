@@ -30,7 +30,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.VirtualNodeSet;
@@ -258,7 +258,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * if <code>false</code>, it is tokenized before being indexed
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
-    public void storeText(CharacterDataImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
+    public void storeText(AbstractCharacterData node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
         if (indexingHint == TOKENIZE || indexingHint == DO_NOT_TOKENIZE) {
             //TODO : case conversion should be handled by the tokenizer -pb
             final XMLString t = node.getXMLString().transformToLower();

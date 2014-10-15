@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2014 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -25,7 +25,6 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
-import org.exist.dom.QName;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -34,168 +33,126 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 
-public class ProcessingInstructionImpl extends NodeImpl implements ProcessingInstruction
-{
+public class ProcessingInstructionImpl extends NodeImpl implements ProcessingInstruction {
+
     /**
      * Creates a new ProcessingInstructionImpl object.
      *
-     * @param  doc
-     * @param  nodeNumber
+     * @param doc
+     * @param nodeNumber
      */
-    public ProcessingInstructionImpl( DocumentImpl doc, int nodeNumber )
-    {
-        super( doc, nodeNumber );
+    public ProcessingInstructionImpl(final DocumentImpl doc, final int nodeNumber) {
+        super(doc, nodeNumber);
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.ProcessingInstruction#getTarget()
-     */
     @Override
-    public String getTarget()
-    {
-        final QName qn = document.nodeName[nodeNumber];
-        return( ( qn != null ) ? qn.getLocalPart() : null );
+    public String getTarget() {
+        return getLocalName();
     }
 
-
     @Override
-    public String getStringValue()
-    {
-        // TODO: this could be optimized
-        return( getData().replaceFirst( "^\\s+", "" ) );
+    public String getStringValue() {
+        return getData().replaceFirst("^\\s+", "");
     }
 
-
     @Override
-    public String getLocalName()
-    {
-        return( getTarget() );
-    }
-
-
-    @Override
-    public String getNamespaceURI()
-    {
-        return( "" );
-    }
-
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.ProcessingInstruction#getData()
-     */
-    @Override
-    public String getData()
-    {
-        return( new String( document.characters, document.alpha[nodeNumber], document.alphaLen[nodeNumber] ) );
+    public String getData() {
+        return new String(document.characters, document.alpha[nodeNumber], document.alphaLen[nodeNumber]);
     }
 
     @Override
     public String getNodeValue() throws DOMException {
-    	return getData();
+        return getData();
     }
 
     @Override
-    public AtomicValue atomize() throws XPathException
-    {
-        return( new StringValue( getData() ) );
+    public AtomicValue atomize() throws XPathException {
+        return new StringValue(getData());
     }
 
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.ProcessingInstruction#setData(java.lang.String)
-     */
     @Override
-    public void setData( String arg0 ) throws DOMException
-    {
+    public void setData(final String data) throws DOMException {
+        document.characters = data.toCharArray();
+        document.alpha[nodeNumber] = 0;
+        document.alphaLen[nodeNumber] = data.length();
     }
 
-
-    /**
-     * ? @see org.w3c.dom.Node#getBaseURI()
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
-    public String getBaseURI()
-    {
+    public String getBaseURI() {
         String baseURI = "";
-        int    parent  = -1;
-        int    test    = -1;
-        test = document.getParentNodeFor( nodeNumber );
+        int parent = -1;
+        int test = document.getParentNodeFor(nodeNumber);
 
-        if( document.nodeKind[test] != Node.DOCUMENT_NODE ) {
+        if(document.nodeKind[test] != Node.DOCUMENT_NODE) {
             parent = test;
         }
 
         // fixme! Testa med 0/ljo
-        while( ( parent != -1 ) && ( document.getNode( parent ).getBaseURI() != null ) ) {
+        while((parent != -1) && (document.getNode(parent).getBaseURI() != null)) {
 
-            if( "".equals( baseURI ) ) {
-                baseURI = document.getNode( parent ).getBaseURI();
+            if(baseURI.isEmpty()) {
+                baseURI = document.getNode(parent).getBaseURI();
             } else {
-                baseURI = document.getNode( parent ).getBaseURI() + "/" + baseURI;
+                baseURI = document.getNode(parent).getBaseURI() + "/" + baseURI;
             }
 
-            test = document.getParentNodeFor( parent );
+            test = document.getParentNodeFor(parent);
 
-            if( document.nodeKind[test] == Node.DOCUMENT_NODE ) {
-                return( baseURI );
+            if(document.nodeKind[test] == Node.DOCUMENT_NODE) {
+                return (baseURI);
             } else {
                 parent = test;
             }
         }
 
-        if( "".equals( baseURI ) ) {
+        if(baseURI.isEmpty()) {
             baseURI = getOwnerDocument().getBaseURI();
         }
-        return( baseURI );
+        return (baseURI);
     }
 
     @Override
-    public Node getFirstChild()
-    {
+    public Node getFirstChild() {
         //No child
-        return( null );
+        return null;
     }
 
     @Override
-    public int getItemType()
-    {
-        return( Type.PROCESSING_INSTRUCTION );
+    public int getItemType() {
+        return Type.PROCESSING_INSTRUCTION;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         final StringBuilder result = new StringBuilder();
-        result.append( "in-memory#" );
-        result.append( "processing-instruction {" );
-        result.append( getTarget() );
-        result.append( "} {" );
-        result.append( getData() );
-        result.append( "} " );
-        return( result.toString() );
+        result.append("in-memory#");
+        result.append("processing-instruction {");
+        result.append(getTarget());
+        result.append("} {");
+        result.append(getData());
+        result.append("} ");
+        return result.toString();
     }
 
     @Override
-    public void selectAttributes(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
+    public void selectAttributes(final NodeTest test, final Sequence result)
+        throws XPathException {
+        throw new UnsupportedOperationException("selectAttributes is not yet implemented!");
+
     }
 
     @Override
-    public void selectChildren(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
+    public void selectChildren(final NodeTest test, final Sequence result)
+        throws XPathException {
+        throw new UnsupportedOperationException("selectChildren is not yet implemented!");
+
     }
 
     @Override
-    public void selectDescendantAttributes(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
+    public void selectDescendantAttributes(final NodeTest test, final Sequence result)
+        throws XPathException {
+        throw new UnsupportedOperationException("selectDescendantAttributes is not yet implemented!");
+
     }
 
 }

@@ -40,7 +40,7 @@ import org.w3c.dom.UserDataHandler;
  * @author wolf
  *
  */
-public class TextImpl extends CharacterDataImpl implements Text {
+public class TextImpl extends AbstractCharacterData implements Text {
 
     public TextImpl() {
         super(Node.TEXT_NODE);

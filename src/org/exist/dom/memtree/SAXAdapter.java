@@ -32,6 +32,7 @@ import org.xml.sax.ext.LexicalHandler;
 
 import org.exist.xquery.XQueryContext;
 
+import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,11 +40,10 @@ import java.util.Map;
 /**
  * Adapter class to build an internal, in-memory DOM from a SAX stream.
  *
- * @author  wolf
+ * @author wolf
  */
-public class SAXAdapter implements ContentHandler, LexicalHandler
-{
-    private MemTreeBuilder          builder;
+public class SAXAdapter implements ContentHandler, LexicalHandler {
+    private MemTreeBuilder builder;
     private HashMap<String, String> namespaces = null;
     private boolean replaceAttributeFlag;
 
@@ -51,222 +51,123 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
         setBuilder(new MemTreeBuilder());
     }
 
-
-    public SAXAdapter(XQueryContext context) {
+    public SAXAdapter(final XQueryContext context) {
         setBuilder(new MemTreeBuilder(context));
     }
 
-    protected final void setBuilder(MemTreeBuilder builder) {
+    protected final void setBuilder(final MemTreeBuilder builder) {
         this.builder = builder;
     }
 
-    public DocumentImpl getDocument()
-    {
-        return( builder.getDocument() );
+    public DocumentImpl getDocument() {
+        return builder.getDocument();
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endDocument()
-     */
     @Override
-    public void endDocument() throws SAXException
-    {
+    public void endDocument() throws SAXException {
         builder.endDocument();
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startDocument()
-     */
     @Override
-    public void startDocument() throws SAXException
-    {
+    public void startDocument() throws SAXException {
         builder.startDocument();
-
-        if (replaceAttributeFlag)
+        if(replaceAttributeFlag) {
             builder.setReplaceAttributeFlag(replaceAttributeFlag);
+        }
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#characters(char[], int, int)
-     */
     @Override
-    public void characters( char[] ch, int start, int length ) throws SAXException
-    {
-        builder.characters( ch, start, length );
+    public void characters(final char[] ch, final int start, final int length) throws SAXException {
+        builder.characters(ch, start, length);
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
-     */
     @Override
-    public void ignorableWhitespace( char[] ch, int start, int length ) throws SAXException
-    {
-        builder.characters( ch, start, length );
+    public void ignorableWhitespace(final char[] ch, final int start, final int length) throws SAXException {
+        builder.characters(ch, start, length);
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
-     */
     @Override
-    public void endPrefixMapping( String prefix ) throws SAXException
-    {
+    public void endPrefixMapping(final String prefix) throws SAXException {
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
-     */
     @Override
-    public void skippedEntity( String name ) throws SAXException
-    {
+    public void skippedEntity(final String name) throws SAXException {
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
-     */
     @Override
-    public void setDocumentLocator( Locator locator )
-    {
+    public void setDocumentLocator(final Locator locator) {
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
-     */
     @Override
-    public void processingInstruction( String target, String data ) throws SAXException
-    {
-        builder.processingInstruction( target, data );
+    public void processingInstruction(final String target, final String data) throws SAXException {
+        builder.processingInstruction(target, data);
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
-     */
     @Override
-    public void startPrefixMapping( String prefix, String uri ) throws SAXException
-    {
-        if( namespaces == null ) {
+    public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
+        if(namespaces == null) {
             namespaces = new HashMap<>();
         }
-        namespaces.put( prefix, uri );
+        namespaces.put(prefix, uri);
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
-    public void endElement( String namespaceURI, String localName, String qName ) throws SAXException
-    {
+    public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
         builder.endElement();
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-     */
     @Override
-    public void startElement( String namespaceURI, String localName, String qName, Attributes atts ) throws SAXException
-    {
-        builder.startElement( namespaceURI, localName, qName, atts );
+    public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
+        builder.startElement(namespaceURI, localName, qName, atts);
 
-        if( namespaces != null ) {
-
-            for( final Map.Entry<String, String> entry : namespaces.entrySet() ) {
-                builder.namespaceNode( entry.getKey().toString(), entry.getValue().toString() );
+        if(namespaces != null) {
+            for(final Map.Entry<String, String> entry : namespaces.entrySet()) {
+                builder.namespaceNode(entry.getKey().toString(), entry.getValue().toString());
             }
         }
 
-        for( int i = 0; i < atts.getLength(); i++ ) {
-
-            if( atts.getQName( i ).startsWith( "xmlns" ) ) {
-                final String prefix = atts.getLocalName( i );
-                final String uri    = atts.getValue( i );
-
-                if( ( namespaces == null ) || !namespaces.containsKey( prefix ) ) {
-                    builder.namespaceNode( prefix, uri );
+        for(int i = 0; i < atts.getLength(); i++) {
+            if(atts.getQName(i).startsWith(XMLConstants.XMLNS_ATTRIBUTE)) {
+                final String prefix = atts.getLocalName(i);
+                final String uri = atts.getValue(i);
+                if(namespaces == null || !namespaces.containsKey(prefix)) {
+                    builder.namespaceNode(prefix, uri);
                 }
             }
         }
         namespaces = null;
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#endCDATA()
-     */
     @Override
-    public void endCDATA() throws SAXException
-    {
+    public void endCDATA() throws SAXException {
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#endDTD()
-     */
     @Override
-    public void endDTD() throws SAXException
-    {
+    public void endDTD() throws SAXException {
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#startCDATA()
-     */
     @Override
-    public void startCDATA() throws SAXException
-    {
+    public void startCDATA() throws SAXException {
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
-     */
     @Override
-    public void comment( char[] ch, int start, int length ) throws SAXException
-    {
-        builder.comment( ch, start, length );
+    public void comment(final char[] ch, final int start, final int length) throws SAXException {
+        builder.comment(ch, start, length);
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
-     */
     @Override
-    public void endEntity( String name ) throws SAXException
-    {
+    public void endEntity(final String name) throws SAXException {
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
-     */
     @Override
-    public void startEntity( String name ) throws SAXException
-    {
+    public void startEntity(final String name) throws SAXException {
     }
 
-
-    /* (non-Javadoc)
-     * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
-    public void startDTD( String name, String publicId, String systemId ) throws SAXException
-    {
+    public void startDTD(final String name, final String publicId, final String systemId) throws SAXException {
     }
 
-    public void setReplaceAttributeFlag(boolean replaceAttributeFlag) {
+    public void setReplaceAttributeFlag(final boolean replaceAttributeFlag) {
         this.replaceAttributeFlag = replaceAttributeFlag;
-    }
-
-    public boolean isReplaceAttributeFlag() {
-        return replaceAttributeFlag;
     }
 }

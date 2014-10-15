@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -33,20 +33,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
 
 
-public class AttributeImpl extends NodeImpl implements Attr {
+public class AttrImpl extends NodeImpl implements Attr {
 
-    public static final int ATTR_CDATA_TYPE  = 0;
-    public static final int ATTR_ID_TYPE     = 1;
-    public static final int ATTR_IDREF_TYPE  = 2;
+    public static final int ATTR_CDATA_TYPE = 0;
+    public static final int ATTR_ID_TYPE = 1;
+    public static final int ATTR_IDREF_TYPE = 2;
     public static final int ATTR_IDREFS_TYPE = 3;
 
     /**
      * Creates a new AttributeImpl object.
      *
-     * @param  doc
-     * @param  nodeNumber
+     * @param doc
+     * @param nodeNumber
      */
-    public AttributeImpl(DocumentImpl doc, int nodeNumber) {
+    public AttrImpl(final DocumentImpl doc, final int nodeNumber) {
         super(doc, nodeNumber);
     }
 
@@ -55,67 +55,27 @@ public class AttributeImpl extends NodeImpl implements Attr {
         return document.attrNodeId[nodeNumber];
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Attr#getName()
-     */
     @Override
     public String getName() {
         return getQName().getStringValue();
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNodeName()
-     */
-    @Override
-    public String getNodeName() {
-        return getQName().getStringValue();
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNodeType()
-     */
     @Override
     public short getNodeType() {
         return Node.ATTRIBUTE_NODE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.dom.memtree.NodeImpl#getType()
-     */
     @Override
     public int getType() {
         return Type.ATTRIBUTE;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getLocalPart()
-     */
-    @Override
-    public String getLocalName() {
-        return getQName().getLocalPart();
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNamespaceURI()
-     */
-    @Override
-    public String getNamespaceURI() {
-        return getQName().getNamespaceURI();
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getPrefix()
-     */
-    @Override
-    public String getPrefix() {
-        return getQName().getPrefix();
-    }
-
     @Override
     public String getBaseURI() {
         final Node parent = document.getNode(document.attrParent[nodeNumber]);
-        if ( parent == null )
-            {return null;}
+        if(parent == null) {
+            return null;
+        }
         return parent.getBaseURI();
     }
 
@@ -124,25 +84,16 @@ public class AttributeImpl extends NodeImpl implements Attr {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Attr#getSpecified()
-     */
     @Override
     public boolean getSpecified() {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Attr#getValue()
-     */
     @Override
     public String getValue() {
         return document.attrValue[nodeNumber];
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNodeValue()
-     */
     @Override
     public String getNodeValue() throws DOMException {
         return document.attrValue[nodeNumber];
@@ -153,46 +104,34 @@ public class AttributeImpl extends NodeImpl implements Attr {
         return document.attrValue[nodeNumber];
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#setNodeValue(java.lang.String)
-     */
     @Override
-    public void setNodeValue(String arg0) throws DOMException {
+    public void setNodeValue(final String nodeValue) throws DOMException {
         //This method was added to enable the SQL XQuery Extension Module
         //to change the value of an attribute after the fact - Andrzej
-        document.attrValue[nodeNumber] = arg0;
+        document.attrValue[nodeNumber] = nodeValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Attr#setValue(java.lang.String)
-     */
     @Override
-    public void setValue(String arg0) throws DOMException {
-        //Nothing to do
+    public void setValue(final String value) throws DOMException {
+        document.attrValue[nodeNumber] = value;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Attr#getOwnerElement()
-     */
     @Override
     public Element getOwnerElement() {
-        return (Element)document.getNode(document.attrParent[nodeNumber]);
+        return (Element) document.getNode(document.attrParent[nodeNumber]);
     }
 
     @Override
-    public void selectDescendantAttributes(NodeTest test, Sequence result) throws XPathException {
-        if (test.matches(this)) {
+    public void selectDescendantAttributes(final NodeTest test, final Sequence result) throws XPathException {
+        if(test.matches(this)) {
             result.add(this);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getParentNode()
-     */
     @Override
     public Node getParentNode() {
         final int parent = document.attrParent[nodeNumber];
-        if( parent > 0 ) {
+        if(parent > 0) {
             return document.getNode(parent);
         }
         return null;
@@ -211,22 +150,11 @@ public class AttributeImpl extends NodeImpl implements Attr {
         ((NodeImpl)getOwnerElement()).selectAncestors(true, test, result);
     }
 
-    /**
-     * ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
     public TypeInfo getSchemaTypeInfo() {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
     }
 
-    /**
-     * ? @see org.w3c.dom.Attr#isId()
-     *
-     * @return DOCUMENT ME!
-     */
     @Override
     public boolean isId() {
         return (document.attrType[nodeNumber] == ATTR_ID_TYPE);
@@ -240,24 +168,24 @@ public class AttributeImpl extends NodeImpl implements Attr {
     @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
-        result.append( "in-memory#" );
-        result.append( "attribute {" );
-        result.append( getQName().getStringValue() );
-        result.append( "} {" );
-        result.append( getValue().toString() );
-        result.append( "} " );
-        return( result.toString() );
+        result.append("in-memory#");
+        result.append("attribute {");
+        result.append(getQName().getStringValue());
+        result.append("} {");
+        result.append(getValue());
+        result.append("} ");
+        return result.toString();
     }
 
     @Override
-    public void selectAttributes(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
+    public void selectAttributes(final NodeTest test, final Sequence result)
+        throws XPathException {
+        throw new UnsupportedOperationException("selectAttributes is not yet implemented!");
     }
 
     @Override
-    public void selectChildren(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
+    public void selectChildren(final NodeTest test, final Sequence result)
+        throws XPathException {
+        throw new UnsupportedOperationException("selectChildren is not yet implemented!");
     }
 }

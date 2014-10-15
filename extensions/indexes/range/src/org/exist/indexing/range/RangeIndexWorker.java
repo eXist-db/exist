@@ -30,7 +30,7 @@ import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.persistent.NodeProxy;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -884,7 +884,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         @Override
-        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
+        public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (TextCollector collector : contentStack) {
                     collector.characters(text, path);
