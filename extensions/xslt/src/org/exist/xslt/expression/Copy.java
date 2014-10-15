@@ -21,8 +21,8 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.dom.INode;
 import org.exist.dom.QName;
-import org.exist.dom.QNameable;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
@@ -121,7 +121,7 @@ public class Copy extends Declaration {
     	            if (item instanceof QNameValue) {
     	                qn = ((QNameValue)item).getQName();
     	            } else {
-                        qn = ((QNameable)item).getQName();
+                        qn = ((INode)item).getQName();
     	                if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
                             qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
     	                }

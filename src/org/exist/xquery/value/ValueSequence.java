@@ -236,7 +236,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 				v = (NodeValue)values[i];
 				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                     // found an in-memory document
-                    final DocumentImpl doc = ((NodeImpl)v).getDocument();
+                    final DocumentImpl doc = ((NodeImpl)v).getOwnerDocument();
                     if (doc==null) {
                        continue;
                     }
@@ -252,7 +252,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                             v = (NodeValue) values[j];
                             if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                                 NodeImpl node = (NodeImpl) v;
-                                if (node.getDocument() == doc) {
+                                if (node.getOwnerDocument() == doc) {
                                     if (node.getNodeType() == Node.ATTRIBUTE_NODE)
                                         {node = expandedDoc.getAttribute(node.getNodeNumber());}
                                     else
@@ -343,8 +343,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         final Set<DocumentImpl> docs = new HashSet<DocumentImpl>();
         for (int i = 0; i <= size; i++) {
             final NodeImpl node = (NodeImpl) values[i];
-            if (node.getDocument().hasReferenceNodes())
-                {docs.add(node.getDocument());}
+            if (node.getOwnerDocument().hasReferenceNodes())
+                {docs.add(node.getOwnerDocument());}
         }
         for (final DocumentImpl doc : docs) {
             doc.expand();
@@ -811,7 +811,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         public int compare(Item o1, Item o2) {
             final NodeImpl n1 = (NodeImpl) o1;
             final NodeImpl n2 = (NodeImpl) o2;
-            final int docCmp = n1.getDocument().compareTo(n2.getDocument());
+            final int docCmp = n1.getOwnerDocument().compareTo(n2.getOwnerDocument());
             if (docCmp == 0) {
                 return n1.getNodeNumber() == n2.getNodeNumber() ? Constants.EQUAL :
                     (n1.getNodeNumber() > n2.getNodeNumber() ? Constants.SUPERIOR : Constants.INFERIOR);

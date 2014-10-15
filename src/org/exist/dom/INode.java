@@ -10,7 +10,8 @@ package org.exist.dom;
  * 
  * @author Adam Retter <adam@exist-db.org>
  */
-public interface INode<T extends org.w3c.dom.Document> extends org.w3c.dom.Node, INodeHandle<T> {
+public interface INode<D extends org.w3c.dom.Document, T extends INode> extends org.w3c.dom.Node,
+    INodeHandle<D>, Comparable<T> {
     
     /**
      * Get the qualified name of the Node

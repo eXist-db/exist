@@ -60,7 +60,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
         this.builder = builder;
     }
 
-    public Document getDocument()
+    public DocumentImpl getDocument()
     {
         return( builder.getDocument() );
     }
@@ -69,6 +69,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#endDocument()
      */
+    @Override
     public void endDocument() throws SAXException
     {
         builder.endDocument();
@@ -78,6 +79,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#startDocument()
      */
+    @Override
     public void startDocument() throws SAXException
     {
         builder.startDocument();
@@ -90,6 +92,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#characters(char[], int, int)
      */
+    @Override
     public void characters( char[] ch, int start, int length ) throws SAXException
     {
         builder.characters( ch, start, length );
@@ -99,6 +102,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
      */
+    @Override
     public void ignorableWhitespace( char[] ch, int start, int length ) throws SAXException
     {
         builder.characters( ch, start, length );
@@ -108,6 +112,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
      */
+    @Override
     public void endPrefixMapping( String prefix ) throws SAXException
     {
     }
@@ -116,6 +121,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
      */
+    @Override
     public void skippedEntity( String name ) throws SAXException
     {
     }
@@ -124,6 +130,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
      */
+    @Override
     public void setDocumentLocator( Locator locator )
     {
     }
@@ -132,6 +139,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
      */
+    @Override
     public void processingInstruction( String target, String data ) throws SAXException
     {
         builder.processingInstruction( target, data );
@@ -141,10 +149,11 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
      */
+    @Override
     public void startPrefixMapping( String prefix, String uri ) throws SAXException
     {
         if( namespaces == null ) {
-            namespaces = new HashMap<String, String>();
+            namespaces = new HashMap<>();
         }
         namespaces.put( prefix, uri );
     }
@@ -153,6 +162,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
      */
+    @Override
     public void endElement( String namespaceURI, String localName, String qName ) throws SAXException
     {
         builder.endElement();
@@ -162,6 +172,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
      */
+    @Override
     public void startElement( String namespaceURI, String localName, String qName, Attributes atts ) throws SAXException
     {
         builder.startElement( namespaceURI, localName, qName, atts );
@@ -191,6 +202,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#endCDATA()
      */
+    @Override
     public void endCDATA() throws SAXException
     {
     }
@@ -199,6 +211,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#endDTD()
      */
+    @Override
     public void endDTD() throws SAXException
     {
     }
@@ -207,6 +220,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#startCDATA()
      */
+    @Override
     public void startCDATA() throws SAXException
     {
     }
@@ -215,6 +229,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
      */
+    @Override
     public void comment( char[] ch, int start, int length ) throws SAXException
     {
         builder.comment( ch, start, length );
@@ -224,6 +239,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
      */
+    @Override
     public void endEntity( String name ) throws SAXException
     {
     }
@@ -232,6 +248,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
      */
+    @Override
     public void startEntity( String name ) throws SAXException
     {
     }
@@ -240,6 +257,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     /* (non-Javadoc)
      * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
      */
+    @Override
     public void startDTD( String name, String publicId, String systemId ) throws SAXException
     {
     }

@@ -131,7 +131,7 @@ public class FunRoot extends Function {
                 if (seq.hasOne() && item.getType() == Type.ATTRIBUTE) {
                 	result.add(item);
                 } else {
-                	result.add(((NodeImpl)item).getDocument());
+                	result.add(((NodeImpl)item).getOwnerDocument());
                 }
             }
 		}

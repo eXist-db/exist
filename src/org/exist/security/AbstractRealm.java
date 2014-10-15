@@ -127,7 +127,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             final AbstractRealm r = this;
             
             for(final Iterator<DocumentImpl> i = collectionGroups.iterator(broker); i.hasNext(); ) {
-                final Configuration conf = Configurator.parse(i.next());
+                final Configuration conf = Configurator.parse(broker.getBrokerPool(), i.next());
                 final String name = conf.getProperty("name");
                 
                 groupsByName.modifyE(new PrincipalDbModifyE<Group, ConfigurationException>() {
@@ -158,7 +158,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         //load marked for remove groups information
         if (collectionRemovedGroups != null && collectionRemovedGroups.getDocumentCount(broker) > 0) {
             for(final Iterator<DocumentImpl> i = collectionRemovedGroups.iterator(broker); i.hasNext(); ) {
-                final Configuration conf = Configurator.parse(i.next());
+                final Configuration conf = Configurator.parse(broker.getBrokerPool(), i.next());
                 final Integer id = conf.getPropertyInteger("id");
                 
                 if (id != null && !getSecurityManager().hasGroup(id)) {
@@ -181,7 +181,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
             
             for(final Iterator<DocumentImpl> i = collectionAccounts.iterator(broker); i.hasNext(); ) {
                 final DocumentImpl doc = i.next();
-                final Configuration conf = Configurator.parse(doc);
+                final Configuration conf = Configurator.parse(broker.getBrokerPool(), doc);
                 final String name = conf.getProperty("name");
                 
                 usersByName.modifyE(new PrincipalDbModifyE<Account, ConfigurationException>(){
@@ -215,7 +215,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         //load marked for remove accounts information
         if (collectionRemovedAccounts != null && collectionRemovedAccounts.getDocumentCount(broker) > 0) {
             for(final Iterator<DocumentImpl> i = collectionRemovedAccounts.iterator(broker); i.hasNext(); ) {
-                final Configuration conf = Configurator.parse(i.next());
+                final Configuration conf = Configurator.parse(broker.getBrokerPool(), i.next());
 	            	
                 final Integer id = conf.getPropertyInteger("id");
                 if (id != null && !getSecurityManager().hasUser(id)) {

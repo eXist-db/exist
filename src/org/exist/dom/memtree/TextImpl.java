@@ -43,147 +43,147 @@ public class TextImpl extends NodeImpl implements Text
 //        return false;
 //    }
 
+    @Override
     public String getStringValue()
     {
         //Quick and (not so ?) dirty...
         return( getData() );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Text#splitText(int)
      */
+    @Override
     public Text splitText( int arg0 ) throws DOMException
     {
         // _TODO_ Auto-generated method stub
         return( null );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#getData()
      */
+    @Override
     public String getData() throws DOMException
     {
         return( new String( document.characters, document.alpha[nodeNumber], document.alphaLen[nodeNumber] ) );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#setData(java.lang.String)
      */
+    @Override
     public void setData( String arg0 ) throws DOMException
     {
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#getLength()
      */
+    @Override
     public int getLength()
     {
         return( document.alphaLen[nodeNumber] );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeValue()
      */
+    @Override
     public String getNodeValue() throws DOMException
     {
         return( getData() );
     }
 
-
+    @Override
     public String getLocalName()
     {
         return( "" );
     }
 
-
+    @Override
     public String getNamespaceURI()
     {
         return( "" );
     }
 
-
+    @Override
     public Node getFirstChild()
     {
         return( null );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#substringData(int, int)
      */
+    @Override
     public String substringData( int arg0, int arg1 ) throws DOMException
     {
         // _TODO_ Auto-generated method stub
         return( null );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#appendData(java.lang.String)
      */
+    @Override
     public void appendData( String arg0 ) throws DOMException
     {
         // _TODO_ Auto-generated method stub
 
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#insertData(int, java.lang.String)
      */
+    @Override
     public void insertData( int arg0, String arg1 ) throws DOMException
     {
         // _TODO_ Auto-generated method stub
 
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#deleteData(int, int)
      */
+    @Override
     public void deleteData( int arg0, int arg1 ) throws DOMException
     {
         // _TODO_ Auto-generated method stub
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#replaceData(int, int, java.lang.String)
      */
+    @Override
     public void replaceData( int arg0, int arg1, String arg2 ) throws DOMException
     {
         // _TODO_ Auto-generated method stub
     }
-
 
     /**
      * ? @see org.w3c.dom.Text#isElementContentWhitespace()
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public boolean isElementContentWhitespace()
     {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( false );
     }
 
-
     /**
      * ? @see org.w3c.dom.Text#getWholeText()
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public String getWholeText()
     {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
-
 
     /**
      * ? @see org.w3c.dom.Text#replaceWholeText(java.lang.String)
@@ -194,19 +194,20 @@ public class TextImpl extends NodeImpl implements Text
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public Text replaceWholeText( String content ) throws DOMException
     {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
-
+    @Override
     public int getItemType()
     {
         return( Type.TEXT );
     }
 
-
+    @Override
     public String toString()
     {
         final StringBuilder result = new StringBuilder();

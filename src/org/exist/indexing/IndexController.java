@@ -217,7 +217,7 @@ public class IndexController {
      * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE},
      * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      */
-    public void reindex(Txn transaction, IStoredNode reindexRoot, int mode) {
+    public void reindex(Txn transaction, IStoredNode<? extends IStoredNode> reindexRoot, int mode) {
         if (reindexRoot == null)
             {return;}
         reindexRoot = broker.objectWith(new NodeProxy(reindexRoot.getOwnerDocument(), reindexRoot.getNodeId()));

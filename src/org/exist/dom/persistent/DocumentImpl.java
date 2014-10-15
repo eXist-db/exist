@@ -22,7 +22,7 @@
 package org.exist.dom.persistent;
 
 import org.exist.EXistException;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.numbering.NodeId;
@@ -61,7 +61,6 @@ import org.w3c.dom.UserDataHandler;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  *  Represents a persistent document object in the database;
@@ -69,7 +68,7 @@ import java.util.Iterator;
  *  
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist, Iterable<NodeImpl> { //Comparable<DocumentImpl>, 
+public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     public final static int UNKNOWN_DOCUMENT_ID = -1;
     
@@ -137,12 +136,8 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
         }
     }
 
+    //TODO document really should not hold a reference to the brokerpool
     public BrokerPool getBrokerPool() {
-        return pool;
-    }
-
-    @Override
-    public BrokerPool getDatabase() {
         return pool;
     }
 
@@ -195,7 +190,6 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return an <code>int</code> value
      */
-    @Override
     public int getDocId() {
         return docId;
     }
@@ -242,7 +236,6 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      *
      * @return a <code>XmldbURI</code> value
      */
-    @Override
     public XmldbURI getURI() {
         if(collection == null) {
             return fileURI;
@@ -607,11 +600,8 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return an <code>int</code> value
      */
     @Override
-    public final int compareTo(Object other) {
-        if (!(other instanceof DocumentImpl)) {
-            return Constants.INFERIOR;
-        }
-        final long otherId = ((DocumentImpl)other).docId;
+    public final int compareTo(DocumentImpl other) {
+        final long otherId = other.docId;
         if (otherId == docId)
             {return Constants.EQUAL;}
         else if (docId < otherId)
@@ -830,7 +820,7 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
      * @return a <code>Document</code> value
      */
     @Override
-    public Document getOwnerDocument() {
+    public DocumentImpl getOwnerDocument() {
         return this;
     }
 
@@ -1442,54 +1432,9 @@ public class DocumentImpl extends NodeImpl implements Document, DocumentAtExist,
             (getDocumentElement() != null ? getDocumentElement().getNodeName() : null) + ">";	
     }
 
-    public Iterator<NodeImpl> iterator() {
-        //XXX: implement
-        return null;
-    }
-
-    public DocumentAtExist getDocumentAtExist() {
-        return this;
-    }
-
-    @Override
-    public int getNodeNumber() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
     @Override
     public NodeId getNodeId() {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    @Override
-    public int getFirstChildFor(int nodeNumber) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public NodeAtExist getNode(int nodeNr) throws DOMException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public int getNextNodeNumber(int nodeNr) throws DOMException {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public boolean hasReferenceNodes() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-    
-    @Override
-    public Object getUUID() {
-            // TODO Auto-generated method stub
-            return null;
     }
 }

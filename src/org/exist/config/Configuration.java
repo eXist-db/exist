@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.exist.dom.persistent.ElementAtExist;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.w3c.dom.Element;
 
 /**
  * Configuration interface provide methods to read settings.
@@ -140,14 +140,14 @@ public interface Configuration {
      *  
      * 
      */
-    public ElementAtExist getElement();
+    public Element getElement();
 
     /**
      * Perform check for changers.
      * 
      * @param document
      */
-    public void checkForUpdates(ElementAtExist document);
+    public void checkForUpdates(Element document);
 
     /**
      * Save configuration.

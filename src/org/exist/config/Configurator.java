@@ -57,9 +57,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.config.annotation.*;
 import org.exist.config.annotation.ConfigurationFieldSettings.SettingKey;
-import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.ElementAtExist;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
@@ -75,6 +73,7 @@ import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.FullXmldbURI;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -686,7 +685,7 @@ public class Configurator {
             reader.setContentHandler(adapter);
             reader.parse(src);
             
-            return new ConfigurationImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
+            return new ConfigurationImpl(adapter.getDocument().getDocumentElement());
         } catch (final ParserConfigurationException e) {
             throw new ConfigurationException(e);
         } catch (final SAXException e) {
@@ -1077,13 +1076,13 @@ public class Configurator {
         }
     }
 
-    public static FullXmldbURI getFullURI(final Database db, final XmldbURI uri) {
+    public static FullXmldbURI getFullURI(final BrokerPool pool, final XmldbURI uri) {
         if (uri instanceof FullXmldbURI) {
             return (FullXmldbURI) uri;
         }
         
         final StringBuilder accessor = new StringBuilder(XmldbURI.XMLDB_URI_PREFIX);
-        accessor.append(db.getId());
+        accessor.append(pool.getId());
         accessor.append("://");
         accessor.append("");
         
@@ -1101,7 +1100,7 @@ public class Configurator {
         }
 
         //XXX: locking required
-        DocumentAtExist document = null;
+        DocumentImpl document = null;
         try {
             document = collection.getDocument(broker, fileURL);
             
@@ -1144,7 +1143,7 @@ public class Configurator {
             return null; //possibly on corrupted database, find better solution (recovery flag?)
         }
         
-        final ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
+        final Element confElement = document.getDocumentElement();
         if (confElement == null) {
             return null; //possibly on corrupted database, find better solution (recovery flag?)
         }
@@ -1154,20 +1153,20 @@ public class Configurator {
         return conf;
     }
 
-    public static Configuration parse(final DocumentAtExist document) {
+    public static Configuration parse(final BrokerPool pool, final DocumentImpl document) {
         if (document == null) {
             return null;
         }
         
         Configuration conf;
-        final FullXmldbURI key = getFullURI(document.getDatabase(), document.getURI());
+        final FullXmldbURI key = getFullURI(pool, document.getURI());
         
         conf = hotConfigs.get(key);
         if (conf != null) {
             return conf;
         }
         
-        final ElementAtExist confElement = (ElementAtExist) document.getDocumentElement();
+        final Element confElement = document.getDocumentElement();
         if (confElement == null) {
             return null; //possibly on corrupted database, find better solution (recovery flag?)
         }
@@ -1177,7 +1176,7 @@ public class Configurator {
         return conf;
     }
 
-    public static DocumentAtExist save(final Configurable instance, final XmldbURI uri) throws IOException {
+    public static DocumentImpl save(final Configurable instance, final XmldbURI uri) throws IOException {
         BrokerPool database;
         try {
             database = BrokerPool.getInstance();
@@ -1200,7 +1199,7 @@ public class Configurator {
         }
     }
 
-    public static DocumentAtExist save(final DBBroker broker, final Configurable instance, final XmldbURI uri) throws IOException {
+    public static DocumentImpl save(final DBBroker broker, final Configurable instance, final XmldbURI uri) throws IOException {
         try {
             final Collection collection = broker.getCollection(uri.removeLastSegment());
             if (collection == null) {
@@ -1218,7 +1217,7 @@ public class Configurator {
     
     protected static Set<FullXmldbURI> saving = new HashSet<FullXmldbURI>();
 
-    public static DocumentAtExist save(final Configurable instance, final DBBroker broker, final Collection collection, final XmldbURI uri) throws IOException, ConfigurationException {
+    public static DocumentImpl save(final Configurable instance, final DBBroker broker, final Collection collection, final XmldbURI uri) throws IOException, ConfigurationException {
         
         final StringWriter writer = new StringWriter();
         final SAXSerializer serializer = new SAXSerializer(writer, null);

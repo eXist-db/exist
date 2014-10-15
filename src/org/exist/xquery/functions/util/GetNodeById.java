@@ -80,7 +80,7 @@ public class GetNodeById extends BasicFunction {
         final NodeId nodeId = context.getBroker().getBrokerPool().getNodeFactory().createFromString(id);
         final NodeValue docNode = (NodeValue) args[0].itemAt(0);
         if (docNode.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-            return ((NodeImpl) docNode).getDocument().getNodeById(nodeId);
+            return ((NodeImpl) docNode).getOwnerDocument().getNodeById(nodeId);
         } else {
             final DocumentImpl doc = ((NodeProxy)docNode).getOwnerDocument();
             return new NodeProxy(doc, nodeId);

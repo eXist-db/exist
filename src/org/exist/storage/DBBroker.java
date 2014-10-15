@@ -535,18 +535,18 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
      *            to itself if it is an element (currently used by the Broker to
      *            determine if a node's content should be fulltext-indexed).
      */
-    public abstract void storeNode(Txn transaction, IStoredNode node,
+    public abstract <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node,
         NodePath currentPath, IndexSpec indexSpec, boolean index);
 
-    public void storeNode(Txn transaction, IStoredNode node, NodePath currentPath, IndexSpec indexSpec) {
+    public <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node, NodePath currentPath, IndexSpec indexSpec) {
         storeNode(transaction, node, currentPath, indexSpec, true);
     }
 
-    public void endElement(final IStoredNode node, NodePath currentPath, String content) {
+    public <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content) {
         endElement(node, currentPath, content, false);
     }
 
-    public abstract void endElement(final IStoredNode node, NodePath currentPath, String content, boolean remove);
+    public abstract <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content, boolean remove);
 
     /**
      * Store a document (descriptor) into the database.
@@ -739,7 +739,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 	 * @param node
 	 *            Description of the Parameter
 	 */
-	public abstract void updateNode(Txn transaction, IStoredNode node, boolean reindex);
+	public abstract <T extends IStoredNode> void updateNode(Txn transaction, IStoredNode<T> node, boolean reindex);
 
 	/**
 	 * Is the database running read-only? Returns false by default. Storage
@@ -768,7 +768,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
 		indexNode(transaction, node, null);
 	}
 
-	public abstract void removeNode(Txn transaction, IStoredNode node,
+	public abstract <T extends IStoredNode> void removeNode(Txn transaction, IStoredNode<T> node,
 			NodePath currentPath, String content);
 
 	public abstract void removeAllNodes(Txn transaction, IStoredNode node,

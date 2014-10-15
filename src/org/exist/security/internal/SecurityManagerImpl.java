@@ -913,7 +913,7 @@ public class SecurityManagerImpl implements SecurityManager {
             //uri = uri.removeLastSegment();
             //String realmId = uri.lastSegment().toString();
             //AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
-            final Configuration conf = Configurator.parse(document);
+            final Configuration conf = Configurator.parse(broker.getBrokerPool(), document);
 
         	saving.put(document.getURI(), conf.getPropertyInteger("id"));
         }
@@ -940,7 +940,7 @@ public class SecurityManagerImpl implements SecurityManager {
             final String realmId = uri.lastSegment().toString();
 			
             final AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
-            final Configuration conf = Configurator.parse(document);
+            final Configuration conf = Configurator.parse(broker.getBrokerPool(), document);
 
             Integer id = -1;
             if(isRemoved) {

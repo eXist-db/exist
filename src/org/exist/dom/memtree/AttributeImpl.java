@@ -21,7 +21,6 @@
  */
 package org.exist.dom.memtree;
 
-import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
@@ -56,14 +55,10 @@ public class AttributeImpl extends NodeImpl implements Attr {
         return document.attrNodeId[nodeNumber];
     }
 
-    @Override
-    public QName getQName() {
-        return document.attrName[nodeNumber];
-    }
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getName()
      */
+    @Override
     public String getName() {
         return getQName().getStringValue();
     }
@@ -132,6 +127,7 @@ public class AttributeImpl extends NodeImpl implements Attr {
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getSpecified()
      */
+    @Override
     public boolean getSpecified() {
         return true;
     }
@@ -139,6 +135,7 @@ public class AttributeImpl extends NodeImpl implements Attr {
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getValue()
      */
+    @Override
     public String getValue() {
         return document.attrValue[nodeNumber];
     }
@@ -169,6 +166,7 @@ public class AttributeImpl extends NodeImpl implements Attr {
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#setValue(java.lang.String)
      */
+    @Override
     public void setValue(String arg0) throws DOMException {
         //Nothing to do
     }
@@ -176,6 +174,7 @@ public class AttributeImpl extends NodeImpl implements Attr {
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getOwnerElement()
      */
+    @Override
     public Element getOwnerElement() {
         return (Element)document.getNode(document.attrParent[nodeNumber]);
     }
@@ -217,6 +216,7 @@ public class AttributeImpl extends NodeImpl implements Attr {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public TypeInfo getSchemaTypeInfo() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -227,6 +227,7 @@ public class AttributeImpl extends NodeImpl implements Attr {
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public boolean isId() {
         return (document.attrType[nodeNumber] == ATTR_ID_TYPE);
     }

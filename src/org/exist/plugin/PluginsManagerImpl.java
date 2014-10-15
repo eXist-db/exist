@@ -34,13 +34,13 @@ import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
 import org.exist.config.*;
 import org.exist.config.annotation.*;
-import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.security.Permission;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -289,7 +289,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		}
 
 		@Override
-		public void backup(DocumentAtExist document, AttributesImpl attrs) {
+		public void backup(Document document, AttributesImpl attrs) {
 			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					try {
@@ -302,7 +302,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		}
 
 		@Override
-		public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
+		public void backup(Document document, SAXSerializer serializer) throws SAXException {
 			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof BackupHandler) {
 					try {
@@ -442,7 +442,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		}
 
 		@Override
-		public void startDocumentRestore(DocumentAtExist document, Attributes atts) {
+		public void startDocumentRestore(Document document, Attributes atts) {
 			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).startDocumentRestore(document, atts);
@@ -451,7 +451,7 @@ public class PluginsManagerImpl implements Configurable, PluginsManager, LifeCyc
 		}
 
 		@Override
-		public void endDocumentRestore(DocumentAtExist document) {
+		public void endDocumentRestore(Document document) {
 			for (final Plug plugin : jacks.values()) {
 				if (plugin instanceof RestoreHandler) {
 					((RestoreHandler) plugin).endDocumentRestore(document);

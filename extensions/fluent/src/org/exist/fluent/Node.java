@@ -157,7 +157,7 @@ public class Node extends Item {
 			}
 		} else if (nv1.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
 			org.exist.dom.memtree.NodeImpl n1 = (org.exist.dom.memtree.NodeImpl) nv1, n2 = (org.exist.dom.memtree.NodeImpl) nv2;
-			if (n1.getDocument() != n2.getDocument())
+			if (n1.getOwnerDocument() != n2.getOwnerDocument())
 				throw new DatabaseException("can't compare document order of in-memory nodes created separately");
 			try {
 				return n1.before(n2, false) ? -1 : +1;

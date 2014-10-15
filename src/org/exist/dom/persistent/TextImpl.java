@@ -54,10 +54,12 @@ public class TextImpl extends CharacterDataImpl implements Text {
         super(Node.TEXT_NODE, nodeId, data);
     }
 
+    @Override
     public String getLocalName() {
         return "";
     }
 
+    @Override
     public String getNamespaceURI() {
         return "";
     }
@@ -76,6 +78,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
      *
      * eUtf8 = {@see org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
      */
+    @Override
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
         final byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + nodeIdLen + 
@@ -111,46 +114,12 @@ public class TextImpl extends CharacterDataImpl implements Text {
         return text;
     }
 
-    public void appendData(String arg) throws DOMException {
-        super.appendData(arg);
-    }
-
-    public void appendData(char[] data, int start, int howMany) throws DOMException {
-        super.appendData( data, start, howMany );
-    }
-
-    public void deleteData(int offset, int count) throws DOMException {
-        super.deleteData(offset, count);
-    }
-
-    public int getLength() {
-        return super.getLength();
-    }
-
-    public String getNodeValue() {
-        return super.getNodeValue();
-    }
-
-    public void insertData(int offset, String arg) throws DOMException {
-        super.insertData(offset, arg);
-    }
-
-    public void replaceData(int offset, int count, String arg) throws DOMException {
-        super.replaceData(offset, count, arg);
-    }
-
-    public void setNodeValue(String value) throws DOMException {
-        super.setNodeValue(value);
-    }
-
+    @Override
     public Text splitText(int offset) throws DOMException {
         return null;
     }
 
-    public String substringData(int offset, int count) throws DOMException {
-        return super.substringData(offset, count);
-    }
-
+    @Override
     public String toString(boolean top) {
         if (top) {
             final StringBuilder result = new StringBuilder();
@@ -169,18 +138,17 @@ public class TextImpl extends CharacterDataImpl implements Text {
         }
     }
 
-    public String toString() {
-        return super.toString();
-    }
-
+    @Override
     public int getChildCount() {
         return 0;
     }
 
+    @Override
     public boolean hasChildNodes() {
         return false;
     }
 
+    @Override
     public Node getFirstChild() {
         //bad implementations don't call hasChildNodes before
         return null;
@@ -188,6 +156,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Text#isElementContentWhitespace()
      */
+    @Override
     public boolean isElementContentWhitespace() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return false;
@@ -195,6 +164,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Text#getWholeText()
      */
+    @Override
     public String getWholeText() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -202,6 +172,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Text#replaceWholeText(java.lang.String)
      */
+    @Override
     public Text replaceWholeText(String content) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -209,6 +180,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#getBaseURI()
      */
+    @Override
     public String getBaseURI() {
         final Node parent = getParentNode();
         if (parent != null)
@@ -219,6 +191,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
      */
+    @Override
     public short compareDocumentPosition(Node other) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return 0;
@@ -226,6 +199,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#getTextContent()
      */
+    @Override
     public String getTextContent() throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -233,12 +207,14 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
      */
+    @Override
     public void setTextContent(String textContent) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
     }
 
     /** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
      */
+    @Override
     public boolean isSameNode(Node other) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return false;
@@ -246,6 +222,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
      */
+    @Override
     public String lookupPrefix(String namespaceURI) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -253,6 +230,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
      */
+    @Override
     public boolean isDefaultNamespace(String namespaceURI) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return false;
@@ -260,6 +238,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
      */
+    @Override
     public String lookupNamespaceURI(String prefix) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -267,6 +246,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
      */
+    @Override
     public boolean isEqualNode(Node arg) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return false;
@@ -274,6 +254,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
      */
+    @Override
     public Object getFeature(String feature, String version) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -281,6 +262,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
      */
+    @Override
     public Object setUserData(String key, Object data, UserDataHandler handler) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -288,6 +270,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     /** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
      */
+    @Override
     public Object getUserData(String key) {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;

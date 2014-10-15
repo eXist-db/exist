@@ -1077,7 +1077,7 @@ public abstract class Serializer implements XMLReader {
 		if (generateDocEvents)
 			{receiver.startDocument();}
         setDocument(null);
-        setXQueryContext(n.getDocument().getContext());
+        setXQueryContext(n.getOwnerDocument().getContext());
         n.streamTo(this, receiver);
 		if (generateDocEvents)
 			{receiver.endDocument();}

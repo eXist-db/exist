@@ -178,7 +178,7 @@ public class OrderedValueSequence extends AbstractSequence {
 					if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
 
 	                    // found an in-memory document
-	                    final org.exist.dom.memtree.DocumentImpl doc = ((NodeImpl)v).getDocument();
+	                    final org.exist.dom.memtree.DocumentImpl doc = ((NodeImpl)v).getOwnerDocument();
                         if (doc==null) {
                             continue;
                         }
@@ -194,7 +194,7 @@ public class OrderedValueSequence extends AbstractSequence {
                                 v = (NodeValue) items[j].item;
                                 if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                                     NodeImpl node = (NodeImpl) v;
-                                    if (node.getDocument() == doc) {
+                                    if (node.getOwnerDocument() == doc) {
                                         node = expandedDoc.getNode(node.getNodeNumber());
                                         NodeId nodeId = node.getNodeId();
                                         if (nodeId == null)

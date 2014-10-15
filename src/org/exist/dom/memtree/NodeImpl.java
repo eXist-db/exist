@@ -24,12 +24,10 @@ package org.exist.dom.memtree;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.INode;
 import org.exist.dom.QName;
-import org.exist.dom.QNameable;
-import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
-import org.exist.dom.persistent.NodeAtExist;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
@@ -53,7 +51,6 @@ import org.exist.xquery.value.UntypedAtomicValue;
 import org.exist.xquery.value.ValueSequence;
 import org.xml.sax.ContentHandler;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -66,7 +63,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 
-public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExist {
+public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl, T>, NodeValue {
 
     public final static short REFERENCE_NODE = 100;
     public final static short NAMESPACE_NODE = 101;
@@ -86,6 +83,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NodeValue#getImplementation()
      */
+    @Override
     public int getImplementationType() {
         return( NodeValue.IN_MEMORY_NODE );
     }
@@ -93,10 +91,12 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getDocumentSet()
      */
+    @Override
     public DocumentSet getDocumentSet() {
         return( DocumentSet.EMPTY_DOCUMENT_SET );
     }
 
+    @Override
     public Iterator<Collection> getCollectionIterator() {
         return( EmptyNodeSet.EMPTY_COLLECTION_ITERATOR );
     }
@@ -104,6 +104,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NodeValue#getNode()
      */
+    @Override
     public Node getNode() {
         return( this );
     }
@@ -111,6 +112,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeName()
      */
+    @Override
     public String getNodeName() {
         switch( getType() ) {
             case Type.DOCUMENT:
@@ -135,26 +137,47 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
         }
     }
 
+    @Override
     public QName getQName() {
         switch( getNodeType() ) {
             case Node.ATTRIBUTE_NODE:
+                return document.attrName[nodeNumber];
+
             case Node.ELEMENT_NODE:
             case Node.PROCESSING_INSTRUCTION_NODE:
-                final QName qn = document.nodeName[nodeNumber];
-                return( qn );
+                return document.nodeName[nodeNumber];
+
             case Node.DOCUMENT_NODE:
-                return( QName.EMPTY_QNAME );
+                return QName.EMPTY_QNAME;
+
             case Node.COMMENT_NODE:
-                return( QName.EMPTY_QNAME );
+                return QName.EMPTY_QNAME;
+
             case Node.TEXT_NODE:
-                return( QName.EMPTY_QNAME );
+                return QName.EMPTY_QNAME;
+
             case Node.CDATA_SECTION_NODE:
-                return( QName.EMPTY_QNAME );
+                return QName.EMPTY_QNAME;
+
             default:
-                return( null );
+                return null;
         }
     }
 
+    @Override
+    public void setQName(final QName qname) {
+        switch(getNodeType() ) {
+            case Node.ATTRIBUTE_NODE:
+                document.attrName[nodeNumber] = qname;
+                break;
+
+            case Node.ELEMENT_NODE:
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                document.nodeName[nodeNumber] = qname;
+        }
+    }
+
+    @Override
     public NodeId getNodeId() {
         expand();
         return( document.nodeId[nodeNumber] );
@@ -176,6 +199,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeValue()
      */
+    @Override
     public String getNodeValue() throws DOMException {
         throw( new RuntimeException( getClass().getName() + ": can not call getNodeValue() on node type " + this.getNodeType() ) );
     }
@@ -183,6 +207,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#setNodeValue(java.lang.String)
      */
+    @Override
     public void setNodeValue( String arg0 ) throws DOMException {
         throw( new RuntimeException( "Can not call setNodeValue() on node type " + this.getNodeType() ) );
     }
@@ -190,6 +215,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeType()
      */
+    @Override
     public short getNodeType() {
         //Workaround for fn:string-length(fn:node-name(document {""}))
         if( this.document == null ) {
@@ -201,6 +227,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getParentNode()
      */
+    @Override
     public Node getParentNode() {
         int next = document.next[nodeNumber];
         while( next > nodeNumber ) {
@@ -230,6 +257,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
         return( document.getNode( next ) );
     }
 
+    @Override
     public void addContextNode( int contextId, NodeValue node ) {
         throw( new RuntimeException( "Can not call addContextNode() on node type " + this.getNodeType() ) );
     }
@@ -250,6 +278,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NodeValue#equals(org.exist.xquery.value.NodeValue)
      */
+    @Override
     public boolean equals( NodeValue other ) throws XPathException {
         if( other.getImplementationType() != NodeValue.IN_MEMORY_NODE ) {
             return( false );
@@ -262,6 +291,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NodeValue#after(org.exist.xquery.value.NodeValue)
      */
+    @Override
     public boolean after( NodeValue other, boolean isFollowing ) throws XPathException {
         if( other.getImplementationType() != NodeValue.IN_MEMORY_NODE ) {
             throw( new XPathException( "cannot compare persistent node with in-memory node" ) );
@@ -272,6 +302,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NodeValue#before(org.exist.xquery.value.NodeValue)
      */
+    @Override
     public boolean before( NodeValue other, boolean isPreceding ) throws XPathException {
         if( other.getImplementationType() != NodeValue.IN_MEMORY_NODE ) {
             throw( new XPathException( "cannot compare persistent node with in-memory node" ) );
@@ -279,10 +310,8 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
         return( nodeNumber < ( (NodeImpl)other ).nodeNumber );
     }
 
-    public int compareTo( Object other ) {
-        if( !( other instanceof NodeImpl ) ) {
-            return( Constants.INFERIOR );
-        }
+    @Override
+    public int compareTo( NodeImpl other ) {
         final NodeImpl n = (NodeImpl)other;
         if( n.document == document ) {
             if( ( nodeNumber == n.nodeNumber ) && ( getNodeType() == n.getNodeType() ) ) {
@@ -299,6 +328,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
         }
     }
 
+    @Override
     public Sequence tail() throws XPathException {
     	return Sequence.EMPTY_SEQUENCE;
     }
@@ -306,6 +336,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getChildNodes()
      */
+    @Override
     public NodeList getChildNodes() {
         throw( new RuntimeException( "Can not call getChildNodes() on node type " + this.getNodeType() ) );
     }
@@ -313,6 +344,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getFirstChild()
      */
+    @Override
     public Node getFirstChild() {
         throw( new RuntimeException( "Can not call getFirstChild() on node type " + this.getNodeType() ) );
     }
@@ -320,6 +352,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getLastChild()
      */
+    @Override
     public Node getLastChild() {
         throw( new RuntimeException( "Can not call getLastChild() on node type " + this.getNodeType() ) );
     }
@@ -327,6 +360,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getPreviousSibling()
      */
+    @Override
     public Node getPreviousSibling() {
         if( nodeNumber == 0 ) {
             return( null );
@@ -346,6 +380,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNextSibling()
      */
+    @Override
     public Node getNextSibling() {
         final int nextNr = document.next[nodeNumber];
         return( ( nextNr < nodeNumber ) ? null : document.getNode( nextNr ) );
@@ -354,6 +389,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getAttributes()
      */
+    @Override
     public NamedNodeMap getAttributes() {
         throw( new RuntimeException( "Can not call getAttributes() on node type " + this.getNodeType() ) );
     }
@@ -361,21 +397,15 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getOwnerDocument()
      */
-    public Document getOwnerDocument() {
-        return( document );
-    }
-
-    public DocumentImpl getDocument() {
-        return( document );
-    }
-
-    public DocumentAtExist getDocumentAtExist() {
+    @Override
+    public DocumentImpl getOwnerDocument() {
         return( document );
     }
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
      */
+    @Override
     public Node insertBefore( Node arg0, Node arg1 ) throws DOMException {
         throw( new RuntimeException( "Can not call insertBefore() on node type " + this.getNodeType() ) );
     }
@@ -383,6 +413,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
+    @Override
     public Node replaceChild( Node arg0, Node arg1 ) throws DOMException {
         throw( new RuntimeException( "Can not call replaceChild() on node type " + this.getNodeType() ) );
     }
@@ -390,6 +421,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#removeChild(org.w3c.dom.Node)
      */
+    @Override
     public Node removeChild( Node arg0 ) throws DOMException {
         throw( new RuntimeException( "Can not call removeChild() on node type " + this.getNodeType() ) );
     }
@@ -397,6 +429,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#newChild(org.w3c.dom.Node)
      */
+    @Override
     public Node appendChild( Node arg0 ) throws DOMException {
         throw( new RuntimeException( "Can not call appendChild() on node type " + this.getNodeType() ) );
     }
@@ -404,6 +437,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#hasChildNodes()
      */
+    @Override
     public boolean hasChildNodes() {
         //throw new RuntimeException("Can not call hasChildNodes() on node type " + this.getNodeType());
         //the default value is
@@ -413,6 +447,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#cloneNode(boolean)
      */
+    @Override
     public Node cloneNode( boolean arg0 ) {
         throw( new RuntimeException( "Can not call cloneNode() on node type " + this.getNodeType() ) );
     }
@@ -420,12 +455,14 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#normalize()
      */
+    @Override
     public void normalize() {
     }
 
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#isSupported(java.lang.String, java.lang.String)
      */
+    @Override
     public boolean isSupported( String arg0, String arg1 ) {
         throw( new RuntimeException( "Can not call isSupported() on node type " + this.getNodeType() ) );
     }
@@ -433,6 +470,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNamespaceURI()
      */
+    @Override
     public String getNamespaceURI() {
         throw( new RuntimeException( "Can not call getNamespaceURI() on node type " + this.getNodeType() ) );
     }
@@ -440,6 +478,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getPrefix()
      */
+    @Override
     public String getPrefix() {
         throw( new RuntimeException( "Can not call getPrefix() on node type " + this.getNodeType() ) );
     }
@@ -447,6 +486,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#setPrefix(java.lang.String)
      */
+    @Override
     public void setPrefix( String arg0 ) throws DOMException {
         throw( new RuntimeException( "Can not call setPrefix() on node type " + this.getNodeType() ) );
     }
@@ -454,6 +494,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getLocalPart()
      */
+    @Override
     public String getLocalName() {
         throw( new RuntimeException( "Can not call getLocalPart() on node type " + this.getNodeType() ) );
     }
@@ -461,6 +502,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#hasAttributes()
      */
+    @Override
     public boolean hasAttributes() {
         throw( new RuntimeException( "Can not call hasAttributes() on node type " + this.getNodeType() ) );
     }
@@ -472,6 +514,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#getType()
      */
+    @Override
     public int getType() {
         //Workaround for fn:string-length(fn:node-name(document {""}))
         if( this.document == null ) {
@@ -500,6 +543,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#getStringValue()
      */
+    @Override
     public String getStringValue() {
         final int level       = document.treeLevel[nodeNumber];
         int next        = nodeNumber + 1;
@@ -558,6 +602,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#toSequence()
      */
+    @Override
     public Sequence toSequence() {
         return( this );
     }
@@ -565,6 +610,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#convertTo(int)
      */
+    @Override
     public AtomicValue convertTo( int requiredType ) throws XPathException {
         return( UntypedAtomicValue.convertTo( null, getStringValue(), requiredType ) );
     }
@@ -572,6 +618,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#atomize()
      */
+    @Override
     public AtomicValue atomize() throws XPathException {
         return( new UntypedAtomicValue( getStringValue() ) );
     }
@@ -580,14 +627,17 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      * Methods of interface Sequence
      */
 
+    @Override
     public boolean isEmpty() {
         return( false );
     }
 
+    @Override
     public boolean hasOne() {
         return( true );
     }
 
+    @Override
     public boolean hasMany() {
         return( false );
     }
@@ -595,6 +645,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
      */
+    @Override
     public void add( Item item ) throws XPathException {
         throw( new RuntimeException( "Can not call add() on node type " + this.getNodeType() ) );
     }
@@ -602,6 +653,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#addAll(org.exist.xquery.value.Sequence)
      */
+    @Override
     public void addAll( Sequence other ) throws XPathException {
         throw( new RuntimeException( "Can not call addAll() on node type " + this.getNodeType() ) );
     }
@@ -609,6 +661,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getItemType()
      */
+    @Override
     public int getItemType() {
         return( Type.NODE );
     }
@@ -616,6 +669,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#iterate()
      */
+    @Override
     public SequenceIterator iterate() throws XPathException {
         return( new SingleNodeIterator( this ) );
     }
@@ -623,6 +677,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#unorderedIterator()
      */
+    @Override
     public SequenceIterator unorderedIterator() {
         return( new SingleNodeIterator( this ) );
     }
@@ -630,6 +685,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getItemCount()
      */
+    @Override
     public int getItemCount() {
         return( 1 );
     }
@@ -642,6 +698,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getCardinality()
      */
+    @Override
     public int getCardinality() {
         return( Cardinality.EXACTLY_ONE );
     }
@@ -649,6 +706,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#itemAt(int)
      */
+    @Override
     public Item itemAt( int pos ) {
         return( ( pos == 0 ) ? this : null );
     }
@@ -657,6 +715,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
      */
+    @Override
     public boolean effectiveBooleanValue() throws XPathException {
         //A node evaluates to true()
         return( true );
@@ -665,12 +724,14 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#toNodeSet()
      */
+    @Override
     public NodeSet toNodeSet() throws XPathException {
         final ValueSequence seq = new ValueSequence();
         seq.add( this );
         return( seq.toNodeSet() );
     }
 
+    @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
         return( new ValueSequence( this ).toMemNodeSet() );
     }
@@ -678,6 +739,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
      */
+    @Override
     public void toSAX( DBBroker broker, ContentHandler handler, Properties properties )
         throws SAXException {
         final Serializer serializer = broker.getSerializer();
@@ -697,7 +759,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
         serializer.toSAX( this );
     }
 
-
+    @Override
     public void copyTo( DBBroker broker, DocumentBuilderReceiver receiver ) throws SAXException {
         //Null test for document nodes
         if( document != null ) {
@@ -708,13 +770,14 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     public void streamTo( Serializer serializer, Receiver receiver ) throws SAXException {
         //Null test for document nodes
         if( document != null ) {
-            document.streamTo( serializer, this, receiver );
+            document.streamTo(serializer, this, receiver);
         }
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
      */
+    @Override
     public int conversionPreference( Class<?> javaClass ) {
         if( javaClass.isAssignableFrom( NodeImpl.class ) ) {
             return( 0 );
@@ -775,6 +838,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#setSelfAsContext(int)
      */
+    @Override
     public void setSelfAsContext( int contextId ) {
         throw( new RuntimeException( "Can not call setSelfAsContext() on node type " + this.getNodeType() ) );
     }
@@ -782,6 +846,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#isCached()
      */
+    @Override
     public boolean isCached() {
         // always return false
         return( false );
@@ -790,6 +855,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#setIsCached(boolean)
      */
+    @Override
     public void setIsCached( boolean cached ) {
         // ignore
         throw( new RuntimeException( "Can not call setIsCached() on node type " + this.getNodeType() ) );
@@ -798,14 +864,17 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#removeDuplicates()
      */
+    @Override
     public void removeDuplicates() {
         // do nothing: this is a single node
     }
 
+    @Override
     public String getBaseURI() {
         return( null );
     }
 
+    @Override
     public void destroy(XQueryContext context, Sequence contextSequence) {
         // nothing to do
     }
@@ -813,12 +882,10 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
 //    protected XmldbURI calculateBaseURI() {
 //    	return null;
 //    }
-    
+
 
     public abstract void selectAttributes( NodeTest test, Sequence result ) throws XPathException;
-    
     public abstract void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException;
-
     public abstract void selectChildren( NodeTest test, Sequence result ) throws XPathException;
 
     public void selectDescendants( boolean includeSelf, NodeTest test, Sequence result ) 
@@ -852,7 +919,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     public void selectPrecedingSiblings( NodeTest test, Sequence result )
             throws XPathException {
         final int parent   = document.getParentNodeFor( nodeNumber );
-        int nextNode = document.getFirstChildFor( parent );
+        int nextNode = document.getFirstChildFor(parent);
         while( ( nextNode >= parent ) && ( nextNode < nodeNumber ) ) {
             final NodeImpl n = document.getNode( nextNode );
             if( test.matches( n ) ) {
@@ -882,7 +949,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
 
     public void selectFollowingSiblings( NodeTest test, Sequence result ) 
             throws XPathException {
-        final int parent = document.getParentNodeFor( nodeNumber );
+        final int parent = document.getParentNodeFor(nodeNumber);
         if( parent == 0 ) {
             // parent is the document node
             if( getNodeType() == Node.ELEMENT_NODE ) {
@@ -921,7 +988,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
             NodeImpl next = (NodeImpl)getNextSibling();
             while( next != null ) {
                 if( test.matches( next ) ) {
-                    next.selectDescendants( true, test, result );
+                    next.selectDescendants(true, test, result);
                 }
                 if( next.getNodeType() == Node.ELEMENT_NODE ) {
                     break;
@@ -992,7 +1059,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
 
     public boolean matchPrecedingSiblings( NodeTest test ) {
         final int parent   = document.getParentNodeFor( nodeNumber );
-        int nextNode = document.getFirstChildFor( parent );
+        int nextNode = document.getFirstChildFor(parent);
         while( ( nextNode >= parent ) && ( nextNode < nodeNumber ) ) {
             final NodeImpl n = document.getNode( nextNode );
             if( test.matches( n ) ) {
@@ -1022,7 +1089,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     }
 
     public boolean matchFollowingSiblings( NodeTest test ) {
-        final int parent = document.getParentNodeFor( nodeNumber );
+        final int parent = document.getParentNodeFor(nodeNumber);
         if( parent == 0 ) {
             // parent is the document node
             if( getNodeType() == Node.ELEMENT_NODE ) {
@@ -1100,6 +1167,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public short compareDocumentPosition( Node other ) throws DOMException {
         throw( new RuntimeException( "Can not call compareDocumentPosition() on node type " + this.getNodeType() ) );
     }
@@ -1111,6 +1179,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public String getTextContent() throws DOMException {
         throw( new RuntimeException( "Can not call getTextContent() on node type " + this.getNodeType() ) );
     }
@@ -1122,6 +1191,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public void setTextContent( String textContent ) throws DOMException {
         throw( new RuntimeException( "Can not call setTextContent() on node type " + this.getNodeType() ) );
     }
@@ -1133,6 +1203,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public boolean isSameNode( Node other ) {
         throw( new RuntimeException( "Can not call isSameNode() on node type " + this.getNodeType() ) );
     }
@@ -1144,6 +1215,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public String lookupPrefix( String namespaceURI ) {
         throw( new RuntimeException( "Can not call lookupPrefix() on node type " + this.getNodeType() ) );
     }
@@ -1155,6 +1227,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public boolean isDefaultNamespace( String namespaceURI ) {
         throw( new RuntimeException( "Can not call isDefaultNamespace() on node type " + this.getNodeType() ) );
     }
@@ -1166,6 +1239,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public String lookupNamespaceURI( String prefix ) {
         throw( new RuntimeException( "Can not call lookupNamespaceURI() on node type " + this.getNodeType() ) );
     }
@@ -1177,6 +1251,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public boolean isEqualNode( Node arg ) {
         throw( new RuntimeException( "Can not call isEqualNode() on node type " + this.getNodeType() ) );
     }
@@ -1189,6 +1264,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public Object getFeature( String feature, String version ) {
         throw( new RuntimeException( "Can not call getFeature() on node type " + this.getNodeType() ) );
     }
@@ -1202,6 +1278,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public Object setUserData( String key, Object data, UserDataHandler handler ) {
         throw( new RuntimeException( "Can not call setUserData() on node type " + this.getNodeType() ) );
     }
@@ -1213,6 +1290,7 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public Object getUserData( String key ) {
         throw( new RuntimeException( "Can not call getUserData() on node type " + this.getNodeType() ) );
     }
@@ -1220,27 +1298,33 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#isPersistentSet()
      */
+    @Override
     public boolean isPersistentSet() {
         //See package's name ;-)
         return( false );
     }
 
+    @Override
     public void nodeMoved( NodeId oldNodeId, NodeHandle newNode ) {
         // can not be applied to in-memory nodes
     }
 
+    @Override
     public void clearContext( int contextId ) {
         //Nothing to do
     }
 
+    @Override
     public int getState() {
         return( 0 );
     }
 
+    @Override
     public boolean isCacheable() {
         return( true );
     }
 
+    @Override
     public boolean hasChanged( int previousState ) {
         return( false ); // will never change
     }
@@ -1255,13 +1339,15 @@ public abstract class NodeImpl implements Node, QNameable, NodeValue, NodeAtExis
         /* (non-Javadoc)
          * @see org.exist.xquery.value.SequenceIterator#hasNext()
          */
+        @Override
         public boolean hasNext() {
-            return( node != null );
+            return node != null;
         }
 
         /* (non-Javadoc)
          * @see org.exist.xquery.value.SequenceIterator#nextItem()
          */
+        @Override
         public Item nextItem() {
             final NodeImpl next = node;
             node = null;
