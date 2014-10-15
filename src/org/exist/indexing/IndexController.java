@@ -24,7 +24,7 @@ package org.exist.indexing;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.TextImpl;
-import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.IStoredNode;
@@ -317,7 +317,7 @@ public class IndexController {
                 break;
             case Node.TEXT_NODE :
             case Node.CDATA_SECTION_NODE :
-                listener.characters(transaction, (CharacterDataImpl) node, path);
+                listener.characters(transaction, (AbstractCharacterData) node, path);
                 break;
             case Node.ATTRIBUTE_NODE :
                 listener.attribute(transaction, (AttrImpl) node, path);

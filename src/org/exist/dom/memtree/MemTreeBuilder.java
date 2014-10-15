@@ -133,7 +133,7 @@ public class MemTreeBuilder {
     /**
      * Create a new element.
      *
-     * @param qname         DOCUMENT ME!
+     * @param qname      DOCUMENT ME!
      * @param attributes DOCUMENT ME!
      * @return the node number of the created element
      */
@@ -181,15 +181,15 @@ public class MemTreeBuilder {
     private int getAttribType(final QName qname, final String type) {
         if(qname.equals(Namespaces.XML_ID_QNAME)) {
             // an xml:id attribute.
-            return AttributeImpl.ATTR_CDATA_TYPE;
+            return AttrImpl.ATTR_CDATA_TYPE;
         } else if(type.equals(Indexer.ATTR_ID_TYPE)) {
-            return AttributeImpl.ATTR_ID_TYPE;
+            return AttrImpl.ATTR_ID_TYPE;
         } else if(type.equals(Indexer.ATTR_IDREF_TYPE)) {
-            return AttributeImpl.ATTR_IDREF_TYPE;
+            return AttrImpl.ATTR_IDREF_TYPE;
         } else if(type.equals(Indexer.ATTR_IDREFS_TYPE)) {
-            return AttributeImpl.ATTR_IDREFS_TYPE;
+            return AttrImpl.ATTR_IDREFS_TYPE;
         } else {
-            return AttributeImpl.ATTR_CDATA_TYPE;
+            return AttrImpl.ATTR_CDATA_TYPE;
         }
     }
 
@@ -248,7 +248,7 @@ public class MemTreeBuilder {
         //} else {
         //lastNode = doc.addAttribute(lastNode, qname, value);
         //}
-        final int nodeNr = doc.addAttribute(lastNode, qname, value, AttributeImpl.ATTR_CDATA_TYPE);
+        final int nodeNr = doc.addAttribute(lastNode, qname, value, AttrImpl.ATTR_CDATA_TYPE);
 
         //TODO :
         //1) call linkNode(nodeNr); ?

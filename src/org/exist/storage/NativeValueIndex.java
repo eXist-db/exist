@@ -27,7 +27,7 @@ import org.exist.dom.TypedQNameComparator;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.DocumentSet;
@@ -1999,7 +1999,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
 
 
-        public void characters( Txn transaction, CharacterDataImpl text, NodePath path )
+        public void characters( Txn transaction, AbstractCharacterData text, NodePath path )
         {
             if( ( contentStack != null ) && !contentStack.isEmpty() ) {
 

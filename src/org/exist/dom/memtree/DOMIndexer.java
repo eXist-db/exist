@@ -53,7 +53,7 @@ import java.util.Stack;
  * directly accesses the in-memory document structure and writes it into a
  * temporary doc on the database. This is much faster than first serializing
  * the document tree to SAX and passing it to {@link org.exist.collections.Collection#store(org.exist.storage.txn.Txn, org.exist.storage.DBBroker, org.exist.collections.IndexInfo, org.xml.sax.InputSource, boolean)}.
- *
+ * <p/>
  * <p>As the in-memory document fragment may not be a well-formed XML doc (having more than one root element), a wrapper element is put around the
  * content nodes.</p>
  *
@@ -78,7 +78,7 @@ public class DOMIndexer {
     private final ProcessingInstructionImpl pi = new ProcessingInstructionImpl();
 
     public DOMIndexer(final DBBroker broker, final Txn transaction, final DocumentImpl doc,
-                      org.exist.dom.persistent.DocumentImpl targetDoc) {
+                      final org.exist.dom.persistent.DocumentImpl targetDoc) {
         this.broker = broker;
         this.transaction = transaction;
         this.doc = doc;
@@ -158,7 +158,6 @@ public class DOMIndexer {
             nodeNr = nextNode;
         }
     }
-
 
     /**
      * DOCUMENT ME!
@@ -255,7 +254,6 @@ public class DOMIndexer {
         }
     }
 
-
     /**
      * DOCUMENT ME!
      *
@@ -274,7 +272,6 @@ public class DOMIndexer {
         }
     }
 
-
     private Map<String, String> getNamespaces(final int nodeNr) {
         int ns = doc.alphaLen[nodeNr];
 
@@ -288,7 +285,7 @@ public class DOMIndexer {
             final QName qn = doc.namespaceCode[ns];
 
             if(XMLConstants.XMLNS_ATTRIBUTE.equals(qn.getLocalPart())) {
-                map.put("", qn.getNamespaceURI());
+                map.put(XMLConstants.DEFAULT_NS_PREFIX, qn.getNamespaceURI());
             } else {
                 map.put(qn.getLocalPart(), qn.getNamespaceURI());
             }
@@ -297,7 +294,6 @@ public class DOMIndexer {
 
         return map;
     }
-
 
     /**
      * DOCUMENT ME!
@@ -309,7 +305,7 @@ public class DOMIndexer {
      */
     private void storeAttributes(final int nodeNr, final ElementImpl elem, final NodePath path) throws DOMException {
         int attr = doc.alpha[nodeNr];
-        if(attr > - 1) {
+        if(attr > -1) {
             while((attr < doc.nextAttr) && (doc.attrParent[attr] == nodeNr)) {
                 final QName qn = doc.attrName[attr];
                 final AttrImpl attrib = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);

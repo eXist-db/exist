@@ -22,6 +22,8 @@
  */
 package org.exist.dom.memtree;
 
+import org.apache.xml.utils.XMLChar;
+import org.apache.xml.utils.XML11Char;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.INode;
@@ -59,6 +61,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
 
+import javax.xml.XMLConstants;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -68,84 +71,50 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     public final static short REFERENCE_NODE = 100;
     public final static short NAMESPACE_NODE = 101;
 
-    protected int             nodeNumber;
-    protected DocumentImpl    document;
+    protected int nodeNumber;
+    protected DocumentImpl document;
 
-    public NodeImpl( DocumentImpl doc, int nodeNumber ) {
-        this.document   = doc;
+    public NodeImpl(final DocumentImpl doc, final int nodeNumber) {
+        this.document = doc;
         this.nodeNumber = nodeNumber;
     }
 
     public int getNodeNumber() {
-        return( nodeNumber );
+        return nodeNumber;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NodeValue#getImplementation()
-     */
     @Override
     public int getImplementationType() {
-        return( NodeValue.IN_MEMORY_NODE );
+        return NodeValue.IN_MEMORY_NODE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getDocumentSet()
-     */
     @Override
     public DocumentSet getDocumentSet() {
-        return( DocumentSet.EMPTY_DOCUMENT_SET );
+        return DocumentSet.EMPTY_DOCUMENT_SET;
     }
 
     @Override
     public Iterator<Collection> getCollectionIterator() {
-        return( EmptyNodeSet.EMPTY_COLLECTION_ITERATOR );
+        return EmptyNodeSet.EMPTY_COLLECTION_ITERATOR;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NodeValue#getNode()
-     */
     @Override
     public Node getNode() {
-        return( this );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNodeName()
-     */
-    @Override
-    public String getNodeName() {
-        switch( getType() ) {
-            case Type.DOCUMENT:
-                return( "#document" );
-            case Type.ELEMENT:
-            case Type.PROCESSING_INSTRUCTION:
-                final QName qn = document.nodeName[nodeNumber];
-                //TODO : check !
-                return( qn.getStringValue() );
-            case Type.ATTRIBUTE:
-                return( ( document.attrName[nodeNumber] ).getStringValue() );
-            case Type.NAMESPACE:
-                return( ( document.namespaceCode[nodeNumber] ).getStringValue() );
-            case Type.TEXT:
-                return( "#text" );
-            case Type.COMMENT:
-                return( "#comment" );
-            case Type.CDATA_SECTION:
-                return( "#cdata-section" );
-            default:
-                return( "#unknown" );
-        }
+        return this;
     }
 
     @Override
-    public QName getQName() {
-        switch( getNodeType() ) {
+    public final QName getQName() {
+        switch(getNodeType()) {
             case Node.ATTRIBUTE_NODE:
                 return document.attrName[nodeNumber];
 
             case Node.ELEMENT_NODE:
             case Node.PROCESSING_INSTRUCTION_NODE:
                 return document.nodeName[nodeNumber];
+
+            case NodeImpl.NAMESPACE_NODE:
+                return document.namespaceCode[nodeNumber];
 
             case Node.DOCUMENT_NODE:
                 return QName.EMPTY_QNAME;
@@ -165,8 +134,8 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     @Override
-    public void setQName(final QName qname) {
-        switch(getNodeType() ) {
+    public final void setQName(final QName qname) {
+        switch(getNodeType()) {
             case Node.ATTRIBUTE_NODE:
                 document.attrName[nodeNumber] = qname;
                 break;
@@ -174,13 +143,108 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             case Node.ELEMENT_NODE:
             case Node.PROCESSING_INSTRUCTION_NODE:
                 document.nodeName[nodeNumber] = qname;
+                break;
+
+            case NodeImpl.NAMESPACE_NODE:
+                document.namespaceCode[nodeNumber] = qname;
+                break;
+        }
+    }
+
+    @Override
+    public final String getNodeName() {
+        switch(getType()) {
+            case Type.DOCUMENT:
+                return "#document";
+
+            case Type.ELEMENT:
+            case Type.ATTRIBUTE:
+            case Type.PROCESSING_INSTRUCTION:
+            case Type.NAMESPACE:
+                return getQName().getStringValue();
+
+            case Type.TEXT:
+                return "#text";
+
+            case Type.COMMENT:
+                return "#comment";
+
+            case Type.CDATA_SECTION:
+                return "#cdata-section";
+
+            default:
+                return "#unknown";
+        }
+    }
+
+    @Override
+    public String getLocalName() {
+        switch(getNodeType()) {
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
+                return getQName().getLocalPart();
+
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                final QName qname = getQName();
+                return qname != null ? qname.getLocalPart() : null;
+
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public String getNamespaceURI() {
+        switch(getNodeType()) {
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
+                return getQName().getNamespaceURI();
+
+            case NodeImpl.NAMESPACE_NODE:
+                return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
+
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public final String getPrefix() {
+        switch(getNodeType()) {
+            case Node.ELEMENT_NODE:
+            case Node.ATTRIBUTE_NODE:
+            case NodeImpl.NAMESPACE_NODE:
+                return getQName().getPrefix();
+
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public void setPrefix(final String prefix) throws DOMException {
+        if(prefix == null) {
+            return;
+        } else if(getOwnerDocument().getXmlVersion().equals("1.0") && !XMLChar.isValidNCName(prefix)) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Prefix '" + prefix + "' in XML 1.0 contains invalid characters");
+        } else if(getOwnerDocument().getXmlVersion().equals("1.1") && !XML11Char.isXML11ValidNCName(prefix)) {
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Prefix '" + prefix + "' in XML 1.1 contains invalid characters");
+        } else if(getNamespaceURI() == null) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, "Cannot set prefix when namespace is null");
+        } else if(prefix.equals(XMLConstants.XML_NS_PREFIX) && !getNamespaceURI().equals(XMLConstants.XML_NS_URI)) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, "Prefix '" + XMLConstants.XML_NS_PREFIX + "' is invalid for namespace '" + getNamespaceURI() + "'");
+        } else if(getNodeType() == Node.ATTRIBUTE_NODE && prefix.equals(XMLConstants.XMLNS_ATTRIBUTE) && !getNamespaceURI().equals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI)) {
+            throw new DOMException(DOMException.NAMESPACE_ERR, "Prefix '" + XMLConstants.XMLNS_ATTRIBUTE + "' is invalid for namespace '" + getNamespaceURI() + "'");
+        } else if(getNodeType() == Node.ELEMENT_NODE || getNodeType() == Node.ATTRIBUTE_NODE) {
+            final QName qname = getQName();
+            setQName(new QName(qname.getLocalPart(), qname.getNamespaceURI(), prefix, qname.getNameType()));
         }
     }
 
     @Override
     public NodeId getNodeId() {
         expand();
-        return( document.nodeId[nodeNumber] );
+        return document.nodeId[nodeNumber];
     }
 
     public void expand() throws DOMException {
@@ -188,824 +252,633 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     public void deepCopy() throws DOMException {
-        DocumentImpl newDoc = document.expandRefs( this );
-        if( newDoc != document ) {
+        final DocumentImpl newDoc = document.expandRefs(this);
+        if(newDoc != document) {
             // we received a new document
             this.nodeNumber = 1;
-            this.document   = newDoc;
+            this.document = newDoc;
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNodeValue()
-     */
     @Override
     public String getNodeValue() throws DOMException {
-        throw( new RuntimeException( getClass().getName() + ": can not call getNodeValue() on node type " + this.getNodeType() ) );
+        throw new RuntimeException(getClass().getName() + ": can not call getNodeValue() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#setNodeValue(java.lang.String)
-     */
     @Override
-    public void setNodeValue( String arg0 ) throws DOMException {
-        throw( new RuntimeException( "Can not call setNodeValue() on node type " + this.getNodeType() ) );
+    public void setNodeValue(String arg0) throws DOMException {
+        throw new RuntimeException("Can not call setNodeValue() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNodeType()
-     */
     @Override
     public short getNodeType() {
         //Workaround for fn:string-length(fn:node-name(document {""}))
-        if( this.document == null ) {
-            return( Node.DOCUMENT_NODE );
+        if(this.document == null) {
+            return Node.DOCUMENT_NODE;
         }
-        return( document.nodeKind[nodeNumber] );
+        return document.nodeKind[nodeNumber];
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getParentNode()
-     */
     @Override
     public Node getParentNode() {
         int next = document.next[nodeNumber];
-        while( next > nodeNumber ) {
+        while(next > nodeNumber) {
             next = document.next[next];
         }
-        if( next < 0 ) {
-            return( null );
+        if(next < 0) {
+            return null;
         }
-        return( document.getNode( next ) );
+        return document.getNode(next);
     }
 
     public Node selectParentNode() {
         // as getParentNode() but doesn't return the document itself
-        if( nodeNumber == 0 ) {
-            return( null );
+        if(nodeNumber == 0) {
+            return null;
         }
         int next = document.next[nodeNumber];
-        while( next > nodeNumber ) {
+        while(next > nodeNumber) {
             next = document.next[next];
         }
-        if( next < 0 ) { //Is this even possible ?
-            return( null );
+        if(next < 0) { //Is this even possible ?
+            return null;
         }
-        if( next == 0 ) {
-            return( this.document.explicitCreation ? this.document : null );
+        if(next == 0) {
+            return this.document.explicitlyCreated ? this.document : null;
         }
-        return( document.getNode( next ) );
+        return document.getNode(next);
     }
 
     @Override
-    public void addContextNode( int contextId, NodeValue node ) {
-        throw( new RuntimeException( "Can not call addContextNode() on node type " + this.getNodeType() ) );
+    public void addContextNode(final int contextId, final NodeValue node) {
+        throw new RuntimeException("Can not call addContextNode() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
-    public boolean equals( Object obj ) {
-        if( !( obj instanceof NodeImpl ) ) {
-            return( false );
+    public boolean equals(final Object other) {
+        if(other == null || !(other instanceof NodeImpl)) {
+            return false;
         }
-        final NodeImpl o = (NodeImpl)obj;
-        return( ( document == o.document ) && ( nodeNumber == o.nodeNumber ) && 
-                ( getNodeType() == o.getNodeType() ) );
+        final NodeImpl o = (NodeImpl) other;
+        return document == o.document && nodeNumber == o.nodeNumber &&
+            getNodeType() == o.getNodeType();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NodeValue#equals(org.exist.xquery.value.NodeValue)
-     */
     @Override
-    public boolean equals( NodeValue other ) throws XPathException {
-        if( other.getImplementationType() != NodeValue.IN_MEMORY_NODE ) {
-            return( false );
+    public boolean equals(final NodeValue other) throws XPathException {
+        if(other.getImplementationType() != NodeValue.IN_MEMORY_NODE) {
+            return false;
         }
-        final NodeImpl o = (NodeImpl)other;
-        return( ( document == o.document ) && ( nodeNumber == o.nodeNumber ) && 
-                ( getNodeType() == o.getNodeType() ) );
+        final NodeImpl o = (NodeImpl) other;
+        return document == o.document && nodeNumber == o.nodeNumber &&
+            getNodeType() == o.getNodeType();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NodeValue#after(org.exist.xquery.value.NodeValue)
-     */
     @Override
-    public boolean after( NodeValue other, boolean isFollowing ) throws XPathException {
-        if( other.getImplementationType() != NodeValue.IN_MEMORY_NODE ) {
-            throw( new XPathException( "cannot compare persistent node with in-memory node" ) );
+    public boolean after(final NodeValue other, final boolean isFollowing) throws XPathException {
+        if(other.getImplementationType() != NodeValue.IN_MEMORY_NODE) {
+            throw new XPathException("cannot compare persistent node with in-memory node");
         }
-        return( nodeNumber > ( (NodeImpl)other ).nodeNumber );
+        return nodeNumber > ((NodeImpl) other).nodeNumber;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NodeValue#before(org.exist.xquery.value.NodeValue)
-     */
     @Override
-    public boolean before( NodeValue other, boolean isPreceding ) throws XPathException {
-        if( other.getImplementationType() != NodeValue.IN_MEMORY_NODE ) {
-            throw( new XPathException( "cannot compare persistent node with in-memory node" ) );
+    public boolean before(final NodeValue other, final boolean isPreceding) throws XPathException {
+        if(other.getImplementationType() != NodeValue.IN_MEMORY_NODE) {
+            throw new XPathException("cannot compare persistent node with in-memory node");
         }
-        return( nodeNumber < ( (NodeImpl)other ).nodeNumber );
+        return nodeNumber < ((NodeImpl)other).nodeNumber;
     }
 
     @Override
-    public int compareTo( NodeImpl other ) {
-        final NodeImpl n = (NodeImpl)other;
-        if( n.document == document ) {
-            if( ( nodeNumber == n.nodeNumber ) && ( getNodeType() == n.getNodeType() ) ) {
-                return( Constants.EQUAL );
-            } else if( nodeNumber < n.nodeNumber ) {
-                return( Constants.INFERIOR );
+    public int compareTo(final NodeImpl other) {
+        final NodeImpl n = (NodeImpl) other;
+        if(n.document == document) {
+            if(nodeNumber == n.nodeNumber && getNodeType() == n.getNodeType()) {
+                return Constants.EQUAL;
+            } else if(nodeNumber < n.nodeNumber) {
+                return Constants.INFERIOR;
             } else {
-                return( Constants.SUPERIOR );
+                return Constants.SUPERIOR;
             }
-        } else if( document.docId < n.document.docId ) {
-            return( Constants.INFERIOR );
+        } else if(document.docId < n.document.docId) {
+            return Constants.INFERIOR;
         } else {
-            return( Constants.SUPERIOR );
+            return Constants.SUPERIOR;
         }
     }
 
     @Override
     public Sequence tail() throws XPathException {
-    	return Sequence.EMPTY_SEQUENCE;
+        return Sequence.EMPTY_SEQUENCE;
     }
-    
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getChildNodes()
-     */
+
     @Override
     public NodeList getChildNodes() {
-        throw( new RuntimeException( "Can not call getChildNodes() on node type " + this.getNodeType() ) );
+        throw new RuntimeException("Can not call getChildNodes() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getFirstChild()
-     */
     @Override
     public Node getFirstChild() {
-        throw( new RuntimeException( "Can not call getFirstChild() on node type " + this.getNodeType() ) );
+        throw new RuntimeException("Can not call getFirstChild() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getLastChild()
-     */
     @Override
     public Node getLastChild() {
-        throw( new RuntimeException( "Can not call getLastChild() on node type " + this.getNodeType() ) );
+        throw new RuntimeException("Can not call getLastChild() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getPreviousSibling()
-     */
     @Override
     public Node getPreviousSibling() {
-        if( nodeNumber == 0 ) {
-            return( null );
+        if(nodeNumber == 0) {
+            return null;
         }
-        final int parent   = document.getParentNodeFor( nodeNumber );
-        int nextNode = document.getFirstChildFor( parent );
-        while( ( nextNode >= parent ) && ( nextNode < nodeNumber ) ) {
-            int following = document.next[nextNode];
-            if( following == nodeNumber ) {
-                return( document.getNode( nextNode ) );
+        final int parent = document.getParentNodeFor(nodeNumber);
+        int nextNode = document.getFirstChildFor(parent);
+        while((nextNode >= parent) && (nextNode < nodeNumber)) {
+            final int following = document.next[nextNode];
+            if(following == nodeNumber) {
+                return document.getNode(nextNode);
             }
             nextNode = following;
         }
-        return( null );
+        return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNextSibling()
-     */
     @Override
     public Node getNextSibling() {
         final int nextNr = document.next[nodeNumber];
-        return( ( nextNr < nodeNumber ) ? null : document.getNode( nextNr ) );
+        return nextNr < nodeNumber ? null : document.getNode(nextNr);
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getAttributes()
-     */
     @Override
     public NamedNodeMap getAttributes() {
-        throw( new RuntimeException( "Can not call getAttributes() on node type " + this.getNodeType() ) );
+        throw new RuntimeException("Can not call getAttributes() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getOwnerDocument()
-     */
     @Override
     public DocumentImpl getOwnerDocument() {
-        return( document );
+        return document;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
-     */
     @Override
-    public Node insertBefore( Node arg0, Node arg1 ) throws DOMException {
-        throw( new RuntimeException( "Can not call insertBefore() on node type " + this.getNodeType() ) );
+    public Node insertBefore(final Node newChild, final Node refChild) throws DOMException {
+        throw new RuntimeException("Can not call insertBefore() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
-     */
     @Override
-    public Node replaceChild( Node arg0, Node arg1 ) throws DOMException {
-        throw( new RuntimeException( "Can not call replaceChild() on node type " + this.getNodeType() ) );
+    public Node replaceChild(final Node newChild, final Node oldChild) throws DOMException {
+        throw new RuntimeException("Can not call replaceChild() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#removeChild(org.w3c.dom.Node)
-     */
     @Override
-    public Node removeChild( Node arg0 ) throws DOMException {
-        throw( new RuntimeException( "Can not call removeChild() on node type " + this.getNodeType() ) );
+    public Node removeChild(final Node oldChild) throws DOMException {
+        throw new RuntimeException("Can not call removeChild() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#newChild(org.w3c.dom.Node)
-     */
     @Override
-    public Node appendChild( Node arg0 ) throws DOMException {
-        throw( new RuntimeException( "Can not call appendChild() on node type " + this.getNodeType() ) );
+    public Node appendChild(final Node newChild) throws DOMException {
+        throw new RuntimeException("Can not call appendChild() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#hasChildNodes()
-     */
     @Override
     public boolean hasChildNodes() {
-        //throw new RuntimeException("Can not call hasChildNodes() on node type " + this.getNodeType());
-        //the default value is
-        return( false );
+        return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#cloneNode(boolean)
-     */
     @Override
-    public Node cloneNode( boolean arg0 ) {
-        throw( new RuntimeException( "Can not call cloneNode() on node type " + this.getNodeType() ) );
+    public Node cloneNode(final boolean deep) {
+        throw new RuntimeException("Can not call cloneNode() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#normalize()
-     */
     @Override
     public void normalize() {
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#isSupported(java.lang.String, java.lang.String)
-     */
     @Override
-    public boolean isSupported( String arg0, String arg1 ) {
-        throw( new RuntimeException( "Can not call isSupported() on node type " + this.getNodeType() ) );
+    public boolean isSupported(final String feature, final String version) {
+        throw new RuntimeException("Can not call isSupported() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNamespaceURI()
-     */
-    @Override
-    public String getNamespaceURI() {
-        throw( new RuntimeException( "Can not call getNamespaceURI() on node type " + this.getNodeType() ) );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getPrefix()
-     */
-    @Override
-    public String getPrefix() {
-        throw( new RuntimeException( "Can not call getPrefix() on node type " + this.getNodeType() ) );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#setPrefix(java.lang.String)
-     */
-    @Override
-    public void setPrefix( String arg0 ) throws DOMException {
-        throw( new RuntimeException( "Can not call setPrefix() on node type " + this.getNodeType() ) );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getLocalPart()
-     */
-    @Override
-    public String getLocalName() {
-        throw( new RuntimeException( "Can not call getLocalPart() on node type " + this.getNodeType() ) );
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#hasAttributes()
-     */
     @Override
     public boolean hasAttributes() {
-        throw( new RuntimeException( "Can not call hasAttributes() on node type " + this.getNodeType() ) );
+        throw new RuntimeException("Can not call hasAttributes() on node type " + this.getNodeType());
     }
 
-    /*
-     * Methods of interface Item
-     */
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#getType()
-     */
     @Override
     public int getType() {
         //Workaround for fn:string-length(fn:node-name(document {""}))
-        if( this.document == null ) {
-            return( Type.DOCUMENT );
+        if(this.document == null) {
+            return Type.DOCUMENT;
         }
         switch(getNodeType()) {
-            case Node.DOCUMENT_NODE: 
-                return( Type.DOCUMENT );
-            case Node.COMMENT_NODE: 
-                return( Type.COMMENT );
-            case Node.PROCESSING_INSTRUCTION_NODE: 
-                return( Type.PROCESSING_INSTRUCTION );
-            case Node.ELEMENT_NODE: 
-                return( Type.ELEMENT );
-            case Node.ATTRIBUTE_NODE: 
-                return( Type.ATTRIBUTE );
-            case Node.TEXT_NODE: 
-                return( Type.TEXT );
-            case Node.CDATA_SECTION_NODE: 
-                return( Type.CDATA_SECTION );
-            default: 
-                return( Type.NODE );
+            case Node.DOCUMENT_NODE:
+                return Type.DOCUMENT;
+
+            case Node.COMMENT_NODE:
+                return Type.COMMENT;
+
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                return Type.PROCESSING_INSTRUCTION;
+
+            case Node.ELEMENT_NODE:
+                return Type.ELEMENT;
+
+            case Node.ATTRIBUTE_NODE:
+                return Type.ATTRIBUTE;
+
+            case Node.TEXT_NODE:
+                return Type.TEXT;
+
+            case Node.CDATA_SECTION_NODE:
+                return Type.CDATA_SECTION;
+
+            default:
+                return Type.NODE;
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#getStringValue()
-     */
     @Override
     public String getStringValue() {
-        final int level       = document.treeLevel[nodeNumber];
-        int next        = nodeNumber + 1;
+        final int level = document.treeLevel[nodeNumber];
+        int next = nodeNumber + 1;
         int startOffset = 0;
-        int len         = -1;
+        int len = -1;
 
-        while( ( next < document.size ) && ( document.treeLevel[next] > level ) ) {
-            if( 
-            		   ( document.nodeKind[next] == Node.TEXT_NODE )
-            		|| ( document.nodeKind[next] == Node.CDATA_SECTION_NODE )
-            		|| ( document.nodeKind[next] == Node.PROCESSING_INSTRUCTION_NODE )
+        while(next < document.size && document.treeLevel[next] > level) {
+            if(
+                (document.nodeKind[next] == Node.TEXT_NODE)
+                    || (document.nodeKind[next] == Node.CDATA_SECTION_NODE)
+                    || (document.nodeKind[next] == Node.PROCESSING_INSTRUCTION_NODE)
                 ) {
-                if( len < 0 ) {
+                if(len < 0) {
                     startOffset = document.alpha[next];
-                    len         = document.alphaLen[next];
+                    len = document.alphaLen[next];
                 } else {
                     len += document.alphaLen[next];
                 }
             } else {
-                return( getStringValueSlow() );
+                return getStringValueSlow();
             }
             ++next;
         }
-        return( ( len < 0 ) ? "" : new String( document.characters, startOffset, len ) );
+        return len < 0 ? "" : new String(document.characters, startOffset, len);
     }
 
     private String getStringValueSlow() {
-        final int           level = document.treeLevel[nodeNumber];
-        StringBuilder buf   = null;
-        int           next  = nodeNumber + 1;
+        final int level = document.treeLevel[nodeNumber];
+        StringBuilder buf = null;
+        int next = nodeNumber + 1;
 
-        while( ( next < document.size ) && ( document.treeLevel[next] > level ) ) {
-            switch( document.nodeKind[next] ) {
+        while(next < document.size && document.treeLevel[next] > level) {
+            switch(document.nodeKind[next]) {
                 case Node.TEXT_NODE:
                 case Node.CDATA_SECTION_NODE:
-            	case Node.PROCESSING_INSTRUCTION_NODE: {
-                    if( buf == null ) {
+                case Node.PROCESSING_INSTRUCTION_NODE: {
+                    if(buf == null) {
                         buf = new StringBuilder();
                     }
-                    buf.append( document.characters, document.alpha[next], document.alphaLen[next] );
+                    buf.append(document.characters, document.alpha[next], document.alphaLen[next]);
                     break;
                 }
                 case REFERENCE_NODE: {
-                    if( buf == null ) {
+                    if(buf == null) {
                         buf = new StringBuilder();
                     }
-                    buf.append( document.references[document.alpha[next]].getStringValue() );
+                    buf.append(document.references[document.alpha[next]].getStringValue());
                     break;
                 }
             }
             ++next;
         }
-        return( ( buf == null ) ? "" : buf.toString() );
+        return ((buf == null) ? "" : buf.toString());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#toSequence()
-     */
     @Override
     public Sequence toSequence() {
-        return( this );
+        return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#convertTo(int)
-     */
     @Override
-    public AtomicValue convertTo( int requiredType ) throws XPathException {
-        return( UntypedAtomicValue.convertTo( null, getStringValue(), requiredType ) );
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
+        return UntypedAtomicValue.convertTo(null, getStringValue(), requiredType);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#atomize()
-     */
     @Override
     public AtomicValue atomize() throws XPathException {
-        return( new UntypedAtomicValue( getStringValue() ) );
+        return new UntypedAtomicValue(getStringValue());
     }
-
-    /*
-     * Methods of interface Sequence
-     */
 
     @Override
     public boolean isEmpty() {
-        return( false );
+        return false;
     }
 
     @Override
     public boolean hasOne() {
-        return( true );
+        return true;
     }
 
     @Override
     public boolean hasMany() {
-        return( false );
+        return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
-     */
     @Override
-    public void add( Item item ) throws XPathException {
-        throw( new RuntimeException( "Can not call add() on node type " + this.getNodeType() ) );
+    public void add(final Item item) throws XPathException {
+        throw new RuntimeException("Can not call add() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#addAll(org.exist.xquery.value.Sequence)
-     */
     @Override
-    public void addAll( Sequence other ) throws XPathException {
-        throw( new RuntimeException( "Can not call addAll() on node type " + this.getNodeType() ) );
+    public void addAll(final Sequence other) throws XPathException {
+        throw new RuntimeException("Can not call addAll() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getItemType()
-     */
     @Override
     public int getItemType() {
-        return( Type.NODE );
+        return Type.NODE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#iterate()
-     */
     @Override
     public SequenceIterator iterate() throws XPathException {
-        return( new SingleNodeIterator( this ) );
+        return new SingleNodeIterator(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#unorderedIterator()
-     */
     @Override
     public SequenceIterator unorderedIterator() {
-        return( new SingleNodeIterator( this ) );
+        return new SingleNodeIterator(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getItemCount()
-     */
     @Override
     public int getItemCount() {
-        return( 1 );
+        return 1;
     }
 
     public int getLength() {
         //Let the derived classes do it...
-        throw( new RuntimeException( "Can not call getLength() on node type " + this.getNodeType() ) );
+        throw new RuntimeException("Can not call getLength() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getCardinality()
-     */
     @Override
     public int getCardinality() {
-        return( Cardinality.EXACTLY_ONE );
+        return Cardinality.EXACTLY_ONE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#itemAt(int)
-     */
     @Override
-    public Item itemAt( int pos ) {
-        return( ( pos == 0 ) ? this : null );
+    public Item itemAt(final int pos) {
+        return pos == 0 ? this : null;
     }
 
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
-     */
     @Override
     public boolean effectiveBooleanValue() throws XPathException {
         //A node evaluates to true()
-        return( true );
+        return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#toNodeSet()
-     */
     @Override
     public NodeSet toNodeSet() throws XPathException {
         final ValueSequence seq = new ValueSequence();
-        seq.add( this );
-        return( seq.toNodeSet() );
+        seq.add(this);
+        return seq.toNodeSet();
     }
 
     @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
-        return( new ValueSequence( this ).toMemNodeSet() );
+        return new ValueSequence(this).toMemNodeSet();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
-     */
     @Override
-    public void toSAX( DBBroker broker, ContentHandler handler, Properties properties )
+    public void toSAX(final DBBroker broker, final ContentHandler handler, final Properties properties)
         throws SAXException {
         final Serializer serializer = broker.getSerializer();
         serializer.reset();
-        serializer.setProperty( Serializer.GENERATE_DOC_EVENTS, "false" );
+        serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 
-        if( properties != null ) {
-            serializer.setProperties( properties );
+        if(properties != null) {
+            serializer.setProperties(properties);
         }
 
-        if( handler instanceof LexicalHandler ) {
-            serializer.setSAXHandlers( handler, (LexicalHandler)handler );
+        if(handler instanceof LexicalHandler) {
+            serializer.setSAXHandlers(handler, (LexicalHandler) handler);
         } else {
-            serializer.setSAXHandlers( handler, null );
+            serializer.setSAXHandlers(handler, null);
         }
 
-        serializer.toSAX( this );
+        serializer.toSAX(this);
     }
 
     @Override
-    public void copyTo( DBBroker broker, DocumentBuilderReceiver receiver ) throws SAXException {
+    public void copyTo(final DBBroker broker, final DocumentBuilderReceiver receiver) throws SAXException {
         //Null test for document nodes
-        if( document != null ) {
-            document.copyTo( this, receiver );
+        if(document != null) {
+            document.copyTo(this, receiver);
         }
     }
 
-    public void streamTo( Serializer serializer, Receiver receiver ) throws SAXException {
+    public void streamTo(final Serializer serializer, final Receiver receiver) throws SAXException {
         //Null test for document nodes
-        if( document != null ) {
+        if(document != null) {
             document.streamTo(serializer, this, receiver);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
-     */
     @Override
-    public int conversionPreference( Class<?> javaClass ) {
-        if( javaClass.isAssignableFrom( NodeImpl.class ) ) {
-            return( 0 );
+    public int conversionPreference(final Class<?> javaClass) {
+        final int preference;
+        if(javaClass.isAssignableFrom(NodeImpl.class)) {
+            preference = 0;
+        } else if(javaClass.isAssignableFrom(Node.class)) {
+            preference = 1;
+        } else if((javaClass == String.class) || (javaClass == CharSequence.class)) {
+            preference = 2;
+        } else if((javaClass == Character.class) || (javaClass == char.class)) {
+            preference = 2;
+        } else if((javaClass == Double.class) || (javaClass == double.class)) {
+            preference = 10;
+        } else if((javaClass == Float.class) || (javaClass == float.class)) {
+            preference = 11;
+        } else if((javaClass == Long.class) || (javaClass == long.class)) {
+            preference = 12;
+        } else if((javaClass == Integer.class) || (javaClass == int.class)) {
+            preference = 13;
+        } else if((javaClass == Short.class) || (javaClass == short.class)) {
+            preference = 14;
+        } else if((javaClass == Byte.class) || (javaClass == byte.class)) {
+            preference = 15;
+        } else if((javaClass == Boolean.class) || (javaClass == boolean.class)) {
+            preference = 16;
+        } else if(javaClass == Object.class) {
+            preference = 20;
+        } else {
+            preference = Integer.MAX_VALUE;
         }
-        if( javaClass.isAssignableFrom( Node.class ) ) {
-            return( 1 );
-        }
-        if( ( javaClass == String.class ) || ( javaClass == CharSequence.class ) ) {
-            return( 2 );
-        }
-        if( ( javaClass == Character.class ) || ( javaClass == char.class ) ) {
-            return( 2 );
-        }
-        if( ( javaClass == Double.class ) || ( javaClass == double.class ) ) {
-            return( 10 );
-        }
-        if( ( javaClass == Float.class ) || ( javaClass == float.class ) ) {
-            return( 11 );
-        }
-        if( ( javaClass == Long.class ) || ( javaClass == long.class ) ) {
-            return( 12 );
-        }
-        if( ( javaClass == Integer.class ) || ( javaClass == int.class ) ) {
-            return( 13 );
-        }
-        if( ( javaClass == Short.class ) || ( javaClass == short.class ) ) {
-            return( 14 );
-        }
-        if( ( javaClass == Byte.class ) || ( javaClass == byte.class ) ) {
-            return( 15 );
-        }
-        if( ( javaClass == Boolean.class ) || ( javaClass == boolean.class ) ) {
-            return( 16 );
-        }
-        if( javaClass == Object.class ) {
-            return( 20 );
-        }
-        return( Integer.MAX_VALUE );
+        return preference;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
-     */
     @Override
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
-        if(target.isAssignableFrom(NodeImpl.class)) {
-            return (T)this;
-        } else if(target.isAssignableFrom(Node.class)) {
-            return (T)this;
-        } else if(target == Object.class) {
-            return (T)this;
+        if(target.isAssignableFrom(NodeImpl.class) || target.isAssignableFrom(Node.class) || target == Object.class) {
+            return (T) this;
         } else {
-            final StringValue v = new StringValue( getStringValue() );
+            final StringValue v = new StringValue(getStringValue());
             return v.toJavaObject(target);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#setSelfAsContext(int)
-     */
     @Override
-    public void setSelfAsContext( int contextId ) {
-        throw( new RuntimeException( "Can not call setSelfAsContext() on node type " + this.getNodeType() ) );
+    public void setSelfAsContext(final int contextId) {
+        throw new RuntimeException("Can not call setSelfAsContext() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#isCached()
-     */
     @Override
     public boolean isCached() {
         // always return false
-        return( false );
+        return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#setIsCached(boolean)
-     */
     @Override
-    public void setIsCached( boolean cached ) {
-        // ignore
-        throw( new RuntimeException( "Can not call setIsCached() on node type " + this.getNodeType() ) );
+    public void setIsCached(final boolean cached) {
+        throw new RuntimeException("Can not call setIsCached() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#removeDuplicates()
-     */
     @Override
     public void removeDuplicates() {
-        // do nothing: this is a single node
     }
 
     @Override
     public String getBaseURI() {
-        return( null );
+        return null;
     }
 
     @Override
-    public void destroy(XQueryContext context, Sequence contextSequence) {
-        // nothing to do
+    public void destroy(final XQueryContext context, final Sequence contextSequence) {
     }
 
-//    protected XmldbURI calculateBaseURI() {
-//    	return null;
-//    }
 
+    public abstract void selectAttributes(final NodeTest test, final Sequence result) throws XPathException;
 
-    public abstract void selectAttributes( NodeTest test, Sequence result ) throws XPathException;
-    public abstract void selectDescendantAttributes( NodeTest test, Sequence result ) throws XPathException;
-    public abstract void selectChildren( NodeTest test, Sequence result ) throws XPathException;
+    public abstract void selectDescendantAttributes(final NodeTest test, final Sequence result) throws XPathException;
 
-    public void selectDescendants( boolean includeSelf, NodeTest test, Sequence result ) 
-            throws XPathException {
-        if( includeSelf && test.matches( this ) ) {
-            result.add( this );
+    public abstract void selectChildren(final NodeTest test, final Sequence result) throws XPathException;
+
+    public void selectDescendants(final boolean includeSelf, final NodeTest test, final Sequence result)
+        throws XPathException {
+        if(includeSelf && test.matches(this)) {
+            result.add(this);
         }
     }
 
-    public void selectAncestors( boolean includeSelf, NodeTest test, Sequence result ) 
-            throws XPathException {
-        if( nodeNumber < 1 ) {
+    public void selectAncestors(final boolean includeSelf, final NodeTest test, final Sequence result)
+        throws XPathException {
+        if(nodeNumber < 1) {
             return;
         }
-        if( includeSelf ) {
-            final NodeImpl n = document.getNode( nodeNumber );
-            if( test.matches( n ) ) {
-                result.add( n );
+        if(includeSelf) {
+            final NodeImpl n = document.getNode(nodeNumber);
+            if(test.matches(n)) {
+                result.add(n);
             }
         }
-        int nextNode = document.getParentNodeFor( nodeNumber );
-        while( nextNode > 0 ) {
-            final NodeImpl n = document.getNode( nextNode );
-            if( test.matches( n ) ) {
-                result.add( n );
+        int nextNode = document.getParentNodeFor(nodeNumber);
+        while(nextNode > 0) {
+            final NodeImpl n = document.getNode(nextNode);
+            if(test.matches(n)) {
+                result.add(n);
             }
-            nextNode = document.getParentNodeFor( nextNode );
+            nextNode = document.getParentNodeFor(nextNode);
         }
     }
 
-    public void selectPrecedingSiblings( NodeTest test, Sequence result )
-            throws XPathException {
-        final int parent   = document.getParentNodeFor( nodeNumber );
+    public void selectPrecedingSiblings(final NodeTest test, final Sequence result)
+        throws XPathException {
+        final int parent = document.getParentNodeFor(nodeNumber);
         int nextNode = document.getFirstChildFor(parent);
-        while( ( nextNode >= parent ) && ( nextNode < nodeNumber ) ) {
-            final NodeImpl n = document.getNode( nextNode );
-            if( test.matches( n ) ) {
-                result.add( n );
+        while((nextNode >= parent) && (nextNode < nodeNumber)) {
+            final NodeImpl n = document.getNode(nextNode);
+            if(test.matches(n)) {
+                result.add(n);
             }
             nextNode = document.next[nextNode];
         }
     }
 
-    public void selectPreceding( NodeTest test, Sequence result, int position ) 
-            throws XPathException {
+    public void selectPreceding(final NodeTest test, final Sequence result, final int position)
+        throws XPathException {
         final NodeId myNodeId = getNodeId();
-        int    count    = 0;
+        int count = 0;
 
-        for( int i = nodeNumber - 1; i > 0; i-- ) {
-            final NodeImpl n = document.getNode( i );
-            if( !myNodeId.isDescendantOf( n.getNodeId() ) && test.matches( n ) ) {
-                if( ( position < 0 ) || ( ++count == position ) ) {
-                    result.add( n );
+        for(int i = nodeNumber - 1; i > 0; i--) {
+            final NodeImpl n = document.getNode(i);
+            if(!myNodeId.isDescendantOf(n.getNodeId()) && test.matches(n)) {
+                if((position < 0) || (++count == position)) {
+                    result.add(n);
                 }
-                if( count == position ) {
+                if(count == position) {
                     break;
                 }
             }
         }
     }
 
-    public void selectFollowingSiblings( NodeTest test, Sequence result ) 
-            throws XPathException {
+    public void selectFollowingSiblings(final NodeTest test, final Sequence result)
+        throws XPathException {
         final int parent = document.getParentNodeFor(nodeNumber);
-        if( parent == 0 ) {
+        if(parent == 0) {
             // parent is the document node
-            if( getNodeType() == Node.ELEMENT_NODE ) {
+            if(getNodeType() == Node.ELEMENT_NODE) {
                 return;
             }
-            NodeImpl next = (NodeImpl)getNextSibling();
-            while( next != null ) {
-                if( test.matches( next ) ) {
-                    result.add( next );
+            NodeImpl next = (NodeImpl) getNextSibling();
+            while(next != null) {
+                if(test.matches(next)) {
+                    result.add(next);
                 }
-                if( next.getNodeType() == Node.ELEMENT_NODE ) {
+                if(next.getNodeType() == Node.ELEMENT_NODE) {
                     break;
                 }
-                next = (NodeImpl)next.getNextSibling();
+                next = (NodeImpl) next.getNextSibling();
             }
         } else {
-            int nextNode = document.getFirstChildFor( parent );
-            while( nextNode > parent ) {
-                final NodeImpl n = document.getNode( nextNode );
-                if( ( nextNode > nodeNumber ) && test.matches( n ) ) {
-                    result.add( n );
+            int nextNode = document.getFirstChildFor(parent);
+            while(nextNode > parent) {
+                final NodeImpl n = document.getNode(nextNode);
+                if((nextNode > nodeNumber) && test.matches(n)) {
+                    result.add(n);
                 }
                 nextNode = document.next[nextNode];
             }
         }
     }
 
-    public void selectFollowing( NodeTest test, Sequence result, int position )
-            throws XPathException {
-        final int parent = document.getParentNodeFor( nodeNumber );
-        if( parent == 0 ) {
+    public void selectFollowing(final NodeTest test, final Sequence result, final int position)
+        throws XPathException {
+        final int parent = document.getParentNodeFor(nodeNumber);
+        if(parent == 0) {
             // parent is the document node
-            if( getNodeType() == Node.ELEMENT_NODE ) {
+            if(getNodeType() == Node.ELEMENT_NODE) {
                 return;
             }
-            NodeImpl next = (NodeImpl)getNextSibling();
-            while( next != null ) {
-                if( test.matches( next ) ) {
+            NodeImpl next = (NodeImpl) getNextSibling();
+            while(next != null) {
+                if(test.matches(next)) {
                     next.selectDescendants(true, test, result);
                 }
-                if( next.getNodeType() == Node.ELEMENT_NODE ) {
+                if(next.getNodeType() == Node.ELEMENT_NODE) {
                     break;
                 }
-                next = (NodeImpl)next.getNextSibling();
+                next = (NodeImpl) next.getNextSibling();
             }
         } else {
             final NodeId myNodeId = getNodeId();
-            int    count    = 0;
-            int    nextNode = nodeNumber + 1;
-            while( nextNode < document.size ) {
-                final NodeImpl n = document.getNode( nextNode );
-                if( !n.getNodeId().isDescendantOf( myNodeId ) && test.matches( n ) ) {
-                    if( ( position < 0 ) || ( ++count == position ) ) {
-                        result.add( n );
+            int count = 0;
+            int nextNode = nodeNumber + 1;
+            while(nextNode < document.size) {
+                final NodeImpl n = document.getNode(nextNode);
+                if(!n.getNodeId().isDescendantOf(myNodeId) && test.matches(n)) {
+                    if((position < 0) || (++count == position)) {
+                        result.add(n);
                     }
-                    if( count == position ) {
+                    if(count == position) {
                         break;
                     }
                 }
@@ -1014,344 +887,124 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
         }
     }
 
-    public boolean matchAttributes( NodeTest test ) {
+    public boolean matchAttributes(final NodeTest test) {
         // do nothing
-        return( false );
-        //TODO : make abstract
+        return false;
     }
 
-    public boolean matchDescendantAttributes( NodeTest test ) throws XPathException {
+    public boolean matchDescendantAttributes(final NodeTest test) throws XPathException {
         // do nothing
-        return( false );
-        //TODO : make abstract
+        return false;
     }
 
-    public boolean matchChildren( NodeTest test ) throws XPathException {
-        // do nothing
-        return( false );
-        //TODO : make abstract
+    public boolean matchChildren(final NodeTest test) throws XPathException {
+        return false;
     }
 
-    public boolean matchDescendants( boolean includeSelf, NodeTest test ) throws XPathException {
-        return( includeSelf && test.matches( this ) );
+    public boolean matchDescendants(final boolean includeSelf, final NodeTest test) throws XPathException {
+        return includeSelf && test.matches(this);
     }
 
-    public boolean matchAncestors( boolean includeSelf, NodeTest test ) {
-        if( nodeNumber < 2 ) {
-            return( false );
-        }
-        if( includeSelf ) {
-            final NodeImpl n = document.getNode( nodeNumber );
-            if( test.matches( n ) ) {
-                return( true );
-            }
-        }
-        int nextNode = document.getParentNodeFor( nodeNumber );
-        while( nextNode > 0 ) {
-            final NodeImpl n = document.getNode( nextNode );
-            if( test.matches( n ) ) {
-                return( true );
-            }
-            nextNode = document.getParentNodeFor( nextNode );
-        }
-        return( false );
-    }
-
-    public boolean matchPrecedingSiblings( NodeTest test ) {
-        final int parent   = document.getParentNodeFor( nodeNumber );
-        int nextNode = document.getFirstChildFor(parent);
-        while( ( nextNode >= parent ) && ( nextNode < nodeNumber ) ) {
-            final NodeImpl n = document.getNode( nextNode );
-            if( test.matches( n ) ) {
-                return( true );
-            }
-            nextNode = document.next[nextNode];
-        }
-        return( false );
-    }
-
-    public boolean matchPreceding( NodeTest test, int position ) 
-            throws EXistException {
-        final NodeId myNodeId = getNodeId();
-        int    count    = 0;
-        for( int i = nodeNumber - 1; i > 0; i-- ) {
-            final NodeImpl n = document.getNode( i );
-            if( !myNodeId.isDescendantOf( n.getNodeId() ) && test.matches( n ) ) {
-                if( ( position < 0 ) || ( ++count == position ) ) {
-                    return( true );
-                }
-                if( count == position ) {
-                    break;
-                }
-            }
-        }
-        return( false );
-    }
-
-    public boolean matchFollowingSiblings( NodeTest test ) {
-        final int parent = document.getParentNodeFor(nodeNumber);
-        if( parent == 0 ) {
-            // parent is the document node
-            if( getNodeType() == Node.ELEMENT_NODE ) {
-                return( false );
-            }
-            NodeImpl next = (NodeImpl)getNextSibling();
-            while( next != null ) {
-                if( test.matches( next ) ) {
-                    return( true );
-                }
-                if( next.getNodeType() == Node.ELEMENT_NODE ) {
-                    break;
-                }
-                next = (NodeImpl)next.getNextSibling();
-            }
-        } else {
-            int nextNode = document.getFirstChildFor( parent );
-            while( nextNode > parent ) {
-                final NodeImpl n = document.getNode( nextNode );
-                if( ( nextNode > nodeNumber ) && test.matches( n ) ) {
-                    return( true );
-                }
-                nextNode = document.next[nextNode];
-            }
-        }
-        return( false );
-    }
-
-    public boolean matchFollowing( NodeTest test, int position ) 
-            throws XPathException, EXistException {
-        final int parent = document.getParentNodeFor( nodeNumber );
-        if( parent == 0 ) {
-            // parent is the document node
-            if( getNodeType() == Node.ELEMENT_NODE ) {
-                return( false );
-            }
-            NodeImpl next = (NodeImpl)getNextSibling();
-            while( next != null ) {
-                if( test.matches( next ) ) {
-                    if( next.matchDescendants( true, test ) ) {
-                        return( true );
-                    }
-                }
-                if( next.getNodeType() == Node.ELEMENT_NODE ) {
-                    break;
-                }
-                next = (NodeImpl)next.getNextSibling();
-            }
-        } else {
-            final NodeId myNodeId = getNodeId();
-            int    count    = 0;
-            int    nextNode = nodeNumber + 1;
-            while( nextNode < document.size ) {
-                final NodeImpl n = document.getNode( nextNode );
-                if( !n.getNodeId().isDescendantOf( myNodeId ) && test.matches( n ) ) {
-                    if( ( position < 0 ) || ( ++count == position ) ) {
-                        return( true );
-                    }
-                    if( count == position ) {
-                        break;
-                    }
-                }
-                nextNode++;
-            }
-        }
-        return( false );
-    }
-
-    /**
-     * ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
-     *
-     * @param   other  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  DOMException  DOCUMENT ME!
-     */
     @Override
-    public short compareDocumentPosition( Node other ) throws DOMException {
-        throw( new RuntimeException( "Can not call compareDocumentPosition() on node type " + this.getNodeType() ) );
+    public short compareDocumentPosition(final Node other) throws DOMException {
+        throw new RuntimeException("Can not call compareDocumentPosition() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#getTextContent()
-     *
-     * @return  DOCUMENT ME!
-     *
-     * @throws  DOMException  DOCUMENT ME!
-     */
     @Override
     public String getTextContent() throws DOMException {
-        throw( new RuntimeException( "Can not call getTextContent() on node type " + this.getNodeType() ) );
+        throw new RuntimeException("Can not call getTextContent() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
-     *
-     * @param   textContent  DOCUMENT ME!
-     *
-     * @throws  DOMException  DOCUMENT ME!
-     */
     @Override
-    public void setTextContent( String textContent ) throws DOMException {
-        throw( new RuntimeException( "Can not call setTextContent() on node type " + this.getNodeType() ) );
+    public void setTextContent(final String textContent) throws DOMException {
+        throw new RuntimeException("Can not call setTextContent() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
-     *
-     * @param   other  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
-    public boolean isSameNode( Node other ) {
-        throw( new RuntimeException( "Can not call isSameNode() on node type " + this.getNodeType() ) );
+    public boolean isSameNode(final Node other) {
+        throw new RuntimeException("Can not call isSameNode() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
-     *
-     * @param   namespaceURI  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
-    public String lookupPrefix( String namespaceURI ) {
-        throw( new RuntimeException( "Can not call lookupPrefix() on node type " + this.getNodeType() ) );
+    public String lookupPrefix(final String namespaceURI) {
+        throw new RuntimeException("Can not call lookupPrefix() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
-     *
-     * @param   namespaceURI  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
-    public boolean isDefaultNamespace( String namespaceURI ) {
-        throw( new RuntimeException( "Can not call isDefaultNamespace() on node type " + this.getNodeType() ) );
+    public boolean isDefaultNamespace(final String namespaceURI) {
+        throw new RuntimeException("Can not call isDefaultNamespace() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
-     *
-     * @param   prefix  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
-    public String lookupNamespaceURI( String prefix ) {
-        throw( new RuntimeException( "Can not call lookupNamespaceURI() on node type " + this.getNodeType() ) );
+    public String lookupNamespaceURI(final String prefix) {
+        throw new RuntimeException("Can not call lookupNamespaceURI() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
-     *
-     * @param   arg  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
-    public boolean isEqualNode( Node arg ) {
-        throw( new RuntimeException( "Can not call isEqualNode() on node type " + this.getNodeType() ) );
+    public boolean isEqualNode(final Node arg) {
+        throw new RuntimeException("Can not call isEqualNode() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
-     *
-     * @param   feature  DOCUMENT ME!
-     * @param   version  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
-    public Object getFeature( String feature, String version ) {
-        throw( new RuntimeException( "Can not call getFeature() on node type " + this.getNodeType() ) );
+    public Object getFeature(final String feature, final String version) {
+        throw new RuntimeException("Can not call getFeature() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
-     *
-     * @param   key      DOCUMENT ME!
-     * @param   data     DOCUMENT ME!
-     * @param   handler  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
-    public Object setUserData( String key, Object data, UserDataHandler handler ) {
-        throw( new RuntimeException( "Can not call setUserData() on node type " + this.getNodeType() ) );
+    public Object setUserData(final String key, final Object data, final UserDataHandler handler) {
+        throw new RuntimeException("Can not call setUserData() on node type " + this.getNodeType());
     }
 
-    /**
-     * ? @see org.w3c.dom.Node#getUserData(java.lang.String)
-     *
-     * @param   key  DOCUMENT ME!
-     *
-     * @return  DOCUMENT ME!
-     */
     @Override
-    public Object getUserData( String key ) {
-        throw( new RuntimeException( "Can not call getUserData() on node type " + this.getNodeType() ) );
+    public Object getUserData(final String key) {
+        throw new RuntimeException("Can not call getUserData() on node type " + this.getNodeType());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#isPersistentSet()
-     */
     @Override
     public boolean isPersistentSet() {
-        //See package's name ;-)
-        return( false );
+        return false;
     }
 
     @Override
-    public void nodeMoved( NodeId oldNodeId, NodeHandle newNode ) {
-        // can not be applied to in-memory nodes
+    public void nodeMoved(final NodeId oldNodeId, final NodeHandle newNode) {
     }
 
     @Override
-    public void clearContext( int contextId ) {
-        //Nothing to do
+    public void clearContext(final int contextId) {
     }
 
     @Override
     public int getState() {
-        return( 0 );
+        return 0;
     }
 
     @Override
     public boolean isCacheable() {
-        return( true );
+        return true;
     }
 
     @Override
-    public boolean hasChanged( int previousState ) {
-        return( false ); // will never change
+    public boolean hasChanged(final int previousState) {
+        return false;
     }
 
     private final static class SingleNodeIterator implements SequenceIterator {
         NodeImpl node;
-        
-        public SingleNodeIterator( NodeImpl node ) {
+
+        public SingleNodeIterator(final NodeImpl node) {
             this.node = node;
         }
 
-        /* (non-Javadoc)
-         * @see org.exist.xquery.value.SequenceIterator#hasNext()
-         */
         @Override
         public boolean hasNext() {
             return node != null;
         }
 
-        /* (non-Javadoc)
-         * @see org.exist.xquery.value.SequenceIterator#nextItem()
-         */
         @Override
         public Item nextItem() {
             final NodeImpl next = node;
             node = null;
-            return( next );
+            return next;
         }
 
     }

@@ -24,7 +24,7 @@ package org.exist.fulltext;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
@@ -261,7 +261,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
          * @param path
          */
         @Override
-        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
+        public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
             if (config == null) {
                 engine.storeText(text, NativeTextEngine.TOKENIZE, config, mode == REMOVE_ALL_NODES);
             } else if (config.match(path)) {

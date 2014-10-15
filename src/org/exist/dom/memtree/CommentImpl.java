@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-2014 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -22,102 +22,45 @@
  */
 package org.exist.dom.memtree;
 
-import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Comment;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
-public class CommentImpl extends NodeImpl implements Comment {
+public class CommentImpl extends AbstractCharacterData implements Comment {
 
     /**
      * Creates a new CommentImpl object.
      *
-     * @param  doc
-     * @param  nodeNumber
+     * @param doc
+     * @param nodeNumber
      */
-    public CommentImpl(DocumentImpl doc, int nodeNumber) {
+    public CommentImpl(final DocumentImpl doc, final int nodeNumber) {
         super(doc, nodeNumber);
     }
 
-    public Node getFirstChild() {
-        return null;
+    @Override
+    public int getItemType() {
+        return Type.COMMENT;
     }
 
     public String getStringValue() {
         return getData();
     }
 
-    public String getLocalName() {
-        return "";
-    }
-
-    public String getNamespaceURI() {
-        return "";
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#getData()
-     */
-    public String getData() throws DOMException {
-        return new String(document.characters, document.alpha[nodeNumber], document.alphaLen[nodeNumber]);
-    }
-
     public AtomicValue atomize() throws XPathException {
         return new StringValue(getData());
     }
 
-    public int getLength() {
-        return getData().length();
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#setData(java.lang.String)
-     */
-    public void setData(String arg0) throws DOMException {
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#substringData(int, int)
-     */
-    public String substringData(int arg0, int arg1) throws DOMException {
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#appendData(java.lang.String)
-     */
-    public void appendData(String arg0) throws DOMException {
-        // TODO Auto-generated method stub
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#insertData(int, java.lang.String)
-     */
-    public void insertData( int arg0, String arg1 ) throws DOMException {
-        // TODO Auto-generated method stub
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#deleteData(int, int)
-     */
-    public void deleteData( int arg0, int arg1 ) throws DOMException {
-        // TODO Auto-generated method stub
-    }
-
-    /* (non-Javadoc)
-     * @see org.w3c.dom.CharacterData#replaceData(int, int, java.lang.String)
-     */
-    public void replaceData( int arg0, int arg1, String arg2 ) throws DOMException {
-        // TODO Auto-generated method stub
-    }
-
-    public int getItemType() {
-        return Type.COMMENT;
+    @Override
+    public String getBaseURI() {
+        final Node parent = getParentNode();
+        if(parent == null) {
+            return null;
+        }
+        return parent.getBaseURI();
     }
 
     public String toString() {
@@ -127,34 +70,5 @@ public class CommentImpl extends NodeImpl implements Comment {
         result.append(getData());
         result.append("} ");
         return result.toString();
-    }
-
-    @Override
-    public void selectAttributes(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void selectChildren(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void selectDescendantAttributes(NodeTest test, Sequence result)
-            throws XPathException {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public String getBaseURI() {
-        final Node parent = getParentNode();
-        if (parent == null)
-            {return null;}
-        return parent.getBaseURI();
     }
 }

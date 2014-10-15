@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 import org.exist.dom.memtree.DOMIndexer;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentMetadata;
@@ -3406,7 +3406,7 @@ public class NativeBroker extends DBBroker {
             switch(node.getNodeType()) {
                 case Node.TEXT_NODE:
                 case Node.CDATA_SECTION_NODE:
-                    listener.characters(transaction, (CharacterDataImpl) node, currentPath);
+                    listener.characters(transaction, (AbstractCharacterData) node, currentPath);
                     break;
                 case Node.ELEMENT_NODE:
                     listener.startElement(transaction, (ElementImpl) node, currentPath);

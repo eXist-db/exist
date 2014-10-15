@@ -29,7 +29,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.CharacterDataImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.AttrImpl;
 import org.apache.log4j.Logger;
@@ -1351,7 +1351,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         @Override
-        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
+        public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (TextExtractor extractor : contentStack) {
                 	extractor.beforeCharacters();

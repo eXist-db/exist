@@ -32,7 +32,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
-public class CDATASectionImpl extends CharacterDataImpl implements CDATASection {
+public class CDATASectionImpl extends AbstractCharacterData implements CDATASection {
 
     public CDATASectionImpl() {
         super(Node.CDATA_SECTION_NODE);

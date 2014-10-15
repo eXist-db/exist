@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -22,66 +21,59 @@
  */
 package org.exist.dom.memtree;
 
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
 
 
-/**
- * DOCUMENT ME!
- *
- * @author wolf
- */
-public class ReferenceNode extends NodeImpl {
+public abstract class AbstractCharacterData extends NodeImpl implements CharacterData {
 
-    /**
-     * Creates a new ReferenceNode object.
-     *
-     * @param doc
-     * @param nodeNumber
-     */
-    public ReferenceNode(final DocumentImpl doc, final int nodeNumber) {
+    public AbstractCharacterData(final DocumentImpl doc, final int nodeNumber) {
         super(doc, nodeNumber);
     }
 
-    public NodeProxy getReference() {
-        final int p = document.alpha[nodeNumber];
-        return document.references[p];
+    @Override
+    public int getLength() {
+        return document.alphaLen[nodeNumber];
     }
 
     @Override
-    public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("reference[ ");
-        result.append(getReference().getNode().toString());
-        result.append(" ]");
-        return result.toString();
+    public String getData() throws DOMException {
+        return new String(document.characters, document.alpha[nodeNumber],
+            document.alphaLen[nodeNumber]);
     }
 
     @Override
-    public String getNamespaceURI() {
-        return getReference().getNode().getNamespaceURI();
+    public String substringData(final int offset, final int count) throws DOMException {
+        return null;
     }
 
     @Override
-    public String getLocalName() {
-        return getReference().getNode().getLocalName();
+    public void replaceData(final int offset, final int count, final String arg) throws DOMException {
     }
 
     @Override
-    public NamedNodeMap getAttributes() {
-        return getReference().getNode().getAttributes();
+    public void insertData(final int offset, final String arg) throws DOMException {
+    }
+
+    @Override
+    public void appendData(final String arg) throws DOMException {
+    }
+
+    @Override
+    public void setData(final String data) throws DOMException {
+    }
+
+    @Override
+    public void deleteData(final int offset, final int count) throws DOMException {
     }
 
     @Override
     public Node getFirstChild() {
-        //TODO : how to make this node a reference as well ?
-        return getReference().getNode().getFirstChild();
+        return null;
     }
 
     @Override
@@ -97,10 +89,5 @@ public class ReferenceNode extends NodeImpl {
     @Override
     public void selectDescendantAttributes(final NodeTest test, final Sequence result)
         throws XPathException {
-    }
-
-    @Override
-    public String getNodeValue() throws DOMException {
-        return getReference().getNode().getNodeValue();
     }
 }

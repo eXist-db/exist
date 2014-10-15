@@ -1284,7 +1284,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      */
     @Override
     public String getXmlVersion() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getXmlVersion not implemented on class " + getClass().getName());
+        return "1.0";
     }
 
     /** ? @see org.w3c.dom.Document#setXmlVersion(java.lang.String)

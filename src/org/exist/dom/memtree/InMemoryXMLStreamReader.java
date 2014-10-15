@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-14 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -33,14 +33,13 @@ import javax.xml.stream.XMLStreamReader;
 
 
 /**
- * Implementation of a StAX {@link javax.xml.stream.XMLStreamReader}, which wraps around eXist's in-memory DOM. This class complements {@link
- * org.exist.stax.EmbeddedXMLStreamReader} which reads persistent documents.
+ * Implementation of a StAX {@link javax.xml.stream.XMLStreamReader}, which wraps around eXist's in-memory DOM.
+ * This class complements {@link org.exist.stax.EmbeddedXMLStreamReader} which reads persistent documents.
  */
 public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     private final DocumentImpl doc;
     private final NodeImpl rootNode;
     private int currentNode;
-    private int previous;
 
     private int state = XMLStreamReader.START_DOCUMENT;
 
@@ -65,10 +64,6 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
     @Override
     public int next() throws XMLStreamException {
-        if(state != XMLStreamReader.END_ELEMENT) {
-            previous = currentNode;
-        }
-
         if(currentNode > -1) {
             int next = -1;
 
@@ -296,20 +291,20 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
         switch(type) {
 
-            case AttributeImpl.ATTR_ID_TYPE: {
-                return ("ID");
+            case AttrImpl.ATTR_ID_TYPE: {
+                return "ID";
             }
 
-            case AttributeImpl.ATTR_IDREF_TYPE: {
-                return ("IDREF");
+            case AttrImpl.ATTR_IDREF_TYPE: {
+                return "IDREF";
             }
 
-            case AttributeImpl.ATTR_IDREFS_TYPE: {
-                return ("IDREFS");
+            case AttrImpl.ATTR_IDREFS_TYPE: {
+                return "IDREFS";
             }
 
             default: {
-                return ("CDATA");
+                return "CDATA";
             }
         }
     }
@@ -340,7 +335,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
         if(state != START_ELEMENT && state != END_ELEMENT) {
             throw new IllegalStateException("Cursor is not at an element");
         }
-        return (doc.getNamespacesCountFor(currentNode));
+        return doc.getNamespacesCountFor(currentNode);
     }
 
     @Override

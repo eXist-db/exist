@@ -1771,11 +1771,13 @@ public class ElementImpl extends NamedNode implements Element {
     //TODO Please, keep in sync with org.exist.dom.memtree.ElementImpl
     private XmldbURI calculateBaseURI() {
         XmldbURI baseURI = null;
+
         final String nodeBaseURI = _getAttributeNS(Namespaces.XML_NS, "base");
         if (nodeBaseURI != null) {
             baseURI = XmldbURI.create(nodeBaseURI, false);
-            if (baseURI.isAbsolute())
-                {return baseURI;}
+            if (baseURI.isAbsolute()) {
+                return baseURI;
+            }
         }
         final IStoredNode parent = getParentStoredNode();
         if (parent != null) {
@@ -1783,16 +1785,16 @@ public class ElementImpl extends NamedNode implements Element {
                 baseURI = ((ElementImpl)parent).calculateBaseURI();
             } else {
                 XmldbURI parentsBaseURI = ((ElementImpl)parent).calculateBaseURI();
-                if (nodeBaseURI.isEmpty())
-                    {baseURI = parentsBaseURI;}
-                else {
+                if (nodeBaseURI.isEmpty()) {
+                    baseURI = parentsBaseURI;
+                } else {
                     baseURI = parentsBaseURI.append(baseURI);
                 }
             }
         } else {
-            if (nodeBaseURI == null)
-                {return XmldbURI.create(getOwnerDocument().getBaseURI(), false);}
-            else {
+            if (nodeBaseURI == null) {
+                return XmldbURI.create(getOwnerDocument().getBaseURI(), false);
+            } else {
                 final String docBaseURI = getOwnerDocument().getBaseURI();
                 if (docBaseURI.endsWith("/")) {
                     baseURI = XmldbURI.create(getOwnerDocument().getBaseURI(), false);

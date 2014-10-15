@@ -718,7 +718,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
 
         @Override
-        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
+        public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
             if (isDocumentGMLAware) {
                 //Release the deferred element if any
                 if (deferredElement != null)

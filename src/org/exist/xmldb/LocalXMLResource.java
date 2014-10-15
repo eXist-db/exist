@@ -25,7 +25,7 @@ import org.exist.EXistException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.XMLUtil;
-import org.exist.dom.memtree.AttributeImpl;
+import org.exist.dom.memtree.AttrImpl;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
@@ -428,7 +428,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	}
 
 	public void setContentAsDOM(Node root) throws XMLDBException {
-		if (root instanceof AttributeImpl)
+		if (root instanceof AttrImpl)
 			{throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE,
 					"SENR0001: can not serialize a standalone attribute");}
 		content = null;
