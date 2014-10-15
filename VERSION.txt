@@ -1,4 +1,0 @@
-#eXist build info
-project.version=1.0.0dev
-project.build=20010101
-svn.revision=0000
