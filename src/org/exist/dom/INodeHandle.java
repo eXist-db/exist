@@ -7,12 +7,12 @@ import org.exist.numbering.NodeId;
  * used for both persistent and
  * in-memory nodes.
  * 
- * @param <T> The type of the persistent
+ * @param <D> The type of the persistent
  * or in-memory document
  * 
  * @author Adam Retter <adam@exist-db.org>
  */
-public interface INodeHandle<T extends org.w3c.dom.Document> {
+public interface INodeHandle<D extends org.w3c.dom.Document> {
     
     /**
      * Get the ID of the Node
@@ -31,5 +31,5 @@ public interface INodeHandle<T extends org.w3c.dom.Document> {
      * 
      * @return The persistent Owner Document
      */
-    public T getOwnerDocument(); //TODO consider extracting T into "org.exist.dom.IDocument extends org.w3c.com.Document" and returning an IDocument here
+    public D getOwnerDocument(); //TODO consider extracting T into "org.exist.dom.IDocument extends org.w3c.com.Document" and returning an IDocument here
 }

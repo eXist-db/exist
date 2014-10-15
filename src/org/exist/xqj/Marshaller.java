@@ -224,7 +224,7 @@ public class Marshaller {
                         final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
                         try {
                             receiver.startDocument();
-                            n.getDocument().copyTo(n, receiver);
+                            n.getOwnerDocument().copyTo(n, receiver);
                             receiver.endDocument();
                         } catch (final SAXException e) {
                             throw new XPathException("Error while demarshalling node: " + e.getMessage(), e);

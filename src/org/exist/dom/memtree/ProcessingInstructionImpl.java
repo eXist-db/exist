@@ -50,6 +50,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
     /* (non-Javadoc)
      * @see org.w3c.dom.ProcessingInstruction#getTarget()
      */
+    @Override
     public String getTarget()
     {
         final QName qn = document.nodeName[nodeNumber];
@@ -57,6 +58,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
     }
 
 
+    @Override
     public String getStringValue()
     {
         // TODO: this could be optimized
@@ -64,12 +66,14 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
     }
 
 
+    @Override
     public String getLocalName()
     {
         return( getTarget() );
     }
 
 
+    @Override
     public String getNamespaceURI()
     {
         return( "" );
@@ -79,15 +83,18 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
     /* (non-Javadoc)
      * @see org.w3c.dom.ProcessingInstruction#getData()
      */
+    @Override
     public String getData()
     {
         return( new String( document.characters, document.alpha[nodeNumber], document.alphaLen[nodeNumber] ) );
     }
 
+    @Override
     public String getNodeValue() throws DOMException {
     	return getData();
     }
 
+    @Override
     public AtomicValue atomize() throws XPathException
     {
         return( new StringValue( getData() ) );
@@ -97,6 +104,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
     /* (non-Javadoc)
      * @see org.w3c.dom.ProcessingInstruction#setData(java.lang.String)
      */
+    @Override
     public void setData( String arg0 ) throws DOMException
     {
     }
@@ -107,6 +115,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public String getBaseURI()
     {
         String baseURI = "";
@@ -137,25 +146,25 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
         }
 
         if( "".equals( baseURI ) ) {
-            baseURI = getDocument().getBaseURI();
+            baseURI = getOwnerDocument().getBaseURI();
         }
         return( baseURI );
     }
 
-
+    @Override
     public Node getFirstChild()
     {
         //No child
         return( null );
     }
 
-
+    @Override
     public int getItemType()
     {
         return( Type.PROCESSING_INSTRUCTION );
     }
 
-
+    @Override
     public String toString()
     {
         final StringBuilder result = new StringBuilder();

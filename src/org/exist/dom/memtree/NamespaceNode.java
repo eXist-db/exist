@@ -30,7 +30,6 @@ import org.w3c.dom.TypeInfo;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.dom.QNameable;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
@@ -43,7 +42,7 @@ import org.exist.xquery.value.Type;
  *
  * @author  wolf
  */
-public class NamespaceNode extends NodeImpl implements Attr, QNameable
+public class NamespaceNode extends NodeImpl implements Attr
 {
     /**
      * Creates a new NamespaceNode object.
@@ -59,6 +58,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
     /* (non-Javadoc)
      * @see org.exist.dom.memtree.NodeImpl#getNodeType()
      */
+    @Override
     public short getNodeType()
     {
         //TOUNDERSTAND : return value
@@ -68,76 +68,76 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
         return( NodeImpl.NAMESPACE_NODE);
     }
 
-
     /* (non-Javadoc)
      * @see org.exist.dom.memtree.NodeImpl#getType()
      */
+    @Override
     public int getType()
     {
         return( Type.NAMESPACE );
     }
 
-
+    @Override
     public String getPrefix()
     {
         return( getQName().getPrefix() );
     }
 
-
+    @Override
     public String getNamespaceURI()
     {
         return( Namespaces.XMLNS_NS );
     }
 
-
+    @Override
     public boolean getSpecified()
     {
         return( true );
     }
 
-
+    @Override
     public QName getQName()
     {
         return( document.namespaceCode[nodeNumber] );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getLocalPart()
      */
+    @Override
     public String getLocalName()
     {
         return( getQName().getLocalPart() );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#getNodeName()
      */
+    @Override
     public String getNodeName()
     {
         return( getQName().getStringValue() );
     }
 
-
+    @Override
     public String getName()
     {
         return( getQName().getStringValue() );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getValue()
      */
+    @Override
     public String getValue()
     {
         return( getQName().getNamespaceURI() );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#setValue(java.lang.String)
      */
+    @Override
     public void setValue( String value ) throws DOMException
     {
     }
@@ -152,52 +152,52 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable
         return null;
     }
 
+    @Override
     public String getNodeValue() throws DOMException
     {
         return( getQName().getNamespaceURI() );
     }
 
-
     /* (non-Javadoc)
      * @see org.w3c.dom.Attr#getOwnerElement()
      */
+    @Override
     public Element getOwnerElement()
     {
         return( (Element)document.getNode( document.namespaceParent[nodeNumber] ) );
     }
-
 
     /**
      * ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public TypeInfo getSchemaTypeInfo()
     {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
     }
 
-
     /**
      * ? @see org.w3c.dom.Attr#isId()
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public boolean isId()
     {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( false );
     }
 
-
+    @Override
     public int getItemType()
     {
         return( Type.NAMESPACE );
     }
 
-
-    //Untested
+    @Override
     public String toString()
     {
         final StringBuilder result = new StringBuilder();

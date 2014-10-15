@@ -5,8 +5,8 @@ import org.exist.storage.NodePath;
 
 
 //TODO do we really need to extend Visitable any more?
-public interface IStoredNode extends INode<DocumentImpl>, NodeHandle, Visitable { 
-    
+public interface IStoredNode<T extends IStoredNode> extends INode<DocumentImpl, T>, NodeHandle, Visitable {
+
     //<editor-fold desc="serialization">
     /**
      * Serialize the state of this node

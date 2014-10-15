@@ -28,7 +28,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.exist.EXistException;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -46,7 +46,7 @@ import org.w3c.dom.Node;
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
-public class StoredNode extends NodeImpl implements Visitable, NodeHandle, IStoredNode {
+public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> implements Visitable, NodeHandle, IStoredNode<T> {
 
     public final static int LENGTH_SIGNATURE_LENGTH = 1; //sizeof byte
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
@@ -57,14 +57,14 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle, IStor
 
     private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
 
-    private final short nodeType;
+    protected final short nodeType;
 
     /**
      * Creates a new <code>StoredNode</code> instance.
      *
      * @param nodeType a <code>short</code> value
      */
-    public StoredNode(short nodeType) {
+    protected StoredNode(short nodeType) {
         this.nodeType = nodeType;
     }
 
@@ -74,21 +74,29 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle, IStor
      * @param nodeType a <code>short</code> value
      * @param nodeId a <code>NodeId</code> value
      */
-    public StoredNode(short nodeType, NodeId nodeId) {
+    protected StoredNode(short nodeType, NodeId nodeId) {
         this.nodeType = nodeType;
         this.nodeId = nodeId;
     }
 
+    protected StoredNode(short nodeType, NodeId nodeId, DocumentImpl ownerDocument, long internalAddress) {
+        this(nodeType, nodeId);
+        this.ownerDocument = ownerDocument;
+        this.internalAddress = internalAddress;
+    }
+
+    protected StoredNode(final StoredNode other) {
+        this.nodeType = other.nodeType;
+        this.nodeId = other.nodeId;
+        this.internalAddress = other.internalAddress;
+        this.ownerDocument = other.ownerDocument;
+    }
+
     /**
-     * Copy constructor: creates a copy of the other node.
-     *
-     * @param other a <code>NodeHandle</code> value
+     * Extracts just the details of the StoredNode
      */
-    public StoredNode(NodeHandle other) {
-        this.ownerDocument = other.getOwnerDocument();
-        this.nodeType = other.getNodeType();
-        this.nodeId = other.getNodeId();
-        this.internalAddress = other.getInternalAddress();
+    public StoredNode extract() {
+        return new StoredNode(this) {};
     }
 
     /**
@@ -253,11 +261,6 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle, IStor
      */
     @Override
     public DocumentImpl getOwnerDocument() {
-        return ownerDocument;
-    }
-
-    @Override
-    public DocumentAtExist getDocumentAtExist() {
         return ownerDocument;
     }
 
@@ -481,19 +484,10 @@ public class StoredNode extends NodeImpl implements Visitable, NodeHandle, IStor
     }
 
     @Override
-    public int getNodeNumber() {
-        return 0; //TODO: find a value for node number
-    }
-
-    @Override
-    public int compareTo(Object other) {
-        if( !(other instanceof StoredNode)) {
-            return Constants.INFERIOR;
-        }
-        final StoredNode n = (StoredNode)other;
-        if(n.ownerDocument == ownerDocument) {
-            return nodeId.compareTo(n.nodeId);
-        } else if(ownerDocument.getDocId() < n.ownerDocument.getDocId()) {
+    public int compareTo(final StoredNode other) {
+        if(other.ownerDocument == ownerDocument) {
+            return nodeId.compareTo(other.nodeId);
+        } else if(ownerDocument.getDocId() < other.ownerDocument.getDocId()) {
             return Constants.INFERIOR;
         } else {
             return Constants.SUPERIOR;

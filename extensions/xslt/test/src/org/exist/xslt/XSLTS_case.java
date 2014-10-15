@@ -114,7 +114,7 @@ public class XSLTS_case extends TestCase {
 			
 			Templates templates = factory.newTemplates(
 					new SourceImpl(
-							loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+xslURL).getDocument()
+							loadVarFromURI(context, testLocation+XSLTS_folder+"/TestInputs/"+xslURL).getOwnerDocument()
 						)
 					);
 			TransformerHandler handler = factory.newTransformerHandler(templates);

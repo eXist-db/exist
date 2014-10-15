@@ -196,7 +196,7 @@ public class FunIdRef extends Function {
         final Set<org.exist.dom.memtree.DocumentImpl> visitedDocs = new TreeSet<org.exist.dom.memtree.DocumentImpl>();
         for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
             final org.exist.dom.memtree.NodeImpl v = (org.exist.dom.memtree.NodeImpl) i.nextItem();
-            final org.exist.dom.memtree.DocumentImpl doc = v.getDocument();
+            final org.exist.dom.memtree.DocumentImpl doc = v.getOwnerDocument();
             if (!visitedDocs.contains(doc)) {
                 final org.exist.dom.memtree.NodeImpl node = doc.selectByIdref(id);
                 if (node != null)

@@ -1209,7 +1209,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
         if( nv.getImplementationType() == NodeValue.IN_MEMORY_NODE ) {
             final NodeImpl node = (NodeImpl)nv;
-            reader = new InMemoryXMLStreamReader( node.getDocument(), node.getDocument() );
+            reader = new InMemoryXMLStreamReader( node.getOwnerDocument(), node.getOwnerDocument() );
         } else {
             final NodeProxy proxy = (NodeProxy)nv;
             reader = getBroker().newXMLStreamReader( new NodeProxy( proxy.getOwnerDocument(), NodeId.DOCUMENT_NODE, proxy.getOwnerDocument().getFirstChildAddress() ), false );

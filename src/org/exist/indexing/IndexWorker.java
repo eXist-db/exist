@@ -138,7 +138,7 @@ public interface IndexWorker {
      * @param includeSelf if set to true, the current node itself will be included in the check
      * @return the top-most root node to be reindexed
      */
-    IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert, boolean includeSelf);
+    <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf);
 
     /**
      * Return a stream listener to index the current document in the current mode.

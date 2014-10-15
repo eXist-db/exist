@@ -85,7 +85,7 @@ public class PatchFunction extends BasicFunction {
             NodeValue nv = (NodeValue) args[0].itemAt(0);
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                 NodeImpl node = (NodeImpl) nv;
-                reader = new InMemoryXMLStreamReader(node.getDocument(), node.getDocument());
+                reader = new InMemoryXMLStreamReader(node.getOwnerDocument(), node.getOwnerDocument());
             } else {
                 NodeProxy proxy = (NodeProxy) nv;
                 reader = context.getBroker().newXMLStreamReader(new NodeProxy(proxy.getOwnerDocument(), NodeId.DOCUMENT_NODE, proxy.getOwnerDocument().getFirstChildAddress()), false);

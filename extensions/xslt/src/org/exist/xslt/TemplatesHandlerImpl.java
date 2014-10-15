@@ -26,9 +26,9 @@ import javax.xml.transform.sax.TemplatesHandler;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.XPathException;
-import org.exist.dom.persistent.ElementAtExist;
 import org.exist.dom.memtree.SAXAdapter;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -58,7 +58,7 @@ public class TemplatesHandlerImpl extends SAXAdapter implements TemplatesHandler
 	public Templates getTemplates() {
 		if (templates == null) {
 	        Document doc = getDocument();
-	        ElementAtExist xsl = (ElementAtExist) doc.getDocumentElement();
+	        Element xsl = doc.getDocumentElement();
 
 	        try {
 				templates = XSL.compile(xsl);

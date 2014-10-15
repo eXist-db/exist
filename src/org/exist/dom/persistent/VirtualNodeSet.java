@@ -380,7 +380,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                             final NodeProxy contextNode = new NodeProxy(p);
                             contextNode.deepCopyContext(proxy);
                             //TODO : is this StoredNode construction necessary ?
-                            final INodeIterator domIter = broker.getNodeIterator(new StoredNode(contextNode));
+                            final INodeIterator domIter = broker.getNodeIterator(contextNode.asStoredNode());
                             domIter.next();
                             contextNode.setMatches(proxy.getMatches());
                             addChildren(contextNode, result, node, domIter, 0);

@@ -217,7 +217,7 @@ public class FunId extends Function {
         final Set<DocumentImpl> visitedDocs = new TreeSet<DocumentImpl>();
         for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
             final NodeImpl v = (NodeImpl) i.nextItem();
-            final DocumentImpl doc = v.getDocument();
+            final DocumentImpl doc = v.getOwnerDocument();
             if (!visitedDocs.contains(doc)) {
                 final NodeImpl elem = doc.selectById(id);
                 if (elem != null)

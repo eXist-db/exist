@@ -325,7 +325,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    public IStoredNode getReindexRoot(IStoredNode node, NodePath nodePath )
+    public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath nodePath )
     {
         doc = node.getOwnerDocument();
         final NodePath   path        = new NodePath( nodePath );

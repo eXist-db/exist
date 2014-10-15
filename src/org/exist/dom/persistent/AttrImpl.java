@@ -42,9 +42,9 @@ import org.w3c.dom.UserDataHandler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class AttrImpl extends NamedNode implements Attr {
-	
-	public static final int LENGTH_NS_ID = 2; //sizeof short
+public class AttrImpl extends NamedNode implements Attr, Cloneable {
+
+    public static final int LENGTH_NS_ID = 2; //sizeof short
 	public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
 	
     public final static int CDATA = 0;
@@ -74,8 +74,8 @@ public class AttrImpl extends NamedNode implements Attr {
         this(name, symbols);
         this.value = new XMLString( str.toCharArray() );
     }
-
-    public AttrImpl(AttrImpl other) {
+    
+    public AttrImpl(final AttrImpl other) {
         super(other);
         this.attributeType = other.attributeType;
         this.value = other.value;
@@ -242,6 +242,7 @@ public class AttrImpl extends NamedNode implements Attr {
         list.addAttribute(broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix), value, attrType, dln);
     }
 
+    @Override
     public String getName() {
         return nodeName.getStringValue();
     }
@@ -273,6 +274,7 @@ public class AttrImpl extends NamedNode implements Attr {
         return indexType;
     }
 
+    @Override
     public String getValue() {
         return value.toString();
     }
@@ -281,15 +283,18 @@ public class AttrImpl extends NamedNode implements Attr {
     public String getNodeValue() {
         return value.toString();
     }
-    
+
+    @Override
     public void setValue(String str) throws DOMException {
         this.value = new XMLString(str.toCharArray());
     }
 
+    @Override
     public Element getOwnerElement() {
         return (Element) ((DocumentImpl)getOwnerDocument()).getNode( nodeId.getParentId() );
     }
 
+    @Override
     public boolean getSpecified() {
         return true;
     } 
@@ -343,6 +348,7 @@ public class AttrImpl extends NamedNode implements Attr {
 
     /** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
      */
+    @Override
     public TypeInfo getSchemaTypeInfo() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
@@ -350,6 +356,7 @@ public class AttrImpl extends NamedNode implements Attr {
 
     /** ? @see org.w3c.dom.Attr#isId()
      */
+    @Override
     public boolean isId() {
         return this.getType() == ID;
     }

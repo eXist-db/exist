@@ -23,6 +23,7 @@ package org.exist.dom.memtree;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -30,7 +31,6 @@ import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
 
 import org.exist.Namespaces;
-import org.exist.dom.persistent.ElementAtExist;
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class ElementImpl extends NodeImpl implements ElementAtExist {
+public class ElementImpl extends NodeImpl implements Element {
 
     public ElementImpl( DocumentImpl doc, int nodeNumber ) {
         super( doc, nodeNumber );
@@ -56,13 +56,9 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#getTagName()
      */
+    @Override
     public String getTagName() {
         return( getNodeName() );
-    }
-
-    @Override
-    public QName getQName() {
-        return( document.nodeName[nodeNumber] );
     }
 
     /* (non-Javadoc)
@@ -139,6 +135,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#getAttribute(java.lang.String)
      */
+    @Override
     public String getAttribute( String name ) {
         int attr = document.alpha[nodeNumber];
         if( -1 < attr ) {
@@ -168,6 +165,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#setAttribute(java.lang.String, java.lang.String)
      */
+    @Override
     public void setAttribute( String name, String value ) throws DOMException {
         final int lastNode = document.getLastNode();
 
@@ -184,6 +182,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#removeAttribute(java.lang.String)
      */
+    @Override
     public void removeAttribute( String arg0 ) throws DOMException {
         // TODO Auto-generated method stub
     }
@@ -221,6 +220,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#getAttributeNode(java.lang.String)
      */
+    @Override
     public Attr getAttributeNode( String name ) {
         int attr = document.alpha[nodeNumber];
         if( -1 < attr ) {
@@ -250,6 +250,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#setAttributeNode(org.w3c.dom.Attr)
      */
+    @Override
     public Attr setAttributeNode( Attr arg0 ) throws DOMException {
         // TODO Auto-generated method stub
         return( null );
@@ -258,6 +259,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#removeAttributeNode(org.w3c.dom.Attr)
      */
+    @Override
     public Attr removeAttributeNode( Attr arg0 ) throws DOMException {
         // TODO Auto-generated method stub
         return( null );
@@ -333,6 +335,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
      */
+    @Override
     public NodeList getElementsByTagName( String name ) {
         final NodeListImpl nl       = new NodeListImpl();
         int          nextNode = nodeNumber;
@@ -351,6 +354,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#getAttributeNS(java.lang.String, java.lang.String)
      */
+    @Override
     public String getAttributeNS( String namespaceURI, String localName ) {
         int attr = document.alpha[nodeNumber];
         if( -1 < attr ) {
@@ -381,6 +385,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#setAttributeNS(java.lang.String, java.lang.String, java.lang.String)
      */
+    @Override
     public void setAttributeNS( String arg0, String arg1, String arg2 ) throws DOMException {
         // TODO Auto-generated method stub
     }
@@ -388,6 +393,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#removeAttributeNS(java.lang.String, java.lang.String)
      */
+    @Override
     public void removeAttributeNS( String arg0, String arg1 ) throws DOMException {
         // TODO Auto-generated method stub
     }
@@ -395,6 +401,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
      */
+    @Override
     public Attr getAttributeNodeNS( String namespaceURI, String localName ) {
         int attr = document.alpha[nodeNumber];
         if( -1 < attr ) {
@@ -425,6 +432,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#setAttributeNodeNS(org.w3c.dom.Attr)
      */
+    @Override
     public Attr setAttributeNodeNS( Attr arg0 ) throws DOMException
     {
         // TODO Auto-generated method stub
@@ -435,6 +443,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#getElementsByTagNameNS(java.lang.String, java.lang.String)
      */
+    @Override
     public NodeList getElementsByTagNameNS( String namespaceURI, String name ) {
         final QName        qname    = new QName( name, namespaceURI );
         final NodeListImpl nl       = new NodeListImpl();
@@ -456,6 +465,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#hasAttribute(java.lang.String)
      */
+    @Override
     public boolean hasAttribute( String name ) {
         return( getAttribute( name ) != null );
     }
@@ -463,6 +473,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
     /* (non-Javadoc)
      * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
      */
+    @Override
     public boolean hasAttributeNS( String namespaceURI, String localName ) {
         return( getAttributeNS( namespaceURI, localName ) != null );
     }
@@ -595,16 +606,16 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
             }
         } else {
         	if (nodeBaseURI == null)
-        		{return XmldbURI.create(getDocument().getBaseURI(), false);}
+        		{return XmldbURI.create(getOwnerDocument().getBaseURI(), false);}
         	else if (nodeNumber == 1) {
         		;
         	} else {
-        		final String docBaseURI = getDocument().getBaseURI();
+        		final String docBaseURI = getOwnerDocument().getBaseURI();
                 if (docBaseURI.endsWith("/")) {
-                	baseURI = XmldbURI.create(getDocument().getBaseURI(), false);
+                	baseURI = XmldbURI.create(getOwnerDocument().getBaseURI(), false);
                 	baseURI.append(baseURI);
                 } else {
-                	baseURI = XmldbURI.create(getDocument().getBaseURI(), false);
+                	baseURI = XmldbURI.create(getOwnerDocument().getBaseURI(), false);
                 	baseURI = baseURI.removeLastSegment();
                 	baseURI.append(baseURI);
                 }
@@ -618,6 +629,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      *
      * @return  DOCUMENT ME!
      */
+    @Override
     public TypeInfo getSchemaTypeInfo() {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
         return( null );
@@ -631,6 +643,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public void setIdAttribute( String name, boolean isId ) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
     }
@@ -644,6 +657,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public void setIdAttributeNS( String namespaceURI, String localName, boolean isId )
             throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
@@ -657,6 +671,7 @@ public class ElementImpl extends NodeImpl implements ElementAtExist {
      *
      * @throws  DOMException  DOCUMENT ME!
      */
+    @Override
     public void setIdAttributeNode( Attr idAttr, boolean isId ) throws DOMException {
         // maybe _TODO_ - new DOM interfaces - Java 5.0
     }

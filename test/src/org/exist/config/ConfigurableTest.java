@@ -29,7 +29,6 @@ import java.io.InputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.exist.dom.persistent.ElementAtExist;
 import org.exist.dom.memtree.SAXAdapter;
 import org.junit.Test;
 import org.xml.sax.InputSource;
@@ -114,7 +113,7 @@ public class ConfigurableTest {
         reader.setContentHandler(adapter);
         reader.parse(src);
         
-        ConfigurationImpl config = new ConfigurationImpl((ElementAtExist) adapter.getDocument().getDocumentElement());
+        ConfigurationImpl config = new ConfigurationImpl(adapter.getDocument().getDocumentElement());
         
         ConfigurableObject object = new ConfigurableObject(config);
         

@@ -42,7 +42,6 @@ import org.xml.sax.SAXException;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.dom.persistent.DocumentAtExist;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -74,7 +73,7 @@ import java.util.Arrays;
  *
  * @author  wolf
  */
-public class DocumentImpl extends NodeImpl implements DocumentAtExist {
+public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     private static long        nextDocId        = 0;
 
@@ -145,8 +144,20 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     boolean                    explicitCreation = false;
     
     boolean replaceAttribute = false;
-    
+
     private Database db = null;
+
+
+    private Database getDatabase() {
+        if (db == null) {
+            try {
+                db = BrokerPool.getInstance();
+            } catch (final EXistException e) {
+                throw new NullPointerException();
+            }
+        }
+        return db;
+    }
 
     public DocumentImpl(XQueryContext context, boolean explicitCreation) {
         super(null, 0);
@@ -159,18 +170,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
             db = context.getDatabase();
             namePool = context.getSharedNamePool();
         }
-    }
-
-    @Override
-    public Database getDatabase() {
-        if (db == null) {
-            try {
-                db = BrokerPool.getInstance();
-            } catch (final EXistException e) {
-                throw new NullPointerException();
-            }
-        }
-        return db;
     }
 
     private static long createDocId() {
@@ -315,15 +314,14 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         alpha[nodeNum] = nextReferenceIdx++;
     }
 
+    public boolean hasReferenceNodes() {
+        return (references != null) && (references[0] != null);
+    }
+
     public void replaceReferenceNode(int nodeNum, CharSequence ch) {
         nodeKind[nodeNum] = Node.TEXT_NODE;
         references[alpha[nodeNum]] = null;
         addChars(nodeNum, ch);
-    }
-
-    @Override
-    public boolean hasReferenceNodes() {
-        return (references != null) && (references[0] != null);
     }
 
     public int addAttribute(int nodeNum, QName qname, String value, int type) throws DOMException {
@@ -385,11 +383,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
 
     public int getLastNode() {
         return size - 1;
-    }
-
-    @Override
-    public DocumentImpl getDocument() {
-        return this;
     }
 
     public short getNodeType(int nodeNum) {
@@ -491,7 +484,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return new NamespaceNode(this, nodeNum);
     }
 
-    @Override
     public NodeImpl getNode( int nodeNum ) throws DOMException {
         if (nodeNum == 0) {
             return this;
@@ -656,7 +648,6 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
         return count;
     }
 
-    @Override
     public int getFirstChildFor(int nodeNumber) {
         final short level = treeLevel[nodeNumber];
         final int nextNode = nodeNumber + 1;
@@ -1045,7 +1036,7 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
      * @see org.w3c.dom.Node#getOwnerDocument()
      */
     @Override
-    public org.w3c.dom.Document getOwnerDocument() {
+    public DocumentImpl getOwnerDocument() {
         return this;
     }
 
@@ -1672,29 +1663,8 @@ public class DocumentImpl extends NodeImpl implements DocumentAtExist {
     }
 
     @Override
-    public int getNextNodeNumber(int nextNode) throws DOMException {
-        return document.next[nextNode];
-    }
-
-    @Override
-    public XmldbURI getURI() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public void selectAttributes(NodeTest test, Sequence result)
             throws XPathException {
         // TODO Auto-generated method stub
-    }
-
-    @Override
-    public int getDocId() {
-        return 0;
-    }
-
-    @Override
-    public Object getUUID() {
-            return null;
     }
 }

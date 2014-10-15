@@ -37,7 +37,7 @@ import javax.xml.stream.XMLStreamException;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.exist.dom.*;
+import org.exist.dom.QName;
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
@@ -78,7 +78,7 @@ import org.w3c.dom.UserDataHandler;
  *
  * @author Wolfgang Meier
  */
-public class ElementImpl extends NamedNode implements Element, ElementAtExist {
+public class ElementImpl extends NamedNode implements Element {
 
     public static final int LENGTH_ELEMENT_CHILD_COUNT = 4; //sizeof int
     public static final int LENGTH_ATTRIBUTES_COUNT = 2; //sizeof short
@@ -112,7 +112,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         }
     }
 
-    public ElementImpl(ElementImpl other) {
+    public ElementImpl(final ElementImpl other) {
         super(other);
         this.children = other.children;
         this.attributes = other.attributes;
@@ -736,6 +736,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#getAttribute(java.lang.String)
      */
+    @Override
     public String getAttribute(String name) {
         final Attr attr = findAttribute(name);
         return attr != null ? attr.getValue() : "";
@@ -744,6 +745,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#getAttributeNS(java.lang.String, java.lang.String)
      */
+    @Override
     public String getAttributeNS(String namespaceURI, String localName) {
         final Attr attr = findAttribute(new QName(localName, namespaceURI));
         return attr != null ? attr.getValue() : "";
@@ -759,6 +761,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#getAttributeNode(java.lang.String)
      */
+    @Override
     public Attr getAttributeNode(String name) {
         return findAttribute(name);
     }
@@ -766,6 +769,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
      */
+    @Override
     public Attr getAttributeNodeNS(String namespaceURI, String localName) {
         return findAttribute(new QName(localName, namespaceURI));
     }
@@ -933,6 +937,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
      */
+    @Override
     public NodeList getElementsByTagName(String tagName) {
         final QName qname = new QName(tagName, "", null);
         return ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
@@ -941,6 +946,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#getElementsByTagNameNS(java.lang.String, java.lang.String)
      */
+    @Override
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
         final QName qname = new QName(localName, namespaceURI, null);
         return ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
@@ -992,6 +998,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#getTagName()
      */
+    @Override
     public String getTagName() {
         return nodeName.getStringValue();
     }
@@ -999,6 +1006,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#hasAttribute(java.lang.String)
      */
+    @Override
     public boolean hasAttribute(String name) {
         return findAttribute(name) != null;
     }
@@ -1006,6 +1014,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
      */
+    @Override
     public boolean hasAttributeNS(String namespaceURI, String localName) {
         return findAttribute(new QName(localName, namespaceURI)) != null;
     }
@@ -1050,6 +1059,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#removeAttribute(java.lang.String)
      */
+    @Override
     public void removeAttribute(String name) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "removeAttribute(String name) not implemented on class " + getClass().getName());
@@ -1058,32 +1068,38 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
     /**
      * @see org.w3c.dom.Element#removeAttributeNS(java.lang.String, java.lang.String)
      */
+    @Override
     public void removeAttributeNS(String namespaceURI, String name) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "removeAttributeNS(String namespaceURI, String name) not implemented on class " + getClass().getName());
     }
 
+    @Override
     public Attr removeAttributeNode(Attr oldAttr) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "removeAttributeNode(Attr oldAttr) not implemented on class " + getClass().getName());
     }
 
+    @Override
     public void setAttribute(String name, String value) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "setAttribute(String name, String value) not implemented on class " + getClass().getName());
     }
 
+    @Override
     public void setAttributeNS(String namespaceURI, String qualifiedName, String value) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "setAttributeNS(String namespaceURI, String qualifiedName," +
             "String value) not implemented on class " + getClass().getName());
     }
 
+    @Override
     public Attr setAttributeNode(Attr newAttr) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, 
             "setAttributeNode(Attr newAttr) not implemented on class " + getClass().getName());
     }
 
+    @Override
     public Attr setAttributeNodeNS(Attr newAttr) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "setAttributeNodeNS(Attr newAttr) not implemented on class " + getClass().getName());
@@ -1712,6 +1728,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
 
     /** ? @see org.w3c.dom.Element#getSchemaTypeInfo()
      */
+    @Override
     public TypeInfo getSchemaTypeInfo() {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "getSchemaTypeInfo() not implemented on class " + getClass().getName());
@@ -1719,6 +1736,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
 
     /** ? @see org.w3c.dom.Element#setIdAttribute(java.lang.String, boolean)
      */
+    @Override
     public void setIdAttribute(String name, boolean isId) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "setIdAttribute(String name, boolean isId) not implemented on class " + getClass().getName());	
@@ -1726,6 +1744,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
 
     /** ? @see org.w3c.dom.Element#setIdAttributeNS(java.lang.String, java.lang.String, boolean)
      */
+    @Override
     public void setIdAttributeNS(String namespaceURI, String localName, boolean isId) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "setIdAttributeNS(String namespaceURI, String localName," +
@@ -1734,6 +1753,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
 
     /** ? @see org.w3c.dom.Element#setIdAttributeNode(org.w3c.dom.Attr, boolean)
      */
+    @Override
     public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "setIdAttributeNode(Attr idAttr, boolean isId) not implemented on class " + getClass().getName());	
@@ -1748,7 +1768,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         return ""; //UNDERSTAND: is it ok?
     }
 
-    //Please, keep in sync with org.exist.dom.memtree.ElementImpl
+    //TODO Please, keep in sync with org.exist.dom.memtree.ElementImpl
     private XmldbURI calculateBaseURI() {
         XmldbURI baseURI = null;
         final String nodeBaseURI = _getAttributeNS(Namespaces.XML_NS, "base");
@@ -1818,7 +1838,7 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
         // This function is used by Saxon in some circumstances, and this partial implementation is required for proper Saxon operation.
         if (other instanceof IStoredNode) {
             return (this.nodeId == ((IStoredNode)other).getNodeId() &&
-                this.ownerDocument.getDocId() == ((IStoredNode)other).getOwnerDocument().getDocId());
+                this.ownerDocument.getDocId() == ((IStoredNode<? extends IStoredNode>)other).getOwnerDocument().getDocId());
         } 
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "isSameNode(Node other) not implemented on other class " + other.getClass().getName());

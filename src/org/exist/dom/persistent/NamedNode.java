@@ -23,7 +23,6 @@
 package org.exist.dom.persistent;
 
 import org.exist.dom.QName;
-import org.exist.dom.QNameable;
 import org.exist.numbering.NodeId;
 import org.w3c.dom.DOMException;
 
@@ -32,8 +31,7 @@ import org.w3c.dom.DOMException;
  * 
  * @author wolf
  */
-//TODO : rename as StoredNamedNode ? -pb
-public class NamedNode extends StoredNode implements QNameable {
+public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
 
     protected QName nodeName = null;
     
@@ -56,27 +54,37 @@ public class NamedNode extends StoredNode implements QNameable {
      * @param qname 
      * @param nodeType 
      */
-    public NamedNode(short nodeType, NodeId nodeId, QName qname) {
+    protected NamedNode(short nodeType, NodeId nodeId, QName qname) {
         super(nodeType, nodeId);
         this.nodeName = qname;
     }
 
-    public NamedNode(NamedNode other) {
+    protected NamedNode(final NamedNode other) {
         super(other);
         this.nodeName = other.nodeName;
+    }
+
+    /**
+     * Extracts just the details of the NamedNode
+     */
+    public NamedNode extract() {
+        return new NamedNode(this){};
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.persistent.NodeImpl#getQName()
      */
+    @Override
     public QName getQName() {
         return nodeName;
     }
 
+    @Override
     public void setQName(QName qname) {
         this.nodeName = qname;
     }
 
+    @Override
     public void setNodeName(QName name) {
         nodeName = name;
     }
@@ -92,6 +100,7 @@ public class NamedNode extends StoredNode implements QNameable {
     /* (non-Javadoc)
      * @see org.exist.dom.persistent.NodeImpl#clear()
      */
+    @Override
     public void clear() {
         super.clear();
         nodeName = null;

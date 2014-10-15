@@ -92,7 +92,7 @@ public class IndexStatisticsWorker implements IndexWorker {
         return mode;
     }
 
-    public IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf) {
         return null;
     }
 
