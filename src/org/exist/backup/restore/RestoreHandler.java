@@ -256,6 +256,8 @@ public class RestoreHandler extends DefaultHandler {
                 listener.error("Could not initalise SAXParser for processing sub-collection: " + descriptor.getSymbolicPath(name, false));
             } catch(final IOException ioe) {
                 listener.error("Could not read sub-collection for processing: " + ioe.getMessage());
+            } catch(final SAXException se) {
+                listener.error("SAX exception while reading sub-collection " + subDescriptor.getSymbolicPath() + " for processing: " + se.getMessage());
             }
         } else {
             listener.error("Collection " + descriptor.getSymbolicPath(name, false) + " does not exist or is not readable.");
