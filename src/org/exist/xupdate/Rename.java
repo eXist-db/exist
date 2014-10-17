@@ -74,7 +74,6 @@ public class Rename extends Modification {
         try {
             final StoredNode[] ql = selectAndLock(transaction);
             NodeImpl parent;
-            final IndexListener listener = new IndexListener(ql);
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             final String newName = children.item(0).getNodeValue();
             for (int i = 0; i < ql.length; i++) {
@@ -83,7 +82,6 @@ public class Rename extends Modification {
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
-                doc.getMetadata().setIndexListener(listener);
                 parent = (NodeImpl) node.getParentNode();
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
@@ -102,7 +100,6 @@ public class Rename extends Modification {
                         throw new EXistException("unsupported node-type");
                 }
 
-                doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);

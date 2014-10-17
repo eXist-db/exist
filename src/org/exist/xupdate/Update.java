@@ -75,7 +75,6 @@ public class Update extends Modification {
         int modifications = children.getLength();
         try {
             final StoredNode ql[] = selectAndLock(transaction);
-            final IndexListener listener = new IndexListener(ql);
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             Node temp;
             TextImpl text;
@@ -88,7 +87,6 @@ public class Update extends Modification {
                     continue;
                 }
                 final DocumentImpl  doc = (DocumentImpl)node.getOwnerDocument();
-                doc.getMetadata().setIndexListener(listener);
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                      throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
@@ -121,7 +119,6 @@ public class Update extends Modification {
                     default:
                         throw new EXistException("unsupported node-type");
                 }
-                doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);

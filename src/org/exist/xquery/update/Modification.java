@@ -33,7 +33,6 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeIndexListener;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
@@ -41,7 +40,6 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionException;
@@ -355,25 +353,4 @@ public abstract class Modification extends AbstractExpression
         final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
         txnMgr.close(transaction);
     }
-
-    final static class IndexListener implements NodeIndexListener {
-
-		final NodeHandle[] nodes;
-
-		public IndexListener(NodeHandle[] nodes) {
-			this.nodes = nodes;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.exist.dom.persistent.NodeIndexListener#nodeChanged(org.exist.dom.persistent.NodeImpl)
-		 */
-                @Override
-		public void nodeChanged(NodeHandle node) {
-			for (int i = 0; i < nodes.length; i++) {
-				if (StorageAddress.equals(nodes[i], node)) {
-					nodes[i] = node;
-				}
-			}
-		}
-	}
 }

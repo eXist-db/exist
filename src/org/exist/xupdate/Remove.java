@@ -67,7 +67,6 @@ public class Remove extends Modification {
 			LockException, EXistException, XPathException, TriggerException {
 		try {
 			final StoredNode[] ql = selectAndLock(transaction);
-			final IndexListener listener = new IndexListener(ql);
 			final NotificationService notifier = broker.getBrokerPool()
 					.getNotificationService();
 			NodeImpl parent;
@@ -78,7 +77,6 @@ public class Remove extends Modification {
 						Permission.WRITE)) {
             				throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                                 }
-				doc.getMetadata().setIndexListener(listener);
 				parent = (NodeImpl) node.getParentNode();
                 if (parent == null || parent.getNodeType() != Node.ELEMENT_NODE) {
 					throw new EXistException(
@@ -86,7 +84,6 @@ public class Remove extends Modification {
 									+ "instead");
 				} else
 					{parent.removeChild(transaction, node);}
-				doc.getMetadata().clearIndexListener();
 				doc.getMetadata().setLastModified(System.currentTimeMillis());
 				modifiedDocuments.add(doc);
 				broker.storeXMLResource(transaction, doc);

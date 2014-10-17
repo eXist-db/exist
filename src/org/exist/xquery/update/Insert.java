@@ -138,7 +138,6 @@ public class Insert extends Modification {
             try {
                 final StoredNode[] ql = selectAndLock(transaction, inSeq);
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                final IndexListener listener = new IndexListener(ql);                
                 final NodeList contentList = seq2nodeList(contentSeq);
                 for (int i = 0; i < ql.length; i++) {
                     final StoredNode node = ql[i];
@@ -146,7 +145,6 @@ public class Insert extends Modification {
                     if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
-                    doc.getMetadata().setIndexListener(listener);
                     
                     //update the document
     				if (mode == INSERT_APPEND) {
@@ -162,7 +160,6 @@ public class Insert extends Modification {
     	                        break;
     	                }
     				}
-                    doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);

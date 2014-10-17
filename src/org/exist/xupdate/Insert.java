@@ -81,7 +81,6 @@ public class Insert extends Modification {
         if (children.getLength() == 0) {return 0;}
         try {
             final StoredNode[] ql = selectAndLock(transaction);
-            final IndexListener listener = new IndexListener(ql);
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();       
             NodeImpl parent;             
             final int len = children.getLength();
@@ -90,7 +89,6 @@ public class Insert extends Modification {
             for (int i = 0; i < ql.length; i++) {
                 final StoredNode node = ql[i];
                 final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-                doc.getMetadata().setIndexListener(listener);
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("permission to update document denied");
                 }
@@ -103,7 +101,6 @@ public class Insert extends Modification {
                         parent.insertAfter(transaction, children, node);
                         break;
                 }
-                doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);

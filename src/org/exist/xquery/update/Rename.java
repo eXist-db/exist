@@ -134,7 +134,6 @@ public class Rename extends Modification {
     		try {
                 final StoredNode[] ql = selectAndLock(transaction, inSeq);
                 NodeImpl parent;
-                final IndexListener listener = new IndexListener(ql);
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 for (int i = 0; i < ql.length; i++) {
                     final StoredNode node = ql[i];
@@ -142,7 +141,6 @@ public class Rename extends Modification {
                     if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
                             throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
-                    doc.getMetadata().setIndexListener(listener);
                     
                     //update the document
                     parent = (NodeImpl) node.getParentNode();
@@ -160,8 +158,7 @@ public class Rename extends Modification {
                         default:
                             throw new XPathException(this, "unsupported node-type");
                     }
-    
-                    doc.getMetadata().clearIndexListener();
+
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);

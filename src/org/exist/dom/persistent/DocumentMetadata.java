@@ -73,8 +73,6 @@ public class DocumentMetadata {
      */
     private LockToken lockToken = null;
 
-    private transient NodeIndexListener listener = NullNodeIndexListener.INSTANCE;
-
     protected transient int splitCount = 0;
 
     private boolean isReferenced = false;
@@ -217,14 +215,6 @@ public class DocumentMetadata {
 
     public void setDocType(final DocumentType docType) {
         this.docType = docType;
-    }
-
-    public void clearIndexListener() {
-        listener = NullNodeIndexListener.INSTANCE;
-    }
-
-    public void setIndexListener(final NodeIndexListener listener) {
-        this.listener = listener;
     }
 
     /**

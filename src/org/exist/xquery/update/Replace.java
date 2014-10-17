@@ -123,7 +123,6 @@ public class Replace extends Modification {
         final Txn transaction = getTransaction();
         try {
             final StoredNode ql[] = selectAndLock(transaction, inSeq);
-            final IndexListener listener = new IndexListener(ql);
             final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             Item temp;
             TextImpl text;
@@ -135,7 +134,6 @@ public class Replace extends Modification {
                 if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
-                doc.getMetadata().setIndexListener(listener);
                 
                 //update the document
                 parent = (ElementImpl) node.getParentStoredNode();
@@ -165,7 +163,6 @@ public class Replace extends Modification {
                     default:
                         throw new EXistException("unsupported node-type");
                 }
-                doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
                 context.getBroker().storeXMLResource(transaction, doc);
