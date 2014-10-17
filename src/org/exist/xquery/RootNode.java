@@ -79,7 +79,7 @@ public class RootNode extends Step {
 //        if (cachedDocs != null && cachedDocs.equalDocs(ds)) return cached;
         
         // check if the loaded documents should remain locked
-        NewArrayNodeSet result = new NewArrayNodeSet(2);
+        NewArrayNodeSet result = new NewArrayNodeSet();
         try {
             // wait for pending updates
             if (!context.inProtectedMode())

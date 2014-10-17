@@ -501,7 +501,7 @@ public class Predicate extends PathExpr {
                 && Type.subTypeOf(contextSequence.getItemType(), Type.NODE)
                 && contextSequence.isPersistentSet()
                 && outerSequence.isPersistentSet()) {
-            final Sequence result = new NewArrayNodeSet(100);
+            final Sequence result = new NewArrayNodeSet();
             final NodeSet contextSet = contextSequence.toNodeSet();
             switch (mode) {
             case Constants.CHILD_AXIS:
@@ -521,7 +521,7 @@ public class Predicate extends PathExpr {
                 if (contextSet.getDocumentSet().intersection(
                         outerNodeSet.getDocumentSet()).getDocumentCount() == 0)
                         {LOG.info("contextSet and outerNodeSet don't share any document");}
-                final NewArrayNodeSet temp = new NewArrayNodeSet(100);
+                final NewArrayNodeSet temp = new NewArrayNodeSet();
                 for (final SequenceIterator i = ancestors.iterate(); i.hasNext();) {
                     NodeProxy p = (NodeProxy) i.nextItem();
                     ContextItem contextNode = p.getContext();

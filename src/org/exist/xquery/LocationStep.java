@@ -879,7 +879,7 @@ public class LocationStep extends Step {
 			return vset;
 		}
 		if (test.isWildcardTest()) {
-			final NewArrayNodeSet result = new NewArrayNodeSet(contextSet.getLength());
+			final NewArrayNodeSet result = new NewArrayNodeSet();
 			try {
 				for (final NodeProxy current : contextSet) {
 					//ignore document elements to avoid NPE at getXMLStreamReader
