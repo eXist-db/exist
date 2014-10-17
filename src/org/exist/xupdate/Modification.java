@@ -23,7 +23,6 @@
 package org.exist.xupdate;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -39,8 +38,6 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.NodeIndexListener;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.security.PermissionDeniedException;
@@ -49,14 +46,12 @@ import org.exist.security.xacml.NullAccessContextException;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
-import org.exist.storage.StorageAddress;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -351,26 +346,5 @@ public abstract class Modification {
 		buf.append(getName());
 		buf.append(">");
 		return buf.toString();
-	}
-
-	final static class IndexListener implements NodeIndexListener {
-
-		NodeHandle[] nodes;
-
-		public IndexListener(NodeHandle[] nodes) {
-			this.nodes = nodes;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.exist.dom.persistent.NodeIndexListener#nodeChanged(org.exist.dom.persistent.NodeImpl)
-		 */
-                @Override
-		public void nodeChanged(NodeHandle node) {
-			for (int i = 0; i < nodes.length; i++) {
-				if (StorageAddress.equals(nodes[i], node)) {
-					nodes[i] = node;
-				}
-			}
-		}
 	}
 }

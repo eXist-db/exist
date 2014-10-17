@@ -121,7 +121,6 @@ public class Delete extends Modification {
     		try {
     			final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 final StoredNode[] ql = selectAndLock(transaction, inSeq);
-                final IndexListener listener = new IndexListener(ql);
                 NodeImpl parent;
                 for (int i = 0; i < ql.length; i++) {
                     final StoredNode node = ql[i];
@@ -130,7 +129,6 @@ public class Delete extends Modification {
                         //transact.abort(transaction);    
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
-                    doc.getMetadata().setIndexListener(listener);
                     
                     //update the document
                     parent = (NodeImpl) node.getParentNode();
@@ -148,8 +146,7 @@ public class Delete extends Modification {
                     } else {
                         parent.removeChild(transaction, node);
                     }
-                    
-                    doc.getMetadata().clearIndexListener();
+
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);

@@ -126,7 +126,6 @@ public class Update extends Modification {
     			final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
 
                 final StoredNode ql[] = selectAndLock(transaction, inSeq);
-                final IndexListener listener = new IndexListener(ql);
                 TextImpl text;
                 AttrImpl attribute;
                 ElementImpl parent;
@@ -137,7 +136,6 @@ public class Update extends Modification {
                             Permission.WRITE)){
                             throw new XPathException(this, "User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
-                    doc.getMetadata().setIndexListener(listener);
                                         
                     //update the document
                     switch (node.getNodeType())
@@ -176,7 +174,6 @@ public class Update extends Modification {
                         default:
                             throw new XPathException(this, "unsupported node-type");
                     }
-                    doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);

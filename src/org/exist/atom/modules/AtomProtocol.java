@@ -57,16 +57,12 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.config.ConfigurationException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.NodeIndexListener;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.UUIDGenerator;
 import org.exist.storage.DBBroker;
-import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -1033,7 +1029,6 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 				DOMDB.appendChild(transaction, target, child);
 			}
 		}
-		ownerDocument.getMetadata().clearIndexListener();
 		ownerDocument.getMetadata().setLastModified(System.currentTimeMillis());
 	}
 
