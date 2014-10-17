@@ -131,7 +131,7 @@ public class Update extends Modification {
                 ElementImpl parent;
                 for (int i = 0; i < ql.length; i++) {
                     final StoredNode node = ql[i];
-                    final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                    final DocumentImpl doc = node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.WRITE)){
                             throw new XPathException(this, "User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");

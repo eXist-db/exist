@@ -242,7 +242,7 @@ public abstract class Modification {
 		    final StoredNode ql[] = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nl.item(i);
-				final DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
+				final DocumentImpl doc = ql[i].getOwnerDocument();
 				
 				// call the eventual triggers
 				// TODO -jmv separate loop on docs and not on nodes

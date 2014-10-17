@@ -525,7 +525,7 @@ public class Database {
 		}
                 @Override
 		public void removeNode(NodeHandle node, NodePath currentPath, String content) {
-			stale(normalizePath(((DocumentImpl) node.getOwnerDocument()).getURI().getCollectionPath()) + "#" + node.getNodeId());
+			stale(normalizePath((node.getOwnerDocument()).getURI().getCollectionPath()) + "#" + node.getNodeId());
 		}
 		public void flush() {}
 		public void setDocument(DocumentImpl document) {}

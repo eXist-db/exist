@@ -346,7 +346,7 @@ public class Node extends Item {
 				public void completed(NodeList removeList, NodeList addList) {
 					Transaction tx = db.requireTransactionWithBroker();
 					try {
-						DocumentImpl doc = (DocumentImpl) elem.getOwnerDocument();
+						DocumentImpl doc = elem.getOwnerDocument();
 						tx.lockWrite(doc);
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						elem.removeAppendAttributes(tx.tx, removeList, addList);

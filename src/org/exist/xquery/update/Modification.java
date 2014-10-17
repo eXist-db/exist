@@ -161,7 +161,7 @@ public abstract class Modification extends AbstractExpression
                 if (n.getNodeType() == Node.DOCUMENT_NODE)
                     {throw new XPathException(this, "Updating the document object is not allowed.");}
 				ql[i] = (StoredNode) n;
-				final DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
+				final DocumentImpl doc = ql[i].getOwnerDocument();
 				//prepare Trigger
 				prepareTrigger(transaction, doc);
 			}
