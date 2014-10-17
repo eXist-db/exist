@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -25,11 +25,6 @@ import org.exist.numbering.NodeId;
 
 public interface ExtNodeSet extends NodeSet {
 
-    public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId, 
-        boolean includeSelf, int contextId, boolean copyMatches);
-
-    public ByDocumentIterator iterateByDocument();
-
-    public void setSorted(DocumentImpl document, boolean sorted);
-
+    public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId,
+                                         boolean includeSelf, int contextId, boolean copyMatches);
 }

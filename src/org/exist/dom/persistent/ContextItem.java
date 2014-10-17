@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-2014,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -27,13 +27,13 @@ public class ContextItem {
     private NodeProxy node;
 
     private ContextItem nextDirect;
-    private int contextId;
+    final private int contextId;
 
-    public ContextItem(NodeProxy node) {
+    public ContextItem(final NodeProxy node) {
         this(Expression.NO_CONTEXT_ID, node);
     }
 
-    public ContextItem(int contextId, NodeProxy node) {
+    public ContextItem(final int contextId, final NodeProxy node) {
         this.contextId = contextId;
         this.node = node;
     }
@@ -54,16 +54,17 @@ public class ContextItem {
         return nextDirect;
     }
 
-    public void setNextContextItem(ContextItem next) {
-            nextDirect = next;
+    public void setNextContextItem(final ContextItem next) {
+        nextDirect = next;
     }
 
     @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder();
         buf.append(node);
-        if (nextDirect != null)
-            {buf.append("/" + nextDirect);}
+        if(nextDirect != null) {
+            buf.append("/").append(nextDirect);
+        }
         return buf.toString();
     }
 }

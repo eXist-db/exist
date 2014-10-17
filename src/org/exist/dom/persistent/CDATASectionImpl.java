@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -38,50 +38,20 @@ public class CDATASectionImpl extends AbstractCharacterData implements CDATASect
         super(Node.CDATA_SECTION_NODE);
     }
 
-    public CDATASectionImpl(NodeId nodeId, String data) {
+    public CDATASectionImpl(final NodeId nodeId, final String data) {
         super(Node.CDATA_SECTION_NODE, nodeId, data);
     }
 
-    public CDATASectionImpl(NodeId nodeId) {
+    public CDATASectionImpl(final NodeId nodeId) {
         super(Node.CDATA_SECTION_NODE, nodeId);
     }
 
-    public CDATASectionImpl( XMLString data ) {
-        super( Node.CDATA_SECTION_NODE);
+    public CDATASectionImpl(final XMLString data) {
+        super(Node.CDATA_SECTION_NODE);
         this.cdata = data;
     }
 
     @Override
-    public int getChildCount() {
-        return 0;
-    }
-
-    @Override
-    public Node getFirstChild() {
-        return null;
-    }
-
-    @Override
-    public boolean hasChildNodes() {
-        return false;
-    }
-
-    public String getWholeText() {
-        return null;
-    }
-
-    public boolean isElementContentWhitespace() {
-        return false;
-    }
-
-    public Text replaceWholeText(String content) throws DOMException {
-        return null;
-    }
-
-    public Text splitText(int offset) throws DOMException {
-        return null;
-    }
-
     /**
      * Serializes a (persistent DOM) CDATA Section to a byte array
      *
@@ -96,13 +66,12 @@ public class CDATASectionImpl extends AbstractCharacterData implements CDATASect
      *
      * eUtf8 = {@see org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
      */
-    @Override
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
         final byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
             nodeIdLen + cdata.UTF8Size());
         int pos = 0;
-        data[pos] = (byte) ( Signatures.Cdata << 0x5 );
+        data[pos] = (byte) (Signatures.Cdata << 0x5);
         pos += LENGTH_SIGNATURE_LENGTH;
         ByteConversion.shortToByte((short) nodeId.units(), data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
@@ -112,20 +81,37 @@ public class CDATASectionImpl extends AbstractCharacterData implements CDATASect
         return data;
     }
 
-    public static StoredNode deserialize(byte[] data,
-            int start,
-            int len,
-            DocumentImpl doc,
-            boolean pooled) {
+    public static StoredNode deserialize(final byte[] data, final int start,
+            final int len, final DocumentImpl doc, final boolean pooled) {
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;
         final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
-        final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);        
+        final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
         final CDATASectionImpl cdata = new CDATASectionImpl(dln);
         cdata.cdata = UTF8.decode(data, pos, len - (pos - start));
         return cdata;
+    }
+
+    @Override
+    public String getWholeText() {
+        return null;
+    }
+
+    @Override
+    public boolean isElementContentWhitespace() {
+        return false;
+    }
+
+    @Override
+    public Text replaceWholeText(final String content) throws DOMException {
+        return null;
+    }
+
+    @Override
+    public Text splitText(final int offset) throws DOMException {
+        return null;
     }
 }

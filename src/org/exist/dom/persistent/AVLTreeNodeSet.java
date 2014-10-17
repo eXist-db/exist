@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2014 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ *  $Id$
+ */
 package org.exist.dom.persistent;
 
 import org.exist.numbering.NodeId;
@@ -13,10 +34,6 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     private Node root;
     private int size = 0;
     private int state = 0;
-    
-    public AVLTreeNodeSet() {
-        //Nothing to do
-    }
 
     /* (non-Javadoc)
       * @see org.exist.dom.persistent.NodeSet#iterate()
@@ -31,103 +48,86 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return new InorderTraversal();
     }
 
-    /* (non-Javadoc)
-      * @see org.exist.dom.persistent.NodeSet#addAll(org.exist.dom.persistent.NodeSet)
-      */
     @Override
-    public void addAll(NodeSet other) {
-        for (final Iterator<NodeProxy> i = other.iterator(); i.hasNext();)
+    public void addAll(final NodeSet other) {
+        for(final Iterator<NodeProxy> i = other.iterator(); i.hasNext(); ) {
             add(i.next());
+        }
     }
 
-    /* (non-Javadoc)
-      * @see org.exist.dom.persistent.NodeSet#getLength()
-      */
     @Override
     public int getLength() {
         return size;
     }
-    
+
     //TODO : evaluate both semantics
     @Override
     public int getItemCount() {
         return size;
     }
 
-    /* (non-Javadoc)
-      * @see org.exist.dom.persistent.NodeSet#item(int)
-      */
+
+    //TODO could we not just use itemAt(index) here or get(pos)?
     @Override
-    public org.w3c.dom.Node item(int pos) {
-        int i = 0;
-        for(final Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
-            final NodeProxy p = it.next();
-            if(i == pos)
-                {return p.getNode();}
-        }
-        return null;
+    public org.w3c.dom.Node item(final int pos) {
+        final NodeProxy proxy = get(pos);
+        return proxy == null ? null : proxy.getNode();
     }
 
-    /* (non-Javadoc)
-      * @see org.exist.dom.persistent.NodeSet#get(int)
-      */
     @Override
-    public NodeProxy get(int pos) {
-        return (NodeProxy)itemAt(pos);
+    public NodeProxy get(final int pos) {
+        return (NodeProxy) itemAt(pos);
     }
 
-    /* (non-Javadoc)
-      * @see org.exist.dom.persistent.NodeSet#get(org.exist.dom.persistent.NodeProxy)
-      */
     @Override
-    public final NodeProxy get(NodeProxy p) {
+    public final NodeProxy get(final NodeProxy p) {
         final Node n = searchData(p);
         return n == null ? null : n.getData();
     }
 
     @Override
     public boolean isEmpty() {
-        return (size == 0);
+        return size == 0;
     }
 
     @Override
     public boolean hasOne() {
-        return (size == 1);
+        return size == 1;
     }
 
-    /* (non-Javadoc)
-      * @see org.exist.xquery.value.Sequence#itemAt(int)
-      */
     @Override
-    public Item itemAt(int pos) {
+    public Item itemAt(final int pos) {
         int i = 0;
         for(final Iterator<NodeProxy> it = iterator(); it.hasNext(); i++) {
             final NodeProxy p = it.next();
-            if(i == pos)
-                {return p;}
+            if(i == pos) {
+                return p;
+            }
         }
-        //TODO : exception ?
         return null;
     }
 
     @Override
-    public final void add(NodeProxy proxy) {
-        if(proxy == null)
-            {return;}
+    public final void add(final NodeProxy proxy) {
+        if(proxy == null) {
+            return;
+        }
+
         setHasChanged();
-        if (root == null) {
+        if(root == null) {
             root = new Node(proxy);
             ++size;
             return;
         }
+
         Node tempNode = root;
-        while (true) {
+        while(true) {
             final int c = tempNode.data.compareTo(proxy);
-            if (c == 0) {
+            if(c == 0) {
                 return;
             }
-            if (c > 0) { // inserts s into left subtree.
-                if (tempNode.hasLeftChild()) {
+            if(c > 0) { // inserts s into left subtree.
+                if(tempNode.hasLeftChild()) {
                     tempNode = tempNode.leftChild;
                     continue;
                 }
@@ -137,7 +137,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                 return;
             }
             // inserts s to right subtree
-            if (tempNode.hasRightChild()) {
+            if(tempNode.hasRightChild()) {
                 tempNode = tempNode.rightChild;
                 continue;
             }
@@ -149,54 +149,61 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     }
 
     public Node getMinNode() {
-        if (root == null)
-            {return null;}
+        if(root == null) {
+            return null;
+        }
         Node tempNode = root;
-        while (tempNode.hasLeftChild())
+        while(tempNode.hasLeftChild()) {
             tempNode = tempNode.getLeftChild();
+        }
         return tempNode;
     }
 
     public Node getMaxNode() {
-        if (root == null)
-            {return null;}
+        if(root == null) {
+            return null;
+        }
         Node tempNode = root;
-        while (tempNode.hasRightChild())
+        while(tempNode.hasRightChild()) {
             tempNode = tempNode.getRightChild();
+        }
         return tempNode;
     }
 
-    private void balance(Node node) {
+    private void balance(final Node node) {
         Node currentNode, currentParent;
         currentNode = node;
         currentParent = node.parent;
-        while (currentNode != root) {
+        while(currentNode != root) {
             final int h = currentParent.height;
             currentParent.setHeight();
-            if (h == currentParent.height)
-                {return;} // Case 1
-            if (currentParent.balanced()) {
+            if(h == currentParent.height) {
+                return;
+            } // Case 1
+            if(currentParent.balanced()) {
                 currentNode = currentParent;
                 currentParent = currentNode.parent;
                 continue;
             }
-            if (currentParent.leftHeight() - currentParent.rightHeight()
+            if(currentParent.leftHeight() - currentParent.rightHeight()
                 == 2) {
                 Node nodeA = currentParent,
                     nodeB = nodeA.getLeftChild(),
                     //nodeC = nodeB.getLeftChild(),
                     nodeD = nodeB.getRightChild();
-                if (nodeB.leftHeight() > nodeB.rightHeight()) {
+                if(nodeB.leftHeight() > nodeB.rightHeight()) {
                     // right rotation for Case 2
                     nodeA.addLeftChild(nodeD);
-                    if (nodeA != root) {
-                        if (nodeA.isLeftChild())
-                            {nodeA.parent.addLeftChild(nodeB);}
-                        else
-                            {nodeA.parent.addRightChild(nodeB);}
+                    if(nodeA != root) {
+                        if(nodeA.isLeftChild()) {
+                            nodeA.parent.addLeftChild(nodeB);
+                        } else {
+                            nodeA.parent.addRightChild(nodeB);
+                        }
                     } else {
                         root = nodeB;
-                    };
+                    }
+
                     nodeB.addRightChild(nodeA);
                     nodeA.setHeight();
                     nodeB.setHeight();
@@ -205,25 +212,26 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                     continue;
                 }
                 // Case 3 and Case 4
-                Node nodeE = null, nodeF = null;
-                if (nodeD.hasLeftChild()) {
-                    nodeE = nodeD.getLeftChild();
-                    nodeB.addRightChild(nodeE);
-                } else
-                    {nodeB.removeRightChild();}
-                if (nodeD.hasRightChild()) {
-                    nodeF = nodeD.getRightChild();
-                    nodeA.addLeftChild(nodeF);
-                } else
-                    {nodeA.removeLeftChild();}
+                if(nodeD.hasLeftChild()) {
+                    nodeB.addRightChild(nodeD.getLeftChild());
+                } else {
+                    nodeB.removeRightChild();
+                }
+                if(nodeD.hasRightChild()) {
+                    nodeA.addLeftChild(nodeD.getRightChild());
+                } else {
+                    nodeA.removeLeftChild();
+                }
 
-                if (currentParent != root) {
-                    if (nodeA.isLeftChild())
-                        {nodeA.parent.addLeftChild(nodeD);}
-                    else
-                        {nodeA.parent.addRightChild(nodeD);}
-                } else
-                    {root = nodeD;}
+                if(currentParent != root) {
+                    if(nodeA.isLeftChild()) {
+                        nodeA.parent.addLeftChild(nodeD);
+                    } else {
+                        nodeA.parent.addRightChild(nodeD);
+                    }
+                } else {
+                    root = nodeD;
+                }
                 nodeD.addLeftChild(nodeB);
                 nodeD.addRightChild(nodeA);
                 nodeB.setHeight();
@@ -234,24 +242,26 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                 continue;
             }
 
-            if (currentParent.leftHeight() - currentParent.rightHeight()
+            if(currentParent.leftHeight() - currentParent.rightHeight()
                 == -2) {
                 final Node nodeA = currentParent;
                 Node nodeB = nodeA.getRightChild();
                 Node nodeC = nodeB.getLeftChild();
                 //Node nodeD = nodeB.getRightChild();
 
-                if (nodeB.leftHeight() < nodeB.rightHeight()) {
+                if(nodeB.leftHeight() < nodeB.rightHeight()) {
                     // left rotation for Case 2
                     nodeA.addRightChild(nodeC);
-                    if (nodeA != root) {
-                        if (nodeA.isLeftChild())
-                            {nodeA.parent.addLeftChild(nodeB);}
-                        else
-                            {nodeA.parent.addRightChild(nodeB);}
+                    if(nodeA != root) {
+                        if(nodeA.isLeftChild()) {
+                            nodeA.parent.addLeftChild(nodeB);
+                        } else {
+                            nodeA.parent.addRightChild(nodeB);
+                        }
                     } else {
                         root = nodeB;
-                    };
+                    }
+                    ;
                     nodeB.addLeftChild(nodeA);
                     nodeA.setHeight();
                     nodeB.setHeight();
@@ -260,26 +270,27 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                     continue;
                 }
                 // Case 3 and Case 4
-                Node nodeE = null, nodeF = null;
-                if (nodeC.hasLeftChild()) {
-                    nodeE = nodeC.getLeftChild();
-                    nodeA.addRightChild(nodeE);
-                } else
-                    {nodeA.removeRightChild();}
-                if (nodeC.hasRightChild()) {
-                    nodeF = nodeC.getRightChild();
-                    nodeB.addLeftChild(nodeF);
-                } else
-                    {nodeB.removeLeftChild();}
+                if(nodeC.hasLeftChild()) {
+                    nodeA.addRightChild(nodeC.getLeftChild());
+                } else {
+                    nodeA.removeRightChild();
+                }
+                if(nodeC.hasRightChild()) {
+                    nodeB.addLeftChild(nodeC.getRightChild());
+                } else {
+                    nodeB.removeLeftChild();
+                }
 
-                if (nodeA != root) {
-                    if (nodeA.isLeftChild())
-                        {nodeA.parent.addLeftChild(nodeC);}
-                    else
-                        {nodeA.parent.addRightChild(nodeC);}
+                if(nodeA != root) {
+                    if(nodeA.isLeftChild()) {
+                        nodeA.parent.addLeftChild(nodeC);
+                    } else {
+                        nodeA.parent.addRightChild(nodeC);
+                    }
 
-                } else
-                    {root = nodeC;}
+                } else {
+                    root = nodeC;
+                }
                 nodeC.addLeftChild(nodeA);
                 nodeC.addRightChild(nodeB);
                 nodeB.setHeight();
@@ -293,108 +304,108 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         }
     }
 
-    public final Node searchData(NodeProxy proxy) {
-        if (root == null)
-            {return null;}
+    public final Node searchData(final NodeProxy proxy) {
+        if(root == null) {
+            return null;
+        }
+
         Node tempNode = root;
-        while (tempNode != null) {
+        while(tempNode != null) {
             final int c = tempNode.data.compareTo(proxy);
-            if (c == 0)
-                {return tempNode;}
-            if (c < 0)
-                {tempNode = tempNode.rightChild;}
-            else
-                {tempNode = tempNode.leftChild;}
+            if(c == 0) {
+                return tempNode;
+            }
+            if(c < 0) {
+                tempNode = tempNode.rightChild;
+            } else {
+                tempNode = tempNode.leftChild;
+            }
         }
         return null;
     }
 
-    public final NodeProxy get(DocumentImpl doc, NodeId nodeId) {
-        if (root == null)
-            {return null;}
+    @Override
+    public final NodeProxy get(final DocumentImpl doc, final NodeId nodeId) {
+        if(root == null) {
+            return null;
+        }
+
         Node tempNode = root;
         int cmp;
-        while (tempNode != null) {
-            if (tempNode.data.getOwnerDocument().getDocId() == doc.getDocId()) {
-            	cmp = tempNode.data.getNodeId().compareTo(nodeId);
-                if (cmp == 0)
-                    {return tempNode.data;}
-                else if (cmp < 0)
-                    {tempNode = tempNode.rightChild;}
-                else
-                    {tempNode = tempNode.leftChild;}
-            } else if (tempNode.data.getOwnerDocument().getDocId() < doc.getDocId())
-                {tempNode = tempNode.rightChild;}
-            else
-                {tempNode = tempNode.leftChild;}
+        while(tempNode != null) {
+            if(tempNode.data.getOwnerDocument().getDocId() == doc.getDocId()) {
+                cmp = tempNode.data.getNodeId().compareTo(nodeId);
+                if(cmp == 0) {
+                    return tempNode.data;
+                } else if(cmp < 0) {
+                    tempNode = tempNode.rightChild;
+                } else {
+                    tempNode = tempNode.leftChild;
+                }
+            } else if(tempNode.data.getOwnerDocument().getDocId() < doc.getDocId()) {
+                tempNode = tempNode.rightChild;
+            } else {
+                tempNode = tempNode.leftChild;
+            }
         }
         return null;
     }
 
-    /* (non-Javadoc)
-      * @see org.exist.dom.persistent.NodeSet#contains(org.exist.dom.persistent.NodeProxy)
-      */
     @Override
-    public final boolean contains(NodeProxy proxy) {
+    public final boolean contains(final NodeProxy proxy) {
         return searchData(proxy) != null;
     }
 
     public void removeNode(Node node) {
         --size;
         Node tempNode = node;
-        while (tempNode.hasLeftChild() || tempNode.hasRightChild()) {
-            if (tempNode.hasLeftChild()) {
+        while(tempNode.hasLeftChild() || tempNode.hasRightChild()) {
+            if(tempNode.hasLeftChild()) {
                 tempNode = tempNode.getLeftChild();
-                while (tempNode.hasRightChild())
+                while(tempNode.hasRightChild()) {
                     tempNode = tempNode.getRightChild();
+                }
             } else {
                 tempNode = tempNode.getRightChild();
-                while (tempNode.hasLeftChild())
+                while(tempNode.hasLeftChild()) {
                     tempNode = tempNode.getLeftChild();
+                }
             }
             node.setData(tempNode.getData());
         }
-        if (tempNode == root) {
+        if(tempNode == root) {
             root = null;
             return;
         }
-        if (tempNode.isLeftChild()) {
+        if(tempNode.isLeftChild()) {
             node = tempNode.parent;
             node.removeLeftChild();
-            if (node.hasRightChild())
-                {balance(node.getRightChild());}
-            else
-                {balance(node);}
+            if(node.hasRightChild()) {
+                balance(node.getRightChild());
+            } else {
+                balance(node);
+            }
         } else {
             node = tempNode.parent;
             node.removeRightChild();
-            if (node.hasLeftChild())
-                {balance(node.getLeftChild());}
-            else
-                {balance(node);}
+            if(node.hasLeftChild()) {
+                balance(node.getLeftChild());
+            } else {
+                balance(node);
+            }
         }
     }
 
     @Override
     public NodeSetIterator iterator() {
-        return (this.new InorderTraversal());
+        return new InorderTraversal();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.exist.dom.persistent.AbstractNodeSet#hasChanged(int)
-     */
     @Override
-    public boolean hasChanged(int previousState) {
+    public boolean hasChanged(final int previousState) {
         return state != previousState;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.exist.dom.persistent.AbstractNodeSet#getState()
-     */
     @Override
     public int getState() {
         return state;
@@ -411,80 +422,83 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     class InorderTraversal implements NodeSetIterator, SequenceIterator {
 
-        private Stack<Node> nodes;
+        private final Stack<Node> nodes = new Stack<>();
 
         public InorderTraversal() {
-            nodes = new Stack<Node>();
-            if (root != null) {
+            if(root != null) {
                 Node tempNode = root;
                 do {
                     nodes.push(tempNode);
                     tempNode = tempNode.leftChild;
-                } while (tempNode != null);
+                } while(tempNode != null);
             }
         }
 
+        @Override
         public boolean hasNext() {
-            if (nodes.size() == 0)
-                {return false;}
+            if(nodes.size() == 0) {
+                return false;
+            }
             return true;
         }
 
+        @Override
         public NodeProxy next() {
-            if(nodes.isEmpty())
-                {return null;}
+            if(nodes.isEmpty()) {
+                return null;
+            }
             final Node currentNode = nodes.peek();
             nodes.pop();
-            if (currentNode.hasRightChild()) {
+            if(currentNode.hasRightChild()) {
                 Node tempNode = currentNode.rightChild;
                 do {
                     nodes.push(tempNode);
                     tempNode = tempNode.leftChild;
-                } while (tempNode != null);
+                } while(tempNode != null);
             }
             return currentNode.getData();
         }
 
+        @Override
         public NodeProxy peekNode() {
-            if(nodes.isEmpty())
-                {return null;}
+            if(nodes.isEmpty()) {
+                return null;
+            }
             final Node currentNode = nodes.peek();
             return currentNode.getData();
         }
-        
-        public void setPosition(NodeProxy proxy) {
+
+        @Override
+        public void setPosition(final NodeProxy proxy) {
             final Node n = searchData(proxy);
             nodes.clear();
-            if (n != null) {
+            if(n != null) {
                 Node tempNode = n;
                 do {
                     nodes.push(tempNode);
                     tempNode = tempNode.leftChild;
-                } while (tempNode != null);
+                } while(tempNode != null);
             }
         }
 
-        /* (non-Javadoc)
-           * @see java.util.Iterator#remove()
-           */
+        @Override
         public void remove() {
-            throw new RuntimeException("Method remove is not implemented");
+            throw new UnsupportedOperationException("remove is not supported on InorderTraversal");
         }
 
-        /* (non-Javadoc)
-       * @see org.exist.xquery.value.SequenceIterator#nextItem()
-       */
+        @Override
         public Item nextItem() {
-            if(nodes.isEmpty())
-                {return null;}
+            if(nodes.isEmpty()) {
+                return null;
+            }
             final Node currentNode = nodes.peek();
             nodes.pop();
-            if (currentNode.hasRightChild()) {
+            if(currentNode.hasRightChild()) {
                 Node tempNode = currentNode.rightChild;
                 do {
                     nodes.push(tempNode);
                     tempNode = tempNode.leftChild;
-                } while (tempNode != null);
+                } while(tempNode != null);
             }
             return currentNode.getData();
         }
@@ -492,24 +506,22 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder();
-        result.append("AVLTree#").append(super.toString());
-        return result.toString();
+        return "AVLTree#" + super.toString();
     }
 
     private final static class Node {
 
-        NodeProxy data;
-        Node parent;
-        Node leftChild;
-        Node rightChild;
-        int height;
+        private NodeProxy data;
+        private Node parent;
+        private Node leftChild;
+        private Node rightChild;
+        private int height;
 
-        public Node(NodeProxy data) {
+        public Node(final NodeProxy data) {
             this.data = data;
         }
 
-        public void setData(NodeProxy data) {
+        public void setData(final NodeProxy data) {
             this.data = data;
         }
 
@@ -537,77 +549,82 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             return (Math.abs(leftHeight() - rightHeight()) <= 1);
         }
 
-        public Node addLeft(NodeProxy data) {
-            Node tempNode = new Node(data);
-            leftChild = tempNode;
+        public Node addLeft(final NodeProxy data) {
+            final Node tempNode = new Node(data);
+            this.leftChild = tempNode;
             tempNode.parent = this;
             return tempNode;
         }
 
-        public Node addLeftChild(Node node) {
-            leftChild = node;
-            if (node != null)
-                {node.parent = this;}
+        public Node addLeftChild(final Node node) {
+            this.leftChild = node;
+            if(node != null) {
+                node.parent = this;
+            }
             return node;
         }
 
-        public Node addRight(NodeProxy data) {
-            Node tempNode = new Node(data);
-            rightChild = tempNode;
+        public Node addRight(final NodeProxy data) {
+            final Node tempNode = new Node(data);
+            this.rightChild = tempNode;
             tempNode.parent = this;
             return tempNode;
         }
 
-        public Node addRightChild(Node node) {
-            rightChild = node;
-            if (node != null)
-                {node.parent = this;}
+        public Node addRightChild(final Node node) {
+            this.rightChild = node;
+            if(node != null) {
+                node.parent = this;
+            }
             return node;
         }
 
         public Node removeLeftChild() {
             final Node tempNode = leftChild;
-            leftChild = null;
+            this.leftChild = null;
             return tempNode;
         }
 
         public Node removeRightChild() {
             final Node tempNode = rightChild;
-            rightChild = null;
+            this.rightChild = null;
             return tempNode;
         }
 
         public int degree() {
             int i = 0;
-            if (leftChild != null)
-                {i++;}
-            if (rightChild != null)
-                {i++;}
+            if(leftChild != null) {
+                i++;
+            }
+            if(rightChild != null) {
+                i++;
+            }
             return i;
         }
 
         public void setHeight() {
-            height = Math.max(leftHeight(), rightHeight());
+            this.height = Math.max(leftHeight(), rightHeight());
         }
 
         public boolean isLeftChild() {
             return (this == parent.leftChild);
         }
 
-        @SuppressWarnings("unused")
-		public boolean isRightChild() {
+        public boolean isRightChild() {
             return (this == parent.rightChild);
         }
 
         public int leftHeight() {
-            if (hasLeftChild())
-                {return (1 + leftChild.height);}
+            if(hasLeftChild()) {
+                return (1 + leftChild.height);
+            }
             return 0;
         }
 
         public int rightHeight() {
-            if (hasRightChild())
-                {return (1 + rightChild.height);}
+            if(hasRightChild()) {
+                return (1 + rightChild.height);
+            }
             return 0;
         }
 

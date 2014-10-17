@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-04,  Wolfgang Meier (wolfgang@exist-db.org)
+ *  Copyright (C) 2000-2014,  Wolfgang Meier (wolfgang@exist-db.org)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -27,32 +27,48 @@ import org.exist.util.UTF8;
 import org.exist.util.XMLString;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
 
 public abstract class AbstractCharacterData extends StoredNode implements CharacterData {
 
     protected XMLString cdata = null;
 
-    public AbstractCharacterData(short nodeType) {
-        super( nodeType );
+    public AbstractCharacterData(final short nodeType) {
+        super(nodeType);
     }
 
-    public AbstractCharacterData(short nodeType, NodeId nodeId) {
-        super( nodeType, nodeId );
+    public AbstractCharacterData(final short nodeType, final NodeId nodeId) {
+        super(nodeType, nodeId);
     }
 
-    public AbstractCharacterData(short nodeType, NodeId nodeId, String data) {
-        super( nodeType, nodeId );
+    public AbstractCharacterData(final short nodeType, final NodeId nodeId, final String data) {
+        super(nodeType, nodeId);
         cdata = new XMLString(data.toCharArray());
     }
 
-    public AbstractCharacterData(short nodeType, String data) {
-        super( nodeType );
+    public AbstractCharacterData(final short nodeType, String data) {
+        super(nodeType);
         cdata = new XMLString(data.toCharArray());
     }
 
-    public AbstractCharacterData(short nodeType, char[] data, int start, int howmany) {
-        super( nodeType );
+    public AbstractCharacterData(final short nodeType, final char[] data, final int start, final int howmany) {
+        super(nodeType);
         cdata = new XMLString(data, start, howmany);
+    }
+
+    @Override
+    public final int getChildCount() {
+        return 0;
+    }
+
+    @Override
+    public final boolean hasChildNodes() {
+        return false;
+    }
+
+    @Override
+    public final Node getFirstChild() {
+        return null;
     }
 
     @Override
@@ -62,30 +78,26 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
     }
 
     @Override
-    public void appendData( String arg ) throws DOMException {
-        if(cdata == null)
-            {cdata = new XMLString(arg.toCharArray());}
-        else
-            {cdata.append(arg);}
-    }
-
-    public void appendData( char[] data, int start, int howmany ) throws DOMException {
-        if(cdata == null)
-            {cdata = new XMLString(data, start, howmany);}
-        else
-            {cdata.append( data, start, howmany );}
+    public void appendData(final String arg) throws DOMException {
+        if(cdata == null) {
+            cdata = new XMLString(arg.toCharArray());
+        } else {
+            cdata.append(arg);
+        }
     }
 
     @Override
-    public void deleteData( int offset, int count ) throws DOMException {
-        if(cdata != null)
-            {cdata.delete(offset, count);}
+    public void deleteData(final int offset, final int count) throws DOMException {
+        if(cdata != null) {
+            cdata.delete(offset, count);
+        }
     }
 
     @Override
     public String getData() throws DOMException {
-        if(cdata == null)
-            {return null;}
+        if(cdata == null) {
+            return null;
+        }
         return cdata.toString();
     }
 
@@ -104,50 +116,56 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
     }
 
     @Override
-    public void insertData( int offset, String arg ) throws DOMException {
-        if(cdata == null)
-            {cdata = new XMLString(arg.toCharArray());}
-        else
-            {cdata.insert(offset, arg);}
+    public void insertData(final int offset, final String arg) throws DOMException {
+        if(cdata == null) {
+            cdata = new XMLString(arg.toCharArray());
+        } else {
+            cdata.insert(offset, arg);
+        }
     }
 
     @Override
-    public void replaceData( int offset, int count, String arg ) throws DOMException {
-        if(cdata == null)
-            {throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");}
+    public void replaceData(final int offset, final int count, final String arg) throws DOMException {
+        if(cdata == null) {
+            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
+        }
         cdata.replace(offset, count, arg);
     }
 
     @Override
-    public void setData( String data ) throws DOMException {
-        if(cdata == null)
-            {cdata = new XMLString(data.toCharArray());}
-        else
-            {cdata.setData(data.toCharArray(), 0, data.length());}
+    public void setData(final String data) throws DOMException {
+        if(cdata == null) {
+            cdata = new XMLString(data.toCharArray());
+        } else {
+            cdata.setData(data.toCharArray(), 0, data.length());
+        }
     }
 
-    public void setData( XMLString data ) throws DOMException {
+    public void setData(final XMLString data) throws DOMException {
         cdata = data;
     }
 
-    public void setData( char[] data, int start, int howmany ) throws DOMException {
-        if(cdata == null)
-            {cdata = new XMLString(data, start, howmany);}
-        else
-            {cdata.setData(data, start, howmany);}
+    public void setData(final char[] data, final int start, final int howmany) throws DOMException {
+        if(cdata == null) {
+            cdata = new XMLString(data, start, howmany);
+        } else {
+            cdata.setData(data, start, howmany);
+        }
     }
 
     @Override
-    public String substringData( int offset, int count ) throws DOMException {
-        if(cdata == null)
-            {throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");}
+    public String substringData(final int offset, final int count) throws DOMException {
+        if(cdata == null) {
+            throw new DOMException(DOMException.DOMSTRING_SIZE_ERR, "string index out of bounds");
+        }
         return cdata.substring(offset, count);
     }
 
     @Override
     public String toString() {
-        if(cdata == null)
-            {return "";}
+        if(cdata == null) {
+            return "";
+        }
         return cdata.toString();
     }
 
@@ -160,13 +178,13 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
         super.release();
     }
 
-    public static XMLString readData(NodeId nodeId, Value value, XMLString string) {
+    public static XMLString readData(final NodeId nodeId, final Value value, final XMLString string) {
         final int nodeIdLen = nodeId.size();
         UTF8.decode(value.data(), value.start() + 3 + nodeIdLen, value.getLength() - 3 - nodeIdLen, string);
         return string;
     }
 
-    public static int getStringLength(NodeId nodeId, Value value) {
+    public static int getStringLength(final NodeId nodeId, final Value value) {
         final int nodeIdLen = nodeId.size();
         return value.getLength() - 3 - nodeIdLen;
     }

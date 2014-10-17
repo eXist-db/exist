@@ -208,9 +208,9 @@ public class QName implements Comparable<QName> {
         if (p == Constants.STRING_NOT_FOUND) {
             return null;
         } else if (p == 0) {
-            throw new IllegalArgumentException("Illegal QName: starts with a :"); //TODO: change to XPathException? -shabanovd
-        } else if (Character.isDigit(qname.substring(0,1).charAt(0))) {   // fixme! Should we not use isQName() here? /ljo
-            throw new IllegalArgumentException("Illegal QName: starts with a digit"); //TODO: change to XPathException? -shabanovd
+            throw new IllegalArgumentException("Illegal QName: starts with a :");
+        } else if (Character.isDigit(qname.substring(0,1).charAt(0))) {
+            throw new IllegalArgumentException("Illegal QName: starts with a digit");
         }
 
         return qname.substring(0, p);
@@ -230,14 +230,33 @@ public class QName implements Comparable<QName> {
         if (p == Constants.STRING_NOT_FOUND) {
             return qname;
         } else if (p == 0) {
-            throw new IllegalArgumentException("Illegal QName: starts with a ':'"); //TODO: change to XPathException? -shabanovd
+            throw new IllegalArgumentException("Illegal QName: starts with a ':'");
         } else if (p == qname.length()) {
-            throw new IllegalArgumentException("Illegal QName: ends with a ':'"); //TODO: change to XPathException? -shabanovd
+            throw new IllegalArgumentException("Illegal QName: ends with a ':'");
         } else if (!isQName(qname)) {
-            throw new IllegalArgumentException("Illegal QName: not a valid local name."); //TODO: change to XPathException? -shabanovd
+            throw new IllegalArgumentException("Illegal QName: not a valid local name.");
         }
 
         return qname.substring(p + 1);
+    }
+
+    /**
+     * Extract a QName from a namespace and qualified name string
+     *
+     * @param namespaceURI A namespace URI
+     * @param qname A qualified named as a string e.g. 'my:name' or a local name e.g. 'name'
+     *
+     * @return The QName
+     */
+    public static QName parse(final String namespaceURI, final String qname) {
+        final int p = qname.indexOf(COLON);
+        if (p == Constants.STRING_NOT_FOUND) {
+            return new QName(qname, namespaceURI);
+        } else if(!isQName(qname)) {
+            throw new IllegalArgumentException("Illegal QName: '" + qname + "'");
+        } else {
+            return new QName(qname.substring(p + 1), namespaceURI, qname.substring(0, p));
+        }
     }
 
     /**

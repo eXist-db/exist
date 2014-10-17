@@ -26,53 +26,53 @@ public class SymbolTableTest {
 
     @Test
     public void getName_returns_empty_string_when_id_is_zero() throws EXistException, IOException {
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         assertEquals("", symbolTable.getName((short)0));
         symbolTable.close();
     }
 
     @Test
     public void getNameSpace_returns_empty_string_when_id_is_zero() throws EXistException {
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         assertEquals("", symbolTable.getNamespace((short)0));
     }
 
     @Test
     public void geMimeType_returns_empty_string_when_id_is_zero() throws EXistException, IOException {
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         assertEquals("", symbolTable.getMimeType((short)0));
         symbolTable.close();
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void getSymbol_for_localName_throws_exception_when_name_is_empty_string() throws EXistException, IOException {
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         symbolTable.getSymbol("");
         symbolTable.close();
     }
 
     @Test
     public void getNSSymbol_returns_zero_when_namespace_is_null() throws EXistException, IOException {
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         assertEquals(0, symbolTable.getNSSymbol(null));
         symbolTable.close();
     }
 
     @Test
     public void getNSSymbol_returns_zero_when_namespace_is_empty_string() throws EXistException, IOException {
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         assertEquals(0, symbolTable.getNSSymbol(""));
         symbolTable.close();
     }
 
     @Test
     public void localName_ids_are_stable() throws EXistException, IOException {
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         final String localName = "some-name";
         final short localNameId = symbolTable.getSymbol(localName);
         symbolTable.close();
 
-        symbolTable = new SymbolTable(null, tmpDir);
+        symbolTable = new SymbolTable(tmpDir);
         final String roundTrippedLocalName = symbolTable.getName(localNameId);
         symbolTable.close();
 
@@ -81,12 +81,12 @@ public class SymbolTableTest {
 
     @Test
     public void namespace_ids_are_stable() throws EXistException, IOException {
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         final String namespace = "http://something/or/other";
         final short namespaceId = symbolTable.getNSSymbol(namespace);
         symbolTable.close();
 
-        symbolTable = new SymbolTable(null, tmpDir);
+        symbolTable = new SymbolTable(tmpDir);
         final String roundTrippedNamespace = symbolTable.getNamespace(namespaceId);
         symbolTable.close();
 
@@ -95,12 +95,12 @@ public class SymbolTableTest {
 
     @Test
     public void mimetype_ids_are_stable() throws EXistException, IOException {
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         final String mimetype = "something/other";
         final int mimetypeId = symbolTable.getMimeTypeId(mimetype);
         symbolTable.close();
 
-        symbolTable = new SymbolTable(null, tmpDir);
+        symbolTable = new SymbolTable(tmpDir);
         final String roundTrippedMimetype = symbolTable.getMimeType(mimetypeId);
         symbolTable.close();
 
@@ -110,7 +110,7 @@ public class SymbolTableTest {
     @Test
     public void write_and_read_are_balanced() throws EXistException, IOException {
 
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         symbolTable.getSymbol("some-name");
 
         VariableByteOutputStream mockOs = EasyMock.createMock(VariableByteOutputStream.class);
@@ -148,7 +148,7 @@ public class SymbolTableTest {
     @Test
     public void readLegacyFormat() throws EXistException, IOException {
 
-        SymbolTable symbolTable = new SymbolTable(null, tmpDir);
+        SymbolTable symbolTable = new SymbolTable(tmpDir);
         VariableByteInput mockIs = EasyMock.createMock(VariableByteInput.class);
 
         /* readLegacy expectations */

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-2012 The eXist Project
+ *  Copyright (C) 2000-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -21,11 +21,6 @@
  */
 package org.exist.dom.persistent;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.TreeSet;
-
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -35,13 +30,18 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.TreeSet;
+
 /**
  * Manages a set of documents.
- * 
+ *
  * This class implements the NodeList interface for a collection of documents.
  * It also contains methods to retrieve the collections these documents
  * belong to.
- * 
+ *
  * @author wolf
  */
 public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocumentSet {
@@ -54,58 +54,61 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         super(29, 1.75);
     }
 
-    public DefaultDocumentSet(int initialSize) {
+    public DefaultDocumentSet(final int initialSize) {
         super(initialSize, 1.75);
     }
 
     @Override
     public void clear() {
         super.clear();
-        docIds = new BitSet();
-        collectionIds = new BitSet();
-        collections = new TreeSet<Collection>();
+        this.docIds = new BitSet();
+        this.collectionIds = new BitSet();
+        this.collections = new TreeSet<>();
     }
 
     @Override
-    public void add(DocumentImpl doc) {
+    public void add(final DocumentImpl doc) {
         add(doc, true);
     }
 
     @Override
-    public void add(DocumentImpl doc, boolean checkDuplicates) {
+    public void add(final DocumentImpl doc, final boolean checkDuplicates) {
         final int docId = doc.getDocId();
-        if (checkDuplicates && contains(docId))
-            {return;}
+        if(checkDuplicates && contains(docId)) {
+            return;
+        }
+
         docIds.set(docId);
         put(docId, doc);
         final Collection collection = doc.getCollection();
-        if (collection != null) {
-	        if (!collectionIds.get(collection.getId())) {
-	        	collectionIds.set(collection.getId());
-	            collections.add(collection);
-	        }
+        if(collection != null) {
+            if(!collectionIds.get(collection.getId())) {
+                collectionIds.set(collection.getId());
+                collections.add(collection);
+            }
         }
     }
 
-    public void add(Node node) {
-        if (!(node instanceof DocumentImpl))
-            {throw new RuntimeException("wrong implementation");}
+    public void add(final Node node) {
+        if(!(node instanceof DocumentImpl)) {
+            throw new RuntimeException("wrong implementation");
+        }
         add((DocumentImpl) node);
     }
 
     @Override
-    public void addAll(DocumentSet other) {
-    	for (final Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext(); ) {
-    		add(i.next());
-    	}
+    public void addAll(final DocumentSet other) {
+        for(final Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext(); ) {
+            add(i.next());
+        }
     }
 
     @Override
-    public void addCollection(Collection collection) {
-    	if (!collectionIds.get(collection.getId())) {
-    		collectionIds.set(collection.getId());
-    		collections.add(collection);
-    	}
+    public void addCollection(final Collection collection) {
+        if(!collectionIds.get(collection.getId())) {
+            collectionIds.set(collection.getId());
+            collections.add(collection);
+        }
     }
 
     @Override
@@ -128,7 +131,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     }
 
     @Override
-    public DocumentImpl getDoc(int docId) {
+    public DocumentImpl getDoc(final int docId) {
         return (DocumentImpl) get(docId);
     }
 
@@ -137,7 +140,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         final XmldbURI result[] = new XmldbURI[size()];
         DocumentImpl d;
         int j = 0;
-        for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); j++) {
+        for(final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); j++) {
             d = i.next();
             result[j] = d.getFileURI();
         }
@@ -146,58 +149,64 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     }
 
     @Override
-    public DocumentSet intersection(DocumentSet other) {
+    public DocumentSet intersection(final DocumentSet other) {
         final DefaultDocumentSet r = new DefaultDocumentSet();
         DocumentImpl d;
-        for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+        for(final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             d = i.next();
-            if (other.contains(d.getDocId()))
-                {r.add(d);}
+            if(other.contains(d.getDocId())) {
+                r.add(d);
+            }
         }
-        for (final Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext();) {
+        for(final Iterator<DocumentImpl> i = other.getDocumentIterator(); i.hasNext(); ) {
             d = i.next();
-            if (contains(d.getDocId()) && (!r.contains(d.getDocId())))
-                {r.add(d);}
+            if(contains(d.getDocId()) && (!r.contains(d.getDocId()))) {
+                r.add(d);
+            }
         }
         return r;
     }
 
-    public DocumentSet union(DocumentSet other) {
+    public DocumentSet union(final DocumentSet other) {
         final DefaultDocumentSet result = new DefaultDocumentSet();
         result.addAll(other);
         DocumentImpl d;
-        for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+        for(final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             d = i.next();
-            if (!result.contains(d.getDocId()))
-                {result.add(d);}
+            if(!result.contains(d.getDocId())) {
+                result.add(d);
+            }
         }
         return result;
     }
 
     @Override
-    public boolean contains(DocumentSet other) {
-        if (other.getDocumentCount() > size())
-            {return false;}
-        for (int idx = 0; idx < tabSize; idx++) {
-            if(values[idx] == null || values[idx] == REMOVED)
-                {continue;}
+    public boolean contains(final DocumentSet other) {
+        if(other.getDocumentCount() > size()) {
+            return false;
+        }
+        for(int idx = 0; idx < tabSize; idx++) {
+            if(values[idx] == null || values[idx] == REMOVED) {
+                continue;
+            }
             final DocumentImpl d = (DocumentImpl) values[idx];
-            if (!contains(d.getDocId()))
-                {return false;}
+            if(!contains(d.getDocId())) {
+                return false;
+            }
         }
         return true;
     }
 
     @Override
-    public boolean contains(int id) {
-    	return docIds.get(id);
+    public boolean contains(final int id) {
+        return docIds.get(id);
     }
 
     @Override
     public NodeSet docsToNodeSet() {
         final NodeSet result = new NewArrayNodeSet(getDocumentCount());
         DocumentImpl doc;
-        for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+        for(final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             doc = i.next();
             if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
                 result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
@@ -207,14 +216,15 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     }
 
     public int getMinDocId() {
-        int min = DocumentImpl.UNKNOWN_DOCUMENT_ID; 
+        int min = DocumentImpl.UNKNOWN_DOCUMENT_ID;
         DocumentImpl d;
-        for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+        for(final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             d = i.next();
-            if (min == DocumentImpl.UNKNOWN_DOCUMENT_ID)
-                {min = d.getDocId();}
-            else if (d.getDocId() < min)
-                {min = d.getDocId();}
+            if(min == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
+                min = d.getDocId();
+            } else if(d.getDocId() < min) {
+                min = d.getDocId();
+            }
         }
         return min;
     }
@@ -222,70 +232,80 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
     public int getMaxDocId() {
         int max = DocumentImpl.UNKNOWN_DOCUMENT_ID;
         DocumentImpl d;
-        for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext();) {
+        for(final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             d = i.next();
-            if (d.getDocId() > max)
-                {max = d.getDocId();}
+            if(d.getDocId() > max) {
+                max = d.getDocId();
+            }
         }
         return max;
     }
 
     @Override
-    public boolean equalDocs(DocumentSet other) {
-        if (this == other)
-            // we are comparing the same objects
-            {return true;}
-        if (size() != other.getDocumentCount())
-            {return false;}
+    public boolean equalDocs(final DocumentSet other) {
+        if(this == other)
+        // we are comparing the same objects
+        {
+            return true;
+        }
+        if(size() != other.getDocumentCount()) {
+            return false;
+        }
         for(int idx = 0; idx < tabSize; idx++) {
-            if (values[idx] == null || values[idx] == REMOVED)
-                {continue;}
-            if (!other.contains(keys[idx]))
-                {return false;}
+            if(values[idx] == null || values[idx] == REMOVED) {
+                continue;
+            }
+            if(!other.contains(keys[idx])) {
+                return false;
+            }
         }
         return true;
     }
 
     @Override
-    public void lock(DBBroker broker, boolean exclusive, boolean checkExisting) throws LockException {
+    public void lock(final DBBroker broker, final boolean exclusive, final boolean checkExisting) throws LockException {
         DocumentImpl d;
         Lock dlock;
         //final Thread thread = Thread.currentThread();
         for(int idx = 0; idx < tabSize; idx++) {
-            if(values[idx] == null || values[idx] == REMOVED)
-                {continue;}
-            d = (DocumentImpl)values[idx];
+            if(values[idx] == null || values[idx] == REMOVED) {
+                continue;
+            }
+            d = (DocumentImpl) values[idx];
             dlock = d.getUpdateLock();
             //if (checkExisting && dlock.hasLock(thread))
-                //continue;
-            if(exclusive)
-                {dlock.acquire(Lock.WRITE_LOCK);}
-            else
-                {dlock.acquire(Lock.READ_LOCK);}
+            //continue;
+            if(exclusive) {
+                dlock.acquire(Lock.WRITE_LOCK);
+            } else {
+                dlock.acquire(Lock.READ_LOCK);
+            }
         }
     }
 
     @Override
-    public void unlock(boolean exclusive) {
+    public void unlock(final boolean exclusive) {
         DocumentImpl d;
         Lock dlock;
         final Thread thread = Thread.currentThread();
         for(int idx = 0; idx < tabSize; idx++) {
-            if(values[idx] == null || values[idx] == REMOVED)
-                {continue;}
-            d = (DocumentImpl)values[idx];
+            if(values[idx] == null || values[idx] == REMOVED) {
+                continue;
+            }
+            d = (DocumentImpl) values[idx];
             dlock = d.getUpdateLock();
-            if(exclusive)
-                {dlock.release(Lock.WRITE_LOCK);}
-            else if (dlock.isLockedForRead(thread))
-                {dlock.release(Lock.READ_LOCK);}
+            if(exclusive) {
+                dlock.release(Lock.WRITE_LOCK);
+            } else if(dlock.isLockedForRead(thread)) {
+                dlock.release(Lock.READ_LOCK);
+            }
         }
     }
 
     @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
-        for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
+        for(final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             result.append(i.next());
             result.append(", ");
         }

@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-2014,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,11 +19,11 @@
  */
 package org.exist.dom;
 
-import java.util.ArrayList;
-
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+
+import java.util.ArrayList;
 
 public class NamedNodeMapImpl extends ArrayList<Node> implements NamedNodeMap {
 

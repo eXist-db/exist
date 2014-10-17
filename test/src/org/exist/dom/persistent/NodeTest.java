@@ -88,7 +88,7 @@ public class NodeTest extends XMLTestCase {
             System.out.println("Testing getChildNodes() ...");
             node = (StoredNode) cl.item(0);
             assertEquals(3, node.getChildCount());
-            assertEquals(2, node.getAttributesCount());
+            assertEquals(2, node.getAttributes().getLength());
         	cl = node.getChildNodes();
         	assertEquals(3, cl.getLength());
         	assertEquals(cl.item(2).getNodeValue(), "abc");

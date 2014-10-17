@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *  http://exist.sourceforge.net
  *
@@ -38,25 +38,39 @@ public class DocumentMetadata {
     public final static byte NO_LOCKTOKEN = 0;
     public final static byte HAS_LOCKTOKEN = 2;
 
-    /** the mimeType of the document */
+    /**
+     * the mimeType of the document
+     */
     private String mimeType = MimeType.XML_TYPE.getName();
 
-    /** the creation time of this document */
+    /**
+     * the creation time of this document
+     */
     private long created = 0;
 
-    /** time of the last modification */
+    /**
+     * time of the last modification
+     */
     private long lastModified = 0;
 
-    /** the number of data pages occupied by this document */
+    /**
+     * the number of data pages occupied by this document
+     */
     private int pageCount = 0;
 
-    /** contains the user id if a user lock is held on this resource */
+    /**
+     * contains the user id if a user lock is held on this resource
+     */
     private int userLock = 0;
 
-    /** the document's doctype declaration - if specified. */
+    /**
+     * the document's doctype declaration - if specified.
+     */
     private DocumentType docType = null;
 
-    /** TODO associated lock token - if available */
+    /**
+     * TODO associated lock token - if available
+     */
     private LockToken lockToken = null;
 
     private transient NodeIndexListener listener = NullNodeIndexListener.INSTANCE;
@@ -69,7 +83,7 @@ public class DocumentMetadata {
         //Nothing to do
     }
 
-    public DocumentMetadata(DocumentMetadata other) {
+    public DocumentMetadata(final DocumentMetadata other) {
         this.mimeType = other.mimeType;
         this.created = other.created;
         this.lastModified = other.lastModified;
@@ -78,7 +92,7 @@ public class DocumentMetadata {
     /**
      * Copy all relevant fields from other
      */
-    public void copyOf(DocumentMetadata other) {
+    public void copyOf(final DocumentMetadata other) {
         setCreated(other.getCreated());
         setLastModified(other.getLastModified());
         setMimeType(other.getMimeType());
@@ -89,17 +103,18 @@ public class DocumentMetadata {
         return created;
     }
 
-    public void setCreated(long created) {
+    public void setCreated(final long created) {
         this.created = created;
-        if (lastModified == 0)
-            {lastModified = created;}
+        if(lastModified == 0) {
+            this.lastModified = created;
+        }
     }
 
     public long getLastModified() {
         return lastModified;
     }
 
-    public void setLastModified(long lastModified) {
+    public void setLastModified(final long lastModified) {
         this.lastModified = lastModified;
     }
 
@@ -107,13 +122,12 @@ public class DocumentMetadata {
         return mimeType;
     }
 
-    public void setMimeType(String mimeType) {
+    public void setMimeType(final String mimeType) {
         this.mimeType = mimeType;
     }
 
     /**
      * Returns the number of pages currently occupied by this document.
-     *
      */
     public int getPageCount() {
         return pageCount;
@@ -121,9 +135,10 @@ public class DocumentMetadata {
 
     /**
      * Set the number of pages currently occupied by this document.
+     *
      * @param pageCount
      */
-    public void setPageCount(int pageCount) {
+    public void setPageCount(final int pageCount) {
         this.pageCount = pageCount;
     }
 
@@ -135,14 +150,14 @@ public class DocumentMetadata {
         --pageCount;
     }
 
-    public void write(BrokerPool pool, VariableByteOutputStream ostream) throws IOException {
+    public void write(final BrokerPool pool, final VariableByteOutputStream ostream) throws IOException {
         ostream.writeLong(created);
         ostream.writeLong(lastModified);
         ostream.writeInt(pool.getSymbols().getMimeTypeId(mimeType));
         ostream.writeInt(pageCount);
         ostream.writeInt(userLock);
-        
-        if (docType != null) {
+
+        if(docType != null) {
             ostream.writeByte(HAS_DOCTYPE);
             ((DocumentTypeImpl) docType).write(ostream);
         } else {
@@ -150,7 +165,7 @@ public class DocumentMetadata {
         }
 
         // TODO added by dwes
-        if (lockToken != null) {
+        if(lockToken != null) {
             ostream.writeByte(HAS_LOCKTOKEN);
             lockToken.write(ostream);
         } else {
@@ -158,21 +173,21 @@ public class DocumentMetadata {
         }
     }
 
-    public void read(BrokerPool pool, VariableByteInput istream) throws IOException {
+    public void read(final BrokerPool pool, final VariableByteInput istream) throws IOException {
         created = istream.readLong();
         lastModified = istream.readLong();
         final int mimeTypeSymbolsIndex = istream.readInt();
         mimeType = pool.getSymbols().getMimeType(mimeTypeSymbolsIndex);
         pageCount = istream.readInt();
         userLock = istream.readInt();
-        if (istream.readByte() == HAS_DOCTYPE) {
+        if(istream.readByte() == HAS_DOCTYPE) {
             docType = new DocumentTypeImpl();
             ((DocumentTypeImpl) docType).read(istream);
         } else {
             docType = null;
         }
         // TODO added by dwes
-        if (istream.readByte() == HAS_LOCKTOKEN) {
+        if(istream.readByte() == HAS_LOCKTOKEN) {
             lockToken = new LockToken();
             lockToken.read(istream);
         } else {
@@ -184,35 +199,31 @@ public class DocumentMetadata {
         return userLock;
     }
 
-    public void setUserLock(int userLock) {
+    public void setUserLock(final int userLock) {
         this.userLock = userLock;
     }
 
-    public LockToken getLockToken(){
+    public LockToken getLockToken() {
         return lockToken;
     }
 
-    public void setLockToken(LockToken token){
-        lockToken=token;
+    public void setLockToken(final LockToken token) {
+        lockToken = token;
     }
 
     public DocumentType getDocType() {
         return docType;
     }
 
-    public void setDocType(DocumentType docType) {
+    public void setDocType(final DocumentType docType) {
         this.docType = docType;
-    }
-
-    public NodeIndexListener getIndexListener() {
-        return listener;
     }
 
     public void clearIndexListener() {
         listener = NullNodeIndexListener.INSTANCE;
     }
 
-    public void setIndexListener(NodeIndexListener listener) {
+    public void setIndexListener(final NodeIndexListener listener) {
         this.listener = listener;
     }
 
@@ -220,7 +231,6 @@ public class DocumentMetadata {
      * Increase the page split count of this document. The number
      * of pages that have been split during inserts serves as an
      * indicator for the fragmentation
-     *
      */
     public void incSplitCount() {
         splitCount++;
@@ -230,7 +240,7 @@ public class DocumentMetadata {
         return splitCount;
     }
 
-    public void setSplitCount(int count) {
+    public void setSplitCount(final int count) {
         splitCount = count;
     }
 
@@ -238,7 +248,7 @@ public class DocumentMetadata {
         return isReferenced;
     }
 
-    public void setReferenced(boolean referenced) {
+    public void setReferenced(final boolean referenced) {
         isReferenced = referenced;
     }
 }

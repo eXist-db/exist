@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 
 /**
- *  Class representing a locktoken. Introduced for webDAV locking.
+ * Class representing a locktoken. Introduced for webDAV locking.
  *
  * @author Dannes Wessels
  */
@@ -80,44 +80,79 @@ public class LockToken {
     // Getters and setters
 
     /**
-     *  Get type of lock.
+     * Get type of lock.
      */
-    public byte getType(){  return type;   }
-    public void setType(byte type){ this.type=type; }
+    public byte getType() {
+        return type;
+    }
 
-    public byte getDepth(){  return depth;   }
-    public void setDepth(byte depth){ this.depth=depth; }
+    public void setType(final byte type) {
+        this.type = type;
+    }
 
-    public byte getScope(){  return scope;   }
-    public void setScope(byte scope){ this.scope=scope; }
+    public byte getDepth() {
+        return depth;
+    }
 
-    public String getOwner(){ return owner; }
-    public void setOwner(String owner){ this.owner = owner; }
+    public void setDepth(final byte depth) {
+        this.depth = depth;
+    }
 
-    public long getTimeOut(){ return timeout;   }
-    public void setTimeOut(long timeout){ this.timeout=timeout; }
+    public byte getScope() {
+        return scope;
+    }
 
-    public String getOpaqueLockToken(){ return token; }
-    public void setOpaqueLockToken(String token){ this.token = token; }
+    public void setScope(final byte scope) {
+        this.scope = scope;
+    }
 
-    public byte getResourceType(){  return resourceType;   }
-    public void setResourceType(byte type){ resourceType=type; }
+    public String getOwner() {
+        return owner;
+    }
 
-    public boolean isNullResource(){
-        return (resourceType == LockToken.RESOURCE_TYPE_NULL_RESOURCE );
+    public void setOwner(final String owner) {
+        this.owner = owner;
+    }
+
+    public long getTimeOut() {
+        return timeout;
+    }
+
+    public void setTimeOut(final long timeout) {
+        this.timeout = timeout;
+    }
+
+    public String getOpaqueLockToken() {
+        return token;
+    }
+
+    public void setOpaqueLockToken(final String token) {
+        this.token = token;
+    }
+
+    public byte getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(final byte type) {
+        resourceType = type;
+    }
+
+    public boolean isNullResource() {
+        return (resourceType == LockToken.RESOURCE_TYPE_NULL_RESOURCE);
     }
 
     // Create new UUID for token
-    public void createOpaqueLockToken(){
+    public void createOpaqueLockToken() {
         token = LockToken.generateUUID();
     }
 
     // Helper function.
-    public static String generateUUID(){
+    public static String generateUUID() {
         return UUIDGenerator.getUUID();
     }
 
-    public void write(VariableByteOutputStream ostream) throws IOException {
+    public void write(final VariableByteOutputStream ostream) throws IOException {
         ostream.writeByte(type);
         ostream.writeByte(depth);
         ostream.writeByte(scope);
@@ -127,17 +162,17 @@ public class LockToken {
         ostream.writeByte(resourceType);
     }
 
-    public void read(VariableByteInput istream) throws IOException {
+    public void read(final VariableByteInput istream) throws IOException {
         type = istream.readByte();
         depth = istream.readByte();
         scope = istream.readByte();
         owner = istream.readUTF();
-        if (owner.length() == 0){
+        if(owner.length() == 0) {
             owner = null;
         }
         timeout = istream.readLong();
         token = istream.readUTF();
-        if (token.length() == 0) {
+        if(token.length() == 0) {
             token = null;
         }
         resourceType = istream.readByte();

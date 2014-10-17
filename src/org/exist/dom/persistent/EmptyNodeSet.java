@@ -1,6 +1,5 @@
-
 /* eXist Open Source Native XML Database
- * Copyright (C) 2001-06,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ * Copyright (C) 2001-2014,  Wolfgang M. Meier (wolfgang@exist-db.org)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -15,13 +14,13 @@
  * You should have received a copy of the GNU Library General Public
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
- * 
+ *
  * $Id$
  */
 package org.exist.dom.persistent;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
@@ -29,12 +28,10 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public final class EmptyNodeSet extends AbstractNodeSet {
 
     public final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
-
     public final static EmptyCollectionIterator EMPTY_COLLECTION_ITERATOR = new EmptyCollectionIterator();
 
     @Override
@@ -42,32 +39,18 @@ public final class EmptyNodeSet extends AbstractNodeSet {
         return EMPTY_ITERATOR;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.dom.persistent.NodeSet#iterate()
-     */
     @Override
     public SequenceIterator iterate() throws XPathException {
         return SequenceIterator.EMPTY_ITERATOR;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.dom.persistent.AbstractNodeSet#unorderedIterator()
-     */
     @Override
     public SequenceIterator unorderedIterator() throws XPathException {
         return SequenceIterator.EMPTY_ITERATOR;
     }
 
-    public boolean contains(DocumentImpl doc, long nodeId) {
-        return false;
-    }
-
     @Override
-    public boolean contains(NodeProxy proxy) {
-        return false;
-    }
-
-    public boolean contains(DocumentImpl doc) {
+    public boolean contains(final NodeProxy proxy) {
         return false;
     }
 
@@ -81,30 +64,12 @@ public final class EmptyNodeSet extends AbstractNodeSet {
         return false;
     }
 
-    public void add(DocumentImpl doc, long nodeId) {
-        //Nothing to do
-    }
-
-    public void add(Node node) {
-        //Nothing todo
+    @Override
+    public void add(final NodeProxy proxy) {
     }
 
     @Override
-    public void add(NodeProxy proxy) {
-        //Nothing to do
-    }
-
-    public void addAll(NodeList other) {
-        //Nothing to do
-    }
-
-    @Override
-    public void addAll(NodeSet other) {
-        //Nothing to do
-    }
-
-    public void remove(NodeProxy node) {
-        //Nothing to do
+    public void addAll(final NodeSet other) {
     }
 
     @Override
@@ -118,102 +83,100 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     }
 
     @Override
-    public Node item(int pos) {
+    public Node item(final int pos) {
         return null;
     }
 
     @Override
-    public Item itemAt(int pos) {
+    public Item itemAt(final int pos) {
         return null;
     }
 
     @Override
-    public NodeProxy get(int pos) {
+    public NodeProxy get(final int pos) {
         return null;
     }
 
-    public NodeProxy get(DocumentImpl doc, NodeId nodeId) {
-        return null;
-    }
-
-    @Override
-    public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId,
-            boolean directParent, boolean includeSelf) {
+    public NodeProxy get(final DocumentImpl doc, final NodeId nodeId) {
         return null;
     }
 
     @Override
-    public NodeProxy get(NodeProxy proxy) {
+    public NodeProxy parentWithChild(final DocumentImpl doc, final NodeId nodeId,
+            final boolean directParent, final boolean includeSelf) {
         return null;
     }
 
     @Override
-    public NodeSet intersection(NodeSet other) {
+    public NodeProxy get(final NodeProxy proxy) {
+        return null;
+    }
+
+    @Override
+    public NodeSet intersection(final NodeSet other) {
         return this;
     }
 
     @Override
-    public NodeSet deepIntersection(NodeSet other) {
+    public NodeSet deepIntersection(final NodeSet other) {
         return this;
     }
 
     @Override
-    public NodeSet union(NodeSet other) {
+    public NodeSet union(final NodeSet other) {
         return other;
     }
 
     private final static class EmptyNodeSetIterator implements NodeSetIterator {
 
-        /* (non-Javadoc)
-         * @see java.util.Iterator#remove()
-         */
-        public void remove() {
-            //Nothing to do
-        }
-
-        /* (non-Javadoc)
-         * @see java.util.Iterator#hasNext()
-         */
-        public boolean hasNext() {
+        @Override
+        public final boolean hasNext() {
             return false;
         }
 
-        /* (non-Javadoc)
-         * @see java.util.Iterator#next()
-         */
-        public NodeProxy next() {
-            return null;
-        }
-
-        public NodeProxy peekNode() {
-            return null;
-        }
-
-        public void setPosition(NodeProxy proxy) {
-            //Nothing to do
+        @Override
+        public final NodeProxy next() {
+            throw new NoSuchElementException("There are no nodes in the empty set");
         }
 
         @Override
-        public String toString() {
+        public final void remove() {
+            throw new IllegalStateException("Cannot remove node from an empty set");
+        }
+
+        @Override
+        public final NodeProxy peekNode() {
+            throw new IllegalStateException("Cannot peek into an empty set");
+        }
+
+        public final void setPosition(final NodeProxy proxy) {
+            throw new IllegalStateException("Cannot reposition within an empty set");
+        }
+
+        @Override
+        public final String toString() {
             final StringBuilder result = new StringBuilder();
             result.append("Empty#").append(super.toString());
             return result.toString();
         }
 
-    } 
+    }
 
     private final static class EmptyCollectionIterator implements Iterator<Collection> {
 
-        public boolean hasNext() {
+        @Override
+        public final boolean hasNext() {
             return false;
         }
 
-        public Collection next() {
-            return null;
+        @Override
+        public final Collection next() {
+            throw new NoSuchElementException("There are no collections in the empty set");
         }
 
-        public void remove() {
-            //Nothing to do
+        @Override
+        public final void remove() {
+            throw new IllegalStateException("Cannot remove collection from an empty set");
         }
 
     }

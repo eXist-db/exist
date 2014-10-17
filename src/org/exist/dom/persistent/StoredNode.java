@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2000-2007 The eXist Project
+ * Copyright (C) 2000-2014 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -21,14 +21,8 @@
  */
 package org.exist.dom.persistent;
 
-import java.io.IOException;
-import java.util.Iterator;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.exist.EXistException;
-import org.exist.dom.*;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -41,10 +35,14 @@ import org.exist.xquery.Constants;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
+import java.io.IOException;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 /**
- *  The base class for all persistent DOM nodes in the database.
+ * The base class for all persistent DOM nodes in the database.
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
 public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> implements Visitable, NodeHandle, IStoredNode<T> {
 
@@ -64,7 +62,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
      *
      * @param nodeType a <code>short</code> value
      */
-    protected StoredNode(short nodeType) {
+    protected StoredNode(final short nodeType) {
         this.nodeType = nodeType;
     }
 
@@ -72,14 +70,14 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
      * Creates a new <code>StoredNode</code> instance.
      *
      * @param nodeType a <code>short</code> value
-     * @param nodeId a <code>NodeId</code> value
+     * @param nodeId   a <code>NodeId</code> value
      */
-    protected StoredNode(short nodeType, NodeId nodeId) {
+    protected StoredNode(final short nodeType, final NodeId nodeId) {
         this.nodeType = nodeType;
         this.nodeId = nodeId;
     }
 
-    protected StoredNode(short nodeType, NodeId nodeId, DocumentImpl ownerDocument, long internalAddress) {
+    protected StoredNode(final short nodeType, final NodeId nodeId, final DocumentImpl ownerDocument, long internalAddress) {
         this(nodeType, nodeId);
         this.ownerDocument = ownerDocument;
         this.internalAddress = internalAddress;
@@ -96,7 +94,8 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
      * Extracts just the details of the StoredNode
      */
     public StoredNode extract() {
-        return new StoredNode(this) {};
+        return new StoredNode(this) {
+        };
     }
 
     /**
@@ -106,7 +105,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     public void clear() {
         this.nodeId = null;
         this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-    } 
+    }
 
     @Override
     public byte[] serialize() {
@@ -115,121 +114,99 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
     /**
      * Read a node from the specified byte array.
-     * 
-     * This checks the node type and calls the {@link #deserialize(byte[], int, int,DocumentImpl,boolean)}
+     * <p/>
+     * This checks the node type and calls the {@link #deserialize(byte[], int, int, DocumentImpl, boolean)}
      * method of the corresponding node class.
-     * 
+     *
      * @param data
      * @param start
      * @param len
      * @param doc
      */
-    public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc) {
+    public static StoredNode deserialize(final byte[] data, final int start, final int len, final DocumentImpl doc) {
         return deserialize(data, start, len, doc, false);
     }
 
     /**
      * Read a node from the specified byte array.
-     * 
+     * <p/>
      * This checks the node type and calls the {@link #deserialize(byte[], int, int, DocumentImpl, boolean)}
      * method of the corresponding node class. The node will be allocated in the pool
      * and should be released once it is no longer needed.
-     * 
+     *
      * @param data
      * @param start
      * @param len
      * @param doc
      */
-    public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc, boolean pooled) {
-            final short type = Signatures.getType(data[start]);
-        switch (type) {
-        case Node.TEXT_NODE :
-            return TextImpl.deserialize(data, start, len, doc, pooled);
-        case Node.ELEMENT_NODE :
-            return ElementImpl.deserialize(data, start, len, doc, pooled);
-        case Node.ATTRIBUTE_NODE :
-            return AttrImpl.deserialize(data, start, len, doc, pooled);
-        case Node.PROCESSING_INSTRUCTION_NODE :
-            return ProcessingInstructionImpl.deserialize(data, start, len, doc, pooled);
-        case Node.COMMENT_NODE :
-            return CommentImpl.deserialize(data, start, len, doc, pooled);
-        case Node.CDATA_SECTION_NODE :
-            return CDATASectionImpl.deserialize(data, start, len, doc, pooled);
-        default :
-            LOG.error("Unknown node type: " + type);
-            Thread.dumpStack();
-            return null;
+    public static StoredNode deserialize(final byte[] data, final int start, final int len, final DocumentImpl doc, boolean pooled) {
+        final short type = Signatures.getType(data[start]);
+        switch(type) {
+            case Node.TEXT_NODE:
+                return TextImpl.deserialize(data, start, len, doc, pooled);
+            case Node.ELEMENT_NODE:
+                return ElementImpl.deserialize(data, start, len, doc, pooled);
+            case Node.ATTRIBUTE_NODE:
+                return AttrImpl.deserialize(data, start, len, doc, pooled);
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                return ProcessingInstructionImpl.deserialize(data, start, len, doc, pooled);
+            case Node.COMMENT_NODE:
+                return CommentImpl.deserialize(data, start, len, doc, pooled);
+            case Node.CDATA_SECTION_NODE:
+                return CDATASectionImpl.deserialize(data, start, len, doc, pooled);
+            default:
+                LOG.error("Unknown node type: " + type);
+                Thread.dumpStack();
+                return null;
         }
     }
 
     @Override
     public QName getQName() {
         switch(getNodeType()) {
-        case Node.DOCUMENT_NODE:
-            return QName.DOCUMENT_QNAME;
-        case Node.TEXT_NODE:
-            return QName.TEXT_QNAME;
-        case Node.COMMENT_NODE:
-            return QName.COMMENT_QNAME;
-        case Node.DOCUMENT_TYPE_NODE:
-            return QName.DOCTYPE_QNAME;
-        default:
-            LOG.error("Unknown node type: " + getNodeType()); 
-            return null;
+            case Node.DOCUMENT_NODE:
+                return QName.DOCUMENT_QNAME;
+            case Node.TEXT_NODE:
+                return QName.TEXT_QNAME;
+            case Node.COMMENT_NODE:
+                return QName.COMMENT_QNAME;
+            case Node.DOCUMENT_TYPE_NODE:
+                return QName.DOCTYPE_QNAME;
+            default:
+                LOG.error("Unknown node type: " + getNodeType());
+                return null;
         }
     }
 
-    public void setQName(QName qname) {
+    @Override
+    public void setQName(final QName qname) {
         //do nothing
     }
 
-    /**
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof StoredNode)) {
+    public boolean equals(final Object obj) {
+        if(obj == null || !(obj instanceof StoredNode)) {
             return false;
         }
-        return ((StoredNode)obj).nodeId.equals(nodeId);
+        return ((StoredNode) obj).nodeId.equals(nodeId);
     }
 
-    /**
-     * The method <code>setNodeId</code>
-     *
-     * @param dln a <code>NodeId</code> value
-     */
     @Override
-    public void setNodeId(NodeId dln) {
+    public void setNodeId(final NodeId dln) {
         this.nodeId = dln;
     }
 
-    /**
-     * The method <code>getNodeId</code>
-     *
-     * @return a <code>NodeId</code> value
-     */
     public NodeId getNodeId() {
         return nodeId;
     }
 
-    /**
-     *  Get the internal storage address of this node
-     *
-     *@return    The internalAddress value
-     */
     @Override
     public long getInternalAddress() {
         return internalAddress;
     }
 
-    /**
-     *  Set the internal storage address of this node.
-     *
-     *@param  internalAddress  The new internalAddress value
-     */
     @Override
-    public void setInternalAddress(long internalAddress) {
+    public void setInternalAddress(final long internalAddress) {
         this.internalAddress = internalAddress;
     }
 
@@ -244,47 +221,35 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     }
 
     @Override
-    public void setDirty(boolean dirty) {
+    public void setDirty(final boolean dirty) {
         //Nothing to do
     }
 
-    /**
-     * @see org.w3c.dom.Node#getNodeType()
-     */
     @Override
     public short getNodeType() {
         return this.nodeType;
     }
 
-    /**
-     * @see org.w3c.dom.Node#getOwnerDocument()
-     */
     @Override
     public DocumentImpl getOwnerDocument() {
         return ownerDocument;
     }
 
-    /**
-     *  Set the owner document.
-     *
-     *@param  ownerDocument  The new ownerDocument value
-     */
     @Override
-    public void setOwnerDocument(DocumentImpl ownerDocument) {
+    public void setOwnerDocument(final DocumentImpl ownerDocument) {
         this.ownerDocument = ownerDocument;
     }
 
-    /**
-     * @see org.w3c.dom.Node#getParentNode()
-     */
     @Override
     public Node getParentNode() {
         final NodeId parentId = nodeId.getParentId();
-        if (parentId == NodeId.DOCUMENT_NODE)
-            {return ownerDocument;}
+        if(parentId == NodeId.DOCUMENT_NODE) {
+            return ownerDocument;
+        }
         // Filter out the temporary nodes wrapper element
-        if (parentId.getTreeLevel() == 1 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
-            {return ownerDocument;}
+        if(parentId.getTreeLevel() == 1 && getOwnerDocument().getCollection().isTempCollection()) {
+            return ownerDocument;
+        }
         return ownerDocument.getNode(parentId);
     }
 
@@ -294,83 +259,84 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         return parent instanceof StoredNode ? (StoredNode) parent : null;
     }
 
-    /**
-     * @see org.w3c.dom.Node#getPreviousSibling()
-     */
     @Override
     public Node getPreviousSibling() {
         final StoredNode parent = getParentStoredNode();
-        if (parent == null) {return null;}
-        if (parent.isDirty()) {
+        if(parent == null) {
+            return null;
+        }
+        if(parent.isDirty()) {
             DBBroker broker = null;
             try {
                 broker = ownerDocument.getBrokerPool().get(null);
                 final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
                 IStoredNode last = null;
-                while (reader.hasNext()) {
+                while(reader.hasNext()) {
                     final int status = reader.next();
                     final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                    if (status != XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == level) {
-                        if (currentId.equals(nodeId)) {
+                    if(status != XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == level) {
+                        if(currentId.equals(nodeId)) {
                             return last;
                         }
                         last = reader.getNode();
                     }
                 }
-            } catch (final IOException e) {
+            } catch(final IOException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
                 //TODO : throw exception -pb
-            } catch (final XMLStreamException e) {
+            } catch(final XMLStreamException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-              //TODO : throw exception -pb
-            } catch (final EXistException e) {
+                //TODO : throw exception -pb
+            } catch(final EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-              //TODO : throw exception -pb
+                //TODO : throw exception -pb
             } finally {
                 ownerDocument.getBrokerPool().release(broker);
             }
             return null;
         }
         final NodeId firstChild = parent.getNodeId().newChild();
-        if (nodeId.equals(firstChild))
-            {return null;}
+        if(nodeId.equals(firstChild)) {
+            return null;
+        }
         final NodeId siblingId = nodeId.precedingSibling();
         return ownerDocument.getNode(siblingId);
     }
 
-    /**
-     * @see org.w3c.dom.Node#getNextSibling()
-     */
     @Override
     public Node getNextSibling() {
-        if (nodeId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
-            {return null;}
+        if(nodeId.getTreeLevel() == 2 && getOwnerDocument().getCollection().isTempCollection()) {
+            return null;
+        }
         final StoredNode parent = getParentStoredNode();
-        if (parent == null) {return null;}
-        if (parent.isDirty()) {
+        if(parent == null) {
+            return null;
+        }
+        if(parent.isDirty()) {
             DBBroker broker = null;
             try {
                 broker = ownerDocument.getBrokerPool().get(null);
                 final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
-                while (reader.hasNext()) {
+                while(reader.hasNext()) {
                     final int status = reader.next();
                     final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                    if (status != XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == level) {
-                        if (currentId.compareTo(nodeId) > 0)
-                            {return reader.getNode();}
+                    if(status != XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == level) {
+                        if(currentId.compareTo(nodeId) > 0) {
+                            return reader.getNode();
+                        }
                     }
                 }
-            } catch (final IOException e) {
+            } catch(final IOException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
                 //TODO : throw exception -pb
-            } catch (final XMLStreamException e) {
+            } catch(final XMLStreamException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-              //TODO : throw exception -pb
-            } catch (final EXistException e) {
+                //TODO : throw exception -pb
+            } catch(final EXistException e) {
                 LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-              //TODO : throw exception -pb
+                //TODO : throw exception -pb
             } finally {
                 ownerDocument.getBrokerPool().release(broker);
             }
@@ -380,62 +346,66 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         return ownerDocument.getNode(siblingId);
     }
 
-    protected IStoredNode getLastNode(IStoredNode node) {
-        if (!node.hasChildNodes())
-            {return node;}
+    protected IStoredNode getLastNode(final IStoredNode node) {
+        if(!node.hasChildNodes()) {
+            return node;
+        }
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
             final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(node, true);
-            while (reader.hasNext()) {
+            while(reader.hasNext()) {
                 reader.next();
             }
             return reader.getPreviousNode();
-        } catch (final IOException e) {
+        } catch(final IOException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-          //TODO : throw exception -pb
-        } catch (final XMLStreamException e) {
+            //TODO : throw exception -pb
+        } catch(final XMLStreamException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-          //TODO : throw exception -pb
-        } catch (final EXistException e) {
+            //TODO : throw exception -pb
+        } catch(final EXistException e) {
             LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
-          //TODO : throw exception -pb
+            //TODO : throw exception -pb
         } finally {
             ownerDocument.getBrokerPool().release(broker);
         }
         return null;
     }
 
-    protected StoredNode getLastNode(Iterator<StoredNode> iterator, StoredNode node) {
-        if (!node.hasChildNodes())
-            {return node;}
-        final int children = node.getChildCount();
-        StoredNode next = null;
-        for (int i = 0; i < children; i++) {
-            next = iterator.next();
-            //Recursivity helps taversing...
-            next = getLastNode(iterator, next);
-        }
-        return next;
-    }
+//    protected StoredNode getLastNode(final Iterator<StoredNode> iterator, final StoredNode node) {
+//        if(!node.hasChildNodes()) {
+//            return node;
+//        }
+//        final int children = node.getChildCount();
+//        StoredNode next = null;
+//        for(int i = 0; i < children; i++) {
+//            next = iterator.next();
+//            //Recursivity helps taversing...
+//            next = getLastNode(iterator, next);
+//        }
+//        return next;
+//    }
 
     @Override
     public NodePath getPath() {
         final NodePath path = new NodePath();
-        if (getNodeType() == Node.ELEMENT_NODE)
-            {path.addComponent(getQName());}
-        NodeImpl parent = (NodeImpl)getParentNode();
-        while (parent != null && parent.getNodeType() != Node.DOCUMENT_NODE) {
+        if(getNodeType() == Node.ELEMENT_NODE) {
+            path.addComponent(getQName());
+        }
+        NodeImpl parent = (NodeImpl) getParentNode();
+        while(parent != null && parent.getNodeType() != Node.DOCUMENT_NODE) {
             path.addComponentAtStart(parent.getQName());
-            parent = (NodeImpl)parent.getParentNode();
+            parent = (NodeImpl) parent.getParentNode();
         }
         return path;
     }
 
     @Override
-    public NodePath getPath(NodePath parentPath) {
-        if (getNodeType() == Node.ELEMENT_NODE)
-            {parentPath.addComponent(getQName());}
+    public NodePath getPath(final NodePath parentPath) {
+        if(getNodeType() == Node.ELEMENT_NODE) {
+            parentPath.addComponent(getQName());
+        }
         return parentPath;
     }
 
@@ -448,12 +418,12 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         return buf.toString();
     }
 
-    public String toString(boolean top) {
+    public String toString(final boolean top) {
         return toString();
     }
 
     /**
-     * Release all memory resources hold by this node. 
+     * Release all memory resources hold by this node.
      */
     @Override
     public void release() {
@@ -462,14 +432,14 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         NodePool.getInstance().returnNode(this);
     }
 
-    public boolean accept(NodeVisitor visitor) {
+    public boolean accept(final NodeVisitor visitor) {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
             final INodeIterator iterator = broker.getNodeIterator(this);
             iterator.next();
             return accept(iterator, visitor);
-        } catch (final EXistException e) {
+        } catch(final EXistException e) {
             LOG.error("Exception while reading node: " + e.getMessage(), e);
             //TODO : throw exception -pb
         } finally {
@@ -479,7 +449,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     }
 
     @Override
-    public boolean accept(INodeIterator iterator, NodeVisitor visitor) {
+    public boolean accept(final INodeIterator iterator, final NodeVisitor visitor) {
         return visitor.visit(this); //TODO iterator is not used here?
     }
 
