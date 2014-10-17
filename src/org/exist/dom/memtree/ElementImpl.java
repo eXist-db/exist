@@ -142,7 +142,7 @@ public class ElementImpl extends NodeImpl implements Element {
         int attr = document.alpha[nodeNumber];
         if(-1 < attr) {
             while(attr < document.nextAttr && document.attrParent[attr] == nodeNumber) {
-                map.add(new AttrImpl(document, attr));
+                map.setNamedItem(new AttrImpl(document, attr));
                 ++attr;
             }
         }
@@ -153,7 +153,7 @@ public class ElementImpl extends NodeImpl implements Element {
         }
         while(ns < document.nextNamespace && document.namespaceParent[ns] == nodeNumber) {
             final NamespaceNode node = new NamespaceNode(document, ns);
-            map.add(node);
+            map.setNamedItem(node);
             ++ns;
         }
         return map;
