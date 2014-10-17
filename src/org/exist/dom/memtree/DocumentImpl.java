@@ -528,31 +528,17 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return new AttrImpl(this, nextAttr - 1);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.w3c.dom.Node#getParentNode()
-     */
     @Override
     public Node getParentNode() {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.w3c.dom.Document#getDoctype()
-     */
+
     @Override
     public DocumentType getDoctype() {
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.w3c.dom.Document#getImplementation()
-     */
     @Override
     public DOMImplementation getImplementation() {
         return (
@@ -578,17 +564,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 @Override
                 public boolean hasFeature(final String feature, final String version) {
                     return ("XML".equals(feature) && ("1.0".equals(version) ||
-                        "2.0".equals(version)));
+                        "1.1".equals(version)));
                 }
             }
         );
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.w3c.dom.Document#getDocumentElement()
-     */
     @Override
     public Element getDocumentElement() {
         if(size == 1) {
@@ -604,11 +585,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return (Element)getNode(nodeNum);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.w3c.dom.Node#getFirstChild()
-     */
     @Override
     public Node getFirstChild() {
         if(size > 1) {
@@ -668,12 +644,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return nextNr < nodeNumber ? -1 : nextNr;
     }
 
-    /**
-     * The method <code>getParentNodeFor.</code>
-     *
-     * @param nodeNumber an <code>int</code> value
-     * @return an <code>int</code> value
-     */
     public int getParentNodeFor(final int nodeNumber) {
         int nextNode = next[nodeNumber];
         while(nextNode > nodeNumber) {
