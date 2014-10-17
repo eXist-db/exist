@@ -963,7 +963,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 	public void mergeFeed(final DBBroker broker, final Txn transaction,
 			final ElementImpl target, Element source, final String updated) {
 		
-		final DocumentImpl ownerDocument = (DocumentImpl) target.getOwnerDocument();
+		final DocumentImpl ownerDocument = target.getOwnerDocument();
 		final List<Node> toRemove = new ArrayList<Node>();
 		DOM.forEachChild(target, new NodeHandler() {
 			@Override

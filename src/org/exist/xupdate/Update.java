@@ -86,7 +86,7 @@ public class Update extends Modification {
                     LOG.warn("select " + selectStmt + " returned empty node");
                     continue;
                 }
-                final DocumentImpl  doc = (DocumentImpl)node.getOwnerDocument();
+                final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                      throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }

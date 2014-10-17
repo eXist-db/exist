@@ -44,7 +44,7 @@ public final class NodeIterator implements INodeIterator {
     public NodeIterator(DBBroker broker, DOMFile db, NodeHandle node, boolean poolable)
             throws BTreeException, IOException {
         this.db = db;
-        this.doc = (DocumentImpl)node.getOwnerDocument();
+        this.doc = node.getOwnerDocument();
         this.useNodePool = poolable;
         this.node = node;
         this.broker = broker;

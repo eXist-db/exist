@@ -92,8 +92,8 @@ public class NativeSerializer extends Serializer {
 		
     	if (doc.getDoctype() != null){
 			if ("yes".equals(getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no"))) {
-				final IStoredNode n = (IStoredNode)doc.getDoctype();
-				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), true, null, new TreeSet<String>());
+				final DocumentTypeImpl docType = (DocumentTypeImpl)doc.getDoctype();
+				serializeToReceiver(docType, null, docType.getOwnerDocument(), true, null, new TreeSet<String>());
 			}
 		}
     	

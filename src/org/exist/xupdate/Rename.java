@@ -78,7 +78,7 @@ public class Rename extends Modification {
             final String newName = children.item(0).getNodeValue();
             for (int i = 0; i < ql.length; i++) {
                 final StoredNode node = ql[i];
-                final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }

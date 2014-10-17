@@ -88,7 +88,7 @@ public class Insert extends Modification {
                 {LOG.debug("found " + len + " nodes to insert");}
             for (int i = 0; i < ql.length; i++) {
                 final StoredNode node = ql[i];
-                final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("permission to update document denied");
                 }

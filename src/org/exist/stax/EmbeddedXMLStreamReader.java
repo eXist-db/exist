@@ -138,7 +138,7 @@ public class EmbeddedXMLStreamReader implements ExtendedXMLStreamReader {
         this.elementStack.clear();
         this.state = START_DOCUMENT;
         this.reportAttribs = reportAttributes;
-        this.document = (DocumentImpl) node.getOwnerDocument();
+        this.document = node.getOwnerDocument();
         this.origin = node;
     }
 
