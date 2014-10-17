@@ -156,7 +156,7 @@ public class ExtCollection extends Function {
             
         }
         // iterate through all docs and create the node set
-        final NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 1);
+        final NodeSet result = new NewArrayNodeSet();
         Lock dlock;
         DocumentImpl doc;
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext();) {

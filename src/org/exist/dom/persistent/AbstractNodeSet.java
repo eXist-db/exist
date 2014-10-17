@@ -122,7 +122,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     @Override
     public NodeSet copy() {
-        final NewArrayNodeSet set = new NewArrayNodeSet(getLength());
+        final NewArrayNodeSet set = new NewArrayNodeSet();
         set.addAll(this);
         return set;
     }

@@ -364,7 +364,7 @@ public class NodeSetHelper {
     private static NodeSet ancestorsForChild(final NodeSet ancestors,
             final NodeProxy child, final boolean directParent,
             final boolean includeSelf) {
-        final NodeSet result = new NewArrayNodeSet(5);
+        final NodeSet result = new NewArrayNodeSet();
         NodeId nodeId = child.getNodeId();
         NodeProxy temp = ancestors.get(child.getOwnerDocument(), nodeId);
         if(includeSelf && temp != null) {

@@ -231,7 +231,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 
     private void addInternal(final NodeProxy p) {
         if(realSet == null) {
-            realSet = new NewArrayNodeSet(256);
+            realSet = new NewArrayNodeSet();
         }
         realSet.add(p);
         knownIsEmptyCardinality = true;
@@ -241,7 +241,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
         hasOne = realSet.hasOne();
         hasMany = !(isEmpty || hasOne);
         //Reset the real document set
-        //TODO : use realDocumentSet.add(p.getDocument()) ?
+        //TODO : use realDocumentSet.add(p.getOwnerDocument()) ?
         realDocumentSet = null;
         realSetIsComplete = false;
     }

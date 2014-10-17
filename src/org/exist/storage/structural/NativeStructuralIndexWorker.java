@@ -81,7 +81,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector, Expression parent) {
         final Lock lock = index.btree.getLock();
-        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
+        final NewArrayNodeSet result = new NewArrayNodeSet();
         final FindElementsCallback callback = new FindElementsCallback(type, result, docs, selector, parent);
         // scan the document set to find document id ranges to query
         final List<Range> ranges = new ArrayList<Range>();
@@ -148,7 +148,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet, int contextId, Expression parent) {
         final Lock lock = index.btree.getLock();
-        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
+        final NewArrayNodeSet result = new NewArrayNodeSet();
         final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, result, parent);
         try {
             lock.acquire(Lock.READ_LOCK);
@@ -183,7 +183,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     public NodeSet findAncestorsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet,
                                           int contextId) {
         final Lock lock = index.btree.getLock();
-        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
+        final NewArrayNodeSet result = new NewArrayNodeSet();
         try {
             lock.acquire(Lock.READ_LOCK);
             for (final NodeProxy descendant : contextSet) {
@@ -228,7 +228,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     public NodeSet scanByType(byte type, int axis, NodeTest test, boolean useSelfAsContext, DocumentSet docs, 
     		NodeSet contextSet, int contextId) {
         final Lock lock = index.btree.getLock();
-        final NewArrayNodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 256);
+        final NewArrayNodeSet result = new NewArrayNodeSet();
         final FindDescendantsCallback callback = new FindDescendantsCallback(type, axis, contextId, useSelfAsContext, result, null);
         for (final NodeProxy ancestor : contextSet) {
             final DocumentImpl doc = ancestor.getOwnerDocument();

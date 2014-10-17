@@ -434,7 +434,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             {token = stemmer.stem(expr);}
         else
             {token = expr;}
-        final NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 250);
+        final NodeSet result = new NewArrayNodeSet();
         for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = (iter.next()).getId();
             Value key;
