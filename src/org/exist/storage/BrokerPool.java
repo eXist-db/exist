@@ -863,7 +863,7 @@ public class BrokerPool implements Database {
                     // If the initialization fails after transactionManager has been created this method better cleans up
                     // or the FileSyncThread for the journal can/will hang.
                     try {
-                        symbols = new SymbolTable(this, conf);
+                        symbols = new SymbolTable(conf);
                         isReadOnly = isReadOnly || !symbols.getFile().canWrite();
 
                         indexManager = new IndexManager(this, conf);

@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-2010 The eXist Project
+ *  Copyright (C) 2000-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -40,41 +40,43 @@ import org.w3c.dom.Node;
 import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
 
+import javax.xml.XMLConstants;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class AttrImpl extends NamedNode implements Attr, Cloneable {
 
     public static final int LENGTH_NS_ID = 2; //sizeof short
-	public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
-	
+    public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
+
     public final static int CDATA = 0;
     public final static int ID = 1;
     public final static int IDREF = 2;
     public final static int IDREFS = 3;
-    
-    public final static int DEFAULT_ATTRIBUTE_TYPE = CDATA;
-	
-	protected int attributeType = DEFAULT_ATTRIBUTE_TYPE;
+
+    private final static int DEFAULT_ATTRIBUTE_TYPE = CDATA;
+
+    private int attributeType = DEFAULT_ATTRIBUTE_TYPE;
     private int indexType = RangeIndexSpec.NO_INDEX;
-    protected XMLString value = null;
+    private XMLString value = null;
 
     public AttrImpl() {
-    	super(Node.ATTRIBUTE_NODE);
+        super(Node.ATTRIBUTE_NODE);
     }
 
-    public AttrImpl (QName name, SymbolTable symbols) throws DOMException {
-        super( Node.ATTRIBUTE_NODE, name);
-        if (symbols != null && symbols.getSymbol(nodeName.getLocalPart()) < 0) {
+    public AttrImpl(final QName name, final SymbolTable symbols) throws DOMException {
+        super(Node.ATTRIBUTE_NODE, name);
+        if(symbols != null && symbols.getSymbol(nodeName.getLocalPart()) < 0) {
             throw new DOMException(DOMException.INVALID_ACCESS_ERR,
-                    "Too many element/attribute names registered in the database. No of distinct names is limited to 16bit. Aborting store.");
+                "Too many element/attribute names registered in the database. No of distinct names is limited to 16bit. Aborting store.");
         }
     }
 
-    public AttrImpl (QName name, String str, SymbolTable symbols) throws DOMException {
+    public AttrImpl(final QName name, final String str, final SymbolTable symbols) throws DOMException {
         this(name, symbols);
-        this.value = new XMLString( str.toCharArray() );
+        this.value = new XMLString(str.toCharArray());
     }
-    
+
     public AttrImpl(final AttrImpl other) {
         super(other);
         this.attributeType = other.attributeType;
@@ -84,8 +86,8 @@ public class AttrImpl extends NamedNode implements Attr, Cloneable {
     @Override
     public void clear() {
         super.clear();
-        attributeType = DEFAULT_ATTRIBUTE_TYPE;
-        value = null;
+        this.attributeType = DEFAULT_ATTRIBUTE_TYPE;
+        this.value = null;
     }
 
     /**
@@ -125,53 +127,57 @@ public class AttrImpl extends NamedNode implements Attr, Cloneable {
      */
     @Override
     public byte[] serialize() {
-        if(nodeName.getLocalPart() == null)
-            {throw new RuntimeException("Local name is null");}
-        final short id = ownerDocument.getBrokerPool().getSymbols().getSymbol( this );
-        final byte idSizeType = Signatures.getSizeType( id );
+        if(nodeName.getLocalPart() == null) {
+            throw new RuntimeException("Local name is null");
+        }
+        final short id = ownerDocument.getBrokerPool().getSymbols().getSymbol(this);
+        final byte idSizeType = Signatures.getSizeType(id);
         int prefixLen = 0;
-        if (nodeName.hasNamespace()) {
-            if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
-                {prefixLen = UTF8.encoded(nodeName.getPrefix());}
+        if(nodeName.hasNamespace()) {
+            if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0) {
+                prefixLen = UTF8.encoded(nodeName.getPrefix());
+            }
         }
         final int nodeIdLen = nodeId.size();
         final byte[] data = ByteArrayPool.getByteArray(
-                LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen +
+            LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen +
                 Signatures.getLength(idSizeType) +
                 (nodeName.hasNamespace() ? LENGTH_NS_ID + LENGTH_PREFIX_LENGTH + prefixLen : 0) +
                 value.UTF8Size());
         int pos = 0;
-        data[pos] = (byte) ( Signatures.Attr << 0x5 );
+        data[pos] = (byte) (Signatures.Attr << 0x5);
         data[pos] |= idSizeType;
         data[pos] |= (byte) (attributeType << 0x2);
-        if(nodeName.hasNamespace())
-            {data[pos] |= 0x10;}
+        if(nodeName.hasNamespace()) {
+            data[pos] |= 0x10;
+        }
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
         ByteConversion.shortToByte((short) nodeId.units(), data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId.serialize(data, pos);
-        pos += nodeIdLen;        
+        pos += nodeIdLen;
         Signatures.write(idSizeType, id, data, pos);
         pos += Signatures.getLength(idSizeType);
         if(nodeName.hasNamespace()) {
             final short nsId = ownerDocument.getBrokerPool().getSymbols().getNSSymbol(nodeName.getNamespaceURI());
             ByteConversion.shortToByte(nsId, data, pos);
             pos += LENGTH_NS_ID;
-            ByteConversion.shortToByte((short)prefixLen, data, pos);
+            ByteConversion.shortToByte((short) prefixLen, data, pos);
             pos += LENGTH_PREFIX_LENGTH;
-            if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
-                {UTF8.encode(nodeName.getPrefix(), data, pos);}
+            if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0) {
+                UTF8.encode(nodeName.getPrefix(), data, pos);
+            }
             pos += prefixLen;
         }
         value.UTF8Encode(data, pos);
         return data;
     }
 
-    public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
+    public static StoredNode deserialize(final byte[] data, final int start, final int len, final DocumentImpl doc, final boolean pooled) {
         int pos = start;
-        final byte idSizeType = (byte) ( data[pos] & 0x3 );
+        final byte idSizeType = (byte) (data[pos] & 0x3);
         final boolean hasNamespace = (data[pos] & 0x10) == 0x10;
-        final int attrType = ( data[pos] & 0x4 ) >> 0x2;
+        final int attrType = (data[pos] & 0x4) >> 0x2;
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
         final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
@@ -180,29 +186,31 @@ public class AttrImpl extends NamedNode implements Attr, Cloneable {
         final short id = (short) Signatures.read(idSizeType, data, pos);
         pos += Signatures.getLength(idSizeType);
         final String name = doc.getBrokerPool().getSymbols().getName(id);
-        if (name == null)
-            {throw new RuntimeException("no symbol for id " + id);}
+        if(name == null) {
+            throw new RuntimeException("no symbol for id " + id);
+        }
         short nsId = 0;
         String prefix = null;
-        if (hasNamespace) {
+        if(hasNamespace) {
             nsId = ByteConversion.byteToShort(data, pos);
             pos += LENGTH_NS_ID;
             int prefixLen = ByteConversion.byteToShort(data, pos);
             pos += LENGTH_PREFIX_LENGTH;
-            if (prefixLen > 0)
-                {prefix = UTF8.decode(data, pos, prefixLen).toString();}
+            if(prefixLen > 0) {
+                prefix = UTF8.decode(data, pos, prefixLen).toString();
+            }
             pos += prefixLen;
         }
         final String namespace = nsId == 0 ? "" : doc.getBrokerPool().getSymbols().getNamespace(nsId);
         XMLString value = UTF8.decode(data, pos, len - (pos - start));
 
         //OK : we have the necessary material to build the attribute
-        AttrImpl attr;
-        if(pooled)
-            {attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);}
-            //attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
-        else
-            {attr = new AttrImpl();}
+        final AttrImpl attr;
+        if(pooled) {
+            attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
+        } else {
+            attr = new AttrImpl();
+        }
         attr.setNodeName(doc.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix));
         attr.value = value;
         attr.setNodeId(dln);
@@ -210,11 +218,11 @@ public class AttrImpl extends NamedNode implements Attr, Cloneable {
         return attr;
     }
 
-    public static void addToList(DBBroker broker, byte[] data, int start, int len, AttrList list) {
+    public static void addToList(final DBBroker broker, final byte[] data, final int start, final int len, final AttrList list) {
         int pos = start;
-        final byte idSizeType = (byte) ( data[pos] & 0x3 );
+        final byte idSizeType = (byte) (data[pos] & 0x3);
         final boolean hasNamespace = (data[pos] & 0x10) == 0x10;
-        final int attrType = ( data[pos] & 0x4 ) >> 0x2;
+        final int attrType = (data[pos] & 0x4) >> 0x2;
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
         final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
@@ -223,50 +231,61 @@ public class AttrImpl extends NamedNode implements Attr, Cloneable {
         final short id = (short) Signatures.read(idSizeType, data, pos);
         pos += Signatures.getLength(idSizeType);
         final String name = broker.getBrokerPool().getSymbols().getName(id);
-        if (name == null)
-            {throw new RuntimeException("no symbol for id " + id);}
+        if(name == null) {
+            throw new RuntimeException("no symbol for id " + id);
+        }
         short nsId = 0;
         String prefix = null;
-        if (hasNamespace) {
+        if(hasNamespace) {
             nsId = ByteConversion.byteToShort(data, pos);
             pos += LENGTH_NS_ID;
             int prefixLen = ByteConversion.byteToShort(data, pos);
             pos += LENGTH_PREFIX_LENGTH;
-            if (prefixLen > 0)
-                {prefix = UTF8.decode(data, pos, prefixLen).toString();}
+            if(prefixLen > 0) {
+                prefix = UTF8.decode(data, pos, prefixLen).toString();
+            }
             pos += prefixLen;
         }
-        final String namespace = nsId == 0 ? "" : broker.getBrokerPool().getSymbols().getNamespace(nsId);
-        String value = new String( data, pos, len - (pos - start), UTF_8 );
+        final String namespace = nsId == 0 ? XMLConstants.NULL_NS_URI : broker.getBrokerPool().getSymbols().getNamespace(nsId);
+        final String value = new String(data, pos, len - (pos - start), UTF_8);
 
         list.addAttribute(broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix), value, attrType, dln);
     }
 
     @Override
     public String getName() {
-        return nodeName.getStringValue();
+        return getNodeName();
     }
 
     public int getType() {
         return attributeType;
     }
 
-    public void setType(int type) {
+    public void setType(final int type) {
         //TODO : range check -pb
-        attributeType = type;
+        this.attributeType = type;
     }
 
-    public static String getAttributeType(int type) {
-        if (type == AttrImpl.ID)
-            {return "ID";}
-        if (type == AttrImpl.IDREF)
-            {return "IDREF";}
-        if (type == AttrImpl.IDREFS)
-            {return "IDREFS";}
-        return "CDATA";
+    public static String getAttributeType(final int type) {
+        switch(type) {
+            case AttrImpl.ID:
+                return "ID";
+
+            case AttrImpl.IDREF:
+                return "IDREF";
+
+            case AttrImpl.IDREFS:
+                return "IDREFS";
+
+            case AttrImpl.CDATA:
+                return "CDATA";
+
+            default:
+                return null;
+        }
     }
 
-    public void setIndexType(int idxType) {
+    public void setIndexType(final int idxType) {
         this.indexType = idxType;
     }
 
@@ -281,59 +300,54 @@ public class AttrImpl extends NamedNode implements Attr, Cloneable {
 
     @Override
     public String getNodeValue() {
-        return value.toString();
+        return getValue();
     }
 
     @Override
-    public void setValue(String str) throws DOMException {
-        this.value = new XMLString(str.toCharArray());
+    public void setValue(final String value) throws DOMException {
+        this.value = new XMLString(value.toCharArray());
     }
 
     @Override
     public Element getOwnerElement() {
-        return (Element) ((DocumentImpl)getOwnerDocument()).getNode( nodeId.getParentId() );
+        return (Element)getOwnerDocument().getNode(nodeId.getParentId());
     }
 
     @Override
     public boolean getSpecified() {
         return true;
-    } 
+    }
 
     @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder();
-        buf.append( ' ' );
-        buf.append( nodeName );
-        buf.append( "=\"" );
-        buf.append( value );
-        buf.append( '"' );
+        buf.append(nodeName)
+            .append("=\"")
+            .append(value)
+            .append("\"");
         return buf.toString();
     }
 
     @Override
-    public String toString(boolean top) {
-        if (top) {
+    public String toString(final boolean top) {
+        if(top) {
             final StringBuilder result = new StringBuilder();
-            result.append( "<exist:attribute " );
-            result.append( "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " );
-            result.append( "exist:id=\"" );
-            result.append( getNodeId() );
-            result.append( "\" exist:source=\"" );
-            result.append( ((DocumentImpl)getOwnerDocument()).getFileURI());
-            result.append( "\" " );
-            result.append( getNodeName() );
-            result.append( "=\"" );
-            result.append( getValue() );
-            result.append( "\"/>" );
+            result.append("<exist:attribute ")
+                .append("xmlns:exist=\"").append(Namespaces.EXIST_NS).append("\" ")
+                .append("exist:id=\"")
+                .append(getNodeId())
+                .append("\" exist:source=\"")
+                .append(getOwnerDocument().getFileURI())
+                .append("\" ")
+                .append(getNodeName())
+                .append("=\"")
+                .append(getValue())
+                .append("\"/>");
             return result.toString();
+        } else {
+            return toString();
         }
-        return toString();
     }
-
-    @Override
-    public boolean hasChildNodes() {
-        return false;
-    } 
 
     @Override
     public int getChildCount() {
@@ -342,20 +356,14 @@ public class AttrImpl extends NamedNode implements Attr, Cloneable {
 
     @Override
     public Node getFirstChild() {
-        //bad implementations don't call hasChildNodes before
         return null;
     }
 
-    /** ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
-     */
     @Override
     public TypeInfo getSchemaTypeInfo() {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
     }
 
-    /** ? @see org.w3c.dom.Attr#isId()
-     */
     @Override
     public boolean isId() {
         return this.getType() == ID;
@@ -364,95 +372,62 @@ public class AttrImpl extends NamedNode implements Attr, Cloneable {
     @Override
     public String getBaseURI() {
         final Element e = getOwnerElement();
-        if (e != null)
-            {return e.getBaseURI();}
+        if(e != null) {
+            return e.getBaseURI();
+        }
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
-     */
     @Override
-    public short compareDocumentPosition(Node other) throws DOMException {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public short compareDocumentPosition(final Node other) throws DOMException {
         return 0;
     }
 
-    /** ? @see org.w3c.dom.Node#getTextContent()
-     */
     @Override
     public String getTextContent() throws DOMException {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
-     */
     @Override
-    public void setTextContent(String textContent) throws DOMException {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public void setTextContent(final String textContent) throws DOMException {
     }
 
-    /** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
-     */
     @Override
-    public boolean isSameNode(Node other) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public boolean isSameNode(final Node other) {
         return false;
     }
 
-    /** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
-     */
     @Override
-    public String lookupPrefix(String namespaceURI) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public String lookupPrefix(final String namespaceURI) {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
-     */
     @Override
-    public boolean isDefaultNamespace(String namespaceURI) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public boolean isDefaultNamespace(final String namespaceURI) {
         return false;
     }
 
-    /** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
-     */
     @Override
-    public String lookupNamespaceURI(String prefix) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public String lookupNamespaceURI(final String prefix) {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
-     */
     @Override
-    public boolean isEqualNode(Node arg) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public boolean isEqualNode(final Node arg) {
         return false;
     }
 
-    /** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
-     */
     @Override
-    public Object getFeature(String feature, String version) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public Object getFeature(final String feature, final String version) {
+        return null;
+    }
+    @Override
+    public Object setUserData(final String key, final Object data, final UserDataHandler handler) {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
-     */
     @Override
-    public Object setUserData(String key, Object data, UserDataHandler handler) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
-        return null;
-    }
-
-    /** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
-     */
-    @Override
-    public Object getUserData(String key) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public Object getUserData(final String key) {
         return null;
     }
 }

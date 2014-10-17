@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  Copyright (C) 2001-2014 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -29,40 +29,35 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xmldb.XmldbURI;
 
-import java.io.EOFException;
 import java.io.IOException;
 
 /**
  * Represents a binary resource. Binary resources are just stored
  * as binary data in a single overflow page. However, class BinaryDocument
- * extends {@link org.exist.dom.persistent.DocumentImpl} and thus provides the 
+ * extends {@link org.exist.dom.persistent.DocumentImpl} and thus provides the
  * same interface.
- * 
+ *
  * @author wolf
  */
 public class BinaryDocument extends DocumentImpl {
 
     private long pageNr = Page.NO_PAGE;
-    
     private long realSize = 0L;
-    
-    public BinaryDocument(BrokerPool pool) {
-        super(pool, null, null);
-    } 
 
-    public BinaryDocument(BrokerPool pool, Collection collection, XmldbURI fileURI) {
+    public BinaryDocument(final BrokerPool pool) {
+        super(pool);
+    }
+
+    public BinaryDocument(final BrokerPool pool, final Collection collection, final XmldbURI fileURI) {
         super(pool, collection, fileURI);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.dom.persistent.DocumentImpl#getResourceType()
-     */
     @Override
     public byte getResourceType() {
         return BINARY_FILE;
     }
-    
-    public void setPage(long page) {
+
+    public void setPage(final long page) {
         this.pageNr = page;
     }
 
@@ -75,12 +70,12 @@ public class BinaryDocument extends DocumentImpl {
         return realSize;
     }
 
-    public void setContentLength(long length) {
+    public void setContentLength(final long length) {
         this.realSize = length;
     }
 
     @Override
-    public void write(VariableByteOutputStream ostream) throws IOException {
+    public void write(final VariableByteOutputStream ostream) throws IOException {
         ostream.writeInt(getDocId());
         ostream.writeUTF(getFileURI().toString());
         ostream.writeLong(pageNr);
@@ -92,14 +87,14 @@ public class BinaryDocument extends DocumentImpl {
     }
 
     @Override
-    public void read(VariableByteInput istream) throws IOException, EOFException {
+    public void read(final VariableByteInput istream) throws IOException {
         setDocId(istream.readInt());
         setFileURI(XmldbURI.create(istream.readUTF()));
-        pageNr = istream.readLong();
-        
+        this.pageNr = istream.readLong();
+
         getPermissions().read(istream);
 
-        realSize = istream.readLong();
+        this.realSize = istream.readLong();
         final DocumentMetadata metadata = new DocumentMetadata();
         metadata.read(getBrokerPool(), istream);
         setMetadata(metadata);

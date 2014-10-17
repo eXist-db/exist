@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -32,10 +32,10 @@ public interface Visitable {
      * Visit the current node. For element nodes,
      * the method recursively traverses through the child nodes and
      * calls accept on each of them.
-     * 
+     *
      * @param iterator an iterator positioned at the current node
-     * @param visitor the visitor to call.
+     * @param visitor  the visitor to call.
      * @return the value returned by the NodeVisitor.visit method.
      */
-    public boolean accept(INodeIterator iterator, NodeVisitor visitor);  
+    public boolean accept(INodeIterator iterator, NodeVisitor visitor);
 }

@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist Project
+ * Copyright (C) 2001-2014 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -19,7 +19,6 @@
  *  
  *  $Id$
  */
-
 package org.exist.dom.persistent;
 
 import org.exist.numbering.NodeId;
@@ -29,11 +28,12 @@ import org.exist.util.pool.NodePool;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
+import javax.xml.XMLConstants;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Persistent implementation of a DOM processing-instruction node.
- * 
+ *
  * @author wolf
  */
 public class ProcessingInstructionImpl extends StoredNode implements ProcessingInstruction {
@@ -47,13 +47,13 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         super(Node.PROCESSING_INSTRUCTION_NODE);
     }
 
-    public ProcessingInstructionImpl(NodeId nodeId, String target, String data) {
+    public ProcessingInstructionImpl(final NodeId nodeId, final String target, final String data) {
         super(Node.PROCESSING_INSTRUCTION_NODE, nodeId);
         this.target = target;
         this.data = data;
     }
 
-    public ProcessingInstructionImpl(String target, String data) {
+    public ProcessingInstructionImpl(final String target, final String data) {
         this(null, target, data);
     }
 
@@ -62,29 +62,27 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         super.clear();
         target = null;
         data = null;
-    } 
+    }
 
     /**
-     *  Gets the target attribute of the ProcessingInstructionImpl object
+     * Gets the target attribute of the ProcessingInstructionImpl object
      *
-     *@return    The target value
+     * @return The target value
      */
+    @Override
     public String getTarget() {
         return target;
     }
 
     /**
-     *  Sets the target attribute of the ProcessingInstructionImpl object
+     * Sets the target attribute of the ProcessingInstructionImpl object
      *
-     *@param  target  The new target value
+     * @param target The new target value
      */
     public void setTarget(final String target) {
         this.target = target;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.Node#getNodeName()
-     */
     @Override
     public String getNodeName() {
         return target;
@@ -97,50 +95,50 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
 
     @Override
     public String getNamespaceURI() {
-        return "";
+        return XMLConstants.NULL_NS_URI;
     }
 
     /**
-     *  Gets the data attribute of the ProcessingInstructionImpl object
+     * Gets the data attribute of the ProcessingInstructionImpl object
      *
-     *@return    The data value
+     * @return The data value
      */
+    @Override
     public String getData() {
         return data;
     }
 
     /**
-     *  Sets the data attribute of the ProcessingInstructionImpl object
+     * Sets the data attribute of the ProcessingInstructionImpl object
      *
-     *@param  data  The new data value
+     * @param data The new data value
      */
+    @Override
     public void setData(final String data) {
         this.data = data;
     }
 
-    /** ? @see org.w3c.dom.Node#getBaseURI()
+    /**
+     * ? @see org.w3c.dom.Node#getBaseURI()
      */
     @Override
     public String getBaseURI() {
         final StoredNode parent = getParentStoredNode();
-        if (parent != null )
-            {return parent.getBaseURI();}
-        return getOwnerDocument().getBaseURI();
+        if(parent != null) {
+            return parent.getBaseURI();
+        } else {
+            return getOwnerDocument().getBaseURI();
+        }
     }
 
-    /**
-     *  Description of the Method
-     *
-     *@return    Description of the Return Value
-     */
     @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder();
-        buf.append( "<?" );
-        buf.append( target );
-        buf.append( " " );
-        buf.append( data );
-        buf.append( " ?>" );
+        buf.append("<?");
+        buf.append(target);
+        buf.append(" ");
+        buf.append(data);
+        buf.append(" ?>");
         return buf.toString();
     }
 
@@ -172,43 +170,50 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         final byte[] d = new byte[td.length + dd.length + nodeIdLen + 7];
         int pos = 0;
         d[pos] = (byte) (Signatures.Proc << 0x5);
-        pos += LENGTH_SIGNATURE_LENGTH; 
+        pos += LENGTH_SIGNATURE_LENGTH;
         ByteConversion.shortToByte((short) nodeId.units(), d, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId.serialize(d, pos);
         pos += nodeIdLen;
         ByteConversion.intToByte(td.length, d, pos);
         pos += LENGTH_TARGET_DATA;
-        System.arraycopy( td, 0, d, pos, td.length);
+        System.arraycopy(td, 0, d, pos, td.length);
         pos += td.length;
-        System.arraycopy( dd, 0, d, pos, dd.length);
+        System.arraycopy(dd, 0, d, pos, dd.length);
         return d;
     }
 
-    public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc, boolean pooled) {
+    public static StoredNode deserialize(final byte[] data, final int start, final int len, final DocumentImpl doc, final boolean pooled) {
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;
+
         final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
+
         final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
-        int nodeIdLen = dln.size();
+        final int nodeIdLen = dln.size();
         pos += nodeIdLen;
-        int l = ByteConversion.byteToInt(data, pos);
+
+        final int l = ByteConversion.byteToInt(data, pos);
         pos += LENGTH_TARGET_DATA;
-        String target;
-        target = new String(data, pos, l, UTF_8);
+
+        final String target = new String(data, pos, l, UTF_8);
         pos += l;
-        String cdata;
-        cdata = new String(data, pos, len - (pos - start), UTF_8);
+
+        final String cdata = new String(data, pos, len - (pos - start), UTF_8);
+
         //OK : we have the necessary material to build the processing instruction
-        ProcessingInstructionImpl pi;
-        if(pooled)
-            {pi = (ProcessingInstructionImpl) NodePool.getInstance().borrowNode(Node.PROCESSING_INSTRUCTION_NODE);}
-        else
-            {pi = new ProcessingInstructionImpl();}
+        final ProcessingInstructionImpl pi;
+        if(pooled) {
+            pi = (ProcessingInstructionImpl) NodePool.getInstance().borrowNode(Node.PROCESSING_INSTRUCTION_NODE);
+        } else {
+            pi = new ProcessingInstructionImpl();
+        }
+
         pi.setTarget(target);
         pi.data = cdata;
         pi.setNodeId(dln);
+
         return pi;
     }
 
@@ -224,8 +229,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
 
     @Override
     public Node getFirstChild() {
-        //bad implementations don't call hasChildNodes before
         return null;
     }
-
 }
+

@@ -24,7 +24,7 @@ package org.exist.util.hashtable;
 import java.util.Iterator;
 
 /**
- * A hashtable which maps object keys to long values.
+ * A hashtable which maps object keys to int values.
  * 
  * Keys are compared by their object equality, i.e. two objects are equal
  * if object1.equals(object2).

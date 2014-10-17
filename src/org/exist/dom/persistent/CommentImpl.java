@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2014 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *  $Id$
+ */
 package org.exist.dom.persistent;
 
 import org.exist.numbering.NodeId;
@@ -9,6 +30,8 @@ import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
 
+import javax.xml.XMLConstants;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class CommentImpl extends AbstractCharacterData implements Comment {
@@ -17,12 +40,12 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
         super(Node.COMMENT_NODE);
     }
 
-    public CommentImpl( String data ) {
-        super( Node.COMMENT_NODE, data );
+    public CommentImpl(final String data) {
+        super(Node.COMMENT_NODE, data);
     }
 
-    public CommentImpl( char[] data, int start, int howmany ) {
-        super( Node.COMMENT_NODE, data, start, howmany );
+    public CommentImpl(final char[] data, final int start, final int howmany) {
+        super(Node.COMMENT_NODE, data, start, howmany);
     }
 
     @Override
@@ -32,15 +55,15 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
 
     @Override
     public String getNamespaceURI() {
-        return "";
+        return XMLConstants.NULL_NS_URI;
     }
 
     @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder();
-        buf.append( "<!-- " );
-        buf.append( cdata.toString() );
-        buf.append( " -->" );
+        buf.append("<!-- ");
+        buf.append(cdata.toString());
+        buf.append(" -->");
         return buf.toString();
     }
 
@@ -63,28 +86,28 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
         String s;
         try {
             s = StringValue.expand(cdata);
-        } catch (final XPathException e) {
+        } catch(final XPathException e) {
             LOG.warn(e);
             s = cdata.toString();
         }
-        final byte[] cd = s.getBytes( UTF_8 );
+        final byte[] cd = s.getBytes(UTF_8);
 
         final int nodeIdLen = nodeId.size();
         final byte[] data = new byte[StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
-           + nodeIdLen + cd.length];
+            +nodeIdLen + cd.length];
         int pos = 0;
-        data[pos] = (byte) ( Signatures.Comm << 0x5 );
+        data[pos] = (byte) (Signatures.Comm << 0x5);
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
         ByteConversion.shortToByte((short) nodeId.units(), data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId.serialize(data, pos);
         pos += nodeIdLen;
-        System.arraycopy( cd, 0, data, pos, cd.length );
+        System.arraycopy(cd, 0, data, pos, cd.length);
         return data;
     }
 
-    public static StoredNode deserialize(byte[] data, int start, int len,
-           DocumentImpl doc, boolean pooled) {
+    public static StoredNode deserialize(final byte[] data, final int start, final int len,
+                                         final DocumentImpl doc, final boolean pooled) {
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;
         final int dlnLen = ByteConversion.byteToShort(data, pos);
@@ -92,33 +115,17 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
         final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
-        String cdata = new String(data, pos, len - (pos - start), UTF_8 );
+        final String cdata = new String(data, pos, len - (pos - start), UTF_8);
         //OK : we have the necessary material to build the comment
-        CommentImpl comment;
-        if(pooled)
-            {comment = (CommentImpl) NodePool.getInstance().borrowNode(Node.COMMENT_NODE);}
-            //comment = (CommentImpl)NodeObjectPool.getInstance().borrowNode(CommentImpl.class);
-        else
-            {comment = new CommentImpl();}
+        final CommentImpl comment;
+        if(pooled) {
+            comment = (CommentImpl) NodePool.getInstance().borrowNode(Node.COMMENT_NODE);
+        } else {
+            comment = new CommentImpl();
+        }
         comment.setNodeId(dln);
         comment.appendData(cdata);
         return comment;
-    }
-
-    @Override
-    public boolean hasChildNodes() {
-        return false;
-    }
-
-    @Override
-    public int getChildCount() {
-        return 0;
-    }
-
-    @Override
-    public Node getFirstChild() {
-        //bad implementations don't call hasChildNodes before
-        return null;
     }
 }
 

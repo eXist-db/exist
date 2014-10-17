@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *  http://exist.sourceforge.net
  *  
@@ -27,9 +27,8 @@ import java.util.Iterator;
 /**
  * An iterator on a node set. Extends the {@link Iterator} interface with
  * an additional method to reposition the iterator.
- * 
- * @author wolf
  *
+ * @author wolf
  */
 public interface NodeSetIterator extends Iterator<NodeProxy> {
 
@@ -44,7 +43,7 @@ public interface NodeSetIterator extends Iterator<NodeProxy> {
      * {@link Iterator#next()} will return this NodeProxy. If the
      * node does not exist in the node set, the iterator will be positioned
      * to the end of the set.
-     * 
+     *
      * @param proxy
      */
     public void setPosition(NodeProxy proxy);

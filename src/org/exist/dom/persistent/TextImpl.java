@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2010 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -28,17 +28,17 @@ import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.util.pool.NodePool;
-
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 import org.w3c.dom.UserDataHandler;
 
+import javax.xml.XMLConstants;
+
 /**
  * TextImpl.java
- * 
- * @author wolf
  *
+ * @author wolf
  */
 public class TextImpl extends AbstractCharacterData implements Text {
 
@@ -46,11 +46,11 @@ public class TextImpl extends AbstractCharacterData implements Text {
         super(Node.TEXT_NODE);
     }
 
-    public TextImpl( String data ) {
+    public TextImpl(final String data) {
         super(Node.TEXT_NODE, data);
     }
 
-    public TextImpl( NodeId nodeId, String data ) {
+    public TextImpl(final NodeId nodeId, final String data) {
         super(Node.TEXT_NODE, nodeId, data);
     }
 
@@ -61,7 +61,7 @@ public class TextImpl extends AbstractCharacterData implements Text {
 
     @Override
     public String getNamespaceURI() {
-        return "";
+        return XMLConstants.NULL_NS_URI;
     }
 
     /**
@@ -81,7 +81,7 @@ public class TextImpl extends AbstractCharacterData implements Text {
     @Override
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
-        final byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + nodeIdLen + 
+        final byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + nodeIdLen +
             NodeId.LENGTH_NODE_ID_UNITS + cdata.UTF8Size());
         int pos = 0;
         data[pos] = (byte) (Signatures.Char << 0x5);
@@ -94,20 +94,21 @@ public class TextImpl extends AbstractCharacterData implements Text {
         return data;
     }
 
-    public static StoredNode deserialize(byte[] data, int start, int len,
-            DocumentImpl doc, boolean pooled) {
-        TextImpl text;
-        if (pooled)
-            {text = (TextImpl) NodePool.getInstance().borrowNode(Node.TEXT_NODE);}
-        else
-            {text = new TextImpl();}
+    public static StoredNode deserialize(final byte[] data, final int start, final int len,
+            final DocumentImpl doc, final boolean pooled) {
+        final TextImpl text;
+        if(pooled) {
+            text = (TextImpl) NodePool.getInstance().borrowNode(Node.TEXT_NODE);
+        } else {
+            text = new TextImpl();
+        }
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;
         final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         text.setNodeId(dln);
-        int nodeIdLen = dln.size();
+        final int nodeIdLen = dln.size();
         pos += nodeIdLen;
         text.cdata = UTF8.decode(data, pos, len - (LENGTH_SIGNATURE_LENGTH +
             nodeIdLen + NodeId.LENGTH_NODE_ID_UNITS));
@@ -115,20 +116,15 @@ public class TextImpl extends AbstractCharacterData implements Text {
     }
 
     @Override
-    public Text splitText(int offset) throws DOMException {
-        return null;
-    }
-
-    @Override
-    public String toString(boolean top) {
-        if (top) {
+    public String toString(final boolean top) {
+        if(top) {
             final StringBuilder result = new StringBuilder();
             result.append("<exist:text ");
-            result.append("xmlns:exist=\"" + Namespaces.EXIST_NS + "\" ");
+            result.append("xmlns:exist=\"").append(Namespaces.EXIST_NS).append("\" ");
             result.append("exist:id=\"");
             result.append(getNodeId());
             result.append("\" exist:source=\"");
-            result.append(((DocumentImpl)getOwnerDocument()).getFileURI());
+            result.append(getOwnerDocument().getFileURI());
             result.append("\">");
             result.append(getData());
             result.append("</exist:text>");
@@ -139,140 +135,86 @@ public class TextImpl extends AbstractCharacterData implements Text {
     }
 
     @Override
-    public int getChildCount() {
-        return 0;
-    }
-
-    @Override
-    public boolean hasChildNodes() {
-        return false;
-    }
-
-    @Override
-    public Node getFirstChild() {
-        //bad implementations don't call hasChildNodes before
+    public String getWholeText() {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Text#isElementContentWhitespace()
-     */
     @Override
     public boolean isElementContentWhitespace() {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return false;
     }
 
-    /** ? @see org.w3c.dom.Text#getWholeText()
-     */
     @Override
-    public String getWholeText() {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public Text replaceWholeText(final String content) throws DOMException {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Text#replaceWholeText(java.lang.String)
-     */
     @Override
-    public Text replaceWholeText(String content) throws DOMException {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public Text splitText(final int offset) throws DOMException {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#getBaseURI()
-     */
     @Override
     public String getBaseURI() {
         final Node parent = getParentNode();
-        if (parent != null)
-            {return parent.getBaseURI();}
-        else
-            {return null;}
+        if(parent != null) {
+            return parent.getBaseURI();
+        } else {
+            return null;
+        }
     }
 
-    /** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
-     */
     @Override
-    public short compareDocumentPosition(Node other) throws DOMException {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public short compareDocumentPosition(final Node other) throws DOMException {
         return 0;
     }
 
-    /** ? @see org.w3c.dom.Node#getTextContent()
-     */
     @Override
     public String getTextContent() throws DOMException {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#setTextContent(java.lang.String)
-     */
     @Override
-    public void setTextContent(String textContent) throws DOMException {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public void setTextContent(final String textContent) throws DOMException {
     }
 
-    /** ? @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
-     */
     @Override
-    public boolean isSameNode(Node other) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public boolean isSameNode(final Node other) {
         return false;
     }
 
-    /** ? @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
-     */
     @Override
-    public String lookupPrefix(String namespaceURI) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public String lookupPrefix(final String namespaceURI) {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
-     */
     @Override
-    public boolean isDefaultNamespace(String namespaceURI) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public boolean isDefaultNamespace(final String namespaceURI) {
         return false;
     }
 
-    /** ? @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
-     */
     @Override
-    public String lookupNamespaceURI(String prefix) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public String lookupNamespaceURI(final String prefix) {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
-     */
     @Override
-    public boolean isEqualNode(Node arg) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public boolean isEqualNode(final Node arg) {
         return false;
     }
 
-    /** ? @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
-     */
     @Override
-    public Object getFeature(String feature, String version) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public Object getFeature(final String feature, final String version) {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
-     */
     @Override
-    public Object setUserData(String key, Object data, UserDataHandler handler) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public Object setUserData(final String key, final Object data, final UserDataHandler handler) {
         return null;
     }
 
-    /** ? @see org.w3c.dom.Node#getUserData(java.lang.String)
-     */
     @Override
-    public Object getUserData(String key) {
-        // maybe _TODO_ - new DOM interfaces - Java 5.0
+    public Object getUserData(final String key) {
         return null;
     }
 }

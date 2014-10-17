@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -21,26 +21,35 @@
  */
 package org.exist.dom.persistent;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+
 
 public class StoredDOMImplementation implements DOMImplementation {
 
-    public Document createDocument(String arg0, String arg1, DocumentType arg2)
-            throws DOMException {
+    @Override
+    public Document createDocument(final String namespaceURI,
+            final String qualifiedName, final DocumentType docType)
+        throws DOMException {
         return null;
     }
 
-    public DocumentType createDocumentType(String qualifiedName,
-            String publicId, String systemId) throws DOMException {
+    @Override
+    public DocumentType createDocumentType(final String qualifiedName,
+            final String publicId, final String systemId) throws DOMException {
         return null;
     }
 
-    public Object getFeature(String feature, String arg1) {
+    @Override
+    public Object getFeature(final String feature, final String version) {
         return null;
     }
 
-    public boolean hasFeature(String feature, String version) {
+    @Override
+    public boolean hasFeature(final String feature, final String version) {
         return "XML".equals(feature) && ("1.0".equals(version) || "2.0".equals(version));
     }
-
 }
+

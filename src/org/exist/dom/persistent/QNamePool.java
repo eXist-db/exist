@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-2014 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -32,13 +32,13 @@ import java.util.Objects;
  * A pool for QNames. This is a temporary pool for QName objects to avoid
  * allocating the same QName multiple times. If the pool is full, it will just be
  * cleared.
- * 
+ *
  * @author wolf
  */
 public class QNamePool extends AbstractHashSet<QName> {
 
     private final static int DEFAULT_POOL_SIZE = 512;
-    private org.exist.dom.QName[] values;
+    private QName[] values;
 
     public QNamePool() {
         super(DEFAULT_POOL_SIZE);
@@ -65,13 +65,13 @@ public class QNamePool extends AbstractHashSet<QName> {
      */
     public final QName get(final byte type, final String namespaceURI, final String localName, final String prefix) {
         int idx = hashCode(localName, namespaceURI, prefix, type) % tabSize;
-        if (idx < 0) {
+        if(idx < 0) {
             idx *= -1;
         }
 
-        if (values[idx] == null) {
+        if(values[idx] == null) {
             return null;  // key does not exist
-        } else if (equals(values[idx], localName, namespaceURI, prefix, type)) {
+        } else if(equals(values[idx], localName, namespaceURI, prefix, type)) {
             return values[idx]; //no hash-collision
         } else {
 
@@ -101,7 +101,7 @@ public class QNamePool extends AbstractHashSet<QName> {
             clear();
             try {
                 return insert(qn);
-            } catch (final HashtableOverflowException e1) {
+            } catch(final HashtableOverflowException e1) {
                 throw new RuntimeException(e1);
             }
         }
@@ -114,54 +114,52 @@ public class QNamePool extends AbstractHashSet<QName> {
     }
 
     private QName insert(final QName value) throws HashtableOverflowException {
-        if (value == null) {
+        if(value == null) {
             throw new IllegalArgumentException("Illegal value: null");
         }
 
         int idx = hashCode(value.getLocalPart(), value.getNamespaceURI(), value.getPrefix(), value.getNameType()) % tabSize;
-        if (idx < 0) {
+        if(idx < 0) {
             idx *= -1;
         }
 
         int bucket = -1;
         // look for an empty bucket
-        if (values[idx] == null) {
+        if(values[idx] == null) {
             values[idx] = value;
             ++items;
             return values[idx];
-        } else if (values[idx] == REMOVED) {
+        } else if(values[idx] == REMOVED) {
             // remember the bucket, but continue to check
             // for duplicate keys
             bucket = idx;
-        } else if (values[idx].equals(value)) {
+        } else if(values[idx].equals(value)) {
             // duplicate value
             return values[idx];
         }
 
         //System.out.println("Hash collision: " + value + " with " + values[idx]);
         final int rehashVal = rehash(idx);
-        int rehashCnt = 1;
-        for (int i = 0; i < tabSize; i++) {
+        for(int i = 0; i < tabSize; i++) {
             idx = (idx + rehashVal) % tabSize;
-            if (values[idx] == REMOVED) {
+            if(values[idx] == REMOVED) {
                 bucket = idx;
-            } else if (values[idx] == null) {
-                if (bucket > -1) {
+            } else if(values[idx] == null) {
+                if(bucket > -1) {
                     // store key into the empty bucket first found
                     idx = bucket;
                 }
                 values[idx] = value;
                 ++items;
                 return values[idx];
-            } else if (values[idx].equals(value)) {
+            } else if(values[idx].equals(value)) {
                 // duplicate value
                 return values[idx];
             }
-            ++rehashCnt;
         }
         // should never happen, but just to be sure:
         // if the key has not been inserted yet, do it now
-        if (bucket > -1) {
+        if(bucket > -1) {
             values[bucket] = value;
             ++items;
             return values[bucket];
@@ -172,7 +170,7 @@ public class QNamePool extends AbstractHashSet<QName> {
 
     protected int rehash(final int iVal) {
         int retVal = (iVal + iVal / 2) % tabSize;
-        if (retVal == 0) {
+        if(retVal == 0) {
             retVal = 1;
         }
         return retVal;
@@ -180,7 +178,7 @@ public class QNamePool extends AbstractHashSet<QName> {
 
     /**
      * Used to calculate a hashCode for a QName
-     *
+     * <p/>
      * This varies from {@see org.exist.dom.QName#hashCode()} in so far
      * as it also includes the prefix in the hash calculation
      *
@@ -198,11 +196,11 @@ public class QNamePool extends AbstractHashSet<QName> {
 
     /**
      * Used to calculate equality for a QName and it's constituent components
-     *
+     * <p/>
      * This varies from {@see org.exist.dom.QName#equals(Object)} in so far
      * as it also includes the prefix in the equality test
      *
-     * @param qname The QName to check equality against the other*
+     * @param qname             The QName to check equality against the other*
      * @param otherLocalPart
      * @param otherNamespaceURI
      * @param otherPrefix
@@ -214,7 +212,6 @@ public class QNamePool extends AbstractHashSet<QName> {
             && qname.getLocalPart().equals(otherLocalPart)
             && Objects.equals(qname.getPrefix(), otherPrefix);
     }
-
 
 
     @Override

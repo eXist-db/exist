@@ -1,5 +1,5 @@
 /* eXist xml document repository and xpath implementation
- * Copyright (C) 2000,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-2014,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,10 +17,10 @@
  */
 package org.exist.dom;
 
-import java.util.ArrayList;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
 
 public class NodeListImpl extends ArrayList<Node> implements NodeList {
 
@@ -70,7 +70,7 @@ public class NodeListImpl extends ArrayList<Node> implements NodeList {
     }
 
     @Override
-    public Node item(int pos) {
+    public Node item(final int pos) {
         if (pos >= size()) {
             return null;
         }

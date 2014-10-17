@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -24,7 +24,7 @@ package org.exist.dom.persistent;
 /**
  * Visitor pattern: used for traversing the DOM tree
  * implement to get notified of the current node.
- * 
+ *
  * @author wolf
  */
 public interface NodeVisitor {

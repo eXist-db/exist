@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
+ *  Copyright (C) 2001-2014 Wolfgang M. Meier
  *  wolfgang@exist-db.org
  *  http://exist-db.org
  *
@@ -28,33 +28,23 @@ import org.w3c.dom.DOMException;
 
 /**
  * A node with a QName, i.e. an element or attribute.
- * 
+ *
  * @author wolf
  */
 public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
 
     protected QName nodeName = null;
-    
-    public NamedNode(short nodeType) {
+
+    public NamedNode(final short nodeType) {
         super(nodeType);
     }
 
-    /**
-     * @param nodeType
-     */
-    public NamedNode(short nodeType, QName qname) {
+    public NamedNode(final short nodeType, final QName qname) {
         super(nodeType);
         this.nodeName = qname;
     }
 
-    /**
-     * 
-     * 
-     * @param nodeId 
-     * @param qname 
-     * @param nodeType 
-     */
-    protected NamedNode(short nodeType, NodeId nodeId, QName qname) {
+    protected NamedNode(final short nodeType, final NodeId nodeId, final QName qname) {
         super(nodeType, nodeId);
         this.nodeName = qname;
     }
@@ -68,42 +58,40 @@ public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
      * Extracts just the details of the NamedNode
      */
     public NamedNode extract() {
-        return new NamedNode(this){};
+        return new NamedNode(this) {
+        };
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.dom.persistent.NodeImpl#getQName()
-     */
     @Override
     public QName getQName() {
         return nodeName;
     }
 
     @Override
-    public void setQName(QName qname) {
+    public void setQName(final QName qname) {
         this.nodeName = qname;
     }
 
-    @Override
-    public void setNodeName(QName name) {
+    /**
+     * @deprecated use #setQName(qname) instead
+     */
+    @Deprecated
+    public void setNodeName(final QName name) {
         nodeName = name;
     }
 
-    public void setNodeName(QName name, SymbolTable symbols) throws DOMException {
-        nodeName = name;
-        if (symbols.getSymbol(nodeName.getLocalPart()) < 0) {
+    public void setNodeName(final QName name, final SymbolTable symbols) throws DOMException {
+        this.nodeName = name;
+        if(symbols.getSymbol(nodeName.getLocalPart()) < 0) {
             throw new DOMException(DOMException.INVALID_ACCESS_ERR,
-                    "Too many element/attribute names registered in the database. No of distinct names is limited to 16bit. Aborting store.");
+                "Too many element/attribute names registered in the database. No of distinct names is limited to 16bit. Aborting store.");
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.dom.persistent.NodeImpl#clear()
-     */
     @Override
     public void clear() {
         super.clear();
-        nodeName = null;
+        this.nodeName = null;
     }
 
 }
