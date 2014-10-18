@@ -27,7 +27,7 @@ public class ContextItem {
     private NodeProxy node;
 
     private ContextItem nextDirect;
-    final private int contextId;
+    private final int contextId;
 
     public ContextItem(final NodeProxy node) {
         this(Expression.NO_CONTEXT_ID, node);

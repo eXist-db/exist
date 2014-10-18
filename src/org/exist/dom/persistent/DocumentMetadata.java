@@ -32,11 +32,11 @@ import org.w3c.dom.DocumentType;
 
 public class DocumentMetadata {
 
-    public final static byte NO_DOCTYPE = 0;
-    public final static byte HAS_DOCTYPE = 1;
+    public static final byte NO_DOCTYPE = 0;
+    public static final byte HAS_DOCTYPE = 1;
 
-    public final static byte NO_LOCKTOKEN = 0;
-    public final static byte HAS_LOCKTOKEN = 2;
+    public static final byte NO_LOCKTOKEN = 0;
+    public static final byte HAS_LOCKTOKEN = 2;
 
     /**
      * the mimeType of the document

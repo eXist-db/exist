@@ -84,7 +84,7 @@ public class EnclosedExpr extends PathExpr {
         // create the output
         final MemTreeBuilder builder = context.getDocumentBuilder();
         final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-        receiver.checkNS = true;
+        receiver.setCheckNS(true);
         try {
             final SequenceIterator i = result.iterate();
             Item next = i.nextItem();

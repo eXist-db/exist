@@ -51,7 +51,7 @@ import org.exist.numbering.NodeId;
  */
 public abstract class Match implements Comparable<Match> {
 
-    public final static class Offset implements Comparable<Offset> {
+    public static final class Offset implements Comparable<Offset> {
         private int offset;
         private final int length;
 
@@ -148,8 +148,9 @@ public abstract class Match implements Comparable<Match> {
     }
 
     private void addOffsets(final Collection<Offset> offsets) {
-        for(final Offset o : offsets)
+        for(final Offset o : offsets) {
             addOffset(o);
+        }
     }
 
     public Offset getOffset(final int pos) {

@@ -34,7 +34,7 @@ public class NamedNodeMapImpl implements NamedNodeMap {
 
     // NamedNodeMap is used by attributes, and it is often
     // rare that an element has more then 10 attributes
-    private final static int DEFAULT_SIZE = 10;
+    private static final int DEFAULT_SIZE = 10;
 
     private final IndexedHashMap<QName, Node> namedNodes = new IndexedHashMap<>(DEFAULT_SIZE);
 
@@ -99,7 +99,7 @@ public class NamedNodeMapImpl implements NamedNodeMap {
         }
     }
 
-    private final class IndexedHashMap<K, V> {
+    private static final class IndexedHashMap<K, V> {
         private final Object2ObjectHashMap<K, V> map;
         private final List<K> keys;
 

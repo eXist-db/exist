@@ -44,17 +44,17 @@ import javax.xml.XMLConstants;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class AttrImpl extends NamedNode implements Attr, Cloneable {
+public class AttrImpl extends NamedNode implements Attr {
 
     public static final int LENGTH_NS_ID = 2; //sizeof short
     public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
 
-    public final static int CDATA = 0;
-    public final static int ID = 1;
-    public final static int IDREF = 2;
-    public final static int IDREFS = 3;
+    public static final int CDATA = 0;
+    public static final int ID = 1;
+    public static final int IDREF = 2;
+    public static final int IDREFS = 3;
 
-    private final static int DEFAULT_ATTRIBUTE_TYPE = CDATA;
+    private static final int DEFAULT_ATTRIBUTE_TYPE = CDATA;
 
     private int attributeType = DEFAULT_ATTRIBUTE_TYPE;
     private int indexType = RangeIndexSpec.NO_INDEX;
@@ -133,10 +133,8 @@ public class AttrImpl extends NamedNode implements Attr, Cloneable {
         final short id = ownerDocument.getBrokerPool().getSymbols().getSymbol(this);
         final byte idSizeType = Signatures.getSizeType(id);
         int prefixLen = 0;
-        if(nodeName.hasNamespace()) {
-            if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0) {
-                prefixLen = UTF8.encoded(nodeName.getPrefix());
-            }
+        if(nodeName.hasNamespace() && nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0) {
+            prefixLen = UTF8.encoded(nodeName.getPrefix());
         }
         final int nodeIdLen = nodeId.size();
         final byte[] data = ByteArrayPool.getByteArray(

@@ -75,15 +75,15 @@ import java.io.IOException;
  */
 public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
-    public final static int UNKNOWN_DOCUMENT_ID = -1;
+    public static final int UNKNOWN_DOCUMENT_ID = -1;
 
-    public final static byte XML_FILE = 0;
-    public final static byte BINARY_FILE = 1;
+    public static final byte XML_FILE = 0;
+    public static final byte BINARY_FILE = 1;
 
-    public final static int LENGTH_DOCUMENT_ID = 4; //sizeof int
-    public final static int LENGTH_DOCUMENT_TYPE = 1; //sizeof byte
+    public static final int LENGTH_DOCUMENT_ID = 4; //sizeof int
+    public static final int LENGTH_DOCUMENT_TYPE = 1; //sizeof byte
 
-    //public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
+    //public static final byte DOCUMENT_NODE_SIGNATURE = 0x0F;
 
     private final BrokerPool pool;
 

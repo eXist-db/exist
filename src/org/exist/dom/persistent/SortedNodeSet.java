@@ -52,7 +52,6 @@ import java.util.NoSuchElementException;
 
 public class SortedNodeSet extends AbstractNodeSet {
 
-    private PathExpr expr;
     private final OrderedLinkedList list = new OrderedLinkedList();
 
     private final String sortExpr;
@@ -108,7 +107,7 @@ public class SortedNodeSet extends AbstractNodeSet {
             }
             final AST ast = parser.getAST();
             LOG.debug("generated AST: " + ast.toStringTree());
-            expr = new PathExpr(context);
+            final PathExpr expr = new PathExpr(context);
             treeParser.xpath(ast, expr);
             if(treeParser.foundErrors()) {
                 LOG.debug(treeParser.getErrorMessage());
@@ -219,7 +218,7 @@ public class SortedNodeSet extends AbstractNodeSet {
         return new SortedNodeSetIterator(list.iterator());
     }
 
-    private final static class SortedNodeSetIterator implements NodeSetIterator, SequenceIterator {
+    private static final class SortedNodeSetIterator implements NodeSetIterator, SequenceIterator {
 
         private final Iterator<IteratorItem> ii;
 
@@ -280,8 +279,9 @@ public class SortedNodeSet extends AbstractNodeSet {
                     item = i.nextItem();
                     strings.add(new OrderedLinkedList.SimpleNode(item.getStringValue().toUpperCase()));
                 }
-                for(final Iterator<OrderedLinkedList.SimpleNode> j = strings.iterator(); j.hasNext(); )
+                for(final Iterator<OrderedLinkedList.SimpleNode> j = strings.iterator(); j.hasNext(); ) {
                     buf.append((j.next()).getData());
+                }
                 value = buf.toString();
             } catch(final XPathException e) {
                 LOG.warn(e.getMessage(), e); //TODO : throw exception ! -pb
@@ -293,11 +293,11 @@ public class SortedNodeSet extends AbstractNodeSet {
             final IteratorItem o = (IteratorItem) other;
             if(value == null) {
                 return o.value == null ? Constants.EQUAL : Constants.SUPERIOR;
+            } else if(o.value == null) {
+                return Constants.INFERIOR;
+            } else {
+                return value.compareTo(o.value);
             }
-            if(o.value == null) {
-                return value == null ? Constants.EQUAL : Constants.INFERIOR;
-            }
-            return value.compareTo(o.value);
         }
 
         @Override

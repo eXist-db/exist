@@ -48,7 +48,7 @@ import java.util.Iterator;
  */
 public abstract class AbstractNodeSet extends AbstractSequence implements NodeSet {
 
-    protected final static Logger LOG = Logger.getLogger(AbstractNodeSet.class);
+    protected static final Logger LOG = Logger.getLogger(AbstractNodeSet.class);
 
     // indicates the type of an optional value index that may have
     // been defined on the nodes in this set.
@@ -677,7 +677,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         return result.toString();
     }
 
-    private class CollectionIterator implements Iterator<Collection> {
+    private final class CollectionIterator implements Iterator<Collection> {
 
         private Collection nextCollection = null;
         private final NodeSetIterator nodeIterator = iterator();

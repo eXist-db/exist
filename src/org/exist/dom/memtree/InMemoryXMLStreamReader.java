@@ -37,6 +37,8 @@ import javax.xml.stream.XMLStreamReader;
  * This class complements {@link org.exist.stax.EmbeddedXMLStreamReader} which reads persistent documents.
  */
 public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
+    private static final String NOT_START_ELEMENT = "Cursor is not at the start of an element";
+
     private final DocumentImpl doc;
     private final NodeImpl rootNode;
     private int currentNode;
@@ -216,7 +218,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public int getAttributeCount() {
         if(state != START_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+            throw new IllegalStateException(NOT_START_ELEMENT);
         }
         return doc.getAttributesCountFor(currentNode);
     }
@@ -224,11 +226,11 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public QName getAttributeQName(final int index) {
         if(state != START_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+            throw new IllegalStateException(NOT_START_ELEMENT);
         }
 
         if(index > getAttributeCount()) {
-            throw new ArrayIndexOutOfBoundsException("bad attribute index");
+            throw new ArrayIndexOutOfBoundsException();
         }
         final int attr = doc.alpha[currentNode];
         return doc.attrName[attr + index];
@@ -242,7 +244,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public String getAttributeNamespace(final int index) {
         if(state != START_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+            throw new IllegalStateException(NOT_START_ELEMENT);
         }
         return getAttributeQName(index).getNamespaceURI();
     }
@@ -250,7 +252,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public String getAttributeLocalName(final int index) {
         if(state != START_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+            throw new IllegalStateException(NOT_START_ELEMENT);
         }
         return getAttributeQName(index).getLocalPart();
     }
@@ -258,7 +260,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public String getAttributePrefix(final int index) {
         if(state != START_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+            throw new IllegalStateException(NOT_START_ELEMENT);
         }
         return getAttributeQName(index).getPrefix();
     }
@@ -266,11 +268,11 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public NodeId getAttributeId(final int index) {
         if(state != START_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+            throw new IllegalStateException(NOT_START_ELEMENT);
         }
 
         if(index > getAttributeCount()) {
-            throw new ArrayIndexOutOfBoundsException("bad attribute index");
+            throw new ArrayIndexOutOfBoundsException();
         }
         doc.expand();
         final int attr = doc.alpha[currentNode];
@@ -280,11 +282,11 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public String getAttributeType(final int index) {
         if(state != START_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+            throw new IllegalStateException(NOT_START_ELEMENT);
         }
 
         if(index > getAttributeCount()) {
-            throw new ArrayIndexOutOfBoundsException("bad attribute index");
+            throw new ArrayIndexOutOfBoundsException();
         }
         final int attr = doc.alpha[currentNode];
         final int type = doc.attrType[attr + index];
@@ -312,11 +314,11 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public String getAttributeValue(final int index) {
         if(state != START_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+            throw new IllegalStateException(NOT_START_ELEMENT);
         }
 
         if(index > getAttributeCount()) {
-            throw new ArrayIndexOutOfBoundsException("bad attribute index");
+            throw new ArrayIndexOutOfBoundsException();
         }
         final int attr = doc.alpha[currentNode];
         return doc.attrValue[attr + index];
@@ -325,15 +327,15 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public boolean isAttributeSpecified(final int index) {
         if(state != START_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+            throw new IllegalStateException(NOT_START_ELEMENT);
         }
         return true;
     }
 
     @Override
     public int getNamespaceCount() {
-        if(state != START_ELEMENT && state != END_ELEMENT) {
-            throw new IllegalStateException("Cursor is not at an element");
+        if(state != START_ELEMENT && state != END_ELEMENT && state != NAMESPACE) {
+            throw new IllegalStateException("Cursor is not at an element or namespace");
         }
         return doc.getNamespacesCountFor(currentNode);
     }
@@ -341,7 +343,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public String getNamespacePrefix(final int index) {
         if(index > getNamespaceCount()) {
-            throw new ArrayIndexOutOfBoundsException("bad namespace index");
+            throw new ArrayIndexOutOfBoundsException();
         }
         final int ns = doc.alphaLen[currentNode];
         final QName nsQName = doc.namespaceCode[ns + index];
@@ -351,7 +353,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
     @Override
     public String getNamespaceURI(final int index) {
         if(index > getNamespaceCount()) {
-            throw new ArrayIndexOutOfBoundsException("bad namespace index");
+            throw new ArrayIndexOutOfBoundsException();
         }
         final int ns = doc.alphaLen[currentNode];
         final QName nsQName = doc.namespaceCode[ns + index];
@@ -418,7 +420,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
         if(state == START_ELEMENT || state == END_ELEMENT) {
             return doc.nodeName[currentNode];
         }
-        throw new IllegalStateException("Cursor is not at an element");
+        throw new IllegalStateException("Cursor is not at the start of end of an element");
     }
 
     @Override

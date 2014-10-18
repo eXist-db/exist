@@ -74,14 +74,12 @@ import java.util.Arrays;
  */
 public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
+    private static final int NODE_SIZE = 16;
+    private static final int ATTR_SIZE = 8;
+    private static final int CHAR_BUF_SIZE = 256;
+    private static final int REF_SIZE = 8;
+
     private static long nextDocId = 0;
-
-    private final static int NODE_SIZE = 16;
-    private final static int ATTR_SIZE = 8;
-    private final static int CHAR_BUF_SIZE = 256;
-    private final static int REF_SIZE = 8;
-
-
 
     // holds the node type of a node
     protected short[] nodeKind = null;
@@ -314,7 +312,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         addChars(nodeNum, ch);
     }
 
-    public int addAttribute(final int nodeNum, QName qname, final String value, final int type) throws DOMException {
+    public int addAttribute(final int nodeNum, final QName qname, final String value, final int type) throws DOMException {
         if(nodeKind == null) {
             init();
         }
@@ -342,9 +340,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(nextAttr == attrName.length) {
             growAttributes();
         }
-        qname = new QName(qname.getLocalPart(), qname.getNamespaceURI(), qname.getPrefix(), ElementValue.ATTRIBUTE);
+        final QName attrQname = new QName(qname.getLocalPart(), qname.getNamespaceURI(), qname.getPrefix(), ElementValue.ATTRIBUTE);
         attrParent[nextAttr] = nodeNum;
-        attrName[nextAttr] = namePool.getSharedName(qname);
+        attrName[nextAttr] = namePool.getSharedName(attrQname);
         attrValue[nextAttr] = value;
         attrType[nextAttr] = type;
         if(alpha[nodeNum] < 0) {
@@ -541,8 +539,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public DOMImplementation getImplementation() {
-        return (
-            new DOMImplementation() {
+        return new DOMImplementation() {
 
                 @Override
                 public Document createDocument(final String namespaceURI,
@@ -564,10 +561,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 @Override
                 public boolean hasFeature(final String feature, final String version) {
                     return ("XML".equals(feature) && ("1.0".equals(version) ||
-                        "1.1".equals(version)));
+                        "2.0".equals(version)));
                 }
-            }
-        );
+            };
     }
 
     @Override
@@ -1062,7 +1058,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         try {
             if(nextReferenceIdx == 0) {
                 computeNodeIds();
-                return (this);
+                return this;
             }
             final MemTreeBuilder builder = new MemTreeBuilder(context);
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);

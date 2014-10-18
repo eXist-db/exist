@@ -25,7 +25,6 @@ package org.exist.dom.persistent;
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
-import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -38,15 +37,15 @@ import java.util.Iterator;
  */
 public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
 
-    public final static int ANCESTOR = 0;
-    public final static int DESCENDANT = 1;
-    public final static int PRECEDING = 2;
-    public final static int FOLLOWING = 3;
+    public static final int ANCESTOR = 0;
+    public static final int DESCENDANT = 1;
+    public static final int PRECEDING = 2;
+    public static final int FOLLOWING = 3;
 
     /**
      * Constant representing an empty node set.
      */
-    public final static NodeSet EMPTY_SET = new EmptyNodeSet();
+    public static final NodeSet EMPTY_SET = new EmptyNodeSet();
 
     /**
      * Get a copy of this node set which can be modified.
@@ -150,7 +149,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      * @param al        a node set containing potential parent nodes
      * @param mode      selection mode
      * @param contextId used to track context nodes when evaluating predicate
-     *                  expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+     *                  expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                  will be added to each result of the of the selection.
      */
 
@@ -172,7 +171,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      * @param includeSelf if true, check if the ancestor node itself is contained in
      *                    the set of descendant nodes (descendant-or-self axis)
      * @param contextId   used to track context nodes when evaluating predicate
-     *                    expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+     *                    expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                    will be added to each result of the of the selection.
      */
     public NodeSet selectAncestorDescendant(NodeSet al, int mode, boolean includeSelf,
@@ -189,7 +188,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      * @param includeSelf if true, check if the ancestor node itself is contained
      *                    in this node set (ancestor-or-self axis)
      * @param contextId   used to track context nodes when evaluating predicate
-     *                    expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+     *                    expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                    will be added to each result of the of the selection.
      */
     public NodeSet selectAncestors(NodeSet descendants, boolean includeSelf, int contextId);
@@ -201,7 +200,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param siblings  a node set containing potential siblings
      * @param contextId used to track context nodes when evaluating predicate
-     *                  expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+     *                  expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                  will be added to each result of the of the selection.
      */
     public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId);
@@ -213,7 +212,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param siblings  a node set containing potential siblings
      * @param contextId used to track context nodes when evaluating predicate
-     *                  expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+     *                  expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                  will be added to each result of the of the selection.
      */
     public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId);
@@ -266,7 +265,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      *
      * @param test      a node test
      * @param contextId used to track context nodes when evaluating predicate
-     *                  expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+     *                  expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                  will be added to each result of the of the selection.
      */
     public NodeSet directSelectAttribute(DBBroker broker, org.exist.xquery.NodeTest test, int contextId);
@@ -343,7 +342,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
      * this node set.
      *
      * @param contextId used to track context nodes when evaluating predicate
-     *                  expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
+     *                  expressions. If contextId != {@link org.exist.xquery.Expression#NO_CONTEXT_ID}, the current context
      *                  will be added to each result of the of the selection.
      */
     public NodeSet getContextNodes(int contextId);

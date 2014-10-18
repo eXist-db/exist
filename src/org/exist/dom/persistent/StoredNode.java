@@ -46,8 +46,8 @@ import javax.xml.stream.XMLStreamException;
  */
 public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> implements Visitable, NodeHandle, IStoredNode<T> {
 
-    public final static int LENGTH_SIGNATURE_LENGTH = 1; //sizeof byte
-    public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
+    public static final int LENGTH_SIGNATURE_LENGTH = 1; //sizeof byte
+    public static final long UNKNOWN_NODE_IMPL_ADDRESS = -1;
 
     protected NodeId nodeId = null;
 
@@ -185,7 +185,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
     @Override
     public boolean equals(final Object obj) {
-        if(obj == null || !(obj instanceof StoredNode)) {
+        if(!(obj instanceof StoredNode)) {
             return false;
         }
         return ((StoredNode) obj).nodeId.equals(nodeId);
@@ -322,10 +322,10 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
                 while(reader.hasNext()) {
                     final int status = reader.next();
                     final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                    if(status != XMLStreamConstants.END_ELEMENT && currentId.getTreeLevel() == level) {
-                        if(currentId.compareTo(nodeId) > 0) {
-                            return reader.getNode();
-                        }
+                    if(status != XMLStreamConstants.END_ELEMENT
+                        && currentId.getTreeLevel() == level
+                        && currentId.compareTo(nodeId) > 0) {
+                        return reader.getNode();
                     }
                 }
             } catch(final IOException e) {

@@ -24,7 +24,6 @@ package org.exist.dom.memtree;
 
 import org.apache.xml.utils.XMLChar;
 import org.apache.xml.utils.XML11Char;
-import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.INode;
 import org.exist.dom.QName;
@@ -60,7 +59,6 @@ import org.w3c.dom.UserDataHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
-
 import javax.xml.XMLConstants;
 import java.util.Iterator;
 import java.util.Properties;
@@ -68,8 +66,8 @@ import java.util.Properties;
 
 public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl, T>, NodeValue {
 
-    public final static short REFERENCE_NODE = 100;
-    public final static short NAMESPACE_NODE = 101;
+    public static final short REFERENCE_NODE = 100;
+    public static final short NAMESPACE_NODE = 101;
 
     protected int nodeNumber;
     protected DocumentImpl document;
@@ -262,12 +260,12 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public String getNodeValue() throws DOMException {
-        throw new RuntimeException(getClass().getName() + ": can not call getNodeValue() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
-    public void setNodeValue(String arg0) throws DOMException {
-        throw new RuntimeException("Can not call setNodeValue() on node type " + this.getNodeType());
+    public void setNodeValue(final String nodeValue) throws DOMException {
+        throw unsupported();
     }
 
     @Override
@@ -311,12 +309,12 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void addContextNode(final int contextId, final NodeValue node) {
-        throw new RuntimeException("Can not call addContextNode() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public boolean equals(final Object other) {
-        if(other == null || !(other instanceof NodeImpl)) {
+        if(!(other instanceof NodeImpl)) {
             return false;
         }
         final NodeImpl o = (NodeImpl) other;
@@ -375,17 +373,17 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public NodeList getChildNodes() {
-        throw new RuntimeException("Can not call getChildNodes() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public Node getFirstChild() {
-        throw new RuntimeException("Can not call getFirstChild() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public Node getLastChild() {
-        throw new RuntimeException("Can not call getLastChild() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
@@ -413,7 +411,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public NamedNodeMap getAttributes() {
-        throw new RuntimeException("Can not call getAttributes() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
@@ -423,22 +421,22 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public Node insertBefore(final Node newChild, final Node refChild) throws DOMException {
-        throw new RuntimeException("Can not call insertBefore() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public Node replaceChild(final Node newChild, final Node oldChild) throws DOMException {
-        throw new RuntimeException("Can not call replaceChild() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public Node removeChild(final Node oldChild) throws DOMException {
-        throw new RuntimeException("Can not call removeChild() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public Node appendChild(final Node newChild) throws DOMException {
-        throw new RuntimeException("Can not call appendChild() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
@@ -448,7 +446,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public Node cloneNode(final boolean deep) {
-        throw new RuntimeException("Can not call cloneNode() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
@@ -457,12 +455,12 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public boolean isSupported(final String feature, final String version) {
-        throw new RuntimeException("Can not call isSupported() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public boolean hasAttributes() {
-        throw new RuntimeException("Can not call hasAttributes() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
@@ -586,12 +584,12 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void add(final Item item) throws XPathException {
-        throw new RuntimeException("Can not call add() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public void addAll(final Sequence other) throws XPathException {
-        throw new RuntimeException("Can not call addAll() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
@@ -612,11 +610,6 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     @Override
     public int getItemCount() {
         return 1;
-    }
-
-    public int getLength() {
-        //Let the derived classes do it...
-        throw new RuntimeException("Can not call getLength() on node type " + this.getNodeType());
     }
 
     @Override
@@ -727,7 +720,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void setSelfAsContext(final int contextId) {
-        throw new RuntimeException("Can not call setSelfAsContext() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
@@ -738,7 +731,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void setIsCached(final boolean cached) {
-        throw new RuntimeException("Can not call setIsCached() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
@@ -907,57 +900,57 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public short compareDocumentPosition(final Node other) throws DOMException {
-        throw new RuntimeException("Can not call compareDocumentPosition() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public String getTextContent() throws DOMException {
-        throw new RuntimeException("Can not call getTextContent() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public void setTextContent(final String textContent) throws DOMException {
-        throw new RuntimeException("Can not call setTextContent() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public boolean isSameNode(final Node other) {
-        throw new RuntimeException("Can not call isSameNode() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public String lookupPrefix(final String namespaceURI) {
-        throw new RuntimeException("Can not call lookupPrefix() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public boolean isDefaultNamespace(final String namespaceURI) {
-        throw new RuntimeException("Can not call isDefaultNamespace() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public String lookupNamespaceURI(final String prefix) {
-        throw new RuntimeException("Can not call lookupNamespaceURI() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public boolean isEqualNode(final Node arg) {
-        throw new RuntimeException("Can not call isEqualNode() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public Object getFeature(final String feature, final String version) {
-        throw new RuntimeException("Can not call getFeature() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public Object setUserData(final String key, final Object data, final UserDataHandler handler) {
-        throw new RuntimeException("Can not call setUserData() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
     public Object getUserData(final String key) {
-        throw new RuntimeException("Can not call getUserData() on node type " + this.getNodeType());
+        throw unsupported();
     }
 
     @Override
@@ -986,6 +979,11 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     @Override
     public boolean hasChanged(final int previousState) {
         return false;
+    }
+
+
+    private UnsupportedOperationException unsupported() {
+        return new UnsupportedOperationException("Operation is unsupported on node type: " + this.getNodeType());
     }
 
     private final static class SingleNodeIterator implements SequenceIterator {

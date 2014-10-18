@@ -533,18 +533,14 @@ public class ElementImpl extends NodeImpl implements Element {
         result.append("element {");
         result.append(getQName().getStringValue());
         result.append("} {");
-        NamedNodeMap theAttrs;
-        if((theAttrs = getAttributes()) != null) {
+        final NamedNodeMap theAttrs = getAttributes();
+        if(theAttrs != null) {
             for(int i = 0; i < theAttrs.getLength(); i++) {
                 if(i > 0) {
                     result.append(" ");
                 }
                 final Node natt = theAttrs.item(i);
-                if(natt instanceof AttrImpl) {
-                    result.append(natt.toString());
-                } else {
-                    result.append(natt.toString());
-                }
+                result.append(natt.toString());
             }
         }
         for(int i = 0; i < this.getChildCount(); i++) {
