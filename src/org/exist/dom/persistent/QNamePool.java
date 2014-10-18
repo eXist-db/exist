@@ -37,7 +37,7 @@ import java.util.Objects;
  */
 public class QNamePool extends AbstractHashSet<QName> {
 
-    private final static int DEFAULT_POOL_SIZE = 512;
+    private static final int DEFAULT_POOL_SIZE = 512;
     private QName[] values;
 
     public QNamePool() {

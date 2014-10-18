@@ -39,7 +39,7 @@ import org.w3c.dom.Text;
  *
  * @author wolf
  */
-public class NodeSetHelper {
+public final class NodeSetHelper {
 
     private NodeSetHelper() {
         //Utility class of static methods
@@ -670,9 +670,9 @@ public class NodeSetHelper {
         return false;
     }
 
-    public final static void copyChildren(final Document new_doc, final Node node, final Node new_node) {
+    public static final void copyChildren(final Document newDoc, final Node node, final Node newNode) {
         final NodeList children = node.getChildNodes();
-        Node new_child;
+        Node newChild;
         for(int i = 0; i < children.getLength(); i++) {
             final Node child = children.item(i);
             if(child == null) {
@@ -680,18 +680,18 @@ public class NodeSetHelper {
             }
             switch(child.getNodeType()) {
                 case Node.ELEMENT_NODE: {
-                    new_child = copyNode(new_doc, child);
-                    new_node.appendChild(new_child);
+                    newChild = copyNode(newDoc, child);
+                    newNode.appendChild(newChild);
                     break;
                 }
                 case Node.ATTRIBUTE_NODE: {
-                    new_child = copyNode(new_doc, child);
-                    ((Element) new_node).setAttributeNode((Attr) new_child);
+                    newChild = copyNode(newDoc, child);
+                    ((Element) newNode).setAttributeNode((Attr) newChild);
                     break;
                 }
                 case Node.TEXT_NODE: {
-                    new_child = copyNode(new_doc, child);
-                    new_node.appendChild(new_child);
+                    newChild = copyNode(newDoc, child);
+                    newNode.appendChild(newChild);
                     break;
                 }
                 // TODO : error for any other one -pb
@@ -699,23 +699,28 @@ public class NodeSetHelper {
         }
     }
 
-    public final static Node copyNode(final Document new_doc, final Node node) {
-        Node new_node;
+    public static final Node copyNode(final Document newDoc, final Node node) {
+        final Node newNode;
         switch(node.getNodeType()) {
+
             case Node.ELEMENT_NODE:
-                new_node = new_doc.createElementNS(node.getNamespaceURI(), node.getNodeName());
-                copyChildren(new_doc, node, new_node);
-                return new_node;
+                newNode = newDoc.createElementNS(node.getNamespaceURI(), node.getNodeName());
+                copyChildren(newDoc, node, newNode);
+                break;
+
             case Node.TEXT_NODE:
-                new_node = new_doc.createTextNode(((Text) node).getData());
-                return new_node;
+                newNode = newDoc.createTextNode(((Text) node).getData());
+                break;
+
             case Node.ATTRIBUTE_NODE:
-                new_node = new_doc.createAttributeNS(node.getNamespaceURI(), node.getNodeName());
-                ((Attr) new_node).setValue(((Attr) node).getValue());
-                return new_node;
+                newNode = newDoc.createAttributeNS(node.getNamespaceURI(), node.getNodeName());
+                ((Attr) newNode).setValue(((Attr) node).getValue());
+                break;
+
             default:
                 // TODO : error ? -pb
-                return null;
+                newNode = null;
         }
+        return newNode;
     }
 }

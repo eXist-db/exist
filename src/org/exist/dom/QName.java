@@ -37,19 +37,19 @@ import javax.xml.XMLConstants;
  */
 public class QName implements Comparable<QName> {
 
-    private final static String WILDCARD = "*";
-    private final static char COLON = ':';
+    private static final String WILDCARD = "*";
+    private static final char COLON = ':';
 
-    public final static QName EMPTY_QNAME = new QName("", XMLConstants.NULL_NS_URI);
-    public final static QName DOCUMENT_QNAME = EMPTY_QNAME;
-    public final static QName TEXT_QNAME = EMPTY_QNAME;
-    public final static QName COMMENT_QNAME = EMPTY_QNAME;
-    public final static QName DOCTYPE_QNAME = EMPTY_QNAME;
+    public static final QName EMPTY_QNAME = new QName("", XMLConstants.NULL_NS_URI);
+    public static final QName DOCUMENT_QNAME = EMPTY_QNAME;
+    public static final QName TEXT_QNAME = EMPTY_QNAME;
+    public static final QName COMMENT_QNAME = EMPTY_QNAME;
+    public static final QName DOCTYPE_QNAME = EMPTY_QNAME;
 
 
-    protected final String localPart;
-    protected final String namespaceURI;
-    protected final String prefix;
+    private final String localPart;
+    private final String namespaceURI;
+    private final String prefix;
 
     //TODO : use ElementValue.UNKNOWN and type explicitly ?
     private final byte nameType; // = ElementValue.ELEMENT;
@@ -173,7 +173,7 @@ public class QName implements Comparable<QName> {
     public boolean equals(final Object other) {
         if(other == this) {
             return true;
-        } else if(other == null || !(other instanceof QName)) {
+        } else if(!(other instanceof QName)) {
             return false;
         } else {
             final QName qnOther = (QName)other;
@@ -313,7 +313,7 @@ public class QName implements Comparable<QName> {
         }
     }
 
-    public final static boolean isQName(final String name) {
+    public static final boolean isQName(final String name) {
         final int colon = name.indexOf(COLON);
 
         if (colon == Constants.STRING_NOT_FOUND) {

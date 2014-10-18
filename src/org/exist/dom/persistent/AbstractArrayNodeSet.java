@@ -34,7 +34,7 @@ import org.w3c.dom.Node;
  */
 public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
-    protected final static int INITIAL_SIZE = 64;
+    protected static final int INITIAL_SIZE = 64;
 
     protected int size = 0;
 
@@ -141,7 +141,7 @@ public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements Do
     }
 
     private void setHasChanged() {
-        this.state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
+        this.state = (state == Integer.MAX_VALUE ? 0 : state + 1);
     }
 
     @Override

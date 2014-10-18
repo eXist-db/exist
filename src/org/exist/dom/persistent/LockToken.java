@@ -37,33 +37,33 @@ public class LockToken {
 
     // Lock type
     private byte type = LOCK_TYPE_NOT_SET;
-    public final static byte LOCK_TYPE_NONE = 0;
-    public final static byte LOCK_TYPE_WRITE = 1;
-    public final static byte LOCK_TYPE_NOT_SET = 4;
+    public static final byte LOCK_TYPE_NONE = 0;
+    public static final byte LOCK_TYPE_WRITE = 1;
+    public static final byte LOCK_TYPE_NOT_SET = 4;
 
     // Lock depth
     private byte depth = LOCK_DEPTH_NOT_SET;
-    public final static byte LOCK_DEPTH_0 = 0;
-    public final static byte LOCK_DEPTH_1 = 1;
-    public final static byte LOCK_DEPTH_INFINIY = 2;
-    public final static byte LOCK_DEPTH_NOT_SET = 4;
+    public static final byte LOCK_DEPTH_0 = 0;
+    public static final byte LOCK_DEPTH_1 = 1;
+    public static final byte LOCK_DEPTH_INFINIY = 2;
+    public static final byte LOCK_DEPTH_NOT_SET = 4;
 
     // Lock scope
     private byte scope = LOCK_SCOPE_NOT_SET;
-    public final static byte LOCK_SCOPE_NONE = 0;
-    public final static byte LOCK_SCOPE_EXCLUSIVE = 1;
-    public final static byte LOCK_SCOPE_SHARED = 2;
-    public final static byte LOCK_SCOPE_NOT_SET = 4;
+    public static final byte LOCK_SCOPE_NONE = 0;
+    public static final byte LOCK_SCOPE_EXCLUSIVE = 1;
+    public static final byte LOCK_SCOPE_SHARED = 2;
+    public static final byte LOCK_SCOPE_NOT_SET = 4;
 
     // Timeout
-    public final static long LOCK_TIMEOUT_INFINITE = -1L;
-    public final static long NO_LOCK_TIMEOUT = -2L;
+    public static final long LOCK_TIMEOUT_INFINITE = -1L;
+    public static final long NO_LOCK_TIMEOUT = -2L;
 
     // Write Locks and Null Resources
     // see http://www.webdav.org/specs/rfc2518.html#rfc.section.7.4
     private byte resourceType = RESOURCE_TYPE_NOT_SPECIFIED;
-    public final static byte RESOURCE_TYPE_NOT_SPECIFIED = 0;
-    public final static byte RESOURCE_TYPE_NULL_RESOURCE = 1;
+    public static final byte RESOURCE_TYPE_NOT_SPECIFIED = 0;
+    public static final byte RESOURCE_TYPE_NULL_RESOURCE = 1;
 
     // Other
     private String owner = null;

@@ -68,6 +68,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
@@ -355,7 +356,7 @@ public class ElementImpl extends NamedNode implements Element {
                     node.addNamespaceMapping(prefix, doc.getBrokerPool().getSymbols().getNamespace(nsId));
                 }
             } catch(final IOException e) {
-                e.printStackTrace();
+                LOG.error(e);
             }
         }
         return node;
@@ -428,7 +429,7 @@ public class ElementImpl extends NamedNode implements Element {
                     namespaces.add(new String[]{prefix, document.getBrokerPool().getSymbols().getNamespace(nsId)});
                 }
             } catch(final IOException e) {
-                e.printStackTrace();
+                LOG.error(e);
             }
         }
     }
@@ -571,8 +572,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while appending child node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
     }
 
@@ -745,8 +747,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while appending node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
 
         return null;
@@ -810,8 +813,9 @@ public class ElementImpl extends NamedNode implements Element {
             } catch(final EXistException e) {
                 LOG.warn("Exception while retrieving attributes: " + e.getMessage());
             } finally {
-                if(broker != null)
+                if(broker != null) {
                     broker.release();
+                }
             }
         }
         if(declaresNamespacePrefixes()) {
@@ -839,8 +843,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while retrieving attributes: " + e.getMessage());
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
         return null;
     }
@@ -870,8 +875,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while retrieving attributes: " + e.getMessage());
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
         return null;
     }
@@ -933,10 +939,8 @@ public class ElementImpl extends NamedNode implements Element {
             for(final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
                 reader.hasNext(); ) {
                 final int status = reader.next();
-                if(status != XMLStreamConstants.END_ELEMENT) {
-                    if(((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId)) {
-                        childList.add(reader.getNode());
-                    }
+                if(status != XMLStreamConstants.END_ELEMENT && ((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId)) {
+                    childList.add(reader.getNode());
                 }
             }
         } catch(final IOException e) {
@@ -946,8 +950,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
         return childList;
     }
@@ -984,8 +989,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while retrieving child node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
         return null;
     }
@@ -1036,8 +1042,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while reading node value: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
         return "";
     }
@@ -1128,7 +1135,7 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * Method toString.
      */
-    private String toString(final boolean top, final TreeSet<String> namespaces) {
+    private String toString(final boolean top, final Set<String> namespaces) {
         final StringBuilder buf = new StringBuilder();
         final StringBuilder attributes = new StringBuilder();
         final StringBuilder children = new StringBuilder();
@@ -1301,8 +1308,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
     }
 
@@ -1348,8 +1356,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
     }
 
@@ -1412,8 +1421,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
     }
 
@@ -1438,13 +1448,11 @@ public class ElementImpl extends NamedNode implements Element {
                 "Node is not a child of this element");
         }
 
-        if(newNode.getNodeType() == Node.ATTRIBUTE_NODE) {
-            if(newNode.getQName().equals(Namespaces.XML_ID_QNAME)) {
-                // an xml:id attribute. Normalize the attribute and set its type to ID
-                final AttrImpl attr = (AttrImpl) newNode;
-                attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
-                attr.setType(AttrImpl.ID);
-            }
+        if(newNode.getNodeType() == Node.ATTRIBUTE_NODE && newNode.getQName().equals(Namespaces.XML_ID_QNAME)) {
+            // an xml:id attribute. Normalize the attribute and set its type to ID
+            final AttrImpl attr = (AttrImpl) newNode;
+            attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
+            attr.setType(AttrImpl.ID);
         }
         IStoredNode previousNode = (IStoredNode) oldNode.getPreviousSibling();
         if(previousNode == null) {
@@ -1488,8 +1496,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
         return newNode;
     }
@@ -1536,8 +1545,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
         return oldNode;
     }
@@ -1601,8 +1611,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
     }
 
@@ -1679,8 +1690,9 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: " + e.getMessage(), e);
         } finally {
-            if(broker != null)
+            if(broker != null) {
                 broker.release();
+            }
         }
         //return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
         return newNode; //returning the newNode is more sensible than returning the oldNode

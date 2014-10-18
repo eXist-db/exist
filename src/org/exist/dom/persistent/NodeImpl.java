@@ -35,7 +35,7 @@ import javax.xml.XMLConstants;
 
 public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl, T> {
 
-    protected final static Logger LOG = Logger.getLogger(NodeImpl.class);
+    protected static final Logger LOG = Logger.getLogger(NodeImpl.class);
 
     @Override
     public Node cloneNode(final boolean deep) {

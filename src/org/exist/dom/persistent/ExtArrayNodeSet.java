@@ -66,7 +66,7 @@ import java.util.NoSuchElementException;
  */
 public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet {
 
-    private final static int DEFAULT_INITIAL_SIZE = 128;
+    private static final int DEFAULT_INITIAL_SIZE = 128;
 
     private final int initialSize;
 
@@ -715,19 +715,20 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
          * @param includeSelf  a <code>boolean</code> value
          * @return a <code>NodeProxy</code> value
          */
-        NodeProxy parentWithChild(final DocumentImpl doc, NodeId nodeId, final boolean directParent, final boolean includeSelf) {
+        NodeProxy parentWithChild(final DocumentImpl doc, final NodeId nodeId, final boolean directParent, final boolean includeSelf) {
             NodeProxy temp;
             if(includeSelf && (temp = get(nodeId)) != null) {
                 return temp;
             }
-            nodeId = nodeId.getParentId();
-            while(nodeId != null) {
-                if((temp = get(nodeId)) != null) {
+
+            NodeId parentNodeId = nodeId.getParentId();
+            while(parentNodeId != null) {
+                if((temp = get(parentNodeId)) != null) {
                     return temp;
                 } else if(directParent) {
                     return null;
                 }
-                nodeId = nodeId.getParentId();
+                parentNodeId = parentNodeId.getParentId();
             }
             return null;
         }

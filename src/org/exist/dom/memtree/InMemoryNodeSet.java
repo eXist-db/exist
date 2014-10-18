@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class InMemoryNodeSet extends ValueSequence {
 
-    public final static InMemoryNodeSet EMPTY = new InMemoryNodeSet(0);
+    public static final InMemoryNodeSet EMPTY = new InMemoryNodeSet(0);
 
     public InMemoryNodeSet() {
         super();

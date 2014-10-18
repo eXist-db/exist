@@ -39,15 +39,15 @@ import javax.xml.transform.TransformerException;
 /**
  * Defines some static utility methods.
  */
-public class XMLUtil {
+public final class XMLUtil {
 
-    private static Logger LOG = Logger.getLogger(XMLUtil.class.getName());
+    private static final Logger LOG = Logger.getLogger(XMLUtil.class.getName());
 
     private XMLUtil() {
         //Utility class of static methods
     }
 
-    public final static String dump(final DocumentFragment fragment) {
+    public static final String dump(final DocumentFragment fragment) {
         final StringWriter writer = new StringWriter();
         final DOMSerializer serializer = new DOMSerializer();
         serializer.setWriter(writer);
@@ -59,10 +59,10 @@ public class XMLUtil {
         return writer.toString();
     }
 
-    public final static String encodeAttrMarkup(final String str) {
+    public static final String encodeAttrMarkup(final String str) {
         final StringBuilder buf = new StringBuilder();
         char ch;
-        for(int i = 0; i < str.length(); i++)
+        for(int i = 0; i < str.length(); i++) {
             switch(ch = str.charAt(i)) {
                 case '&':
                     boolean isEntity = false;
@@ -93,10 +93,11 @@ public class XMLUtil {
                 default:
                     buf.append(ch);
             }
+        }
         return buf.toString();
     }
 
-    public final static String decodeAttrMarkup(final String str) {
+    public static final String decodeAttrMarkup(final String str) {
         final StringBuilder out = new StringBuilder(str.length());
         char ch;
         String ent;
@@ -125,7 +126,7 @@ public class XMLUtil {
         return out.toString();
     }
 
-    public final static String getEncoding(final String xmlDecl) {
+    public static final String getEncoding(final String xmlDecl) {
         if(xmlDecl == null) {
             return null;
         }
@@ -134,23 +135,25 @@ public class XMLUtil {
         if(p0 == Constants.STRING_NOT_FOUND) {
             return null;
         }
-        for(int i = p0 + 8; i < xmlDecl.length(); i++)
+        for(int i = p0 + 8; i < xmlDecl.length(); i++) {
             if(Character.isWhitespace(xmlDecl.charAt(i))
                 || xmlDecl.charAt(i) == '=') {
                 continue;
             } else if(xmlDecl.charAt(i) == '"') {
-                while(xmlDecl.charAt(++i) != '"' && i < xmlDecl.length())
+                while(xmlDecl.charAt(++i) != '"' && i < xmlDecl.length()) {
                     buf.append(xmlDecl.charAt(i));
+                }
                 return buf.toString();
             } else {
                 return null;
             }
+        }
         return null;
     }
 
-    public final static String getXMLDecl(final byte[] data) {
+    public static final String getXMLDecl(final byte[] data) {
         boolean foundTag = false;
-        for(int i = 0; i < data.length && !foundTag; i++)
+        for(int i = 0; i < data.length && !foundTag; i++) {
             if(data[i] == '<') {
                 foundTag = true;
 
@@ -224,11 +227,12 @@ public class XMLUtil {
                     }
                 }
             }
+        }
         return null;
     }
 
     @Deprecated
-    public final static String readFile(final File file) throws IOException {
+    public static final String readFile(final File file) throws IOException {
         return readFile(file, UTF_8.name());
     }
 

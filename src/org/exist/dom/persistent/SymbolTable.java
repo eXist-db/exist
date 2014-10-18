@@ -62,37 +62,37 @@ public class SymbolTable {
 
     private static final String FILE_NAME = "symbols.dbx";
 
-    public final static short FILE_FORMAT_VERSION_ID = 8;
-    public final static short LEGACY_FILE_FORMAT_VERSION_ID = 7;
+    public static final short FILE_FORMAT_VERSION_ID = 8;
+    public static final short LEGACY_FILE_FORMAT_VERSION_ID = 7;
 
     public enum SymbolType {
         NAME((byte) 0),
         NAMESPACE((byte) 1),
         MIMETYPE((byte) 2);
 
-        private final byte type_id;
-        private SymbolType(final byte type_id) {
-            this.type_id = type_id;
+        private final byte typeId;
+        private SymbolType(final byte typeId) {
+            this.typeId = typeId;
         }
 
         public final byte getTypeId() {
-            return type_id;
+            return typeId;
         }
 
-        public static SymbolType valueOf(final byte type_id) {
+        public static SymbolType valueOf(final byte typeId) {
             for(final SymbolType symbolType : SymbolType.values()) {
-                if(symbolType.getTypeId() == type_id) {
+                if(symbolType.getTypeId() == typeId) {
                     return symbolType;
                 }
             }
-            throw new IllegalArgumentException("No such enumerated value for type_id:" + type_id);
+            throw new IllegalArgumentException("No such enumerated value for typeId:" + typeId);
         }
     }
 
-    public final static int LENGTH_LOCAL_NAME = 2; //sizeof short
-    public final static int LENGTH_NS_URI = 2; //sizeof short
+    public static final int LENGTH_LOCAL_NAME = 2; //sizeof short
+    public static final int LENGTH_NS_URI = 2; //sizeof short
 
-    public final static char ATTR_NAME_PREFIX = '@';
+    public static final char ATTR_NAME_PREFIX = '@';
 
     protected final SymbolCollection localNameSymbols = new LocalNameSymbolCollection(SymbolType.NAME, 200);
     protected final SymbolCollection namespaceSymbols = new SymbolCollection(SymbolType.NAMESPACE, 200);
@@ -128,7 +128,7 @@ public class SymbolTable {
         this(new File((String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR)));
     }
 
-    public static String getFileName() {
+    public static final String getFileName() {
         return FILE_NAME;
     }
 
@@ -327,7 +327,7 @@ public class SymbolTable {
         changed = false;
     }
 
-    public File getFile() {
+    public final File getFile() {
         return file;
     }
 
@@ -345,10 +345,10 @@ public class SymbolTable {
             fos.write(os.toByteArray());
             fos.close();
         } catch(final FileNotFoundException e) {
-            throw new EXistException("File not found: " + this.getFile().getAbsolutePath());
+            throw new EXistException("File not found: " + this.getFile().getAbsolutePath(), e);
         } catch(final IOException e) {
             throw new EXistException("IO error occurred while creating "
-                + this.getFile().getAbsolutePath());
+                + this.getFile().getAbsolutePath(), e);
         }
     }
 
@@ -376,7 +376,7 @@ public class SymbolTable {
             }
             fis.close();
         } catch(final FileNotFoundException e) {
-            throw new EXistException("Could not read " + this.getFile().getAbsolutePath());
+            throw new EXistException("Could not read " + this.getFile().getAbsolutePath(), e);
         } catch(final IOException e) {
             throw new EXistException("IO error occurred while reading "
                 + this.getFile().getAbsolutePath() + ": " + e.getMessage(), e);

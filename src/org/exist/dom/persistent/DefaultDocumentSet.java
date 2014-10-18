@@ -33,6 +33,7 @@ import org.w3c.dom.Node;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -48,7 +49,7 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
 
     private BitSet docIds = new BitSet();
     private BitSet collectionIds = new BitSet();
-    private TreeSet<Collection> collections = new TreeSet<Collection>();
+    private Set<Collection> collections = new TreeSet<>();
 
     public DefaultDocumentSet() {
         super(29, 1.75);
@@ -81,11 +82,9 @@ public class DefaultDocumentSet extends Int2ObjectHashMap implements MutableDocu
         docIds.set(docId);
         put(docId, doc);
         final Collection collection = doc.getCollection();
-        if(collection != null) {
-            if(!collectionIds.get(collection.getId())) {
-                collectionIds.set(collection.getId());
-                collections.add(collection);
-            }
+        if(collection != null && !collectionIds.get(collection.getId())) {
+            collectionIds.set(collection.getId());
+            collections.add(collection);
         }
     }
 

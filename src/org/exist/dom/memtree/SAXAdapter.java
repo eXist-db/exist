@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ *  Copyright (C) 2001-2014 The eXist Team
  *
  *  http://exist-db.org
  *
@@ -22,15 +22,12 @@
  */
 package org.exist.dom.memtree;
 
-import org.w3c.dom.Document;
-
+import org.exist.xquery.XQueryContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
-
-import org.exist.xquery.XQueryContext;
 
 import javax.xml.XMLConstants;
 import java.util.HashMap;
@@ -44,7 +41,7 @@ import java.util.Map;
  */
 public class SAXAdapter implements ContentHandler, LexicalHandler {
     private MemTreeBuilder builder;
-    private HashMap<String, String> namespaces = null;
+    private Map<String, String> namespaces = null;
     private boolean replaceAttributeFlag;
 
     public SAXAdapter() {

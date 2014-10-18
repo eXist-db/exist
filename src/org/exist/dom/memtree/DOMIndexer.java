@@ -61,8 +61,8 @@ import java.util.Stack;
  */
 public class DOMIndexer {
 
-    private final static Logger LOG = Logger.getLogger(DOMIndexer.class);
-    private final static QName ROOT_QNAME = new QName("temp", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private static final Logger LOG = Logger.getLogger(DOMIndexer.class);
+    private static final QName ROOT_QNAME = new QName("temp", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
 
     private final DBBroker broker;
     private final Txn transaction;
@@ -336,11 +336,9 @@ public class DOMIndexer {
     }
 
     private void setPrevious(final StoredNode previous) {
-        if(prevNode != null) {
-            if((prevNode.getNodeType() == Node.TEXT_NODE) || (prevNode.getNodeType() == Node.COMMENT_NODE) || (prevNode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE)) {
-                if((previous == null) || (prevNode.getNodeType() != previous.getNodeType())) {
-                    prevNode.clear();
-                }
+        if(prevNode != null && (prevNode.getNodeType() == Node.TEXT_NODE || prevNode.getNodeType() == Node.COMMENT_NODE || prevNode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE)) {
+            if(previous == null || prevNode.getNodeType() != previous.getNodeType()) {
+                prevNode.clear();
             }
         }
         prevNode = previous;

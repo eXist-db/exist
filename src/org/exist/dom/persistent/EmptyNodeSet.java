@@ -31,8 +31,8 @@ import org.w3c.dom.Node;
 
 public final class EmptyNodeSet extends AbstractNodeSet {
 
-    public final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
-    public final static EmptyCollectionIterator EMPTY_COLLECTION_ITERATOR = new EmptyCollectionIterator();
+    public static final EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
+    public static final EmptyCollectionIterator EMPTY_COLLECTION_ITERATOR = new EmptyCollectionIterator();
 
     @Override
     public NodeSetIterator iterator() {
@@ -127,7 +127,7 @@ public final class EmptyNodeSet extends AbstractNodeSet {
         return other;
     }
 
-    private final static class EmptyNodeSetIterator implements NodeSetIterator {
+    private static final class EmptyNodeSetIterator implements NodeSetIterator {
 
         @Override
         public final boolean hasNext() {
@@ -162,7 +162,7 @@ public final class EmptyNodeSet extends AbstractNodeSet {
 
     }
 
-    private final static class EmptyCollectionIterator implements Iterator<Collection> {
+    private static final class EmptyCollectionIterator implements Iterator<Collection> {
 
         @Override
         public final boolean hasNext() {

@@ -31,7 +31,7 @@ import java.util.Iterator;
 
 public interface DocumentSet {
 
-    public final static DocumentSet EMPTY_DOCUMENT_SET = new DefaultDocumentSet(9);
+    public static final DocumentSet EMPTY_DOCUMENT_SET = new DefaultDocumentSet(9);
 
     public Iterator<DocumentImpl> getDocumentIterator();
 

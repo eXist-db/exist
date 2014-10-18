@@ -52,7 +52,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     private final boolean explicitNSDecl;
 
     private Map<String, String> namespaces = null;
-    public boolean checkNS = false;
+    private boolean checkNS = false;
 
     public DocumentBuilderReceiver() {
         this(null);
@@ -65,6 +65,10 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     public DocumentBuilderReceiver(final MemTreeBuilder builder, final boolean declareNamespaces) {
         this.builder = builder;
         this.explicitNSDecl = declareNamespaces;
+    }
+
+    public void setCheckNS(final boolean checkNS) {
+        this.checkNS = checkNS;
     }
 
     @Override
@@ -131,9 +135,8 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     }
 
     @Override
-    public void startElement(QName qname, final AttrList attribs) {
-        qname = checkNS(true, qname);
-        builder.startElement(qname, null);
+    public void startElement(final QName qname, final AttrList attribs) {
+        builder.startElement(checkNS(true, qname), null);
         declareNamespaces();
         if(attribs != null) {
             for(int i = 0; i < attribs.getLength(); i++) {
@@ -171,12 +174,11 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     }
 
     @Override
-    public void attribute(QName qname, final String value) throws SAXException {
+    public void attribute(final QName qname, final String value) throws SAXException {
         try {
-            qname = checkNS(false, qname);
-            builder.addAttribute(qname, value);
+            builder.addAttribute(checkNS(false, qname), value);
         } catch(final DOMException e) {
-            throw new SAXException(e.getMessage());
+            throw new SAXException(e.getMessage(), e);
         }
     }
 

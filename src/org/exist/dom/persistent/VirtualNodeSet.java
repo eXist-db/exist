@@ -346,10 +346,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
                             // fixme! self axis probably not needed /ljo
                             axis == Constants.SELF_AXIS ||
                             axis == Constants.PRECEDING_AXIS ||
-                            axis == Constants.FOLLOWING_AXIS)) {
-                            if(test.matches(node)) {
-                                result.add(p);
-                            }
+                            axis == Constants.FOLLOWING_AXIS)
+                            && test.matches(node)) {
+
+                            result.add(p);
                         }
                     }
                 }
@@ -443,21 +443,19 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 child.setOwnerDocument((DocumentImpl) node.getOwnerDocument());
                 final NodeProxy p = new NodeProxy(child);
                 p.setMatches(contextNode.getMatches());
-                if(test.matches(child)) {
-                    if(((axis == Constants.CHILD_AXIS
-                        || axis == Constants.ATTRIBUTE_AXIS)
-                        && recursions == 0) ||
-                        (axis == Constants.DESCENDANT_AXIS
-                            || axis == Constants.DESCENDANT_SELF_AXIS
-                            || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
-                        p.deepCopyContext(contextNode);
-                        if(useSelfAsContext && inPredicate) {
-                            p.addContextNode(contextId, p);
-                        } else if(inPredicate) {
-                            p.addContextNode(contextId, contextNode);
-                        }
-                        result.add(p);
+                if(test.matches(child) && (
+                    ((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS) && recursions == 0)
+                    || (axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS))
+                ) {
+
+                    p.deepCopyContext(contextNode);
+
+                    if(useSelfAsContext && inPredicate) {
+                        p.addContextNode(contextId, p);
+                    } else if(inPredicate) {
+                        p.addContextNode(contextId, contextNode);
                     }
+                    result.add(p);
                 }
                 addChildren(contextNode, result, child, iter, recursions + 1);
             }
@@ -521,10 +519,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
             }
         } catch(final IOException e) {
-            e.printStackTrace();
+            LOG.error(e);
             //TODO : throw exception ,
         } catch(final XMLStreamException e) {
-            e.printStackTrace();
+            LOG.error(e);
             //TODO : throw exception ? -pb
         }
     }

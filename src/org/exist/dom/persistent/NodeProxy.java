@@ -262,7 +262,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     @Override
     public boolean equals(final Object other) {
-        if(other == null || !(other instanceof NodeProxy)) {
+        if(!(other instanceof NodeProxy)) {
             return false;
         }
 
@@ -843,10 +843,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     public boolean contains(final NodeProxy proxy) {
         if(doc.getDocId() != proxy.doc.getDocId()) {
             return false;
-        } else if(!nodeId.equals(proxy.getNodeId())) {
-            return false;
         } else {
-            return true;
+            return nodeId.equals(proxy.getNodeId());
         }
     }
 
@@ -1282,7 +1280,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         }
     }
 
-    private final static class SingleNodeIterator implements NodeSetIterator, SequenceIterator {
+    private static final class SingleNodeIterator implements NodeSetIterator, SequenceIterator {
 
         private boolean hasNext = true;
         private NodeProxy node;

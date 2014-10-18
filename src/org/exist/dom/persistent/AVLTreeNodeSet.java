@@ -261,7 +261,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                     } else {
                         root = nodeB;
                     }
-                    ;
+                    
                     nodeB.addLeftChild(nodeA);
                     nodeA.setHeight();
                     nodeB.setHeight();
@@ -356,7 +356,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return searchData(proxy) != null;
     }
 
-    public void removeNode(Node node) {
+    public void removeNode(final Node node) {
         --size;
         Node tempNode = node;
         while(tempNode.hasLeftChild() || tempNode.hasRightChild()) {
@@ -377,21 +377,21 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             root = null;
             return;
         }
+
+        final Node parent = tempNode.parent;
         if(tempNode.isLeftChild()) {
-            node = tempNode.parent;
-            node.removeLeftChild();
-            if(node.hasRightChild()) {
-                balance(node.getRightChild());
+            parent.removeLeftChild();
+            if(parent.hasRightChild()) {
+                balance(parent.getRightChild());
             } else {
-                balance(node);
+                balance(parent);
             }
         } else {
-            node = tempNode.parent;
-            node.removeRightChild();
-            if(node.hasLeftChild()) {
-                balance(node.getLeftChild());
+            parent.removeRightChild();
+            if(parent.hasLeftChild()) {
+                balance(parent.getLeftChild());
             } else {
-                balance(node);
+                balance(parent);
             }
         }
     }
@@ -417,7 +417,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     }
 
     private void setHasChanged() {
-        state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
+        state = (state == Integer.MAX_VALUE ? 0 : state + 1);
     }
 
     class InorderTraversal implements NodeSetIterator, SequenceIterator {
@@ -509,7 +509,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return "AVLTree#" + super.toString();
     }
 
-    private final static class Node {
+    private static final class Node {
 
         private NodeProxy data;
         private Node parent;

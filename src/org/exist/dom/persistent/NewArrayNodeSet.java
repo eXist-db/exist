@@ -75,8 +75,6 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
 
     private NodeProxy nodes[];
 
-    private DocumentIterator docIter = null;
-
     public NewArrayNodeSet() {
         nodes = new NodeProxy[INITIAL_SIZE];
     }
@@ -510,7 +508,6 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 }
             }
         }
-        docIter = null;
     }
 
     private void ensureDocCapacity() {
@@ -805,19 +802,19 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
      * @param includeSelf  a <code>boolean</code> value
      * @return a <code>NodeProxy</code> value
      */
-    private NodeProxy parentWithChild(final int docIdx, NodeId nodeId, final boolean directParent, final boolean includeSelf) {
+    private NodeProxy parentWithChild(final int docIdx, final NodeId nodeId, final boolean directParent, final boolean includeSelf) {
         NodeProxy temp;
         if(includeSelf && (temp = get(docIdx, nodeId)) != null) {
             return temp;
         }
-        nodeId = nodeId.getParentId();
-        while(nodeId != null) {
-            if((temp = get(docIdx, nodeId)) != null) {
+        NodeId parentNodeId = nodeId.getParentId();
+        while(parentNodeId != null) {
+            if((temp = get(docIdx, parentNodeId)) != null) {
                 return temp;
             } else if(directParent) {
                 return null;
             }
-            nodeId = nodeId.getParentId();
+            parentNodeId = parentNodeId.getParentId();
         }
         return null;
     }
@@ -939,9 +936,6 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     @Override
     public Iterator<DocumentImpl> getDocumentIterator() {
         sort();
-        if(docIter != null) {
-            return docIter.reset();
-        }
         return new DocumentIterator();
     }
 
@@ -1077,11 +1071,6 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         @Override
         public final void remove() {
             throw new UnsupportedOperationException();
-        }
-
-        protected final DocumentIterator reset() {
-            this.currentDoc = 0;
-            return this;
         }
     }
 
