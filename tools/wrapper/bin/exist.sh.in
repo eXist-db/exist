@@ -3,8 +3,7 @@
 ##  eXist Native XML Database
 ##  Copyright (C) 2004-2014 The eXist-db Project
 ##  http://exist-db.org
-##  wolf, ljo
-##
+##  wolf, ljo, dizzzz
 ## 
 
 #
@@ -297,17 +296,17 @@ if [ "$DIST_OS" = "macosx" ]
 then
     OS_VER=`sw_vers | grep 'ProductVersion:' | grep -o '[0-9]*\.[0-9]*\.[0-9]*\|[0-9]*\.[0-9]*'`
     DIST_ARCH="universal"
-    if [[ "$OS_VER" < "10.5.0" ]]
-    then
-        DIST_BITS="32"
-    else
+#    if [[ "$OS_VER" < "10.5.0" ]]
+#    then
+#        DIST_BITS="32"
+#    else
         if [ "X`/usr/sbin/sysctl -n hw.cpu64bit_capable`" == "X1" ]  
         then
             DIST_BITS="64"
         else
             DIST_BITS="32"
         fi
-    fi
+#    fi
     APP_PLIST_BASE=${PLIST_DOMAIN}.${APP_NAME}
     APP_PLIST=${APP_PLIST_BASE}.plist
 else
