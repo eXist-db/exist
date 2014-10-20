@@ -167,38 +167,66 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 
 	@Override
 	public void backup(Collection collection, AttributesImpl attrs) {
-	    if (collection == null)
-	        return;
+	    if (collection == null) {
+			return;
+		}
+
+		final Metas ms = md.getMetas(collection.getURI());
+		if(ms == null) {
+			LOG.warn("No metadata found to backup for collection: "  + collection.getURI());
+			return;
+		}
 	    
 //		System.out.println("backup collection "+colection.getURI());
-		backup(md.getMetas(collection.getURI()), attrs);
+		backup(ms, attrs);
 	}
 
 	@Override
 	public void backup(Collection collection, SAXSerializer serializer) throws SAXException {
-	    if (collection == null)
-	        return;
-	    
+	    if (collection == null) {
+			return;
+		}
+
+		final Metas ms = md.getMetas(collection.getURI());
+		if(ms == null) {
+			LOG.warn("No metadata found to backup for collection: "  + collection.getURI());
+			return;
+		}
+
 //		System.out.println("backup collection "+colection.getURI());
-		backup(md.getMetas(collection.getURI()), serializer);
+		backup(ms, serializer);
 	}
 
 	@Override
 	public void backup(Document document, AttributesImpl attrs) {
-	    if (document == null)
-	        return;
-	    
+	    if (document == null) {
+			return;
+		}
+
+		final Metas ms = md.getMetas(document);
+		if(ms == null) {
+			LOG.warn("No metadata found to backup for document: "  + ((DocumentImpl)document).getURI());
+			return;
+		}
+
 //		System.out.println("backup document "+document.getURI());
-		backup(md.getMetas(document), attrs);
+		backup(ms, attrs);
 	}
 
 	@Override
 	public void backup(Document document, SAXSerializer serializer) throws SAXException {
-	    if (document == null)
-	        return;
-	    
+	    if (document == null) {
+			return;
+		}
+
+		final Metas ms = md.getMetas(document);
+		if(ms == null) {
+			LOG.warn("No metadata found to backup for document: "  + ((DocumentImpl)document).getURI());
+			return;
+		}
+
 //		System.out.println("backup document "+document.getURI());
-		backup(md.getMetas(document), serializer);
+		backup(ms, serializer);
 	}
 
 	//restore methods
