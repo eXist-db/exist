@@ -37,6 +37,8 @@ import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -94,22 +96,30 @@ public class DOMIndexerTest {
         "   <result>{$a/title, $a/f:name, $a}</result>";
 
     @Test
-    public void store() throws PermissionDeniedException, IOException, TriggerException, EXistException, SAXException, LockException, AuthenticationException {
+    public void store() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
     	BrokerPool pool = null;
-    	DBBroker broker = null;    
+    	DBBroker broker = null;
+        TransactionManager txnMgr = null;
+        Txn txn = null;
     	try {
             pool = BrokerPool.getInstance();
+            txnMgr = pool.getTransactionManager();
+            txn = txnMgr.beginTransaction();
             Subject admin = pool.getSecurityManager().authenticate("admin", "");
             broker = pool.get(admin);
-            Collection collection = broker.getOrCreateCollection(null, TestConstants.TEST_COLLECTION_URI);
-            IndexInfo info = collection.validateXMLResource(null, broker, TestConstants.TEST_XML_URI, XML);
+            Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
+            IndexInfo info = collection.validateXMLResource(txn, broker, TestConstants.TEST_XML_URI, XML);
             //TODO : unlock the collection here ?
-            collection.store(null, broker, info, XML, false);
+            collection.store(txn, broker, info, XML, false);
             @SuppressWarnings("unused")
-			org.exist.dom.persistent.DocumentImpl doc = info.getDocument();
+            org.exist.dom.persistent.DocumentImpl doc = info.getDocument();
             broker.flush();
-            broker.saveCollection(null, collection);
+            broker.saveCollection(txn, collection);
+            txnMgr.commit(txn);
         } finally {
+            if(txn != null) {
+                txn.close();
+            }
             if (pool != null) {
                 pool.release(broker);
             }
