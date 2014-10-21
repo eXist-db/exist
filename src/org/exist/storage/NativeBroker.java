@@ -3264,13 +3264,18 @@ public class NativeBroker extends DBBroker {
     @Override
     public void removeAllNodes(final Txn transaction, final IStoredNode node, final NodePath currentPath,
                                final StreamListener listener) {
-        final INodeIterator iterator = getNodeIterator(node);
-        iterator.next();
-        final Stack<RemovedNode> stack = new Stack<>();
-        collectNodesForRemoval(transaction, stack, iterator, listener, node, currentPath);
-        while(!stack.isEmpty()) {
-            final RemovedNode next = stack.pop();
-            removeNode(transaction, next.node, next.path, next.content);
+
+        try(final INodeIterator iterator = getNodeIterator(node)) {
+            iterator.next();
+
+            final Stack<RemovedNode> stack = new Stack<>();
+            collectNodesForRemoval(transaction, stack, iterator, listener, node, currentPath);
+            while(!stack.isEmpty()) {
+                final RemovedNode next = stack.pop();
+                removeNode(transaction, next.node, next.path, next.content);
+            }
+        } catch(final IOException ioe) {
+            LOG.warn("Unable to close node iterator", ioe);
         }
     }
 

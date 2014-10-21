@@ -797,10 +797,9 @@ public class ElementImpl extends NamedNode implements Element {
     public NamedNodeMap getAttributes() {
         final org.exist.dom.NamedNodeMapImpl map = new NamedNodeMapImpl();
         if(hasAttributes()) {
-            DBBroker broker = null;
-            try {
-                broker = ownerDocument.getBrokerPool().get(null);
-                final INodeIterator iterator = broker.getNodeIterator(this);
+            try(final DBBroker broker = ownerDocument.getBrokerPool().get(null);
+                final INodeIterator iterator = broker.getNodeIterator(this)) {
+
                 iterator.next();
                 final int childCount = getChildCount();
                 for(int i = 0; i < childCount; i++) {
@@ -810,12 +809,8 @@ public class ElementImpl extends NamedNode implements Element {
                     }
                     map.setNamedItem(next);
                 }
-            } catch(final EXistException e) {
+            } catch(final EXistException | IOException e) {
                 LOG.warn("Exception while retrieving attributes: " + e.getMessage());
-            } finally {
-                if(broker != null) {
-                    broker.release();
-                }
             }
         }
         if(declaresNamespacePrefixes()) {
@@ -834,18 +829,12 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     private AttrImpl findAttribute(final String qname) {
-        DBBroker broker = null;
-        try {
-            broker = ownerDocument.getBrokerPool().get(null);
-            final INodeIterator iterator = broker.getNodeIterator(this);
+        try(final DBBroker broker  = ownerDocument.getBrokerPool().get(null);
+                final INodeIterator iterator = broker.getNodeIterator(this)) {
             iterator.next();
             return findAttribute(qname, iterator, this);
-        } catch(final EXistException e) {
+        } catch(final EXistException | IOException e) {
             LOG.warn("Exception while retrieving attributes: " + e.getMessage());
-        } finally {
-            if(broker != null) {
-                broker.release();
-            }
         }
         return null;
     }
@@ -866,18 +855,12 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     private AttrImpl findAttribute(final QName qname) {
-        DBBroker broker = null;
-        try {
-            broker = ownerDocument.getBrokerPool().get(null);
-            final INodeIterator iterator = broker.getNodeIterator(this);
+        try(final DBBroker broker = ownerDocument.getBrokerPool().get(null);
+                final INodeIterator iterator = broker.getNodeIterator(this)) {
             iterator.next();
             return findAttribute(qname, iterator, this);
-        } catch(final EXistException e) {
+        } catch(final EXistException | IOException e) {
             LOG.warn("Exception while retrieving attributes: " + e.getMessage());
-        } finally {
-            if(broker != null) {
-                broker.release();
-            }
         }
         return null;
     }
@@ -974,10 +957,9 @@ public class ElementImpl extends NamedNode implements Element {
         if(!hasChildNodes() || getChildCount() == attributes) {
             return null;
         }
-        DBBroker broker = null;
-        try {
-            broker = ownerDocument.getBrokerPool().get(null);
-            final INodeIterator iterator = broker.getNodeIterator(this);
+
+        try(final DBBroker broker = ownerDocument.getBrokerPool().get(null);
+                final INodeIterator iterator = broker.getNodeIterator(this)) {
             iterator.next();
             IStoredNode next;
             for(int i = 0; i < getChildCount(); i++) {
@@ -986,12 +968,8 @@ public class ElementImpl extends NamedNode implements Element {
                     return next;
                 }
             }
-        } catch(final EXistException e) {
+        } catch(final EXistException | IOException e) {
             LOG.warn("Exception while retrieving child node: " + e.getMessage(), e);
-        } finally {
-            if(broker != null) {
-                broker.release();
-            }
         }
         return null;
     }
