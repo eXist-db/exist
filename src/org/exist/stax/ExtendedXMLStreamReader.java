@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2014 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -30,9 +30,9 @@ public interface ExtendedXMLStreamReader extends XMLStreamReader {
 
     public final static String PROPERTY_NODE_ID = "node-id";
     
-    public QName getAttributeQName(int i);
+    public QName getAttributeQName(int index);
 
     public QName getQName();
 
-    public NodeId getAttributeId(int i);
+    public NodeId getAttributeId(int index);
 }

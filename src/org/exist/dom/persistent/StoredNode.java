@@ -24,8 +24,8 @@ package org.exist.dom.persistent;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
@@ -269,7 +269,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             DBBroker broker = null;
             try {
                 broker = ownerDocument.getBrokerPool().get(null);
-                final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
+                final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
                 IStoredNode last = null;
                 while(reader.hasNext()) {
@@ -317,7 +317,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             DBBroker broker = null;
             try {
                 broker = ownerDocument.getBrokerPool().get(null);
-                final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
+                final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(parent, true);
                 final int level = nodeId.getTreeLevel();
                 while(reader.hasNext()) {
                     final int status = reader.next();
@@ -353,7 +353,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(node, true);
+            final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(node, true);
             while(reader.hasNext()) {
                 reader.next();
             }

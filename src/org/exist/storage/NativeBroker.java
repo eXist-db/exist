@@ -52,6 +52,7 @@ import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
 import org.exist.security.*;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.btree.*;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.dom.DOMFile;
@@ -551,7 +552,7 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public EmbeddedXMLStreamReader getXMLStreamReader(final NodeHandle node, final boolean reportAttributes)
+    public IEmbeddedXMLStreamReader getXMLStreamReader(final NodeHandle node, final boolean reportAttributes)
         throws IOException, XMLStreamException {
         if(streamReader == null) {
             final RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);

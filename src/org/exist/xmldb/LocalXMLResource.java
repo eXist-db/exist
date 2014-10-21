@@ -449,7 +449,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         @Override
         public void freeResources() throws XMLDBException {
             //dO nothing
-            //TODO consider unifying closeDocument() code into freeResources()
+            //TODO consider unifying close() code into freeResources()
         }
 
 	private class InternalXMLSerializer extends SAXSerializer {
