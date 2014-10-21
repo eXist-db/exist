@@ -194,7 +194,7 @@ public class NativeBroker extends DBBroker {
 
     private NodeProcessor nodeProcessor = new NodeProcessor();
 
-    private EmbeddedXMLStreamReader streamReader = null;
+    private IEmbeddedXMLStreamReader streamReader = null;
 
     protected Journal logManager;
 
@@ -564,7 +564,7 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public EmbeddedXMLStreamReader newXMLStreamReader(final NodeHandle node, final boolean reportAttributes)
+    public IEmbeddedXMLStreamReader newXMLStreamReader(final NodeHandle node, final boolean reportAttributes)
         throws IOException, XMLStreamException {
         final RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
         return new EmbeddedXMLStreamReader(this, node.getOwnerDocument(), iterator, null, reportAttributes);

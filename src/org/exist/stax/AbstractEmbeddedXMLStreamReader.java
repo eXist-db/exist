@@ -109,13 +109,7 @@ public abstract class AbstractEmbeddedXMLStreamReader<T extends IRawNodeIterator
         }
     }
 
-    /**
-     * Reposition the stream reader to another start node, maybe in a different document.
-     *
-     * @param node             the new start node.
-     * @param reportAttributes if set to true, attributes will be reported as top-level events.
-     * @throws java.io.IOException
-     */
+    @Override
     public void reposition(final DBBroker broker, final NodeHandle node, final boolean reportAttributes) throws IOException {
         this.broker = broker;
         // Seeking to a node with unknown address will reuse this reader, so do it before setting all
