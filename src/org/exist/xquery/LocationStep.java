@@ -33,6 +33,8 @@ import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.stax.StaXUtil;
 import org.exist.storage.ElementValue;
 import org.exist.storage.UpdateListener;
@@ -895,7 +897,7 @@ public class LocationStep extends Step {
 					else
 						{filter = new FollowingSiblingFilter(test, current,
 								result, contextId);}
-					final EmbeddedXMLStreamReader reader = context.getBroker()
+					final IEmbeddedXMLStreamReader reader = context.getBroker()
 							.getXMLStreamReader(parent, false);
 					reader.filter(filter);
 				}
@@ -988,7 +990,7 @@ public class LocationStep extends Step {
 						final NodeProxy root = new NodeProxy(node);
 						final PrecedingFilter filter = new PrecedingFilter(test,
 								next, result, contextId);
-						final EmbeddedXMLStreamReader reader = context.getBroker()
+						final IEmbeddedXMLStreamReader reader = context.getBroker()
 								.getXMLStreamReader(root, false);
 						reader.filter(filter);
 					}
@@ -1084,7 +1086,7 @@ public class LocationStep extends Step {
 						final NodeProxy root = new NodeProxy(node);
 						final FollowingFilter filter = new FollowingFilter(test,
 								next, result, contextId);
-						final EmbeddedXMLStreamReader reader = context.getBroker()
+						final IEmbeddedXMLStreamReader reader = context.getBroker()
 								.getXMLStreamReader(root, false);
 						reader.filter(filter);
 					}
@@ -1419,7 +1421,7 @@ public class LocationStep extends Step {
 			}
 			final NodeId refId = referenceNode.getNodeId();
 			final NodeId currentId = (NodeId) reader
-					.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+					.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
 			if (!isAfter) {
 				isAfter = currentId.equals(refId);
 			} else if (currentId.getTreeLevel() == refId.getTreeLevel()

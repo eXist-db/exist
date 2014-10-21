@@ -14,6 +14,7 @@ import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
 import org.exist.indexing.StreamListener;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.NodePath;
@@ -131,7 +132,7 @@ public class IndexStatisticsWorker implements IndexWorker {
             final NodePath path = new NodePath();
             final Stack<NodeStats> stack = new Stack<NodeStats>();
             QName qname;
-            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
+            final ExtendedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
             while (reader.hasNext()) {
                 final int status = reader.next();
                 switch (status) {

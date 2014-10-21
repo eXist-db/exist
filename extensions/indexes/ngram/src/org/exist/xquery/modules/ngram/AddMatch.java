@@ -4,13 +4,13 @@ import java.io.IOException;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramMatch;
 import org.exist.numbering.NodeId;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -58,7 +58,7 @@ public class AddMatch extends BasicFunction {
 		String matchStr = null;
 		NodeId nodeId = null;
 		try {
-			for (EmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(node, true); reader.hasNext(); ) {
+			for (final XMLStreamReader reader = context.getBroker().getXMLStreamReader(node, true); reader.hasNext(); ) {
 			    int status = reader.next();
 			    if (status == XMLStreamConstants.CHARACTERS) {
 			    	matchStr = reader.getText();

@@ -324,7 +324,7 @@ public class ConsistencyCheck
                         EmbeddedXMLStreamReader reader = null;
                         try {
                             final ElementImpl             root            = (ElementImpl)doc.getDocumentElement();
-                            reader = broker.getXMLStreamReader( root, true );
+                            reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader( root, true );
                             NodeId                  nodeId;
                             boolean                 attribsAllowed  = false;
                             int                     expectedAttribs = 0;

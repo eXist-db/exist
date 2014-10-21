@@ -26,7 +26,7 @@ import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
-import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.StorageAddress;
@@ -1205,7 +1205,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         }
         try {
             NewArrayNodeSet result = null;
-            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
+            final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
             int status = reader.next();
             if(status != XMLStreamReader.START_ELEMENT) {
                 return NodeSet.EMPTY_SET;
@@ -1455,7 +1455,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             return false;
         }
         try {
-            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
+            final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
             int status = reader.next();
             if(status != XMLStreamReader.START_ELEMENT) {
                 return false;

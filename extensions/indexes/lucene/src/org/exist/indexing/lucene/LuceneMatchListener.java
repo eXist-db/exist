@@ -36,8 +36,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.PhraseQuery;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
@@ -177,7 +177,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         int level = 0;
         int textOffset = 0;
         try {
-            EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(p, false);
+            IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(p, false);
             while (reader.hasNext()) {
                 int ev = reader.next();
                 switch (ev) {

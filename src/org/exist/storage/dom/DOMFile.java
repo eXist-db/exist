@@ -1279,7 +1279,7 @@ public class DOMFile extends BTree implements Lockable {
             } while (parentPointer == KEY_NOT_FOUND);
             try {
                 final NodeProxy parent = new NodeProxy(doc, nodeID, parentPointer);
-                final EmbeddedXMLStreamReader cursor = broker.getXMLStreamReader(parent, true);
+                final EmbeddedXMLStreamReader cursor = (EmbeddedXMLStreamReader)broker.getXMLStreamReader(parent, true);
                 while(cursor.hasNext()) {
                     final int status = cursor.next();
                     if (status != XMLStreamReader.END_ELEMENT) {

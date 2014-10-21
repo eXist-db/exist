@@ -600,7 +600,7 @@ public class SystemExport
     private void writeXML( DocumentImpl doc, Receiver receiver )
     {
         try {
-            EmbeddedXMLStreamReader   reader;
+            XMLStreamReader   reader;
             char[]                    ch;
             int                       nsdecls;
             final NamespaceSupport          nsSupport = new NamespaceSupport();

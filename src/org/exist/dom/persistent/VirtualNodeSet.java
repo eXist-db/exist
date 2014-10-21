@@ -464,7 +464,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 
     private void addChildren(final NodeProxy contextNode, final NodeSet result) {
         try {
-            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(contextNode, true);
+            final EmbeddedXMLStreamReader reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader(contextNode, true);
             int status = reader.next();
             int level = 0;
             if(status == XMLStreamConstants.START_ELEMENT) {

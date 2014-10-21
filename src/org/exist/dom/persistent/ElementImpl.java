@@ -27,8 +27,8 @@ import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.QName;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
@@ -936,7 +936,7 @@ public class ElementImpl extends NamedNode implements Element {
         DBBroker broker = null;
         try {
             broker = ownerDocument.getBrokerPool().get(null);
-            for(final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
+            for(final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(this, true);
                 reader.hasNext(); ) {
                 final int status = reader.next();
                 if(status != XMLStreamConstants.END_ELEMENT && ((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId)) {
