@@ -22,12 +22,27 @@
 package org.exist.stax;
 
 import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.storage.DBBroker;
 import org.exist.util.XMLString;
 
 import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
 
 public interface IEmbeddedXMLStreamReader extends ExtendedXMLStreamReader {
+
+    /**
+     * Reposition the stream reader to another start node.
+     *
+     * NOTE: This maybe in a different document!
+     *
+     * @param node the new start node.
+     * @param reportAttributes if set to true, attributes will be reported as top-level events.
+     *
+     * @throws java.io.IOException
+     */
+    void reposition(final DBBroker broker, final NodeHandle node, final boolean reportAttributes) throws IOException;
 
     /**
      * Deserialize the node at the current position of the cursor and return

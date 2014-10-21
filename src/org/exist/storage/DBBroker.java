@@ -41,7 +41,6 @@ import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.dom.INodeIterator;
@@ -837,7 +836,7 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     public abstract IEmbeddedXMLStreamReader getXMLStreamReader(NodeHandle node, boolean reportAttributes)
             throws IOException, XMLStreamException;
 
-    public abstract EmbeddedXMLStreamReader newXMLStreamReader(NodeHandle node, boolean reportAttributes)
+    public abstract IEmbeddedXMLStreamReader newXMLStreamReader(NodeHandle node, boolean reportAttributes)
             throws IOException, XMLStreamException;
 
     public abstract void backupToArchive(RawDataBackup backup) throws IOException, EXistException;
