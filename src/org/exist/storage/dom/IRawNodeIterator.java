@@ -24,9 +24,10 @@ package org.exist.storage.dom;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.storage.btree.Value;
 
+import java.io.Closeable;
 import java.io.IOException;
 
-public interface IRawNodeIterator {
+public interface IRawNodeIterator extends Closeable {
 
     /**
      * Reposition the iterator to the start of the specified node.
@@ -47,5 +48,6 @@ public interface IRawNodeIterator {
     /**
      * Close the iterator
      */
+    @Override
     public void close();
 }
