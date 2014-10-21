@@ -44,6 +44,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -76,10 +77,19 @@ public class NativeSerializer extends Serializer {
     			return;
     	}
     	setDocument(p.getOwnerDocument());
-    	if (generateDocEvent) {receiver.startDocument();}
-        final INodeIterator domIter = broker.getNodeIterator(p);
-        serializeToReceiver(null, domIter, p.getOwnerDocument(), checkAttributes, p.getMatches(), new TreeSet<String>());
-        if (generateDocEvent) {receiver.endDocument();}
+    	if (generateDocEvent) {
+            receiver.startDocument();
+        }
+
+        try(final INodeIterator domIter = broker.getNodeIterator(p)) {
+            serializeToReceiver(null, domIter, p.getOwnerDocument(), checkAttributes, p.getMatches(), new TreeSet<String>());
+        } catch(final IOException e) {
+            LOG.warn("Unable to close node iterator", e);
+        }
+
+        if(generateDocEvent) {
+            receiver.endDocument();
+        }
     }
     
     protected void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent) throws SAXException {
@@ -100,11 +110,14 @@ public class NativeSerializer extends Serializer {
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
     		final IStoredNode node = (IStoredNode) children.item(i);
-    		final INodeIterator domIter = broker.getNodeIterator(node);
-    		domIter.next();
-    		final NodeProxy p = new NodeProxy(node);
-    		serializeToReceiver(node, domIter, (DocumentImpl)node.getOwnerDocument(), 
-    				true, p.getMatches(), new TreeSet<String>());
+    		try(final INodeIterator domIter = broker.getNodeIterator(node)) {
+                domIter.next();
+                final NodeProxy p = new NodeProxy(node);
+                serializeToReceiver(node, domIter, (DocumentImpl) node.getOwnerDocument(),
+                    true, p.getMatches(), new TreeSet<String>());
+            } catch(final IOException ioe) {
+                LOG.warn("Unable to close node iterator", ioe);
+            }
     	}
 
     	if (generateDocEvent) {receiver.endDocument();}

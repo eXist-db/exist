@@ -334,10 +334,13 @@ public class VirtualNodeSet extends AbstractNodeSet {
                             final NodeProxy contextNode = new NodeProxy(p);
                             contextNode.deepCopyContext(proxy);
                             //TODO : is this StoredNode construction necessary ?
-                            final INodeIterator domIter = broker.getNodeIterator(contextNode.asStoredNode());
-                            domIter.next();
-                            contextNode.setMatches(proxy.getMatches());
-                            addChildren(contextNode, result, node, domIter, 0);
+                            try(final INodeIterator domIter = broker.getNodeIterator(contextNode.asStoredNode())) {
+                                domIter.next();
+                                contextNode.setMatches(proxy.getMatches());
+                                addChildren(contextNode, result, node, domIter, 0);
+                            } catch(final IOException ioe) {
+                                LOG.warn("Unable to close iterator", ioe);
+                            }
                         }
                         if(node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
                             && (axis == Constants.CHILD_AXIS ||

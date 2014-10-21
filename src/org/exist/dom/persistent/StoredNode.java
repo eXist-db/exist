@@ -433,17 +433,13 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     }
 
     public boolean accept(final NodeVisitor visitor) {
-        DBBroker broker = null;
-        try {
-            broker = ownerDocument.getBrokerPool().get(null);
-            final INodeIterator iterator = broker.getNodeIterator(this);
+        try(final DBBroker broker = ownerDocument.getBrokerPool().get(null);
+                final INodeIterator iterator = broker.getNodeIterator(this)) {
             iterator.next();
             return accept(iterator, visitor);
-        } catch(final EXistException e) {
+        } catch(final EXistException | IOException e) {
             LOG.error("Exception while reading node: " + e.getMessage(), e);
             //TODO : throw exception -pb
-        } finally {
-            ownerDocument.getBrokerPool().release(broker);
         }
         return false;
     }
