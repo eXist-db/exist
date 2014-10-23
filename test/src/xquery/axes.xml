@@ -595,4 +595,29 @@
         </code>
         <expected>A1</expected>
     </test>
+    <test output="text">
+        <task>Ancestor axis on attributes and text</task>
+        <code><![CDATA[let $doc :=
+<doc xml:id="x">
+    <a>
+        <b x="1">text<e>text</e>text</b>
+    </a>
+</doc>
+
+return 
+    let $paths :=
+        for $node in ($doc//attribute(), $doc//text())
+        (:I would have thought that $doc//node() would do the job …:)
+        let $path := 
+            if ($node instance of attribute())
+            then concat($node/string-join(ancestor-or-self::*/name(.), '/'), '/@', local-name($node))
+            else
+                if ($node instance of text())
+                then concat($node/string-join(ancestor-or-self::*/name(.), '/'), '/text()')
+                else $node/string-join(ancestor-or-self::*/name(.), '/')
+        order by $path ascending
+        return $path
+    return distinct-values($paths)]]></code>
+        <expected>doc/@id doc/a/b/@x doc/a/b/e/text() doc/a/b/text()</expected>
+    </test>
 </TestSet>

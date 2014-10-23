@@ -204,6 +204,14 @@ public class AttributeImpl extends NodeImpl implements Attr {
         return getParentNode();
     }
 
+    @Override
+    public void selectAncestors(boolean includeSelf, NodeTest test, Sequence result) throws XPathException {
+        if (test.matches(this)) {
+            result.add(this);
+        }
+        ((NodeImpl)getOwnerElement()).selectAncestors(true, test, result);
+    }
+
     /**
      * ? @see org.w3c.dom.Attr#getSchemaTypeInfo()
      *
