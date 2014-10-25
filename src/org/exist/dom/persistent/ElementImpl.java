@@ -302,13 +302,13 @@ public class ElementImpl extends NamedNode implements Element {
         boolean isDirty = (data[pos] & 0x8) == 0x8;
         final boolean hasNamespace = (data[pos] & 0x10) == 0x10;
         pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
-        int children = ByteConversion.byteToInt(data, pos);
+        final int children = ByteConversion.byteToInt(data, pos);
         pos += LENGTH_ELEMENT_CHILD_COUNT;
         final int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         pos += dln.size();
-        short attributes = ByteConversion.byteToShort(data, pos);
+        final short attributes = ByteConversion.byteToShort(data, pos);
         pos += LENGTH_ATTRIBUTES_COUNT;
         final short id = (short) Signatures.read(idSizeType, data, pos);
         pos += Signatures.getLength(idSizeType);
