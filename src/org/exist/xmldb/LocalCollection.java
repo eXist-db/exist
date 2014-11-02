@@ -55,6 +55,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
@@ -887,10 +888,16 @@ public class LocalCollection extends Observable implements CollectionImpl {
             //Notice : the document should now have its update lock released
             transact.commit(txn);
             collection.deleteObservers();
+            
+        } catch(SAXException e) {
+            transact.abort(txn);
+            LOG.error(e.getMessage());
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
         } catch(final Exception e) {
             transact.abort(txn);
             LOG.error(e);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            
         } finally {
             transact.close(txn);
             brokerPool.release(broker);

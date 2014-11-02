@@ -1484,7 +1484,7 @@ public class Collection extends Observable implements Comparable<Collection>, Ca
                     
                     reader.parse(closeShieldedInputSource);
                 } catch(final SAXException e) {
-                    throw new SAXException("The XML parser reported a problem: " + e.getMessage(), e);
+                    throw new SAXException("The XML parser reported a problem: " + e.getMessage());
                 } catch(final IOException e) {
                     throw new EXistException(e);
                 } finally {

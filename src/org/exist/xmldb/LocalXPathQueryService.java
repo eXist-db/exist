@@ -453,7 +453,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     	} catch (final EXistException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
     	} catch (final XPathException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());
     	} catch (final Exception e) {
     	    // need to catch all runtime exceptions here to be able to release locked documents
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
