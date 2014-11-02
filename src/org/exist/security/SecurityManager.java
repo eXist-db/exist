@@ -100,6 +100,10 @@ public interface SecurityManager extends Configurable {
    public Subject getGuestSubject();
    public Group getDBAGroup();
 
+    public int getNextAccountId();
+
+    public int getNextGroupId();
+
    public List<Account> getGroupMembers(String groupName);
 
    @Deprecated //use realm's method

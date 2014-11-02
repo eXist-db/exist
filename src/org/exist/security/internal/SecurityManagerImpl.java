@@ -501,14 +501,14 @@ public class SecurityManagerImpl implements SecurityManager {
         return pool;
     }
 
-    private synchronized int getNextGroupId() {
+    public synchronized int getNextGroupId() {
         if(lastGroupId + 1 == MAX_GROUP_ID) {
             throw new RuntimeException("System has no more group-ids available");            
         }
         return ++lastGroupId;
     }
 
-    private synchronized int getNextAccountId() {
+    public synchronized int getNextAccountId() {
         if(lastUserId +1 == MAX_USER_ID) {
             throw new RuntimeException("System has no more user-ids available");
         }
