@@ -31,9 +31,7 @@ import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementAtExist;
-import org.exist.security.ACLPermission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.PermissionFactory;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.utils.ConverterFrom1_0;
@@ -52,10 +50,12 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 
     protected Logger LOG = Logger.getLogger(getClass());
 
+    protected DBBroker broker;
+
     //XXX: is it safe to delete?
     @Deprecated
     public void finish(int event, DBBroker broker, Txn txn, XmldbURI documentPath, DocumentImpl document) {
-        
+
         Configuration conf;
         switch (event) {
         case REMOVE_DOCUMENT_EVENT:
@@ -120,6 +120,7 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 
     @Override
     public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
+        this.broker = broker;
         //Nothing to do
     }
 
@@ -128,7 +129,6 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
         //check saving list
         if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
             {return;}
-
         checkForUpdates(broker, document.getURI(), document);
 
         final XmldbURI uri = document.getCollection().getURI();
@@ -144,6 +144,7 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
 
     @Override
     public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
+        this.broker = broker;
         //check saving list
         if (Configurator.saving.contains(Configurator.getFullURI(broker.getBrokerPool(), document.getURI()) ))
             {return;}
@@ -234,31 +235,93 @@ public class ConfigurationDocumentTrigger extends FilteringTrigger {
             groupIdMappings.put(2, RealmImpl.GUEST_GROUP_ID);
         }
 
+    private boolean parsingName = false;
+    private StringBuilder name = new StringBuilder();
+
     @Override
     public void startElement(String namespaceURI, String localName, String qname, Attributes attributes) throws SAXException {
-        
         final boolean aclPermissionInUse = 
             PermissionFactory.getDefaultResourcePermission() instanceof ACLPermission;
         //map unix style user and group ids to acl style
         if (aclPermissionInUse && namespaceURI != null &&
                 namespaceURI.equals(Configuration.NS) && "account".equals(localName)) {
-            final Attributes newAttrs = modifyUserGroupIdAttribute(attributes, userIdMappings);
+            final Attributes newAttrs = modifyUserGroupIdAttribute(localName, attributes, userIdMappings);
             super.startElement(namespaceURI, localName, qname, newAttrs);
         } else if(aclPermissionInUse && namespaceURI != null && namespaceURI.equals(Configuration.NS) && "group".equals(localName)) {
-            final Attributes newAttrs = modifyUserGroupIdAttribute(attributes, groupIdMappings);
+            final Attributes newAttrs = modifyUserGroupIdAttribute(localName, attributes, groupIdMappings);
             super.startElement(namespaceURI, localName, qname, newAttrs);
         } else {
             super.startElement(namespaceURI, localName, qname, attributes);
         }
+        // remember the name of the user or group when we are validating an account
+        if (isValidating() && namespaceURI != null && namespaceURI.equals(Configuration.NS) && "name".equals(localName)) {
+            parsingName = true;
+            name.setLength(0);
+        }
     }
 
-    private Attributes modifyUserGroupIdAttribute(final Attributes attrs, final Map<Integer, Integer> idMappings) {
+    @Override
+    public void endElement(String namespaceURI, String localName, String qname) throws SAXException {
+        super.endElement(namespaceURI, localName, qname);
+        if (isValidating() && "name".equals(localName) && namespaceURI != null && namespaceURI.equals(Configuration.NS) ) {
+            parsingName = false;
+        }
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        super.characters(ch, start, length);
+        // remember the name of the user or group when we are validating an account
+        if (isValidating() && parsingName) {
+            name.append(ch, start, length);
+        }
+    }
+
+    private Attributes modifyUserGroupIdAttribute(final String elementName, final Attributes attrs, final Map<Integer, Integer> idMappings) {
         final String strId = attrs.getValue("id");
         if (strId != null) {
             Integer id = Integer.parseInt(strId);
+
             Integer newId = idMappings.get(id);
             if(newId == null) {
-                newId = id;
+                // check if an account or group with the same name exists in the database.
+                // if yes, replace the id attribute to preserve the existing user or group id.
+                // using the new id would corrupt the resources/collections which still reference
+                // the old id.
+                if (!isValidating() && name.length() > 0) {
+                    if ("account".equals(elementName)) {
+                        // check if there's an existing account with the same name
+                        Account oldAccount = broker.getBrokerPool().getSecurityManager().getAccount(name.toString());
+                        if (oldAccount != null) {
+                            // yes: use id of existing account
+                            newId = oldAccount.getId();
+                        } else {
+                            // no: check if there's another account with the same id
+                            oldAccount = broker.getBrokerPool().getSecurityManager().getAccount(id);
+                            if (oldAccount != null) {
+                                // yes: generate new id
+                                newId = broker.getBrokerPool().getSecurityManager().getNextAccountId();
+                            }
+                        }
+                    } else if ("group".equals(elementName)) {
+                        // check if there's an existing group with the same name
+                        Group oldGroup = broker.getBrokerPool().getSecurityManager().getGroup(name.toString());
+                        if (oldGroup != null) {
+                            // yes: use id of existing group
+                            newId = oldGroup.getId();
+                        } else {
+                            // no: check if there's another group with the same id
+                            oldGroup = broker.getBrokerPool().getSecurityManager().getGroup(id);
+                            if (oldGroup != null) {
+                                // group with same id: generate new id
+                                newId = broker.getBrokerPool().getSecurityManager().getNextGroupId();
+                            }
+                        }
+                    }
+                }
+                if (newId == null) {
+                    newId = id;
+                }
             }
             final AttributesImpl newAttrs = new AttributesImpl(attrs);
             final int idIndex = newAttrs.getIndex("id");
