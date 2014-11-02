@@ -252,9 +252,6 @@ public class InteractiveClient {
         messageln("rmcol collection     remove collection");
         messageln("set [key=value]      set property. Calling set without ");
         messageln("                     argument shows current settings.");
-        messageln("validate [document]  validate xml document with system xml catalog.");
-        messageln("validate [document] [grammar]  validate xml document with ");
-        messageln("                     specified grammar document.");
         messageln(EOL + "--- search commands ---");
         messageln("find xpath-expr      execute the given XPath expression.");
         messageln("show [position]      display query result value at position.");
