@@ -72,6 +72,9 @@ public class TypeTest implements NodeTest {
             case Type.PROCESSING_INSTRUCTION :
                 domType = Node.PROCESSING_INSTRUCTION_NODE;
                 break;
+            case Type.DOCUMENT:
+                domType = Node.DOCUMENT_NODE;
+                break;
             case Type.NODE :
             default :
                 return true;
