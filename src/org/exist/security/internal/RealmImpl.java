@@ -68,10 +68,12 @@ public class RealmImpl extends AbstractRealm {
     public final static int ADMIN_ACCOUNT_ID = 1048574;
     public final static int GUEST_ACCOUNT_ID = 1048573;
     public final static int UNKNOWN_ACCOUNT_ID = 1048572;
+    public final static int INITIAL_LAST_ACCOUNT_ID = 10;
 
     public final static int DBA_GROUP_ID = 1048575;
     public final static int GUEST_GROUP_ID = 1048574;
     public final static int UNKNOWN_GROUP_ID = 1048573;
+    public final static int INITIAL_LAST_GROUP_ID = 10;
 
     protected final AccountImpl ACCOUNT_SYSTEM;
     protected final AccountImpl ACCOUNT_UNKNOWN;
@@ -90,8 +92,8 @@ public class RealmImpl extends AbstractRealm {
 
     	super(sm, config);
 
-    	sm.lastUserId = 10;     //TODO this is horrible!
-    	sm.lastGroupId = 10;    //TODO this is horrible!
+    	sm.lastUserId = INITIAL_LAST_ACCOUNT_ID;     //TODO this is horrible!
+    	sm.lastGroupId = INITIAL_LAST_GROUP_ID;    //TODO this is horrible!
         
         //DBA group
         GROUP_DBA = new GroupImpl(this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
