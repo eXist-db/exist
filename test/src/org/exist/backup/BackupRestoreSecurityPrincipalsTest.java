@@ -221,11 +221,11 @@ public class BackupRestoreSecurityPrincipalsTest {
         assertUser(RealmImpl.GUEST_ACCOUNT_ID, SecurityManager.GUEST_USER, ((XMLResource) result.getResource(1)).getContentAsDOM());
         assertUser(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 1, "frank", ((XMLResource) result.getResource(2)).getContentAsDOM());
         assertUser(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 2, "jack", ((XMLResource) result.getResource(3)).getContentAsDOM());
-        assertUser(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 3, "joe", ((XMLResource) result.getResource(4)).getContentAsDOM());
+        assertUser(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 4, "joe", ((XMLResource) result.getResource(4)).getContentAsDOM()); //this is `+ 4` because pre-allocating an id skips one
 
         //check the last user id after the restore
         result = xqs.query(lastAccountIdQuery);
-        assertEquals(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 3, Integer.parseInt(result.getResource(0).getContent().toString())); //last account id should be that of 'joe'
+        assertEquals(RealmImpl.INITIAL_LAST_ACCOUNT_ID + 4, Integer.parseInt(result.getResource(0).getContent().toString())); //last account id should be that of 'joe'
 
         //check the owner of frank's document after restore
         final Resource fDoc = test.getResource(FRANKS_DOCUMENT);
