@@ -73,6 +73,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         start.run(args, null);
     }
 
+    public final static String SIGNAL_STARTING = "jetty starting";
     public final static String SIGNAL_STARTED = "jetty started";
     public final static String SIGNAL_ERROR = "error";
 
@@ -190,6 +191,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             
             server.setStopAtShutdown(true);
             server.addLifeCycleListener(this);
+
             BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(server));
             server.start();
 
@@ -409,12 +411,16 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
     public synchronized void lifeCycleStarting(LifeCycle lifeCycle) {
         logger.info("Jetty server starting...");
+        setChanged();
+        notifyObservers(SIGNAL_STARTING);
         status = STATUS_STARTING;
         notifyAll();
     }
 
     public synchronized void lifeCycleStarted(LifeCycle lifeCycle) {
         logger.info("Jetty server started.");
+        setChanged();
+        notifyObservers(SIGNAL_STARTED);
         status = STATUS_STARTED;
         notifyAll();
     }
