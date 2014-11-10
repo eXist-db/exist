@@ -1128,4 +1128,18 @@ public class SecurityManagerImpl implements SecurityManager {
 	public Subject getCurrentSubject() {
 		return pool.getSubject();
 	}
+
+    @Override
+    public final synchronized void preAllocateAccountId(final PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException {
+        final int id = getNextAccountId();
+        save();
+        receiver.allocate(id);
+    }
+
+    @Override
+    public final synchronized void preAllocateGroupId(final PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException {
+        final int id = getNextGroupId();
+        save();
+        receiver.allocate(id);
+    }
 }
