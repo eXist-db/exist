@@ -40,7 +40,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class Main implements WrapperListener, Observer {
     
     public static final int WAIT_HINT_STOP = 60000;
-    public static final int WAIT_HINT_UPDATE = 6000;
+    public static final int WAIT_HINT_UPDATE = 10000;
 
 	private Class<?> klazz;
 	private Object app;
