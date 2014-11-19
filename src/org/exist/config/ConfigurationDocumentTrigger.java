@@ -259,7 +259,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
     @Override
     public void startElement(final String namespaceURI, final String localName, final String qname, final Attributes attributes) throws SAXException {
-        if(createOrUpdate && namespaceURI != null && namespaceURI.equals(Configuration.NS) && (localName.equals(PrincipalType.ACCOUNT.getElementName()) || (localName.equals(PrincipalType.GROUP.getElementName()) && !processingAccount))) {
+        if(createOrUpdate && namespaceURI != null && namespaceURI.equals(Configuration.NS) && ( (localName.equals(PrincipalType.ACCOUNT.getElementName()) && attributes.getValue("id") != null )|| (localName.equals(PrincipalType.GROUP.getElementName()) && !processingAccount))) {
             processingAccount = localName.equals(PrincipalType.ACCOUNT.getElementName()); //set group account/group guard
             defer(true);
         }
@@ -275,7 +275,9 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
             //we have now captured the entire account or group in our deferred queue,
             //so we can now process it in it's entirety
-            processPrincipal(PrincipalType.fromElementName(localName));
+            if(processingAccount) {
+                processPrincipal(PrincipalType.fromElementName(localName));
+            }
 
             //stop deferring events and apply
             defer(false);
@@ -314,7 +316,13 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         //check if there is a name collision, i.e. another principal with the same name
         final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
         final String principalName = findName();
-        final Principal existingPrincipleByName = principalName != null ? principalType.getPrincipal(sm, principalName) : null;
+        // first check if the account or group exists before trying to retrieve it
+        // otherwise the LDAP realm will create a new user, leading to an endless loop
+        final boolean principalExists = principalName != null && principalType.hasPrincipal(sm, principalName);
+        Principal existingPrincipleByName = null;
+        if (principalExists) {
+            existingPrincipleByName = principalType.getPrincipal(sm, principalName);
+        }
 
         final int newId;
         if(existingPrincipleByName != null) {
@@ -324,7 +332,11 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
             //check if there is an id collision, i.e. another principal with the same id
             final Integer id = Integer.valueOf(attrs.getValue(ID_ATTR));
-            final Principal existingPrincipalById = principalType.getPrincipal(sm, id);
+            final boolean principalIdExists = principalType.hasPrincipal(sm, id);
+            Principal existingPrincipalById = null;
+            if (principalIdExists) {
+                existingPrincipalById = principalType.getPrincipal(sm, id);
+            }
 
             if(existingPrincipalById != null) {
 
@@ -488,6 +500,23 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         }
 
         /**
+         * Check if a user or group already exists (by name)
+         *
+         * @param sm
+         * @param name
+         * @return
+         */
+        public boolean hasPrincipal(final SecurityManager sm, final String name) {
+            switch (this) {
+                case ACCOUNT:
+                    return sm.hasAccount(name);
+                case GROUP:
+                    return sm.hasGroup(name);
+            }
+            return false;
+        }
+
+        /**
          * Gets a principal of this type from the SecurityManager by id
          *
          * @param sm An instance of the SecurityManager
@@ -504,6 +533,23 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
                     return sm.getGroup(id);
             }
             return null;
+        }
+
+        /**
+         * Check if a user or group already exists (by id)
+         *
+         * @param sm
+         * @param id
+         * @return
+         */
+        public boolean hasPrincipal(final SecurityManager sm, final int id) {
+            switch(this) {
+                case ACCOUNT:
+                    return sm.hasUser(id);
+                case GROUP:
+                    return sm.hasGroup(id);
+            }
+            return false;
         }
 
         public void preAllocateId(final SecurityManager sm, final PreAllocatedIdReceiver receiver) throws PermissionDeniedException, EXistException {
