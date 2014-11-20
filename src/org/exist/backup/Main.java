@@ -377,7 +377,8 @@ public class Main
                     "as admin:\n\n" +
                     "import module namespace repair=\"http://exist-db.org/xquery/repo/repair\"\n" +
                     "at \"resource:org/exist/xquery/modules/expathrepo/repair.xql\";\n" +
-                    "repair:rebuild-all()\n");
+                    "repair:clean-all(),\n" +
+                    "repair:repair()\n");
         }
     }
     
