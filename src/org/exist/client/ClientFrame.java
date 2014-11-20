@@ -1373,7 +1373,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         final XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
         service.query("import module namespace repair=\"http://exist-db.org/xquery/repo/repair\"\n" +
                 "at \"resource:org/exist/xquery/modules/expathrepo/repair.xql\";\n" +
-                "repair:rebuild-all()");
+                "repair:clean-all(),\n" +
+                "repair:repair()");
     }
 
     public UserManagementService getUserManagementService() throws XMLDBException {
