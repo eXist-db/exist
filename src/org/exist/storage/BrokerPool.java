@@ -1929,16 +1929,7 @@ public class BrokerPool implements Database {
                 //Notify all running tasks that we are shutting down
 
                 //Shutdown the scheduler
-                scheduler.shutdown(false);    //asynchronous
-
-                while(!scheduler.isShutdown()) {
-                    //wait for shutdown
-                    try {
-                        wait(250);
-                    } catch(final InterruptedException e) {
-                        //nothing to be done
-                    }
-                }
+                scheduler.shutdown(true);
 
                 //Notify all running XQueries that we are shutting down
                 processMonitor.killAll(500);
