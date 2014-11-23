@@ -44,10 +44,9 @@ import org.exist.xquery.value.Type;
 import org.exquery.restxq.ResourceFunction;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceRegistry;
-import org.exquery.restxq.annotation.ConsumesAnnotation;
-import org.exquery.restxq.annotation.ParameterAnnotation;
-import org.exquery.restxq.annotation.PathAnnotation;
-import org.exquery.restxq.annotation.ProducesAnnotation;
+import org.exquery.restxq.annotation.*;
+import org.exquery.serialization.annotation.AbstractYesNoSerializationAnnotation;
+import org.exquery.serialization.annotation.MethodAnnotation;
 import org.exquery.serialization.annotation.SerializationAnnotation;
 import org.exquery.xquery.Literal;
 import org.exquery.xquery3.Annotation;
@@ -210,7 +209,15 @@ public class RegistryFunctions extends BasicFunction {
     static void serializeSerializationAnnotation(final MemTreeBuilder builder, final SerializationAnnotation serializationAnnotation) {
         builder.startElement(QName.fromJavaQName(serializationAnnotation.getName()), null);
 
-        //TODO add parameters for Serialization Annotations
+        if(serializationAnnotation instanceof AbstractYesNoSerializationAnnotation) {
+            builder.characters(((AbstractYesNoSerializationAnnotation) serializationAnnotation).getStringValue());
+        } else if(serializationAnnotation instanceof org.exquery.serialization.annotation.MediaTypeAnnotation) {
+            builder.characters(((org.exquery.serialization.annotation.MediaTypeAnnotation) serializationAnnotation).getMediaType());
+        } else if(serializationAnnotation instanceof MethodAnnotation) {
+            builder.characters(((org.exquery.serialization.annotation.MethodAnnotation) serializationAnnotation).getMethod());
+        }
+
+        //TODO further output: annotations as they are implemented
 
         builder.endElement();
     }
