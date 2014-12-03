@@ -115,8 +115,9 @@
         <delete file="installer/install.xml" failonerror="false"/>
         <xslt basedir="installer" in="installer/install.xml.tmpl"
             out="installer/install.xml"
-            style="install.xsl" classpathref="classpath.core" 
+            style="installer/install.xsl" classpathref="classpath.core" 
             processor="trax">
+            <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <classpath>
                 <fileset dir="lib/endorsed">
                     <include name="saxon*.jar"/>
@@ -129,7 +130,7 @@
     </target>
     
     <target name="process-xar">
-        <propertyregex property="app.name" regexp="^.*/([^/]+).xar$"
+        <propertyregex property="app.name" regexp="^.*\${file.separator}([^\${file.separator}]+).xar$"
             input="${app}" select="\1"/>
         <echo message="Processing application package: ${app.name}"/>
         <unjar dest="${apps.dir}" src="${app}">
