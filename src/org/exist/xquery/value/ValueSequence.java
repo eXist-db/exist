@@ -397,7 +397,25 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 			values = newValues;
 		}
 	}
-	
+
+    private static class ItemComparator implements Comparator<Item> {
+
+        public final static ItemComparator INSTANCE = new ItemComparator();
+
+        private ItemComparator() {}
+
+        @Override
+        public int compare(final Item n1, final Item n2) {
+            if(n1 instanceof org.exist.dom.memtree.NodeImpl && (!(n2 instanceof org.exist.dom.memtree.NodeImpl))) {
+                return Constants.INFERIOR;
+            } else if(n1 instanceof Comparable) {
+                return ((Comparable)n1).compareTo(n2);
+            } else {
+                return Constants.INFERIOR;
+            }
+        }
+    }
+
 	private void removeDuplicateNodes() {
         if(noDuplicates || size < 1)
 			{return;}
@@ -422,7 +440,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             }
             if(!hasNodes)
             {return;}
-            final Map<Item, Item> nodes = new TreeMap<Item, Item>();
+            final Map<Item, Item> nodes = new TreeMap<>(ItemComparator.INSTANCE);
             int j = 0;
             for (int i = 0; i <= size; i++) {
                 if(Type.subTypeOf(values[i].getType(), Type.NODE)) {
