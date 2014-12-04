@@ -350,16 +350,15 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public int compareTo(final NodeImpl other) {
-        final NodeImpl n = (NodeImpl) other;
-        if(n.document == document) {
-            if(nodeNumber == n.nodeNumber && getNodeType() == n.getNodeType()) {
+        if(other.document == document) {
+            if(nodeNumber == other.nodeNumber && getNodeType() == other.getNodeType()) {
                 return Constants.EQUAL;
-            } else if(nodeNumber < n.nodeNumber) {
+            } else if(nodeNumber < other.nodeNumber) {
                 return Constants.INFERIOR;
             } else {
                 return Constants.SUPERIOR;
             }
-        } else if(document.docId < n.document.docId) {
+        } else if(document.docId < other.document.docId) {
             return Constants.INFERIOR;
         } else {
             return Constants.SUPERIOR;
