@@ -48,13 +48,15 @@ public class CompressionModule extends AbstractInternalModule {
         new FunctionDef(ZipFunction.signatures[0], ZipFunction.class),
         new FunctionDef(ZipFunction.signatures[1], ZipFunction.class),
         new FunctionDef(UnZipFunction.signatures[0], UnZipFunction.class),
-
+        new FunctionDef(UnZipFunction.signatures[1], UnZipFunction.class),
+		
         new FunctionDef(GZipFunction.signatures[0], GZipFunction.class),
         new FunctionDef(UnGZipFunction.signatures[0], UnGZipFunction.class),
 
         new FunctionDef(TarFunction.signatures[0], TarFunction.class),
         new FunctionDef(TarFunction.signatures[1], TarFunction.class),
-        new FunctionDef(UnTarFunction.signatures[0], UnTarFunction.class)
+        new FunctionDef(UnTarFunction.signatures[0], UnTarFunction.class),
+        new FunctionDef(UnTarFunction.signatures[1], UnTarFunction.class)		
     };
 
     public CompressionModule(Map<String, List<? extends Object>> parameters) {

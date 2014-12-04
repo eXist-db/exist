@@ -72,6 +72,31 @@ public class UnTarFunction extends AbstractExtractFunction {
                 new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+        ),
+		
+        new FunctionSignature(
+            new QName("untar", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+            "UnTar all the resources/folders from the provided data by calling user defined functions " +
+            "to determine what and how to store the resources/folders",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("tar-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The tar file data"),
+                new FunctionParameterSequenceType("entry-filter", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
+                		"A user defined function for filtering resources from the tar file. The function takes 3 parameters e.g. " +
+                		"user:untar-entry-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean. " +
+                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, " +
+                		"for example a list of extracted files. If the return type is true() it indicates the entry " +
+                		"should be processed and passed to the entry-data function, else the resource is skipped."),
+                new FunctionParameterSequenceType("entry-filter-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for filtering function."),
+                new FunctionParameterSequenceType("entry-data", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
+                		"A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. " +
+                		"user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). " +
+                		"Or a user defined function wich returns path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. " +
+                		"user:entry-path($path as xs:string, $data-type as xs:string, $param as item()*) as xs:anyURI. " +
+                		"$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters"),
+                new FunctionParameterSequenceType("entry-data-param", Type.ANY_TYPE, Cardinality.ZERO_OR_MORE, "A sequence with an additional parameters for storing function."),
+				new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "The encoding to be used during uncompressing eg: UTF8 or Cp437 from https://docs.oracle.com/javase/8/docs/technotes/guides/intl/encoding.doc.html"),
+            },
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
         )
     };
 
@@ -81,7 +106,7 @@ public class UnTarFunction extends AbstractExtractFunction {
     }
 	
     @Override
-    protected Sequence processCompressedData(BinaryValue compressedData) throws XPathException, XMLDBException
+    protected Sequence processCompressedData(BinaryValue compressedData, String encoding) throws XPathException, XMLDBException
     {
         TarArchiveInputStream tis = null;
         try
