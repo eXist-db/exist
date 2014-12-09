@@ -312,6 +312,17 @@
                 <include name="wrapper"/>
             </fileset>
         </chmod>
+        
+        <!-- Re-sign jar files that get re-built when this script gets invoked -->
+        <signjar alias="exist" storepass="secret" keystore="key.store">
+            <fileset dir="${dist.dir}">
+                <include name="exist*.jar"/>
+                <include name="start.jar"/>
+                <include name="exist-optional.jar"/>
+                <include name="examples.jar"/>
+                <include name="lib/extensions/exist-modules.jar"/>
+            </fileset>
+        </signjar>
     </target>
     
     <!-- ================================================================== -->
