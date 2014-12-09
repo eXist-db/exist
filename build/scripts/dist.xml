@@ -197,7 +197,14 @@
         <touch file="${dist.dir}/log/.DO_NOT_DELETE"/>
 
         <filter token="database" value="native"/>
-
+        <mkdir dir="${dist.dir}/autodeploy"/>
+        <mkdir dir="${dist.dir}/lib/test"/>
+        <copy todir="${dist.dir}/autodeploy">
+            <fileset dir="./autodeploy">
+                <exclude name="**/*~"/>
+                <include name="*.xar"/>
+            </fileset>
+        </copy>
         <copy todir="${dist.dir}/" filtering="true">
             <fileset dir=".">
                 <include name="LICENSE"/>
