@@ -27,10 +27,12 @@ import java.util.TreeSet;
 
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.ItemComparator;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -74,7 +76,7 @@ public class Except extends CombiningExpression {
                 {result = lval.toNodeSet().except(rval.toNodeSet());}
             else { 
                 result = new ValueSequence();
-                final Set<Item> set = new TreeSet<Item>();
+                final Set<Item> set = new TreeSet<Item>(ItemComparator.INSTANCE);
                 for (final SequenceIterator i = rval.unorderedIterator(); i.hasNext(); )
                     set.add(i.nextItem());
                 for (final SequenceIterator i = lval.unorderedIterator(); i.hasNext(); ) {
