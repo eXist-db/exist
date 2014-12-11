@@ -211,8 +211,13 @@ public class RegistryFunctions extends BasicFunction {
 
         if(serializationAnnotation instanceof AbstractYesNoSerializationAnnotation) {
             builder.characters(((AbstractYesNoSerializationAnnotation) serializationAnnotation).getStringValue());
+
         } else if(serializationAnnotation instanceof org.exquery.serialization.annotation.MediaTypeAnnotation) {
-            builder.characters(((org.exquery.serialization.annotation.MediaTypeAnnotation) serializationAnnotation).getMediaType());
+            builder.characters(((org.exquery.serialization.annotation.MediaTypeAnnotation) serializationAnnotation).getValue());
+
+        } else if(serializationAnnotation instanceof org.exquery.serialization.annotation.EncodingAnnotation) {
+            builder.characters(((org.exquery.serialization.annotation.EncodingAnnotation) serializationAnnotation).getValue());
+
         } else if(serializationAnnotation instanceof MethodAnnotation) {
             builder.characters(((org.exquery.serialization.annotation.MethodAnnotation) serializationAnnotation).getMethod());
         }
