@@ -21,47 +21,48 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
-public class Union extends CombiningExpression {
+public class Intersect extends CombiningExpression {
 
-    public Union(final XQueryContext context, final PathExpr left, final PathExpr right) {
+    public Intersect(final XQueryContext context, final PathExpr left, final PathExpr right) {
         super(context, left, right);
     }
 
     @Override
     public Sequence combine(final Sequence ls, final Sequence rs) throws XPathException {
         final Sequence result;
-        if (ls.isEmpty() && rs.isEmpty()) {
+        if (ls.isEmpty() || rs.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
-        } else if (rs.isEmpty()) {
-            if (!Type.subTypeOf(ls.getItemType(), Type.NODE)) {
-                throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");
-            }
-            result = ls;
-        } else if (ls.isEmpty()) {
-            if (!Type.subTypeOf(rs.getItemType(), Type.NODE)) {
-                throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");
-            }
-            result = rs;
         } else {
             if (!(Type.subTypeOf(ls.getItemType(), Type.NODE) && Type.subTypeOf(rs.getItemType(), Type.NODE))) {
-                throw new XPathException(this, ErrorCodes.XPTY0004, "union operand is not a node sequence");
+                throw new XPathException(this, ErrorCodes.XPTY0004, "intersect operand is not a node sequence");
             }
             if (ls.isPersistentSet() && rs.isPersistentSet()) {
-                result = ls.toNodeSet().union(rs.toNodeSet());
+                result = ls.toNodeSet().intersection(rs.toNodeSet());
             } else {
-                final ValueSequence values = new ValueSequence(true);
-                values.addAll(ls);
-                values.addAll(rs);
-                values.sortInDocumentOrder();
-                values.removeDuplicates();
-                result = values;
+                result = new ValueSequence(true);
+                final Set<Item> set = new TreeSet<>();
+                for (final SequenceIterator i = ls.unorderedIterator(); i.hasNext(); ) {
+                    set.add(i.nextItem());
+                }
+                for (final SequenceIterator i = rs.unorderedIterator(); i.hasNext(); ) {
+                    final Item next = i.nextItem();
+                    if (set.contains(next)) {
+                        result.add(next);
+                    }
+                }
+                result.removeDuplicates();
             }
         }
 
@@ -70,11 +71,11 @@ public class Union extends CombiningExpression {
 
     @Override
     protected String getOperatorName() {
-        return "union";
+        return "intersect";
     }
 
     @Override
     public void accept(final ExpressionVisitor visitor) {
-        visitor.visitUnionExpr(this);
+        visitor.visitIntersectionExpr(this);
     }
 }

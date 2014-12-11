@@ -3264,7 +3264,7 @@ public XQueryTreeParser() {
 			_t = __t197;
 			_t = _t.getNextSibling();
 			
-					Intersection intersect = new Intersection(context, left, right);
+					Intersect intersect = new Intersect(context, left, right);
 					path.add(intersect);
 					step = intersect;
 				

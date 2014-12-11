@@ -1745,7 +1745,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		step=expr [right]
 	)
 	{
-		Intersection intersect = new Intersection(context, left, right);
+		Intersect intersect = new Intersect(context, left, right);
 		path.add(intersect);
 		step = intersect;
 	}
