@@ -21,11 +21,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -52,7 +48,7 @@ public class Intersect extends CombiningExpression {
                 result = ls.toNodeSet().intersection(rs.toNodeSet());
             } else {
                 result = new ValueSequence(true);
-                final Set<Item> set = new TreeSet<>();
+                final Set<Item> set = new TreeSet<>(ItemComparator.INSTANCE);
                 for (final SequenceIterator i = ls.unorderedIterator(); i.hasNext(); ) {
                     set.add(i.nextItem());
                 }
