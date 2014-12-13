@@ -144,13 +144,31 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         return buf.toString();
     }
 
+    /**
+     * Serializes a (persistent DOM) Processing Instruction to a byte array
+     *
+     * data = signature nodeIdUnitsLength nodeId targetLength target contentLength content
+     *
+     * signature = [byte] 0x40
+     *
+     * nodeIdUnitsLength = [short] (2 bytes) The number of units of the processing instruction's NodeId
+     * nodeId = {@see org.exist.numbering.DLNBase#serialize(byte[], int)}
+     *
+     * targetLength = [int] (4 bytes) The length of the target string in bytes
+     * target = jUtf8
+     *
+     * contentLength = [int] (4 bytes) The length of the data string in bytes
+     * content = jUtf8
+     *
+     * jUtf8 = {@see java.io.DataOutputStream#writeUTF(java.lang.String)}
+     */
     @Override
     public byte[] serialize() {
 
-        byte[] td = target.getBytes(UTF_8);
-        byte[] dd = data.getBytes(UTF_8);
+        final byte[] td = target.getBytes(UTF_8);
+        final byte[] dd = data.getBytes(UTF_8);
 
-        int nodeIdLen = nodeId.size();
+        final int nodeIdLen = nodeId.size();
         final byte[] d = new byte[td.length + dd.length + nodeIdLen + 7];
         int pos = 0;
         d[pos] = (byte) (Signatures.Proc << 0x5);
