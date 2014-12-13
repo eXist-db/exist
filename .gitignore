@@ -25,7 +25,9 @@ installer/install.xml
 installer/scripts/
 lib/extensions/
 lib/user/icu4j*.jar
+lib/user/je*.jar
 lib/user/svnkit*.jar
+lib/user/uuid*.jar
 local.*
 mime-types.xml
 nbproject/build/
