@@ -32,7 +32,6 @@ function fd:format-month-numeric-width($date as xs:date) {
 };
 
 declare
-    %test:pending
     %test:args("2012-06-26")
     %test:assertEquals("26 JUN 2012")
     %test:args("1970-10-07")
@@ -42,7 +41,6 @@ function fd:format-month-string-width-caps($date as xs:date) {
 };
 
 declare
-    %test:pending
     %test:args("2012-06-26")
     %test:assertEquals("26 Jun 2012")
     %test:args("1970-10-07")
@@ -61,13 +59,12 @@ function fd:format-names($date as xs:date) {
 };
 
 declare
-    %test:pending
     %test:args("2012-06-26")
     %test:assertEquals("Tue Jun 26 2012")
     %test:args("1970-10-07")
     %test:assertEquals("Wed Oct 7 1970")
 function fd:format-names-width($date as xs:date) {
-    format-date($date, "[FNn,*-3] [MNn] [D] [Y]")
+    format-date($date, "[FNn,*-3] [MNn,*-3] [D] [Y]")
 };
 
 declare
