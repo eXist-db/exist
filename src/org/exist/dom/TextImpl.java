@@ -62,6 +62,20 @@ public class TextImpl extends CharacterDataImpl implements Text {
         return "";
     }
 
+    /**
+     * Serializes a (persistent DOM) Text to a byte array
+     *
+     * data = signature nodeIdUnitsLength nodeId cdata
+     *
+     * signature = [byte] 0x0
+     *
+     * nodeIdUnitsLength = [short] (2 bytes) The number of units of the text's NodeId
+     * nodeId = {@see org.exist.numbering.DLNBase#serialize(byte[], int)}
+     *
+     * cdata = eUtf8
+     *
+     * eUtf8 = {@see org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
+     */
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
         final byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + nodeIdLen + 
