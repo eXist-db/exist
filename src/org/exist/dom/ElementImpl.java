@@ -171,9 +171,9 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      *
      * data = signature childCount nodeIdUnitsLength nodeId attributesCount localNameId namespace? prefixData?
      *
-     * signature = 0x20 | localNameLength | hasNamespace? | isDirty?
+     * signature = [byte] 0x20 | localNameType | hasNamespace? | isDirty?
      *
-     * localNameLength = noContent OR intContent OR shortContent OR byteContent
+     * localNameType = noContent OR intContent OR shortContent OR byteContent
      * noContent = 0x0
      * intContent = 0x1
      * shortContent = 0x2
@@ -184,8 +184,10 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * isDirty = 0x8
      *
      * childCount = [int] (4 bytes) The number of child nodes
+     *
      * nodeIdUnitsLength = [short] (2 bytes) The number of units of the element's NodeId
      * nodeId = @see org.exist.numbering.DLNBase#serialize(byte[], int)
+     *
      * attributesCount = [short] (2 bytes) The number of attributes
      *
      * localNameId = [int] (4 bytes) | [short] (2 bytes) | [byte] 1 byte. The Id of the element's local name from SymbolTable (symbols.dbx)
@@ -195,14 +197,14 @@ public class ElementImpl extends NamedNode implements Element, ElementAtExist {
      * namespacePrefixLength = [short] (2 bytes)
      * elementNamespacePrefix = eUtf8
      *
-     * eUtf8 = @see org.exist.util.UTF8#encode(java.lang.String, byte[], int)
+     * eUtf8 = {@see org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
      *
      * prefixData = namespaceMappingsCount namespaceMapping+
      * namespaceMappingsCount = [short] (2 bytes)
      * namespaceMapping = namespacePrefix namespaceUriId
      * namespacePrefix = jUtf8
      *
-     * jUtf8 = @see java.io.DataOutputStream#writeUTF(java.lang.String)
+     * jUtf8 = {@see java.io.DataOutputStream#writeUTF(java.lang.String)}
      */
     @Override
     public byte[] serialize() {
