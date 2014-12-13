@@ -54,7 +54,7 @@ declare function test:suite($functions as function(*)+) {
                         util:system-time() - $startTime
                     return
                         <testsuite package="{$module}" timestamp="{util:system-dateTime()}"
-                            failures="{count($results/failure)}" pending="{count($results/skipped)}"
+                            failures="{count($results/failure)}" pending="{count($results/pending)}"
                             tests="{count($results)}" time="{$elapsed}">
                             { $results }
                         </testsuite>
