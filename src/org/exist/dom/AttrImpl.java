@@ -87,6 +87,41 @@ public class AttrImpl extends NamedNode implements Attr {
         value = null;
     }
 
+    /**
+     * Serializes a (persistent DOM) Attr to a byte array
+     *
+     * data = signature nodeIdUnitsLength nodeId localNameId namespace? value
+     *
+     * signature = [byte] 0x80 | localNameType | attrType | hasNamespace?
+     *
+     * localNameType = noContent OR intContent OR shortContent OR byteContent
+     * noContent = 0x0
+     * intContent = 0x1
+     * shortContent = 0x2
+     * byteContent = 0x3
+     *
+     * attrType = cdata OR id OR idref OR idrefs
+     * cdata = 0x0;
+     * id = 0x4
+     * idref = 0x8
+     * idrefs = 0xC
+     *
+     * hasNamespace = 0x10
+     *
+     * nodeIdUnitsLength = [short] (2 bytes) The number of units of the attr's NodeId
+     * nodeId = {@see org.exist.numbering.DLNBase#serialize(byte[], int)}
+     *
+     * localNameId = [int] (4 bytes) | [short] (2 bytes) | [byte] 1 byte. The Id of the attr's local name from SymbolTable (symbols.dbx)
+     *
+     * namespace = namespaceUriId namespacePrefixLength attrNamespacePrefix?
+     * namespaceUriId = [short] (2 bytes) The Id of the namespace URI from SymbolTable (symbols.dbx)
+     * namespacePrefixLength = [short] (2 bytes)
+     * attrNamespacePrefix = eUtf8
+     *
+     * value = eUtf8
+     *
+     * eUtf8 = {@see org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
+     */
     @Override
     public byte[] serialize() {
         if(nodeName.getLocalName() == null)
