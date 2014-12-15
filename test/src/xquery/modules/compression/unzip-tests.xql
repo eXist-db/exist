@@ -24,14 +24,13 @@ function uz:setup() {
     return (
         sm:chmod(xs:anyURI($coll), "rwxrwxrwx"),
         xmldb:store($uz:collection, $uz:myFile-name, util:parse($uz:myFile-serialized))
-
     )
 };
 
 declare
     %test:tearDown
 function uz:cleanup() {
-(:    xmldb:remove($uz:collection):) 1
+    xmldb:remove($uz:collection)
 };
 
 declare
