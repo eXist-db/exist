@@ -10,6 +10,7 @@
     
     <!-- import common targets -->
     <import file="../../build.xml"/>
+    <import file="git-support.xml"/>
     
     <property name="dist" value="${basedir}/dist"/>
     <property name="app.dir" value="${dist}/eXist-db.app"/>
@@ -194,10 +195,13 @@
     </target>
 
     <!-- Create a DMG - This only works on MacOSX (requires hdiutil) or Linux (requires mkfs.hfsplus) -->
-    <target name="dmg" description="Create a DMG package for MacOSX (only works on MacOSX or Linux)">
+    <target name="dmg" depends="git.details" description="Create a DMG package for MacOSX (only works on MacOSX or Linux)">
 
         <!-- Set this property value to your application name -->
         <property name="app.name" value="${project.name}"/>
+        
+        <property name="dmg.name" value="${app.name}-${project.version}-${git.commit}.dmg"/>
+        <echo message="Creating ${dmg.name}..."/>
 
         <!-- Set this property value to a directory where you can
              mount temporarily your images, for example /tmp -->
@@ -321,19 +325,19 @@
             <arg value="-format"/>
             <arg value="UDZO"/>
             <arg value="-o"/>
-            <arg value="${dist}/${app.name}.dmg"/>
+            <arg value="${dist}/${dmg.name}"/>
         </exec>
 
         <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
             <arg value="internet-enable"/>
             <arg value="-yes"/>
-            <arg value="${dist}/${app.name}.dmg"/>
+            <arg value="${dist}/${dmg.name}"/>
         </exec>
         
         <!-- Copy it to a new image (Linux) -->
         <exec executable="cp" os="Linux" failonerror="true">
             <arg value="${dist}/${app.name}-tmp.dmg"/>
-            <arg value="${dist}/${app.name}.dmg"/>
+            <arg value="${dist}/${dmg.name}"/>
         </exec>
 
         <!-- Delete the temporary image -->
