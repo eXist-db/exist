@@ -188,10 +188,17 @@
 		<property name="inst-jar" value="installer/${project.name}-setup-${project.version}-${git.commit}.jar"/>
 		<property name="inst-exe" value="installer/${project.name}-setup-${project.version}-${git.commit}.exe"/>
 
+        <propertyregex property="ver.major" input="${project.version.numeric}" regexp="([0-9]+).*" replace="\1"/>
+	    <propertyregex property="ver.minor" input="${project.version.numeric}" regexp="[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
+	    <propertyregex property="ver.revision" input="${project.version.numeric}" regexp="[0-9]+\.[0-9]+\.([0-9]+).*" replace="\1" defaultValue="0"/>
+	    <propertyregex property="ver.build" input="${project.version.numeric}" regexp="[0-9]+\.[0-9]+\.[0-9]+\.([0-9]+)" replace="\1" defaultValue="0"/>
+
 		<launch4j configFile="installer/launch4j.xml" jar="${inst-jar}" 
-			outfile="${inst-exe}" fileVersion="${project.version.numeric}.${git.commit}"
+			outfile="${inst-exe}"
+			fileVersion="${ver.major}.${ver.minor}.${ver.revision}.${ver.build}"
 			txtFileVersion="${project.version}-${git.commit}"
-			productVersion="${project.version.numeric}.${git.commit}"/>
+			productVersion="${ver.major}.${ver.minor}.${ver.revision}.${ver.build}"
+			txtProductVersion="${project.version}-${git.commit}"/>
 	</target>
 
     <target name="copy_scripts">
