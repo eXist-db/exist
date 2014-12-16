@@ -2,7 +2,7 @@
 -----------------                                    -----------------
                          Tanuki Software, Ltd. 
                  Community Software License Agreement
-                             Version 1.1
+                             Version 1.2
 
 IMPORTANT-READ CAREFULLY: This license agreement is a legal agreement
 between you ("Licensee") and Tanuki Software, Ltd. ("TSI"), which
@@ -365,7 +365,7 @@ Section 4 - GPLv2 License Agreement
     END OF TERMS AND CONDITIONS
 
 
-Section 5 - 3rd Party Components
+Section 4 - 3rd Party Components
 
 (1) The Software Program includes software and documentation components
 developed in part by Silver Egg Technology, Inc.("SET") prior to 2001

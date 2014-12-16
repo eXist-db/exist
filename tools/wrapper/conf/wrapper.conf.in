@@ -41,7 +41,8 @@ wrapper.lang.folder=../lang
 #********************************************************************
 
 # Java Application
-wrapper.java.command=@java.vm@
+#  Locate the java binary on the system PATH:
+wrapper.java.command=java
 #  Specify a specific java binary:
 #set.JAVA_HOME=/java/path
 #wrapper.java.command=%JAVA_HOME%/bin/java
