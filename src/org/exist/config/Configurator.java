@@ -418,6 +418,36 @@ public class Configurator {
                             if (!(obj instanceof Configurable)) {
                                 iterator.remove();
                                 continue;
+
+                            } else if (obj instanceof Reference) {
+
+                                if (referenceBy == null) {
+                                    LOG.error("illegal design '"+configuration.getName()+"' ["+field+"]");
+                                    iterator.remove();
+                                    continue;
+                                }
+
+                                String name = ((Reference)obj).getName();
+
+                                //Lookup for new configuration, update if found
+                                boolean found = false;
+                                for (final Iterator<Configuration> i = confs.iterator(); i.hasNext();) {
+                                    final Configuration conf = i.next();
+
+                                    String uniq = conf.getProperty( referenceBy );
+
+                                    if (uniq != null && uniq.equals(name)) {
+                                        i.remove();
+                                        found = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!found) {
+                                    LOG.debug("Configuration was removed, removing the object [" + obj + "].");
+                                    //XXX: remove by method call
+                                    iterator.remove();
+                                }
                                 
                             } else {
                                 current_conf = ((Configurable) obj).getConfiguration();
@@ -718,28 +748,31 @@ public class Configurator {
     protected static void serializeByReference(final Configurable instance,
             final SAXSerializer serializer, final String fieldAsElementName,
             final String referenceBy) throws SAXException {
-        final Configurable resolved = ((ReferenceImpl) instance).resolve();
-        final Method getMethod = searchForGetMethod(resolved.getClass(), referenceBy);
-        Object value;
-        
-        try {
-            value = getMethod.invoke(resolved);
-            
-        } catch (final IllegalArgumentException iae) {
-            LOG.error(iae.getMessage(), iae);
-            //TODO : throw exception ? -pb
-            return;
-            
-        } catch (final IllegalAccessException iae) {
-            LOG.error(iae.getMessage(), iae);
-            //TODO : throw exception ? -pb
-            return;
-            
-        } catch (final InvocationTargetException ite) {
-            LOG.error(ite.getMessage(), ite);
-            //TODO : throw exception ? -pb
-            return;
-        }
+
+        Object value = ((ReferenceImpl) instance).getName();
+
+//        final Configurable resolved = ((ReferenceImpl) instance).resolve();
+//        final Method getMethod = searchForGetMethod(resolved.getClass(), referenceBy);
+//        Object value;
+//
+//        try {
+//            value = getMethod.invoke(resolved);
+//
+//        } catch (final IllegalArgumentException iae) {
+//            LOG.error(iae.getMessage(), iae);
+//            //TODO : throw exception ? -pb
+//            return;
+//
+//        } catch (final IllegalAccessException iae) {
+//            LOG.error(iae.getMessage(), iae);
+//            //TODO : throw exception ? -pb
+//            return;
+//
+//        } catch (final InvocationTargetException ite) {
+//            LOG.error(ite.getMessage(), ite);
+//            //TODO : throw exception ? -pb
+//            return;
+//        }
         
         final QName qnConfig = new QName(fieldAsElementName, Configuration.NS);
         
