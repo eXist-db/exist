@@ -3032,7 +3032,7 @@ public class XQueryContext implements BinaryValueManager, Context
         return realUser;
     }
     
-    public void setRealUser(final Subject realUser) {
+    protected void setRealUser(final Subject realUser) {
         this.realUser = realUser;
     }
 
