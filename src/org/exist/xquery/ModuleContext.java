@@ -25,6 +25,7 @@ import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.security.Subject;
 import org.exist.storage.UpdateListener;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
@@ -69,8 +70,14 @@ public class ModuleContext extends XQueryContext {
 		loadDefaults(getBroker().getConfiguration());
 		this.profiler = new Profiler( getBroker().getBrokerPool() );
     }
-	
-	String getLocation() {
+
+    @Override
+    public Subject getRealUser() {
+        //the real and effective users are set at execution time on the root XQuery Context
+        return getRootContext().getRealUser();
+    }
+
+    String getLocation() {
 	    return location;
 	}
    
