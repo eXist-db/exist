@@ -23,6 +23,7 @@ package org.exist.xquery.modules.compression;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -111,7 +112,7 @@ public class UnTarFunction extends AbstractExtractFunction {
         TarArchiveInputStream tis = null;
         try
         {
-            tis = new TarArchiveInputStream(compressedData.getInputStream());
+            tis = new TarArchiveInputStream(compressedData.getInputStream(), encoding);
             TarArchiveEntry entry = null;
 
             Sequence results = new ValueSequence();
