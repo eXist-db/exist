@@ -22,11 +22,11 @@
 package org.exist.xmldb;
 
 import org.exist.EXistException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.XMLUtil;
-import org.exist.memtree.AttributeImpl;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.XMLUtil;
+import org.exist.dom.memtree.AttrImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.Subject;
@@ -95,7 +95,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
 	public LocalXMLResource(Subject user, BrokerPool pool, LocalCollection parent,
 			NodeProxy p) throws XMLDBException {
-		this(user, pool, parent, p.getDocument().getFileURI());
+		this(user, pool, parent, p.getOwnerDocument().getFileURI());
 		this.proxy = p;
 	}
 
@@ -428,7 +428,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	}
 
 	public void setContentAsDOM(Node root) throws XMLDBException {
-		if (root instanceof AttributeImpl)
+		if (root instanceof AttrImpl)
 			{throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE,
 					"SENR0001: can not serialize a standalone attribute");}
 		content = null;
@@ -449,7 +449,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         @Override
         public void freeResources() throws XMLDBException {
             //dO nothing
-            //TODO consider unifying closeDocument() code into freeResources()
+            //TODO consider unifying close() code into freeResources()
         }
 
 	private class InternalXMLSerializer extends SAXSerializer {

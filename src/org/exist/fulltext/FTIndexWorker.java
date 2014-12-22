@@ -21,8 +21,17 @@
  */
 package org.exist.fulltext;
 
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.AbstractCharacterData;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
@@ -126,10 +135,11 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    @Override
+    public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
             {return null;}
-        final IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(broker);
+        final IndexSpec indexConf = node.getOwnerDocument().getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
             final FulltextIndexSpec config = indexConf.getFulltextIndexSpec();
             if (config == null)
@@ -144,8 +154,8 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
             if (reindexRequired) {
-                StoredNode topMost = null;
-                StoredNode currentNode = node;
+                IStoredNode topMost = null;
+                IStoredNode currentNode = node;
                 while (currentNode != null) {
                     if (config.hasQNameIndex(currentNode.getQName()))
                         {topMost = currentNode;}
@@ -235,7 +245,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final boolean mixedContent = config.matchMixedElement(path);
                 if (mixedContent || config.hasQNameIndex(element.getQName())) {
                     final ElementContent contentBuf = contentStack.pop();
-                    element.getQName().setNameType(ElementValue.ELEMENT);
+                    element.setQName(new QName(element.getQName(), ElementValue.ELEMENT));
                     engine.storeText(element, contentBuf,
                             mixedContent ? NativeTextEngine.FOURTH_OPTION : NativeTextEngine.TEXT_BY_QNAME,
                             null, mode == REMOVE_ALL_NODES);
@@ -251,7 +261,7 @@ public class FTIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
          * @param path
          */
         @Override
-        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
+        public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
             if (config == null) {
                 engine.storeText(text, NativeTextEngine.TOKENIZE, config, mode == REMOVE_ALL_NODES);
             } else if (config.match(path)) {

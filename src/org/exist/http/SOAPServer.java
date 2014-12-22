@@ -59,18 +59,18 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.exist.Namespaces;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.ResponseWrapper;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.ElementImpl;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
@@ -251,7 +251,7 @@ public class SOAPServer
     	query.append("xquery version \"1.0\";").append(SEPERATOR);
     	query.append(SEPERATOR);
         query.append("import module namespace ").append(xqwsDescription.getNamespace()
-                .getLocalName()).append("=\"").append(xqwsDescription.getNamespace()
+                .getLocalPart()).append("=\"").append(xqwsDescription.getNamespace()
                 .getNamespaceURI()).append("\" at \"")
                 .append(xqwsDescription.getFileURI().toString())
                 .append("\";").append(SEPERATOR);
@@ -263,7 +263,7 @@ public class SOAPServer
         {
         	functionName = xqwsSOAPFunction.getNodeName();
         }
-        query.append(xqwsDescription.getNamespace().getLocalName())
+        query.append(xqwsDescription.getNamespace().getLocalPart())
                 .append(":").append(functionName).append("(");
         
         //add the arguments for the function call if any
@@ -866,7 +866,7 @@ public class SOAPServer
     	//cache for internal Description of an XQWS
     	private long lastModifiedXQWS = 0;
     	private Module modXQWS = null;
-    	private org.exist.memtree.DocumentImpl docXQWSDescription = null;
+    	private org.exist.dom.memtree.DocumentImpl docXQWSDescription = null;
     	
     	//cache for XQWS WSDL
     	private long lastModifiedWSDL = 0;
@@ -1278,7 +1278,7 @@ public class SOAPServer
     		final DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_SOAP_RESPONSE), Lock.READ_LOCK);
     		
     		//Get an internal description, containg just a single function with its result
-    		final org.exist.memtree.DocumentImpl docResult = describeWebService(modXQWS, xqwsFileURI, request, XQWSPath, functionName, functionResult);
+    		final org.exist.dom.memtree.DocumentImpl docResult = describeWebService(modXQWS, xqwsFileURI, request, XQWSPath, functionName, functionResult);
     		
     		//return the SOAP Response
 	    	final Properties params = new Properties();
@@ -1425,7 +1425,7 @@ public class SOAPServer
             //Create a simple XQuery wrapper to access the module
             String query = "xquery version \"1.0\";" + SEPERATOR;
             query += SEPERATOR;
-            query += "import module namespace " + xqwsNamespace.getLocalName() + "=\"" + xqwsNamespace.getNamespaceURI() + "\" at \"" + xqwsFileUri.toString() + "\";" + SEPERATOR;
+            query += "import module namespace " + xqwsNamespace.getLocalPart() + "=\"" + xqwsNamespace.getNamespaceURI() + "\" at \"" + xqwsFileUri.toString() + "\";" + SEPERATOR;
             query += SEPERATOR;
             query += "()";
             
@@ -1443,7 +1443,7 @@ public class SOAPServer
     	 * 	<path/>
     	 * 	<URL/>
     	 * 	<functions>
-    	 * 		<function/> { unbounded } { @see org.exist.http.SOAPServer#describeWebServiceFunction(org.exist.xquery.FunctionSignature, org.exist.memtree.MemTreeBuilder) }
+    	 * 		<function/> { unbounded } { @see org.exist.http.SOAPServer#describeWebServiceFunction(org.exist.xquery.FunctionSignature, org.exist.dom.memtree.MemTreeBuilder) }
     	 * 	</functions>
     	 * </webservice>
     	 *
@@ -1455,7 +1455,7 @@ public class SOAPServer
     	 * @param functionResult For writting out the results of a function call, should be used with functionName 
     	 * @return	An in-memory document describing the webservice
     	 */
-    	private org.exist.memtree.DocumentImpl describeWebService(Module modXQWS, XmldbURI xqwsFileUri, HttpServletRequest request, String path, String functionName, Sequence functionResult) throws XPathException,SAXException
+    	private org.exist.dom.memtree.DocumentImpl describeWebService(Module modXQWS, XmldbURI xqwsFileUri, HttpServletRequest request, String path, String functionName, Sequence functionResult) throws XPathException,SAXException
     	{
     		final FunctionSignature[] xqwsFunctions = modXQWS.listFunctions();
             final MemTreeBuilder builderWebserviceDoc = new MemTreeBuilder(broker.getXQueryService().newContext(AccessContext.REST));
@@ -1487,7 +1487,7 @@ public class SOAPServer
     			else
     			{
     				//Only a Single Function Description for showing function call results
-    				if(xqwsFunctions[f].getName().getLocalName().equals(functionName))
+    				if(xqwsFunctions[f].getName().getLocalPart().equals(functionName))
     				{
     					describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc, functionResult);
     					break;
@@ -1537,7 +1537,7 @@ public class SOAPServer
     		//Generate an XML snippet for each function
         	builderFunction.startElement(new QName("function", null, null), null);
         	builderFunction.startElement(new QName("name", null, null), null);
-        	builderFunction.characters(signature.getName().getLocalName());
+        	builderFunction.characters(signature.getName().getLocalPart());
         	builderFunction.endElement();
         	if(signature.getDescription() != null)
         	{
@@ -1551,7 +1551,7 @@ public class SOAPServer
         	{
         		builderFunction.startElement(new QName("parameter",null, null), null);
         		builderFunction.startElement(new QName("name",null, null), null);
-        		//builderFunction.characters(xqwsArguments[a].getNodeName().getLocalName()); //TODO: how to get parameter name?
+        		//builderFunction.characters(xqwsArguments[a].getNodeName().getLocalPart()); //TODO: how to get parameter name?
         		builderFunction.endElement();
         		builderFunction.startElement(new QName("type",null, null), null);
         		builderFunction.characters(Type.getTypeName(xqwsArguments[a].getPrimaryType()));
@@ -1614,7 +1614,7 @@ public class SOAPServer
          * 
          * @return byte array containing the result of the transformation
          */
-        private byte[] Transform(org.exist.memtree.DocumentImpl srcDoc, DocumentImpl docStyleSheet, Properties parameters) throws  TransformerConfigurationException, SAXException
+        private byte[] Transform(org.exist.dom.memtree.DocumentImpl srcDoc, DocumentImpl docStyleSheet, Properties parameters) throws  TransformerConfigurationException, SAXException
         {
             //Transform docXQWSDescription with the stylesheet
         	

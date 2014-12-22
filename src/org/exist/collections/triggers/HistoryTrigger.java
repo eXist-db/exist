@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;

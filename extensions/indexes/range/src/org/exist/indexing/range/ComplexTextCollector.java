@@ -1,10 +1,9 @@
 package org.exist.indexing.range;
 
-import org.exist.dom.AttrImpl;
-import org.exist.dom.CharacterDataImpl;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.QName;
 import org.exist.storage.NodePath;
-import org.exist.util.XMLString;
 
 import java.util.*;
 
@@ -50,7 +49,7 @@ public class ComplexTextCollector implements TextCollector {
     }
 
     @Override
-    public void characters(CharacterDataImpl text, NodePath path) {
+    public void characters(AbstractCharacterData text, NodePath path) {
         if (currentField != null) {
             Field field = fields.get(fields.size() - 1);
             if (!field.isAttribute() && (currentField.includeNested() || currentField.match(path))) {

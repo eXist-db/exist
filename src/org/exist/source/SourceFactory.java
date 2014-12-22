@@ -28,8 +28,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.exist.EXistException;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

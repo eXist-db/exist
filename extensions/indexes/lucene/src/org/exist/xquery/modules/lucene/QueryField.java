@@ -2,8 +2,8 @@ package org.exist.xquery.modules.lucene;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;

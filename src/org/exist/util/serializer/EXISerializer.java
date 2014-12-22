@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -87,19 +87,19 @@ public class EXISerializer implements ContentHandler, Receiver {
 			for(int x=0; x < attribs.size; x++) {
 				final QName attribQName = attribs.getQName(x);
 				attributes.addAttribute(attribQName.getNamespaceURI(),
-						attribQName.getLocalName(),
+						attribQName.getLocalPart(),
 						attribQName.getStringValue(),
 						UNKNOWN_TYPE,
 						attribs.getValue(x));
 			}
 		}
-		encoder.startElement(qname.getNamespaceURI(), qname.getLocalName(), null, attributes);
+		encoder.startElement(qname.getNamespaceURI(), qname.getLocalPart(), null, attributes);
 		
 	}
 
 	@Override
 	public void endElement(QName qname) throws SAXException {
-		encoder.endElement(qname.getNamespaceURI(), qname.getLocalName(), null);
+		encoder.endElement(qname.getNamespaceURI(), qname.getLocalPart(), null);
 		
 	}
 
@@ -145,7 +145,7 @@ public class EXISerializer implements ContentHandler, Receiver {
 	}
 
 	@Override
-	public void setCurrentNode(StoredNode node) {
+	public void setCurrentNode(INodeHandle node) {
 		// TODO Auto-generated method stub
 		
 	}

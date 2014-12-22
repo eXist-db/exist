@@ -1,7 +1,7 @@
 package org.exist.xquery;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.value.AbstractSequence;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;

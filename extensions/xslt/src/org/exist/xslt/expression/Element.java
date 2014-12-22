@@ -29,8 +29,8 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.XMLChar;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.XPathException;
@@ -130,11 +130,11 @@ public class Element extends SimpleConstructor {
 //            for(int i = 0; i < namespaceDecls.length; i++) {
 //                if ("".equals(namespaceDecls[i].getNamespaceURI())) {
 //                    // TODO: the specs are unclear here: should we throw XQST0085 or not?
-//                    context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
-////					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
+//                    context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart());
+////					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart()) == null)
 ////		        		throw new XPathException(getASTNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
 //                } else
-//                    context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+//                    context.declareInScopeNamespace(namespaceDecls[i].getLocalPart(), namespaceDecls[i].getNamespaceURI());
 //            }
 //        }
         AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
@@ -184,11 +184,11 @@ public class Element extends SimpleConstructor {
 //                for(int i = 0; i < namespaceDecls.length; i++) {
 //                    //if ("".equals(namespaceDecls[i].getNamespaceURI())) {
 //                        // TODO: the specs are unclear here: should we throw XQST0085 or not?
-//                    //	context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
-////					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
+//                    //	context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart());
+////					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart()) == null)
 ////		        		throw new XPathException(getAS      TNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
 //                    //} else
-//                        context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+//                        context.declareInScopeNamespace(namespaceDecls[i].getLocalPart(), namespaceDecls[i].getNamespaceURI());
 //                }
 //            }
 //            AttributesImpl attrs = new AttributesImpl();
@@ -215,9 +215,9 @@ public class Element extends SimpleConstructor {
 //                    constructor = attributes[i];
 //                    attrValues = constructor.eval(contextSequence, contextItem);
 //                    attrQName = QName.parse(context, constructor.getQName(), "");
-//                    if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
-//                        throw new XPathException(this, "XQST0040 '" + attrQName.getLocalName() + "' is a duplicate attribute name");
-//                    attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
+//                    if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalPart()) != -1)
+//                        throw new XPathException(this, "XQST0040 '" + attrQName.getLocalPart() + "' is a duplicate attribute name");
+//                    attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalPart(),
 //                            attrQName.getStringValue(), "CDATA", attrValues.getStringValue());
 //                }
 //            }
@@ -287,7 +287,7 @@ public class Element extends SimpleConstructor {
 //                }
 //            }
 //            // do we need to add a namespace declaration for the current node?
-//            if (qn.needsNamespaceDecl()) {
+//            if (qn.hasNamespace()) {
 //                if (context.getInScopePrefix(qn.getNamespaceURI()) == null) {
 //                    String prefix = qn.getPrefix();
 //                    if (prefix == null || prefix.length() == 0)

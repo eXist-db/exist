@@ -31,8 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.exist.dom.DocumentImpl;
-import org.exist.extensions.exquery.restxq.impl.xquery.*;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.extensions.exquery.restxq.impl.ExistXqueryRegistry;
 import org.exist.extensions.exquery.restxq.impl.RestXqServiceRegistryManager;
@@ -131,7 +130,7 @@ public class RegistryFunctions extends BasicFunction {
         Sequence result = Sequence.EMPTY_SEQUENCE;
                 
         try {
-            if(isCalledAs(qnRegisterModule.getLocalName())) {
+            if(isCalledAs(qnRegisterModule.getLocalPart())) {
                 final DocumentImpl module = getContext().getBroker().getResource(moduleUri, Permission.READ);
                 if(xqueryRegistry.isXquery(module)) {
                     try {
@@ -145,7 +144,7 @@ public class RegistryFunctions extends BasicFunction {
                 } else {
                    result = Sequence.EMPTY_SEQUENCE; 
                 }
-            } else if(isCalledAs(qnDeregisterModule.getLocalName())) {
+            } else if(isCalledAs(qnDeregisterModule.getLocalPart())) {
                 final DocumentImpl module = getContext().getBroker().getResource(moduleUri, Permission.READ);
                 if(xqueryRegistry.isXquery(module)) {                
                     final List<RestXqService> deregisteringServices = new ArrayList<RestXqService>();
@@ -159,7 +158,7 @@ public class RegistryFunctions extends BasicFunction {
                 } else {
                    result = Sequence.EMPTY_SEQUENCE; 
                 }
-            } else if(isCalledAs(qnFindResourceFunctions.getLocalName())) {
+            } else if(isCalledAs(qnFindResourceFunctions.getLocalPart())) {
                final DocumentImpl module = getContext().getBroker().getResource(moduleUri, Permission.READ);
                if(xqueryRegistry.isXquery(module)) {                
                     try {
@@ -173,7 +172,7 @@ public class RegistryFunctions extends BasicFunction {
                 } else {
                    result = Sequence.EMPTY_SEQUENCE; 
                 }
-            } else if(isCalledAs(qnRegisterResourceFunction.getLocalName())) {
+            } else if(isCalledAs(qnRegisterResourceFunction.getLocalPart())) {
                final String resourceFunctionIdentifier = args[1].getStringValue();
                final DocumentImpl module = getContext().getBroker().getResource(moduleUri, Permission.READ);
                if(xqueryRegistry.isXquery(module)) {
@@ -198,7 +197,7 @@ public class RegistryFunctions extends BasicFunction {
                 } else {
                    result = Sequence.EMPTY_SEQUENCE; 
                 }
-            } else if(isCalledAs(qnDeregisterResourceFunction.getLocalName())) {
+            } else if(isCalledAs(qnDeregisterResourceFunction.getLocalPart())) {
                 //TODO
                 final String resourceFunctionIdentifier = args[1].getStringValue();
                 final SignatureDetail signatureDetail = extractSignatureDetail(resourceFunctionIdentifier);

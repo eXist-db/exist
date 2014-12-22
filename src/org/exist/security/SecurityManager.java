@@ -26,7 +26,7 @@ import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.config.Configurable;
 import org.exist.config.ConfigurationException;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

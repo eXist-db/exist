@@ -123,7 +123,7 @@ public class GroupMembershipFunction extends BasicFunction {
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
 
         try {
-            if(isCalledAs(qnIsDba.getLocalName())) {
+            if(isCalledAs(qnIsDba.getLocalPart())) {
                 final String username = args[0].getStringValue();
 
                 if(!securityManager.hasAccount(username)) {
@@ -132,7 +132,7 @@ public class GroupMembershipFunction extends BasicFunction {
                     final Account account = securityManager.getAccount(username);
                     result = BooleanValue.valueOf(securityManager.hasAdminPrivileges(account));
                 }
-            } else if(isCalledAs(qnSetPrimaryGroup.getLocalName())) {
+            } else if(isCalledAs(qnSetPrimaryGroup.getLocalPart())) {
 
                 final String username = args[0].getStringValue();
                 final String groupName = args[1].getStringValue();
@@ -147,7 +147,7 @@ public class GroupMembershipFunction extends BasicFunction {
 
                 final Group group = securityManager.getGroup(groupName);
 
-                if(!isCalledAs(qnGetGroupMembers.getLocalName()) && (!(group.isManager(currentUser) || currentUser.hasDbaRole()))) {
+                if(!isCalledAs(qnGetGroupMembers.getLocalPart()) && (!(group.isManager(currentUser) || currentUser.hasDbaRole()))) {
                     throw new XPathException("Only a Group Manager or DBA may modify the group or retrieve sensitive group information.");
                 }
 
@@ -167,17 +167,17 @@ public class GroupMembershipFunction extends BasicFunction {
 
                 final Group group = securityManager.getGroup(groupName);
 
-                if(!isCalledAs(qnGetGroupMembers.getLocalName()) && (!(group.isManager(currentUser) || currentUser.hasDbaRole()))) {
+                if(!isCalledAs(qnGetGroupMembers.getLocalPart()) && (!(group.isManager(currentUser) || currentUser.hasDbaRole()))) {
                     throw new XPathException("Only a Group Manager or DBA may modify the group or retrieve sensitive group information.");
                 }
 
-                if(isCalledAs(qnAddGroupMember.getLocalName())) {
+                if(isCalledAs(qnAddGroupMember.getLocalPart())) {
                     final List<Account> users = getUsers(securityManager, args[1]);
                     addGroupMembers(securityManager, group, users);
-                } else if(isCalledAs(qnRemoveGroupMember.getLocalName())) {
+                } else if(isCalledAs(qnRemoveGroupMember.getLocalPart())) {
                     final List<Account> users = getUsers(securityManager, args[1]);
                     removeGroupMembers(securityManager, group, users);
-                } else if(isCalledAs(qnGetGroupMembers.getLocalName())) {
+                } else if(isCalledAs(qnGetGroupMembers.getLocalPart())) {
                     final List<String> groupMembers = securityManager.findAllGroupMembers(groupName);
 
                     final ValueSequence seq = new ValueSequence();
@@ -185,13 +185,13 @@ public class GroupMembershipFunction extends BasicFunction {
                         seq.add(new StringValue(groupMember));
                     }
                     result = seq;
-                } else if(isCalledAs(qnAddGroupManager.getLocalName())) {
+                } else if(isCalledAs(qnAddGroupManager.getLocalPart())) {
                     final List<Account> users = getUsers(securityManager, args[1]);
                     addGroupManagers(securityManager, group, users);
-                } else if(isCalledAs(qnRemoveGroupManager.getLocalName())) {
+                } else if(isCalledAs(qnRemoveGroupManager.getLocalPart())) {
                     final List<Account> users = getUsers(securityManager, args[1]);
                     removeGroupManagers(securityManager, group, users);
-                } else if(isCalledAs(qnGetGroupManagers.getLocalName())) {
+                } else if(isCalledAs(qnGetGroupManagers.getLocalPart())) {
                     final ValueSequence seq = new ValueSequence();
                     for(final Account groupManager : group.getManagers()) {
                         seq.add(new StringValue(groupManager.getName()));

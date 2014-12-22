@@ -77,7 +77,7 @@ public class JavaCall extends Function {
 			throw new XPathException(this, "Class: " + namespaceURI + " not found", e);
 		}
 
-		name = qname.getLocalName();
+		name = qname.getLocalPart();
 		// convert hyphens into camelCase
 		if (name.indexOf('-') > 0) {
 			final StringBuilder buf = new StringBuilder();

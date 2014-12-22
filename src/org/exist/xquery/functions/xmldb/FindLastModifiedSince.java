@@ -1,10 +1,10 @@
 package org.exist.xquery.functions.xmldb;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.NodeSetIterator;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.NodeSetIterator;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -51,7 +51,7 @@ public class FindLastModifiedSince extends BasicFunction {
 		
 		for (final NodeSetIterator i = nodes.iterator(); i.hasNext(); ) {
 			final NodeProxy proxy = i.next();
-			final DocumentImpl doc = proxy.getDocument();
+			final DocumentImpl doc = proxy.getOwnerDocument();
 			final long modified = doc.getMetadata().getLastModified();
 			if (modified > lastModified)
 				{result.add(proxy);}

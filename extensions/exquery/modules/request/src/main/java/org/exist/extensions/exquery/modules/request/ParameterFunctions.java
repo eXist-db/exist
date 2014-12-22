@@ -84,12 +84,12 @@ public class ParameterFunctions extends AbstractRequestModuleFunction {
     public Sequence eval(final Sequence[] args, final HttpRequest request) throws XPathException {
         final Sequence result;
         
-        if(isCalledAs(qnParameterNames.getLocalName())) {
+        if(isCalledAs(qnParameterNames.getLocalPart())) {
             result = new ValueSequence();
             for(final String parameterName : request.getParameterNames()) {
                 result.add(new StringValue(parameterName));
             }
-        } else if(isCalledAs(qnParameter.getLocalName())) {
+        } else if(isCalledAs(qnParameter.getLocalPart())) {
             final String paramName = args[0].getStringValue();
             
             if(getSignature().getArgumentCount() == 1) {

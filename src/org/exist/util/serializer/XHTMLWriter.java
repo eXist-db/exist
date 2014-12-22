@@ -131,7 +131,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         final String namespaceURI = qname.getNamespaceURI();
         if(prefix != null && prefix.length() > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
             haveCollapsedXhtmlPrefix = true;
-            return new QName(qname.getLocalName(), namespaceURI);   
+            return new QName(qname.getLocalPart(), namespaceURI);
         }
         
         return qname;

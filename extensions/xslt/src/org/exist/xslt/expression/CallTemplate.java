@@ -85,7 +85,7 @@ public class CallTemplate extends SimpleConstructor {
 				WithParam param = (WithParam) expr;
 				
 				QName name = param.getName();
-				String key = name.getNamespaceURI() + name.getLocalName();
+				String key = name.getNamespaceURI() + name.getLocalPart();
 				
 				if (params.containsKey(key))
 					compileError(XSLExceptions.ERR_XTSE0670);

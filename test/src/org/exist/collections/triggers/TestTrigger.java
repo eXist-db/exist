@@ -20,9 +20,9 @@
 package org.exist.collections.triggers;
 
 import org.exist.collections.IndexInfo;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -57,9 +57,6 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
         try {
             this.doc = parent.getDocument(broker, docPath);
             if (this.doc == null) {
-                
-                
-        
                 LOG.debug("creating new file for collection contents");
 
                 // IMPORTANT: temporarily disable triggers on the collection.
@@ -69,13 +66,14 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
                 //TODO : unlock the collection here ?
                 parent.store(transaction, broker, info, TEMPLATE, false);
                 this.doc = info.getDocument();
-
-                transactMgr.commit(transaction);
             }
+            transactMgr.commit(transaction);
+
         } catch (Exception e) {
             transactMgr.abort(transaction);
             throw new TriggerException(e.getMessage(), e);
         } finally {
+            transaction.close();
             parent.setTriggersEnabled(true);
         }
     }
@@ -83,6 +81,8 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
 	private void addRecord(DBBroker broker, String xupdate) throws TriggerException {
         MutableDocumentSet docs = new DefaultDocumentSet();
         docs.add(doc);
+        TransactionManager transactMgr = broker.getBrokerPool().getTransactionManager();
+        Txn transaction = transactMgr.beginTransaction();
         try {
             // IMPORTANT: temporarily disable triggers on the collection.
             // We would end up in infinite recursion if we don't do that
@@ -91,13 +91,18 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
             XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.TRIGGER);
             // process the XUpdate
             Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
-            for (int i = 0; i < modifications.length; i++)
-                modifications[i].process(null);
+            for (int i = 0; i < modifications.length; i++) {
+                modifications[i].process(transaction);
+            }
+            transactMgr.commit(transaction);
+
             broker.flush();
         } catch (Exception e) {
+            transactMgr.abort(transaction);
             e.printStackTrace();
             throw new TriggerException(e.getMessage(), e);
         } finally {
+            transaction.close();
             // IMPORTANT: reenable trigger processing for the collection.
             getCollection().setTriggersEnabled(true);
         }

@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;

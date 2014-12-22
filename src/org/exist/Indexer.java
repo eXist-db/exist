@@ -31,16 +31,17 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.CDATASectionImpl;
-import org.exist.dom.CommentImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentTypeImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.CDATASectionImpl;
+import org.exist.dom.persistent.CommentImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentTypeImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.ProcessingInstructionImpl;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.TextImpl;
 import org.exist.indexing.StreamListener;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -271,7 +272,7 @@ public class Indexer extends Observable implements ContentHandler,
             if (!validate) {
                 broker.storeNode(transaction, comment, currentPath, indexSpec);
             }
-            document.appendChild(comment);
+            document.appendChild((NodeHandle)comment);
         } else {
             final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
@@ -433,7 +434,7 @@ public class Indexer extends Observable implements ContentHandler,
             if (!validate) {
                 broker.storeNode(transaction, pi, currentPath, indexSpec);
             }
-            document.appendChild(pi);
+            document.appendChild((NodeHandle)pi);
         } else {
             final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
@@ -630,7 +631,7 @@ public class Indexer extends Observable implements ContentHandler,
                 }
                 storeElement(node);
             }
-            document.appendChild(node);
+            document.appendChild((NodeHandle)node);
         }
         level++;
 
@@ -663,7 +664,7 @@ public class Indexer extends Observable implements ContentHandler,
                     attr.setType(AttrImpl.IDREF);
                 } else if (attributes.getType(i).equals(ATTR_IDREFS_TYPE)) {
                     attr.setType(AttrImpl.IDREFS);
-                } else if (attr.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
+                } else if (attr.getQName().equals(Namespaces.XML_ID_QNAME)) {
                     // an xml:id attribute. Normalize the attribute and set its
                     // type to ID
                     attr.setValue(StringValue.trimWhitespace(StringValue
@@ -673,7 +674,7 @@ public class Indexer extends Observable implements ContentHandler,
                             "Value of xml:id attribute is not a valid NCName: "
                             + attr.getValue());}
                     attr.setType(AttrImpl.ID);
-                } else if (attr.getQName().equalsSimple(Namespaces.XML_SPACE_QNAME)) {
+                } else if (attr.getQName().equals(Namespaces.XML_SPACE_QNAME)) {
                     node.setPreserveSpace("preserve".equals(attr.getValue()));
                 }
                 node.appendChildInternal(prevNode, attr);

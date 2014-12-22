@@ -22,10 +22,10 @@
 package org.exist.xquery.modules.range;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.indexing.range.RangeIndex;
 import org.exist.indexing.range.RangeIndexConfig;
 import org.exist.indexing.range.RangeIndexConfigElement;
@@ -39,7 +39,6 @@ import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -129,7 +128,7 @@ public class Lookup extends Function implements Optimizable {
 
     public static Lookup create(XQueryContext context, RangeIndex.Operator operator, NodePath contextPath) {
         for (FunctionSignature sig: signatures) {
-            if (sig.getName().getLocalName().equals(operator.toString())) {
+            if (sig.getName().getLocalPart().equals(operator.toString())) {
                 return new Lookup(context, sig, contextPath);
             }
         }
@@ -194,28 +193,32 @@ public class Lookup extends Function implements Optimizable {
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
                     LocationStep outerStep = (LocationStep) outerExpr;
                     NodeTest test = outerStep.getTest();
-                    if (test.getName() == null)
+                    if (test.getName() == null) {
                         contextQName = new QName(null, null, null);
-                    else if (test.isWildcardTest())
+                    } else if (test.isWildcardTest()) {
                         contextQName = test.getName();
-                    else
+                    } else {
                         contextQName = new QName(test.getName());
-                    if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                        contextQName.setNameType(ElementValue.ATTRIBUTE);
+                    }
+                    if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                        contextQName = new QName(contextQName.getLocalPart(), contextQName.getNamespaceURI(), contextQName.getPrefix(), ElementValue.ATTRIBUTE);
+                    }
                     contextStep = firstStep;
                     axis = outerStep.getAxis();
                     optimizeSelf = true;
                 }
             } else if (lastStep != null && firstStep != null) {
                 NodeTest test = lastStep.getTest();
-                if (test.getName() == null)
+                if(test.getName() == null) {
                     contextQName = new QName(null, null, null);
-                else if (test.isWildcardTest())
+                } else if(test.isWildcardTest()) {
                     contextQName = test.getName();
-                else
+                } else {
                     contextQName = new QName(test.getName());
-                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                    contextQName.setNameType(ElementValue.ATTRIBUTE);
+                }
+                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                    contextQName = new QName(contextQName.getLocalPart(), contextQName.getNamespaceURI(), contextQName.getPrefix(), ElementValue.ATTRIBUTE);
+                }
                 axis = firstStep.getAxis();
                 optimizeChild = steps.size() == 1 &&
                         (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
@@ -276,7 +279,7 @@ public class Lookup extends Function implements Optimizable {
     }
 
     private RangeIndex.Operator getOperator() {
-        final String calledAs = getSignature().getName().getLocalName();
+        final String calledAs = getSignature().getName().getLocalPart();
         return RangeIndexModule.OPERATOR_MAP.get(calledAs);
     }
 

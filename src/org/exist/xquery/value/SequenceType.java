@@ -130,8 +130,8 @@ public class SequenceType {
 				if (!nodeName.getNamespaceURI().equals(realNode.getNamespaceURI()))
 					{return false;}
 			}
-			if (nodeName.getLocalName() != null) {
-				return nodeName.getLocalName().equals(realNode.getLocalName());
+			if (nodeName.getLocalPart() != null) {
+				return nodeName.getLocalPart().equals(realNode.getLocalName());
 			}
 		}
 		return true;

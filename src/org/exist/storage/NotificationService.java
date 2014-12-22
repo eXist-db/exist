@@ -22,11 +22,11 @@
 package org.exist.storage;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.numbering.NodeId;
 
 import java.util.IdentityHashMap;
+import org.exist.dom.persistent.IStoredNode;
 
 /**
  * Global notification service for document updates. Other classes
@@ -84,7 +84,7 @@ public class NotificationService extends IdentityHashMap<UpdateListener, Object>
 	 * Notify all subscribers that a node has been moved. Nodes may be moved during a
      * defragmentation run.
 	 */
-	public synchronized void notifyMove(NodeId oldNodeId, StoredNode newNode) {
+	public synchronized void notifyMove(NodeId oldNodeId, IStoredNode newNode) {
 		for (final UpdateListener listener : keySet()) {
 	        listener.nodeMoved(oldNodeId, newNode);
 		}

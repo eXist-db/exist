@@ -51,7 +51,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.exist.dom.QName;
 import org.exist.management.impl.SanityReport;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;

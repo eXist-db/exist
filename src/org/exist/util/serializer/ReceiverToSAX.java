@@ -21,8 +21,8 @@
 */
 package org.exist.util.serializer;
 
+import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
 import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -109,18 +109,18 @@ public class ReceiverToSAX implements Receiver {
 			QName attrQName;
 			for(int i = 0; i < attribs.getLength(); i++) {
 				attrQName = attribs.getQName(i);
-				a.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(), attrQName.getStringValue(),
+				a.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalPart(), attrQName.getStringValue(),
 						"CDATA", attribs.getValue(i));
 			}
 		}
-		contentHandler.startElement(qname.getNamespaceURI(), qname.getLocalName(), qname.getStringValue(), a);
+		contentHandler.startElement(qname.getNamespaceURI(), qname.getLocalPart(), qname.getStringValue(), a);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.Receiver#endElement(org.exist.dom.QName)
 	 */
 	public void endElement(QName qname) throws SAXException {
-		contentHandler.endElement(qname.getNamespaceURI(), qname.getLocalName(), qname.getStringValue());
+		contentHandler.endElement(qname.getNamespaceURI(), qname.getLocalPart(), qname.getStringValue());
 	}
 
 	/* (non-Javadoc)
@@ -183,7 +183,8 @@ public class ReceiverToSAX implements Receiver {
         // not supported with this receiver
     }
 
-    public void setCurrentNode(StoredNode node) {
+    @Override
+    public void setCurrentNode(INodeHandle node) {
         // just ignore
     }
     

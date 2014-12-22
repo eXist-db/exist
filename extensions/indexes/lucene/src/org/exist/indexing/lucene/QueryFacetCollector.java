@@ -57,8 +57,8 @@ import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.FixedBitSet;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

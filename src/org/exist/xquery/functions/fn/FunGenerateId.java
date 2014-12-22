@@ -1,8 +1,8 @@
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 

@@ -154,9 +154,12 @@ public class FulltextIndexSpec {
                                 " in index definition");
                     }
                 }
-                final QName qname = new QName(localName, namespaceURI, null);
-                if (isAttribute)
-                    {qname.setNameType(ElementValue.ATTRIBUTE);}
+                final QName qname;
+                if (isAttribute) {
+                    qname = new QName(localName, namespaceURI, ElementValue.ATTRIBUTE);
+                } else {
+                    qname = new QName(localName, namespaceURI);
+                }
                 qnameSpecs.put(qname, new QNameSpec(qname, elem));
             }
 		}

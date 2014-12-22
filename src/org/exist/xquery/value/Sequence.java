@@ -21,9 +21,9 @@
 package org.exist.xquery.value;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -35,10 +35,10 @@ import java.util.Iterator;
  * 
  * A sequence is a sequence of items. Each item is either an atomic value or a
  * node. A single item is also a sequence, containing only the item. The base classes for 
- * {@link org.exist.xquery.value.AtomicValue atomic values} and {@link org.exist.dom.NodeProxy
+ * {@link org.exist.xquery.value.AtomicValue atomic values} and {@link org.exist.dom.persistent.NodeProxy
  * nodes} thus implement the Sequence interface.
  * 
- * Also, a {@link org.exist.dom.NodeSet node set} is a special type of sequence, where all 
+ * Also, a {@link org.exist.dom.persistent.NodeSet node set} is a special type of sequence, where all 
  * items are of type node.  
  */
 public interface Sequence {
@@ -266,7 +266,7 @@ public interface Sequence {
      * @param oldNodeId
      * @param newNode
      */
-    void nodeMoved(NodeId oldNodeId, StoredNode newNode);
+    void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Peristent nodes and NOT also in-memory nodes
 
     public boolean isCacheable();
     

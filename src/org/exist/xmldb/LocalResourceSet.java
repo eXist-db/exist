@@ -30,8 +30,8 @@ import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.SortedNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.SortedNodeSet;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -206,9 +206,9 @@ public class LocalResourceSet implements ResourceSet {
 			// than the one by which this resource set has been
 			// generated: adjust if necessary.
 			LocalCollection coll = collection;
-			if (p.getDocument().getCollection() == null
-				|| coll.getCollection().getId() != p.getDocument().getCollection().getId()) {
-				coll = new LocalCollection(user, brokerPool, null, p.getDocument().getCollection().getURI(), coll.getAccessContext());
+			if (p.getOwnerDocument().getCollection() == null
+				|| coll.getCollection().getId() != p.getOwnerDocument().getCollection().getId()) {
+				coll = new LocalCollection(user, brokerPool, null, p.getOwnerDocument().getCollection().getURI(), coll.getAccessContext());
 				coll.properties = outputProperties;
 			}
 			res = new LocalXMLResource(user, brokerPool, coll, p);

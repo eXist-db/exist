@@ -1,7 +1,7 @@
 package org.exist.storage;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.numbering.NodeId;
 
 public interface UpdateListener {
@@ -35,7 +35,7 @@ public interface UpdateListener {
      * @param oldNodeId
      * @param newNode
      */
-    public void nodeMoved(NodeId oldNodeId, StoredNode newNode);
+    public void nodeMoved(NodeId oldNodeId, NodeHandle newNode);
 
     /**
      * Called when the listener is removed from the notification service

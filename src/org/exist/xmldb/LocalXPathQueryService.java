@@ -50,13 +50,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.security.Permission;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -134,10 +134,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	public ResourceSet query(XMLResource res, String query, String sortBy)
 		throws XMLDBException {
 		final Node n = ((LocalXMLResource) res).root;
-		if (n != null && n instanceof org.exist.memtree.NodeImpl) {
+		if (n != null && n instanceof org.exist.dom.memtree.NodeImpl) {
 			
 			final XmldbURI[] docs = new XmldbURI[] { XmldbURI.create(res.getParentCollection().getName()) };
-			return doQuery(query, docs, (org.exist.memtree.NodeImpl)n, sortBy);
+			return doQuery(query, docs, (org.exist.dom.memtree.NodeImpl)n, sortBy);
 		}
 		final NodeProxy node = ((LocalXMLResource) res).getNode();
 		if (node == null) {
@@ -148,7 +148,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		} else {
 			final NodeSet set = new ExtArrayNodeSet(1);
 			set.add(node);
-			final XmldbURI[] docs = new XmldbURI[] { node.getDocument().getURI() };
+			final XmldbURI[] docs = new XmldbURI[] { node.getOwnerDocument().getURI() };
 			return doQuery(query, docs, set, sortBy);
 		}
 	}
@@ -167,7 +167,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		} else {
 			final NodeSet set = new ExtArrayNodeSet(1);
 			set.add(node);
-			final XmldbURI[] docs = new XmldbURI[] { node.getDocument().getURI() };
+			final XmldbURI[] docs = new XmldbURI[] { node.getOwnerDocument().getURI() };
 			return execute(docs, set, expression, null);
 		}
 	}

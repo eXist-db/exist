@@ -6,7 +6,7 @@
 package org.exist.storage.index;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;

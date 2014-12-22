@@ -24,8 +24,8 @@ package org.exist.xquery;
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.XMLChar;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -35,6 +35,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.XMLConstants;
 import java.util.Iterator;
 
 /**
@@ -131,7 +132,7 @@ public class ElementConstructor extends NodeConstructor {
             decls[namespaceDecls.length] = qn;          
             namespaceDecls = decls;
         }
-        //context.inScopeNamespaces.put(qn.getLocalName(), qn.getNamespaceURI());
+        //context.inScopeNamespaces.put(qn.getLocalPart(), qn.getNamespaceURI());
 	}
 	
     /* (non-Javadoc)
@@ -145,11 +146,11 @@ public class ElementConstructor extends NodeConstructor {
             for(int i = 0; i < namespaceDecls.length; i++) {
                 if ("".equals(namespaceDecls[i].getNamespaceURI())) {
                     // TODO: the specs are unclear here: should we throw XQST0085 or not?
-                    context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
-//					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
+                    context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart());
+//					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart()) == null)
 //		        		throw new XPathException(getASTNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
                 } else
-                    {context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());}
+                    {context.declareInScopeNamespace(namespaceDecls[i].getLocalPart(), namespaceDecls[i].getNamespaceURI());}
             }
         }
         final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
@@ -184,11 +185,11 @@ public class ElementConstructor extends NodeConstructor {
                 for(int i = 0; i < namespaceDecls.length; i++) {
                     //if ("".equals(namespaceDecls[i].getNamespaceURI())) {
                         // TODO: the specs are unclear here: should we throw XQST0085 or not?
-                    //	context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
-//					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
+                    //	context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart());
+//					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart()) == null)
 //		        		throw new XPathException(getAS      TNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
                     //} else
-                        context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+                        context.declareInScopeNamespace(namespaceDecls[i].getLocalPart(), namespaceDecls[i].getNamespaceURI());
                 }
             }
             // process attributes
@@ -223,13 +224,13 @@ public class ElementConstructor extends NodeConstructor {
             			String prefix = context.getPrefixForURI(namespaceURI);
             			
             			if (prefix != null) {
-            				attrQName.setPrefix(prefix);
+                            attrQName = new QName(attrQName.getLocalPart(), attrQName.getNamespaceURI(), prefix);
             			} else {
             				//generate prefix
             				for (final int n = 1; i < 100; i++) {
             					prefix = "eXnsp"+n;
             		            if (context.getURIForPrefix(prefix) == null) {
-            		            	attrQName.setPrefix(prefix);
+                                    attrQName = new QName(attrQName.getLocalPart(), attrQName.getNamespaceURI(), prefix);
             		            	break;
             		            }
             		            
@@ -240,12 +241,12 @@ public class ElementConstructor extends NodeConstructor {
             			}
             		}
                     
-                    if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
-                        {throw new XPathException(this, ErrorCodes.XQST0040, "'" + attrQName.getLocalName() + "' is a duplicate attribute name");}
+                    if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalPart()) != -1)
+                        {throw new XPathException(this, ErrorCodes.XQST0040, "'" + attrQName.getLocalPart() + "' is a duplicate attribute name");}
                     
                     v = DynamicAttributeConstructor.normalize(this, attrQName, attrValues.getStringValue());
                     
-                    attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
+                    attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalPart(),
                             attrQName.getStringValue(), "CDATA", v);
                 }
             }
@@ -256,6 +257,7 @@ public class ElementConstructor extends NodeConstructor {
             if(!qnameSeq.hasOne())
             	{throw new XPathException(this, ErrorCodes.XPTY0004, "Type error: the node name should evaluate to a single item");}
             final Item qnitem = qnameSeq.itemAt(0);
+
             QName qn;
             if (qnitem instanceof QNameValue) {
                 qn = ((QNameValue)qnitem).getQName();
@@ -276,13 +278,13 @@ public class ElementConstructor extends NodeConstructor {
                      qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
                  }
                  */
-                if (qn.getPrefix() == null && context.getInScopeNamespace("") != null) {
-                     qn.setNamespaceURI(context.getInScopeNamespace(""));
+                if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
+                     qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
                 }
              }
 
             //Not in the specs but... makes sense
-            if(!XMLChar.isValidName(qn.getLocalName()))
+            if(!XMLChar.isValidName(qn.getLocalPart()))
             	{throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");}
 
             // add namespace declaration nodes
@@ -293,7 +295,7 @@ public class ElementConstructor extends NodeConstructor {
                 }
             }
             // do we need to add a namespace declaration for the current node?
-            if (qn.needsNamespaceDecl()) {
+            if (qn.hasNamespace()) {
                 if (context.getInScopePrefix(qn.getNamespaceURI()) == null) {
                     String prefix = qn.getPrefix();
                     if (prefix == null || prefix.length() == 0)

@@ -98,7 +98,7 @@ public class FunctionSignature {
     }
         
     public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final FunctionSignature deprecatedBy) {
-        this(name, description, arguments, returnType, false, "Moved to the module: " + deprecatedBy.getName().getNamespaceURI() + ", you should now use '" + deprecatedBy.getName().getPrefix() + ":" + deprecatedBy.getName().getLocalName() + "' instead!");
+        this(name, description, arguments, returnType, false, "Moved to the module: " + deprecatedBy.getName().getNamespaceURI() + ", you should now use '" + deprecatedBy.getName().getPrefix() + ":" + deprecatedBy.getName().getLocalPart() + "' instead!");
     }
 
     public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final boolean overloaded, final String deprecated) {
@@ -217,7 +217,7 @@ public class FunctionSignature {
         if(annotations != null) {
             for(final Annotation annot : annotations) {
                 final QName qn = annot.getName();
-                if(qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && "private".equals(qn.getLocalName())) {
+                if(qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && "private".equals(qn.getLocalPart())) {
                     return true;
                 }
             }
@@ -270,7 +270,7 @@ public class FunctionSignature {
             return getArgumentCount() == other.getArgumentCount();
         }
         
-        if(name.equalsSimple(other.name)) {
+        if(name.equals(other.name)) {
             return getArgumentCount() == other.getArgumentCount();
         }
         

@@ -95,7 +95,7 @@ public class Option {
 	
 	public boolean equals(Object other) {
 		if (other instanceof Option) {
-			return qname.equalsSimple(((Option)other).qname);
+			return qname.equals(((Option) other).qname);
 		}
 		return false;
 	}

@@ -22,8 +22,8 @@
  */
 package org.exist.xquery;
 
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.XMLChar;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;

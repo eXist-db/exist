@@ -32,11 +32,8 @@ import org.exist.EXistException;
 import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.DocumentTriggerProxy;
-import org.exist.collections.triggers.CollectionTriggerProxy;
 import org.exist.config.Configuration;
-import org.exist.dom.DocumentAtExist;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.plugin.Plug;
 import org.exist.plugin.PluginsManager;
 import org.exist.security.PermissionDeniedException;
@@ -45,6 +42,7 @@ import org.exist.storage.MetaStorage;
 import org.exist.storage.md.xquery.MetadataModule;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.XQueryContext;
+import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -169,38 +167,66 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 
 	@Override
 	public void backup(Collection collection, AttributesImpl attrs) {
-	    if (collection == null)
-	        return;
+	    if (collection == null) {
+			return;
+		}
+
+		final Metas ms = md.getMetas(collection.getURI());
+		if(ms == null) {
+			LOG.warn("No metadata found to backup for collection: "  + collection.getURI());
+			return;
+		}
 	    
 //		System.out.println("backup collection "+colection.getURI());
-		backup(md.getMetas(collection.getURI()), attrs);
+		backup(ms, attrs);
 	}
 
 	@Override
 	public void backup(Collection collection, SAXSerializer serializer) throws SAXException {
-	    if (collection == null)
-	        return;
-	    
+	    if (collection == null) {
+			return;
+		}
+
+		final Metas ms = md.getMetas(collection.getURI());
+		if(ms == null) {
+			LOG.warn("No metadata found to backup for collection: "  + collection.getURI());
+			return;
+		}
+
 //		System.out.println("backup collection "+colection.getURI());
-		backup(md.getMetas(collection.getURI()), serializer);
+		backup(ms, serializer);
 	}
 
 	@Override
-	public void backup(DocumentAtExist document, AttributesImpl attrs) {
-	    if (document == null)
-	        return;
-	    
+	public void backup(Document document, AttributesImpl attrs) {
+	    if (document == null) {
+			return;
+		}
+
+		final Metas ms = md.getMetas(document);
+		if(ms == null) {
+			LOG.warn("No metadata found to backup for document: "  + ((DocumentImpl)document).getURI());
+			return;
+		}
+
 //		System.out.println("backup document "+document.getURI());
-		backup(md.getMetas(document), attrs);
+		backup(ms, attrs);
 	}
 
 	@Override
-	public void backup(DocumentAtExist document, SAXSerializer serializer) throws SAXException {
-	    if (document == null)
-	        return;
-	    
+	public void backup(Document document, SAXSerializer serializer) throws SAXException {
+	    if (document == null) {
+			return;
+		}
+
+		final Metas ms = md.getMetas(document);
+		if(ms == null) {
+			LOG.warn("No metadata found to backup for document: "  + ((DocumentImpl)document).getURI());
+			return;
+		}
+
 //		System.out.println("backup document "+document.getURI());
-		backup(md.getMetas(document), serializer);
+		backup(ms, serializer);
 	}
 
 	//restore methods
@@ -277,20 +303,20 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	}
 
 	@Override
-	public void startDocumentRestore(DocumentAtExist document, Attributes atts) {
+	public void startDocumentRestore(Document document, Attributes atts) {
 	    if (document == null)
 	        return;
 	    
 //		System.out.println("startDocument "+document.getURI());
 		String uuid = atts.getValue(NAMESPACE_URI, UUID);
 		if (uuid != null)
-			currentMetas = md.replaceMetas(document.getURI(), uuid);
+			currentMetas = md.replaceMetas(document instanceof DocumentImpl ? ((DocumentImpl)document).getURI() : null, uuid);
 		else
 			currentMetas = md.addMetas(document); 
 	}
 
 	@Override
-	public void endDocumentRestore(DocumentAtExist document) {
+	public void endDocumentRestore(Document document) {
 //		System.out.println("endDocumentRestore "+document.getURI());
 	}
 

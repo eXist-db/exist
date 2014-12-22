@@ -253,8 +253,8 @@ public class FunGetDateComponent extends BasicFunction {
 			} else if (isCalledAs("timezone-from-dateTime") || isCalledAs("timezone-from-date") || isCalledAs("timezone-from-time")) {
 				result = date.getTimezone();
 			} else {
-                logger.error("can't handle function " + mySignature.getName().getLocalName());
-				throw new Error("can't handle function " + mySignature.getName().getLocalName());
+                logger.error("can't handle function " + mySignature.getName().getLocalPart());
+				throw new Error("can't handle function " + mySignature.getName().getLocalPart());
 			}
 		}
 		

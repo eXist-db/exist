@@ -32,7 +32,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 
-import org.exist.memtree.DocumentImpl;
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.security.Subject;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;

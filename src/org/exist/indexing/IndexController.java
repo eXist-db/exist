@@ -21,8 +21,14 @@
  */
 package org.exist.indexing;
 
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.MetaStorage;
 import org.exist.storage.MetaStreamListener;
@@ -211,11 +217,11 @@ public class IndexController {
      * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE},
      * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      */
-    public void reindex(Txn transaction, StoredNode reindexRoot, int mode) {
+    public void reindex(Txn transaction, IStoredNode<? extends IStoredNode> reindexRoot, int mode) {
         if (reindexRoot == null)
             {return;}
-        reindexRoot = broker.objectWith(new NodeProxy(reindexRoot.getDocument(), reindexRoot.getNodeId()));
-        setDocument(reindexRoot.getDocument(), mode);
+        reindexRoot = broker.objectWith(new NodeProxy(reindexRoot.getOwnerDocument(), reindexRoot.getNodeId()));
+        setDocument(reindexRoot.getOwnerDocument(), mode);
         getStreamListener();
         IndexUtils.scanNode(broker, transaction, reindexRoot, listener);
         flush();
@@ -230,7 +236,7 @@ public class IndexController {
      * @param path the NodePath of the node
      * @return the top-most root node to be re-indexed
      */
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert) {
+    public IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert) {
         return getReindexRoot(node, path, insert, false);
     }
 
@@ -244,8 +250,8 @@ public class IndexController {
      * @param includeSelf if set to true, the current node itself will be included in the check
      * @return the top-most root node to be re-indexed
      */
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
-        StoredNode next, top = null;
+    public IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+        IStoredNode next, top = null;
         for (final IndexWorker indexWorker : indexWorkers.values()) {
             next = indexWorker.getReindexRoot(node, path, insert, includeSelf);
             if (next != null && (top == null || top.getNodeId().isDescendantOf(next.getNodeId()))) {
@@ -303,7 +309,7 @@ public class IndexController {
      * @param path the node's NodePath
      * @param listener the StreamListener which receives the index events
      */
-    public void indexNode(Txn transaction, StoredNode node, NodePath path, StreamListener listener) {
+    public void indexNode(Txn transaction, IStoredNode node, NodePath path, StreamListener listener) {
         if (listener != null) {
             switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
@@ -311,7 +317,7 @@ public class IndexController {
                 break;
             case Node.TEXT_NODE :
             case Node.CDATA_SECTION_NODE :
-                listener.characters(transaction, (CharacterDataImpl) node, path);
+                listener.characters(transaction, (AbstractCharacterData) node, path);
                 break;
             case Node.ATTRIBUTE_NODE :
                 listener.attribute(transaction, (AttrImpl) node, path);

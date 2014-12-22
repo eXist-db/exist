@@ -41,7 +41,7 @@ import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.*;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
@@ -913,7 +913,7 @@ public class SecurityManagerImpl implements SecurityManager {
             //uri = uri.removeLastSegment();
             //String realmId = uri.lastSegment().toString();
             //AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
-            final Configuration conf = Configurator.parse(document);
+            final Configuration conf = Configurator.parse(broker.getBrokerPool(), document);
 
         	saving.put(document.getURI(), conf.getPropertyInteger("id"));
         }
@@ -940,7 +940,7 @@ public class SecurityManagerImpl implements SecurityManager {
             final String realmId = uri.lastSegment().toString();
 			
             final AbstractRealm realm = (AbstractRealm)findRealmForRealmId(realmId);
-            final Configuration conf = Configurator.parse(document);
+            final Configuration conf = Configurator.parse(broker.getBrokerPool(), document);
 
             Integer id = -1;
             if(isRemoved) {

@@ -21,7 +21,7 @@
  */
 package org.exist.fulltext;
 
-import org.exist.dom.Match;
+import org.exist.dom.persistent.Match;
 import org.exist.numbering.NodeId;
 
 public class FTMatch extends Match {

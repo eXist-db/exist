@@ -24,9 +24,9 @@ package org.exist.xquery.functions.util;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.InMemoryNodeSet;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.InMemoryNodeSet;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;

@@ -7,7 +7,12 @@ import javax.xml.datatype.*;
 
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.*;
-import org.exist.dom.*;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
@@ -30,7 +35,7 @@ public class Node extends Item {
 		super(item, namespaceBindings, db);
 		if (item instanceof NodeProxy) {
 			NodeProxy proxy = (NodeProxy) item;
-			String docPath = proxy.getDocument().getURI().getCollectionPath();
+			String docPath = proxy.getOwnerDocument().getURI().getCollectionPath();
 			staleMarker.track(docPath.substring(0, docPath.lastIndexOf('/')));	// folder
 			staleMarker.track(docPath);	// document
 			staleMarker.track(docPath + "#" + proxy.getNodeId());	// node
@@ -104,7 +109,7 @@ public class Node extends Item {
 			} catch (IOException e) {
 				throw new RuntimeException("unable to serialize node's id to compute hashCode", e);
 			}
-			return proxy.getDocument().getURI().hashCode() ^ Arrays.hashCode(buf.toByteArray());
+			return proxy.getOwnerDocument().getURI().hashCode() ^ Arrays.hashCode(buf.toByteArray());
 		} else {
 			return item.hashCode();
 		}
@@ -142,7 +147,7 @@ public class Node extends Item {
 			throw new DatabaseException("can't compare different node types, since they can never be in the same document");
 		if (nv1.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy n1 = (NodeProxy) item, n2 = (NodeProxy) node.item;
-			if (n1.getDocument().getDocId() != n2.getDocument().getDocId()) 
+			if (n1.getOwnerDocument().getDocId() != n2.getOwnerDocument().getDocId()) 
 				throw new DatabaseException("can't compare document order of nodes in disparate documents:  this node is in " + document() + " and the argument node in " + node.document());
 			if (n1.getNodeId().equals(n2.getNodeId())) return 0;
 			try {
@@ -151,8 +156,8 @@ public class Node extends Item {
 				throw new DatabaseException("unable to compare nodes", e);
 			}
 		} else if (nv1.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-			org.exist.memtree.NodeImpl n1 = (org.exist.memtree.NodeImpl) nv1, n2 = (org.exist.memtree.NodeImpl) nv2;
-			if (n1.getDocument() != n2.getDocument())
+			org.exist.dom.memtree.NodeImpl n1 = (org.exist.dom.memtree.NodeImpl) nv1, n2 = (org.exist.dom.memtree.NodeImpl) nv2;
+			if (n1.getOwnerDocument() != n2.getOwnerDocument())
 				throw new DatabaseException("can't compare document order of in-memory nodes created separately");
 			try {
 				return n1.before(n2, false) ? -1 : +1;
@@ -173,7 +178,7 @@ public class Node extends Item {
 	public XMLDocument document() {
 		staleMarker.check();
 		if (document == null) try {
-			document = Document.newInstance(((NodeProxy) item).getDocument(), this).xml();
+			document = Document.newInstance(((NodeProxy) item).getOwnerDocument(), this).xml();
 		} catch (ClassCastException e) {
 			throw new UnsupportedOperationException("node is not part of a document in the database");
 		}
@@ -189,19 +194,21 @@ public class Node extends Item {
 	public ElementBuilder<Node> append() {
 		staleMarker.check();	// do an early check to fail-fast, we'll check again on completion
 		try {
-			final StoredNode node = (StoredNode) getDOMNode(); 
+			final StoredNode node = (StoredNode) getDOMNode();
 			return new ElementBuilder<Node>(namespaceBindings, true, new ElementBuilder.CompletedCallback<Node>() {
 				public Node completed(org.w3c.dom.Node[] nodes) {
 					Transaction tx = db.requireTransactionWithBroker();
 					try {
-						tx.lockWrite(node.getDocument());
+						tx.lockWrite(node.getOwnerDocument());
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						node.appendChildren(tx.tx, toNodeList(nodes), 0);
-						StoredNode result = (StoredNode) node.getLastChild();
+						NodeHandle result = (NodeHandle) node.getLastChild();
 						touchDefragAndFireTriggerAfter(tx, trigger);
 						tx.commit();
-						if (result == null) return null;
-						NodeProxy proxy = new NodeProxy((DocumentImpl) result.getOwnerDocument(), result.getNodeId(), result.getNodeType(), result.getInternalAddress());
+						if (result == null) {
+                            return null;
+                        }
+						NodeProxy proxy = new NodeProxy(result);
 						return new Node(proxy, namespaceBindings.extend(), db);
 					} catch (DOMException e) {
 						throw new DatabaseException(e);
@@ -213,7 +220,7 @@ public class Node extends Item {
 				}
 			});
 		} catch (ClassCastException e) {
-			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
+			if (getDOMNode() instanceof org.exist.dom.memtree.NodeImpl) {
 				throw new UnsupportedOperationException("appends to in-memory nodes are not supported");
 			} else {
 				throw new UnsupportedOperationException("cannot append to a " + Type.getTypeName(item.getType()));
@@ -242,7 +249,9 @@ public class Node extends Item {
 		} else {
 			Transaction tx = db.requireTransactionWithBroker();
 			try {
-				if (parent instanceof StoredNode) tx.lockWrite(((StoredNode) parent).getDocument());
+				if (parent instanceof NodeHandle) {
+                    tx.lockWrite(((NodeHandle) parent).getOwnerDocument());
+                }
 				DocumentTrigger trigger = fireTriggerBefore(tx);
 				parent.removeChild(tx.tx, child);
 				touchDefragAndFireTriggerAfter(tx, trigger);
@@ -316,7 +325,7 @@ public class Node extends Item {
 				}
 			});
 		} catch (ClassCastException e) {
-			if (getDOMNode() instanceof org.exist.memtree.NodeImpl) {
+			if (getDOMNode() instanceof org.exist.dom.memtree.NodeImpl) {
 				throw new UnsupportedOperationException("replacement of in-memory nodes is not supported");
 			} else {
 				throw new UnsupportedOperationException("cannot replace a " + Type.getTypeName(item.getType()));
@@ -337,7 +346,7 @@ public class Node extends Item {
 				public void completed(NodeList removeList, NodeList addList) {
 					Transaction tx = db.requireTransactionWithBroker();
 					try {
-						DocumentImpl doc = (DocumentImpl) elem.getOwnerDocument();
+						DocumentImpl doc = elem.getOwnerDocument();
 						tx.lockWrite(doc);
 						DocumentTrigger trigger = fireTriggerBefore(tx);
 						elem.removeAppendAttributes(tx.tx, removeList, addList);
@@ -351,7 +360,7 @@ public class Node extends Item {
 				}
 			});
 		} catch (ClassCastException e) {
-			if (getDOMNode() instanceof org.exist.memtree.ElementImpl) {
+			if (getDOMNode() instanceof org.exist.dom.memtree.ElementImpl) {
 				throw new UnsupportedOperationException("updates on in-memory nodes are not supported");
 			} else {
 				throw new UnsupportedOperationException("cannot update attributes on a " + Type.getTypeName(item.getType()));
@@ -362,7 +371,7 @@ public class Node extends Item {
 	private DocumentTrigger fireTriggerBefore(Transaction tx) throws TriggerException {
 		if (!(item instanceof NodeProxy)) return null;
 		
-		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
+		DocumentImpl docimpl = ((NodeProxy) item).getOwnerDocument();
 		Collection col = docimpl.getCollection();
 		
 		DocumentTrigger trigger = new DocumentTriggers(tx.broker, null, col, col.getConfiguration(tx.broker));
@@ -373,12 +382,12 @@ public class Node extends Item {
 	}
 	
 	private void touchDefragAndFireTriggerAfter(Transaction tx, DocumentTrigger trigger) throws TriggerException {
-		DocumentImpl doc = ((NodeProxy) item).getDocument();
+		DocumentImpl doc = ((NodeProxy) item).getOwnerDocument();
 		doc.getMetadata().setLastModified(System.currentTimeMillis());
 		tx.broker.storeXMLResource(tx.tx, doc);
-		if (item instanceof NodeProxy) Database.queueDefrag(((NodeProxy) item).getDocument());
+		if (item instanceof NodeProxy) Database.queueDefrag(((NodeProxy) item).getOwnerDocument());
 		if (trigger == null) return;
-		DocumentImpl docimpl = ((NodeProxy) item).getDocument();
+		DocumentImpl docimpl = ((NodeProxy) item).getOwnerDocument();
 		
 		trigger.afterUpdateDocument(tx.broker, tx.tx, docimpl);
 	}

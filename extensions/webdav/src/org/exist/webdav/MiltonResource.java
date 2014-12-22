@@ -103,22 +103,22 @@ public class MiltonResource implements Resource {
     }
 
     /**
-     *  Converts an org.exist.dom.LockToken into com.bradmcevoy.http.LockToken.
+     *  Converts an org.exist.dom.persistent.LockToken into com.bradmcevoy.http.LockToken.
      *
      * @param existLT Exist-db representation of a webdav token.
      * @return Milton representation of a webdav token.
      */
-    protected LockToken convertToken(org.exist.dom.LockToken existLT) {
+    protected LockToken convertToken(org.exist.dom.persistent.LockToken existLT) {
 
         // LockInfo : construct scope
         LockInfo.LockScope scope = null;
 
         switch (existLT.getScope()) {
-            case org.exist.dom.LockToken.LOCK_SCOPE_SHARED:
+            case org.exist.dom.persistent.LockToken.LOCK_SCOPE_SHARED:
                 scope = LockInfo.LockScope.SHARED;
                 break;
 
-            case org.exist.dom.LockToken.LOCK_SCOPE_EXCLUSIVE:
+            case org.exist.dom.persistent.LockToken.LOCK_SCOPE_EXCLUSIVE:
                 scope = LockInfo.LockScope.EXCLUSIVE;
                 break;
 
@@ -131,7 +131,7 @@ public class MiltonResource implements Resource {
         LockInfo.LockType type = null;
 
         switch (existLT.getType()) {
-            case org.exist.dom.LockToken.LOCK_TYPE_WRITE:
+            case org.exist.dom.persistent.LockToken.LOCK_TYPE_WRITE:
                 type = LockInfo.LockType.WRITE;
                 break;
 
@@ -148,7 +148,7 @@ public class MiltonResource implements Resource {
         LockInfo.LockDepth depth = null;
 
         switch (existLT.getDepth()) {
-            case org.exist.dom.LockToken.LOCK_DEPTH_INFINIY:
+            case org.exist.dom.persistent.LockToken.LOCK_DEPTH_INFINIY:
                 depth = LockInfo.LockDepth.INFINITY;
                 break;
 
@@ -165,11 +165,11 @@ public class MiltonResource implements Resource {
         Long timeout = existLT.getTimeOut();
 
         // Special treatment when no LOCK was present
-        if(timeout == org.exist.dom.LockToken.NO_LOCK_TIMEOUT){
+        if(timeout == org.exist.dom.persistent.LockToken.NO_LOCK_TIMEOUT){
             timeout=null;
 
         // Special treatment infinite lock
-        } else if(timeout == org.exist.dom.LockToken.LOCK_TIMEOUT_INFINITE){ 
+        } else if(timeout == org.exist.dom.persistent.LockToken.LOCK_TIMEOUT_INFINITE){ 
             timeout=Long.MAX_VALUE;
         }
 
@@ -184,19 +184,19 @@ public class MiltonResource implements Resource {
     }
 
     /**
-     *  Converts an org.exist.dom.LockToken into com.bradmcevoy.http.LockToken.
+     *  Converts an org.exist.dom.persistent.LockToken into com.bradmcevoy.http.LockToken.
      */
-    protected org.exist.dom.LockToken convertToken(LockTimeout timeout, LockInfo lockInfo) {
+    protected org.exist.dom.persistent.LockToken convertToken(LockTimeout timeout, LockInfo lockInfo) {
 
-        org.exist.dom.LockToken existToken = new org.exist.dom.LockToken();
+        org.exist.dom.persistent.LockToken existToken = new org.exist.dom.persistent.LockToken();
 
         // Set lock depth
         switch (lockInfo.depth) {
             case ZERO:
-                existToken.setDepth(org.exist.dom.LockToken.LOCK_DEPTH_0);
+                existToken.setDepth(org.exist.dom.persistent.LockToken.LOCK_DEPTH_0);
                 break;
             case INFINITY:
-                existToken.setDepth(org.exist.dom.LockToken.LOCK_DEPTH_INFINIY);
+                existToken.setDepth(org.exist.dom.persistent.LockToken.LOCK_DEPTH_INFINIY);
                 break;
         }
 
@@ -204,33 +204,33 @@ public class MiltonResource implements Resource {
         // Set lock scope
         switch (lockInfo.scope) {
             case EXCLUSIVE:
-                existToken.setScope(org.exist.dom.LockToken.LOCK_SCOPE_EXCLUSIVE);
+                existToken.setScope(org.exist.dom.persistent.LockToken.LOCK_SCOPE_EXCLUSIVE);
                 break;
             case SHARED:
-                existToken.setScope(org.exist.dom.LockToken.LOCK_SCOPE_SHARED);
+                existToken.setScope(org.exist.dom.persistent.LockToken.LOCK_SCOPE_SHARED);
                 break;
             case NONE:
-                existToken.setScope(org.exist.dom.LockToken.LOCK_SCOPE_NONE);
+                existToken.setScope(org.exist.dom.persistent.LockToken.LOCK_SCOPE_NONE);
                 break;
         }
 
         // Set lock type (read,write)
         switch (lockInfo.type) {
             case READ:
-                existToken.setScope(org.exist.dom.LockToken.LOCK_TYPE_NONE);
+                existToken.setScope(org.exist.dom.persistent.LockToken.LOCK_TYPE_NONE);
                 break;
             case WRITE:
-                existToken.setScope(org.exist.dom.LockToken.LOCK_TYPE_WRITE);
+                existToken.setScope(org.exist.dom.persistent.LockToken.LOCK_TYPE_WRITE);
                 break;
         }
 
 
         // Set timeouts
         if (timeout == null || timeout.getSeconds() == null) {
-            existToken.setTimeOut(org.exist.dom.LockToken.NO_LOCK_TIMEOUT);
+            existToken.setTimeOut(org.exist.dom.persistent.LockToken.NO_LOCK_TIMEOUT);
 
         } else if (timeout.getSeconds() == Long.MAX_VALUE ) {
-            existToken.setTimeOut(org.exist.dom.LockToken.LOCK_TIMEOUT_INFINITE);
+            existToken.setTimeOut(org.exist.dom.persistent.LockToken.LOCK_TIMEOUT_INFINITE);
             
         } else {
             Long futureDate = (new Date().getTime())/1000 + timeout.getSeconds();

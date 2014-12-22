@@ -24,13 +24,13 @@ import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeImpl;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeImpl;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -64,7 +64,7 @@ public class Rename extends Modification {
     /*
      * (non-Javadoc)
      * 
-     * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
+     * @see org.exist.xupdate.Modification#process(org.exist.dom.persistent.DocumentSet)
      */
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException, TriggerException {
@@ -74,16 +74,14 @@ public class Rename extends Modification {
         try {
             final StoredNode[] ql = selectAndLock(transaction);
             NodeImpl parent;
-            final IndexListener listener = new IndexListener(ql);
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             final String newName = children.item(0).getNodeValue();
             for (int i = 0; i < ql.length; i++) {
                 final StoredNode node = ql[i];
-                final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
-                doc.getMetadata().setIndexListener(listener);
                 parent = (NodeImpl) node.getParentNode();
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
@@ -102,7 +100,6 @@ public class Rename extends Modification {
                         throw new EXistException("unsupported node-type");
                 }
 
-                doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);

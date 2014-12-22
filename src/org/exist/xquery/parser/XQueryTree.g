@@ -35,13 +35,14 @@ header {
 	import java.util.TreeSet;
 	import java.util.HashMap;
 	import java.util.Stack;
+	import javax.xml.XMLConstants;
 	import org.exist.storage.BrokerPool;
 	import org.exist.storage.DBBroker;
 	import org.exist.storage.analysis.Tokenizer;
 	import org.exist.EXistException;
 	import org.exist.Namespaces;
-	import org.exist.dom.DocumentSet;
-	import org.exist.dom.DocumentImpl;
+	import org.exist.dom.persistent.DocumentSet;
+	import org.exist.dom.persistent.DocumentImpl;
 	import org.exist.dom.QName;
 	import org.exist.security.PermissionDeniedException;
 	import org.exist.util.XMLChar;
@@ -134,7 +135,7 @@ options {
 	private boolean annotationValid(QName qname) {
 		String ns = qname.getNamespaceURI();
         if (ns.equals(Namespaces.XPATH_FUNCTIONS_NS)) {
-			String ln = qname.getLocalName();
+			String ln = qname.getLocalPart();
 			return ("private".equals(ln) || "public".equals(ln));
 		} else {
 			return !(ns.equals(Namespaces.XML_NS)
@@ -953,8 +954,8 @@ throws XPathException
 				qn2:QNAME
 				{
 					try {
-	                    QName qname= QName.parse(staticContext, qn2.getText(), "");
-	                    qname.setNameType(ElementValue.ATTRIBUTE);
+            QName qname = QName.parse(staticContext, qn2.getText(), XMLConstants.DEFAULT_NS_PREFIX);
+            qname = new QName(qname, ElementValue.ATTRIBUTE);
 						type.setNodeName(qname);
 					} catch (XPathException e) {
 						e.setLocation(lattr.getLine(), lattr.getColumn());
@@ -991,8 +992,7 @@ throws XPathException
                     value = nc.getText();
                 if (sl != null)
                     value = sl.getText();
-                QName qname= new QName(value, "", null);
-                qname.setNamespaceURI(null);
+                QName qname= new QName.WildcardNamespaceURIQName(value);
                 if (!"".equals(value))
                     type.setNodeName(qname);
             }
@@ -1745,7 +1745,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		step=expr [right]
 	)
 	{
-		Intersection intersect = new Intersection(context, left, right);
+		Intersect intersect = new Intersect(context, left, right);
 		path.add(intersect);
 		step = intersect;
 	}
@@ -1912,12 +1912,12 @@ throws PermissionDeniedException, EXistException, XPathException
 			try {
 				QName qname= QName.parse(staticContext, qn.getText());
 				if (axis == Constants.ATTRIBUTE_AXIS) {
-	                //qname.setNamespaceURI(null);
-	                test= new NameTest(Type.ATTRIBUTE, qname);
-	                qname.setNameType(ElementValue.ATTRIBUTE);
-	            } else {
-	                test= new NameTest(Type.ELEMENT, qname);
-	            }
+	        qname = new QName(qname, ElementValue.ATTRIBUTE);
+	        test= new NameTest(Type.ATTRIBUTE, qname);
+
+        } else {
+          test= new NameTest(Type.ELEMENT, qname);
+        }
 				ast = qn;
 			} catch(XPathException ex1) {
 				ex1.setLocation(qn.getLine(), qn.getColumn());
@@ -1928,8 +1928,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		#( PREFIX_WILDCARD nc1:NCNAME )
 		{
 			try {
-				QName qname= new QName(nc1.getText(), null, null);
-				qname.setNamespaceURI(null);
+				QName qname= new QName.WildcardNamespaceURIQName(nc1.getText());
 				test= new NameTest(Type.ELEMENT, qname);
 				if (axis == Constants.ATTRIBUTE_AXIS)
 					test.setType(Type.ATTRIBUTE);
@@ -1943,7 +1942,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			try {
 				String namespaceURI= staticContext.getURIForPrefix(nc.getText());
-				QName qname= new QName(null, namespaceURI, nc.getText());
+				QName qname= new QName.WildcardLocalPartQName(namespaceURI, nc.getText());
 				test= new NameTest(Type.ELEMENT, qname);
 				if (axis == Constants.ATTRIBUTE_AXIS)
 					test.setType(Type.ATTRIBUTE);
@@ -2013,9 +2012,9 @@ throws PermissionDeniedException, EXistException, XPathException
 			(
 				qn3:QNAME 
 				{ 
-					QName qname= QName.parse(staticContext, qn3.getText());
+					QName qname = QName.parse(staticContext, qn3.getText());
+					qname = new QName(qname, ElementValue.ATTRIBUTE);
 					test= new NameTest(Type.ATTRIBUTE, qname);
-					qname.setNameType(ElementValue.ATTRIBUTE);
 					axis= Constants.ATTRIBUTE_AXIS;
 				}
 				|
@@ -2102,14 +2101,12 @@ throws PermissionDeniedException, EXistException, XPathException
 		attr:QNAME
 		{
           qname= QName.parse(staticContext, attr.getText(), "");
-          qname.setNameType(ElementValue.ATTRIBUTE);
+          qname = new QName(qname, ElementValue.ATTRIBUTE);
         }
 		|
 		#( PREFIX_WILDCARD nc2:NCNAME )
 		{ 
-          qname= new QName(nc2.getText(), null, null);
-          qname.setNamespaceURI(null);
-          qname.setNameType(ElementValue.ATTRIBUTE);
+          qname = new QName.WildcardNamespaceURIQName(nc2.getText(), ElementValue.ATTRIBUTE);
 		}
 		|
 		#( nc3:NCNAME WILDCARD )
@@ -2117,8 +2114,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			String namespaceURI= staticContext.getURIForPrefix(nc3.getText());
 			if (namespaceURI == null)
 				throw new EXistException("No namespace defined for prefix " + nc3.getText());
-			qname= new QName(null, namespaceURI, null);
-			qname.setNameType(ElementValue.ATTRIBUTE);
+			qname= new QName.WildcardLocalPartQName(namespaceURI, ElementValue.ATTRIBUTE);
 		}
 		|
 		WILDCARD
@@ -2783,7 +2779,7 @@ throws PermissionDeniedException, EXistException, XPathException
         {
             QName qname = QName.parse(staticContext, qna.getText());
             if (Namespaces.XMLNS_NS.equals(qname.getNamespaceURI()) 
-                || ("".equals(qname.getNamespaceURI()) && qname.getLocalName().equals("xmlns")))
+                || ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals(XMLConstants.XMLNS_ATTRIBUTE)))
                 throw new XPathException("err:XQDY0044: the node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
         }
         #( LCURLY
@@ -2846,7 +2842,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				)*
 				{ c.addAttribute(attrib); 
                                   if (attrib.isNamespaceDeclaration()) {
-                                     String nsPrefix = attrib.getQName().equals("xmlns") ?
+                                     String nsPrefix = attrib.getQName().equals(XMLConstants.XMLNS_ATTRIBUTE) ?
                                         "" : QName.extractLocalName(attrib.getQName());
                                      staticContext.declareInScopeNamespace(nsPrefix,attrib.getLiteralValue());
                                   }

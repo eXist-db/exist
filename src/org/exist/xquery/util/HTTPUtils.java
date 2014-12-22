@@ -26,8 +26,8 @@ package org.exist.xquery.util;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XQuery;

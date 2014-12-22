@@ -23,7 +23,7 @@ package org.exist.xquery;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.ComputableValue;

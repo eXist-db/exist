@@ -6,7 +6,7 @@ import java.io.OutputStream;
 
 import org.apache.log4j.Logger;
 import org.exist.backup.RawDataBackup;
-import org.exist.dom.SymbolTable;
+import org.exist.dom.persistent.SymbolTable;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.RawBackupSupport;

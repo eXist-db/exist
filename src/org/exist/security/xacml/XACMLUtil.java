@@ -53,13 +53,13 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -148,13 +148,14 @@ public class XACMLUtil implements UpdateListener
 	}
 
 
-    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
-        // not relevant
-    }
+        @Override
+        public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
+            // not relevant
+        }
 
-    public void unsubscribe() {
-        // not relevant
-    }
+        public void unsubscribe() {
+            // not relevant
+        }
 
     /**
 	 * Returns true if the specified document is in the policy collection.
@@ -299,13 +300,13 @@ public class XACMLUtil implements UpdateListener
 		final int documentCount = (documentSet == null) ? 0 : documentSet.getDocumentCount();
 		if(documentCount == 0)
 		{
-			LOG.warn("Could not find " + attributeQName.getLocalName() + " '" +  attributeValue + "'", null);
+			LOG.warn("Could not find " + attributeQName.getLocalPart() + " '" +  attributeValue + "'", null);
 			return null;
 		}
 
 		if(documentCount > 1)
 		{
-			throw new ProcessingException("Too many applicable policies for " + attributeQName.getLocalName() + " '" +  attributeValue + "'");
+			throw new ProcessingException("Too many applicable policies for " + attributeQName.getLocalPart() + " '" +  attributeValue + "'");
 		}
 
 		return (DocumentImpl)documentSet.getDocumentIterator().next();

@@ -21,8 +21,8 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.dom.NodeProxy;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.memtree.NodeImpl;
 
 import java.util.Comparator;
 
@@ -32,7 +32,7 @@ import java.util.Comparator;
 public class MixedNodeValueComparator implements Comparator {
 
     /* (non-Javadoc)
-     * @see org.exist.dom.DocumentOrderComparator#compare(java.lang.Object, java.lang.Object)
+     * @see org.exist.dom.persistent.DocumentOrderComparator#compare(java.lang.Object, java.lang.Object)
      */
     public int compare(Object o1, Object o2) {
         final NodeValue n1 = (NodeValue) o1;

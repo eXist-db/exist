@@ -24,12 +24,12 @@ package org.exist.xquery.functions.text;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.dom.TextImpl;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.FastQSort;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;

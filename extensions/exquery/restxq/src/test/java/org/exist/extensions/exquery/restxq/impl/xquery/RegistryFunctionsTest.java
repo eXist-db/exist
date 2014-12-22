@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.exist.extensions.exquery.restxq.impl.xquery;
 
 import org.custommonkey.xmlunit.XMLAssert;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exquery.serialization.annotation.MediaTypeAnnotation;
 import org.exquery.serialization.annotation.MethodAnnotation;
 import org.exquery.serialization.annotation.SerializationAnnotationException;

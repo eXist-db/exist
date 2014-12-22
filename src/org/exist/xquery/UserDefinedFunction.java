@@ -22,7 +22,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -118,7 +118,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
 //        context.expressionStart(this);

@@ -32,7 +32,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,21 +54,21 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.debuggee.DebuggeeFactory;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
-import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentMetadata;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.QName;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.persistent.XMLUtil;
 import static org.exist.http.RESTServerParameter.*;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
-import org.exist.memtree.ElementImpl;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
@@ -1470,9 +1469,9 @@ public class RESTServer {
 
             // now declare variable
             if (prefix != null) {
-                context.declareVariable(q.getPrefix() + ":" + q.getLocalName(), sequence);
+                context.declareVariable(q.getPrefix() + ":" + q.getLocalPart(), sequence);
             } else {
-                context.declareVariable(q.getLocalName(), sequence);
+                context.declareVariable(q.getLocalPart(), sequence);
             }
         }
     }

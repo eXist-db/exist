@@ -16,7 +16,7 @@ import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.AttributeSource.State;
 import org.exist.Namespaces;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 
 public class PlainTextHighlighter {
 

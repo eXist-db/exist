@@ -21,8 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.DoubleValue;
@@ -92,7 +92,7 @@ public class FunSubSequence extends Function {
     /*
     * (non-Javadoc)
     *
-    * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
+    * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet,
     *      org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
     */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {

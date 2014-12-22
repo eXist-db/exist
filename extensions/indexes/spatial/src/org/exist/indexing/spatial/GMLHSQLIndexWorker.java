@@ -33,11 +33,11 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex.SpatialOperator;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;

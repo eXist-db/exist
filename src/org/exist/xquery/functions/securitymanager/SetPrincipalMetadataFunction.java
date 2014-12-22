@@ -89,12 +89,12 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
         final String value = args[2].getStringValue();
             
         final Principal principal;
-        if(isCalledAs(qnSetAccountMetadata.getLocalName())) {
+        if(isCalledAs(qnSetAccountMetadata.getLocalPart())) {
             if(!currentUser.hasDbaRole() && !currentUser.getUsername().equals(strPrincipal)) {
                 throw new XPathException(this, new PermissionDeniedException("You must have suitable access rights to modify the users metadata."));
             }
             principal = securityManager.getAccount(strPrincipal);
-        } else if(isCalledAs(qnSetGroupMetadata.getLocalName())) {
+        } else if(isCalledAs(qnSetGroupMetadata.getLocalPart())) {
             
             //check for a valid group metadata key
             boolean valid = false;

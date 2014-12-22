@@ -5,8 +5,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.repo.ExistPkgInfo;
 import org.exist.repo.ExistRepository;

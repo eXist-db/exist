@@ -23,18 +23,15 @@ package org.exist.xslt.compiler;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 import java.util.Map;
 
+import org.exist.dom.*;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Expression;
 //import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
-import org.exist.dom.NodeListImpl;
-import org.exist.dom.QName;
-import org.exist.dom.DocumentAtExist;
-import org.exist.dom.ElementAtExist;
-import org.exist.dom.NodeAtExist;
 import org.exist.xslt.XSLContext;
 import org.exist.xslt.XSLStylesheet;
 import org.exist.xslt.expression.Element;
@@ -55,12 +52,12 @@ import org.w3c.dom.UserDataHandler;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class XSLElement implements ElementAtExist, Names {
+public class XSLElement implements org.w3c.dom.Element, INode, Names {
 	
 	protected XSLPathExpr expr = null;
-	protected ElementAtExist element;
+	protected final org.w3c.dom.Element element;
 	
-	public XSLElement(ElementAtExist element) {
+	public XSLElement(final org.w3c.dom.Element element) {
 		this.element = element;
 	}
 	
@@ -125,7 +122,7 @@ public class XSLElement implements ElementAtExist, Names {
 		return exec;
 	}
 	
-	private SimpleConstructor getNodeConstructor(ContextAtExist context, NodeAtExist node, XSLPathExpr content) throws XPathException {
+	private SimpleConstructor getNodeConstructor(ContextAtExist context, Node node, XSLPathExpr content) throws XPathException {
 		SimpleConstructor constructer = null;
 		if (node.getNodeType() == Node.ELEMENT_NODE) {
 			Element element = new Element((XSLContext) context, node.getNodeName());
@@ -177,14 +174,13 @@ public class XSLElement implements ElementAtExist, Names {
 	
 	public void compileNode(ContextAtExist context, XSLPathExpr content, Node node) throws XPathException {
 		//namespaces
-		if (node instanceof ElementAtExist) {
-			ElementAtExist elementAtExist = (ElementAtExist) node;
-			Map<String, String> namespaceMap = elementAtExist.getNamespaceMap();
-	        for (String name : namespaceMap.keySet()) {
-	        	//getContext().declareInScopeNamespace(name, namespaceMap.get(name));
-	        	context.declareNamespace(name, namespaceMap.get(name));
-	        	//TODO: rewrite, changes at xquery.parser. it use static 
-	        }
+		if (node instanceof org.exist.dom.persistent.ElementImpl) {
+			org.exist.dom.persistent.ElementImpl elementAtExist = (org.exist.dom.persistent.ElementImpl) node;
+
+			for(final Iterator<String> itPrefix = elementAtExist.getPrefixes(); itPrefix.hasNext();) {
+				final String prefix = itPrefix.next();
+				context.declareNamespace(prefix, elementAtExist.getNamespaceForPrefix(prefix));
+			}
 		}
 		
 		if (!node.hasChildNodes())
@@ -196,7 +192,7 @@ public class XSLElement implements ElementAtExist, Names {
 		for (int i=0; i<children.getLength(); i++) {
 			constructer = null;
 			
-			NodeAtExist child = (NodeAtExist)children.item(i);
+			INode child = (INode)children.item(i);
 			if (isXSLElement(child)) {
 				XSLElement xslElement = (XSLElement) child;
 				content.add(xslElement.compile(context));
@@ -234,7 +230,7 @@ public class XSLElement implements ElementAtExist, Names {
 		
 		NodeList children = node.getChildNodes();
 		for (int i=0; i<children.getLength(); i++) {
-			NodeAtExist child = (NodeAtExist)children.item(i);
+			INode child = (INode)children.item(i);
 			if (isXSLElement(child)) {
 				XSLElement xslElement = (XSLElement) child;
 				xslElement.preprocess(context);
@@ -244,20 +240,14 @@ public class XSLElement implements ElementAtExist, Names {
 		}
 	}
 	
-	private boolean isXSLElement(NodeAtExist child) {
+	private boolean isXSLElement(INode child) {
 		return Factory.qns.containsKey(child.getQName());
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.dom.i.NodeAtExist#getDocumentAtExist()
-	 */
-	public DocumentAtExist getDocumentAtExist() {
-		return element.getDocumentAtExist();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
 	 */
+	@Override
 	public Node appendChild(Node newChild) throws DOMException {
 		return element.appendChild(newChild);
 	}
@@ -265,6 +255,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#cloneNode(boolean)
 	 */
+	@Override
 	public Node cloneNode(boolean deep) {
 		return element.cloneNode(deep);
 	}
@@ -272,6 +263,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
 	 */
+	@Override
 	public short compareDocumentPosition(Node other) throws DOMException {
 		return element.compareDocumentPosition(other);
 	}
@@ -279,6 +271,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getAttributes()
 	 */
+	@Override
 	public NamedNodeMap getAttributes() {
 		return element.getAttributes();
 	}
@@ -286,38 +279,23 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getBaseURI()
 	 */
+	@Override
 	public String getBaseURI() {
 		return element.getBaseURI();
 	}
 
-	NodeListImpl nl; //TODO: handle changes some how
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getChildNodes()
 	 */
+	@Override
 	public NodeList getChildNodes() {
-		if (nl != null)
-			return nl;
-		
-		DocumentAtExist document = getDocumentAtExist();
-		
-		nl = new NodeListImpl();
-		int nextNode = document.getFirstChildFor(getNodeNumber());
-		while (nextNode > getNodeNumber()) {
-			NodeAtExist n = document.getNode(nextNode);
-
-			if (n instanceof ElementAtExist) {
-				n = new XSLElement((ElementAtExist) n);
-			}
-			
-			nl.add(n);
-            nextNode = document.getNextNodeNumber(nextNode);
-        }
-		return nl;
+		return element.getChildNodes();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getFeature(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public Object getFeature(String feature, String version) {
 		return element.getFeature(feature, version);
 	}
@@ -325,6 +303,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getFirstChild()
 	 */
+	@Override
 	public Node getFirstChild() {
 		return element.getFirstChild();
 	}
@@ -332,13 +311,15 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getLastChild()
 	 */
+	@Override
 	public Node getLastChild() {
 		return element.getLastChild();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.w3c.dom.Node#getLocalName()
+	 * @see org.w3c.dom.Node#getLocalPart()
 	 */
+	@Override
 	public String getLocalName() {
 		return element.getLocalName();
 	}
@@ -346,6 +327,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNamespaceURI()
 	 */
+	@Override
 	public String getNamespaceURI() {
 		return element.getNamespaceURI();
 	}
@@ -353,6 +335,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNextSibling()
 	 */
+	@Override
 	public Node getNextSibling() {
 		return element.getNextSibling();
 	}
@@ -360,13 +343,20 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
+	@Override
 	public String getNodeName() {
 		return element.getNodeName();
 	}
 
+	@Override
+	public NodeId getNodeId() {
+		return null;
+	}
+
 	/* (non-Javadoc)
-	 * @see org.w3c.dom.Node#getNodeType()
-	 */
+         * @see org.w3c.dom.Node#getNodeType()
+         */
+	@Override
 	public short getNodeType() {
 		return element.getNodeType();
 	}
@@ -374,6 +364,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNodeValue()
 	 */
+	@Override
 	public String getNodeValue() throws DOMException {
 		return element.getNodeValue();
 	}
@@ -381,6 +372,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getOwnerDocument()
 	 */
+	@Override
 	public Document getOwnerDocument() {
 		return element.getOwnerDocument();
 	}
@@ -388,17 +380,19 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getParentNode()
 	 */
+	@Override
 	public Node getParentNode() {
 		return element.getParentNode();
 	}
 
 	public boolean isParentNode() {
-		return (element.getNodeId().getTreeLevel() == 1);
+		return (((INode)element).getNodeId().getTreeLevel() == 1);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getPrefix()
 	 */
+	@Override
 	public String getPrefix() {
 		return element.getPrefix();
 	}
@@ -406,6 +400,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
+	@Override
 	public Node getPreviousSibling() {
 		return element.getPreviousSibling();
 	}
@@ -413,6 +408,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getTextContent()
 	 */
+	@Override
 	public String getTextContent() throws DOMException {
 		return element.getTextContent();
 	}
@@ -420,6 +416,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getUserData(java.lang.String)
 	 */
+	@Override
 	public Object getUserData(String key) {
 		return element.getUserData(key);
 	}
@@ -427,6 +424,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#hasAttributes()
 	 */
+	@Override
 	public boolean hasAttributes() {
 		return element.hasAttributes();
 	}
@@ -434,6 +432,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#hasChildNodes()
 	 */
+	@Override
 	public boolean hasChildNodes() {
 		return element.hasChildNodes();
 	}
@@ -441,6 +440,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#insertBefore(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
+	@Override
 	public Node insertBefore(Node newChild, Node refChild) throws DOMException {
 		return element.insertBefore(newChild, refChild);
 	}
@@ -448,6 +448,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#isDefaultNamespace(java.lang.String)
 	 */
+	@Override
 	public boolean isDefaultNamespace(String namespaceURI) {
 		return element.isDefaultNamespace(namespaceURI);
 	}
@@ -455,6 +456,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#isEqualNode(org.w3c.dom.Node)
 	 */
+	@Override
 	public boolean isEqualNode(Node arg) {
 		return element.isEqualNode(arg);
 	}
@@ -462,6 +464,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#isSameNode(org.w3c.dom.Node)
 	 */
+	@Override
 	public boolean isSameNode(Node other) {
 		return element.isSameNode(other);
 	}
@@ -469,6 +472,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#isSupported(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public boolean isSupported(String feature, String version) {
 		return element.isSupported(feature, version);
 	}
@@ -476,6 +480,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#lookupNamespaceURI(java.lang.String)
 	 */
+	@Override
 	public String lookupNamespaceURI(String prefix) {
 		return element.lookupNamespaceURI(prefix);
 	}
@@ -483,6 +488,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#lookupPrefix(java.lang.String)
 	 */
+	@Override
 	public String lookupPrefix(String namespaceURI) {
 		return element.lookupPrefix(namespaceURI);
 	}
@@ -490,6 +496,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#normalize()
 	 */
+	@Override
 	public void normalize() {
 		element.normalize();
 	}
@@ -504,6 +511,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
 	 */
+	@Override
 	public Node replaceChild(Node newChild, Node oldChild) throws DOMException {
 		return element.replaceChild(newChild, oldChild);
 	}
@@ -511,6 +519,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#setNodeValue(java.lang.String)
 	 */
+	@Override
 	public void setNodeValue(String nodeValue) throws DOMException {
 		element.setNodeValue(nodeValue);
 	}
@@ -518,6 +527,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#setPrefix(java.lang.String)
 	 */
+	@Override
 	public void setPrefix(String prefix) throws DOMException {
 		element.setPrefix(prefix);
 	}
@@ -525,6 +535,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#setTextContent(java.lang.String)
 	 */
+	@Override
 	public void setTextContent(String textContent) throws DOMException {
 		element.setTextContent(textContent);
 	}
@@ -532,6 +543,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#setUserData(java.lang.String, java.lang.Object, org.w3c.dom.UserDataHandler)
 	 */
+	@Override
 	public Object setUserData(String key, Object data, UserDataHandler handler) {
 		return element.setUserData(key, data, handler);
 	}
@@ -539,6 +551,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getAttribute(java.lang.String)
 	 */
+	@Override
 	public String getAttribute(String name) {
 		return element.getAttribute(name);
 	}
@@ -546,6 +559,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getAttributeNS(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public String getAttributeNS(String namespaceURI, String localName)
 			throws DOMException {
 		return element.getAttributeNS(namespaceURI, localName);
@@ -554,6 +568,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getAttributeNode(java.lang.String)
 	 */
+	@Override
 	public Attr getAttributeNode(String name) {
 		return element.getAttributeNode(name);
 	}
@@ -561,6 +576,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getAttributeNodeNS(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public Attr getAttributeNodeNS(String namespaceURI, String localName)
 			throws DOMException {
 		return element.getAttributeNodeNS(namespaceURI, localName);
@@ -569,6 +585,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getElementsByTagName(java.lang.String)
 	 */
+	@Override
 	public NodeList getElementsByTagName(String name) {
 		return element.getElementsByTagName(name);
 	}
@@ -576,6 +593,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getElementsByTagNameNS(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public NodeList getElementsByTagNameNS(String namespaceURI, String localName)
 			throws DOMException {
 		return element.getElementsByTagNameNS(namespaceURI, localName);
@@ -584,6 +602,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getSchemaTypeInfo()
 	 */
+	@Override
 	public TypeInfo getSchemaTypeInfo() {
 		return element.getSchemaTypeInfo();
 	}
@@ -591,6 +610,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#getTagName()
 	 */
+	@Override
 	public String getTagName() {
 		return element.getTagName();
 	}
@@ -598,6 +618,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#hasAttribute(java.lang.String)
 	 */
+	@Override
 	public boolean hasAttribute(String name) {
 		return element.hasAttribute(name);
 	}
@@ -605,6 +626,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#hasAttributeNS(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public boolean hasAttributeNS(String namespaceURI, String localName)
 			throws DOMException {
 		return element.hasAttributeNS(namespaceURI, localName);
@@ -613,6 +635,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#removeAttribute(java.lang.String)
 	 */
+	@Override
 	public void removeAttribute(String name) throws DOMException {
 		element.removeAttribute(name);
 	}
@@ -620,6 +643,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#removeAttributeNS(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void removeAttributeNS(String namespaceURI, String localName)
 			throws DOMException {
 		element.removeAttributeNS(namespaceURI, localName);
@@ -628,6 +652,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#removeAttributeNode(org.w3c.dom.Attr)
 	 */
+	@Override
 	public Attr removeAttributeNode(Attr oldAttr) throws DOMException {
 		return element.removeAttributeNode(oldAttr);
 	}
@@ -635,6 +660,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#setAttribute(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void setAttribute(String name, String value) throws DOMException {
 		element.setAttribute(name, value);
 	}
@@ -642,6 +668,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#setAttributeNS(java.lang.String, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void setAttributeNS(String namespaceURI, String qualifiedName,
 			String value) throws DOMException {
 		element.setAttributeNS(namespaceURI, qualifiedName, value);
@@ -650,6 +677,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#setAttributeNode(org.w3c.dom.Attr)
 	 */
+	@Override
 	public Attr setAttributeNode(Attr newAttr) throws DOMException {
 		return element.setAttributeNode(newAttr);
 	}
@@ -657,6 +685,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#setAttributeNodeNS(org.w3c.dom.Attr)
 	 */
+	@Override
 	public Attr setAttributeNodeNS(Attr newAttr) throws DOMException {
 		return element.setAttributeNodeNS(newAttr);
 	}
@@ -664,6 +693,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#setIdAttribute(java.lang.String, boolean)
 	 */
+	@Override
 	public void setIdAttribute(String name, boolean isId) throws DOMException {
 		element.setIdAttribute(name, isId);
 	}
@@ -671,6 +701,7 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#setIdAttributeNS(java.lang.String, java.lang.String, boolean)
 	 */
+	@Override
 	public void setIdAttributeNS(String namespaceURI, String localName,
 			boolean isId) throws DOMException {
 		element.setIdAttributeNS(namespaceURI, localName, isId);
@@ -679,56 +710,28 @@ public class XSLElement implements ElementAtExist, Names {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Element#setIdAttributeNode(org.w3c.dom.Attr, boolean)
 	 */
+	@Override
 	public void setIdAttributeNode(Attr idAttr, boolean isId)
 			throws DOMException {
 		element.setIdAttributeNode(idAttr, isId);
 	}
 
-	
-	/* (non-Javadoc)
-	 * @see org.exist.dom.QNameable#getQName()
-	 */
+	@Override
 	public QName getQName() {
-		return element.getQName();
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.dom.i.NodeAtExist#getNodeNumber()
-	 */
-	public int getNodeNumber() {
-		return element.getNodeNumber();
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	public int compareTo(Object o) {
-		return element.compareTo(o);
+		return ((INode)element).getQName();
 	}
 
-//	/* (non-Javadoc)
-//	 * @see org.exist.dom.i.NodeAtExist#matchChildren(org.exist.xquery.NodeTest)
-//	 */
-//	public Boolean matchChildren(NodeTest test) throws XPathException {
-//		return element.matchChildren(test);
-//	}
+	@Override
+	public void setQName(final QName qname) {
+		((INode)element).setQName(qname);
+	}
 
 	public String toString() {
 		return element.toString();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.dom.i.ElementAtExist#getNamespaceMap()
-	 */
-	public Map<String, String> getNamespaceMap() {
-		return element.getNamespaceMap();
-	}
-
-	
-	/* (non-Javadoc)
-	 * @see org.exist.dom.i.NodeAtExist#getNodeId()
-	 */
-	public NodeId getNodeId() {
-		return element.getNodeId();
+	@Override
+	public int compareTo(final Object other) {
+		return ((INode)element).compareTo(other);
 	}
 }

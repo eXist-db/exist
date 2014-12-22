@@ -1,8 +1,8 @@
 package org.exist.versioning;
 
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.DocumentImpl;
 import org.exist.util.serializer.AttrList;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.serializers.CustomMatchListener;
@@ -26,11 +26,12 @@ public class VersioningFilter extends CustomMatchListener {
     public VersioningFilter() {
     }
 
+    @Override
     public void startElement(QName qname, AttrList attribs) throws SAXException {
         if (elementStack == 0) {
-            StoredNode node = getCurrentNode();
+            final NodeHandle node = getCurrentNode();
             if (node != null) {
-                DocumentImpl doc = node.getDocument();
+                final DocumentImpl doc = node.getOwnerDocument();
                 XmldbURI uri = doc.getURI();
                 if (!uri.startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
                     

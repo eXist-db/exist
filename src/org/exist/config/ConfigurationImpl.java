@@ -29,9 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.exist.dom.ElementAtExist;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -43,39 +44,40 @@ import org.w3c.dom.NodeList;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements Configuration {
+public class ConfigurationImpl implements Configuration {
 
     private Map<String, Object> runtimeProperties = new HashMap<String, Object>();
 
     protected WeakReference<Configurable> configuredObjectReference = null;
-    
+
+    private Element element;
+
     private ConfigurationImpl() {
         //Nothing to do
     }
 
-    protected ConfigurationImpl(ElementAtExist element) {
-        this();
-        setProxyObject(element);
+    protected ConfigurationImpl(final Element element) {
+        this.element = element;
     }
 
     @Override
-    public ElementAtExist getElement() {
-        return getProxyObject();
+    public Element getElement() {
+        return element;
     }
 
     @Override
     public String getName() {
-        return getLocalName();
+        return element.getLocalName();
     }
 
     @Override
     public String getValue() {
-        return getElement().getNodeValue();
+        return element.getNodeValue();
     }
 
     @Override
     public Configuration getConfiguration(String name) {
-        if (getLocalName().equals(name)) {
+        if (element.getLocalName().equals(name)) {
             return this;
         }
         final List<Configuration> list = getConfigurations(name);
@@ -91,12 +93,12 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
 
         final List<Configuration> list = new ArrayList<Configuration>();
         
-        Node child = getFirstChild();
+        Node child = element.getFirstChild();
         while (child != null) {
             
             if (child.getNodeType() == Node.ELEMENT_NODE) {
 
-                final ElementAtExist el = (ElementAtExist) child;
+                final Element el = (Element)child;
                 
                 if (name.equals( el.getLocalName() ) && NS.equals( el.getNamespaceURI() )) {
                     
@@ -122,7 +124,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         props = new HashMap<String, String>();
         Set<String> names = new HashSet<String>();
         
-        Node child = getFirstChild();
+        Node child = element.getFirstChild();
         while (child != null) {
             
             if (child.getNodeType() == Node.ELEMENT_NODE) {
@@ -147,7 +149,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
         }
         
         //load attributes values
-        NamedNodeMap attrs = getAttributes();
+        NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             
             Node attr = attrs.item(i);
@@ -198,12 +200,12 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
             return map;
         }
         
-        Node child = getFirstChild();
+        Node child = element.getFirstChild();
         while (child != null) {
             
             if (child.getNodeType() == Node.ELEMENT_NODE) {
 
-                final ElementAtExist el = (ElementAtExist) child;
+                final Element el = (Element) child;
                 
                 if (name.equals( el.getLocalName() ) && NS.equals( el.getNamespaceURI() )) {
                     
@@ -347,7 +349,7 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     }
 
     public Integer getPropertyMegabytes(String name, Integer defaultValue) {
-        String cacheMem = getAttribute(name);
+        String cacheMem = element.getAttribute(name);
         if (cacheMem != null) {
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
                 {cacheMem = cacheMem.substring(0, cacheMem.length() - 1);}
@@ -366,13 +368,13 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     @Override
     public Set<String> getProperties() {
         final Set<String> properties = new HashSet<String>();
-        final NamedNodeMap attrs = getAttributes();
+        final NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             //ignore namespace declarations
             if ( !"xmlns".equals( attrs.item(i).getPrefix() ) )
                 {properties.add(attrs.item(i).getNodeName());}
         }
-        final NodeList children = getChildNodes();
+        final NodeList children = element.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             final Node child = children.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
@@ -404,10 +406,10 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     private boolean saving = false;
 
     @Override
-    public void checkForUpdates(ElementAtExist element) {
+    public void checkForUpdates(Element element) {
         if (!saving && configuredObjectReference != null && configuredObjectReference.get() != null) {
             clearCache();
-            setProxyObject(element);
+            this.element = element;
             Configurator.configure(configuredObjectReference.get(), this);
         }
     }
@@ -415,15 +417,17 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     @Override
     public void save() throws PermissionDeniedException, ConfigurationException {
         //ignore in-memory nodes
-        if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
-            {return;} 
+        if (element instanceof org.exist.dom.memtree.ElementImpl) {
+            return;
+        }
+
         synchronized (this) {
             try {
                 saving = true;
                 if (configuredObjectReference != null && configuredObjectReference.get() != null)
                     {Configurator.save(
-                        configuredObjectReference.get(), 
-                        getProxyObject().getDocumentAtExist().getURI()
+                        configuredObjectReference.get(),
+                        ((DocumentImpl)element.getOwnerDocument()).getURI()
                     );}
             } catch (final Exception e) {
                throw new ConfigurationException(e.getMessage(), e);
@@ -436,15 +440,17 @@ public class ConfigurationImpl extends ProxyElement<ElementAtExist> implements C
     @Override
     public void save(final DBBroker broker) throws PermissionDeniedException, ConfigurationException {
         //ignore in-memory nodes
-        if (getProxyObject().getClass().getPackage().getName().startsWith("org.exist.memtree"))
-            {return;} 
+        if (element instanceof org.exist.dom.memtree.ElementImpl) {
+            return;
+        }
+
         synchronized(this) {
             try {
                 saving = true;
                 if (configuredObjectReference != null && configuredObjectReference.get() != null)
                     {Configurator.save(broker,
-                        configuredObjectReference.get(), 
-                        getProxyObject().getDocumentAtExist().getURI()
+                        configuredObjectReference.get(),
+                        ((DocumentImpl) element.getOwnerDocument()).getURI()
                     );}
             } catch (final Exception e) {
                throw new ConfigurationException(e.getMessage(), e);

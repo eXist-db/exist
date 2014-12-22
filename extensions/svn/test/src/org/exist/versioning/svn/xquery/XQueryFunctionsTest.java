@@ -32,7 +32,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.exist.Namespaces;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;

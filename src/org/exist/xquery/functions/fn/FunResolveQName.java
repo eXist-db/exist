@@ -23,11 +23,11 @@ package org.exist.xquery.functions.fn;
 
 import java.util.Iterator;
 
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -116,7 +116,7 @@ public class FunResolveQName extends BasicFunction {
                 } else {
                     NodeImpl next = (NodeImpl) node;
                     do {
-                        uri = findNamespaceURI((org.exist.memtree.ElementImpl) next, prefix);
+                        uri = findNamespaceURI((org.exist.dom.memtree.ElementImpl) next, prefix);
                         if (uri != null) {
                             break;
                         } else {
@@ -130,8 +130,7 @@ public class FunResolveQName extends BasicFunction {
                                              + "' was found.", args[0]);
                 }
                 final String localPart = QName.extractLocalName(qnameString);
-                final QName qn = new QName(localPart, uri);
-                qn.setPrefix(prefix);
+                final QName qn = new QName(localPart, uri, prefix);
         
                 final QNameValue result = new QNameValue(context, qn);
                 if (context.getProfiler().isEnabled()) 
@@ -191,11 +190,11 @@ public class FunResolveQName extends BasicFunction {
     /**
      * The method <code>findNamespaceURI</code>
      *
-     * @param element an <code>org.exist.memtree.ElementImpl</code> value
+     * @param element an <code>org.exist.dom.memtree.ElementImpl</code> value
      * @param prefix a <code>String</code> value
      * @return a <code>String</code> value
      */
-    public static String findNamespaceURI(org.exist.memtree.ElementImpl element, String prefix) {
+    public static String findNamespaceURI(org.exist.dom.memtree.ElementImpl element, String prefix) {
         final String namespaceURI = element.getNamespaceURI();
         if (namespaceURI != null && namespaceURI.length() > 0 && prefix.equals(element.getPrefix())) {
             return namespaceURI;

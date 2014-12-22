@@ -26,11 +26,11 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentAtExist;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.MetaStorage;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.Document;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -53,7 +53,7 @@ public abstract class MetaData implements MetaStorage {
     public abstract List<DocumentImpl> matchDocumentsByKey(String key) throws EXistException, PermissionDeniedException;
     public abstract List<DocumentImpl> matchDocumentsByValue(String value) throws EXistException, PermissionDeniedException;
 
-	public abstract Metas addMetas(DocumentAtExist doc);
+	public abstract Metas addMetas(Document doc);
 	public abstract Metas addMetas(Collection col);
 
 	public abstract Meta getMeta(String uuid);
@@ -63,7 +63,7 @@ public abstract class MetaData implements MetaStorage {
 	protected abstract Metas _addMetas(String uri, String uuid);
 	protected abstract Metas replaceMetas(XmldbURI uri, String uuid);
 
-	public abstract Metas getMetas(DocumentAtExist doc);
+	public abstract Metas getMetas(Document doc);
 	public abstract Metas getMetas(XmldbURI uri);
 
 	public abstract void copyMetas(XmldbURI oldDoc, DocumentImpl newDoc);

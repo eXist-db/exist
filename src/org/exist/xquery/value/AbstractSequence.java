@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-2014,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -21,10 +21,10 @@
 package org.exist.xquery.value;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.EmptyNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
@@ -46,21 +46,8 @@ public abstract class AbstractSequence implements Sequence {
      * @see http://cvs.sourceforge.net/viewcvs.py/exist/eXist-1.0/src/org/exist/xquery/value/AbstractSequence.java?r1=1.11&r2=1.12 */
     private static final boolean OLD_EXIST_VERSION_COMPATIBILITY = false;
 
-    protected boolean isEmpty;
-    protected boolean hasOne;
-
-    protected AbstractSequence() {
-        isEmpty = true;
-        hasOne = false;
-    }
-
-    public abstract int getItemType();
-
-    public abstract SequenceIterator iterate() throws XPathException;
-
-    public abstract SequenceIterator unorderedIterator() throws XPathException;
-	
-    public abstract int getItemCount();
+    protected boolean isEmpty = true;
+    protected boolean hasOne = false;
 
     public int getCardinality() {
         if (isEmpty())
@@ -80,10 +67,6 @@ public abstract class AbstractSequence implements Sequence {
             //TODO : clean atomization
             {return new StringValue(first.getStringValue()).convertTo(requiredType);}
     }
-
-    public abstract boolean isEmpty();
-
-    public abstract boolean hasOne();
 
     public boolean hasMany() {
         return !isEmpty() && !hasOne();
@@ -127,20 +110,10 @@ public abstract class AbstractSequence implements Sequence {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#add(org.exist.xquery.value.Item)
-     */
-    public abstract void add(Item item) throws XPathException;
-
     public void addAll(Sequence other) throws XPathException {
         for (final SequenceIterator i = other.iterate(); i.hasNext(); )
             add(i.nextItem());
     }
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#itemAt(int)
-     */
-    public abstract Item itemAt(int pos);
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getDocumentSet()
@@ -153,7 +126,8 @@ public abstract class AbstractSequence implements Sequence {
         return EmptyNodeSet.EMPTY_COLLECTION_ITERATOR;
     }
 
-    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+    @Override
+    public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
         //Nothing to do
     }
 

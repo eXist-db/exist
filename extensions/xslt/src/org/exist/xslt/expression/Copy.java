@@ -21,11 +21,11 @@
  */
 package org.exist.xslt.expression;
 
+import org.exist.dom.INode;
 import org.exist.dom.QName;
-import org.exist.dom.QNameable;
 import org.exist.interpreter.ContextAtExist;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
@@ -36,6 +36,8 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
 import org.exist.xslt.XSLContext;
 import org.w3c.dom.Attr;
+
+import javax.xml.XMLConstants;
 
 /**
  * <!-- Category: instruction -->
@@ -119,9 +121,9 @@ public class Copy extends Declaration {
     	            if (item instanceof QNameValue) {
     	                qn = ((QNameValue)item).getQName();
     	            } else {
-    	                qn = ((QNameable)item).getQName();
-    	                if (qn.getPrefix() == null && context.getInScopeNamespace("") != null) {
-    	                     qn.setNamespaceURI(context.getInScopeNamespace(""));
+                        qn = ((INode)item).getQName();
+    	                if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
+                            qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
     	                }
     	            }
     				int nodeNr = builder.startElement(qn, null);

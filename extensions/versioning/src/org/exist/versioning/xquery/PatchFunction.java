@@ -21,13 +21,13 @@
  */
 package org.exist.versioning.xquery;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.InMemoryXMLStreamReader;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.InMemoryXMLStreamReader;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.versioning.DiffException;
@@ -85,17 +85,17 @@ public class PatchFunction extends BasicFunction {
             NodeValue nv = (NodeValue) args[0].itemAt(0);
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                 NodeImpl node = (NodeImpl) nv;
-                reader = new InMemoryXMLStreamReader(node.getDocument(), node.getDocument());
+                reader = new InMemoryXMLStreamReader(node.getOwnerDocument(), node.getOwnerDocument());
             } else {
                 NodeProxy proxy = (NodeProxy) nv;
-                reader = context.getBroker().newXMLStreamReader(new NodeProxy(proxy.getDocument(), NodeId.DOCUMENT_NODE, proxy.getDocument().getFirstChildAddress()), false);
+                reader = context.getBroker().newXMLStreamReader(new NodeProxy(proxy.getOwnerDocument(), NodeId.DOCUMENT_NODE, proxy.getOwnerDocument().getFirstChildAddress()), false);
             }
 
             nv = (NodeValue) args[1].itemAt(0);
             if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                 throw new XPathException("patch cannot be applied to in-memory documents");
             NodeProxy diffProxy = (NodeProxy) nv;
-            DocumentImpl diff = diffProxy.getDocument();
+            DocumentImpl diff = diffProxy.getOwnerDocument();
         
             MemTreeBuilder builder = context.getDocumentBuilder();
             DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);

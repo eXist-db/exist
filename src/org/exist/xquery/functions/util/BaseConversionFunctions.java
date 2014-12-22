@@ -67,11 +67,11 @@ public class BaseConversionFunctions extends BasicFunction {
 	
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        if(isCalledAs(qnIntToOctal.getLocalName())) {
+        if(isCalledAs(qnIntToOctal.getLocalPart())) {
             final int i = args[0].toJavaObject(Integer.class);
             final String octal = i == 0 ? "0" : "0" + Integer.toOctalString(i);
             return new StringValue(octal);
-        } else if(isCalledAs(qnOctalToInt.getLocalName())) {
+        } else if(isCalledAs(qnOctalToInt.getLocalPart())) {
             final String octal = args[0].toString();
             return new IntegerValue(Integer.parseInt(octal, 8));
         } else {

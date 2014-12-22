@@ -23,7 +23,7 @@
 package org.exist.xquery.functions.util;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.util.LockException;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;

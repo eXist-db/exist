@@ -48,12 +48,12 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.ProcessingInstructionImpl;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.XMLUtil;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.http.servlets.SessionWrapper;
@@ -873,7 +873,7 @@ public abstract class Serializer implements XMLReader {
 	    }
 	    setXSLHandler(p, false);
 	    if (p.getNodeId() == NodeId.DOCUMENT_NODE) {
-		serializeToReceiver(p.getDocument(), "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
+		serializeToReceiver(p.getOwnerDocument(), "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
 	    } else {
 		serializeToReceiver(p, "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
 	    }
@@ -1069,15 +1069,15 @@ public abstract class Serializer implements XMLReader {
 		if(v.getImplementationType() == NodeValue.PERSISTENT_NODE)
 			{serializeToReceiver((NodeProxy)v, generateDocEvents, true);}
 		else
-			{serializeToReceiver((org.exist.memtree.NodeImpl)v, generateDocEvents);}
+			{serializeToReceiver((org.exist.dom.memtree.NodeImpl)v, generateDocEvents);}
 	}
 	
-	protected void serializeToReceiver(org.exist.memtree.NodeImpl n, boolean generateDocEvents)
+	protected void serializeToReceiver(org.exist.dom.memtree.NodeImpl n, boolean generateDocEvents)
 	throws SAXException {
 		if (generateDocEvents)
 			{receiver.startDocument();}
         setDocument(null);
-        setXQueryContext(n.getDocument().getContext());
+        setXQueryContext(n.getOwnerDocument().getContext());
         n.streamTo(this, receiver);
 		if (generateDocEvents)
 			{receiver.endDocument();}

@@ -25,7 +25,7 @@ package org.exist.util.sorters;
 import java.util.Comparator;
 import java.util.List;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 
 /**
  * Interface to some sorting algorithm.

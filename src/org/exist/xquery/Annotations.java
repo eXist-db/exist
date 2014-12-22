@@ -50,7 +50,7 @@ public abstract class Annotations {
     	
     	if (anns == null) {return null;}
     	
-    	return anns.getTrigger(ann.getName().getLocalName(), ann);
+    	return anns.getTrigger(ann.getName().getLocalPart(), ann);
     }
     
     public abstract AnnotationTrigger getTrigger(String name, Annotation ann);

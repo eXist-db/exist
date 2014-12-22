@@ -3,6 +3,7 @@ package org.exist.storage;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 
@@ -88,6 +89,10 @@ public class StorageAddress {
         return ((p0 & 0xFFFFFFFF0000FFFFL) == (p1 & 0xFFFFFFFF0000FFFFL));
     }
 
+    public final static boolean equals(NodeHandle n0, NodeHandle n1) {
+        return equals(n0.getInternalAddress(), n1.getInternalAddress());
+    }
+
     public final static void write(long pointer, VariableByteOutputStream os) {
         os.writeInt(pageFromPointer(pointer));
     	os.writeShort(tidFromPointer(pointer));
@@ -100,5 +105,9 @@ public class StorageAddress {
 
     public final static String toString(long pointer) {
         return pageFromPointer(pointer) + ":" + tidFromPointer(pointer);
+    }
+
+    public final static String toString(NodeHandle nodeHandle) {
+        return toString(nodeHandle.getInternalAddress());
     }
 }
