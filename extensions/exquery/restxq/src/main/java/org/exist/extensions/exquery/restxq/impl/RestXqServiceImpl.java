@@ -250,8 +250,12 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                 }
             }
         }
-        
-        return result;
+
+        if(result != null) {
+            return result;
+        } else {
+            return Sequence.EMPTY_SEQUENCE;
+        }
     }
     
     private DocumentImpl parseAsXml(final InputStream is) {
