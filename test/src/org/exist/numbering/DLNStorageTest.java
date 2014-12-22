@@ -4,8 +4,8 @@ import junit.framework.TestCase;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -61,11 +61,11 @@ public class DLNStorageTest extends TestCase {
                     null, AccessContext.TEST);
             assertEquals(1, seq.getItemCount());
             NodeProxy href = (NodeProxy) seq.itemAt(0);
-            System.out.println(StorageAddress.toString(href.getInternalAddress()));
+            System.out.println(StorageAddress.toString(href));
             assertEquals("1.3.2.1", href.getNodeId().toString());
             // test Attr deserialization
             Attr attr = (Attr) href.getNode();
-            System.out.println(StorageAddress.toString(((StoredNode)attr).getInternalAddress()));
+            System.out.println(StorageAddress.toString(((NodeHandle)attr)));
             // test Attr fields
             assertEquals(attr.getNodeName(), "href");
             assertEquals(attr.getName(), "href");

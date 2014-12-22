@@ -21,6 +21,17 @@
  */
 package org.exist.indexing.lucene;
 
+import org.exist.dom.QName;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.AbstractCharacterData;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.AttrImpl;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -36,13 +47,12 @@ import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfigur
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.*;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.indexing.*;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextDoc;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
@@ -202,7 +212,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return this.mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf) {
         if (node.getNodeType() == Node.ATTRIBUTE_NODE)
             return null;
         if (config == null)
@@ -220,8 +230,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         if (reindexRequired) {
             p = new NodePath(path);
-            StoredNode topMost = null;
-            StoredNode currentNode = node;
+            IStoredNode topMost = null;
+            IStoredNode currentNode = node;
             if (currentNode.getNodeType() != Node.ELEMENT_NODE)
                 currentNode = currentNode.getParentStoredNode();
             while (currentNode != null) {
@@ -739,7 +749,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             //System.out.println(builder.getDocument().toString());
             
             // TODO check
-            report = ((org.exist.memtree.DocumentImpl) builder.getDocument()).getNode(nodeNr);
+            report = ((org.exist.dom.memtree.DocumentImpl) builder.getDocument()).getNode(nodeNr);
 
 
         } catch (Exception ex){
@@ -939,7 +949,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         List<QName> indexes = new ArrayList<>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
-                if (qname.getLocalName() == null || qname.getNamespaceURI() == null)
+                if (qname.getLocalPart() == null || qname.getNamespaceURI() == null)
                     getDefinedIndexesFor(qname, indexes);
                 else
                     indexes.add(qname);
@@ -970,8 +980,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static boolean matchQName(QName qname, QName candidate) {
         boolean match = true;
-        if (qname.getLocalName() != null)
-            match = qname.getLocalName().equals(candidate.getLocalName());
+        if (qname.getLocalPart() != null)
+            match = qname.getLocalPart().equals(candidate.getLocalPart());
         if (match && qname.getNamespaceURI() != null && qname.getNamespaceURI().length() > 0)
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
         return match;
@@ -1173,7 +1183,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 @Override
                 public void metadata(QName key, Object value) {
                     if (value instanceof String) {
-                        String name = key.getLocalName();//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
+                        String name = key.getLocalPart();//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
                         Field fld = new Field(name, value.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
                         metas.add(fld);
                         //System.out.println(" "+name+" = "+value.toString());
@@ -1341,7 +1351,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         @Override
-        public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
+        public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (TextExtractor extractor : contentStack) {
                 	extractor.beforeCharacters();

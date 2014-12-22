@@ -22,11 +22,11 @@
 package org.exist.indexing;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
@@ -138,7 +138,7 @@ public interface IndexWorker {
      * @param includeSelf if set to true, the current node itself will be included in the check
      * @return the top-most root node to be reindexed
      */
-    StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf);
+    <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf);
 
     /**
      * Return a stream listener to index the current document in the current mode.

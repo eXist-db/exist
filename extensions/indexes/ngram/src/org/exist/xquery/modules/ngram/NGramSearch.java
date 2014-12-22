@@ -29,11 +29,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.EmptyNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.EmptyNodeSet;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndex;
 import org.exist.indexing.ngram.NGramIndexWorker;
@@ -166,10 +166,12 @@ public class NGramSearch extends Function implements Optimizable {
                     LocationStep outerStep = (LocationStep) outerExpr;
                     NodeTest test = outerStep.getTest();
                     if (!test.isWildcardTest() && test.getName() != null) {
-                        contextQName = new QName(test.getName());
                         if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS
-                            || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                            contextQName.setNameType(ElementValue.ATTRIBUTE);
+                            || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                            contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                        } else {
+                            contextQName = new QName(test.getName());
+                        }
                         contextStep = firstStep;
                         axis = outerStep.getAxis();
                         optimizeSelf = true;
@@ -178,10 +180,12 @@ public class NGramSearch extends Function implements Optimizable {
             } else if (lastStep != null && firstStep != null) {
                 NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
-                    contextQName = new QName(test.getName());
                     if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS
-                        || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                        contextQName.setNameType(ElementValue.ATTRIBUTE);
+                        || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                        contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                    } else {
+                        contextQName = new QName(test.getName());
+                    }
                     axis = firstStep.getAxis();
                     optimizeChild = steps.size() == 1 &&
                         (axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS);
@@ -273,7 +277,7 @@ public class NGramSearch extends Function implements Optimizable {
     }
 
     private String getLocalName() {
-        return getSignature().getName().getLocalName();
+        return getSignature().getName().getLocalPart();
     }
 
     private NodeSet processMatches(

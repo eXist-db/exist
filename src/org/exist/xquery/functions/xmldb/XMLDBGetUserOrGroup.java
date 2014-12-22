@@ -103,7 +103,7 @@ public class XMLDBGetUserOrGroup extends XMLDBPermissions {
 
 		try {
 			final Permission perm = getPermissions(collection, args);
-			if("get-owner".equals(getSignature().getName().getLocalName())) {
+			if("get-owner".equals(getSignature().getName().getLocalPart())) {
 				return new StringValue(perm.getOwner().getName());
             } else {
 				return new StringValue(perm.getGroup().getName());

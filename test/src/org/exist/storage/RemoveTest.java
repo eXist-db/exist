@@ -22,9 +22,9 @@
 package org.exist.storage;
 
 import org.exist.collections.IndexInfo;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;

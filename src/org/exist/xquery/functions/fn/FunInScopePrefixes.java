@@ -29,8 +29,8 @@ import java.util.Map.Entry;
 import java.util.Stack;
 
 import org.exist.Namespaces;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -173,7 +173,7 @@ public class FunInScopePrefixes extends BasicFunction {
 					//get the top-most ancestor
 					final Stack<Element> stack = new Stack<Element>(); 
 					do {
- 						if (node.getParentNode() == null || node.getParentNode() instanceof org.exist.memtree.DocumentImpl)
+ 						if (node.getParentNode() == null || node.getParentNode() instanceof org.exist.dom.memtree.DocumentImpl)
  							{stack.add((Element)node);}
 						node = node.getParentNode();
 					} while (node != null && node.getNodeType() == Node.ELEMENT_NODE);					
@@ -207,11 +207,11 @@ public class FunInScopePrefixes extends BasicFunction {
 			prefixes.put(prefix == null ? "" : prefix, namespaceURI);
 		}		
 		
-		if (element instanceof org.exist.memtree.ElementImpl) {
-			((org.exist.memtree.ElementImpl)element).getNamespaceMap(prefixes);
+		if (element instanceof org.exist.dom.memtree.ElementImpl) {
+			((org.exist.dom.memtree.ElementImpl)element).getNamespaceMap(prefixes);
 		
 		} else {
-			final ElementImpl elementImpl = (org.exist.dom.ElementImpl) element;
+			final ElementImpl elementImpl = (org.exist.dom.persistent.ElementImpl) element;
 			if (elementImpl.declaresNamespacePrefixes()) {
 				for (final Iterator<String> i = elementImpl.getPrefixes(); i.hasNext(); ) {
 					final String prefix = i.next();

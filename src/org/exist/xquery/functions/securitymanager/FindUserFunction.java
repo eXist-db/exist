@@ -112,7 +112,7 @@ public class FindUserFunction extends BasicFunction {
         
         final Sequence result;
         
-        if(isCalledAs(qnListUsers.getLocalName())) {
+        if(isCalledAs(qnListUsers.getLocalPart())) {
             result = new ValueSequence();
             if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
                 result.add(new StringValue(SecurityManager.GUEST_USER));
@@ -125,7 +125,7 @@ public class FindUserFunction extends BasicFunction {
                 throw new XPathException("You must be an authenticated user");
             }
             
-            if(isCalledAs(qnUserExists.getLocalName())) {
+            if(isCalledAs(qnUserExists.getLocalPart())) {
                  final String username = args[0].getStringValue();
                  result = BooleanValue.valueOf(securityManager.hasAccount(username));
             } else {
@@ -133,11 +133,11 @@ public class FindUserFunction extends BasicFunction {
                 final String startsWith = args[0].getStringValue();
 
                 final List<String> usernames;
-                if(isCalledAs(qnFindUsersByUsername.getLocalName())) {
+                if(isCalledAs(qnFindUsersByUsername.getLocalPart())) {
                     usernames = securityManager.findUsernamesWhereUsernameStarts(startsWith);
-                } else if(isCalledAs(qnFindUsersByName.getLocalName())) {
+                } else if(isCalledAs(qnFindUsersByName.getLocalPart())) {
                     usernames = securityManager.findUsernamesWhereNameStarts(startsWith);
-                } else if(isCalledAs(qnFindUsersByNamePart.getLocalName())) {
+                } else if(isCalledAs(qnFindUsersByNamePart.getLocalPart())) {
                     usernames = securityManager.findUsernamesWhereNamePartStarts(startsWith);
                 } else {
                     throw new XPathException("Unknown function");

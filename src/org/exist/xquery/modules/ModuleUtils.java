@@ -38,10 +38,10 @@ import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 
 import org.apache.log4j.Logger;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Document;
@@ -243,7 +243,7 @@ public class ModuleUtils {
 	 */
 	public static DocumentImpl htmlToXHtml(XQueryContext context, String url, InputSource srcHtml, Map<String, Boolean> parserFeatures, Map<String, String>parserProperties) throws IOException, SAXException {
             // we use eXist's in-memory DOM implementation
-            org.exist.memtree.DocumentImpl memtreeDoc = null;
+            org.exist.dom.memtree.DocumentImpl memtreeDoc = null;
 
             // use Neko to parse the HTML content to XML
             XMLReader reader = null;

@@ -20,12 +20,12 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
@@ -79,7 +79,7 @@ public class RootNode extends Step {
 //        if (cachedDocs != null && cachedDocs.equalDocs(ds)) return cached;
         
         // check if the loaded documents should remain locked
-        NewArrayNodeSet result = new NewArrayNodeSet(2);
+        NewArrayNodeSet result = new NewArrayNodeSet();
         try {
             // wait for pending updates
             if (!context.inProtectedMode())
@@ -138,22 +138,26 @@ public class RootNode extends Step {
     protected void registerUpdateListener() {
         if (listener == null) {
             listener = new UpdateListener() {
+                @Override
                 public void documentUpdated(DocumentImpl document, int event) {
                     // clear all
                     cachedDocs = null;
                     cached = null;
                 }
 
+                @Override
                 public void unsubscribe() {
                     RootNode.this.listener = null;
                 }
 
-                public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+                @Override
+                public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
                     // not relevant
                 }
 
+                @Override
                 public void debug() {
-                	LOG.debug("UpdateListener: Line: " + RootNode.this.toString());                	
+                    LOG.debug("UpdateListener: Line: " + RootNode.this.toString());                	
                 }
             };
             context.registerUpdateListener(listener);

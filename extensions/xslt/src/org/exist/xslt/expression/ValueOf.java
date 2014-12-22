@@ -24,8 +24,8 @@ package org.exist.xslt.expression;
 import javax.xml.stream.XMLStreamException;
 
 import org.exist.interpreter.ContextAtExist;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Profiler;
@@ -197,7 +197,7 @@ public class ValueOf extends SimpleConstructor {
                             "another child node.");
                     next.copyTo(context.getBroker(), receiver);
                     allowAttribs = next.getType() == Type.ATTRIBUTE;
-                    next = i.nextItem();				}
+                    next = i.nextItem();				}
             }
 			// flush remaining character data
 			if (buf != null && buf.length() > 0)

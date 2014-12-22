@@ -67,6 +67,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -79,7 +80,7 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.log4j.Logger;
 import org.exist.SystemProperties;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.ACLPermission;
 import org.exist.security.Account;
 import org.exist.security.Permission;
@@ -2590,14 +2591,14 @@ public class InteractiveClient {
             }
             final AttributesImpl attrs = new AttributesImpl();
             serializer.startDocument();
-            serializer.startElement("", "history", "history", attrs);
+            serializer.startElement(XMLConstants.NULL_NS_URI, "history", "history", attrs);
             for(final ListIterator<String> i = queryHistory.listIterator(p); i.hasNext(); ) {
-                serializer.startElement("", "query", "query", attrs);
+                serializer.startElement(XMLConstants.NULL_NS_URI, "query", "query", attrs);
                 final String next = i.next();
                 serializer.characters(next.toCharArray(), 0, next.length());
-                serializer.endElement("", "query", "query");
+                serializer.endElement(XMLConstants.NULL_NS_URI, "query", "query");
             }
-            serializer.endElement("", "history", "history");
+            serializer.endElement(XMLConstants.NULL_NS_URI, "history", "history");
             serializer.endDocument();
             writer.close();
             SerializerPool.getInstance().returnObject(serializer);

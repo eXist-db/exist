@@ -1,5 +1,5 @@
 /* eXist xml document repository and xpath implementation
- * Copyright (C) 2000,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-2014,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,10 +17,10 @@
  */
 package org.exist.dom;
 
-import java.util.ArrayList;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
 
 public class NodeListImpl extends ArrayList<Node> implements NodeList {
 
@@ -30,36 +30,50 @@ public class NodeListImpl extends ArrayList<Node> implements NodeList {
         super();
     }
 
-    public NodeListImpl(int initialCapacity) {
+    public NodeListImpl(final int initialCapacity) {
         super(initialCapacity);
     }
 
-    public boolean add(Node node) {
-        if (node == null)
-            {return false;}
+    @Override
+    public boolean add(final Node node) {
+        if (node == null) {
+            return false;
+        }
         return super.add(node);
     }
 
-    public boolean addAll(NodeList other) {
-        if (other.getLength() == 0)
-            {return false;}
-        boolean result = true;
-        for (int i = 0; i < other.getLength(); i++) {
-            if (!add(other.item(i))) {
-                result = false;
-                break;
+    /**
+     * Add all elements of the other NodeList to
+     * this NodeList
+     *
+     * @return true if all elements were added, false
+     *   if none or only some were added.
+     */
+    public boolean addAll(final NodeList other) {
+        if (other.getLength() == 0) {
+            return false;
+        } else {
+            boolean result = true;
+            for(int i = 0; i < other.getLength(); i++) {
+                if(!add(other.item(i))) {
+                    result = false;
+                    break;
+                }
             }
+            return result;
         }
-        return result;
     }
 
+    @Override
     public int getLength() {
         return size();
     }
 
-    public Node item(int pos) {
-        if (pos >= size())
-            {return null;}
-        return (Node) get(pos);
+    @Override
+    public Node item(final int pos) {
+        if (pos >= size()) {
+            return null;
+        }
+        return get(pos);
     }
 }

@@ -21,10 +21,17 @@
  */
 package org.exist.backup;
 
+import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentMetadata;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DefaultDocumentSet;
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.security.ACLPermission;
@@ -79,7 +86,7 @@ import java.util.*;
  * </ul>
  *
  * <p>The class should be used in combination with {@link ConsistencyCheck}. The error lists returned by ConsistencyCheck can be passed to {@link
- * #export(BackupHandler, org.exist.collections.Collection, BackupWriter, java.util.Date, BackupDescriptor, java.util.List, org.exist.dom.MutableDocumentSet)}.</p>
+ * #export(BackupHandler, org.exist.collections.Collection, BackupWriter, java.util.Date, BackupDescriptor, java.util.List, org.exist.dom.persistent.MutableDocumentSet)}.</p>
  */
 public class SystemExport
 {
@@ -593,7 +600,7 @@ public class SystemExport
     private void writeXML( DocumentImpl doc, Receiver receiver )
     {
         try {
-            EmbeddedXMLStreamReader   reader;
+            XMLStreamReader   reader;
             char[]                    ch;
             int                       nsdecls;
             final NamespaceSupport          nsSupport = new NamespaceSupport();

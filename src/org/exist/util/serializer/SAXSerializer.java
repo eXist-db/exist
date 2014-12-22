@@ -23,11 +23,12 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import org.exist.Namespaces;
+import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.XMLString;
 import org.exist.util.serializer.json.JSONWriter;
@@ -173,7 +174,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             return;
         }
         if(prefix == null) {
-            prefix = "";
+            prefix = XMLConstants.DEFAULT_NS_PREFIX;
         }
         final String ns = nsSupport.getURI(prefix);
         if (enforceXHTML && !XHTML_NS.equals(namespaceURI)) {
@@ -201,13 +202,13 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             namespaceDecls.clear();
             nsSupport.pushContext();
             receiver.startElement(namespaceURI, localName, qname);
-            String elemPrefix = "";
+            String elemPrefix = XMLConstants.DEFAULT_NS_PREFIX;
             int p = qname.indexOf(':');
             if (p > 0) {
                 elemPrefix = qname.substring(0, p);
             }
             if (namespaceURI == null) {
-                namespaceURI = "";
+                namespaceURI = XMLConstants.NULL_NS_URI;
             }
             if (enforceXHTML && elemPrefix.length() == 0 && namespaceURI.length() == 0) {
                 namespaceURI = XHTML_NS;
@@ -222,16 +223,16 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             if(attribs != null) {
                 for (int i = 0; i < attribs.getLength(); i++) {
                     attrName = attribs.getQName(i);
-                    if ("xmlns".equals(attrName)) {
-                        if (nsSupport.getURI("") == null) {
+                    if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrName)) {
+                        if (nsSupport.getURI(XMLConstants.DEFAULT_NS_PREFIX) == null) {
                             uri = attribs.getValue(i);
                             if (enforceXHTML && !XHTML_NS.equals(uri)) {
                                 uri = XHTML_NS;
                             }
-                            namespaceDecls.put("", uri);
-                            nsSupport.declarePrefix("", uri);
+                            namespaceDecls.put(XMLConstants.DEFAULT_NS_PREFIX, uri);
+                            nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, uri);
                         }
-                    } else if (attrName.startsWith("xmlns:")) {
+                    } else if (attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE + ":")) {
                         final String prefix = attrName.substring(6);
                         if (nsSupport.getURI(prefix) == null) {
                             uri = attribs.getValue(i);
@@ -263,14 +264,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
                 }
             }
             //cancels current xmlns if relevant
-            if ("".equals(elemPrefix) && !namespaceURI.equals(receiver.getDefaultNamespace())) {
-                receiver.namespace("", namespaceURI);
-                nsSupport.declarePrefix("", namespaceURI); 
+            if (XMLConstants.DEFAULT_NS_PREFIX.equals(elemPrefix) && !namespaceURI.equals(receiver.getDefaultNamespace())) {
+                receiver.namespace(XMLConstants.DEFAULT_NS_PREFIX, namespaceURI);
+                nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, namespaceURI);
             }
             optionalNamespaceDecls.clear();
             // output attributes
             for (int i = 0; i < attribs.getLength(); i++) {
-                if (!attribs.getQName(i).startsWith("xmlns")) {
+                if (!attribs.getQName(i).startsWith(XMLConstants.XMLNS_ATTRIBUTE)) {
                     receiver.attribute(attribs.getQName(i), attribs.getValue(i));
                 }
             }
@@ -290,16 +291,17 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             String prefix = qname.getPrefix();
             String namespaceURI = qname.getNamespaceURI();
             if(prefix == null) {
-                prefix = "";
+                prefix = XMLConstants.DEFAULT_NS_PREFIX;
             }
             if(namespaceURI == null) {
-                namespaceURI = "";
+                namespaceURI = XMLConstants.NULL_NS_URI;
             }
             if(enforceXHTML && prefix.length() == 0 && namespaceURI.length() == 0) {
                 namespaceURI = XHTML_NS;
-                qname.setNamespaceURI(namespaceURI);
+                receiver.startElement(new QName(qname.getLocalPart(), namespaceURI, qname.getPrefix()));
+            } else {
+                receiver.startElement(qname);
             }
-            receiver.startElement(qname);
             if (nsSupport.getURI(prefix) == null) {
                 namespaceDecls.put(prefix, namespaceURI);
                 nsSupport.declarePrefix(prefix, namespaceURI);
@@ -310,21 +312,21 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             if(attribs != null) {
                 for (int i = 0; i < attribs.getLength(); i++) {
                     attrQName = attribs.getQName(i);
-                    if ("xmlns".equals(attrQName.getLocalName())) {
-                        if (nsSupport.getURI("") == null) {
+                    if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrQName.getLocalPart())) {
+                        if (nsSupport.getURI(XMLConstants.DEFAULT_NS_PREFIX) == null) {
                             uri = attribs.getValue(i);
                             if (enforceXHTML && !XHTML_NS.equals(uri)) {
                                 uri = XHTML_NS;
                             }
-                            namespaceDecls.put("", uri);
-                            nsSupport.declarePrefix("", uri);
+                            namespaceDecls.put(XMLConstants.DEFAULT_NS_PREFIX, uri);
+                            nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, uri);
                         }
                     } else if (attrQName.getPrefix() != null && attrQName.getPrefix().length() > 0) {
                         prefix = attrQName.getPrefix();
-                        if("xmlns:".equals(prefix)) {
+                        if((XMLConstants.XMLNS_ATTRIBUTE + ":").equals(prefix)) {
                             if (nsSupport.getURI(prefix) == null) {
                                 uri = attribs.getValue(i);
-                                prefix = attrQName.getLocalName();
+                                prefix = attrQName.getLocalPart();
                                 namespaceDecls.put(prefix, uri);
                                 nsSupport.declarePrefix(prefix, uri);
                             }
@@ -348,7 +350,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             // output all namespace declarations
             for (final Map.Entry<String, String> nsEntry : namespaceDecls.entrySet()) {
                 optPrefix = nsEntry.getKey();
-                if ("xmlns".equals(optPrefix)) {
+                if (XMLConstants.XMLNS_ATTRIBUTE.equals(optPrefix)) {
                     continue;
                 }
                 uri = nsEntry.getValue(); 
@@ -358,14 +360,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             }
             optionalNamespaceDecls.clear();
             //cancels current xmlns if relevant
-            if ("".equals(prefix) && !namespaceURI.equals(receiver.getDefaultNamespace())) {
-                receiver.namespace("", namespaceURI);
-                nsSupport.declarePrefix("", namespaceURI); 
+            if (XMLConstants.DEFAULT_NS_PREFIX.equals(prefix) && !namespaceURI.equals(receiver.getDefaultNamespace())) {
+                receiver.namespace(XMLConstants.DEFAULT_NS_PREFIX, namespaceURI);
+                nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, namespaceURI);
             }
             if(attribs != null) {
                 // output attributes
                 for (int i = 0; i < attribs.getLength(); i++) {
-                    if (!attribs.getQName(i).getLocalName().startsWith("xmlns")) {
+                    if (!attribs.getQName(i).getLocalPart().startsWith(XMLConstants.XMLNS_ATTRIBUTE)) {
                         receiver.attribute(attribs.getQName(i), attribs.getValue(i));
                     }
                 }
@@ -383,7 +385,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
         try {
             nsSupport.popContext();
             receiver.endElement(namespaceURI, localName, qname);
-            receiver.setDefaultNamespace(nsSupport.getURI(""));
+            receiver.setDefaultNamespace(nsSupport.getURI(XMLConstants.DEFAULT_NS_PREFIX));
         } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
@@ -399,19 +401,20 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
             String prefix = qname.getPrefix();
             String namespaceURI = qname.getNamespaceURI();
             if(prefix == null) {
-                prefix = "";
+                prefix = XMLConstants.DEFAULT_NS_PREFIX;
             }
             
             if(namespaceURI == null) {
-                namespaceURI = "";
+                namespaceURI = XMLConstants.NULL_NS_URI;
             }
             
             if(enforceXHTML && prefix.length() == 0 && namespaceURI.length() == 0) {
                 namespaceURI = XHTML_NS;
-                qname.setNamespaceURI(namespaceURI);
+                receiver.endElement(new QName(qname.getLocalPart(), namespaceURI, qname.getPrefix()));
+            } else {
+                receiver.endElement(qname);
             }
-            receiver.endElement(qname);
-            receiver.setDefaultNamespace(nsSupport.getURI(""));
+            receiver.setDefaultNamespace(nsSupport.getURI(XMLConstants.DEFAULT_NS_PREFIX));
         } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }
@@ -423,7 +426,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     @Override
     public void attribute(final QName qname, final String value) throws SAXException {
         // ignore namespace declaration attributes
-        if((qname.getPrefix() != null && "xmlns".equals(qname.getPrefix())) || "xmlns".equals(qname.getLocalName())) {
+        if((qname.getPrefix() != null && XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getPrefix())) || XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getLocalPart())) {
             return;
         }
         
@@ -571,7 +574,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     }
 
     @Override
-    public void setCurrentNode(final StoredNode node) {
+    public void setCurrentNode(final INodeHandle node) {
         // just ignore.
     }
 

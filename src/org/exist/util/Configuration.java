@@ -38,7 +38,7 @@ import org.xml.sax.XMLReader;
 
 import org.exist.Indexer;
 import org.exist.indexing.IndexManager;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.JobConfig;
 import org.exist.scheduler.JobException;

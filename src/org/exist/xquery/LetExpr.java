@@ -98,7 +98,7 @@ public class LetExpr extends BindingExpression {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem,
             Sequence resultSequence, GroupedValueSequenceTable groupedSequence) 

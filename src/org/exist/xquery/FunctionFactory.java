@@ -67,7 +67,7 @@ public class FunctionFactory {
      */
     public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params,
         boolean optimizeStrFuncs) throws XPathException {
-        final String local = qname.getLocalName();
+        final String local = qname.getLocalPart();
         final String uri = qname.getNamespaceURI();
         Expression step = null;
         if (optimizeStrFuncs && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
@@ -349,7 +349,7 @@ public class FunctionFactory {
             Module _module_ = context.getModule(Namespaces.XPATH_FUNCTIONS_NS);
             if(_module_ != null) {
                 module = _module_;
-                qname.setNamespaceURI(Namespaces.XPATH_FUNCTIONS_NS);
+                qname = new QName(qname.getLocalPart(), Namespaces.XPATH_FUNCTIONS_NS, qname.getPrefix());
                 def = ((InternalModule) module).getFunctionDef(qname, params.size());
             }
         }

@@ -20,13 +20,13 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.ContextItem;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.persistent.ContextItem;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
@@ -458,8 +458,8 @@ public class Predicate extends PathExpr {
         for (final Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
             final NodeProxy currentNode = i.next();
             int sizeHint = Constants.NO_SIZE_HINT;
-            if (lastDoc == null || currentNode.getDocument() != lastDoc) {
-                lastDoc = currentNode.getDocument();
+            if (lastDoc == null || currentNode.getOwnerDocument() != lastDoc) {
+                lastDoc = currentNode.getOwnerDocument();
                 sizeHint = nodes.getSizeHint(lastDoc);
             }
             ContextItem contextItem = currentNode.getContext();
@@ -501,7 +501,7 @@ public class Predicate extends PathExpr {
                 && Type.subTypeOf(contextSequence.getItemType(), Type.NODE)
                 && contextSequence.isPersistentSet()
                 && outerSequence.isPersistentSet()) {
-            final Sequence result = new NewArrayNodeSet(100);
+            final Sequence result = new NewArrayNodeSet();
             final NodeSet contextSet = contextSequence.toNodeSet();
             switch (mode) {
             case Constants.CHILD_AXIS:
@@ -521,7 +521,7 @@ public class Predicate extends PathExpr {
                 if (contextSet.getDocumentSet().intersection(
                         outerNodeSet.getDocumentSet()).getDocumentCount() == 0)
                         {LOG.info("contextSet and outerNodeSet don't share any document");}
-                final NewArrayNodeSet temp = new NewArrayNodeSet(100);
+                final NewArrayNodeSet temp = new NewArrayNodeSet();
                 for (final SequenceIterator i = ancestors.iterate(); i.hasNext();) {
                     NodeProxy p = (NodeProxy) i.nextItem();
                     ContextItem contextNode = p.getContext();

@@ -77,13 +77,22 @@ public class UnionTest {
     }
     
     @Test
-    public void testUnionInPredicate_withIndex() throws XMLDBException {
+    public void unionInPredicate_withIndex() throws XMLDBException {
         storeCollectionConfig();
         
         final XQueryService service = storeXMLStringAndGetQueryService(PUBMED_DOC_NAME, PUBMED);
         final ResourceSet result = service.queryResource(PUBMED_DOC_NAME, XQUERY);
          
         assertEquals(1, result.getSize());
+    }
+
+    @Test
+    public void unionPersistentAndConstructedNodes() throws XMLDBException {
+        final XQueryService service = storeXMLStringAndGetQueryService(PUBMED_DOC_NAME, PUBMED);
+        final String xquery = "doc('" + testCollection.getName() + "/" + PUBMED_DOC_NAME + "')//Language | <a/> | <b/>";
+
+        final ResourceSet results = service.query(xquery);
+        assertEquals(3, results.getSize());
     }
     
     private void storeCollectionConfig() throws XMLDBException {
@@ -164,7 +173,7 @@ public class UnionTest {
     }
     
     @BeforeClass
-    public static void startDbAndCreateTestCollexction() throws Exception {
+    public static void startDbAndCreateTestCollection() throws Exception {
         
         // initialize driver
         final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");

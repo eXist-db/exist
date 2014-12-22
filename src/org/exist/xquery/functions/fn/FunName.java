@@ -21,8 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.exist.dom.INode;
 import org.exist.dom.QName;
-import org.exist.dom.QNameable;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.ErrorCodes;
@@ -129,9 +129,9 @@ public class FunName extends Function {
             if (!Type.subTypeOf(item.getType(), Type.NODE))
             	{throw new XPathException(this, ErrorCodes.XPTY0004, "item is not a node; got '" + Type.getTypeName(item.getType()) + "'");}
             //TODO : how to improve performance ?
-            final Node n = ((NodeValue)item).getNode();  
-            if (n instanceof QNameable)
-            	{result = new StringValue(((QNameable)n).getQName().getStringValue());}
+            final Node n = ((NodeValue)item).getNode();
+            if (n instanceof INode)
+            	{result = new StringValue(((INode)n).getQName().getStringValue());}
             else
             	{result = StringValue.EMPTY_STRING;}
         }

@@ -22,8 +22,8 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.exist.dom.INode;
 import org.exist.dom.QName;
-import org.exist.dom.QNameable;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.ErrorCodes;
@@ -87,9 +87,9 @@ public class FunNodeName extends Function {
             //TODO : how to improve performance ?
             final Node n = ((NodeValue)item).getNode(); 
             //Returns an expanded-QName for node kinds that can have names.
-            if (n instanceof QNameable) {
-            	final QName qn= ((QNameable)n).getQName();
-            	if (qn.equalsSimple(QName.EMPTY_QNAME))
+            if (n instanceof INode) {
+            	final QName qn= ((INode)n).getQName();
+            	if (qn.equals(QName.EMPTY_QNAME))
             		{result = Sequence.EMPTY_SEQUENCE;}
             	else            		
             		{result = new QNameValue(context, qn);}

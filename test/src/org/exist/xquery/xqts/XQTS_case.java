@@ -32,9 +32,9 @@ import java.util.TimeZone;
 
 import junit.framework.Assert;
 
-import org.exist.dom.ElementImpl;
+import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.NodeListImpl;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.FileSource;
 import org.exist.storage.DBBroker;

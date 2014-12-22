@@ -1,9 +1,10 @@
 package org.exist.storage.dom;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
@@ -15,7 +16,7 @@ import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
 
 import java.io.IOException;
-import java.util.Iterator;
+import org.exist.dom.persistent.NodeHandle;
 
 /**
  * Class NodeIterator is used to iterate over nodes in the DOM storage.
@@ -25,12 +26,12 @@ import java.util.Iterator;
  * 
  * @author wolf
  */
-public final class NodeIterator implements Iterator<StoredNode> {
+public final class NodeIterator implements INodeIterator {
 
     private final static Logger LOG = Logger.getLogger(NodeIterator.class);
 
     private DOMFile db = null;
-    private StoredNode node = null;
+    private NodeHandle node; //= null;
     private DocumentImpl doc = null;
     private int offset;
     private short lastTupleID = ItemId.UNKNOWN_ID;
@@ -40,10 +41,10 @@ public final class NodeIterator implements Iterator<StoredNode> {
     private DBBroker broker;
     private boolean useNodePool = false;
 
-    public NodeIterator(DBBroker broker, DOMFile db, StoredNode node, boolean poolable)
+    public NodeIterator(DBBroker broker, DOMFile db, NodeHandle node, boolean poolable)
             throws BTreeException, IOException {
         this.db = db;
-        this.doc = (DocumentImpl)node.getOwnerDocument();
+        this.doc = node.getOwnerDocument();
         this.useNodePool = poolable;
         this.node = node;
         this.broker = broker;
@@ -64,6 +65,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
      *
      *@return <code>true</code> if there is at least one more node to read
      */
+    @Override
     public boolean hasNext() {
         final Lock lock = db.getLock();
         try {
@@ -101,7 +103,8 @@ public final class NodeIterator implements Iterator<StoredNode> {
     /**
      *  Returns the next node in document order. 
      */
-    public StoredNode next() {
+    @Override
+    public IStoredNode next() {
         final Lock lock = db.getLock();
         try {
             try {
@@ -112,7 +115,7 @@ public final class NodeIterator implements Iterator<StoredNode> {
                 return null;
             }
             db.setOwnerObject(broker);
-            StoredNode nextNode = null;
+            IStoredNode nextNode = null;
             if (gotoNextPosition()) {
                 long backLink = 0;
                 do {
@@ -260,21 +263,9 @@ public final class NodeIterator implements Iterator<StoredNode> {
      * node count == 0. Use this method only if you want to
      * delete an entire document, not to remove a single node.
      */
+    @Override
     public void remove() {
         throw new RuntimeException("remove() method not implemented");
-    }
-
-    /**
-     *  Reposition the iterator at the address of the proxy node.
-     *
-     *@param  node  The new to value
-     */
-    public void setTo(StoredNode node) {
-        if (StorageAddress.hasAddress(node.getInternalAddress())) {
-            startAddress = node.getInternalAddress();
-        } else {
-            this.node = node;
-        }
     }
 
     /**
@@ -284,5 +275,10 @@ public final class NodeIterator implements Iterator<StoredNode> {
      */
     public void setTo(long address) {
         this.startAddress = address;
+    }
+
+    @Override
+    public void close() throws IOException {
+        //nothing needs to be done
     }
 }

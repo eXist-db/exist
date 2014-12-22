@@ -2,7 +2,7 @@ package org.exist.xquery.value;
 
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 
 
 public interface MemoryNodeSet extends Sequence {

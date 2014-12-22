@@ -1,8 +1,12 @@
 package org.exist.indexing.sort;
 
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
@@ -326,7 +330,7 @@ public class SortIndexWorker implements IndexWorker {
         byte[] data = new byte[7 + proxy.getNodeId().size()];
         data[0] = 0;
         ByteConversion.shortToByteH(id, data, 1);
-        ByteConversion.intToByteH(proxy.getDocument().getDocId(), data, 3);
+        ByteConversion.intToByteH(proxy.getOwnerDocument().getDocId(), data, 3);
         proxy.getNodeId().serialize(data, 7);
         return data;
     }
@@ -362,7 +366,7 @@ public class SortIndexWorker implements IndexWorker {
         return mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    public IStoredNode getReindexRoot(IStoredNode node, NodePath path, boolean insert, boolean includeSelf) {
         return insert ? null : node;
     }
 

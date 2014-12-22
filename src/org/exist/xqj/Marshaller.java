@@ -25,11 +25,11 @@ import org.exist.xquery.value.*;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.NameTest;
 import org.exist.storage.DBBroker;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.InMemoryNodeSet;
-import org.exist.memtree.ElementImpl;
-import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.InMemoryNodeSet;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.QName;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -224,7 +224,7 @@ public class Marshaller {
                         final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
                         try {
                             receiver.startDocument();
-                            n.getDocument().copyTo(n, receiver);
+                            n.getOwnerDocument().copyTo(n, receiver);
                             receiver.endDocument();
                         } catch (final SAXException e) {
                             throw new XPathException("Error while demarshalling node: " + e.getMessage(), e);

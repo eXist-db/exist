@@ -22,25 +22,19 @@
 package org.exist.xquery.modules.range;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.VirtualNodeSet;
 import org.exist.indexing.range.RangeIndex;
 import org.exist.indexing.range.RangeIndexConfig;
-import org.exist.indexing.range.RangeIndexConfigElement;
 import org.exist.indexing.range.RangeIndexWorker;
-import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.util.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -327,7 +321,7 @@ public class FieldLookup extends Function implements Optimizable {
     }
 
     private RangeIndex.Operator getOperator() {
-        final String calledAs = getSignature().getName().getLocalName();
+        final String calledAs = getSignature().getName().getLocalPart();
         return RangeIndexModule.OPERATOR_MAP.get(calledAs.substring("field-".length()));
     }
 

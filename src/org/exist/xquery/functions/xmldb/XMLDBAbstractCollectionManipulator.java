@@ -24,7 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
@@ -96,7 +96,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         	logger.debug("Found node");
         	if(node.getImplementationType() == NodeValue.PERSISTENT_NODE)
         	{
-        		final org.exist.collections.Collection internalCol = ((NodeProxy)node).getDocument().getCollection();
+        		final org.exist.collections.Collection internalCol = ((NodeProxy)node).getOwnerDocument().getCollection();
         		logger.debug("Found node");
         		try
         		{

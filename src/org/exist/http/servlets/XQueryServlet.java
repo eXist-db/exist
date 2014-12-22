@@ -68,7 +68,7 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
 import org.exist.debuggee.DebuggeeFactory;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.persistent.XMLUtil;
 
 /**
  * Servlet to generate HTML output from an XQuery file.
@@ -423,7 +423,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 //        URI baseUri;
 //        try {
 //            baseUri = new URI(request.getScheme(),
-//                    null/*user info?*/, request.getLocalName(), request.getLocalPort(),
+//                    null/*user info?*/, request.getLocalPart(), request.getLocalPort(),
 //                    request.getRequestURI(), null, null);
 //        } catch(URISyntaxException e) {
 //            baseUri = null;

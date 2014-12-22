@@ -1,7 +1,7 @@
 package org.exist.xquery.modules.sort;
 
 import org.exist.EXistException;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.indexing.sort.SortIndex;
 import org.exist.indexing.sort.SortIndexWorker;
@@ -48,7 +48,7 @@ public class RemoveIndex extends BasicFunction {
                     throw new XPathException(this, "Second argument to remove should be a persistent node, not " +
                         "an in-memory node.");
                 NodeProxy proxy = (NodeProxy) nv;
-                index.remove(id, proxy.getDocument());
+                index.remove(id, proxy.getOwnerDocument());
             } else {
                 index.remove(id);
             }

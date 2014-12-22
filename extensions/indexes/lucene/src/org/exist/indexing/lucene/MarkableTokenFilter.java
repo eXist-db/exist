@@ -66,7 +66,7 @@ public class MarkableTokenFilter extends TokenFilter {
     }*/
 
     @Override
-    public boolean incrementToken() throws IOException {
+    public final boolean incrementToken() throws IOException {
         if (isCaching) {
             if(!input.incrementToken()) {
                 input.end();

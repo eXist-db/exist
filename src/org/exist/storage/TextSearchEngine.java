@@ -20,6 +20,12 @@
  */
 package org.exist.storage;
 
+import org.exist.dom.QName;
+import org.exist.dom.persistent.AbstractCharacterData;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.NodeSet;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -29,7 +35,6 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.fulltext.ElementContent;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.SimpleTokenizer;
@@ -160,8 +165,8 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param indexSpec
 	 * @param node
 	 */
-	public abstract void storeText(CharacterDataImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
-    public abstract void storeText(StoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
+	public abstract void storeText(AbstractCharacterData node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
+    public abstract void storeText(IStoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
 
 	public abstract void flush();
 	public abstract boolean close() throws DBException;

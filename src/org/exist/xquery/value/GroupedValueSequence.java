@@ -22,9 +22,9 @@
  */ 
 package org.exist.xquery.value; 
 
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.GroupSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;

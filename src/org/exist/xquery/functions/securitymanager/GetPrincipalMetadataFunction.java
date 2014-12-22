@@ -128,9 +128,9 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
         final Subject currentUser = broker.getSubject();
 
         if(args.length == 0) {
-            if(isCalledAs(qnGetAccountMetadataKeys.getLocalName())) {
+            if(isCalledAs(qnGetAccountMetadataKeys.getLocalPart())) {
                 result = getAllAccountMetadataKeys();
-            } else if(isCalledAs(qnGetGroupMetadataKeys.getLocalName())) {
+            } else if(isCalledAs(qnGetGroupMetadataKeys.getLocalPart())) {
                 result = getAllGroupMetadataKeys();
             } else {
                 throw new XPathException("Unknown function");
@@ -139,12 +139,12 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
             final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
             final String strPrincipal = args[0].getStringValue();
             final Principal principal;
-            if(isCalledAs(qnGetAccountMetadataKeys.getLocalName()) || isCalledAs(qnGetAccountMetadata.getLocalName())) {
+            if(isCalledAs(qnGetAccountMetadataKeys.getLocalPart()) || isCalledAs(qnGetAccountMetadata.getLocalPart())) {
                 if(!currentUser.hasDbaRole() && !currentUser.getUsername().equals(strPrincipal)) {
                     throw new XPathException("You must be a DBA to retrieve metadata about other users, otherwise you may only retrieve metadata about yourself.");
                 }
                 principal = securityManager.getAccount(strPrincipal);
-            } else if(isCalledAs(qnGetGroupMetadataKeys.getLocalName()) || isCalledAs(qnGetGroupMetadata.getLocalName())) {
+            } else if(isCalledAs(qnGetGroupMetadataKeys.getLocalPart()) || isCalledAs(qnGetGroupMetadata.getLocalPart())) {
                 if(!currentUser.hasDbaRole() && !currentUser.hasGroup(strPrincipal)) {
                     throw new XPathException("You must be a DBA to retrieve metadata about other groups, otherwise you may only retrieve metadata about groups you are a member of.");
                 }
@@ -153,9 +153,9 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
                 throw new XPathException("Unknown function");
             }
             
-            if(isCalledAs(qnGetAccountMetadataKeys.getLocalName()) || isCalledAs(qnGetGroupMetadataKeys.getLocalName())) {
+            if(isCalledAs(qnGetAccountMetadataKeys.getLocalPart()) || isCalledAs(qnGetGroupMetadataKeys.getLocalPart())) {
                 result = getPrincipalMetadataKeys(principal);
-            } else if(isCalledAs(qnGetAccountMetadata.getLocalName()) || isCalledAs(qnGetGroupMetadata.getLocalName())) {
+            } else if(isCalledAs(qnGetAccountMetadata.getLocalPart()) || isCalledAs(qnGetGroupMetadata.getLocalPart())) {
                 final String metadataAttributeNamespace = args[1].getStringValue();
                 result = getPrincipalMetadata(principal, metadataAttributeNamespace);
             } else {

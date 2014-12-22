@@ -1,6 +1,6 @@
 package org.exist.xquery.modules.lucene;
 
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.lucene.LuceneIndex;

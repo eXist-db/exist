@@ -37,11 +37,11 @@ import org.w3c.dom.Document;
  */
 public class DocumentTypedValue extends AbstractTypedValue<Document> {
 
-    public DocumentTypedValue(final org.exist.dom.DocumentImpl document) {
+    public DocumentTypedValue(final org.exist.dom.persistent.DocumentImpl document) {
         super(Type.DOCUMENT, document);
     }
     
-    public DocumentTypedValue(final org.exist.memtree.DocumentImpl document) {
+    public DocumentTypedValue(final org.exist.dom.memtree.DocumentImpl document) {
         super(Type.DOCUMENT, document);
     }   
 }

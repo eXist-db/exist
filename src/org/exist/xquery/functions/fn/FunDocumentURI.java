@@ -21,9 +21,9 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentImpl;
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -69,7 +69,7 @@ public class FunDocumentURI extends Function {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
@@ -92,7 +92,7 @@ public class FunDocumentURI extends Function {
                 final NodeProxy node = (NodeProxy) value;
                 //Returns the empty sequence if the node is not a document node. 
                 if (node.isDocument()) {
-                    final XmldbURI path = node.getDocument().getURI(); 
+                    final XmldbURI path = node.getOwnerDocument().getURI(); 
                     result = new AnyURIValue(path);
                 }
             } else {

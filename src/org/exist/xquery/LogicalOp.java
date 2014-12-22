@@ -53,7 +53,7 @@ public abstract class LogicalOp extends BinaryOp {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public abstract Sequence eval(
 		Sequence contextSequence,

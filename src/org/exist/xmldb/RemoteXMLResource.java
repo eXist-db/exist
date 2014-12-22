@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 
 import org.exist.Namespaces;
-import org.exist.dom.DocumentTypeImpl;
+import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;

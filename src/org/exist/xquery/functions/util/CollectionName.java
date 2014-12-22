@@ -25,7 +25,7 @@ package org.exist.xquery.functions.util;
 import java.net.URISyntaxException;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
@@ -102,7 +102,7 @@ public class CollectionName extends BasicFunction {
 			if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				final NodeProxy p = (NodeProxy) node;
 				//TODO: use xmldbUri
-				return new StringValue(p.getDocument().getCollection().getURI().toString());	
+				return new StringValue(p.getOwnerDocument().getCollection().getURI().toString());
 			}
 		} else
 			{throw new XPathException(this, "First argument to util:collection-name should be either " +

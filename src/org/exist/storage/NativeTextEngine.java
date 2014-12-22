@@ -23,9 +23,23 @@ package org.exist.storage;
 
 //import java.io.EOFException;
 
+import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.VirtualNodeSet;
+import org.exist.dom.persistent.SymbolTable;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
 import org.exist.fulltext.ElementContent;
 import org.exist.fulltext.FTMatch;
 import org.exist.numbering.NodeId;
@@ -244,7 +258,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * if <code>false</code>, it is tokenized before being indexed
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
-    public void storeText(CharacterDataImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
+    public void storeText(AbstractCharacterData node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
         if (indexingHint == TOKENIZE || indexingHint == DO_NOT_TOKENIZE) {
             //TODO : case conversion should be handled by the tokenizer -pb
             final XMLString t = node.getXMLString().transformToLower();
@@ -275,7 +289,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
     }
 
-    public void storeText(StoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
+    @Override
+    public void storeText(IStoredNode parent, ElementContent text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
         //TODO : case conversion should be handled by the tokenizer -pb
         TextToken token;
         ElementContent.TextSpan span = text.getFirst();
@@ -316,7 +331,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         // TODO Auto-generated method stub      
     }
 
-    public void removeNode(StoredNode node, NodePath currentPath, String content) {
+    @Override
+    public void removeNode(NodeHandle node, NodePath currentPath, String content) {
         // TODO Auto-generated method stub      
     }
 
@@ -378,7 +394,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     }
 
     /* Drop all index entries for the given document.
-     * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.dom.DocumentImpl)
+     * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.dom.persistent.DocumentImpl)
      */
     public void dropIndex(DocumentImpl document) {
         invertedIndex.dropIndex(document);
@@ -418,7 +434,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             {token = stemmer.stem(expr);}
         else
             {token = expr;}
-        final NodeSet result = new NewArrayNodeSet(docs.getDocumentCount(), 250);
+        final NodeSet result = new NewArrayNodeSet();
         for (final Iterator<Collection> iter = docs.getCollectionIterator(); iter.hasNext();) {
             final int collectionId = (iter.next()).getId();
             Value key;
@@ -566,7 +582,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     }
 
     /* Return all nodes for wich the matcher matches.
-     * @see org.exist.storage.TextSearchEngine#getNodes(org.exist.xquery.XQueryContext, org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.storage.TermMatcher, java.lang.CharSequence)
+     * @see org.exist.storage.TextSearchEngine#getNodes(org.exist.xquery.XQueryContext, org.exist.dom.persistent.DocumentSet, org.exist.dom.persistent.NodeSet, org.exist.storage.TermMatcher, java.lang.CharSequence)
      */
     public NodeSet getNodes(XQueryContext context, DocumentSet docs,
             NodeSet contextSet, int axis, QName qname, TermMatcher matcher,
@@ -1458,7 +1474,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     private final class IndexScanCallback implements BTreeCallback{
         private DocumentSet docs;
         private NodeSet contextSet;
-        private Map map = new TreeMap();
+        private Map<String, Occurrences> map = new TreeMap<>();
         private XMLString word = new XMLString(64);
         private boolean byQName;
 
@@ -1693,7 +1709,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 SymbolTable.LENGTH_LOCAL_NAME;
             data = new byte[len];
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-            final short localNameId = symbols.getSymbol(qname.getLocalName());
+            final short localNameId = symbols.getSymbol(qname.getLocalPart());
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             data[OFFSET_QNAME_TYPE] = qname.getNameType();
@@ -1706,7 +1722,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 LENGTH_QNAME_TYPE + SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME;
             data = new byte[len];
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-            final short localNameId = symbols.getSymbol(qname.getLocalName());
+            final short localNameId = symbols.getSymbol(qname.getLocalPart());
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.intToByte(collectionId, data, OFFSET_COLLECTION_ID);
             data[OFFSET_QNAME_TYPE] = qname.getNameType();

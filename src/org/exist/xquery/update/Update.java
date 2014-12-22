@@ -24,12 +24,12 @@ package org.exist.xquery.update;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.NodeListImpl;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
@@ -126,18 +126,16 @@ public class Update extends Modification {
     			final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
 
                 final StoredNode ql[] = selectAndLock(transaction, inSeq);
-                final IndexListener listener = new IndexListener(ql);
                 TextImpl text;
                 AttrImpl attribute;
                 ElementImpl parent;
                 for (int i = 0; i < ql.length; i++) {
                     final StoredNode node = ql[i];
-                    final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                    final DocumentImpl doc = node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.WRITE)){
                             throw new XPathException(this, "User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
-                    doc.getMetadata().setIndexListener(listener);
                                         
                     //update the document
                     switch (node.getNodeType())
@@ -176,7 +174,6 @@ public class Update extends Modification {
                         default:
                             throw new XPathException(this, "unsupported node-type");
                     }
-                    doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);

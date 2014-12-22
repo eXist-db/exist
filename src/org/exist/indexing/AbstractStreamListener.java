@@ -22,9 +22,9 @@
 package org.exist.indexing;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.CharacterDataImpl;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 
@@ -70,7 +70,7 @@ public abstract class AbstractStreamListener implements StreamListener {
     }
 
     @Override
-    public void characters(Txn transaction, CharacterDataImpl text, NodePath path) {
+    public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
         if (next != null) {
             next.characters(transaction, text, path);
         }

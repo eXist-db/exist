@@ -1,8 +1,8 @@
 package org.exist;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;

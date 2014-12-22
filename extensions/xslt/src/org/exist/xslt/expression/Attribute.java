@@ -23,8 +23,8 @@ package org.exist.xslt.expression;
 
 import org.exist.dom.QName;
 import org.exist.interpreter.ContextAtExist;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.XMLChar;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Atomize;

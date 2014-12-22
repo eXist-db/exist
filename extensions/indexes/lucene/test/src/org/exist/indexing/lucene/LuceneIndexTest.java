@@ -13,9 +13,9 @@ import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.indexing.OrderedValuesIndex;
 import org.exist.indexing.QNamedKeysIndex;
@@ -44,6 +44,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
+
+import javax.xml.XMLConstants;
 
 public class LuceneIndexTest {
 
@@ -207,14 +209,13 @@ public class LuceneIndexTest {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
-            checkIndex(docs, broker, new QName[] { new QName("head", "") }, "title", 1);
-            Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p", "")}, "with", 1);
+            checkIndex(docs, broker, new QName[] { new QName("head") }, "title", 1);
+            Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p")}, "with", 1);
             assertEquals(2, o[0].getOccurrences());
-            checkIndex(docs, broker, new QName[] { new QName("hi", "") }, "just", 1);
+            checkIndex(docs, broker, new QName[] { new QName("hi") }, "just", 1);
             checkIndex(docs, broker, null, "in", 1);
 
-            QName attrQN = new QName("rend", "");
-            attrQN.setNameType(ElementValue.ATTRIBUTE);
+            QName attrQN = new QName("rend", XMLConstants.NULL_NS_URI, ElementValue.ATTRIBUTE);
             checkIndex(docs, broker, new QName[] { attrQN }, null, 2);
             checkIndex(docs, broker, new QName[] { attrQN }, "center", 1);
             checkIndex(docs, broker, new QName[] { attrQN }, "right", 1);
@@ -257,8 +258,8 @@ public class LuceneIndexTest {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
-            checkIndex(docs, broker, new QName[] { new QName("a", "") }, "x", 1);
-            checkIndex(docs, broker, new QName[] { new QName("c", "") }, "x", 1);
+            checkIndex(docs, broker, new QName[] { new QName("a") }, "x", 1);
+            checkIndex(docs, broker, new QName[] { new QName("c") }, "x", 1);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -290,13 +291,13 @@ public class LuceneIndexTest {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
-            checkIndex(docs, broker, new QName[] { new QName("head", "") }, "title", 1);
-            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "simple", 1);
-            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "mixed", 1);
-            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "dangerous", 1);
-            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "note", 0);
-            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "ignore", 0);
-            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "warnings", 1);
+            checkIndex(docs, broker, new QName[] { new QName("head") }, "title", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p") }, "simple", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p") }, "mixed", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p") }, "dangerous", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p") }, "note", 0);
+            checkIndex(docs, broker, new QName[] { new QName("p") }, "ignore", 0);
+            checkIndex(docs, broker, new QName[] { new QName("p") }, "warnings", 1);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -535,8 +536,8 @@ public class LuceneIndexTest {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
 
-            checkIndex(docs, broker, new QName[] { new QName("head", "") }, "TITLE", 1);
-            checkIndex(docs, broker, new QName[] { new QName("p", "") }, "uppercase", 1);
+            checkIndex(docs, broker, new QName[] { new QName("head") }, "TITLE", 1);
+            checkIndex(docs, broker, new QName[] { new QName("p") }, "uppercase", 1);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -697,14 +698,13 @@ public class LuceneIndexTest {
 
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
 
-            checkIndex(docs, broker, new QName[] { new QName("head", "") }, "title", 1);
-            Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p", "")}, "with", 1);
+            checkIndex(docs, broker, new QName[] { new QName("head") }, "title", 1);
+            Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p")}, "with", 1);
             assertEquals(2, o[0].getOccurrences());
-            checkIndex(docs, broker, new QName[] { new QName("hi", "") }, "just", 1);
+            checkIndex(docs, broker, new QName[] { new QName("hi") }, "just", 1);
             checkIndex(docs, broker, null, "in", 1);
 
-            QName attrQN = new QName("rend", "");
-            attrQN.setNameType(ElementValue.ATTRIBUTE);
+            QName attrQN = new QName("rend", XMLConstants.NULL_NS_URI, ElementValue.ATTRIBUTE);
             checkIndex(docs, broker, new QName[] { attrQN }, null, 2);
             checkIndex(docs, broker, new QName[] { attrQN }, "center", 1);
         } catch (Exception e) {
@@ -730,9 +730,9 @@ public class LuceneIndexTest {
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, "chair", 1);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 5);
-            checkIndex(docs, broker, new QName[] { new QName("condition", "") }, null, 2);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
+            checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 2);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -753,17 +753,17 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(docs, broker, new QName[] { new QName("condition", "") }, null, 1);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 4);
-            checkIndex(docs, broker, new QName[] { new QName("condition", "") }, "good", 0);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, "good", 0);
-            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "table", 1);
+            checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 1);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 4);
+            checkIndex(docs, broker, new QName[] { new QName("condition") }, "good", 0);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, "good", 0);
+            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "table", 1);
             assertEquals("table", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "cabinet", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("description") }, "cabinet", 1);
             assertEquals("cabinet", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "table", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "table", 1);
             assertEquals("table", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "cabinet", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "cabinet", 1);
             assertEquals("cabinet", o[0].getTerm());
 
             proc.setBroker(broker);
@@ -788,10 +788,10 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            o = checkIndex(docs, broker, new QName[] { new QName("description", "") }, null, 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("description") }, null, 1);
             assertEquals("table", o[0].getTerm());
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, "chair", 0);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, "chair", 0);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 0);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, "chair", 0);
 
             transact.commit(transaction);
         } catch (Exception e) {
@@ -821,9 +821,9 @@ public class LuceneIndexTest {
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
-            Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "chair", 1);
+            Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 5);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -847,21 +847,21 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("condition", "") }, null, 2);
+            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 2);
             System.out.println("prices: " + o.length);
             for (int i = 0; i < o.length; i++) {
                 System.out.println("occurance: " + o[i].getTerm() + ": " + o[i].getOccurrences());
             }
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, null, 4);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 6);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, null, 4);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 6);
 
-            o = checkIndex(docs, broker, new QName[] { new QName("condition", "") }, "bad", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("condition") }, "bad", 1);
             assertEquals("bad", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "armchair", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("description") }, "armchair", 1);
             assertEquals("armchair", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "bad", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "bad", 1);
             assertEquals("bad", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "armchair", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "armchair", 1);
             assertEquals("armchair", o[0].getTerm());
 
             // Insert before top element
@@ -878,17 +878,17 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(docs, broker, new QName[] { new QName("condition", "") }, null, 3);
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, null, 5);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 8);
+            checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 3);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, null, 5);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 8);
 
-            o = checkIndex(docs, broker, new QName[] { new QName("condition", "") }, "poor", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("condition") }, "poor", 1);
             assertEquals("poor", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "wheelchair", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("description") }, "wheelchair", 1);
             assertEquals("wheelchair", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "poor", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "poor", 1);
             assertEquals("poor", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "wheelchair", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "wheelchair", 1);
             assertEquals("wheelchair", o[0].getTerm());
 
             // Insert after element
@@ -905,17 +905,17 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(docs, broker, new QName[] { new QName("condition", "") }, null, 4);
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, null, 6);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 10);
+            checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 4);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, null, 6);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 10);
 
-            o = checkIndex(docs, broker, new QName[] { new QName("condition", "") }, "perfect", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("condition") }, "perfect", 1);
             assertEquals("perfect", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "refrigerator", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("description") }, "refrigerator", 1);
             assertEquals("refrigerator", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "perfect", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "perfect", 1);
             assertEquals("perfect", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "refrigerator", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "refrigerator", 1);
             assertEquals("refrigerator", o[0].getTerm());
 
             proc.setBroker(broker);
@@ -931,11 +931,11 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(docs, broker, new QName[] { new QName("condition", "") }, null, 5);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 11);
-            o = checkIndex(docs, broker, new QName[] { new QName("condition", "") }, "average", 1);
+            checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 5);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 11);
+            o = checkIndex(docs, broker, new QName[] { new QName("condition") }, "average", 1);
             assertEquals("average", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "average", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "average", 1);
             assertEquals("average", o[0].getTerm());
 
             // Insert before nested element
@@ -952,11 +952,11 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(docs, broker, new QName[] { new QName("condition", "") }, null, 6);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 12);
-            o = checkIndex(docs, broker, new QName[] { new QName("condition", "") }, "awesome", 1);
+            checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 6);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 12);
+            o = checkIndex(docs, broker, new QName[] { new QName("condition") }, "awesome", 1);
             assertEquals("awesome", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "awesome", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "awesome", 1);
             assertEquals("awesome", o[0].getTerm());
 
             // Overwrite attribute
@@ -973,8 +973,7 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            QName qnattr[] = { new QName("attr", "", "") };
-            qnattr[0].setNameType(ElementValue.ATTRIBUTE);
+            QName qnattr[] = { new QName("attr", XMLConstants.NULL_NS_URI, XMLConstants.DEFAULT_NS_PREFIX, ElementValue.ATTRIBUTE) };
             o = checkIndex(docs, broker, qnattr, null, 1);
             assertEquals("abc", o[0].getTerm());
             checkIndex(docs, broker, qnattr, "attribute", 0);
@@ -1003,9 +1002,9 @@ public class LuceneIndexTest {
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
-            Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "chair", 1);
+            Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 5);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -1027,11 +1026,11 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, null, 3);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 5);
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, "chair", 0);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, "chair", 0);
-            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "wardrobe", 1);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, null, 3);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 0);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, "chair", 0);
+            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "wardrobe", 1);
             assertEquals("wardrobe", o[0].getTerm());
 
             // Update text node
@@ -1046,11 +1045,11 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, null, 3);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 5);
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, "wardrobe", 0);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, "wardrobe", 0);
-            o = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "wheelchair", 1);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, null, 3);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, "wardrobe", 0);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, "wardrobe", 0);
+            o = checkIndex(docs, broker, new QName[] { new QName("description") }, "wheelchair", 1);
             assertEquals("wheelchair", o[0].getTerm());
 
             // Update attribute value
@@ -1065,8 +1064,7 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            QName qnattr[] = { new QName("attr", "", "") };
-            qnattr[0].setNameType(ElementValue.ATTRIBUTE);
+            QName qnattr[] = { new QName("attr", XMLConstants.NULL_NS_URI, XMLConstants.DEFAULT_NS_PREFIX, ElementValue.ATTRIBUTE) };
             o = checkIndex(docs, broker, qnattr, null, 1);
             assertEquals("abc", o[0].getTerm());
             checkIndex(docs, broker, qnattr, "attribute", 0);
@@ -1095,9 +1093,9 @@ public class LuceneIndexTest {
             transact = pool.getTransactionManager();
             transaction = transact.beginTransaction();
 
-            Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "chair", 1);
+            Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 5);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -1120,18 +1118,18 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, null, 3);
-            checkIndex(docs, broker, new QName[] { new QName("condition", "") }, null, 3);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 6);
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, "chair", 0);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, "chair", 0);
-            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "wheelchair", 1);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, null, 3);
+            checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 3);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 6);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 0);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, "chair", 0);
+            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "wheelchair", 1);
             assertEquals("wheelchair", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("condition", "") }, "poor", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("condition") }, "poor", 1);
             assertEquals("poor", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "wheelchair", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "wheelchair", 1);
             assertEquals("wheelchair", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "poor", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "poor", 1);
             assertEquals("poor", o[0].getTerm());
 
             proc.setBroker(broker);
@@ -1147,13 +1145,13 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, null, 3);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, null, 6);
-            checkIndex(docs, broker, new QName[] { new QName("description", "") }, "wheelchair", 0);
-            checkIndex(docs, broker, new QName[] { new QName("item", "") }, "wheelchair", 0);
-            o = checkIndex(docs, broker, new QName[] { new QName("description", "") }, "armchair", 1);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, null, 3);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, null, 6);
+            checkIndex(docs, broker, new QName[] { new QName("description") }, "wheelchair", 0);
+            checkIndex(docs, broker, new QName[] { new QName("item") }, "wheelchair", 0);
+            o = checkIndex(docs, broker, new QName[] { new QName("description") }, "armchair", 1);
             assertEquals("armchair", o[0].getTerm());
-            o = checkIndex(docs, broker, new QName[] { new QName("item", "") }, "armchair", 1);
+            o = checkIndex(docs, broker, new QName[] { new QName("item") }, "armchair", 1);
             assertEquals("armchair", o[0].getTerm());
 
             transact.commit(transaction);

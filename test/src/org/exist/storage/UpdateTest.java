@@ -23,8 +23,8 @@ package org.exist.storage;
 
 import junit.textui.TestRunner;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;

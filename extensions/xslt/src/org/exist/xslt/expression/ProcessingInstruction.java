@@ -22,8 +22,8 @@
 package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;

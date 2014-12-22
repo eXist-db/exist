@@ -22,7 +22,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
@@ -67,7 +67,7 @@ public class UntypedValueCheck extends AbstractExpression {
     }
     
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
@@ -117,7 +117,7 @@ public class UntypedValueCheck extends AbstractExpression {
     }
 
     /* (non-Javadoc)
-      * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet, org.exist.xquery.StaticContext)
+      * @see org.exist.xquery.Expression#preselect(org.exist.dom.persistent.DocumentSet, org.exist.xquery.StaticContext)
       */
 	public DocumentSet preselect(DocumentSet in_docs)
 		throws XPathException {

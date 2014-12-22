@@ -28,9 +28,9 @@ import java.math.BigInteger;
 import java.net.URISyntaxException;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
@@ -125,7 +125,7 @@ public class DocumentNameOrId extends BasicFunction {
                 final NodeValue node = (NodeValue) args[0].itemAt(0);
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     final NodeProxy proxy = (NodeProxy) node;
-                    doc = proxy.getDocument();
+                    doc = proxy.getOwnerDocument();
                     doc.getUpdateLock().acquire(Lock.READ_LOCK);
                 }
             } else if(Type.subTypeOf(args[0].getItemType(), Type.STRING)) {

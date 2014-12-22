@@ -27,7 +27,7 @@ import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.TriggerProxy;
 import org.exist.debuggee.Debuggee;
-import org.exist.dom.SymbolTable;
+import org.exist.dom.persistent.SymbolTable;
 import org.exist.indexing.IndexManager;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.plugin.PluginsManager;

@@ -21,14 +21,14 @@
  */
 package org.exist.versioning;
 
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.NodeSet;
-import org.exist.dom.NewArrayNodeSet;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;

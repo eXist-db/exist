@@ -22,8 +22,8 @@
 package org.exist.http;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.DBSource;

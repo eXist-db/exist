@@ -24,7 +24,7 @@ package org.exist.xquery.functions.text;
 
 import java.util.List;
 
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.TermMatcher;
 import org.exist.xquery.Cardinality;

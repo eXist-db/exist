@@ -22,7 +22,7 @@
 package org.exist.backup;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentAtExist;
+import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 
@@ -32,9 +32,9 @@ import org.xml.sax.ContentHandler;
  */
 public interface RestoreHandler extends ContentHandler {
 
-	public void startCollectionRestore(Collection colection, Attributes atts);
-	public void endCollectionRestore(Collection colection);
+	public void startCollectionRestore(Collection collection, Attributes atts);
+	public void endCollectionRestore(Collection collection);
 	
-	public void startDocumentRestore(DocumentAtExist document, Attributes atts);
-	public void endDocumentRestore(DocumentAtExist document);
+	public void startDocumentRestore(Document document, Attributes atts);
+	public void endDocumentRestore(Document document);
 }

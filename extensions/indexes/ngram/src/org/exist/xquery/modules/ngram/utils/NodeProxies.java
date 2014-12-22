@@ -1,7 +1,7 @@
 package org.exist.xquery.modules.ngram.utils;
 
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
 
 public final class NodeProxies {
 

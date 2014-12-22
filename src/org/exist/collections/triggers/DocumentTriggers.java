@@ -26,7 +26,7 @@ import java.util.Map;
 import org.exist.Indexer;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;

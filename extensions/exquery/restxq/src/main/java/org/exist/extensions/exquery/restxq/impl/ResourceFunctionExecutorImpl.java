@@ -37,7 +37,7 @@ import org.exist.dom.QName;
 import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
 import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.TypeAdapter;
-import org.exist.memtree.DocumentImpl;
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;

@@ -2,7 +2,7 @@ package org.exist.util.pool;
 
 import org.junit.Test;
 import org.w3c.dom.Node;
-import org.exist.dom.NodeImpl;
+import org.exist.dom.persistent.NodeImpl;
 import static junit.framework.Assert.*;
 
 public class NodePoolTest {

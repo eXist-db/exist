@@ -22,8 +22,8 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.GroupedValueSequence;

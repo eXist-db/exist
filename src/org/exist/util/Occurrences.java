@@ -1,8 +1,8 @@
 package org.exist.util;
 
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
 
 /**
  * Class to count element and word frequencies.

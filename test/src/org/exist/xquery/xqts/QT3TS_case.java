@@ -21,6 +21,9 @@
  */
 package org.exist.xquery.xqts;
 
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
@@ -28,7 +31,6 @@ import java.util.*;
 import junit.framework.Assert;
 
 import org.custommonkey.xmlunit.Diff;
-import org.exist.dom.*;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.util.serializer.SAXSerializer;
@@ -166,7 +168,7 @@ public class QT3TS_case extends TestCase {
                 if (_name == null)
                     continue;
 
-                col = el.getDocument().getURI().removeLastSegment().toString();
+                col = el.getOwnerDocument().getURI().removeLastSegment().toString();
 
                 NodeList sources = el.getElementsByTagNameNS(QT_NS, "source");
                 for (int j = 0; j < sources.getLength(); j++) {
@@ -339,7 +341,7 @@ public class QT3TS_case extends TestCase {
             // e.printStackTrace();
             // ErrorCode errorCode = e.getErrorCode();
             // if (errorCode != null &&
-            // extectedError.contains(errorCode.getErrorQName().getLocalName()))
+            // extectedError.contains(errorCode.getErrorQName().getLocalPart()))
             // return;
             Assert.fail("expected error code: '" + extectedError + "', but got: '" + e.getMessage() + "'");
         } catch (Exception e) {

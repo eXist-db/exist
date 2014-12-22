@@ -1,28 +1,28 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2014 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  *  $Id$
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -31,74 +31,119 @@ import org.exist.xquery.value.Type;
  * Abstract base class for the XQuery/XPath combining operators "union", "intersect"
  * and "except".
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
 public abstract class CombiningExpression extends AbstractExpression {
 
 	final protected PathExpr left;
 	final protected PathExpr right;
-	
-	/**
-	 * @param context
-	 */
-	public CombiningExpression(XQueryContext context, PathExpr left, PathExpr right) {
+
+	public CombiningExpression(final XQueryContext context, final PathExpr left, final PathExpr right) {
 		super(context);
 		this.left = left;
 		this.right = right;
 	}
 
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
-     */
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+	@Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
         left.analyze(contextInfo);
         right.analyze(contextInfo);
     }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public abstract Sequence eval(Sequence contextSequence, Item contextItem)
-		throws XPathException;
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#returnsType()
+	@Override
+	public final Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+		if (context.getProfiler().isEnabled()) {
+			context.getProfiler().start(this);
+			context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+			if (contextSequence != null) {
+				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+			}
+			if (contextItem != null) {
+				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+			}
+		}
+
+		final Sequence ls = left.eval(contextSequence, contextItem);
+		final Sequence rs = right.eval(contextSequence, contextItem);
+		ls.removeDuplicates();
+		rs.removeDuplicates();
+
+		final Sequence result = combine(ls, rs);
+
+		if (context.getProfiler().isEnabled()) {
+			context.getProfiler().end(this, "", result);
+		}
+
+		return result;
+	}
+
+	/**
+	 * Combine the left and right sequences in some manner
+	 *
+	 * @param ls Left sequence
+	 * @param rs Right sequence
+	 *
+	 * @return The combined result
 	 */
+	protected abstract Sequence combine(final Sequence ls, final Sequence rs) throws XPathException;
+
+	@Override
+	public final void dump(final ExpressionDumper dumper) {
+		left.dump(dumper);
+		dumper.display(" " + getOperatorName() + " ");
+		right.dump(dumper);
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder result = new StringBuilder();
+		result.append(left.toString());
+		result.append(" ").append(getOperatorName()).append(" ");
+		result.append(right.toString());
+		return result.toString();
+	}
+
+	/**
+	 * Get the Name of the operator
+	 *
+	 * @return the name of the operator
+	 */
+	protected abstract String getOperatorName();
+
+	@Override
 	public int returnsType() {
 		return Type.NODE;
 	}
 
-	public void setContextDocSet(DocumentSet contextSet) {
+	@Override
+	public void setContextDocSet(final DocumentSet contextSet) {
 		super.setContextDocSet(contextSet);
 		left.setContextDocSet(contextSet);
 		right.setContextDocSet(contextSet);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#resetState()
-	 */
-	public void resetState(boolean postOptimization) {
+
+	@Override
+	public void resetState(final boolean postOptimization) {
 		super.resetState(postOptimization);
 		left.resetState(postOptimization);
 		right.resetState(postOptimization);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
-	 */
-	public void setPrimaryAxis(int axis) {
+	@Override
+	public void setPrimaryAxis(final int axis) {
 		left.setPrimaryAxis(axis);
 		right.setPrimaryAxis(axis);
 	}
 
+	@Override
 	public int getPrimaryAxis() {
 		// just return left axis to indicate that we know the axis
 		return left.getPrimaryAxis();
 	}
 
     @Override
-    public void accept(ExpressionVisitor visitor) {
+    public void accept(final ExpressionVisitor visitor) {
         left.accept(visitor);
         right.accept(visitor);
     }

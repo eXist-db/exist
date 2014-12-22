@@ -23,8 +23,8 @@
 package org.exist.xquery;
 
 import org.exist.Namespaces;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.XMLChar;
 import org.exist.xquery.util.*;
 import org.exist.xquery.util.Error;

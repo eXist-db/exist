@@ -29,7 +29,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;

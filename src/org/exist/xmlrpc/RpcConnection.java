@@ -21,6 +21,18 @@
  */
 package org.exist.xmlrpc;
 
+import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.DocumentMetadata;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.DocumentTypeImpl;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.SortedNodeSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -37,8 +49,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
@@ -2871,7 +2882,7 @@ public class RpcConnection implements RpcAPI {
                             entry = new Vector<String>();
                             if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                                 p = (NodeProxy) next;
-                                entry.addElement(p.getDocument().getURI().toString());
+                                entry.addElement(p.getOwnerDocument().getURI().toString());
                                 entry.addElement(p.getNodeId().toString());
                             } else {
                                 entry.addElement("temp_xquery/" + next.hashCode());
@@ -2990,7 +3001,7 @@ public class RpcConnection implements RpcAPI {
                             entry = new ArrayList<String>();
                             if (((NodeValue) next).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                                 p = (NodeProxy) next;
-                                entry.add(p.getDocument().getURI().toString());
+                                entry.add(p.getOwnerDocument().getURI().toString());
                                 entry.add(p.getNodeId().toString());
                             } else {
                                 entry.add("temp_xquery/"
@@ -4560,13 +4571,13 @@ public class RpcConnection implements RpcAPI {
                     final NodeValue nv = (NodeValue) item;
                     if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         p = (NodeProxy) nv;
-                        docName = p.getDocument().getURI().toString();
-                        doctype = p.getDocument().getDoctype();
+                        docName = p.getOwnerDocument().getURI().toString();
+                        doctype = p.getOwnerDocument().getDoctype();
                         if (map.containsKey(docName)) {
                             counter = map.get(docName);
                             counter.inc();
                         } else {
-                            counter = new NodeCount(p.getDocument());
+                            counter = new NodeCount(p.getOwnerDocument());
                             map.put(docName, counter);
                         }
                         if (doctype == null)
@@ -4654,13 +4665,13 @@ public class RpcConnection implements RpcAPI {
                     final NodeValue nv = (NodeValue) item;
                     if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         p = (NodeProxy) nv;
-                        docName = p.getDocument().getURI().toString();
-                        doctype = p.getDocument().getDoctype();
+                        docName = p.getOwnerDocument().getURI().toString();
+                        doctype = p.getOwnerDocument().getDoctype();
                         if (map.containsKey(docName)) {
                             counter = map.get(docName);
                             counter.inc();
                         } else {
-                            counter = new NodeCount(p.getDocument());
+                            counter = new NodeCount(p.getOwnerDocument());
                             map.put(docName, counter);
                         }
                         if (doctype == null)
@@ -4742,7 +4753,7 @@ public class RpcConnection implements RpcAPI {
             for (int i = 0; i < occurrences.length; i++) {
                 final QName qname = (QName)occurrences[i].getTerm();
                 final Vector<Object> temp = new Vector<Object>(4);
-                temp.addElement(qname.getLocalName());
+                temp.addElement(qname.getLocalPart());
                 temp.addElement(qname.getNamespaceURI());
                 temp.addElement(qname.getPrefix() == null ? "" : qname.getPrefix());
                 temp.addElement(Integer.valueOf(occurrences[i].getOccurrences()));

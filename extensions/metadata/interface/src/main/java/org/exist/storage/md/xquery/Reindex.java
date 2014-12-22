@@ -26,9 +26,9 @@ import java.util.Iterator;
 
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;

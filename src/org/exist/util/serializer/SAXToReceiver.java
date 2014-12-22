@@ -27,7 +27,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.Attributes;
 import org.exist.dom.QName;
-import org.exist.dom.AttrImpl;
+import org.exist.dom.persistent.AttrImpl;
 import org.exist.util.XMLString;
 
 public class SAXToReceiver implements ContentHandler, LexicalHandler {

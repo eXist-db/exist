@@ -2,10 +2,10 @@ package org.expath.exist;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
-import org.exist.dom.BinaryDocument;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
-import org.exist.dom.DocumentImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;

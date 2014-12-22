@@ -2,7 +2,7 @@ package org.exist.fluent;
 
 import java.util.*;
 
-import org.exist.dom.AVLTreeNodeSet;
+import org.exist.dom.persistent.AVLTreeNodeSet;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 

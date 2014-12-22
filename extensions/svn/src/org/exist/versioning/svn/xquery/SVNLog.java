@@ -22,7 +22,7 @@
 package org.exist.versioning.svn.xquery;
 
 import org.exist.dom.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;

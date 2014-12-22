@@ -55,17 +55,14 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.config.ConfigurationException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeIndexListener;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ElementImpl;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.UUIDGenerator;
 import org.exist.storage.DBBroker;
-import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -97,23 +94,6 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 	public static final XmldbURI ENTRY_COLLECTION_URI = XmldbURI.create(ENTRY_COLLECTION_NAME);
 
 	// private static final String ENTRY_XPOINTER = "xpointer(/entry)";
-
-	final static class NodeListener implements NodeIndexListener {
-
-		StoredNode node;
-
-		public NodeListener(StoredNode node) {
-			this.node = node;
-		}
-
-		@Override
-		public void nodeChanged(StoredNode newNode) {
-			final long address = newNode.getInternalAddress();
-			if (StorageAddress.equals(node.getInternalAddress(), address)) {
-				node = newNode;
-			}
-		}
-	}
 
 	/** Creates a new instance of AtomProtocol */
 	public AtomProtocol() {
@@ -983,7 +963,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 	public void mergeFeed(final DBBroker broker, final Txn transaction,
 			final ElementImpl target, Element source, final String updated) {
 		
-		final DocumentImpl ownerDocument = (DocumentImpl) target.getOwnerDocument();
+		final DocumentImpl ownerDocument = target.getOwnerDocument();
 		final List<Node> toRemove = new ArrayList<Node>();
 		DOM.forEachChild(target, new NodeHandler() {
 			@Override
@@ -1049,7 +1029,6 @@ public class AtomProtocol extends AtomFeeds implements Atom {
 				DOMDB.appendChild(transaction, target, child);
 			}
 		}
-		ownerDocument.getMetadata().clearIndexListener();
 		ownerDocument.getMetadata().setLastModified(System.currentTimeMillis());
 	}
 

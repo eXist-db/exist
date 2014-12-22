@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.md.MetaData;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -93,7 +93,7 @@ public class Search extends BasicFunction {
                 Item item = i.nextItem();
                 if (Type.subTypeOf(item.getType(), Type.NODE)) {
                 	if (((NodeValue)item).isPersistentSet()) {
-                		path = ((NodeProxy)item).getDocument().getURI().toString();
+                		path = ((NodeProxy)item).getOwnerDocument().getURI().toString();
                 	} else {
                 		path = item.getStringValue();
                 	}

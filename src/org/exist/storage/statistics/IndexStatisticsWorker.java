@@ -1,19 +1,20 @@
 package org.exist.storage.statistics;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.IStoredNode;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.MatchListener;
 import org.exist.indexing.StreamListener;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.NodePath;
@@ -92,7 +93,7 @@ public class IndexStatisticsWorker implements IndexWorker {
         return mode;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf) {
         return null;
     }
 
@@ -131,7 +132,7 @@ public class IndexStatisticsWorker implements IndexWorker {
             final NodePath path = new NodePath();
             final Stack<NodeStats> stack = new Stack<NodeStats>();
             QName qname;
-            final EmbeddedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
+            final ExtendedXMLStreamReader reader = broker.getXMLStreamReader(root, false);
             while (reader.hasNext()) {
                 final int status = reader.next();
                 switch (status) {

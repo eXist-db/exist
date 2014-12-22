@@ -5,7 +5,7 @@ import java.util.Date;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.Constants;
@@ -295,7 +295,7 @@ public class Item extends Resource {
 			if (item instanceof NodeProxy) {
 				NodeProxy proxy = (NodeProxy) item;
 				if (proxy.isDocument()) {
-					return serializer.serialize(proxy.getDocument());
+					return serializer.serialize(proxy.getOwnerDocument());
 				}
 			}
 			return serializer.serialize((NodeValue) item);

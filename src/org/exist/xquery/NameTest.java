@@ -1,9 +1,9 @@
 package org.exist.xquery;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.ReferenceNode;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.ReferenceNode;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
@@ -25,7 +25,7 @@ public class NameTest extends TypeTest {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.NodeProxy)
+	 * @see org.exist.xquery.NodeTest#matches(org.exist.dom.persistent.NodeProxy)
 	 */
 	public boolean matches(NodeProxy proxy) {
 		Node node = null;
@@ -42,54 +42,70 @@ public class NameTest extends TypeTest {
 	}
 
 	public boolean matches(Node other) {
-        if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
-            {return matches(((ReferenceNode)other).getReference());}
-        if(!isOfType(other.getNodeType()))
-			{return false;}
-		return matchesName(other);
+        if (other.getNodeType() == NodeImpl.REFERENCE_NODE) {
+            return matches(((ReferenceNode)other).getReference());
+        }
+
+        if(!isOfType(other.getNodeType())) {
+            return false;
+        }
+
+        return matchesName(other);
 	}
 
 	public boolean matches(QName name) {
-		if (nodeName.getNamespaceURI() != null) {
-            if (!nodeName.getNamespaceURI().equals(name.getNamespaceURI()))
-				{return false;}
+		if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
+            if (!nodeName.getNamespaceURI().equals(name.getNamespaceURI())) {
+                return false;
+            }
 		}
-		if (nodeName.getLocalName() != null) {
-			return nodeName.getLocalName().equals(name.getLocalName());
+
+		if(!(nodeName instanceof QName.WildcardLocalPartQName)) {
+			return nodeName.getLocalPart().equals(name.getLocalPart());
 		}
+
 		return true;
 	}
 	
     public boolean matchesName(Node other) {
-        if (other.getNodeType() == NodeImpl.REFERENCE_NODE)
-            {return matchesName(((ReferenceNode)other).getReference().getNode());}
-        if (nodeName.getNamespaceURI() != null) {
-            if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI()))
-				{return false;}
+        if (other.getNodeType() == NodeImpl.REFERENCE_NODE) {
+            return matchesName(((ReferenceNode)other).getReference().getNode());
+        }
+
+        if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
+            if (!nodeName.getNamespaceURI().equals(other.getNamespaceURI())) {
+                return false;
+            }
 		}
-		if (nodeName.getLocalName() != null) {
-			return nodeName.getLocalName().equals(other.getLocalName());
+
+        if(!(nodeName instanceof QName.WildcardLocalPartQName)) {
+			return nodeName.getLocalPart().equals(other.getLocalName());
 		}
+
 		return true;
 	}
 
     public boolean matches(XMLStreamReader reader) {
         final int ev = reader.getEventType();
-        if (!isOfEventType(ev))
-            {return false;}
+        if (!isOfEventType(ev)) {
+            return false;
+        }
+
         switch (ev) {
             case XMLStreamReader.START_ELEMENT :
-                if (nodeName.getNamespaceURI() != null) {
+                if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
                     if (!nodeName.getNamespaceURI().equals(reader.getNamespaceURI()))
                         {return false;}
                 }
-                if (nodeName.getLocalName() != null) {
-                    return nodeName.getLocalName().equals(reader.getLocalName());
+
+                if(!(nodeName instanceof QName.WildcardLocalPartQName)) {
+                    return nodeName.getLocalPart().equals(reader.getLocalName());
                 }
                 break;
+
             case XMLStreamReader.PROCESSING_INSTRUCTION :
-                if (nodeName.getLocalName() != null) {
-                    return nodeName.getLocalName().equals(reader.getPITarget());
+                if(!(nodeName instanceof QName.WildcardLocalPartQName)) {
+                    return nodeName.getLocalPart().equals(reader.getPITarget());
                 }
                 break;
         }
@@ -100,23 +116,20 @@ public class NameTest extends TypeTest {
 	 * @see org.exist.xquery.NodeTest#isWildcardTest()
 	 */
 	public boolean isWildcardTest() {
-		return nodeName.getLocalName() == null || nodeName.getNamespaceURI() == null;
+        return nodeName instanceof QName.PartialQName;
 	}
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof NameTest) {
             final NameTest other = (NameTest) obj;
-            return other.nodeType == nodeType && other.nodeName.equalsSimple(nodeName);
+            return other.nodeType == nodeType && other.nodeName.equals(nodeName);
         }
         return false;
     }
 
     public void dump(ExpressionDumper dumper) {
-        if(nodeName.getLocalName() == null)
-            {dumper.display(nodeName.getPrefix() + ":*");}
-        else
-            {dumper.display(nodeName.getStringValue());}        
+        dumper.display(nodeName.getStringValue());
     }    
 
 	/* (non-Javadoc)
@@ -128,17 +141,13 @@ public class NameTest extends TypeTest {
         if(nodeName.getPrefix() != null) {
             result.append(nodeName.getPrefix());
             result.append(":");
-        } else if(nodeName.getNamespaceURI() != null) {
+        } else if(!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
             result.append("{");
             result.append(nodeName.getNamespaceURI());
             result.append("}");
         }
-        
-        if(nodeName.getLocalName() == null) {
-            result.append("*");
-        } else {
-            result.append(nodeName.getLocalName());
-        }
+
+        result.append(nodeName.getLocalPart());
         
         return result.toString();
     }

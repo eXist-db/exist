@@ -22,7 +22,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -89,7 +89,7 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, 
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, 
      * org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
@@ -111,7 +111,7 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#preselect(org.exist.dom.DocumentSet)
+     * @see org.exist.xquery.Expression#preselect(org.exist.dom.persistent.DocumentSet)
      */
     public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
         return in_docs;

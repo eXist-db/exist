@@ -21,7 +21,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -124,7 +124,7 @@ public abstract class AbstractExpression implements Expression {
     }
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.DocumentSet)
+     * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.persistent.DocumentSet)
      */
     @Override
     public void setContextDocSet(DocumentSet contextSet) {

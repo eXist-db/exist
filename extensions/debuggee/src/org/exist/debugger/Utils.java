@@ -28,8 +28,8 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.exist.Namespaces;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.xquery.XQueryContext;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

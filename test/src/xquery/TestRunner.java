@@ -22,7 +22,7 @@
 package xquery;
 
 import org.exist.Namespaces;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.util.XMLFilenameFilter;

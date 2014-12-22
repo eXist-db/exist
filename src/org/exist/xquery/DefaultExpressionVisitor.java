@@ -143,7 +143,7 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         union.right.accept(this);
     }
 
-    public void visitIntersectionExpr(Intersection intersect) {
+    public void visitIntersectionExpr(Intersect intersect) {
         intersect.left.accept(this);
         intersect.right.accept(this);
     }

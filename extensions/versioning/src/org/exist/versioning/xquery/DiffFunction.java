@@ -32,10 +32,10 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.dom.QName;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.versioning.VersioningTrigger;
 import org.exist.versioning.Diff;
 import org.exist.versioning.StandardDiff;
@@ -71,8 +71,8 @@ public class DiffFunction extends BasicFunction {
         if (nv1.getImplementationType() != NodeValue.PERSISTENT_NODE ||
                 nv2.getImplementationType() != NodeValue.PERSISTENT_NODE)
             throw new XPathException(this, "diff function only works on persistent documents stored in the db");
-        DocumentImpl doc1 = ((NodeProxy)nv1).getDocument();
-        DocumentImpl doc2 = ((NodeProxy)nv2).getDocument();
+        DocumentImpl doc1 = ((NodeProxy)nv1).getOwnerDocument();
+        DocumentImpl doc2 = ((NodeProxy)nv2).getOwnerDocument();
 
         context.pushDocumentContext();
         try {

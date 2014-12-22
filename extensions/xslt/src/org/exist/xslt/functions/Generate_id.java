@@ -21,17 +21,14 @@
  */
 package org.exist.xslt.functions;
 
-import org.exist.dom.NodeAtExist;
+import org.exist.dom.INode;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * generate-id() as xs:string 
@@ -61,7 +58,7 @@ public class Generate_id extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
 		if (!contextSequence.isEmpty() && contextSequence.hasOne()) {
-			NodeAtExist docNode = (NodeAtExist) args[0].itemAt(0);
+			INode docNode = (INode)args[0].itemAt(0);
 			return new StringValue(docNode.getNodeId().toString());
 		}
 

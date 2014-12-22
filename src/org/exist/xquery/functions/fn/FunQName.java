@@ -142,8 +142,8 @@ public class FunQName extends BasicFunction {
             //context.declareInScopeNamespace(prefix, namespace);
         }
 
-        if(!XMLChar.isValidName(qname.getLocalName()))
-            {throw new XPathException(this, ErrorCodes.FOCA0002, "'" + qname.getLocalName() + "' is not a valid local name.");}
+        if(!XMLChar.isValidName(qname.getLocalPart()))
+            {throw new XPathException(this, ErrorCodes.FOCA0002, "'" + qname.getLocalPart() + "' is not a valid local name.");}
 
         final Sequence result = new QNameValue(context, qname);
 

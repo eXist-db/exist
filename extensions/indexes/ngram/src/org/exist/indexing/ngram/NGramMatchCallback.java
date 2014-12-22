@@ -1,6 +1,6 @@
 package org.exist.indexing.ngram;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
@@ -8,7 +8,7 @@ import org.xml.sax.SAXException;
 /**
  * Callback interface used by the NGram {@link org.exist.indexing.MatchListener} to report matching
  * text sequences. Pass to
- * {@link NGramIndexWorker#getMatchListener(org.exist.storage.DBBroker, org.exist.dom.NodeProxy, NGramMatchCallback)}
+ * {@link NGramIndexWorker#getMatchListener(org.exist.storage.DBBroker, org.exist.dom.persistent.NodeProxy, NGramMatchCallback)}
  * to get informed of matches.
  */
 public interface NGramMatchCallback {

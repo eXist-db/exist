@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-2014,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public License
@@ -21,11 +21,22 @@
  
 package org.exist.xquery.value;
 
+//TODO replace with extends Iterator<Item>
 public interface SequenceIterator {
 
 	public static final SequenceIterator EMPTY_ITERATOR = new EmptySequenceIterator();
-	 
+
+	/**
+	 * Determines if there is a next item in the sequence
+	 *
+	 * @return true if there is another item available, false otherwise.
+	 */
 	public boolean hasNext();
-	
+
+	/**
+	 * Retrieves the next item from the Sequence
+	 *
+	 * @return The item, or null if there are no more items
+	 */
 	public Item nextItem();
 }

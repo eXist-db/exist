@@ -21,8 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;

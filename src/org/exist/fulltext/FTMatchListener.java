@@ -11,10 +11,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
@@ -67,7 +67,7 @@ public class FTMatchListener extends AbstractMatchListener {
             if (proxy.getNodeId().isDescendantOf(nextMatch.getNodeId())) {
                 if (ancestors == null)
                     {ancestors = new ExtArrayNodeSet();}
-                ancestors.add(new NodeProxy(proxy.getDocument(), nextMatch.getNodeId()));
+                ancestors.add(new NodeProxy(proxy.getOwnerDocument(), nextMatch.getNodeId()));
             }
             nextMatch = nextMatch.getNextMatch();
         }

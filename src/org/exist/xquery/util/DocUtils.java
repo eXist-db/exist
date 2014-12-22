@@ -30,9 +30,9 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 import org.exist.Namespaces;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -97,7 +97,7 @@ public class DocUtils {
                 }
 
                 //TODO : process pseudo-protocols URLs more efficiently.
-                org.exist.memtree.DocumentImpl memtreeDoc = null;
+                org.exist.dom.memtree.DocumentImpl memtreeDoc = null;
                 // we use eXist's in-memory DOM implementation
                 reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
                 //TODO : we should be able to cope with context.getBaseURI()
@@ -106,7 +106,7 @@ public class DocUtils {
                 reader.setContentHandler(adapter);
                 reader.parse(src);
                 final Document doc = adapter.getDocument();
-                memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
+                memtreeDoc = (org.exist.dom.memtree.DocumentImpl)doc;
                 memtreeDoc.setContext(context);
                 memtreeDoc.setDocumentURI(path);
                 document = memtreeDoc;
@@ -202,7 +202,7 @@ public class DocUtils {
 		return document;
 	}
 
-    public static org.exist.memtree.DocumentImpl parse(XQueryContext context, InputStream istream) throws XPathException {
+    public static org.exist.dom.memtree.DocumentImpl parse(XQueryContext context, InputStream istream) throws XPathException {
         return parse(context.getBroker().getBrokerPool(), context, istream);
     }
 
@@ -214,7 +214,7 @@ public class DocUtils {
 	 * @return document
 	 * @throws XPathException
 	 */
-	public static org.exist.memtree.DocumentImpl parse(BrokerPool pool, XQueryContext context, InputStream istream) throws XPathException {
+	public static org.exist.dom.memtree.DocumentImpl parse(BrokerPool pool, XQueryContext context, InputStream istream) throws XPathException {
 		// we use eXist's in-memory DOM implementation
         final XMLReader reader = pool.getParserPool().borrowXMLReader();
         final InputSource src = new InputSource(istream);
@@ -232,6 +232,6 @@ public class DocUtils {
 		} catch (final SAXException e) {
 			throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
 		}
-        return (org.exist.memtree.DocumentImpl) adapter.getDocument();
+        return (org.exist.dom.memtree.DocumentImpl) adapter.getDocument();
 	}
 }
