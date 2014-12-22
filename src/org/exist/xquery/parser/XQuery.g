@@ -149,6 +149,7 @@ imaginaryTokenDefinitions
 	FUNCTION_INLINE 
 	FUNCTION_TEST
 	MAP_TEST
+	MAP_LOOKUP
 	PROLOG
 	OPTION
 	ATOMIC_TYPE 
@@ -1019,7 +1020,7 @@ stepExpr throws XPathException
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => postfixExpr
 	|
 	( MOD | DOLLAR | ( qName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
-	  XML_PI )
+	  XML_PI | QUESTION )
 	=> postfixExpr
 	|
 	axisStep
@@ -1115,8 +1116,24 @@ postfixExpr throws XPathException:
 		(LPPAREN) => predicate
 		|
 		(LPAREN) => dynamicFunCall
+		|
+		(QUESTION) => mapLookup
 	)*
 	;
+
+mapLookup throws XPathException
+{ String name= null; }:
+    QUESTION! (
+        name=ncnameOrKeyword
+        { #mapLookup = #(#[MAP_LOOKUP, name]); }
+        |
+        s:STRING_LITERAL
+        { #mapLookup = #(#[MAP_LOOKUP, s.getText()]); }
+        |
+        paren:parenthesizedExpr
+        { #mapLookup = #(#[MAP_LOOKUP, "?"], #paren); }
+    )
+    ;
 
 dynamicFunCall throws XPathException:
 	args:argumentList	
@@ -1147,6 +1164,8 @@ primaryExpr throws XPathException
 	|
 	(eqName LPAREN ) => functionCall
 	|
+	( QUESTION ) => mapLookup
+	|
 	contextItemExpr
 	|
 	parenthesizedExpr
@@ -1163,7 +1182,7 @@ mapExpr throws XPathException
 
 mapAssignment throws XPathException
 	:
-	exprSingle COLON^ EQ! exprSingle
+	exprSingle COLON^ ( EQ! )? exprSingle
 	;
 
 orderedExpr throws XPathException
@@ -1263,7 +1282,7 @@ argumentList throws XPathException
 
 argument throws XPathException
 :
-	exprSingle | argumentPlaceholder
+	argumentPlaceholder | exprSingle
 	;
 
 argumentPlaceholder throws XPathException

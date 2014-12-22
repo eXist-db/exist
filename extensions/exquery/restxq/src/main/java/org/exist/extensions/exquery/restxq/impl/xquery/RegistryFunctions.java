@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Adam Retter
+Copyright (c) 2014, Adam Retter
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -44,10 +44,9 @@ import org.exist.xquery.value.Type;
 import org.exquery.restxq.ResourceFunction;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceRegistry;
-import org.exquery.restxq.annotation.ConsumesAnnotation;
-import org.exquery.restxq.annotation.ParameterAnnotation;
-import org.exquery.restxq.annotation.PathAnnotation;
-import org.exquery.restxq.annotation.ProducesAnnotation;
+import org.exquery.restxq.annotation.*;
+import org.exquery.serialization.annotation.AbstractYesNoSerializationAnnotation;
+import org.exquery.serialization.annotation.MethodAnnotation;
 import org.exquery.serialization.annotation.SerializationAnnotation;
 import org.exquery.xquery.Literal;
 import org.exquery.xquery3.Annotation;
@@ -97,94 +96,134 @@ public class RegistryFunctions extends BasicFunction {
         final RestXqServiceRegistry registry = RestXqServiceRegistryManager.getRegistry(getContext().getBroker().getBrokerPool());
         return (NodeValue)serializeRestXqServices(getContext().getDocumentBuilder(), registry).getDocumentElement();
     }
-    
+
+    /**
+     * Serializes RESTXQ Services to an XML description
+     *
+     * @param builder The receiver for the serialization
+     * @param services The services to describe
+     *
+     * @return The XML Document constructed from serializing the
+     * services to the MemTreeBuilder
+     */
     public static Document serializeRestXqServices(final MemTreeBuilder builder, final Iterable<RestXqService> services) {
         builder.startDocument();
         builder.startElement(RESOURCE_FUNCTIONS, null);
         
         for(final RestXqService service : services) {
-            
             final ResourceFunction resourceFn = service.getResourceFunction();
-            
-            AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute(null, XQUERY_URI, "", "string", resourceFn.getXQueryLocation().toString());
-            builder.startElement(RESOURCE_FUNCTION, attrs);
-            
-            //identity
-            attrs = new AttributesImpl();
-            attrs.addAttribute(null, NAMESPACE, "", "string", resourceFn.getFunctionSignature().getName().getNamespaceURI());
-            attrs.addAttribute(null, LOCAL_NAME, "", "string", resourceFn.getFunctionSignature().getName().getLocalPart());
-            attrs.addAttribute(null, ARITY, "", "int", Integer.toString(resourceFn.getFunctionSignature().getArgumentCount()));
-            builder.startElement(RESOURCE_FUNCTION_IDENTITY, attrs);
-            builder.endElement();
-            
-            //annotations
-            builder.startElement(ANNOTATIONS, null);
-            final List<Annotation> annotations = new ArrayList<Annotation>();
-            annotations.addAll(resourceFn.getHttpMethodAnnotations());
-            annotations.addAll(resourceFn.getConsumesAnnotations());
-            annotations.addAll(resourceFn.getProducesAnnotations());
-            
-            for(final Annotation annotation : annotations) {
-                builder.startElement(QName.fromJavaQName(annotation.getName()), null);
-                
-                final Literal literals[] =  annotation.getLiterals();
-                if(literals != null) {
-                    for(final Literal literal : literals) {
-                        if(annotation instanceof ConsumesAnnotation || annotation instanceof ProducesAnnotation) {
-                            builder.startElement(INTERNET_MEDIA_TYPE, null);
-                            builder.characters(literal.getValue());
-                            builder.endElement();
-                        }
-                    }
-                }
-                builder.endElement();
-            }
-            
-            if(resourceFn.getPathAnnotation() != null) {
-                final PathAnnotation pathAnnotation = resourceFn.getPathAnnotation();
-                attrs = new AttributesImpl();
-                attrs.addAttribute(null, SPECIFICITY_METRIC, "", "string", Long.toString(pathAnnotation.getPathSpecificityMetric()));
-                builder.startElement(QName.fromJavaQName(pathAnnotation.getName()), attrs);
-                final String[] segments = pathAnnotation.getLiterals()[0].getValue().split("/");
-                for(final String segment : segments) {
-                    if(!segment.isEmpty()) {
-                        builder.startElement(SEGMENT, null);
-                        builder.characters(segment);
-                        builder.endElement();
-                    }
-                }
-                builder.endElement();
-            }
-                
-            for(final ParameterAnnotation parameterAnnotation : resourceFn.getParameterAnnotations()) {
-                final Literal[] literals = parameterAnnotation.getLiterals();
-                attrs = new AttributesImpl();
-                attrs.addAttribute(null, NAME, "", "string", literals[0].getValue());
-                attrs.addAttribute(null, ARGUMENT, "", "string", literals[1].getValue());
-                if(literals.length == 3) {
-                    attrs.addAttribute(null, DEFAULT_VALUE, "", "string", literals[2].getValue());
-                }
-                builder.startElement(QName.fromJavaQName(parameterAnnotation.getName()), attrs);
-                builder.endElement();
-            }
-            
-            for(final SerializationAnnotation serializationAnnotation : resourceFn.getSerializationAnnotations()) {
-                builder.startElement(QName.fromJavaQName(serializationAnnotation.getName()), attrs);
-                
-                //TODO add parameters for Serialization Annotations
-                
-                builder.endElement();
-            }
-            builder.endElement();
-            
-            builder.endElement();
+            serializeResourceFunction(builder, resourceFn);
         }
         
         builder.endElement();
         builder.endDocument();
-        
-        
+
         return builder.getDocument();
+    }
+
+    /**
+     * Serializes a RESTXQ Resource Function as an XML description
+     *
+     * @param builder The receiver for the serialization
+     * @param resourceFn The resource function to describe
+     */
+    static void serializeResourceFunction(final MemTreeBuilder builder, final ResourceFunction resourceFn) {
+        AttributesImpl attrs = new AttributesImpl();
+        attrs.addAttribute(null, XQUERY_URI, "", "string", resourceFn.getXQueryLocation().toString());
+        builder.startElement(RESOURCE_FUNCTION, attrs);
+
+        //identity
+        attrs = new AttributesImpl();
+        attrs.addAttribute(null, NAMESPACE, "", "string", resourceFn.getFunctionSignature().getName().getNamespaceURI());
+        attrs.addAttribute(null, LOCAL_NAME, "", "string", resourceFn.getFunctionSignature().getName().getLocalPart());
+        attrs.addAttribute(null, ARITY, "", "int", Integer.toString(resourceFn.getFunctionSignature().getArgumentCount()));
+        builder.startElement(RESOURCE_FUNCTION_IDENTITY, attrs);
+        builder.endElement();
+
+        //rest annotations
+        builder.startElement(ANNOTATIONS, null);
+        serializeAnnotations(builder, resourceFn);
+        builder.endElement();
+
+        builder.endElement();
+    }
+
+    static void serializeAnnotations(final MemTreeBuilder builder, final ResourceFunction resourceFn) {
+        final List<Annotation> annotations = new ArrayList<>();
+        annotations.addAll(resourceFn.getHttpMethodAnnotations());
+        annotations.addAll(resourceFn.getConsumesAnnotations());
+        annotations.addAll(resourceFn.getProducesAnnotations());
+
+        for(final Annotation annotation : annotations) {
+            builder.startElement(QName.fromJavaQName(annotation.getName()), null);
+
+            final Literal literals[] =  annotation.getLiterals();
+            if(literals != null) {
+                for(final Literal literal : literals) {
+                    if(annotation instanceof ConsumesAnnotation || annotation instanceof ProducesAnnotation) {
+                        builder.startElement(INTERNET_MEDIA_TYPE, null);
+                        builder.characters(literal.getValue());
+                        builder.endElement();
+                    }
+                }
+            }
+            builder.endElement();
+        }
+
+        //path annotation
+        if(resourceFn.getPathAnnotation() != null) {
+            final PathAnnotation pathAnnotation = resourceFn.getPathAnnotation();
+            final AttributesImpl attrs = new AttributesImpl();
+            attrs.addAttribute(null, SPECIFICITY_METRIC, "", "string", Long.toString(pathAnnotation.getPathSpecificityMetric()));
+            builder.startElement(QName.fromJavaQName(pathAnnotation.getName()), attrs);
+            final String[] segments = pathAnnotation.getLiterals()[0].getValue().split("/");
+            for(final String segment : segments) {
+                if(!segment.isEmpty()) {
+                    builder.startElement(SEGMENT, null);
+                    builder.characters(segment);
+                    builder.endElement();
+                }
+            }
+            builder.endElement();
+        }
+
+        //parameter annotations
+        for(final ParameterAnnotation parameterAnnotation : resourceFn.getParameterAnnotations()) {
+            final Literal[] literals = parameterAnnotation.getLiterals();
+            final AttributesImpl attrs = new AttributesImpl();
+            attrs.addAttribute(null, NAME, "", "string", literals[0].getValue());
+            attrs.addAttribute(null, ARGUMENT, "", "string", literals[1].getValue());
+            if(literals.length == 3) {
+                attrs.addAttribute(null, DEFAULT_VALUE, "", "string", literals[2].getValue());
+            }
+            builder.startElement(QName.fromJavaQName(parameterAnnotation.getName()), attrs);
+            builder.endElement();
+        }
+
+        //serialization annotations
+        for(final SerializationAnnotation serializationAnnotation : resourceFn.getSerializationAnnotations()) {
+            serializeSerializationAnnotation(builder, serializationAnnotation);
+        }
+    }
+
+    static void serializeSerializationAnnotation(final MemTreeBuilder builder, final SerializationAnnotation serializationAnnotation) {
+        builder.startElement(QName.fromJavaQName(serializationAnnotation.getName()), null);
+
+        if(serializationAnnotation instanceof AbstractYesNoSerializationAnnotation) {
+            builder.characters(((AbstractYesNoSerializationAnnotation) serializationAnnotation).getStringValue());
+
+        } else if(serializationAnnotation instanceof org.exquery.serialization.annotation.MediaTypeAnnotation) {
+            builder.characters(((org.exquery.serialization.annotation.MediaTypeAnnotation) serializationAnnotation).getValue());
+
+        } else if(serializationAnnotation instanceof org.exquery.serialization.annotation.EncodingAnnotation) {
+            builder.characters(((org.exquery.serialization.annotation.EncodingAnnotation) serializationAnnotation).getValue());
+
+        } else if(serializationAnnotation instanceof MethodAnnotation) {
+            builder.characters(((org.exquery.serialization.annotation.MethodAnnotation) serializationAnnotation).getMethod());
+        }
+
+        //TODO further output: annotations as they are implemented
+
+        builder.endElement();
     }
 }

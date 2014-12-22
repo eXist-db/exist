@@ -88,11 +88,25 @@ public abstract class NodeImpl implements Node, QNameable, NodeAtExist {
             "not implemented on class " + getClass().getName());
     }
 
-    public void insertBefore(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-            "not implemented on class " + getClass().getName());
-    }
+  /**
+   * Insert a list of nodes at the position before the reference
+   * child.
+   *
+   * NOTE: You must call insertBefore on the parent node of the node that you
+   * want to insert nodes before.
+   */
+  public void insertBefore(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
+    throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+      "not implemented on class " + getClass().getName());
+  }
 
+  /**
+   * Insert a list of nodes at the position following the reference
+   * child.
+   *
+   * NOTE: You must call insertAfter on the parent node of the node that you want
+   * to insert nodes after.
+   */
     public void insertAfter(Txn transaction, NodeList nodes, Node refChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
             "insertAfter(Txn transaction, NodeList nodes, Node refChild) " +

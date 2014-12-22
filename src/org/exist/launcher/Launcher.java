@@ -61,9 +61,11 @@ public class Launcher extends Observable implements Observer {
     private MenuItem startItem;
     private MenuItem dashboardItem;
     private MenuItem eXideItem;
+    private MenuItem monexItem;
 
     public final static String PACKAGE_DASHBOARD = "http://exist-db.org/apps/dashboard";
     public final static String PACKAGE_EXIDE = "http://exist-db.org/apps/eXide";
+    public final static String PACKAGE_MONEX = "http://exist-db.org/apps/monex";
 
     public static void main(final String[] args) {
         final String os = System.getProperty("os.name", "");
@@ -304,6 +306,15 @@ public class Launcher extends Observable implements Observer {
                         client();
                     }
                 });
+                monexItem = new MenuItem("Open Monitoring and Profiling");
+                monexItem.setEnabled(false);
+                popup.add(monexItem);
+                monexItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        monex(desktop);
+                    }
+                });
             }
             if (desktop.isSupported(Desktop.Action.OPEN)) {
                 popup.addSeparator();
@@ -365,6 +376,22 @@ public class Launcher extends Observable implements Observer {
         utilityPanel.setStatus("Opening dashboard in browser ...");
         try {
             final URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/eXide/");
+            desktop.browse(url);
+        } catch (final URISyntaxException e) {
+            if (isSystemTraySupported())
+                {trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);}
+            utilityPanel.setStatus("Unable to launch browser");
+        } catch (final IOException e) {
+            if (isSystemTraySupported())
+                {trayIcon.displayMessage(null, "Failed to open URL", TrayIcon.MessageType.ERROR);}
+            utilityPanel.setStatus("Unable to launch browser");
+        }
+    }
+    
+    protected void monex(Desktop desktop) {
+        utilityPanel.setStatus("Opening Monitoring and Profiling in browser ...");
+        try {
+            final URI url = new URI("http://localhost:" + jetty.getPrimaryPort() + "/exist/apps/monex/");
             desktop.browse(url);
         } catch (final URISyntaxException e) {
             if (isSystemTraySupported())
@@ -442,10 +469,15 @@ public class Launcher extends Observable implements Observer {
     @Override
     public void update(Observable observable, Object o) {
         final ExistRepository.Notification notification = (ExistRepository.Notification) o;
+
         if (notification.getPackageURI().equals(PACKAGE_DASHBOARD) && dashboardItem != null) {
             dashboardItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+
         } else if (notification.getPackageURI().equals(PACKAGE_EXIDE) && eXideItem != null) {
             eXideItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+
+        } else if (notification.getPackageURI().equals(PACKAGE_MONEX) && monexItem != null) {
+            monexItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
         }
     }
 

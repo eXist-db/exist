@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project basedir="../.." name="git" default="git.details">
+        
+        <available file="${basedir}/.git" type="dir" property="git.present"/>
+
+        <target name="git.details" description="Setup ${git.branch}, ${git.revision} and ${git.description} properties" if="git.present">
+                <exec executable="git" outputproperty="git.branch.full" failifexecutionfails="false">
+                        <arg value="rev-parse"/>
+                        <arg value="--abbrev-ref"/>
+                        <arg value="HEAD"/>
+                </exec>
+                
+                <propertyregex property="git.branch" input="${git.branch.full}" regexp="(\\|\/)" replace="_" global="true" override="true" defaultvalue="${git.branch.full}"/>
+                
+                <exec executable="git" outputproperty="git.revision" failifexecutionfails="false">
+                        <arg value="rev-parse"/>
+                        <arg value="--short"/>
+                        <arg value="HEAD"/>
+                </exec>
+                
+                <exec executable="git" outputproperty="git.description" failifexecutionfails="false">
+                        <arg value="describe"/>
+                        <arg value="--tags"/>
+                        <arg value="HEAD"/>
+                </exec>
+                
+                <condition property="git.commit" value="${git.commit}" else="${git.branch}-${git.revision}">
+                        <isset property="git.commit" />      
+                </condition>
+                
+                <tstamp>
+                        <format property="TSTAMP" pattern="hhmmss"/>
+                </tstamp>
+                
+                <copy file="${basedir}/VERSION.txt.tmpl" tofile="${basedir}/VERSION.txt" overwrite="true" filtering="true">
+                        <filterset>
+                                <filter token="version" value="${project.version}"/>
+                                <filter token="timestamp" value="${DSTAMP}${TSTAMP}"/>
+                                <filter token="scm.branch" value="${git.branch}"/>
+                                <filter token="scm.revision" value="${git.revision}"/>
+                        </filterset>
+                </copy>
+                
+                <!-- propertyfile file="${basedir}/VERSION.txt">
+                        <entry key="project.build" value="${DSTAMP}"/>
+                        <entry key="scm.branch" value="${git.branch}"/>
+                        <entry key="scm.revision" value="${git.revision}"/>
+                </propertyfile -->
+        </target>
+        
+</project>

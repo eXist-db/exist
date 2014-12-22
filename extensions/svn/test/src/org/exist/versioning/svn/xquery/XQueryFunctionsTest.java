@@ -43,6 +43,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQueryContext;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -79,7 +80,7 @@ public class XQueryFunctionsTest {
 	"return <result pass='true'>";
 
 
-	@Test
+    @Test
 	public void test_001() {
 		test(
 			"xquery version \"1.0\"; " +
@@ -91,6 +92,7 @@ public class XQueryFunctionsTest {
 		);
 	}
 
+    @Ignore
 	@Test
 	public void test_002() {
 		test(
@@ -151,6 +153,7 @@ public class XQueryFunctionsTest {
 		);
 	}
 
+    @Ignore
 	@Test
 	public void test_010() {
 		test(
@@ -188,6 +191,7 @@ public class XQueryFunctionsTest {
 		);
 	}
 
+    @Ignore
 	@Test
 	public void test_011() {
 		test(
@@ -297,7 +301,6 @@ public class XQueryFunctionsTest {
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
         database.setProperty("create-database", "true");
-        database.setProperty("configuration", "../../conf.xml");
         DatabaseManager.registerDatabase(database);
 
         rootCollection =

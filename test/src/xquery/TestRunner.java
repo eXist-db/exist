@@ -47,21 +47,26 @@ import org.xmldb.api.modules.XMLResource;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.StringWriter;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import static org.junit.Assert.fail;
 
 public abstract class TestRunner {
 
-    private Collection rootCollection;
+    private final static String EOL = System.getProperty("line.separator");
 
+    private Collection rootCollection;
     protected abstract String getDirectory();
 
     @Test
-    public void runXMLBasedTests() {
+    public void runXMLBasedTests() throws TransformerException {
     	XMLFilenameFilter filter = new XMLFilenameFilter();
     	
         File dir = new File(getDirectory());
@@ -85,14 +90,18 @@ public abstract class TestRunner {
 				xqs.declareVariable("id", Sequence.EMPTY_SEQUENCE);
                 ResourceSet result = xqs.execute(query);
                 XMLResource resource = (XMLResource) result.getResource(0);
-                results.append(resource.getContent()).append('\n');
+                results.append(resource.getContent()).append(EOL);
                 Element root = (Element) resource.getContentAsDOM();
                 NodeList tests = root.getElementsByTagName("test");
                 for (int i = 0; i < tests.getLength(); i++) {
                     Element test = (Element) tests.item(i);
                     String passed = test.getAttribute("pass");
                     if (passed == null || passed.equals("false")) {
-                        fails.append("Test '" + test.getAttribute("n") + "' in file '" + file.getName() + "' failed.\n");
+                        fails
+                            .append("Test '").append(test.getAttribute("n"))
+                            .append("' in file '").append(file.getName())
+                            .append("' failed; Expected '").append(extractExpected(test))
+                            .append("', actual '").append(extractActual(test)).append("'.").append(EOL);
                     }
                 }
             }
@@ -113,6 +122,39 @@ public abstract class TestRunner {
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
             fail(e.getMessage());
+        }
+    }
+
+    private final String extractExpected(final Element test) {
+        final NodeList nlXpath = test.getElementsByTagName("xpath");
+        if(nlXpath.getLength() > 0) {
+            final StringBuilder xpaths = new StringBuilder();
+            for(int i = 0; i < nlXpath.getLength(); i++) {
+                if(i > 0) {
+                    xpaths.append(", ");
+                }
+                xpaths.append("xpath: " + nlXpath.item(i).getNodeValue());
+            }
+            return xpaths.toString();
+        } else {
+            final NodeList nlExpected = test.getElementsByTagName("expected");
+            if(nlExpected.getLength() == 1) {
+                return nlExpected.item(0).getNodeValue();
+            }
+        }
+        return "";
+    }
+
+    private final String extractActual(final Element test) throws TransformerException {
+        final NodeList nlXpath = test.getElementsByTagName("result");
+        if(nlXpath.getLength() == 1) {
+            final Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            final StringWriter writer = new StringWriter();
+            transformer.transform(new DOMSource(nlXpath.item(0).getFirstChild()), new StreamResult(writer));
+            return writer.toString();
+        } else {
+            return "";
         }
     }
 

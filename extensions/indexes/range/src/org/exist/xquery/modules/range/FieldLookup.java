@@ -21,13 +21,19 @@
  */
 package org.exist.xquery.modules.range;
 
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.indexing.range.RangeIndex;
+import org.exist.indexing.range.RangeIndexConfig;
+import org.exist.indexing.range.RangeIndexConfigElement;
 import org.exist.indexing.range.RangeIndexWorker;
 import org.exist.storage.ElementValue;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.NodePath;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.util.*;
 import org.exist.xquery.util.Error;
@@ -36,6 +42,7 @@ import org.exist.xquery.value.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class FieldLookup extends Function implements Optimizable {
@@ -274,11 +281,26 @@ public class FieldLookup extends Function implements Optimizable {
                     operators[i] = operator;
                 }
             }
+            if (operators.length != fields.getItemCount()) {
+                throw new XPathException(this, "Number of operators specified must correspond to number of fields queried");
+            }
             Sequence[] keys = new Sequence[getArgumentCount() - j];
+            SequenceIterator fieldIter = fields.unorderedIterator();
             for (int i = j; i < getArgumentCount(); i++) {
                 keys[i - j] = getArgument(i).eval(contextSequence);
+                int targetType = Type.ITEM;
+                if (fieldIter.hasNext()) {
+                    String field = fieldIter.nextItem().getStringValue();
+                    targetType = getType(contextSequence, field);
+                }
+                if (targetType != Type.ITEM) {
+                    keys[i -j] = keys[i - j].convertTo(targetType);
+                }
             }
 
+            if (keys.length < fields.getItemCount()) {
+                throw new XPathException(this, "Number of keys to look up must correspond to number of fields specified");
+            }
             RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
 
             try {
@@ -307,6 +329,29 @@ public class FieldLookup extends Function implements Optimizable {
     private RangeIndex.Operator getOperator() {
         final String calledAs = getSignature().getName().getLocalName();
         return RangeIndexModule.OPERATOR_MAP.get(calledAs.substring("field-".length()));
+    }
+
+    public int getType(Sequence contextSequence, String field) {
+        if (contextSequence == null) {
+            return Type.ITEM;
+        }
+        for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            final Collection collection = i.next();
+            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
+                continue;
+            }
+            IndexSpec idxConf = collection.getIndexConfiguration(context.getBroker());
+            if (idxConf != null) {
+                RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
+                if (config != null) {
+                    int type = config.getType(field);
+                    if (type != Type.ITEM) {
+                        return type;
+                    }
+                }
+            }
+        }
+        return Type.ITEM;
     }
 
     @Override

@@ -315,6 +315,22 @@ public class FnFormatDates extends BasicFunction {
                             "format-date does not support an am/pm component");
                 }
                 break;
+            case 'z':
+                if(dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
+                    sb.append("GMT");
+                }
+            case 'Z':
+                final Sequence tz = dt.getTimezone();
+                if(tz != Sequence.EMPTY_SEQUENCE) {
+                    final DayTimeDurationValue dtv = ((DayTimeDurationValue)tz);
+                    final NumberFormatter formatter = NumberFormatter.getInstance(language);
+                    sb.append(dtv.getPart(DurationValue.SIGN) >= 0 ? '+' : '-');
+                    sb.append(formatter.formatNumber(dtv.getPart(DurationValue.HOUR), "01", 2, 2));
+                    sb.append(':');
+                    sb.append(formatter.formatNumber(dtv.getPart(DurationValue.MINUTE), "01", 2, 2));
+                }
+                break;
+
             default:
                 throw new XPathException(this, ErrorCodes.FOFD1340, "Unrecognized date/time component: " + component);
         }
@@ -356,10 +372,26 @@ public class FnFormatDates extends BasicFunction {
                     name = "";
                     break;
             }
-            if ("N".equals(picture))
-                {name = name.toUpperCase();}
-            if ("n".equals(picture))
-                {name = name.toLowerCase();}
+
+            if ("N".equals(picture)) {
+                name = name.toUpperCase();
+            } else if ("n".equals(picture)) {
+                name = name.toLowerCase();
+            }
+
+            final int widths[] = getWidths(width);
+            if (widths != null) {
+                final int min = widths[0];
+                final int max = widths[1];
+                while(name.length() < min) {
+                    name = name + " ";
+                }
+
+                if(name.length() > max) {
+                    name = name.substring(0, max);
+                }
+            }
+
             sb.append(name);
             return;
         }
@@ -367,8 +399,9 @@ public class FnFormatDates extends BasicFunction {
         // determine min and max width
         int min = NumberFormatter.getMinDigits(picture);
         int max = NumberFormatter.getMaxDigits(picture);
-        if (max == 1)
-            {max = Integer.MAX_VALUE;}
+        if (max == 1) {
+            max = Integer.MAX_VALUE;
+        }
         // explicit width takes precedence
         final int widths[] = getWidths(width);
         if (widths != null) {

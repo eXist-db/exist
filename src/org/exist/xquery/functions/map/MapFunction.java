@@ -4,6 +4,8 @@ import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import java.util.Map;
+
 /**
  * Implements all functions of the map module.
  */
@@ -66,11 +68,29 @@ public class MapFunction extends BasicFunction {
                 new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
                 new FunctionParameterSequenceType("key", Type.STRING, Cardinality.EXACTLY_ONE, "The key to remove")
             },
-            new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE))
+            new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)),
+        new FunctionSignature(
+            new QName("for-each-entry", MapModule.NAMESPACE_URI, MapModule.PREFIX),
+            "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; the result is the sequence obtained by concatenating the results of these function calls. " +
+            "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, and the associated value as the second argument.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("input", Type.MAP, Cardinality.EXACTLY_ONE, "The map"),
+                new FunctionParameterSequenceType("action", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to be called for each entry")
+            },
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+        )
     };
+
+    private AnalyzeContextInfo cachedContextInfo;
 
     public MapFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
+    }
+
+    @Override
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        cachedContextInfo = new AnalyzeContextInfo(contextInfo);
+        super.analyze(contextInfo);
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
@@ -86,6 +106,9 @@ public class MapFunction extends BasicFunction {
             {return keys(args);}
         if (isCalledAs("remove"))
             {return remove(args);}
+        if (isCalledAs("for-each-entry")) {
+            return forEachEntry(args);
+        }
         return null;
     }
 
@@ -127,5 +150,20 @@ public class MapFunction extends BasicFunction {
             map.add(m);
         }
         return map;
+    }
+
+    private Sequence forEachEntry(Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final FunctionReference ref = (FunctionReference) args[1].itemAt(0);
+        ref.analyze(cachedContextInfo);
+        final ValueSequence result = new ValueSequence();
+        final Sequence fargs[] = new Sequence[2];
+        for (Map.Entry<AtomicValue, Sequence> entry: map) {
+            fargs[0] = entry.getKey();
+            fargs[1] = entry.getValue();
+            final Sequence s = ref.evalFunction(null, null, fargs);
+            result.addAll(s);
+        }
+        return result;
     }
 }

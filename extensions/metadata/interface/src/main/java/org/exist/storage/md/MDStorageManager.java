@@ -32,6 +32,8 @@ import org.exist.EXistException;
 import org.exist.backup.BackupHandler;
 import org.exist.backup.RestoreHandler;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.DocumentTriggerProxy;
+import org.exist.collections.triggers.CollectionTriggerProxy;
 import org.exist.config.Configuration;
 import org.exist.dom.DocumentAtExist;
 import org.exist.dom.DocumentImpl;
@@ -71,7 +73,7 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	public final static String PREFIX_VALUE = PREFIX+":"+VALUE;
 	public final static String PREFIX_VALUE_IS_DOCUMENT = PREFIX+":"+VALUE_IS_DOCUMENT;
 
-	protected static MDStorageManager _ = null;
+	protected static MDStorageManager inst = null;
 	
 	MetaData md;
 	
@@ -88,14 +90,14 @@ public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 			throw new PermissionDeniedException(e);
 		}
 
-		_ = this;
+		inst = this;
 		
 		Database db = manager.getDatabase();
 		
 		inject(db, md);
 
-		db.getDocumentTriggers().add(new DocumentEvents());
-		db.getCollectionTriggers().add(new CollectionEvents());
+        db.registerDocumentTrigger(DocumentEvents.class);
+        db.registerCollectionTrigger(CollectionEvents.class);
 		
 		Map<String, Class<?>> map = (Map<String, Class<?>>) db.getConfiguration().getProperty(XQueryContext.PROPERTY_BUILT_IN_MODULES);
         map.put(

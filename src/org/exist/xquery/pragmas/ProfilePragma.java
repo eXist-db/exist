@@ -24,6 +24,7 @@ package org.exist.xquery.pragmas;
 import org.exist.xquery.*;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.xquery.value.Sequence;
 
 public class ProfilePragma extends Pragma {
 
@@ -38,7 +39,7 @@ public class ProfilePragma extends Pragma {
     	profiler.setEnabled(false);
     }
 
-    public void before(XQueryContext context, Expression expression) throws XPathException {
+    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
     	final Profiler profiler = context.getProfiler();
     	final Option pragma = new Option(getQName(), getContents());
     	profiler.configure(pragma);

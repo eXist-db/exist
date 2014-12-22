@@ -49,7 +49,7 @@ public class NoIndexPragma extends Pragma {
         return null;
     }
 
-    public void before(XQueryContext context, Expression expression) throws XPathException {
+    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
     }
 
     public void after(XQueryContext context, Expression expression) throws XPathException {

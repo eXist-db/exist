@@ -21,6 +21,9 @@
  */
 package org.exist.backup;
 
+import org.exist.security.Account;
+import org.exist.security.Group;
+import org.exist.security.Permission;
 import org.exist.storage.StorageAddress;
 import org.w3c.dom.Node;
 
@@ -127,6 +130,7 @@ public class ConsistencyCheck
         if (callback != null)
         	{callback.startCollection( uri.toString() );}
 
+        checkPermissions(collection, errors);
         try {
             for(final Iterator<XmldbURI> i = collection.collectionIteratorNoLock(broker); i.hasNext(); ) {
                 final XmldbURI childUri = i.next();
@@ -165,6 +169,7 @@ public class ConsistencyCheck
             }
         }
     }
+
 
 
     public int getDocumentCount() throws TerminatedException
@@ -224,6 +229,48 @@ public class ConsistencyCheck
         finally {
             AccountImpl.getSecurityProperties().enableCheckPasswords(true);
         }
+    }
+
+    public void checkPermissions(Collection collection, List<ErrorReport> errorList) {
+        try {
+            Permission perms = collection.getPermissions();
+            Account owner = perms.getOwner();
+            if (owner == null) {
+                final ErrorReport.CollectionError error = new ErrorReport.CollectionError( ErrorReport.ACCESS_FAILED, "Owner account not found for collection: " + collection.getURI());
+                error.setCollectionId( collection.getId() );
+                error.setCollectionURI( collection.getURI() );
+                errorList.add(error);
+            }
+            Group group = perms.getGroup();
+            if (group == null) {
+                final ErrorReport.CollectionError error = new ErrorReport.CollectionError( ErrorReport.ACCESS_FAILED, "Owner group not found for collection: " + collection.getURI());
+                error.setCollectionId( collection.getId() );
+                error.setCollectionURI( collection.getURI() );
+                errorList.add(error);
+            }
+        } catch(Exception e) {
+            final ErrorReport.CollectionError error = new ErrorReport.CollectionError( ErrorReport.ACCESS_FAILED, "Exception caught while : " + collection.getURI());
+            error.setCollectionId( collection.getId() );
+            error.setCollectionURI( collection.getURI() );
+            errorList.add(error);
+        }
+    }
+
+    public ErrorReport checkPermissions(final DocumentImpl doc) {
+        try {
+            Permission perms = doc.getPermissions();
+            Account owner = perms.getOwner();
+            if (owner == null) {
+                return new ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, "Owner account not found for document " + doc.getFileURI());
+            }
+            Group group = perms.getGroup();
+            if (group == null) {
+                return new ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, "Owner group not found for document " + doc.getFileURI());
+            }
+        } catch(Exception e) {
+            return new ErrorReport.ResourceError(ErrorReport.RESOURCE_ACCESS_FAILED, "Exception caught while checking permissions on document " + doc.getFileURI(), e);
+        }
+        return null;
     }
 
     /**
@@ -514,11 +561,14 @@ public class ConsistencyCheck
                 }
             });
             for (DocumentImpl doc : documents) {
-                final ErrorReport report;
-                if (ConsistencyCheck.this.checkDocs) {
-                    report = checkXMLTree(doc);
-                } else {
-                    report = checkDocument(doc);
+                ErrorReport report;
+                report = checkPermissions(doc);
+                if (report == null) {
+                    if (ConsistencyCheck.this.checkDocs) {
+                        report = checkXMLTree(doc);
+                    } else {
+                        report = checkDocument(doc);
+                    }
                 }
                 if( report != null ) {
                     if(report instanceof ErrorReport.ResourceError) {

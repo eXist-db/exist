@@ -61,11 +61,11 @@ import org.exquery.restxq.RestXqServiceRegistry;
  */
 public class RegistryFunctions extends BasicFunction {
     
-    private final static QName qnFindResourceFunctions = new QName("find-resource-functions", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    private final static QName qnRegisterModule = new QName("register-module", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    private final static QName qnDeregisterModule = new QName("deregister-module", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    private final static QName qnRegisterResourceFunction = new QName("register-resource-function", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    private final static QName qnDeregisterResourceFunction = new QName("deregister-resource-function", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private final static QName qnFindResourceFunctions = new QName("find-resource-functions", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName qnRegisterModule = new QName("register-module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName qnDeregisterModule = new QName("deregister-module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName qnRegisterResourceFunction = new QName("register-resource-function", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private final static QName qnDeregisterResourceFunction = new QName("deregister-resource-function", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
     
     private final static SequenceType PARAM_MODULE = new FunctionParameterSequenceType("module", Type.ANY_URI, Cardinality.EXACTLY_ONE, "A URI pointing to an XQuery module.");
     private final static SequenceType PARAM_RESOURCE_FUNCTION = new FunctionParameterSequenceType("function-signature", Type.STRING, Cardinality.EXACTLY_ONE, "A signature identifying a resource function. Takes the format {namespace}local-name#arity e.g. {http://somenamespace}some-function#2");

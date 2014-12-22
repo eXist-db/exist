@@ -252,9 +252,6 @@ public class InteractiveClient {
         messageln("rmcol collection     remove collection");
         messageln("set [key=value]      set property. Calling set without ");
         messageln("                     argument shows current settings.");
-        messageln("validate [document]  validate xml document with system xml catalog.");
-        messageln("validate [document] [grammar]  validate xml document with ");
-        messageln("                     specified grammar document.");
         messageln(EOL + "--- search commands ---");
         messageln("find xpath-expr      execute the given XPath expression.");
         messageln("show [position]      display query result value at position.");
@@ -2685,7 +2682,7 @@ public class InteractiveClient {
 	if (!"".equals(SystemProperties.getInstance().getSystemProperty("git-commit", ""))) {
 	    builder.append(" (");
 	    builder.append(SystemProperties.getInstance().getSystemProperty("git-commit", "(unknown Git commit ID)"));
-	    builder.append(") ");
+	    builder.append(")");
 	}
         builder.append(", Copyright (C) 2001-");
 	builder.append(Calendar.getInstance().get(Calendar.YEAR));
@@ -2769,7 +2766,7 @@ public class InteractiveClient {
                     }
                 }
             }
-            return p + 1;
+            return p;
         }
     }
     

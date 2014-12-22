@@ -24,7 +24,7 @@ public class SingleKeyMapType extends AbstractMapType {
     }
 
     @Override
-    public int getItemType() {
+    public int getKeyType() {
         return key.getType();
     }
 
@@ -46,17 +46,17 @@ public class SingleKeyMapType extends AbstractMapType {
     }
 
     @Override
+    public int size() {
+        return key == null ? 0 : 1;
+    }
+
+    @Override
     public AbstractMapType remove(AtomicValue key) {
         try {
             return new MapType(context);
         } catch (final XPathException e) {
             return null;
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return key == null ? 0 : 1;
     }
 
     @Override

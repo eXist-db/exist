@@ -155,11 +155,14 @@ public class Lookup extends Function implements Optimizable {
         this.contextPath = contextPath;
     }
 
-    public void setFallback(Expression expression) {
+    public void setFallback(Expression expression, int optimizeAxis) {
         if (expression instanceof InternalFunctionCall) {
             expression = ((InternalFunctionCall)expression).getFunction();
         }
         this.fallback = expression;
+        // we need to know the axis at this point. the optimizer will call
+        // getOptimizeAxis before analyze
+        this.axis = optimizeAxis;
     }
 
     public Expression getFallback() {
@@ -258,7 +261,7 @@ public class Lookup extends Function implements Optimizable {
 
         try {
             preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT);
-        } catch (IOException e) {
+        } catch (XPathException | IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
         //LOG.info("preselect for " + Arrays.toString(keys) + " on " + contextSequence.getItemCount() + "returned " + preselectResult.getItemCount() +
@@ -278,10 +281,16 @@ public class Lookup extends Function implements Optimizable {
     }
 
     private AtomicValue[] getKeys(Sequence contextSequence) throws XPathException {
+        RangeIndexConfigElement config = findConfiguration(contextSequence);
+        int targetType = config != null ? config.getType() : Type.ITEM;
         Sequence keySeq = getArgument(1).eval(contextSequence);
         AtomicValue[] keys = new AtomicValue[keySeq.getItemCount()];
         for (int i = 0; i < keys.length; i++) {
-            keys[i] = (AtomicValue) keySeq.itemAt(i);
+            if (targetType == Type.ITEM) {
+                keys[i] = (AtomicValue) keySeq.itemAt(i);
+            } else {
+                keys[i] = keySeq.itemAt(i).convertTo(targetType);
+            }
         }
         return keys;
     }
@@ -410,7 +419,7 @@ public class Lookup extends Function implements Optimizable {
 
     @Override
     public int getOptimizeAxis() {
-        return Constants.DESCENDANT_AXIS;
+        return axis;
     }
 
     @Override
