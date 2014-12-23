@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://expath.org/ns/pkg" name="http://localhost/test-suite/compression" abbrev="compression-test" version="0.1" spec="1.0">
-    <title>compression test suite</title>
-    <dependency package="http://exist-db.org/apps/shared"/>
-</package>
