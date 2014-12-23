@@ -669,7 +669,7 @@ checkUser() {
         then
             /sbin/runuser - $RUN_AS_USER -c "\"$REALPATH\" $ADDITIONAL_PARA"
         else
-            su - $RUN_AS_USER -c "\"$REALPATH\" $ADDITIONAL_PARA"
+            su - s /bin/sh $RUN_AS_USER -c "\"$REALPATH\" $ADDITIONAL_PARA"
         fi
         RUN_AS_USER_EXITCODE=$?
         # Now that we are the original user again, we may need to clean up the lock file.
