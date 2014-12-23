@@ -88,12 +88,4 @@ public class XHTML5Writer extends XHTMLWriter {
         documentType("html", null, null);
         doctypeWritten = true;
     }
-
-    @Override
-    protected boolean needsEscape(final char ch) {
-        if("script".equals(currentTag)) {
-            return !(ch == '<' || ch == '>' || ch == '&');
-        }
-        return super.needsEscape(ch);
-    }
 }
