@@ -2,8 +2,9 @@ xquery version "3.0";
 
 module namespace uz="http://exist-db.org/testsuite/unzips";
 
-import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+declare namespace util = "http://exist-db.org/xquery/util";
 
+import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 import module namespace compression="http://exist-db.org/xquery/compression";
 
 
@@ -13,18 +14,37 @@ declare variable $uz:collection := "/db/" || $uz:collection-name;
 declare variable $uz:myFile-name := "myFile.xml";
 declare variable $uz:myFile-serialized := "<file/>";
 
+declare variable $uz:myFileZip-name := "myZip.zip";
+declare variable $uz:myZipEntries := (<entry name="{$uz:myFile-name}" type="uri">{$uz:collection}/{$uz:myFile-name}</entry>);
+declare variable $uz:myZipContentBase64 := compression:zip($uz:myZipEntries, true(), $uz:collection);
+declare variable $uz:myStaticContentBase64 := xs:base64Binary("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");
 
+(: declare UTF8 encoded binary :)
+declare variable $uz:myUTF8File-name := "myZipUnicode.zip";
 declare variable $uz:myStaticUTF8ContentBase64 := xs:base64Binary("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NCU5MCVFMiU5NCU5NCVFMiU5NCVCNCVFMiU5NCVBQyVFMiU5NCU5QyVFMiU5NCU4MCVFMiU5NCVCQyVFMiU5NSU5RSVFMiU5NSU5RiVFMiU5NSU5QSVFMiU5NSU5NCVFMiU5NSVBOSVFMiU5NSVBNiVFMiU5NSVBMCVFMiU5NSU5MCVFMiU5NSVBQyVFMiU5NSVBNyVFMiU5NSVBOCVFMiU5NSVBNCVFMiU5NSVBNSVFMiU5NSU5OSVFMiU5NSU5OCVFMiU5NSU5MiVFMiU5NSU5MyVFMiU5NSVBQiVFMiU5NSVBQSVFMiU5NCU5OCVFMiU5NCU4QyVFMiU5NiU4OCVFMiU5NiU4NCVFMiU5NiU4QyVFMiU5NiU5MCVFMiU5NiU4MCVDRSVCMSVDMyU5RiVDRSU5MyVDRiU4MCVDRSVBMyVDRiU4MyVDMiVCNSVDRiU4NCVDRSVBNiVDRSU5OCVDRSVBOSVDRSVCNCVFMiU4OCU5RSVDRiU4NiVDRSVCNSVFMiU4OCVBOSVFMiU4OSVBMSVDMiVCMSVFMiU4OSVBNSVFMiU4OSVBNCVFMiU4QyVBMCVFMiU4QyVBMSVDMyVCNyVFMiU4OSU4OCVDMiVCMCVFMiU4OCU5OSVDMiVCNyVFMiU4OCU5QSVFMiU4MSVCRiVDMiVCMiVFMiU5NiVBMC54bWxQSwUGAAAAAAEAAQBvBAAAnwQAAAAA");
+(: declare cp437 encoded binary :)
+declare variable $uz:myCP437File-name := "myZipCp437.zip";
 declare variable $uz:myStaticCP437ContentBase64 := xs:base64Binary("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NCU5MCVFMiU5NCU5NCVFMiU5NCVCNCVFMiU5NCVBQyVFMiU5NCU5QyVFMiU5NCU4MCVFMiU5NCVCQyVFMiU5NSU5RSVFMiU5NSU5RiVFMiU5NSU5QSVFMiU5NSU5NCVFMiU5NSVBOSVFMiU5NSVBNiVFMiU5NSVBMCVFMiU5NSU5MCVFMiU5NSVBQyVFMiU5NSVBNyVFMiU5NSVBOCVFMiU5NSVBNCVFMiU5NSVBNSVFMiU5NSU5OSVFMiU5NSU5OCVFMiU5NSU5MiVFMiU5NSU5MyVFMiU5NSVBQiVFMiU5NSVBQSVFMiU5NCU5OCVFMiU5NCU4QyVFMiU5NiU4OCVFMiU5NiU4NCVFMiU5NiU4QyVFMiU5NiU5MCVFMiU5NiU4MCVDRSVCMSVDMyU5RiVDRSU5MyVDRiU4MCVDRSVBMyVDRiU4MyVDMiVCNSVDRiU4NCVDRSVBNiVDRSU5OCVDRSVBOSVDRSVCNCVFMiU4OCU5RSVDRiU4NiVDRSVCNSVFMiU4OCVBOSVFMiU4OSVBMSVDMiVCMSVFMiU4OSVBNSVFMiU4OSVBNCVFMiU4QyVBMCVFMiU4QyVBMSVDMyVCNyVFMiU4OSU4OCVDMiVCMCVFMiU4OCU5OSVDMiVCNyVFMiU4OCU5QSVFMiU4MSVCRiVDMiVCMiVFMiU5NiVBMC54bWxQSwUGAAAAAAEAAQBvBAAAnwQAAAAA");
 
-....
 
+(: declare some functions :)
+(: Upload test data in /db/data :)
+declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
+{
+(: TODO - Replace this code with your implementation e.g. you may want to store the data :)
+<entry>
+<path>{$path}</path>
+<type>{$type}</type>
+<data>{$data}</data>
+</entry>
+};
+declare function local:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
+{
+(: TODO - Replace this code with your implementation :)
+true()
+};
 
-declare variable $uz:myZipFileName := "myZipCp437.zip";
-declare variable $uz:myZipEntries2 := (<entry name="ööööööö" type="uri">{$uz:collection}/{$uz:myFile-name}</entry>);
-declare variable $uz:myZipContentBase642 := compression:zip($uz:myZipEntries2, true(), $uz:collection, "Cp437"); 
-declare variable $uz:myZip := xmldb:store($uz:collection, $uz:myZipFileName, $uz:myZipContentBase642);
-
+(: setup tests :)
 declare
     %test:setUp
 function uz:setup() {
@@ -32,16 +52,19 @@ function uz:setup() {
     return (
         sm:chmod(xs:anyURI($coll), "rwxrwxrwx"),
         xmldb:store($uz:collection, $uz:myFile-name, util:parse($uz:myFile-serialized)),
-        xmldb:store($uz:collection, $uz:myZipFileName, $uz:myZip)
+        xmldb:store($uz:collection, $uz:myUTF8File-name, $uz:myStaticUTF8ContentBase64),
+        xmldb:store($uz:collection, $uz:myCP437File-name, $uz:myStaticCP437ContentBase64)
     )
 };
 
+(: tearDown tests :)
 declare
     %test:tearDown
 function uz:cleanup() {
     xmldb:remove($uz:collection)
 };
 
+(: setup tests :)
 declare
     %test:user("guest", "guest")
     %test:args("myFile.xml")
@@ -52,9 +75,33 @@ function uz:fnDocAvailable($myFile-name as xs:string) {
 
 declare
     %test:user("guest", "guest")
-	%test:args("myFile.xml")
+	%test:args("/db/unzip-test", "myFile.xml")
 	%test:assertEquals("<file/>")
-function uz:fnContentAvailable($myFile-name as xs:string) {
-    doc($uz:collection || "/" || $myFile-name)
+function uz:fnContentAvailable($myCollection as xs:string, $myFile-name as xs:string) {
+    doc($myCollection || "/" || $myFile-name)
+};
+
+(: check if cp437 file is stored :)
+declare
+    %test:user("guest", "guest")
+    %test:assertTrue
+function uz:fnContentCp437Available() {
+    util:binary-doc-available($uz:collection || "/" || $uz:myCP437File-name)
+};
+
+(: check if UTF8 file is stored :)
+declare
+    %test:user("guest", "guest")
+    %test:assertTrue
+function uz:fnContentUTF8Available() {
+    util:binary-doc-available($uz:collection || "/" || $uz:myUTF8File-name)
+};
+
+(: check if UTF8 file could be extract using UTF8 encoding :)
+declare 
+    %test:user("guest", "guest")
+    %test:assertTrue
+function uz:fnToExtract() {
+    true()
 };
 
