@@ -72,11 +72,11 @@ public class HTML5Writer extends XHTML5Writer {
 
     @Override
     public void endElement(QName qname) throws TransformerException {
-        if (!isEmptyTag(qname.getLocalName())) {
+        if (!isEmptyTag(qname.getLocalPart())) {
             super.endElement(qname);
         } else {
             closeStartTag(true);
-            endIndent(qname.getNamespaceURI(), qname.getLocalName());
+            endIndent(qname.getNamespaceURI(), qname.getLocalPart());
         }
     }
 
@@ -125,8 +125,8 @@ public class HTML5Writer extends XHTML5Writer {
                 writer.write(qname.getPrefix());
                 writer.write(':');
             }
-            if (!qname.getLocalName().equals(value)) {
-                writer.write(qname.getLocalName());
+            if (!qname.getLocalPart().equals(value)) {
+                writer.write(qname.getLocalPart());
                 writer.write("=\"");
                 writeChars(value, true);
                 writer.write('"');
