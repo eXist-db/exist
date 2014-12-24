@@ -26,7 +26,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import javax.xml.transform.Source;
 import org.apache.log4j.Logger;
-import org.exist.memtree.DocumentImpl;
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.TypeTest;
 import org.exist.xquery.XPathException;

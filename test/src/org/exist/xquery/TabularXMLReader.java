@@ -17,6 +17,8 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.XMLConstants;
+
 
 /** A test data source producing adjustable tabular data */
 class TabularXMLReader implements XMLReader {
@@ -35,23 +37,23 @@ class TabularXMLReader implements XMLReader {
 	void writeDocument( ContentHandler xmldb) throws SAXException {
 		xmldb.startDocument();
 		AttributesImpl attributesImpl = new AttributesImpl();
-		xmldb.startElement( "", "root", "root", attributesImpl );
+		xmldb.startElement(XMLConstants.NULL_NS_URI, "root", "root", attributesImpl);
 		for (int i = 0; i < lines; i++) {
 			String line = "line";
 			if ( DIFFERENT_TAG_EACH_LINE)
 				line += i;
-			xmldb.startElement( "", line, line, attributesImpl );
+			xmldb.startElement(XMLConstants.NULL_NS_URI, line, line, attributesImpl);
 			for (int j = 0; j < columns; j++) {
 				String column = "col" + j;
-				xmldb.startElement( "", column, column, attributesImpl );
+				xmldb.startElement(XMLConstants.NULL_NS_URI, column, column, attributesImpl);
 				char ch[] = new char[20];
 				column.getChars(0, column.length(), ch, 0);
 				xmldb.characters(ch, 0, column.length() );
-				xmldb.endElement("", column, column);
+				xmldb.endElement(XMLConstants.NULL_NS_URI, column, column);
 			}
-			xmldb.endElement("", line, line);
+			xmldb.endElement(XMLConstants.NULL_NS_URI, line, line);
 		}
-		xmldb.endElement( "", "root", "root" );
+		xmldb.endElement(XMLConstants.NULL_NS_URI, "root", "root");
 		xmldb.endDocument();
 	}
 	

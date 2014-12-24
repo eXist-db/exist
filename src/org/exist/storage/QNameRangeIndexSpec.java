@@ -56,9 +56,12 @@ public class QNameRangeIndexSpec extends RangeIndexSpec {
                     " in index definition");
             }
         }
-        qname = new QName(localName, namespaceURI, prefix);
-        if (isAttribute)
-            {qname.setNameType(ElementValue.ATTRIBUTE);}
+
+        if (isAttribute) {
+            qname = new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
+        } else {
+            qname = new QName(localName, namespaceURI, prefix);
+        }
 	}
 
 	public QName getQName() {

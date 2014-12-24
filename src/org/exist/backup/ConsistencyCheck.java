@@ -28,10 +28,10 @@ import org.exist.storage.StorageAddress;
 import org.w3c.dom.Node;
 
 import org.exist.collections.Collection;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.numbering.NodeId;
@@ -275,7 +275,7 @@ public class ConsistencyCheck
 
     /**
      * Check if data for the given XML document exists. Tries to load the document's root element.
-     * This check is certainly not as comprehensive as {@link #checkXMLTree(org.exist.dom.DocumentImpl)},
+     * This check is certainly not as comprehensive as {@link #checkXMLTree(org.exist.dom.persistent.DocumentImpl)},
      * but much faster.
      *
      * @param doc the document object to check
@@ -324,7 +324,7 @@ public class ConsistencyCheck
                         EmbeddedXMLStreamReader reader = null;
                         try {
                             final ElementImpl             root            = (ElementImpl)doc.getDocumentElement();
-                            reader = broker.getXMLStreamReader( root, true );
+                            reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader( root, true );
                             NodeId                  nodeId;
                             boolean                 attribsAllowed  = false;
                             int                     expectedAttribs = 0;
@@ -396,7 +396,7 @@ public class ConsistencyCheck
                                             }
                                         }
 
-                                        final StoredNode node = reader.getNode();
+                                        final IStoredNode node = reader.getNode();
                                         if( node.getNodeType() != Node.ELEMENT_NODE ) {
                                             return( new org.exist.backup.ErrorReport.ResourceError( ErrorReport.INCORRECT_NODE_TYPE, "Expected an element node, received node of type " + node.getNodeType() ) );
                                         }

@@ -38,7 +38,7 @@ public class DiffNode {
         if (nodeType != other.nodeType)
             return false;
         if (qname != null)
-            return qname.equalsSimple(other.qname);
+            return qname.equals(other.qname);
         else
             return value.equals(other.value);
     }

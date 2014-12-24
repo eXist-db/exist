@@ -101,26 +101,26 @@ public class URIFunctions extends AbstractRequestModuleFunction {
     public Sequence eval(final Sequence[] args, final HttpRequest request) throws XPathException {
         final Sequence result;
         
-        if(isCalledAs(qnScheme.getLocalName())) {
+        if(isCalledAs(qnScheme.getLocalPart())) {
             result = new StringValue(request.getScheme());
         
-        } else if(isCalledAs(qnHostname.getLocalName())) {
+        } else if(isCalledAs(qnHostname.getLocalPart())) {
             result = new StringValue(request.getHostname());
         
-        } else if(isCalledAs(qnPort.getLocalName())) {
+        } else if(isCalledAs(qnPort.getLocalPart())) {
             result = new IntegerValue(request.getPort());
 
-        } else if(isCalledAs(qnPath.getLocalName())) {
+        } else if(isCalledAs(qnPath.getLocalPart())) {
             result = new StringValue(request.getPath());
             
-        } else if(isCalledAs(qnQuery.getLocalName())) {
+        } else if(isCalledAs(qnQuery.getLocalPart())) {
             final String query = request.getQuery();
             if(query == null) {
                 result = Sequence.EMPTY_SEQUENCE;
             } else {
                 result = new StringValue(query);
             }
-        } else if(isCalledAs(qnUri.getLocalName())) {
+        } else if(isCalledAs(qnUri.getLocalPart())) {
             result = new StringValue(request.getURI());
             
         } else {

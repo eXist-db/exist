@@ -23,10 +23,10 @@ package org.exist.xquery.update;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeImpl;
 import org.exist.dom.NodeListImpl;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
@@ -138,15 +138,13 @@ public class Insert extends Modification {
             try {
                 final StoredNode[] ql = selectAndLock(transaction, inSeq);
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                final IndexListener listener = new IndexListener(ql);                
                 final NodeList contentList = seq2nodeList(contentSeq);
                 for (int i = 0; i < ql.length; i++) {
                     final StoredNode node = ql[i];
-                    final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                    final DocumentImpl doc = node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                     }
-                    doc.getMetadata().setIndexListener(listener);
                     
                     //update the document
     				if (mode == INSERT_APPEND) {
@@ -162,7 +160,6 @@ public class Insert extends Modification {
     	                        break;
     	                }
     				}
-                    doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);

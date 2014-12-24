@@ -28,6 +28,8 @@ import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.FastStringBuffer;
 
+import javax.xml.XMLConstants;
+
 
 /**
  * @author wolf
@@ -208,6 +210,8 @@ public class NodePath implements Comparable<NodePath> {
         String prefix = QName.extractPrefix(component);
         final String localName = QName.extractLocalName(component);
         String namespaceURI = null;
+
+        //TODO simplify this code (AR)
         if (prefix != null) {
             namespaceURI = namespaces.get(prefix);
             if(namespaceURI == null) {
@@ -217,14 +221,16 @@ public class NodePath implements Comparable<NodePath> {
                 namespaceURI = "";
             }
         } else if (namespaces != null) {
-            namespaceURI = namespaces.get("");
+            namespaceURI = namespaces.get(XMLConstants.DEFAULT_NS_PREFIX);
         }
-        if (namespaceURI == null)
-            {namespaceURI = "";}
-        final QName qn = new QName(localName, namespaceURI, prefix);
-        LOG.debug("URI = " + namespaceURI);
-        if (isAttribute)
-            {qn.setNameType(ElementValue.ATTRIBUTE);}
+
+        final QName qn;
+        if (isAttribute) {
+            qn = new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
+        } else {
+            qn = new QName(localName, namespaceURI, prefix);
+        }
+        LOG.debug("URI = " + qn.getNamespaceURI());
         addComponent(qn);
     }
 

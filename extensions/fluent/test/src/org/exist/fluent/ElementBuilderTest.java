@@ -230,10 +230,10 @@ public class ElementBuilderTest extends DatabaseTestCase {
 	}
 
 	@Test public void adoptMemoryNode() {
-		org.exist.fluent.Node node = db.query().single("<test xml:id='foo'/>").node();
-		ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false,
+		final org.exist.fluent.Node node = db.query().single("<test xml:id='foo'/>").node();
+		final ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false,
 				new ElementBuilder.CompletedCallback<Object>() {
-					public Object completed(Node[] nodes) {
+					public Object completed(final Node[] nodes) {
 						assertEquals(1, nodes.length);
 						assertEquals(1, nodes[0].getChildNodes().getLength());
 						assertEquals(1, nodes[0].getFirstChild().getAttributes().getLength());

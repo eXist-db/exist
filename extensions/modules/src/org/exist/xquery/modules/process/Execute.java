@@ -1,8 +1,8 @@
 package org.exist.xquery.modules.process;
 
 import org.exist.dom.QName;
-import org.exist.memtree.ElementImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;

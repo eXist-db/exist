@@ -22,8 +22,8 @@
 package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;

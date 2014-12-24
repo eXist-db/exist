@@ -22,11 +22,11 @@
 package org.exist.storage.serializers;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.INodeHandle;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
@@ -170,11 +170,11 @@ public class XIncludeFilter implements Receiver {
 	 */
     public void endElement(QName qname) throws SAXException {
         if (XINCLUDE_NS.equals(qname.getNamespaceURI())) {
-            if (XI_FALLBACK.equals(qname.getLocalName())) {
+            if (XI_FALLBACK.equals(qname.getLocalPart())) {
                 inFallback = false;
                 // clear error
                 error = null;
-            } else if (XI_INCLUDE.equals(qname.getLocalName()) && error != null) {
+            } else if (XI_INCLUDE.equals(qname.getLocalPart()) && error != null) {
                 // found an error, but there was no fallback element.
                 // throw the exception now
                 final Exception e = error;
@@ -226,7 +226,7 @@ public class XIncludeFilter implements Receiver {
 	 */
 	public void startElement(QName qname, AttrList attribs) throws SAXException {
 		if (qname.getNamespaceURI() != null && qname.getNamespaceURI().equals(XINCLUDE_NS)) {
-			if (qname.getLocalName().equals(XI_INCLUDE)) {
+			if (qname.getLocalPart().equals(XI_INCLUDE)) {
                 if (LOG.isDebugEnabled())
                     {LOG.debug("processing include ...");}
                 try {
@@ -236,7 +236,7 @@ public class XIncludeFilter implements Receiver {
                         {LOG.debug(resourceError.getMessage(), resourceError);}
                     error = resourceError;
 				}
-            } else if (qname.getLocalName().equals(XI_FALLBACK)) {
+            } else if (qname.getLocalPart().equals(XI_FALLBACK)) {
                 inFallback = true;
             }
         } else if (!inFallback || error != null) {
@@ -282,7 +282,7 @@ public class XIncludeFilter implements Receiver {
 
         Map<String, String> params = null;
         DocumentImpl doc = null;
-        org.exist.memtree.DocumentImpl memtreeDoc = null;
+        org.exist.dom.memtree.DocumentImpl memtreeDoc = null;
         boolean xqueryDoc = false;
         
         if (docUri != null) {
@@ -489,7 +489,7 @@ public class XIncludeFilter implements Receiver {
         serializer.createContainerElements = createContainerElements;
     }
 
-    private org.exist.memtree.DocumentImpl parseExternal(URI externalUri) throws IOException, ResourceError, PermissionDeniedException, ParserConfigurationException, SAXException {
+    private org.exist.dom.memtree.DocumentImpl parseExternal(URI externalUri) throws IOException, ResourceError, PermissionDeniedException, ParserConfigurationException, SAXException {
         final URLConnection con = externalUri.toURL().openConnection();
         if(con instanceof HttpURLConnection)
         {
@@ -515,8 +515,8 @@ public class XIncludeFilter implements Receiver {
         final SAXAdapter adapter = new SAXAdapter();
         reader.setContentHandler(adapter);
         reader.parse(src);
-        final org.exist.memtree.DocumentImpl doc =
-                (org.exist.memtree.DocumentImpl)adapter.getDocument();
+        final org.exist.dom.memtree.DocumentImpl doc =
+                (org.exist.dom.memtree.DocumentImpl)adapter.getDocument();
         doc.setDocumentURI(externalUri.toString());
         return doc;
     }
@@ -586,7 +586,7 @@ public class XIncludeFilter implements Receiver {
         return parameters;
     }
 
-    public void setCurrentNode(StoredNode node) {
+    public void setCurrentNode(INodeHandle node) {
         //ignored
     }
     

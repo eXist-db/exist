@@ -25,7 +25,7 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.TransformerHandler;
 
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.xquery.XQueryContext;
 import org.xml.sax.SAXException;
 

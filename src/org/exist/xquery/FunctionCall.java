@@ -23,9 +23,9 @@ package org.exist.xquery;
 
 import com.sun.xacml.ctx.RequestCtx;
 import java.util.List;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.xquery.util.Error;
@@ -374,7 +374,7 @@ public class FunctionCall extends Function {
     }
 
     /**
-     * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.DocumentSet)
+     * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.persistent.DocumentSet)
      */
     @Override
     public void setContextDocSet(DocumentSet contextSet) {

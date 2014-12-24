@@ -28,9 +28,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
-import org.exist.dom.BinaryDocument;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.xmldb.XmldbURI;
@@ -195,7 +195,7 @@ public class ZipEntryFunctions extends BasicFunction {
         return new StringValue(builder.toString());
     }
 
-    private org.exist.memtree.DocumentImpl extractHtmlEntry(ZipInputStream zis, ZipEntry zipEntry) throws XPathException {
+    private org.exist.dom.memtree.DocumentImpl extractHtmlEntry(ZipInputStream zis, ZipEntry zipEntry) throws XPathException {
         try {
             return ModuleUtils.htmlToXHtml(context, zipEntry.getName(), new StreamSource(zis), null, null);
         } catch(SAXException saxe) {

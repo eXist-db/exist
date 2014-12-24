@@ -1,8 +1,10 @@
 package org.exist.fluent;
 
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.BinaryDocument;
 import java.io.*;
 
-import org.exist.dom.*;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;
 import org.xml.sax.SAXException;

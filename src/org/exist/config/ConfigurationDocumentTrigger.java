@@ -28,8 +28,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.DeferrableFilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementAtExist;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.RealmImpl;
@@ -97,7 +96,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         default:
             conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
             if (conf != null) {
-                conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+                conf.checkForUpdates(document.getDocumentElement());
             }
             if (documentPath.toString().equals(ConverterFrom1_0.LEGACY_USERS_DOCUMENT_PATH)) {
                 try {
@@ -118,7 +117,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     private void checkForUpdates(final DBBroker broker, final XmldbURI uri, final DocumentImpl document) {
         final Configuration conf = Configurator.getConfigurtion(broker.getBrokerPool(), uri);
         if (conf != null) {
-            conf.checkForUpdates((ElementAtExist) document.getDocumentElement());
+            conf.checkForUpdates(document.getDocumentElement());
         }
 
         //TODO : use XmldbURI methos ! not String.equals()

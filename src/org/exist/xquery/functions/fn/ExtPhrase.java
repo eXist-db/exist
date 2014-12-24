@@ -31,10 +31,10 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.EXistException;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.analysis.TextToken;
@@ -113,7 +113,7 @@ public class ExtPhrase extends ExtFulltext {
                 final NodeId nodeId= nextMatch.getNodeId();
                 //If current node id has not been previously processed
                 if (!matchNodeIDs.contains(nodeId)) {
-                    final NodeProxy mcurrent = new NodeProxy(current.getDocument(), nodeId);
+                    final NodeProxy mcurrent = new NodeProxy(current.getOwnerDocument(), nodeId);
                     Match match = null;
                     int firstOffset = -1;
                     matchNodeIDs.add(nodeId);
@@ -214,7 +214,7 @@ public class ExtPhrase extends ExtFulltext {
                 final NodeId nodeId = nextMatch.getNodeId(); 
                 //If current node id has not been previously processed
                 if (!matchGid.contains(nodeId)) {
-                    final NodeProxy mcurrent = new NodeProxy(current.getDocument(), nodeId);
+                    final NodeProxy mcurrent = new NodeProxy(current.getOwnerDocument(), nodeId);
                     //Add it in node id array
                     matchGid.add(nodeId);
                     final String value = mcurrent.getNodeValue();

@@ -22,9 +22,9 @@
 package org.exist.xquery.functions.text;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -149,9 +149,11 @@ public class MatchRegexp extends Function implements Optimizable {
                     final LocationStep outerStep = (LocationStep) outerExpr;
                     final NodeTest test = outerStep.getTest();
                     if (!test.isWildcardTest() && test.getName() != null) {
-                        contextQName = new QName(test.getName());
-                        if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                            {contextQName.setNameType(ElementValue.ATTRIBUTE);}
+                        if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                            contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                        } else {
+                            contextQName = new QName(test.getName());
+                        }
                         contextStep = firstStep;
                         axis = outerStep.getAxis();
                         optimizeSelf = true;
@@ -160,9 +162,11 @@ public class MatchRegexp extends Function implements Optimizable {
             } else if (firstStep != null && lastStep != null) {
                 final NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
-                    contextQName = new QName(test.getName());
-                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                        {contextQName.setNameType(ElementValue.ATTRIBUTE);}
+                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+                        contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                    } else {
+                        contextQName = new QName(test.getName());
+                    }
                     contextStep = lastStep;
                     axis = firstStep.getAxis();
 
@@ -352,7 +356,7 @@ public class MatchRegexp extends Function implements Optimizable {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.functions.ExtFulltext#evalQuery(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, java.lang.String, org.exist.dom.NodeSet)
+	 * @see org.exist.xquery.functions.ExtFulltext#evalQuery(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, java.lang.String, org.exist.dom.persistent.NodeSet)
 	 */
 	public Sequence evalQuery(NodeSet nodes, List<String> terms, boolean matchAll)
 		throws XPathException {

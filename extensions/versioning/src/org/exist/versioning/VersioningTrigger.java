@@ -42,8 +42,8 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.FilteringTrigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
@@ -523,9 +523,9 @@ public class VersioningTrigger extends FilteringTrigger {
             for (int i = 0; i < attributes.getLength(); i++) {
                 if (StandardDiff.NAMESPACE.equals(attributes.getURI(i))) {
                     String attrName = attributes.getLocalName(i);
-                    if (VersioningFilter.ATTR_KEY.getLocalName().equals(attrName))
+                    if (VersioningFilter.ATTR_KEY.getLocalPart().equals(attrName))
                         documentKey = attributes.getValue(i);
-                    else if (VersioningFilter.ATTR_REVISION.getLocalName().equals(attrName))
+                    else if (VersioningFilter.ATTR_REVISION.getLocalPart().equals(attrName))
                         documentRev = attributes.getValue(i);
                 }
             }

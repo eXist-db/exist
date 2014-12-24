@@ -59,7 +59,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     @Override
-    public void visitIntersectionExpr(Intersection intersect) {
+    public void visitIntersectionExpr(Intersect intersect) {
         //Nothing to do
     }
 

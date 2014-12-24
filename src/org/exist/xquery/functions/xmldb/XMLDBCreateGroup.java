@@ -81,7 +81,7 @@ public class XMLDBCreateGroup extends BasicFunction {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet,
+	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet,
 	 * org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	@Override

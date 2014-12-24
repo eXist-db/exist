@@ -22,8 +22,8 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
@@ -116,7 +116,7 @@ public class DynamicNameCheck extends AbstractExpression {
     // TODO should be moved to QName
     private String getPrefixedNodeName(QName name) {
         final String prefix = name.getPrefix();
-        final String localName = name.getLocalName();
+        final String localName = name.getLocalPart();
         if (prefix == null) {
             final String namespaceURI = name.getNamespaceURI();
             if (namespaceURI == null) {

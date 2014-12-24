@@ -26,8 +26,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 
 import org.exist.dom.QName;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;

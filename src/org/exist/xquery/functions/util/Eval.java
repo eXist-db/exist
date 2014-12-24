@@ -41,13 +41,13 @@ import javax.xml.parsers.SAXParserFactory;
 import org.exist.EXistException;
 
 import org.exist.Namespaces;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.ReferenceNode;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.ReferenceNode;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.UUIDGenerator;
@@ -599,7 +599,7 @@ public class Eval extends BasicFunction {
 				//TODO : cleanly seperate the statically know docollection and documents
 				pathes[0] = XmldbURI.create(value.getStringValue());
 				innerContext.setStaticallyKnownDocuments(pathes);
-			} /*else if (child.getNodeType() == Node.ELEMENT_NODE &&	"mapModule".equals(child.getLocalName())) {
+			} /*else if (child.getNodeType() == Node.ELEMENT_NODE &&	"mapModule".equals(child.getLocalPart())) {
 				Element elem = (Element) child;
 				//TODO : error check
 				if (elem.getAttribute("namespace") != null && elem.getAttribute("uri") != null) {

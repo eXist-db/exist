@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.ACLPermission;
 import org.exist.security.Group;
 import org.exist.security.Permission;

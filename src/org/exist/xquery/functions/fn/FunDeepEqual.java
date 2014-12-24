@@ -26,10 +26,10 @@ import org.apache.log4j.Logger;
 import java.text.Collator;
 
 import org.exist.Namespaces;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.ReferenceNode;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.ReferenceNode;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
@@ -176,8 +176,8 @@ public class FunDeepEqual extends CollatingFunction {
             switch(a.getType()) {
             case Type.DOCUMENT:
                 // NodeValue.getNode() doesn't seem to work for document nodes
-                na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getDocument();
-                nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getDocument();
+                na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getOwnerDocument();
+                nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getOwnerDocument();
                 return compareContents(na, nb);
             case Type.ELEMENT:
                 na = nva.getNode();

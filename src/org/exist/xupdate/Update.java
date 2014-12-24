@@ -22,11 +22,16 @@
  */
 package org.exist.xupdate;
 
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.StoredNode;
 import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -60,7 +65,7 @@ public class Update extends Modification {
     /*
      * (non-Javadoc)
      * 
-     * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
+     * @see org.exist.xupdate.Modification#process(org.exist.dom.persistent.DocumentSet)
      */
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException, TriggerException {
@@ -70,7 +75,6 @@ public class Update extends Modification {
         int modifications = children.getLength();
         try {
             final StoredNode ql[] = selectAndLock(transaction);
-            final IndexListener listener = new IndexListener(ql);
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             Node temp;
             TextImpl text;
@@ -82,8 +86,7 @@ public class Update extends Modification {
                     LOG.warn("select " + selectStmt + " returned empty node");
                     continue;
                 }
-                final DocumentImpl  doc = (DocumentImpl)node.getOwnerDocument();
-                doc.getMetadata().setIndexListener(listener);
+                final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getSubject(), Permission.WRITE)) {
                      throw new PermissionDeniedException("User '" + broker.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
@@ -116,7 +119,6 @@ public class Update extends Modification {
                     default:
                         throw new EXistException("unsupported node-type");
                 }
-                doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);

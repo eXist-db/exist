@@ -1,19 +1,20 @@
 package org.exist.indexing;
 
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.util.serializer.Receiver;
 
 /**
  * Highlight matches in query results. Indexes can implement
  * this interface to filter the output produced by the serializer
  * when serializing query results. See
- * {@link org.exist.indexing.IndexWorker#getMatchListener(org.exist.storage.DBBroker, org.exist.dom.NodeProxy)}.
+ * {@link org.exist.indexing.IndexWorker#getMatchListener(org.exist.storage.DBBroker, org.exist.dom.persistent.NodeProxy)}.
  * The interface basically extends {@link org.exist.util.serializer.Receiver}. The
  * additional methods are used to chain multiple MatchListeners. Implementations should
  * forward all events to the next receiver in the chain (if there is one).
  * Class {@link org.exist.indexing.AbstractMatchListener} provides default implementations
  * for all methods.
  */
-public interface MatchListener extends Receiver {
+public interface MatchListener extends Receiver<NodeHandle> {
 
     /**
      * Register the next receiver in the chain. All

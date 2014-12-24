@@ -75,7 +75,7 @@ public class CookieFunctions extends AbstractRequestModuleFunction {
     public Sequence eval(final Sequence[] args, final HttpRequest request) throws XPathException {
         final Sequence result;
         
-        if(isCalledAs(qnCookie.getLocalName())) {
+        if(isCalledAs(qnCookie.getLocalPart())) {
             final String cookieName = args[0].getStringValue();
             
             if(getSignature().getArgumentCount() == 1) {

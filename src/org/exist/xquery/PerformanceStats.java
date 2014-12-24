@@ -24,7 +24,7 @@ package org.exist.xquery;
 
 import org.exist.Database;
 import org.exist.dom.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.util.HashMap;
@@ -129,7 +129,7 @@ public class PerformanceStats {
         public boolean equals(Object obj) {
         	if (obj != null && obj instanceof FunctionStats) {
                 final FunctionStats ostats = (FunctionStats) obj;
-                return qname.equalsSimple(ostats.qname) &&
+                return qname.equals(ostats.qname) &&
                         source.equals(ostats.source);
 			}
         	return false;
@@ -240,7 +240,7 @@ public class PerformanceStats {
 
     @SuppressWarnings("unused")
 	private String createKey(QName qname, String source) {
-        return qname.getNamespaceURI() + ":" + qname.getLocalName() + ":" + source;
+        return qname.getNamespaceURI() + ":" + qname.getLocalPart() + ":" + source;
     }
 
     public boolean hasData() {

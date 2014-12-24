@@ -38,7 +38,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.exist.jetty.JettyStart;
 import org.exist.Namespaces;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.Base64Encoder;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;

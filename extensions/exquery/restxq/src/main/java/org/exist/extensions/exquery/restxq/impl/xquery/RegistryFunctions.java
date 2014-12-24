@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.exist.dom.QName;
 import org.exist.extensions.exquery.restxq.impl.RestXqServiceRegistryManager;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -79,7 +79,7 @@ public class RegistryFunctions extends BasicFunction {
     public final static FunctionSignature signatures[] = {
 		
         new FunctionSignature(
-            new QName(RESOURCE_FUNCTIONS.getLocalName(), RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),
+            new QName(RESOURCE_FUNCTIONS.getLocalPart(), RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),
             "Gets a list of all the registered resource functions.",
             FunctionSignature.NO_ARGS,
             new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of registered resource functions.")

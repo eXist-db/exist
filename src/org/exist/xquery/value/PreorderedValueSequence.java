@@ -21,9 +21,9 @@
 */
 package org.exist.xquery.value;
 
-import org.exist.dom.ContextItem;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ContextItem;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.OrderSpec;

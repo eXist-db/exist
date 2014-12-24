@@ -21,7 +21,7 @@
  */
 package org.exist.storage.md;
 
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 
 import com.eaio.uuid.UUID;
 import com.sleepycat.persist.model.DeleteAction;

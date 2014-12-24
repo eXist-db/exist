@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.math;
 
-import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -65,7 +64,7 @@ public class NoParamFunctions extends BasicFunction {
 	}  
     
         /* (non-Javadoc)
-         * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+         * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
          */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
@@ -79,7 +78,7 @@ public class NoParamFunctions extends BasicFunction {
         
         
         Sequence result;
-        final String functionName = getSignature().getName().getLocalName();
+        final String functionName = getSignature().getName().getLocalPart();
         if(PI.equals(functionName)) {
             result=new DoubleValue(Math.PI);
             

@@ -27,8 +27,8 @@ import java.util.Properties;
 
 import javax.xml.transform.TransformerException;
 
-import org.exist.memtree.NodeImpl;
-import org.exist.memtree.ReferenceNode;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.ReferenceNode;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.w3c.dom.Node;

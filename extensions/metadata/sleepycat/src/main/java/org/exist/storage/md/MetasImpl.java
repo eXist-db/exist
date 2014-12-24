@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentAtExist;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.xmldb.XmldbURI;
 
 import com.eaio.uuid.UUID;
@@ -34,6 +34,7 @@ import com.sleepycat.persist.model.DeleteAction;
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.SecondaryKey;
+import org.w3c.dom.Document;
 
 import static com.sleepycat.persist.model.Relationship.ONE_TO_ONE;
 
@@ -53,13 +54,9 @@ public class MetasImpl implements Metas {
 	@SuppressWarnings("unused")
 	private MetasImpl() {}
 
-	protected MetasImpl(DocumentAtExist doc) {
+	protected MetasImpl(Document doc) {
 		update(doc);
-		
-		if (doc.getUUID() == null)
-			uuid = (new UUID()).toString();
-		else
-			uuid = doc.getUUID().toString();
+		uuid = (new UUID()).toString();
 	}
 	
 	protected MetasImpl(Collection col) {
@@ -108,8 +105,8 @@ public class MetasImpl implements Metas {
         MetaDataImpl.inst.delMeta(uuid, key);
     }
 
-    protected void update(DocumentAtExist doc) {
-		uri = doc.getURI().toString();
+    protected void update(Document doc) {
+		uri = doc instanceof DocumentImpl ? ((DocumentImpl)doc).getURI().toString() : null;
 	}
 	
 	protected void update(Collection col) {

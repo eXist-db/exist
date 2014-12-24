@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2007 The eXist team
+ *  Copyright (C) 2001-2014 The eXist team
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -22,8 +22,8 @@
 package org.exist.storage.dom;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.NodeHandle;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
@@ -43,16 +43,17 @@ import java.io.IOException;
  * the end of the document. Each returned value contains the data of one node in the
  * document.
  */
-public class RawNodeIterator {
+public class RawNodeIterator implements IRawNodeIterator {
 
     private final static Logger LOG = Logger.getLogger(RawNodeIterator.class);
 
-    private DOMFile db = null;
+    private DBBroker broker;
+    private final DOMFile db;
+
     private int offset;
     private short lastTupleID = ItemId.UNKNOWN_ID;
     private DOMFile.DOMPage page = null;
     private long pageNum;
-    private DBBroker broker;
 
     /**
      * Construct the iterator. The iterator will be positioned before the specified
@@ -63,19 +64,14 @@ public class RawNodeIterator {
      * @param node the start node where the iterator will be positioned.
      * @throws IOException
      */
-    public RawNodeIterator(DBBroker broker, DOMFile db, NodeHandle node) throws IOException {
-        this.db = db;
+    public RawNodeIterator(final DBBroker broker, final DOMFile db, final NodeHandle node) throws IOException {
         this.broker = broker;
+        this.db = db;
         seek(node);
     }
 
-    /**
-     * Reposition the iterator to the start of the specified node.
-     *
-     * @param node the start node where the iterator will be positioned.
-     * @throws IOException
-     */
-    public void seek(NodeHandle node) throws IOException {
+    @Override
+    public final void seek(final NodeHandle node) throws IOException {
         final Lock lock = db.getLock();
         try {
             lock.acquire(Lock.READ_LOCK);
@@ -103,10 +99,7 @@ public class RawNodeIterator {
         }
     }
 
-    /**
-     *  Returns the raw data of the next node in document order.
-     * @return the raw data of the node
-     */
+    @Override
     public Value next() {
         Value nextValue = null;
         final Lock lock = db.getLock();
@@ -208,7 +201,8 @@ public class RawNodeIterator {
         }
     }
 
-    public void closeDocument() {
+    @Override
+    public void close() {
         db.closeDocument();
     }
 

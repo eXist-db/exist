@@ -213,14 +213,14 @@ public class TransformerImpl extends Transformer {
 //			for (int event = staxXmlReader.next(); event != XMLStreamConstants.END_DOCUMENT; event = staxXmlReader.next()) {
 //				switch (event) {
 //				  case XMLStreamConstants.START_DOCUMENT:
-//				    System.out.println("Start document " + staxXmlReader.getLocalName());
+//				    System.out.println("Start document " + staxXmlReader.getLocalPart());
 //				    break;
 //				  case XMLStreamConstants.START_ELEMENT:
-//				    System.out.println("Start element " + staxXmlReader.getLocalName());
+//				    System.out.println("Start element " + staxXmlReader.getLocalPart());
 ////				 	System.out.println("Element text " + staxXmlReader.getElementText());
 //				    break;
 //				  case XMLStreamConstants.END_ELEMENT:
-//				    System.out.println("End element " + staxXmlReader.getLocalName());
+//				    System.out.println("End element " + staxXmlReader.getLocalPart());
 //				    break;
 //				  default:
 //				    break;

@@ -21,7 +21,7 @@
  */
 package org.exist.interpreter;
 
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;

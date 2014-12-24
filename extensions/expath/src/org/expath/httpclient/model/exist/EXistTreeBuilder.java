@@ -2,8 +2,8 @@ package org.expath.httpclient.model.exist;
 
 import org.apache.http.Header;
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.XQueryContext;
 import org.expath.httpclient.HeaderSet;
 import org.expath.httpclient.HttpClientException;

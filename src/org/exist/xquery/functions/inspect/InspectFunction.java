@@ -1,7 +1,7 @@
 package org.exist.xquery.functions.inspect;
 
 import org.exist.dom.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.functions.util.UtilModule;
 import org.exist.xquery.xqdoc.XQDocHelper;
 import org.exist.xquery.*;

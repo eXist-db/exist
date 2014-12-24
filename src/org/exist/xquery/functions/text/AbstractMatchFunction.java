@@ -24,7 +24,7 @@ package org.exist.xquery.functions.text;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;

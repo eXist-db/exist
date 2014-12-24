@@ -47,9 +47,7 @@ public class MicroXmlWriter extends IndentingXMLWriter {
     }
 
     private QName removePrefix(final QName qname) {
-        qname.setNamespaceURI("");
-        qname.setPrefix("");
-        return qname;
+        return new QName(qname.getLocalPart());
     }
 
     private CharSequence removeRestrictedChars(final CharSequence charSeq) {
@@ -113,7 +111,7 @@ public class MicroXmlWriter extends IndentingXMLWriter {
 
     @Override
     public void attribute(final QName qname, final String value) throws TransformerException {
-        if(qname != null && (!qname.getLocalName().startsWith("xmlns") || (qname.getPrefix() != null && !qname.getPrefix().startsWith("xmlns")))) {
+        if(qname != null && (!qname.getLocalPart().startsWith("xmlns") || (qname.getPrefix() != null && !qname.getPrefix().startsWith("xmlns")))) {
             super.attribute(removePrefix(qname), removeRestrictedChars(value).toString());
         }
     }

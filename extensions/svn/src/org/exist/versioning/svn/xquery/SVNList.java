@@ -24,7 +24,7 @@ package org.exist.versioning.svn.xquery;
 import java.util.List;
 
 import org.exist.dom.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.versioning.svn.WorkingCopy;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;

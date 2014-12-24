@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.exist.dom.QName;
-import org.exist.memtree.ReferenceNode;
+import org.exist.dom.memtree.ReferenceNode;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Comment;
@@ -40,6 +40,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
+
+import javax.xml.XMLConstants;
 
 /**
  * General purpose class to stream a DOM node to SAX.
@@ -146,9 +148,9 @@ public class DOMStreamer {
             String uri = node.getNamespaceURI();
             String prefix = node.getPrefix();
             if (uri == null)
-                {uri = "";}
+                {uri = XMLConstants.XML_NS_URI;}
             if (prefix == null)
-                {prefix = "";}
+                {prefix = XMLConstants.DEFAULT_NS_PREFIX;}
             if (nsSupport.getURI(prefix) == null) {
                 namespaceDecls.put(prefix, uri);
                 nsSupport.declarePrefix(prefix, uri);
@@ -160,13 +162,13 @@ public class DOMStreamer {
             for (int i = 0; i < attrs.getLength(); i++) {
                 nextAttr = (Attr) attrs.item(i);
                 attrName = nextAttr.getName();
-                if ("xmlns".equals(attrName)) {
-                    if (nsSupport.getURI("") == null) {
+                if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrName)) {
+                    if (nsSupport.getURI(XMLConstants.NULL_NS_URI) == null) {
                         uri = nextAttr.getValue();
-                        namespaceDecls.put("", uri);
-                        nsSupport.declarePrefix("", uri);
+                        namespaceDecls.put(XMLConstants.DEFAULT_NS_PREFIX, uri);
+                        nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, uri);
                     }
-                } else if (attrName.startsWith("xmlns:")) {
+                } else if (attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE + ":")) {
                     prefix = attrName.substring(6);
                     if (nsSupport.getURI(prefix) == null) {
                         uri = nextAttr.getValue();
@@ -203,7 +205,7 @@ public class DOMStreamer {
                 nextAttr = (Attr) attrs.item(i);
                 attrNS = nextAttr.getNamespaceURI();
                 if(attrNS == null)
-                    {attrNS = "";}
+                    {attrNS = XMLConstants.NULL_NS_URI;}
                 attrLocalName = nextAttr.getLocalName();
                 if(attrLocalName == null)
                     {attrLocalName = QName.extractLocalName(nextAttr.getNodeName());}
@@ -216,9 +218,14 @@ public class DOMStreamer {
                 );
             }
             String localName = node.getLocalName();
-            if(localName == null)
-                {localName = QName.extractLocalName(node.getNodeName());}
-            contentHandler.startElement(node.getNamespaceURI(), localName, 
+            if(localName == null) {
+                localName = QName.extractLocalName(node.getNodeName());
+            }
+            String namespaceURI = node.getNamespaceURI();
+            if(namespaceURI == null) {
+                namespaceURI = XMLConstants.NULL_NS_URI;
+            }
+            contentHandler.startElement(namespaceURI, localName,
                 node.getNodeName(), saxAttrs);
             break;
         case Node.TEXT_NODE :
@@ -259,7 +266,15 @@ public class DOMStreamer {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             final ElementInfo info = stack.pop();
             nsSupport.popContext();
-            contentHandler.endElement(node.getNamespaceURI(), node.getLocalName(), node.getNodeName());
+            String localName = node.getLocalName();
+            if(localName == null) {
+                localName = QName.extractLocalName(node.getNodeName());
+            }
+            String namespaceURI = node.getNamespaceURI();
+            if(namespaceURI == null) {
+                namespaceURI = XMLConstants.NULL_NS_URI;
+            }
+            contentHandler.endElement(namespaceURI, localName, node.getNodeName());
             if(info.prefixes != null) {
                 for(int i = 0; i < info.prefixes.length; i++) {
                     contentHandler.endPrefixMapping(info.prefixes[i]);

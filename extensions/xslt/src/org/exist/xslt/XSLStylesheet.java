@@ -34,6 +34,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 
+import org.exist.dom.memtree.NamespaceNode;
 import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.CompiledXQuery;
@@ -43,11 +44,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.dom.DocumentAtExist;
-import org.exist.dom.ElementAtExist;
-import org.exist.dom.NodeAtExist;
 import org.exist.dom.QName;
-import org.exist.dom.NamespaceNodeAtExist;
 import org.exist.dom.Validation;
 import org.exist.interpreter.ContextAtExist;
 import org.exist.xslt.expression.AttributeSet;
@@ -57,6 +54,7 @@ import org.exist.xslt.expression.Template;
 import org.exist.xslt.expression.XSLExpression;
 import org.exist.xslt.expression.i.Parameted;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
@@ -134,8 +132,8 @@ public class XSLStylesheet extends Declaration
 
 	public void prepareAttribute(ContextAtExist context, Attr attr) throws XPathException {
 		String attr_name = attr.getLocalName();
-		if (attr instanceof NamespaceNodeAtExist) {
-			NamespaceNodeAtExist namespace = (NamespaceNodeAtExist) attr;
+		if (attr instanceof NamespaceNode) {
+			NamespaceNode namespace = (NamespaceNode) attr;
 			if (attr_name.equals(""))
 				context.setDefaultElementNamespace(namespace.getValue(), null);
 
@@ -370,12 +368,15 @@ public class XSLStylesheet extends Declaration
 			
 			//XXX: performance !?! how to get subelements sequence?? fast...
 			if (!matched) {
-				if (item instanceof ElementAtExist || item instanceof DocumentAtExist) {
-					NodeAtExist node = (NodeAtExist) item;
+				if (item instanceof org.exist.dom.memtree.ElementImpl
+					|| item instanceof org.exist.dom.persistent.ElementImpl
+					|| item instanceof org.exist.dom.memtree.DocumentImpl
+					|| item instanceof org.exist.dom.persistent.DocumentImpl ) {
+					Node node = (Node) item;
 					
 					NodeList children = node.getChildNodes();
 					for (int i=0; i<children.getLength(); i++) {
-						NodeAtExist child = (NodeAtExist)children.item(i);
+						Node child = children.item(i);
 						
 //						if (child instanceof Text) {
 //		                    MemTreeBuilder builder = context.getDocumentBuilder();

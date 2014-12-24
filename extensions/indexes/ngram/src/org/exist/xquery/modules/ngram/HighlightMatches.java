@@ -21,15 +21,15 @@
  */
 package org.exist.xquery.modules.ngram;
 
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.indexing.MatchListener;
 import org.exist.indexing.ngram.NGramIndex;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.indexing.ngram.NGramMatchCallback;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.BasicFunction;

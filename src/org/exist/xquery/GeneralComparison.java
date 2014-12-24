@@ -23,13 +23,13 @@ package org.exist.xquery;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.ContextItem;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ContextItem;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
@@ -199,10 +199,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     final NodeTest     test      = outerStep.getTest();
 
                     if( !test.isWildcardTest() && ( test.getName() != null ) ) {
-                        contextQName = new QName( test.getName() );
+
 
                         if( ( outerStep.getAxis() == Constants.ATTRIBUTE_AXIS ) || ( outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS ) ) {
-                            contextQName.setNameType( ElementValue.ATTRIBUTE );
+                            contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                        } else {
+                            contextQName = new QName(test.getName());
                         }
                         contextStep  = firstStep;
                         axis         = outerStep.getAxis();
@@ -213,10 +215,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 final NodeTest test = lastStep.getTest();
 
                 if( !test.isWildcardTest() && ( test.getName() != null ) ) {
-                    contextQName = new QName( test.getName() );
+
 
                     if( ( lastStep.getAxis() == Constants.ATTRIBUTE_AXIS ) || ( lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS ) ) {
-                        contextQName.setNameType( ElementValue.ATTRIBUTE );
+                        contextQName = new QName( test.getName(), ElementValue.ATTRIBUTE );
+                    } else {
+                        contextQName = new QName( test.getName() );
                     }
                     contextStep = lastStep;
                     axis        = firstStep.getAxis();
@@ -410,7 +414,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
 
     /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException
     {

@@ -51,8 +51,8 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.Namespaces;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.xmldb.XmldbURI;
 import org.exist.security.*;
 import org.exist.security.xacml.AccessContext;
@@ -577,7 +577,7 @@ public class XQueryURLRewrite extends HttpServlet {
             rewrite = new PathForward(config, action, request.getRequestURI());
         } else if ("redirect".equals(action.getLocalName())) {
             rewrite = new Redirect(action, request.getRequestURI());
-//        } else if ("call".equals(action.getLocalName())) {
+//        } else if ("call".equals(action.getLocalPart())) {
 //            rewrite = new ModuleCall(action, queryContext, request.getRequestURI());
         }
         return rewrite;

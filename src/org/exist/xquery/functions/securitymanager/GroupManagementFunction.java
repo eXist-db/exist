@@ -119,7 +119,7 @@ public class GroupManagementFunction extends BasicFunction {
         try {
             final String groupName = args[0].itemAt(0).getStringValue();
 
-            if(isCalledAs(qnCreateGroup.getLocalName())) {
+            if(isCalledAs(qnCreateGroup.getLocalPart())) {
                 if(securityManager.hasGroup(groupName)) {
                     throw new XPathException("The group with name " + groupName + " already exists.");
                 }
@@ -144,7 +144,7 @@ public class GroupManagementFunction extends BasicFunction {
 
                 securityManager.addGroup(group);
 
-            } else if(isCalledAs(qnRemoveGroup.getLocalName()) || isCalledAs(qnDeleteGroup.getLocalName())) {
+            } else if(isCalledAs(qnRemoveGroup.getLocalPart()) || isCalledAs(qnDeleteGroup.getLocalPart())) {
 
                 if(!securityManager.hasGroup(groupName)) {
                     throw new XPathException("The group with name " + groupName + " does not exist.");

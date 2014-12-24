@@ -23,7 +23,7 @@ package org.exist.commands.info;
 
 import org.exist.Database;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.plugin.command.AbstractCommand;
 import org.exist.plugin.command.CommandException;
 import org.exist.storage.BrokerPool;

@@ -22,15 +22,15 @@ package org.exist.xquery.value;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NewArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.util.FastQSort;
 import org.exist.xquery.*;
@@ -236,7 +236,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 				v = (NodeValue)values[i];
 				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                     // found an in-memory document
-                    final DocumentImpl doc = ((NodeImpl)v).getDocument();
+                    final DocumentImpl doc = ((NodeImpl)v).getOwnerDocument();
                     if (doc==null) {
                        continue;
                     }
@@ -245,14 +245,14 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                     // persistent node. We scan the current sequence and replace all
                     // in-memory nodes with their new persistent node objects.
                     final DocumentImpl expandedDoc = doc.expandRefs(null);
-                    final org.exist.dom.DocumentImpl newDoc = expandedDoc.makePersistent();
+                    final org.exist.dom.persistent.DocumentImpl newDoc = expandedDoc.makePersistent();
                     if (newDoc != null) {
                         NodeId rootId = newDoc.getBrokerPool().getNodeFactory().createInstance();
                         for (int j = i; j <= size; j++) {
                             v = (NodeValue) values[j];
                             if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                                 NodeImpl node = (NodeImpl) v;
-                                if (node.getDocument() == doc) {
+                                if (node.getOwnerDocument() == doc) {
                                     if (node.getNodeType() == Node.ATTRIBUTE_NODE)
                                         {node = expandedDoc.getAttribute(node.getNodeNumber());}
                                     else
@@ -343,8 +343,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         final Set<DocumentImpl> docs = new HashSet<DocumentImpl>();
         for (int i = 0; i <= size; i++) {
             final NodeImpl node = (NodeImpl) values[i];
-            if (node.getDocument().hasReferenceNodes())
-                {docs.add(node.getDocument());}
+            if (node.getOwnerDocument().hasReferenceNodes())
+                {docs.add(node.getOwnerDocument());}
         }
         for (final DocumentImpl doc : docs) {
             doc.expand();
@@ -397,7 +397,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 			values = newValues;
 		}
 	}
-	
+
 	private void removeDuplicateNodes() {
         if(noDuplicates || size < 1)
 			{return;}
@@ -422,7 +422,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             }
             if(!hasNodes)
             {return;}
-            final Map<Item, Item> nodes = new TreeMap<Item, Item>();
+            final Map<Item, Item> nodes = new TreeMap<>(ItemComparator.INSTANCE);
             int j = 0;
             for (int i = 0; i <= size; i++) {
                 if(Type.subTypeOf(values[i].getType(), Type.NODE)) {
@@ -511,7 +511,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             if (Type.subTypeOf(values[i].getType(), Type.NODE)) {
                 node = (NodeValue) values[i];
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE)
-                    {docs.add((org.exist.dom.DocumentImpl) node.getOwnerDocument());}
+                    {docs.add((org.exist.dom.persistent.DocumentImpl) node.getOwnerDocument());}
             }
         }
         return docs;
@@ -721,8 +721,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                     final NodeValue node = (NodeValue) values[pos];
                     if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         final NodeProxy p = (NodeProxy) node;
-                        if (!p.getDocument().getCollection().equals(oldCollection)) {
-                            nextCollection = p.getDocument().getCollection();
+                        if (!p.getOwnerDocument().getCollection().equals(oldCollection)) {
+                            nextCollection = p.getOwnerDocument().getCollection();
                             break;
                         }
                     }
@@ -811,7 +811,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         public int compare(Item o1, Item o2) {
             final NodeImpl n1 = (NodeImpl) o1;
             final NodeImpl n2 = (NodeImpl) o2;
-            final int docCmp = n1.getDocument().compareTo(n2.getDocument());
+            final int docCmp = n1.getOwnerDocument().compareTo(n2.getOwnerDocument());
             if (docCmp == 0) {
                 return n1.getNodeNumber() == n2.getNodeNumber() ? Constants.EQUAL :
                     (n1.getNodeNumber() > n2.getNodeNumber() ? Constants.SUPERIOR : Constants.INFERIOR);

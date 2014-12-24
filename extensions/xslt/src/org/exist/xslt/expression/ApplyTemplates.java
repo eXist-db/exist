@@ -22,7 +22,7 @@
 package org.exist.xslt.expression;
 
 import org.exist.interpreter.ContextAtExist;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.AnyNodeTest;
 import org.exist.xquery.Constants;

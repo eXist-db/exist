@@ -36,9 +36,9 @@ import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.StringTypedValue;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
@@ -250,8 +250,12 @@ public class RestXqServiceImpl extends AbstractRestXqService {
                 }
             }
         }
-        
-        return result;
+
+        if(result != null) {
+            return result;
+        } else {
+            return Sequence.EMPTY_SEQUENCE;
+        }
     }
     
     private DocumentImpl parseAsXml(final InputStream is) {

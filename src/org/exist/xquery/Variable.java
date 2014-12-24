@@ -21,7 +21,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;

@@ -27,7 +27,7 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.serializer.json.JSONWriter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;

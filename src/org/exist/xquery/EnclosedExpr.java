@@ -21,9 +21,9 @@
  */
 package org.exist.xquery;
 
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
-import org.exist.memtree.TextImpl;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.TextImpl;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -56,7 +56,7 @@ public class EnclosedExpr extends PathExpr {
 
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.StaticContext,
-     * org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence)
+     * org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
@@ -84,7 +84,7 @@ public class EnclosedExpr extends PathExpr {
         // create the output
         final MemTreeBuilder builder = context.getDocumentBuilder();
         final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-        receiver.checkNS = true;
+        receiver.setCheckNS(true);
         try {
             final SequenceIterator i = result.iterate();
             Item next = i.nextItem();

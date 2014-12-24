@@ -23,13 +23,13 @@ package org.exist.util.pool;
 
 import java.util.LinkedList;
 
-import org.exist.dom.AttrImpl;
-import org.exist.dom.CDATASectionImpl;
-import org.exist.dom.CommentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeImpl;
-import org.exist.dom.ProcessingInstructionImpl;
-import org.exist.dom.TextImpl;
+import org.exist.dom.persistent.AttrImpl;
+import org.exist.dom.persistent.CDATASectionImpl;
+import org.exist.dom.persistent.CommentImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeImpl;
+import org.exist.dom.persistent.ProcessingInstructionImpl;
+import org.exist.dom.persistent.TextImpl;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Node;
 

@@ -1,5 +1,11 @@
 package org.exist.fluent;
 
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.ExtArrayNodeSet;
 import java.io.*;
 import java.util.*;
 
@@ -7,7 +13,6 @@ import org.exist.EXistException;
 import org.exist.collections.*;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;

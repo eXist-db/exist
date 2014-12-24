@@ -29,18 +29,17 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeIndexListener;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.StoredNode;
-import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionException;
@@ -162,7 +161,7 @@ public abstract class Modification extends AbstractExpression
                 if (n.getNodeType() == Node.DOCUMENT_NODE)
                     {throw new XPathException(this, "Updating the document object is not allowed.");}
 				ql[i] = (StoredNode) n;
-				final DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
+				final DocumentImpl doc = ql[i].getOwnerDocument();
 				//prepare Trigger
 				prepareTrigger(transaction, doc);
 			}
@@ -185,8 +184,8 @@ public abstract class Modification extends AbstractExpression
 				Item item = i.nextItem();
 				if (item.getType() == Type.DOCUMENT) {
 					if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-						final StoredNode root = (StoredNode) ((NodeProxy)item).getDocument().getDocumentElement();
-						item = new NodeProxy(root.getDocument(), root.getNodeId(), root.getInternalAddress());
+						final NodeHandle root = (NodeHandle) ((NodeProxy)item).getOwnerDocument().getDocumentElement();
+						item = new NodeProxy(root);
 					} else {
 						item = (Item)((NodeValue) item).getOwnerDocument().getDocumentElement();
 					}
@@ -201,7 +200,7 @@ public abstract class Modification extends AbstractExpression
                         else
                             {item = builder.getDocument().getNode(last + 1);}
 					} else {
-						((org.exist.memtree.NodeImpl)item).deepCopy();
+						((org.exist.dom.memtree.NodeImpl)item).deepCopy();
 					}
 				}
 				out.add(item);
@@ -354,25 +353,4 @@ public abstract class Modification extends AbstractExpression
         final TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
         txnMgr.close(transaction);
     }
-
-    final static class IndexListener implements NodeIndexListener {
-
-		StoredNode[] nodes;
-
-		public IndexListener(StoredNode[] nodes) {
-			this.nodes = nodes;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.exist.dom.NodeIndexListener#nodeChanged(org.exist.dom.NodeImpl)
-		 */
-		public void nodeChanged(StoredNode node) {
-			final long address = node.getInternalAddress();
-			for (int i = 0; i < nodes.length; i++) {
-				if (StorageAddress.equals(nodes[i].getInternalAddress(), address)) {
-					nodes[i] = node;
-				}
-			}
-		}
-	}
 }

@@ -5,11 +5,11 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.dom.QName;
 import org.exist.security.Group;
 import org.exist.security.Permission;
@@ -1263,7 +1263,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             final IndexedElement[] result = new IndexedElement[occurrences.length];
             for (int i = 0; i < occurrences.length; i++) {
                 final QName qname = (QName)occurrences[i].getTerm();
-                result[i] = new IndexedElement(qname.getLocalName(),qname.getNamespaceURI(),
+                result[i] = new IndexedElement(qname.getLocalPart(),qname.getNamespaceURI(),
                         qname.getPrefix() == null ? "" : qname.getPrefix(),
                         occurrences[i].getOccurrences());
             }

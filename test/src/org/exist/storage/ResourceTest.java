@@ -25,7 +25,7 @@ package org.exist.storage;
 import java.io.InputStream;
 
 import org.exist.collections.Collection;
-import org.exist.dom.BinaryDocument;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;

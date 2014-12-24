@@ -21,10 +21,10 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.memtree.NodeImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.ErrorCodes;
@@ -81,7 +81,7 @@ public class FunRoot extends Function {
     }
     
         /* (non-Javadoc)
-         * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+         * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
          */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
@@ -126,12 +126,12 @@ public class FunRoot extends Function {
 
             if (s.isPersistentSet()) {
                 final NodeProxy p = s.toNodeSet().get(0);
-                result.add(new NodeProxy(p.getDocument()));
+                result.add(new NodeProxy(p.getOwnerDocument()));
             } else {
                 if (seq.hasOne() && item.getType() == Type.ATTRIBUTE) {
                 	result.add(item);
                 } else {
-                	result.add(((NodeImpl)item).getDocument());
+                	result.add(((NodeImpl)item).getOwnerDocument());
                 }
             }
 		}

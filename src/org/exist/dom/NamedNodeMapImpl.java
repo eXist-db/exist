@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000,  Wolfgang Meier (meier@ifs.tu-darmstadt.de)
+ *  Copyright (C) 2001-2014 The eXist Project
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,71 +19,126 @@
  */
 package org.exist.dom;
 
-import java.util.ArrayList;
-
+import org.exist.util.hashtable.Object2ObjectHashMap;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-public class NamedNodeMapImpl extends ArrayList<Node> implements NamedNodeMap {
+import java.util.ArrayList;
+import java.util.List;
 
-    private static final long serialVersionUID = -7913316703165379285L;
+/**
+ * @author Adam Retter <adam.retter@googlemail.com>
+ */
+public class NamedNodeMapImpl implements NamedNodeMap {
 
-    public NamedNodeMapImpl() {
-        super();
+    // NamedNodeMap is used by attributes, and it is often
+    // rare that an element has more then 10 attributes
+    private static final int DEFAULT_SIZE = 10;
+
+    private final IndexedHashMap<QName, Node> namedNodes = new IndexedHashMap<>(DEFAULT_SIZE);
+
+    @Override
+    public Node getNamedItem(final String name) {
+        return namedNodes.get(new QName(name));
     }
 
+    @Override
+    public Node setNamedItem(final Node arg) throws DOMException {
+        return namedNodes.put(new QName(arg.getNodeName()), arg);
+    }
+
+    /**
+     * Adds an INode to the NamedNodeMap
+     *
+     * The INode#getQName method is called
+     * to get the name for the map item
+     *
+     * @return The previous node of the same name if it exists
+     */
+    public Node setNamedItem(final INode arg) throws DOMException {
+        return namedNodes.put(arg.getQName(), arg);
+    }
+
+    @Override
+    public Node removeNamedItem(final String name) throws DOMException {
+        return remove(new QName(name));
+    }
+
+    @Override
+    public Node item(final int index) {
+        return namedNodes.get(index);
+    }
+
+    @Override
     public int getLength() {
-        return size();
+        return namedNodes.size();
     }
 
-    public Node setNamedItem(Node arg) throws DOMException {
-        add(arg);
-        return arg;
+    @Override
+    public Node getNamedItemNS(final String namespaceURI, final String localName) throws DOMException {
+        return namedNodes.get(new QName(localName, namespaceURI));
     }
 
-    public Node setNamedItemNS(Node arg) throws DOMException {
-        return setNamedItem(arg);
+    @Override
+    public Node setNamedItemNS(final Node arg) throws DOMException {
+        return namedNodes.put(new QName(arg.getLocalName(), arg.getNamespaceURI()), arg);
     }
 
-    public Node item(int index) {
-        if (index < size())
-            {return get(index);}
-        return null;
+    @Override
+    public Node removeNamedItemNS(final String namespaceURI, final String localName) throws DOMException {
+        return remove(new QName(localName, namespaceURI));
     }
 
-    public Node getNamedItem(String name) {
-        final int i = indexOf(new QName(name));
-        return (i < 0) ? null : get(i);
-    }
-
-    public Node getNamedItemNS(String namespaceURI, String name) {
-        final int i = indexOf(new QName(name, namespaceURI, null));
-        return (i < 0) ? null : get(i);
-    }
-
-    public Node removeNamedItem(String name) throws DOMException {
-        final int i = indexOf(new QName(name));
-        final Node node = get(i);
-        remove(i);
-        return node;
-    }
-
-    public Node removeNamedItemNS(String namespaceURI, String name)
-            throws DOMException {
-        final int i = indexOf(new QName(name, namespaceURI, null));
-        final Node node = get(i);
-        remove(i);
-        return node;
-    }
-
-    private int indexOf(QName name) {
-        for (int i = 0; i < size(); i++) {
-            final Node temp = get(i);
-            if (temp.getLocalName().equals(name.getLocalName())
-                    && temp.getNamespaceURI().equals(name.getNamespaceURI()))
-                {return i;}
+    private Node remove(final QName qname) throws DOMException {
+        final Node previous = namedNodes.remove(qname);
+        if(previous != null) {
+            return previous;
+        } else {
+            throw new DOMException(DOMException.NOT_FOUND_ERR, "No such named value is present in the map");
         }
-        return -1;
+    }
+
+    private static final class IndexedHashMap<K, V> {
+        private final Object2ObjectHashMap<K, V> map;
+        private final List<K> keys;
+
+        public IndexedHashMap(final int initialSize) {
+            this.map = new Object2ObjectHashMap<>(initialSize);
+            this.keys = new ArrayList<>(initialSize);
+        }
+
+        public final V put(final K key, final V value) {
+            final V current = map.get(key);
+            map.put(key, value);
+            if(current == null) {
+                keys.add(key);
+            }
+            return current;
+        }
+
+        public final V get(final K key) {
+            return map.get(key);
+        }
+
+        public final V get(final int index) {
+            return map.get(keys.get(index));
+        }
+
+        /**
+         * @return The removed value or null if there is
+         *  no value for the key in the nap
+         */
+        public final V remove(final K key) {
+            if(keys.remove(key)) {
+                return map.remove(key);
+            } else {
+                return null;
+            }
+        }
+
+        public final int size() {
+            return keys.size();
+        }
     }
 }

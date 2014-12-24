@@ -109,7 +109,7 @@ public class AccountManagementFunction extends BasicFunction {
         final String username = args[0].getStringValue();
 
         try {
-            if(isCalledAs(qnRemoveAccount.getLocalName())) {
+            if(isCalledAs(qnRemoveAccount.getLocalPart())) {
                 /* remove account */
                 if(!currentUser.hasDbaRole()) {
                     throw new XPathException("Only a DBA user may remove accounts.");
@@ -129,7 +129,7 @@ public class AccountManagementFunction extends BasicFunction {
 
                 final String password = args[1].getStringValue();
 
-                if(isCalledAs(qnPasswd.getLocalName())) {
+                if(isCalledAs(qnPasswd.getLocalPart())) {
                     /* change password */
 
                     if(!(currentUser.getName().equals(username) || currentUser.hasDbaRole())) {
@@ -140,7 +140,7 @@ public class AccountManagementFunction extends BasicFunction {
                     account.setPassword(password);
                     securityManager.updateAccount(account);
 
-                } else if(isCalledAs(qnCreateAccount.getLocalName())) {
+                } else if(isCalledAs(qnCreateAccount.getLocalPart())) {
                     /* create account */
                     if(!currentUser.hasDbaRole()) {
                         throw new XPathException("You must be a DBA to create a User Account.");

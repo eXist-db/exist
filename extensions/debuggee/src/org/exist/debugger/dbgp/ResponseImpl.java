@@ -31,7 +31,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.mina.core.session.IoSession;
 import org.exist.debugger.DebuggerImpl;
 import org.exist.debugger.Response;
-import org.exist.memtree.SAXAdapter;
+import org.exist.dom.memtree.SAXAdapter;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

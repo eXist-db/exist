@@ -12,10 +12,10 @@ import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -389,7 +389,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 //				for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
                     p = (NodeProxy) i.nextItem();
                     ///TODO : use dedicated function in XmldbURI
-                    ppath = p.getDocument().getCollection().getURI().toString() + '/' + p.getDocument().getFileURI();
+                    ppath = p.getOwnerDocument().getCollection().getURI().toString() + '/' + p.getOwnerDocument().getFileURI();
                     if (ppath.equals(path))
                         {hitsByDoc.add(p);}
                 }
@@ -437,14 +437,14 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 			        final NodeValue node = (NodeValue)item;
 			        if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			            final NodeProxy p = (NodeProxy)node;
-			            if ((documents = (TreeMap) collections.get(p.getDocument().getCollection().getURI())) == null) {
+			            if ((documents = (TreeMap) collections.get(p.getOwnerDocument().getCollection().getURI())) == null) {
 			                documents = new TreeMap();
-			                collections.put(p.getDocument().getCollection().getURI(), documents);
+			                collections.put(p.getOwnerDocument().getCollection().getURI(), documents);
 			            }
-			            if ((hits = (Integer) documents.get(p.getDocument().getFileURI())) == null)
-			                documents.put(p.getDocument().getFileURI(), Integer.valueOf(1));
+			            if ((hits = (Integer) documents.get(p.getOwnerDocument().getFileURI())) == null)
+			                documents.put(p.getOwnerDocument().getFileURI(), Integer.valueOf(1));
 			            else
-			                documents.put(p.getDocument().getFileURI(), Integer.valueOf(hits.intValue() + 1));
+			                documents.put(p.getOwnerDocument().getFileURI(), Integer.valueOf(hits.intValue() + 1));
 			        }
 			    }
 			}

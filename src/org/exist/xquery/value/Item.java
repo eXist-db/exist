@@ -22,8 +22,8 @@ package org.exist.xquery.value;
 
 import java.util.Properties;
 
-import org.exist.dom.StoredNode;
-import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;
@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
 /**
  * This class represents an item in a sequence as defined by the XPath 2.0 specification.
  * Every item is either an {@link org.exist.xquery.value.AtomicValue atomic value} or
- * a {@link org.exist.dom.NodeProxy node}.
+ * a {@link org.exist.dom.persistent.NodeProxy node}.
  * 
  * @author wolf
  */
@@ -85,14 +85,14 @@ public interface Item {
 	
 	public <T> T toJavaObject(Class<T> target) throws XPathException;
 
-    /**
-     * Nodes may implement this method to be informed of storage address
-     * and node id changes after updates.
-     *
-     * @see org.exist.storage.UpdateListener
-     *
-     * @param oldNodeId
-     * @param newNode
-     */
-    void nodeMoved(NodeId oldNodeId, StoredNode newNode);
+        /**
+         * Nodes may implement this method to be informed of storage address
+         * and node id changes after updates.
+         *
+         * @see org.exist.storage.UpdateListener
+         *
+         * @param oldNodeId
+         * @param newNode
+         */
+        void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Peristent nodes and NOT also in-memory nodes
 }

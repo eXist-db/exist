@@ -21,9 +21,9 @@
  */
 package org.exist.xquery.functions.text;
 
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -58,7 +58,7 @@ public class FilterNested extends BasicFunction {
         final ExtArrayNodeSet inSet = (ExtArrayNodeSet) args[0].toNodeSet();
         final NodeSet filtered = new ExtArrayNodeSet();
         for (final NodeProxy p : inSet) {
-            if (inSet.hasDescendantsInSet(p.getDocument(), p.getNodeId(), false, -1) == null)
+            if (inSet.hasDescendantsInSet(p.getOwnerDocument(), p.getNodeId(), false, -1) == null)
                 {filtered.add(p);}
         }
         return filtered;

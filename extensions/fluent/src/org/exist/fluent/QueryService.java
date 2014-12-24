@@ -1,12 +1,14 @@
 package org.exist.fluent;
 
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.DefaultDocumentSet;
 import java.io.IOException;
 import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.*;
@@ -577,7 +579,7 @@ public class QueryService implements Cloneable {
 		@Override public Variable resolveVariable(org.exist.dom.QName qname) throws XPathException {
 			Variable var = super.resolveVariable(qname);
 			if (var == null) {
-				requiredVariables.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
+				requiredVariables.add(new QName(qname.getNamespaceURI(), qname.getLocalPart(), qname.getPrefix()));
 				var = new VariableImpl(qname);
 			}
 			return var;
@@ -586,7 +588,7 @@ public class QueryService implements Cloneable {
 		@Override public UserDefinedFunction resolveFunction(org.exist.dom.QName qname, int argCount) throws XPathException {
 			UserDefinedFunction func = super.resolveFunction(qname, argCount);
 			if (func == null) {
-				requiredFunctions.add(new QName(qname.getNamespaceURI(), qname.getLocalName(), qname.getPrefix()));
+				requiredFunctions.add(new QName(qname.getNamespaceURI(), qname.getLocalPart(), qname.getPrefix()));
 				func = new UserDefinedFunction(this, new FunctionSignature(qname, null, new SequenceType(Type.ITEM, org.exist.xquery.Cardinality.ZERO_OR_MORE), true));
 				func.setFunctionBody(new SequenceConstructor(this));
 			}

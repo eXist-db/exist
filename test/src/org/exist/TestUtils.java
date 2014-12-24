@@ -2,7 +2,7 @@ package org.exist;
 
 import org.apache.commons.io.FileUtils;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.start.Main;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

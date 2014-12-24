@@ -76,7 +76,7 @@ public class IndentingXMLWriter extends XMLWriter {
      */
     @Override
     public void startElement(final QName qname) throws TransformerException {
-        if (afterTag && !isInlineTag(qname.getNamespaceURI(), qname.getLocalName())) {
+        if (afterTag && !isInlineTag(qname.getNamespaceURI(), qname.getLocalPart())) {
             indent();
         }
         super.startElement(qname);
@@ -101,7 +101,7 @@ public class IndentingXMLWriter extends XMLWriter {
      */
     @Override
     public void endElement(final QName qname) throws TransformerException {
-        endIndent(qname.getNamespaceURI(), qname.getLocalName());
+        endIndent(qname.getNamespaceURI(), qname.getLocalPart());
         super.endElement(qname);
         sameline = false;
         afterTag = true;

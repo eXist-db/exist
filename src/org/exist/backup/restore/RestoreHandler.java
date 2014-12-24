@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.dom.DocumentTypeImpl;
+import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.SecurityManager;

@@ -21,7 +21,7 @@
 */
 package org.exist.util.serializer;
 
-import org.exist.dom.AttrImpl;
+import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 
@@ -83,7 +83,7 @@ public class AttrList {
 	
 	public String getValue(QName name) {
 		for(int i = 0; i < size; i++) {
-			if(names[i].equalsSimple(name))
+			if(names[i].equals(name))
 				{return values[i];}
 		}
 		return null;

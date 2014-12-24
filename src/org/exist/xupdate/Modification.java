@@ -23,7 +23,6 @@
 package org.exist.xupdate;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -35,27 +34,24 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DefaultDocumentSet;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.MutableDocumentSet;
-import org.exist.dom.NodeIndexListener;
-import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.StoredNode;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
-import org.exist.storage.StorageAddress;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -246,7 +242,7 @@ public abstract class Modification {
 		    final StoredNode ql[] = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nl.item(i);
-				final DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
+				final DocumentImpl doc = ql[i].getOwnerDocument();
 				
 				// call the eventual triggers
 				// TODO -jmv separate loop on docs and not on nodes
@@ -350,57 +346,5 @@ public abstract class Modification {
 		buf.append(getName());
 		buf.append(">");
 		return buf.toString();
-	}
-
-	final static class IndexListener implements NodeIndexListener {
-
-		StoredNode[] nodes;
-
-		public IndexListener(StoredNode[] nodes) {
-			this.nodes = nodes;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.exist.dom.NodeIndexListener#nodeChanged(org.exist.dom.NodeImpl)
-		 */
-		public void nodeChanged(StoredNode node) {
-			final long address = node.getInternalAddress();
-			for (int i = 0; i < nodes.length; i++) {
-				if (StorageAddress.equals(nodes[i].getInternalAddress(), address)) {
-					nodes[i] = node;
-				}
-			}
-		}
-
-		/* (non-Javadoc)
-		 * @see org.exist.dom.NodeIndexListener#nodeChanged(long, long)
-		 */
-		public void nodeChanged(long oldAddress, long newAddress) {
-			// Ignore the address change
-			// TODO: is this really save?
-			
-//			for (int i = 0; i < nodes.length; i++) {
-//				if (StorageAddress.equals(nodes[i].getInternalAddress(), oldAddress)) {
-//					nodes[i].setInternalAddress(newAddress);
-//				}
-//			}
-
-		}
-
-	}
-
-	final static class NodeComparator implements Comparator<StoredNode> {
-
-		/* (non-Javadoc)
-		* @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-		*/
-		public int compare(StoredNode n1, StoredNode n2) {
-			if (n1.getInternalAddress() == n2.getInternalAddress())
-				{return Constants.EQUAL;}
-			if (n1.getInternalAddress() < n2.getInternalAddress())
-				{return Constants.INFERIOR;}
-			else
-				{return Constants.SUPERIOR;}
-		}
 	}
 }

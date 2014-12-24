@@ -1,6 +1,6 @@
 package org.exist.versioning;
 
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.util.serializer.Receiver;/*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-07 The eXist Project

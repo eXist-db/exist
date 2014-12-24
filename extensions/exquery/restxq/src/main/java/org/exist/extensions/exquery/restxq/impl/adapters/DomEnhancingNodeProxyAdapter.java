@@ -32,10 +32,11 @@ import net.sf.cglib.proxy.CallbackFilter;
 import net.sf.cglib.proxy.Dispatcher;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.NoOp;
-import org.exist.dom.ContextItem;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
+import org.exist.dom.persistent.ContextItem;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeHandle;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
@@ -101,20 +102,10 @@ public class DomEnhancingNodeProxyAdapter {
         
         final NodeProxy enhancedNodeProxy = (NodeProxy)enhancer.create(
             new Class[] {
-                DocumentImpl.class,
-                NodeId.class,
-                short.class,
-                long.class,
-                Match.class,
-                ContextItem.class
+                NodeHandle.class
             },
             new Object[] {
-                nodeProxy.getDoc(),
-                nodeProxy.getNodeId(),
-                nodeProxy.getNodeType(),
-                nodeProxy.getInternalAddress(),
-                nodeProxy.getMatches(),
-                nodeProxy.getContext()
+                nodeProxy
             });
         
         return enhancedNodeProxy;

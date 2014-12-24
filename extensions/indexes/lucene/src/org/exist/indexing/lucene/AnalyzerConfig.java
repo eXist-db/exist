@@ -439,8 +439,8 @@ public class AnalyzerConfig {
         for (int i = 0; i < values.getLength(); i++) {
             final Element value = (Element) values.item(i);
 
-            //TODO getNodeValue() on org.exist.dom.ElementImpl should return null according to W3C spec!
-            if (value instanceof org.exist.dom.ElementImpl) {
+            //TODO getNodeValue() on org.exist.dom.persistent.ElementImpl should return null according to W3C spec!
+            if (value instanceof org.exist.dom.persistent.ElementImpl) {
                 set.add(value.getNodeValue());
             } else {
                 set.add(value.getTextContent());

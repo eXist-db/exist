@@ -22,9 +22,9 @@
 package org.exist.xquery.functions.securitymanager;
 
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentImpl;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
-import org.exist.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.AbstractUnixStylePermission;
@@ -234,10 +234,10 @@ public class PermissionsFunction extends BasicFunction {
 
         Sequence result = Sequence.EMPTY_SEQUENCE;
 
-        if(isCalledAs(qnModeToOctal.getLocalName())) {
+        if(isCalledAs(qnModeToOctal.getLocalPart())) {
             final String mode = args[0].itemAt(0).getStringValue();
             result = functionModeToOctal(mode);
-        } else if(isCalledAs(qnOctalToMode.getLocalName())) {
+        } else if(isCalledAs(qnOctalToMode.getLocalPart())) {
             final String octal = args[0].itemAt(0).getStringValue();
             result = functionOctalToMode(octal);
         } else {
@@ -246,41 +246,41 @@ public class PermissionsFunction extends BasicFunction {
             final XmldbURI pathUri = ((AnyURIValue)args[0].itemAt(0)).toXmldbURI();
 
             try {
-                if(isCalledAs(qnGetPermissions.getLocalName())) {
+                if(isCalledAs(qnGetPermissions.getLocalPart())) {
                     result = functionGetPermissions(pathUri);
-                } else if(isCalledAs(qnAddUserACE.getLocalName()) || isCalledAs(qnAddGroupACE.getLocalName())) {
-                    final ACE_TARGET target = isCalledAs(qnAddUserACE.getLocalName()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
+                } else if(isCalledAs(qnAddUserACE.getLocalPart()) || isCalledAs(qnAddGroupACE.getLocalPart())) {
+                    final ACE_TARGET target = isCalledAs(qnAddUserACE.getLocalPart()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
                     final String name = args[1].getStringValue();
                     final ACE_ACCESS_TYPE access_type = args[2].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
                     final String mode = args[3].itemAt(0).getStringValue();
                     result = functionAddACE(pathUri, target, name, access_type, mode);
-                } else if(isCalledAs(qnInsertUserACE.getLocalName()) || isCalledAs(qnInsertGroupACE.getLocalName())) {
-                    final ACE_TARGET target = isCalledAs(qnInsertUserACE.getLocalName()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
+                } else if(isCalledAs(qnInsertUserACE.getLocalPart()) || isCalledAs(qnInsertGroupACE.getLocalPart())) {
+                    final ACE_TARGET target = isCalledAs(qnInsertUserACE.getLocalPart()) ? ACE_TARGET.USER : ACE_TARGET.GROUP;
                     final int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
                     final String name = args[2].getStringValue();
                     final ACE_ACCESS_TYPE access_type = args[3].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
                     final String mode = args[4].itemAt(0).getStringValue();
                     result = functionInsertACE(pathUri, index, target, name, access_type, mode);
-                } else if(isCalledAs(qnModifyACE.getLocalName())) {
+                } else if(isCalledAs(qnModifyACE.getLocalPart())) {
                     final int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
                     final ACE_ACCESS_TYPE access_type = args[2].effectiveBooleanValue() ? ACE_ACCESS_TYPE.ALLOWED : ACE_ACCESS_TYPE.DENIED;
                     final String mode = args[3].itemAt(0).getStringValue();
                     result = functionModifyACE(pathUri, index, access_type, mode);
-                } else if(isCalledAs(qnRemoveACE.getLocalName())) {
+                } else if(isCalledAs(qnRemoveACE.getLocalPart())) {
                     final int index = ((Integer)args[1].itemAt(0).toJavaObject(Integer.class));
                     result = functionRemoveACE(pathUri, index);
-                } else if(isCalledAs(qnClearACL.getLocalName())) {
+                } else if(isCalledAs(qnClearACL.getLocalPart())) {
                     result = functionClearACL(pathUri);
-                } else if(isCalledAs(qnChMod.getLocalName())) {
+                } else if(isCalledAs(qnChMod.getLocalPart())) {
                     final String mode = args[1].itemAt(0).getStringValue();
                     result = functionChMod(pathUri, mode);
-                } else if(isCalledAs(qnChOwn.getLocalName())) {
+                } else if(isCalledAs(qnChOwn.getLocalPart())) {
                     final String owner = args[1].itemAt(0).getStringValue();
                     result = functionChOwn(pathUri, owner);
-                }  else if(isCalledAs(qnChGrp.getLocalName())) {
+                }  else if(isCalledAs(qnChGrp.getLocalPart())) {
                     final String groupname = args[1].itemAt(0).getStringValue();
                     result = functionChGrp(pathUri, groupname);
-                } else if(isCalledAs(qnHasAccess.getLocalName())) {
+                } else if(isCalledAs(qnHasAccess.getLocalPart())) {
                     final String mode = args[1].itemAt(0).getStringValue();
                     result = functionHasAccess(pathUri, mode);
                 }
@@ -292,7 +292,7 @@ public class PermissionsFunction extends BasicFunction {
         return result;
     }
 
-    private org.exist.memtree.DocumentImpl functionGetPermissions(final XmldbURI pathUri) throws XPathException {
+    private org.exist.dom.memtree.DocumentImpl functionGetPermissions(final XmldbURI pathUri) throws XPathException {
         try {
             return permissionsToXml(getPermissions(pathUri));
         } catch(final PermissionDeniedException pde) {
@@ -480,7 +480,7 @@ public class PermissionsFunction extends BasicFunction {
         return permissions;
     }
 
-    private org.exist.memtree.DocumentImpl permissionsToXml(final Permission permission) {
+    private org.exist.dom.memtree.DocumentImpl permissionsToXml(final Permission permission) {
         final MemTreeBuilder builder = context.getDocumentBuilder();
         builder.startDocument();
 

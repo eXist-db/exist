@@ -199,7 +199,7 @@ public class XMLWriter {
                 writer.write(':');
             }
             
-            writer.write(qname.getLocalName());
+            writer.write(qname.getLocalPart());
             tagIsOpen = true;
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
@@ -230,7 +230,7 @@ public class XMLWriter {
                     writer.write(qname.getPrefix());
                     writer.write(':');
                 }
-                writer.write(qname.getLocalName());
+                writer.write(qname.getLocalPart());
                 writer.write('>');
             }
         } catch(final IOException ioe) {
@@ -303,7 +303,7 @@ public class XMLWriter {
                 writer.write(qname.getPrefix());
                 writer.write(':');
             }
-            writer.write(qname.getLocalName());
+            writer.write(qname.getLocalPart());
             writer.write("=\"");
             writeChars(value, true);
             writer.write('"');
