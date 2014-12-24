@@ -1,20 +1,143 @@
 Java Service Wrapper Revision History.
 --------------------------------------
 
+3.5.26
+* Improve the log messages when a JVM restart is requested when the Wrapper is
+  in a state that it will be ignored.
+* (Standard, Professional) Add an additional debug message when a deadlock
+  sweep completes.  No functional change but this was added to make it easy to
+  tell how long the sweep takes on a given application.
+* Clean up the internal tracking of where environment variables were set.
+  No functional changes.
+* When detecting Cygwin with 'uname -o' in the script file, some OS's
+  (Solaris, MacOS, etc.) show an error message because '-o' is not a valid
+  parameter.  Now we hide this error message to avoid confusion and we can
+  guess that Cygwin is not running.
+* Allow to control the service in systemd using the script file.
+* Improve script file. Fix a typo. On MacOS, add another alternative way to
+  find Java and use full path to execute sysctl in case it's not in the path.
+  Thanks to Dannes Wessels for pointing this out.
+* Fix a problem on newer version of Windows when customizing the Wrapper. 
+  The certificate was not removed when creating the target. This was leading
+  to an error when trying to sign the target with a new certificate.
+* Add missing support in the shell script for restarting/stopping the Wrapper 
+  service with launchctl on Mac OS X.
+* Add missing support in the shell script for restarting/stopping the Wrapper 
+  service with Upstart.
+* Add the ability to set the path of the 'su' command as well as the ability
+  to specifiy additional options in the Wrapper shell script using new SU_BIN
+  and SU_OPTS variables.
+* Fix a problem in the WrapperSimpleApp, WrapperStartStopApp, and
+  WrapperJarApp helper classes where command line problems that resulted in
+  the JVM exiting on startup looked like unexpected exits.  This meant that
+  the Wrapper would try to relaunch the JVM again rather than giving up on the
+  first attempt.
+* Modified the WrapperSimpleApp, WrapperStartStopApp, and WrapperJarApp helper
+  classes so that their usage banners will only now be shown for command line
+  related problems.  Issues with the specified classes, methods, or jar files
+  are still logged as errors, but showing the user the usage in these cases
+  was confusing.
+* Correct the WrapperResources.getString() method that has no replacement
+  arguments so that its processing of the raw string is handled the same as
+  methods which have replacement arguments.  Now all strings are processed
+  by the MessageFormat class before being returned.  Previous versions were
+  not consistent about the need to escape single quotes.
+* Added optional key validation to make sure that strings passed in to the
+  WrapperResources.getString() method are formatted correctly.  See the
+  WrapperResources class for information how to enable.
+* Clean up escaping of single quotes in a few messages.
+* Add new options for property wrapper.backend.type: AUTO, SOCKET,
+  SOCKET_IPv4, SOCKET_IPv6, PIPE. When set to AUTO, the Wrapper will try to
+  open a socket ipv4 and fallback to ipv6 and to pipe in case of error.
+* Fix bug when converting from multibyte to wide char without setting the
+  locale at startup (Unix only). Thanks to Bert.
+* Add a 'CLOSE_BACKEND' alias to 'CLOSE_SOCKET' as a test command for the
+  wrapper.commandfile property.  This is because there have been multiple
+  options for the backend connection for some time and the name is more
+  portable.
+* Fix a problem on Mac when running OS X Yosemite where the script was failing
+  to correctly compare versions '10.10' to '10.5.0'.  This was leading to the
+  script thinking that only 32-bit binaries could be run.  This was only an
+  issue if the delta pack naming of the wrapper binaries was being used.
+* Add a new wrapper.java.classpath.missing.loglevel property which makes it
+  possible to control how the Wrapper logs warnings about missing classpath
+  elements.  Previously this was always logged as debug output and could not
+  be disabled.
+* If there are any low level problems launching the Java process that are not
+  related to configuration or the JVM itself, the Wrapper will no longer try
+  again as such retries were meaningless.
+* Windows system APIs have a problem that cause a process to crash if it
+  attempts to set an environment variable over 32767 characters in length.
+  The Wrapper now checks for this and logs an error rather than setting the
+  variable.  This was a problem if very large classpaths were used when the
+  wrapper.java.classpath.use_environment property was TRUE.
+* Windows does not allow a command line to be longer than 32766 characters in
+  length.  Different versions of Windows handle it differently when such a
+  long command is provided.  The Wrapper now does its own check and shows an
+  error in a consistent way.
+* Improve the error message on UNIX platforms when the command line is longer
+  than the system maximum.  This maximum varies greatly by platform and
+  environment and is difficult to calculate reliably, so the maximum length
+  is not currently shown in the message.
+* Fix a problem on UNIX platforms where a very large configuration file could
+  cause the WrapperManager to fail to startup.  This was caused by the partial
+  transfer of the configuration file to the WrapperManager via the backend
+  connection.  This would happen regardless of the backend type used.  The
+  size of the configuration file that would cause a problem varied greatly
+  based on the specific system.
+* Fix a problem on Windows platforms where a very large configuration file
+  would fail to be sent to the WrapperManager on startup when the
+  wrapper.backend.type property was set to PIPE.  The only problem was that
+  the WrapperManager.getProperties() method would be empty.
+* (Professional) Add checks to the WrapperManager.exec() methods on Windows
+  for the maximum command line length of 32766, and maximum environment
+  variable name-value pair length of 32767.
+* (Professional) Fix a problem where a free of a NULL pointer was being done
+  as part of the cleanup process of a WrapperManager.exec() call.  This is not
+  known to have caused any issues.
+* Added getStdOut(), getStdErr(), and getStdIn() methods to the WrapperProcess
+  class as aliases to the getInputStream(), getErrorStream(), and
+  getOutputStream() methods to help avoid confusion.
+* Fix a problem on Windows 7 where long log lines got corrupted after 31397
+  characters when wrapper.console.direct was true.  This seems to be a problem
+  with the underlying Windows API and was only a display issue.  Reduced the
+  maximum number of characters that can be written with a single API call to
+  30000 to work around the issue.  This change is internal and there is still
+  no limit on the length of logged lines.
+* Fix a deadlock if the Wrapper failed to write to the backend when the
+  wrapper.backend.type property was PIPE.  Found by code review and is not
+  known to have actually happened.
+* From Mac OSX 10.5.0, the script file will use the key 'KeepAlive' in the 
+  launchctl configuration file. Prior versions of Mac OSX will continue to use
+  the same key 'OnDemand'. Thanks to Robin for pointing this out.
+* (Standard, Professional) Disallow the use of hostids tied to Apple Bluetooth
+  devices when running on a virtualized Windows system hosted on an OS X
+  system.
+* Fix a problem where WrapperManager.log() was not working correctly when
+  multi-byte messages were logged.
+* In the debug output the full configuration properties packet is suppressed
+  from the log output because it is huge and can contain sensitive data.
+  Add a size to the abbreviated output to assist with debugging.
+* Fix a memory leak on UNIX platforms whenever an error message was reported.
+  This was only a problem if the message was logged repeatedly.
+* Correct a couple other potential memory leaks found through code review.
+  Not known to have been causing any actual problems.
+  
 3.5.25
 * (Professional) Improve the wrapper.timer.<n>.interval property so it is now
   possible to specify ranges and lists of values as well as offsets for
   interval values to more precisely control when timers are fired.
 * (Professional) Fix a problem with the wrapper.timer.<n>.interval property
   where timers would not fire during an interval the system time was set back.
-  Also fixed a problem where timers would stop firing permanently if the system
-  time was set forward by more than the value of the wrapper.timer.max_catchup
-  property and a timer had been scheduled to be fired during that interval.
-  Both of these issues were most likely during daylight savings time.
+  Also fixed a problem where timers would stop firing permanently if the
+  system time was set forward by more than the value of the
+  wrapper.timer.max_catchup property and a timer had been scheduled to be
+  fired during that interval.  Both of these issues were most likely during
+  daylight savings time.
 * Fix a problem where signals received by the JVM were not being logged in
-  debug output correctly if the wrapper.ignore_signals property is set to true.
-  We now also log debug output even if a user event listener consumes the
-  signal event.
+  debug output correctly if the wrapper.ignore_signals property is set to
+  true.  We now also log debug output even if a user event listener consumes
+  the signal event.
 * Fix a problem on Gentoo Linux where the shell script was not correctly
   detecting the system architecture.  This may also be a problem on other
   distributions whose 'uname -p' returns a detailed architecture.
@@ -476,7 +599,7 @@ Java Service Wrapper Revision History.
   intended message.  This could be seen if the configured log file did not
   have write permissions.  Other than the incorrect log message, the Wrapper
   worked correctly.  Introduced in 3.5.2.
-* Fix a problem in the UNIX script where running with upstart wasn't working
+* Fix a problem in the UNIX script where running with Upstart wasn't working
   correctly when RUN_AS_USER was set.
 * Relax security checks when running the 'status' command against the UNIX
   shell script so it now allows any user running the script to perform the
@@ -686,6 +809,10 @@ Java Service Wrapper Revision History.
   a warning whenever it detects that the Wrapper took a long time to record a
   log message.  This was added to test a reported issue caused by slow IO on
   very heavily loaded systems.
+* Added a new 'G' log format to log the time in milliseconds of the previous
+  log message.  See documentation with the wrapper.log.warning.threshold
+  property.  Added to the wrapper.console.format, wrapper.logfile.format, and
+  wrapper.logdialog.format properties.
 * Fix a problem where a filter that requested the JVM to restart would be
   ignored if the JVM exited on its own immediately.  The Wrapper is now more
   consistent so that restart requests from within the JVM or filters will
@@ -878,7 +1005,7 @@ Java Service Wrapper Revision History.
   cause problems writing Japanese text when the file.encoding is German for
   example.
 * Added support in the shell script for starting/installing the wrapper on
-  system boot with upstart.
+  system boot with Upstart.
 * Fix a problem in the shell script where it would fail to recognize a running
   Wrapper if the Wrapper command line or path contained a square bracket.
 * Modify the way we test for the existance of the temp directory so we now
