@@ -65,11 +65,15 @@ public class ArrayType extends FunctionReference {
     }
 
     public Sequence tail() throws XPathException {
-        return new ArrayType(context, RT.subvec(vector, 1, vector.length() - 1));
+        if (vector.length() == 2) {
+            final Sequence tail = vector.nth(1);
+            return tail.getItemType() == Type.ARRAY ? tail : new ArrayType(context, tail);
+        }
+        return new ArrayType(context, RT.subvec(vector, 1, vector.length()));
     }
 
-    public ArrayType subarray(int start, int length) throws XPathException {
-        return new ArrayType(context, RT.subvec(vector, start, length));
+    public ArrayType subarray(int start, int end) throws XPathException {
+        return new ArrayType(context, RT.subvec(vector, start, end));
     }
 
     public ArrayType append(Sequence seq) {
@@ -132,7 +136,7 @@ public class ArrayType extends FunctionReference {
             final IntegerValue v = (IntegerValue) args[0].itemAt(0);
             final int n = v.getInt();
             if (n <= 0 || n > ArrayType.this.getSize()) {
-                throw new XPathException(this, ErrorCodes.XQDY0138, "Position " + n + " does not exist in this array. Length is " + ArrayType.this.getSize());
+                throw new XPathException(this, ErrorCodes.FOAY0001, "Position " + n + " does not exist in this array. Length is " + ArrayType.this.getSize());
             }
             return ArrayType.this.get(n - 1);
         }

@@ -31,21 +31,13 @@ public class ArrayFunction extends BasicFunction {
             ),
             new FunctionSignature(
                     new QName("append", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
-                    "Adds one member at the end of an array, creating a new array.",
+                    "Returns an array containing all the members of the supplied array, plus one additional" +
+                    "member at the end.",
                     new SequenceType[] {
                             new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
                             new FunctionParameterSequenceType("appendage", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items to append")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY, Cardinality.ZERO_OR_MORE, "A copy of $array with the new member attached")
-            ),
-            new FunctionSignature(
-                    new QName("seq", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
-                    "Returns a sequence containing all the members of a supplied array, concatenated into a single sequence. This is " +
-                    "equivalent to calling (1 to ay:size($array)) ! $array(.)",
-                    new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array")
-                    },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.ZERO_OR_MORE, "A sequence containing all members of the array")
             ),
             new FunctionSignature(
                     new QName("head", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
@@ -97,11 +89,7 @@ public class ArrayFunction extends BasicFunction {
             return array.get(index.getInt() - 1);
         } else if (isCalledAs("append")) {
             final ArrayType array = (ArrayType) args[0].itemAt(0);
-            final Sequence seq = args[1];
-            return array.append(seq);
-        } else if (isCalledAs("seq")) {
-            final ArrayType array = (ArrayType) args[0].itemAt(0);
-            return array.asSequence();
+            return array.append(args[1]);
         } else if (isCalledAs("head")) {
             final ArrayType array = (ArrayType) args[0].itemAt(0);
             if (array.getSize() == 0) {
@@ -117,11 +105,11 @@ public class ArrayFunction extends BasicFunction {
         } else if (isCalledAs("subarray")) {
             final ArrayType array = (ArrayType) args[0].itemAt(0);
             final int start = ((IntegerValue) args[1].itemAt(0)).getInt();
-            final int length = array.getSize() - start + 1;
+            final int end = array.getSize();
             if (start < 1) {
                 throw new XPathException(this, ErrorCodes.FOAY0001, "Start index into array is < 1");
             }
-            return array.subarray(start - 1, length);
+            return array.subarray(start - 1, end);
         }
         throw new XPathException(this, "Unknown function: " + getName());
     }
