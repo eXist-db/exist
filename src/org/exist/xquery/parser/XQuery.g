@@ -151,6 +151,7 @@ imaginaryTokenDefinitions
 	MAP_TEST
 	MAP_LOOKUP
 	ARRAY
+	ARRAY_TEST
 	PROLOG
 	OPTION
 	ATOMIC_TYPE 
@@ -520,6 +521,8 @@ itemType throws XPathException
 	( "function" LPAREN ) => functionTest
 	|
 	( "map" LPAREN ) => mapType
+	|
+	( "array" LPAREN ) => arrayType
 	| 
 	( LPAREN ) => parenthesizedItemType
 	|
@@ -585,6 +588,30 @@ mapTypeTest throws XPathException
 	m:"map"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN!
 	{ 
 		#mapTypeTest = #(#[MAP_TEST, "map"], #mapTypeTest);
+	}
+	;
+
+arrayType throws XPathException
+:
+	( "array" LPAREN STAR ) => anyArrayTypeTest
+	|
+	arrayTypeTest
+	;
+
+anyArrayTypeTest throws XPathException
+:
+	m:"array"! LPAREN! s:STAR RPAREN!
+	{
+		#anyArrayTypeTest = #(#[ARRAY_TEST, "array"], #s);
+		#anyArrayTypeTest.copyLexInfo(#m);
+	}
+	;
+
+arrayTypeTest throws XPathException
+:
+	m:"array"! LPAREN! sequenceType RPAREN!
+	{
+		#arrayTypeTest = #(#[ARRAY_TEST, "array"], #arrayTypeTest);
 	}
 	;
 
