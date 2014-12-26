@@ -911,6 +911,24 @@ throws XPathException
 		)
 		|
 		#(
+			ARRAY_TEST { type.setPrimaryType(Type.ARRAY); }
+			(
+				STAR
+				|
+				(
+					// TODO: parameter types are collected, but not used!
+					// Change SequenceType accordingly.
+					{ List<SequenceType> paramTypes = new ArrayList<SequenceType>(5); }
+					(
+						{ SequenceType paramType = new SequenceType(); }
+						sequenceType [paramType]
+						{ paramTypes.add(paramType); }
+					)*
+				)
+			)
+		)
+		|
+		#(
 			"item" { type.setPrimaryType(Type.ITEM); }
 		)
 		|
@@ -1859,6 +1877,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	step=mapExpr [path]
 	|
 	step=arrayConstr [path]
+	step=postfixExpr [step]
+	{ path.add(step); }
 	|
 	#(
 		PARENTHESIZED
@@ -3121,7 +3141,6 @@ throws XPathException, PermissionDeniedException, EXistException
 		    } else {
 		        array = new ArrayConstructor(context, ArrayConstructor.ConstructorType.CURLY_ARRAY);
 		    }
-		    path.add(array);
 		    step = array;
 		}
 		(
