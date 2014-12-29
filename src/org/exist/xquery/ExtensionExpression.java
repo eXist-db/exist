@@ -64,7 +64,7 @@ public class ExtensionExpression extends AbstractExpression {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
-        callBefore();
+        callBefore(contextSequence);
         Sequence result = null;
         for (final Pragma pragma : pragmas) {
             Sequence temp = pragma.eval(contextSequence, contextItem);
@@ -85,9 +85,9 @@ public class ExtensionExpression extends AbstractExpression {
         }
     }
 
-    private void callBefore() throws XPathException {
+    private void callBefore(Sequence contextSequence) throws XPathException {
         for (final Pragma pragma : pragmas) {
-            pragma.before(context, innerExpression);
+            pragma.before(context, innerExpression, contextSequence);
         }
     }
 

@@ -1561,7 +1561,7 @@ public class XQueryTest extends XMLTestCase {
                     storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
 
             System.out.println("testFunctionDocExternal 1: ========");
-            query = "if (doc-available(\"http://www.w3.org/XML/\")) then doc(\"http://www.w3.org/XML/\") else ()";
+            query = "if (doc-available(\"http://www.w3.org/XML/Core/\")) then doc(\"http://www.w3.org/XML/Core/\") else ()";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
 
@@ -1571,7 +1571,7 @@ public class XQueryTest extends XMLTestCase {
             assertEquals("XQuery: " + query, 0, result.getSize());
 
             System.out.println("testFunctionDocExternal 3: ========");
-            query = "doc-available(\"http://www.w3.org/XML/\")";
+            query = "doc-available(\"http://www.w3.org/XML/Core/\")";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());

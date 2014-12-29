@@ -30,6 +30,7 @@ public class RangeIndexConfigElement {
     protected boolean includeNested = false;
     protected boolean caseSensitive = true;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
+    private org.exist.indexing.range.conversion.TypeConverter typeConverter = null;
 
     public RangeIndexConfigElement(Element node, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String match = node.getAttribute("match");
@@ -80,10 +81,29 @@ public class RangeIndexConfigElement {
         if (caseStr != null && caseStr.length() > 0) {
             caseSensitive = caseStr.equalsIgnoreCase("yes");
         }
+        String custom = node.getAttribute("converter");
+        if (custom != null && custom.length() > 0) {
+            try {
+                Class customClass = Class.forName(custom);
+                typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.newInstance();
+            } catch (ClassNotFoundException e) {
+                RangeIndex.LOG.warn("Class for custom-type not found: " + custom);
+            } catch (InstantiationException e) {
+                RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
+            } catch (IllegalAccessException e) {
+                RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
+            }
+        }
     }
 
     public Field convertToField(String fieldName, String content) throws IOException {
-        int fieldType = getType(fieldName);
+        // check if a converter is defined for this index to handle on-the-fly conversions
+        final org.exist.indexing.range.conversion.TypeConverter custom = getTypeConverter(fieldName);
+        if (custom != null) {
+            return custom.toField(fieldName, content);
+        }
+        // no converter: handle default types
+        final int fieldType = getType(fieldName);
         try {
             switch (fieldType) {
                 case Type.INTEGER:
@@ -244,6 +264,10 @@ public class RangeIndexConfigElement {
 
     public int getType() {
         return type;
+    }
+
+    public org.exist.indexing.range.conversion.TypeConverter getTypeConverter(String fieldName) {
+        return typeConverter;
     }
 
     public NodePath getNodePath() {

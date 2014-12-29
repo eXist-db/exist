@@ -6,6 +6,7 @@
     
     <!-- import common targets -->
     <import file="../../build.xml"/>
+    <import file="git-support.xml"/>
     
     <!-- ================================================================== -->
     <!-- Prepare webapp                                                     -->
@@ -31,8 +32,8 @@
     <!-- ================================================================== -->
     <!-- Create .war file                                                   -->
     <!-- ================================================================== -->
-    <target name="dist-war" depends="webapps" description="Create war file">
-        <war destfile="${dist}/exist-${project.version}-rev${git.commit}.war" webxml="webapp/WEB-INF/web.xml">
+    <target name="dist-war" depends="git.details,webapps" description="Create war file">
+        <war destfile="${dist}/exist-${project.version}-${git.commit}.war" webxml="webapp/WEB-INF/web.xml">
                 
             <!-- Add files to WEB-INF/lib -->
             <lib dir=".">

@@ -125,14 +125,7 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.MimeTable;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.xmldb.CollectionImpl;
-import org.exist.xmldb.CollectionManagementServiceImpl;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.ExtendedResource;
-import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.UserManagementService;
-import org.exist.xmldb.XmldbURI;
+import org.exist.xmldb.*;
 import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
 import org.xml.sax.SAXException;
@@ -1337,6 +1330,13 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 try {
                     restore.restore(listener, username, password, dbaPassword, f, uri);
 
+                    if (JOptionPane.showConfirmDialog(null, Messages.getString("ClientFrame.223"), Messages.getString("ClientFrame.224"),
+                            JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        setStatus(Messages.getString("ClientFrame.225"));
+                        repairRepository(client.getCollection());
+                        setStatus(Messages.getString("ClientFrame.226"));
+                    }
+
                     listener.hideDialog();
 
                     if (properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER).equals(SecurityManager.DBA_USER) && dbaPassword != null) {
@@ -1368,7 +1368,15 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(callable);
     }
-    
+
+    public static void repairRepository(Collection collection) throws XMLDBException {
+        final XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+        service.query("import module namespace repair=\"http://exist-db.org/xquery/repo/repair\"\n" +
+                "at \"resource:org/exist/xquery/modules/expathrepo/repair.xql\";\n" +
+                "repair:clean-all(),\n" +
+                "repair:repair()");
+    }
+
     public UserManagementService getUserManagementService() throws XMLDBException {
         final Collection collection = client.getCollection();
         return (UserManagementService) collection.getService("UserManagementService", "1.0");

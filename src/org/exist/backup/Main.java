@@ -81,6 +81,7 @@ public class Main
     private final static int                  OPTION_OPT     = 'o';
     private final static int                  GUI_OPT        = 'U';
     private final static int                  QUIET_OPT      = 'q';
+    private final static int                  REBUILD_OPT    = 'R';
 
     private final static CLOptionDescriptor[] OPTIONS        = new CLOptionDescriptor[] {
         new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit." ),
@@ -92,7 +93,8 @@ public class Main
         new CLOptionDescriptor( "dir", CLOptionDescriptor.ARGUMENT_REQUIRED, BACKUP_DIR_OPT, "specify the directory to use for backups." ),
         new CLOptionDescriptor( "restore", CLOptionDescriptor.ARGUMENT_REQUIRED, RESTORE_OPT, "read the specified restore file and restore the " + "resources described there." ),
         new CLOptionDescriptor( "option", CLOptionDescriptor.ARGUMENTS_REQUIRED_2 | CLOptionDescriptor.DUPLICATES_ALLOWED, OPTION_OPT, "specify extra options: property=value. For available properties see " + "client.properties." ),
-        new CLOptionDescriptor( "quiet", CLOptionDescriptor.ARGUMENT_DISALLOWED, QUIET_OPT, "be quiet. Just print errors." )
+        new CLOptionDescriptor( "quiet", CLOptionDescriptor.ARGUMENT_DISALLOWED, QUIET_OPT, "be quiet. Just print errors." ),
+        new CLOptionDescriptor( "rebuild", CLOptionDescriptor.ARGUMENT_DISALLOWED, REBUILD_OPT, "rebuild the app repository after restore.")
     };
 
     /**
@@ -148,6 +150,7 @@ public class Main
         boolean              doRestore     = false;
         boolean              guiMode       = false;
         boolean              quiet         = false;
+        boolean              rebuildRepo   = false;
 
         for( final CLOption option : opts ) {
 
@@ -208,6 +211,11 @@ public class Main
 
                 case BACKUP_DIR_OPT: {
                     properties.setProperty( "backup-dir", option.getArgument() );
+                    break;
+                }
+
+                case REBUILD_OPT: {
+                    rebuildRepo = true;
                     break;
                 }
             }
@@ -295,7 +303,7 @@ public class Main
                     if(guiMode) {
                         restoreWithGui(username, optionPass, optionDbaPass, f, uri);
                     } else {
-                        restoreWithoutGui(username, optionPass, optionDbaPass, f, uri);
+                        restoreWithoutGui(username, optionPass, optionDbaPass, f, uri, rebuildRepo);
                     }
                 }
                 catch( final Exception e ) {
@@ -309,7 +317,7 @@ public class Main
             if(!(uri.contains(XmldbURI.ROOT_COLLECTION) || uri.endsWith( XmldbURI.ROOT_COLLECTION))) {
                 uri += XmldbURI.ROOT_COLLECTION;
             }
-            
+
             final Collection root = DatabaseManager.getCollection(uri, properties.getProperty( "user", "admin" ), ( optionDbaPass == null ) ? optionPass : optionDbaPass );
             shutdown( root );
         }
@@ -319,7 +327,8 @@ public class Main
         System.exit( 0 );
     }
 
-    private static void restoreWithoutGui(final String username, final String password, final String dbaPassword, final File f, final String uri) {
+    private static void restoreWithoutGui(final String username, final String password, final String dbaPassword, final File f,
+                                          final String uri, final boolean rebuildRepo) {
         
         final RestoreListener listener = new DefaultRestoreListener();
         final Restore restore = new Restore();
@@ -343,6 +352,34 @@ public class Main
         if(listener.hasProblems()) {
             System.err.println(listener.warningsAndErrorsAsString());
         }
+        if (rebuildRepo) {
+            System.out.println("Rebuilding application repository ...");
+            System.out.println("URI: " + uri);
+            try {
+                String rootURI = uri;
+                if(!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith( XmldbURI.ROOT_COLLECTION))) {
+                    rootURI += XmldbURI.ROOT_COLLECTION;
+                }
+                final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword);
+                if (root != null) {
+                    ClientFrame.repairRepository(root);
+                    System.out.println("Application repository rebuilt successfully.");
+                } else {
+                    System.err.println("Failed to retrieve root collection: " + uri);
+                }
+            } catch (XMLDBException e) {
+                reportError(e);
+                System.err.println("Rebuilding application repository failed!");
+            }
+        } else {
+            System.out.println("\nIf you restored collections inside /db/apps, you may want\n" +
+                    "to rebuild the application repository. To do so, run the following query\n" +
+                    "as admin:\n\n" +
+                    "import module namespace repair=\"http://exist-db.org/xquery/repo/repair\"\n" +
+                    "at \"resource:org/exist/xquery/modules/expathrepo/repair.xql\";\n" +
+                    "repair:clean-all(),\n" +
+                    "repair:repair()\n");
+        }
     }
     
     private static void restoreWithGui(final String username, final String password, final String dbaPassword, final File f, final String uri) {
@@ -358,9 +395,25 @@ public class Main
                 
                 try {
                     restore.restore(listener, username, password, dbaPassword, f, uri);
-                    
+
                     listener.hideDialog();
 
+                    if (JOptionPane.showConfirmDialog(null, "Would you like to rebuild the application repository?\nThis is only necessary if application packages were restored.", "Rebuild App Repository?",
+                            JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        System.out.println("Rebuilding application repository ...");
+                        try {
+                            String rootURI = uri;
+                            if(!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith( XmldbURI.ROOT_COLLECTION))) {
+                                rootURI += XmldbURI.ROOT_COLLECTION;
+                            }
+                            final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword);
+                            ClientFrame.repairRepository(root);
+                            System.out.println("Application repository rebuilt successfully.");
+                        } catch (XMLDBException e) {
+                            reportError(e);
+                            System.err.println("Rebuilding application repository failed!");
+                        }
+                    }
                 } catch (final Exception e) {
                     ClientFrame.showErrorMessage(e.getMessage(), null); //$NON-NLS-1$
                 } finally {

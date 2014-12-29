@@ -103,7 +103,7 @@ public class MetasImpl implements Metas {
 	}
 
     public void delete(String key) {
-        MetaDataImpl.instance.delMeta(uuid, key);
+        MetaDataImpl._.delMeta(uuid, key);
     }
 
     protected void setURL(String url) {

@@ -217,7 +217,6 @@ public class MessageListFunctions extends BasicFunction
 		
 		try {
 			msgList = folder.getMessages();
-			
 			prefetchMessages( folder, msgList );
 		}
 		catch( MessagingException me ) {
@@ -309,8 +308,8 @@ public class MessageListFunctions extends BasicFunction
 					Message message = msgList[ i ];
 					
 					builder.startElement( new QName( "message", MailModule.NAMESPACE_URI, MailModule.PREFIX ), null );
-					
-					builder.addAttribute( new QName( "number", null, null ), String.valueOf( i ) );
+
+					builder.addAttribute( new QName( "number", null, null ), String.valueOf(message.getMessageNumber()) );
 					
 					// Sent Date
 					if( message.getSentDate() != null ) {

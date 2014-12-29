@@ -108,88 +108,256 @@
     <list id="f5bc3222-24ad-43d3-b9b5-627b42110798" name="local" comment="[feature] optimize compression from the File System" />
     <list id="dee4f116-21e7-4919-8859-4bc3127d8801" name="xproc" comment="xproc" />
     <list default="true" id="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" name="Revert: [ignore]  update idea project" comment="[ignore]  update idea project">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/betterform/main/lib/infinispan-commons-6.0.0.Final.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/betterform/main/lib/infinispan-core-6.0.0.Final.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/betterform/main/lib/jboss-logging-3.1.2.GA.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/betterform/main/lib/jboss-marshalling-1.3.18.GA.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/betterform/main/lib/jboss-marshalling-river-1.3.18.GA.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/betterform/main/lib/jboss-transaction-api_1.1_spec-1.0.1.Final.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/betterform/main/lib/jgroups-3.4.1.Final.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/betterform/main/webapp/WEB-INF/classes/infinispan.xml" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/extensions/betterform/main/lib/ehcache-LICENSE.txt" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/extensions/betterform/main/lib/ehcache-core-2.5.2.jar" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/extensions/betterform/main/webapp/WEB-INF/classes/ehcache.xml" afterPath="" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/src/org/exist/xquery/update/AbstractTestUpdate.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/src/org/exist/backup/BackupRestoreSecurityPrincipalsTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/Characters.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/src/org/exist/collections/triggers/CollectionTriggerTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/lexicalhandler/Comment.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/ContentHandlerEvent.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/src/org/exist/collections/triggers/CountingCollectionTrigger.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/conversion/DateConverter.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/collections/triggers/DeferrableFilteringTrigger.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/Element.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/lexicalhandler/EndCDATA.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/lexicalhandler/EndDTD.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/EndDocument.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/EndElement.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/lexicalhandler/EndEntity.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/EndPrefixMapping.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/lexicalhandler/Entity.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/IgnorableWhitespace.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/lexicalhandler/LexicalHandlerEvent.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/MapLookup.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/mail/MessageFunctions.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/PrefixMapping.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/ProcessingInstruction.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/SAXEvent.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/SetDocumentLocator.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/SetOptionsFunction.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/SkippedEntity.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/lexicalhandler/StartCDATA.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/lexicalhandler/StartDTD.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/StartDocument.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/StartElement.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/lexicalhandler/StartEntity.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/contenthandler/StartPrefixMapping.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/exist/util/sax/event/TextEvent.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/conversion/TypeConverter.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/src/org/exist/xquery/update/UpdateInsertTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test/src/org/exist/xquery/update/UpdateValueTest.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/VERSION.txt.tmpl" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/expath/src/org/expath/exist/ZipFileFunctions.java" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/mail/get_messages_example.xql" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/scripts/git-support.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/extensions/security/openid/ivy.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/VERSION.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/extensions/security/oauth/lib/org.json.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/extensions/security/oauth/lib/scribe-1.3.0.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/extensions/security/openid/lib/guice-2.0.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/extensions/security/openid/lib/openid4java-0.9.6.jar" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/admin.css" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/admin.xql" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/browse.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/controller.xql" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/dates.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/error.css" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/expath-pkg.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/get-icon.xql" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/get-packages.xql" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/grammar.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/images/ajax-loader.gif" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/images/close.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/images/download.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/images/install.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/images/package.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/images/remove.png" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/indexes.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/install.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/logo.jpg" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/proc.xql" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/repo.xml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/repo.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/scripts/admin.js" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/scripts/prettify.js" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/status.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/styles/prettify.css" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/trace.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/users.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/versions.xql" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/versions.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/view-source.xql" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/xml2html.xslt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/xqueries.xqm" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/admin/yahoo-ui.xql" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/aspectj/lib/aspectjrt-1.8.0.jar" afterPath="$PROJECT_DIR$/tools/aspectj/lib/aspectjrt-1.8.2.jar" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/aspectj/lib/aspectjtools-1.8.0.jar" afterPath="$PROJECT_DIR$/tools/aspectj/lib/aspectjtools-1.8.2.jar" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/tools/aspectj/lib/aspectjweaver-1.8.0.jar" afterPath="$PROJECT_DIR$/tools/aspectj/lib/aspectjweaver-1.8.2.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/betterform/main/lib/betterform.jar" afterPath="$PROJECT_DIR$/extensions/betterform/main/lib/betterform.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/servlets/AbstractExistHttpServlet.java" afterPath="$PROJECT_DIR$/src/org/exist/http/servlets/AbstractExistHttpServlet.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/Atomize.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/Atomize.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-linux-ia-64.so" afterPath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-linux-ia-64.so" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-linux-x86-32.so" afterPath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-linux-x86-32.so" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-linux-x86-64.so" afterPath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-linux-x86-64.so" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-macosx-universal-32.jnilib" afterPath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-macosx-universal-32.jnilib" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-macosx-universal-64.jnilib" afterPath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-macosx-universal-64.jnilib" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-solaris-sparc-32.so" afterPath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-solaris-sparc-32.so" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-solaris-sparc-64.so" afterPath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-solaris-sparc-64.so" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-solaris-x86-32.so" afterPath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-solaris-x86-32.so" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-solaris-x86-64.so" afterPath="$PROJECT_DIR$/tools/wrapper/lib/libwrapper-solaris-x86-64.so" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-linux-ia-64" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-linux-ia-64" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-linux-x86-32" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-linux-x86-32" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-linux-x86-64" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-linux-x86-64" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-macosx-universal-32" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-macosx-universal-32" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-macosx-universal-64" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-macosx-universal-64" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-solaris-sparc-32" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-solaris-sparc-32" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-solaris-sparc-64" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-solaris-sparc-64" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-solaris-x86-32" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-solaris-x86-32" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-solaris-x86-64" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-solaris-x86-64" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/wrapper-windows-x86-32.dll" afterPath="$PROJECT_DIR$/tools/wrapper/lib/wrapper-windows-x86-32.dll" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-windows-x86-32.exe" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-windows-x86-32.exe" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/wrapper-windows-x86-64.dll" afterPath="$PROJECT_DIR$/tools/wrapper/lib/wrapper-windows-x86-64.dll" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-windows-x86-64.exe" afterPath="$PROJECT_DIR$/tools/wrapper/bin/wrapper-windows-x86-64.exe" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/lib/wrapper.jar" afterPath="$PROJECT_DIR$/tools/wrapper/lib/wrapper.jar" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.travis.yml" afterPath="$PROJECT_DIR$/.travis.yml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/AbstractMapType.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/AbstractMapType.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/soap/AdminSoapBindingImpl.java" afterPath="$PROJECT_DIR$/src/org/exist/soap/AdminSoapBindingImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/memtree/AttributeImpl.java" afterPath="$PROJECT_DIR$/src/org/exist/memtree/AttributeImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/BaseHTTPClientFunction.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/BaseHTTPClientFunction.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/BrokerPool.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/BrokerPool.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/client/ClientFrame.java" afterPath="$PROJECT_DIR$/src/org/exist/client/ClientFrame.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/ComplexRangeIndexConfigElement.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/ComplexRangeIndexConfigElement.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/ControllerForward.java" afterPath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/ControllerForward.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/backup/CreateBackupDialog.java" afterPath="$PROJECT_DIR$/src/org/exist/backup/CreateBackupDialog.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/dom/DocumentImpl.java" afterPath="$PROJECT_DIR$/src/org/exist/dom/DocumentImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/DynamicCardinalityCheck.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/DynamicCardinalityCheck.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/DynamicNameCheck.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/DynamicNameCheck.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/DynamicTypeCheck.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/DynamicTypeCheck.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/sql/ExecuteFunction.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/sql/ExecuteFunction.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/Forward.java" afterPath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/Forward.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/Function.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/Function.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/system/GetRevision.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/system/GetRevision.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/config/ConfigurationDocumentTrigger.java" afterPath="$PROJECT_DIR$/src/org/exist/config/ConfigurationDocumentTrigger.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/backup/ConsistencyCheck.java" afterPath="$PROJECT_DIR$/src/org/exist/backup/ConsistencyCheck.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/DeclScanner.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/DeclScanner.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/DeclScannerTokenTypes.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/DeclScannerTokenTypes.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/DeclScannerTokenTypes.txt" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/DeclScannerTokenTypes.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/file/DirectoryList.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/file/DirectoryList.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/value/DurationValue.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/value/DurationValue.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/dom/ElementImpl.java" afterPath="$PROJECT_DIR$/src/org/exist/dom/ElementImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/ExtensionExpression.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/ExtensionExpression.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/FieldLookup.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/FieldLookup.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/fn/FnFormatDates.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/fn/FnFormatDates.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/fn/FnModule.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/fn/FnModule.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/ForceIndexUse.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/ForceIndexUse.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/fn/FunHigherOrderFun.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/fn/FunHigherOrderFun.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/HTTPClientModule.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/HTTPClientModule.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/client/InteractiveClient.java" afterPath="$PROJECT_DIR$/src/org/exist/client/InteractiveClient.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/management/client/JMXServlet.java" afterPath="$PROJECT_DIR$/src/org/exist/management/client/JMXServlet.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/management/client/JMXtoXML.java" afterPath="$PROJECT_DIR$/src/org/exist/management/client/JMXtoXML.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/jetty/JettyStart.java" afterPath="$PROJECT_DIR$/src/org/exist/jetty/JettyStart.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/LocationStep.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/LocationStep.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/launcher/Launcher.java" afterPath="$PROJECT_DIR$/src/org/exist/launcher/Launcher.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/security/ldap/src/org/exist/security/realm/ldap/LdapContextFactory.java" afterPath="$PROJECT_DIR$/extensions/security/ldap/src/org/exist/security/realm/ldap/LdapContextFactory.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/Lookup.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/Lookup.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/indexing/lucene/LuceneConfigText.java" afterPath="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/indexing/lucene/LuceneConfigText.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/mail/MailModule.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/mail/MailModule.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/backup/Main.java" afterPath="$PROJECT_DIR$/src/org/exist/backup/Main.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/src/org/exist/wrapper/Main.java" afterPath="$PROJECT_DIR$/tools/wrapper/src/org/exist/wrapper/Main.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/MapFunction.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/MapFunction.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/MapModule.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/MapModule.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/MapType.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/MapType.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/metadata/interface/src/test/java/org/exist/storage/md/MatchDocumentsTest.java" afterPath="$PROJECT_DIR$/extensions/metadata/interface/src/test/java/org/exist/storage/md/MatchDocumentsTest.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/mail/MessageListFunctions.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/mail/MessageListFunctions.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/ModuleCall.java" afterPath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/ModuleCall.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/ngram/src/org/exist/indexing/ngram/NGramIndexWorker.java" afterPath="$PROJECT_DIR$/extensions/indexes/ngram/src/org/exist/indexing/ngram/NGramIndexWorker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/ngram/src/org/exist/xquery/modules/ngram/NGramSearch.java" afterPath="$PROJECT_DIR$/extensions/indexes/ngram/src/org/exist/xquery/modules/ngram/NGramSearch.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/NameTest.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/NameTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/metadata/sleepycat/src/main/java/org/exist/storage/md/MetasImpl.java" afterPath="$PROJECT_DIR$/extensions/metadata/sleepycat/src/main/java/org/exist/storage/md/MetasImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/modules/ModuleUtils.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/modules/ModuleUtils.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/NativeBroker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/structural/NativeStructuralIndexWorker.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/structural/NativeStructuralIndexWorker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/PassThrough.java" afterPath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/PassThrough.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/PathForward.java" afterPath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/PathForward.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/persistentlogin/PersistentLogin.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/persistentlogin/PersistentLogin.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/management/impl/ProcessReport.java" afterPath="$PROJECT_DIR$/src/org/exist/management/impl/ProcessReport.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/management/impl/ProcessReportMBean.java" afterPath="$PROJECT_DIR$/src/org/exist/management/impl/ProcessReportMBean.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/client/QueryDialog.java" afterPath="$PROJECT_DIR$/src/org/exist/client/QueryDialog.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/NoIndexPragma.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/NoIndexPragma.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/dom/NodeImpl.java" afterPath="$PROJECT_DIR$/src/org/exist/dom/NodeImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/Optimize.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/Optimize.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/OptimizeFieldPragma.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/OptimizeFieldPragma.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/fn/ParsingFunctions.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/fn/ParsingFunctions.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/Pragma.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/Pragma.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/ProfilePragma.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/ProfilePragma.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/scheduler/impl/QuartzSchedulerImpl.java" afterPath="$PROJECT_DIR$/src/org/exist/scheduler/impl/QuartzSchedulerImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndex.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndex.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndexConfig.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndexConfig.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndexConfigElement.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndexConfigElement.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndexWorker.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndexWorker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/Redirect.java" afterPath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/Redirect.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/RewriteConfig.java" afterPath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/RewriteConfig.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/sql/SQLModule.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/sql/SQLModule.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/sql/SQLUtils.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/sql/SQLUtils.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/mail/SendEmailFunction.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/mail/SendEmailFunction.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/indexing/StructuralIndex.java" afterPath="$PROJECT_DIR$/src/org/exist/indexing/StructuralIndex.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/management/impl/SystemInfo.java" afterPath="$PROJECT_DIR$/src/org/exist/management/impl/SystemInfo.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/management/impl/SystemInfoMBean.java" afterPath="$PROJECT_DIR$/src/org/exist/management/impl/SystemInfoMBean.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/URLRewrite.java" afterPath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/URLRewrite.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/http/urlrewrite/URLRewriteTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/http/urlrewrite/URLRewriteTest.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/UntypedValueCheck.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/UntypedValueCheck.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/Version.java" afterPath="$PROJECT_DIR$/src/org/exist/Version.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/XQueryURLRewrite.java" afterPath="$PROJECT_DIR$/src/org/exist/http/urlrewrite/XQueryURLRewrite.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/betterform/main/webapp/WEB-INF/betterform-config.xml" afterPath="$PROJECT_DIR$/extensions/betterform/main/webapp/WEB-INF/betterform-config.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndexConfigField.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/indexing/range/RangeIndexConfigField.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/RangeQueryRewriter.java" afterPath="$PROJECT_DIR$/extensions/indexes/range/src/org/exist/xquery/modules/range/RangeQueryRewriter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/security/internal/RealmImpl.java" afterPath="$PROJECT_DIR$/src/org/exist/security/internal/RealmImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/exquery/restxq/src/main/java/org/exist/extensions/exquery/restxq/impl/xquery/exist/RegistryFunctions.java" afterPath="$PROJECT_DIR$/extensions/exquery/restxq/src/main/java/org/exist/extensions/exquery/restxq/impl/xquery/exist/RegistryFunctions.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/backup/restore/RestoreHandler.java" afterPath="$PROJECT_DIR$/src/org/exist/backup/restore/RestoreHandler.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/memtree/SAXAdapter.java" afterPath="$PROJECT_DIR$/src/org/exist/memtree/SAXAdapter.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/collections/triggers/SAXTriggerTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/collections/triggers/SAXTriggerTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/security/SecurityManager.java" afterPath="$PROJECT_DIR$/src/org/exist/security/SecurityManager.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/security/internal/SecurityManagerImpl.java" afterPath="$PROJECT_DIR$/src/org/exist/security/internal/SecurityManagerImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/file/SerializeToFile.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/file/SerializeToFile.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/SingleKeyMapType.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/functions/map/SingleKeyMapType.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/launcher/SplashScreen.java" afterPath="$PROJECT_DIR$/src/org/exist/launcher/SplashScreen.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/file/Sync.java" afterPath="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/file/Sync.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/TestRunner.java" afterPath="$PROJECT_DIR$/test/src/xquery/TestRunner.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/TimerPragma.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/pragmas/TimerPragma.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/collections/triggers/TriggerConfigTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/collections/triggers/TriggerConfigTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/UserDefinedFunction.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/UserDefinedFunction.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/ant/XMLDBExtractTask.java" afterPath="$PROJECT_DIR$/src/org/exist/ant/XMLDBExtractTask.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/xquery/XPathQueryTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/xquery/XPathQueryTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQuery.g" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQuery.g" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/svn/test/src/org/exist/versioning/svn/xquery/XQueryFunctionsTest.java" afterPath="$PROJECT_DIR$/extensions/svn/test/src/org/exist/versioning/svn/xquery/XQueryFunctionsTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryLexer.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryLexer.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryLexer.smap" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryLexer.smap" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryParser.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryParser.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryParser.smap" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryParser.smap" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/storage/XQueryPool.java" afterPath="$PROJECT_DIR$/src/org/exist/storage/XQueryPool.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/xquery/XQueryTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/xquery/XQueryTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTokenTypes.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTokenTypes.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTokenTypes.txt" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTokenTypes.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTree.g" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTree.g" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTreeParser.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTreeParser.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTreeParser.smap" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTreeParser.smap" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTreeParserTokenTypes.java" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTreeParserTokenTypes.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTreeParserTokenTypes.txt" afterPath="$PROJECT_DIR$/src/org/exist/xquery/parser/XQueryTreeParserTokenTypes.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/collections/triggers/XQueryTrigger.java" afterPath="$PROJECT_DIR$/src/org/exist/collections/triggers/XQueryTrigger.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/collections/triggers/XQueryTriggerTest.java" afterPath="$PROJECT_DIR$/test/src/org/exist/collections/triggers/XQueryTriggerTest.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/exist/xquery/XqueryRemoteTests.java" afterPath="$PROJECT_DIR$/test/src/org/exist/xquery/XqueryRemoteTests.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/expath/src/org/expath/exist/ZipModule.java" afterPath="$PROJECT_DIR$/extensions/expath/src/org/expath/exist/ZipModule.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/installer/apps.properties" afterPath="$PROJECT_DIR$/installer/apps.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/axes.xml" afterPath="$PROJECT_DIR$/test/src/xquery/axes.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/betterform/main/webapp/WEB-INF/betterform-version.info" afterPath="$PROJECT_DIR$/extensions/betterform/main/webapp/WEB-INF/betterform-version.info" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/scripts/build-impl.xml" afterPath="$PROJECT_DIR$/build/scripts/build-impl.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/betterform/build.xml" afterPath="$PROJECT_DIR$/extensions/betterform/build.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/modules/build.xml" afterPath="$PROJECT_DIR$/extensions/modules/build.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.properties" afterPath="$PROJECT_DIR$/build.properties" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/conf.xml.tmpl" afterPath="$PROJECT_DIR$/conf.xml.tmpl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/betterform/main/webapp/dashboard.html" afterPath="$PROJECT_DIR$/extensions/betterform/main/webapp/dashboard.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/scripts/dist.xml" afterPath="$PROJECT_DIR$/build/scripts/dist.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/eXist.iws" afterPath="$PROJECT_DIR$/eXist.iws" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/exist.bat" afterPath="$PROJECT_DIR$/tools/wrapper/bin/exist.bat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/exist.sh.in" afterPath="$PROJECT_DIR$/tools/wrapper/bin/exist.sh.in" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/scripts/extensions-common.xml" afterPath="$PROJECT_DIR$/build/scripts/extensions-common.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/contentextraction/ivy.xml" afterPath="$PROJECT_DIR$/extensions/contentextraction/ivy.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/lib/json.xq" afterPath="$PROJECT_DIR$/src/org/exist/xquery/lib/json.xq" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/selfAxis.xml" afterPath="$PROJECT_DIR$/test/src/xquery/selfAxis.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/system.properties" afterPath="$PROJECT_DIR$/src/org/exist/system.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/conf/wrapper.conf.in" afterPath="$PROJECT_DIR$/tools/wrapper/conf/wrapper.conf.in" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/dates/format-dates.xql" afterPath="$PROJECT_DIR$/test/src/xquery/dates/format-dates.xql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/xquery3/groupby.xql" afterPath="$PROJECT_DIR$/test/src/xquery/xquery3/groupby.xql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/xquery3/higher-order.xml" afterPath="$PROJECT_DIR$/test/src/xquery/xquery3/higher-order.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/install.bat" afterPath="$PROJECT_DIR$/tools/wrapper/bin/install.bat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/installer/install.xml.tmpl" afterPath="$PROJECT_DIR$/installer/install.xml.tmpl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/scripts/installer.xml" afterPath="$PROJECT_DIR$/build/scripts/installer.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/security/oauth/ivy.xml" afterPath="$PROJECT_DIR$/extensions/security/oauth/ivy.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/scripts/junit.xml" afterPath="$PROJECT_DIR$/build/scripts/junit.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/scripts/macosx.xml" afterPath="$PROJECT_DIR$/build/scripts/macosx.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/maps/maps.xql" afterPath="$PROJECT_DIR$/test/src/xquery/maps/maps.xql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/client/messages.properties" afterPath="$PROJECT_DIR$/src/org/exist/client/messages.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mime-types.xml.tmpl" afterPath="$PROJECT_DIR$/mime-types.xml.tmpl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbbuild.xml" afterPath="$PROJECT_DIR$/nbbuild.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nbproject/project.properties" afterPath="$PROJECT_DIR$/nbproject/project.properties" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/doc/revisions.txt" afterPath="$PROJECT_DIR$/tools/wrapper/doc/revisions.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/start/start.config" afterPath="$PROJECT_DIR$/src/org/exist/start/start.config" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/xquery3/suite.xql" afterPath="$PROJECT_DIR$/test/src/xquery/xquery3/suite.xql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/lib/test.xq" afterPath="$PROJECT_DIR$/src/org/exist/xquery/lib/test.xq" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/extensions/indexes/range/test/src/xquery/types.xql" afterPath="$PROJECT_DIR$/extensions/indexes/range/test/src/xquery/types.xql" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/bin/uninstall.bat" afterPath="$PROJECT_DIR$/tools/wrapper/bin/uninstall.bat" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/util/util.xml" afterPath="$PROJECT_DIR$/test/src/xquery/util/util.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tools/wrapper/doc/wrapper-community-license-1.1.txt" afterPath="$PROJECT_DIR$/tools/wrapper/doc/wrapper-community-license-1.1.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/xquery/xinclude/xinclude.xml" afterPath="$PROJECT_DIR$/test/src/xquery/xinclude/xinclude.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/exist/xquery/lib/xqsuite/xqsuite.xql" afterPath="$PROJECT_DIR$/src/org/exist/xquery/lib/xqsuite/xqsuite.xql" />
     </list>
     <list id="2fe5d5c5-3eab-4c67-bc87-1c5a706e8808" name="New changelist" comment="" />
     <ignored path="$USER_HOME$/.grails/" />
     <ignored path="$USER_HOME$/.griffon/" />
+    <ignored path="$PROJECT_DIR$/build/intellij/" />
+    <ignored path="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/cqlparser/" />
+    <ignored path="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/jfreechart/" />
+    <ignored path="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/memcached/" />
+    <ignored path="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/oracle/" />
+    <ignored path="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/xmlcalabash/" />
+    <ignored path="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/xmpp/" />
+    <ignored path="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/xslfo/" />
+    <ignored path="$PROJECT_DIR$/tools/jetty/logs/" />
+    <ignored path="$PROJECT_DIR$/tools/jetty/work/" />
+    <ignored path="$PROJECT_DIR$/webapp/WEB-INF/data/" />
+    <ignored path="$PROJECT_DIR$/webapp/WEB-INF/logs/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -246,8 +414,8 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
-    <breakpoint_rules converted="true" />
     <ui_properties converted="true" />
+    <breakpoint_rules converted="true" />
   </component>
   <component name="ErrorOptionsConfigurable.UI">
     <option name="proportions">
@@ -304,30 +472,6 @@
       <MyDateState />
     </option>
   </component>
-  <component name="IdeDocumentHistory">
-    <option name="changedFiles">
-      <list>
-        <option value="$PROJECT_DIR$/src/org/exist/util/serializer/SAXSerializer.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/util/serializer/MicroXmlWriter.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/xmldb/LocalUserManagementService.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/collections/Collection.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBSetCollectionPermissions.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/xquery/functions/xmldb/XMLDBSetResourcePermissions.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/util/serializer/DOMStreamer.java" />
-        <option value="$PROJECT_DIR$/test/src/org/exist/xmldb/ResourceTest.java" />
-        <option value="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/httpclient/BaseHTTPClientFunction.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/memtree/SAXAdapter.java" />
-        <option value="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractCompressFunction.java" />
-        <option value="$PROJECT_DIR$/extensions/modules/src/org/exist/xquery/modules/compression/AbstractExtractFunction.java" />
-        <option value="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/org/xml/sax/ContentHandler.class" />
-        <option value="$PROJECT_DIR$/eXist.iws" />
-        <option value="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/xquery/modules/lucene/Optimize.java" />
-        <option value="$PROJECT_DIR$/src/org/exist/util/io/Resource.java" />
-        <option value="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/indexing/lucene/LuceneIndex.java" />
-        <option value="$PROJECT_DIR$/extensions/indexes/lucene/src/org/exist/indexing/lucene/LuceneConfigText.java" />
-      </list>
-    </option>
-  </component>
   <component name="ImportEclipseWorkspace">
     <Eclipse-Importer>
       <path-vars />
@@ -354,7 +498,7 @@
     <option name="CLIENT" value="" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="y" value="22" />
+    <option name="y" value="23" />
     <option name="width" value="1440" />
     <option name="height" value="804" />
   </component>
@@ -540,6 +684,7 @@
       <sortByType PackagesPane="true" Favorites="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
@@ -549,33 +694,8 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="exist-dmitriy" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="eXist" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="exist-dmitriy" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="extensions" />
-              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Favorites">
         <subPane subId="eXist">
           <PATH>
@@ -1035,22 +1155,8 @@
       <option name="PORT" value="5005" />
       <method />
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <method>
-        <option name="Make" enabled="false" />
-      </method>
-    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -1076,6 +1182,21 @@
       <properties />
       <listeners />
       <method />
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method>
+        <option name="Make" enabled="false" />
+      </method>
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" runner="emma" />
@@ -1613,15 +1734,20 @@
       <changelist id="dee4f116-21e7-4919-8859-4bc3127d8801" name="xproc" comment="" />
       <changelist id="54ed1300-8fbd-44d6-8b6e-222a6cf763c0" name="Revert: [ignore]  update idea project" comment="" />
       <created>1258752091419</created>
+      <option name="number" value="Default" />
       <updated>1347368406247</updated>
     </task>
     <task id="LOCAL-00001" summary="[feature] added ant task to extract XQuery module documentation and store into the db. (Pre-Tested Commit)">
       <changelist id="c2cbb0af-73e4-419e-a2b6-663e0bbfd989" name="[feature] added ant task to extract XQuery module documentation and store into the db. (Pre-Tested Commit)" comment="[feature] added ant task to extract XQuery module documentation and store into the db." />
       <created>1278753104546</created>
+      <option name="number" value="00001" />
+      <option name="project" value="LOCAL" />
       <updated>1278753104546</updated>
     </task>
     <task id="LOCAL-00006" summary="Revert: [ignore]  update idea project">
       <created>1347369950102</created>
+      <option name="number" value="00006" />
+      <option name="project" value="LOCAL" />
       <updated>1347369950102</updated>
     </task>
     <option name="localTasksCounter" value="7" />
@@ -1648,16 +1774,16 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1440" height="804" extended-state="6" />
+    <frame x="0" y="23" width="1440" height="804" extended-state="6" />
     <editor active="false" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.494302" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.19141914" sideWeight="0.6141141" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37037036" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="2" y="25" width="822" height="573" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37464386" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
@@ -1667,18 +1793,17 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39780018" sideWeight="0.80755395" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.29756796" sideWeight="0.505698" order="0" side_tool="false" content_ui="combo" x="72" y="49" width="451" height="485" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3803419" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Problems" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="17" side_tool="false" content_ui="tabs" />
-      <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="SBT Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.32963374" sideWeight="0.5" order="19" side_tool="false" content_ui="tabs" x="4" y="2" width="968" height="391" />
       <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.32963374" sideWeight="0.5" order="19" side_tool="false" content_ui="tabs" x="4" y="2" width="968" height="391" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3443435" sideWeight="0.59375" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Log4jMonitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5105634" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3803419" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959481" sideWeight="0.6514132" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.102658115" sideWeight="0.28521127" order="9" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -1686,12 +1811,13 @@
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33333334" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37037036" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" x="2" y="25" width="822" height="573" />
       <window_info id="TeamCity" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.53518516" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.42592594" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
+      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22082585" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="Web Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32570422" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="17" side_tool="false" content_ui="tabs" />
@@ -1787,6 +1913,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
+    <watches-manager />
   </component>
   <component name="XPathView.XPathProjectComponent">
     <history />
@@ -1955,7 +2082,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="825" max-vertical-offset="6255">
           <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1963,7 +2089,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="75" max-vertical-offset="7065">
           <caret line="51" column="13" selection-start-line="51" selection-start-column="13" selection-end-line="51" selection-end-column="13" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2084,7 +2209,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="1110" max-vertical-offset="6015">
           <caret line="55" column="0" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2092,7 +2216,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="75" max-vertical-offset="7065">
           <caret line="51" column="13" selection-start-line="51" selection-start-column="13" selection-end-line="51" selection-end-column="13" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2100,7 +2223,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="2.4517088" vertical-offset="0" max-vertical-offset="2415">
           <caret line="160" column="39" selection-start-line="160" selection-start-column="39" selection-end-line="160" selection-end-column="39" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2108,7 +2230,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-4.14374" vertical-offset="3056" max-vertical-offset="4290">
           <caret line="53" column="7" selection-start-line="53" selection-start-column="7" selection-end-line="53" selection-end-column="7" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2191,4 +2312,3 @@
     </states>
   </component>
 </project>
-

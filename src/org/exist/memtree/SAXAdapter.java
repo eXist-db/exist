@@ -45,6 +45,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
 {
     private MemTreeBuilder          builder;
     private HashMap<String, String> namespaces = null;
+    private boolean replaceAttributeFlag;
 
     public SAXAdapter() {
         setBuilder(new MemTreeBuilder());
@@ -80,6 +81,9 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
     public void startDocument() throws SAXException
     {
         builder.startDocument();
+
+        if (replaceAttributeFlag)
+            builder.setReplaceAttributeFlag(replaceAttributeFlag);
     }
 
 
@@ -238,5 +242,13 @@ public class SAXAdapter implements ContentHandler, LexicalHandler
      */
     public void startDTD( String name, String publicId, String systemId ) throws SAXException
     {
+    }
+
+    public void setReplaceAttributeFlag(boolean replaceAttributeFlag) {
+        this.replaceAttributeFlag = replaceAttributeFlag;
+    }
+
+    public boolean isReplaceAttributeFlag() {
+        return replaceAttributeFlag;
     }
 }

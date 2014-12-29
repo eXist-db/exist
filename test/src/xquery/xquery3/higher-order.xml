@@ -451,43 +451,78 @@ return
         <expected></expected>
     </test>
     <test output="text">
-        <task>fn:map function</task>
+        <task>fn:map function (deprecated)</task>
         <code>fn:map(function($a) { $a * $a }, 1 to 5)</code>
         <expected>1 4 9 16 25</expected>
     </test>
     <test output="text">
-        <task>fn:filter function</task>
+        <task>fn:for-each function</task>
+        <code>fn:for-each(1 to 5, function($a) { $a * $a })</code>
+        <expected>1 4 9 16 25</expected>
+    </test>
+    <test output="text">
+        <task>fn:for-each on strings</task>
+        <code>fn:for-each(("john", "jane"), fn:string-to-codepoints#1)</code>
+        <expected>106 111 104 110 106 97 110 101</expected>
+    </test>
+    <test output="text">
+        <task>fn:for-each with cast</task>
+        <code>fn:for-each(("23", "29"), xs:int#1)</code>
+        <expected>23 29</expected>
+    </test>
+    <test output="text">
+        <task>fn:filter function (wrong argument order: deprecated)</task>
         <code>fn:filter(function($a) {$a mod 2 = 0}, 1 to 10)</code>
         <expected>2 4 6 8 10</expected>
     </test>
     <test output="text">
+        <task>fn:filter function (correct argument order)</task>
+        <code>fn:filter(1 to 10, function($a) {$a mod 2 = 0})</code>
+        <expected>2 4 6 8 10</expected>
+    </test>
+    <test output="text">
         <task>fn:fold-left function 1</task>
-        <code> fn:fold-left(function($a, $b) {($b, $a)}, (), 1 to 5)</code>
+        <code> fn:fold-left(1 to 5, (), function($a, $b) {($b, $a)})</code>
         <expected>5 4 3 2 1</expected>
     </test>
     <test output="text">
         <task>fn:fold-left function 2</task>
-        <code>fold-left(function($a, $b) { $a * $b }, 1, (2,3,5,7))</code>
+        <code>fold-left((2,3,5,7), 1, function($a, $b) { $a * $b })</code>
         <expected>210</expected>
     </test>
     <test output="text">
+        <task>fn:fold-left with partial application</task>
+        <code>fn:fold-left(1 to 5, "", fn:concat(?, ".", ?))</code>
+        <expected>.1.2.3.4.5</expected>
+    </test>
+    <test output="text">
         <task>fn:fold-right function 1</task>
-        <code>fn:fold-right(function($a, $b) { $a + $b }, 0, 1 to 5)</code>
+        <code>fn:fold-right(1 to 5, 0, function($a, $b) { $a + $b })</code>
         <expected>15</expected>
     </test>
     <test output="text">
         <task>fn:fold-right function 2</task>
-        <code>fn:fold-right(function($a, $b) { concat($a, ".", $b) }, "", 1 to 5)</code>
+        <code>fn:fold-right(1 to 5, "", function($a, $b) { concat($a, ".", $b) })</code>
         <expected>1.2.3.4.5.</expected>
     </test>
     <test output="text">
-        <task>fn:map-pairs function</task>
+        <task>fn:map-pairs function (deprecated)</task>
         <code>fn:map-pairs(function($a, $b){10*$a + $b}, 1 to 5, 1 to 5)</code>
         <expected>11 22 33 44 55</expected>
     </test>
+    <test output="text">
+        <task>fn:for-each-pair function</task>
+        <code>fn:for-each-pair(1 to 5, 1 to 5, function($a, $b){10*$a + $b})</code>
+        <expected>11 22 33 44 55</expected>
+    </test>
+    <test output="text">
+        <task>fn:for-each-pair with strings</task>
+        <code>fn:for-each-pair(("a", "b", "c"), ("x", "y", "z"), concat#2)</code>
+        <expected>ax by cz</expected>
+    </test>
     <!-- Partial function applications -->
     <test output="text" id="partial1">
-        <task>Partial function with fn:map</task>
+        <task>Partial function with fn:for-each</task>
         <code><![CDATA[xquery version "3.0";
             
 declare namespace ex="http://exist-db.org/xquery/ex";
@@ -499,7 +534,7 @@ declare function ex:multiply($base, $number) {
 (: Use function reference literal to find function at compile time :)
 let $fMultiply := ex:multiply(10, ?)
 return
-    map($fMultiply, 1 to 10)]]></code>
+    for-each(1 to 10, $fMultiply)]]></code>
         <expected>10 20 30 40 50 60 70 80 90 100</expected>
     </test>
     <test output="text" id="partial2">

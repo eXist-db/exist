@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2012 The eXist Project
+ *  Copyright (C) 2012-2014 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
  */
 package org.exist.launcher;
 
@@ -31,6 +30,8 @@ import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.exist.SystemProperties;
+
 /**
  * Display a splash screen showing the eXist-db logo and a status line.
  *
@@ -38,9 +39,10 @@ import java.util.Observer;
  */
 public class SplashScreen extends JFrame implements Observer {
 
-	private static final long serialVersionUID = -8449133653386075547L;
+    private static final long serialVersionUID = -8449133653386075548L;
 
-	private JLabel statusLabel;
+    private JLabel statusLabel;
+    private JLabel versionLabel;
     private Launcher launcher;
 
     public SplashScreen(Launcher launcher) {
@@ -61,10 +63,26 @@ public class SplashScreen extends JFrame implements Observer {
         imageLabel.setIcon(icon);
         final EmptyBorder border = new EmptyBorder(20, 20, 10, 20);
         imageLabel.setBorder(border);
-        getContentPane().add(imageLabel, BorderLayout.CENTER);
+        getContentPane().add(imageLabel, BorderLayout.NORTH);
+        // version label
+        final StringBuilder builder = new StringBuilder();
+	builder.append("Version ");
+        builder.append(SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
+	if (!"".equals(SystemProperties.getInstance().getSystemProperty("git-commit", ""))) {
+	    builder.append(" (");
+	    builder.append(SystemProperties.getInstance().getSystemProperty("git-commit", "(unknown Git commit ID)"));
+	    builder.append(")");
+	}
+        versionLabel = new JLabel(builder.toString(), SwingConstants.CENTER);
+        versionLabel.setFont(new Font(versionLabel.getFont().getName(), Font.BOLD, 10));
+        versionLabel.setForeground(Color.black);
+        versionLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        versionLabel.setSize(new Dimension(icon.getIconWidth(), 60));
+
+        getContentPane().add(versionLabel, BorderLayout.CENTER);
 
         // message label
-        statusLabel = new JLabel("Launching eXist-db ...", SwingConstants.CENTER);
+        statusLabel = new JLabel("Launching ...", SwingConstants.CENTER);
         statusLabel.setFont(new Font(statusLabel.getFont().getName(), Font.PLAIN, 16));
         statusLabel.setForeground(Color.black);
         statusLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -73,7 +91,7 @@ public class SplashScreen extends JFrame implements Observer {
         getContentPane().add(statusLabel, BorderLayout.SOUTH);
         // show it
         setSize(new Dimension(icon.getIconWidth() + 40, icon.getIconHeight() + 50));
-        //pack();
+        pack();
         this.setLocationRelativeTo(null);
         setVisible(true);
     }

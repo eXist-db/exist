@@ -123,6 +123,15 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
         if (field != null) {
             return field.getType();
         }
-        return Type.STRING;
+        return Type.ITEM;
+    }
+
+    @Override
+    public org.exist.indexing.range.conversion.TypeConverter getTypeConverter(String fieldName) {
+        RangeIndexConfigField field = fields.get(fieldName);
+        if (field != null) {
+            return field.getTypeConverter();
+        }
+        return null;
     }
 }

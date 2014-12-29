@@ -168,34 +168,44 @@ public class XQueryPool extends Object2ObjectHashMap {
 		}
 	}
 
-	private synchronized Object borrowObject(DBBroker broker, Source source) {
-		final int idx = getIndex(source);
-		if (idx < 0) {
-			return null;
-		}
-		final Source key = (Source) keys[idx];
-		int validity = key.isValid(broker);
-		
-		if (validity == Source.UNKNOWN)
-			validity = key.isValid(source);
-		
-		if (validity == Source.INVALID || validity == Source.UNKNOWN) {
-			keys[idx] = REMOVED;
-			values[idx] = null;
-			LOG.debug(source.getKey() + " is invalid");
-			return null;
-		}
-		
-		final Stack stack = (Stack) values[idx];
-		if (stack == null || stack.isEmpty())
-			return null;
+	private Object borrowObject(DBBroker broker, Source source) {
 
-		// now check if the compiled expression is valid
-		// it might become invalid if an imported module has changed.
-		final CompiledXQuery query = (CompiledXQuery) stack.pop();
-		//final XQueryContext context = query.getContext();
-		//context.setBroker(broker);
-		if (!query.isValid()) {
+        CompiledXQuery query = null;
+        Source key = null;
+
+        synchronized (this) {
+            final int idx = getIndex(source);
+            if (idx < 0) {
+                return null;
+            }
+            key = (Source) keys[idx];
+            int validity = key.isValid(broker);
+            if (validity == Source.UNKNOWN)
+                validity = key.isValid(source);
+
+            if (validity == Source.INVALID || validity == Source.UNKNOWN) {
+                keys[idx] = REMOVED;
+                values[idx] = null;
+                LOG.debug(source.getKey() + " is invalid");
+                return null;
+            }
+            final Stack stack = (Stack) values[idx];
+            if (stack == null || stack.isEmpty())
+                return null;
+
+            // now check if the compiled expression is valid
+            // it might become invalid if an imported module has changed.
+            query = (CompiledXQuery) stack.pop();
+            final XQueryContext context = query.getContext();
+            //context.setBroker(broker);
+        }
+
+        // query.isValid() may open collections which in turn tries to acquire
+        // org.exist.storage.lock.ReentrantReadWriteLock. In order to avoid
+        // deadlocks with concurrent queries holding that lock while borrowing
+        // we must not hold onto the XQueryPool while calling isValid().
+
+		if (!query.isValid()) synchronized (this) {
 			// the compiled query is no longer valid: one of the imported
 			// modules may have changed
 			remove(key);

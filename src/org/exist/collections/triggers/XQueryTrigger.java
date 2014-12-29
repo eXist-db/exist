@@ -472,7 +472,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
         	return compiledQuery;
         } catch(final XPathException e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.warn(e.getMessage());
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PEPARE_EXCEIPTION_MESSAGE, e);
