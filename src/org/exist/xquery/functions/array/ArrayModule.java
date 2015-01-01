@@ -20,7 +20,15 @@ public class ArrayModule extends AbstractInternalModule {
             new FunctionDef(ArrayFunction.signatures[2], ArrayFunction.class),
             new FunctionDef(ArrayFunction.signatures[3], ArrayFunction.class),
             new FunctionDef(ArrayFunction.signatures[4], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[5], ArrayFunction.class)
+            new FunctionDef(ArrayFunction.signatures[5], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[6], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[7], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[8], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[9], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[10], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[11], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[12], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[13], ArrayFunction.class)
     };
 
     public ArrayModule(Map<String, List<? extends Object>> parameters) {
@@ -44,6 +52,6 @@ public class ArrayModule extends AbstractInternalModule {
 
     @Override
     public String getReleaseVersion() {
-        return "2.2";
+        return "2.2.1";
     }
 }

@@ -91,8 +91,37 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return new ArrayType(context, RT.subvec(vector, start, end));
     }
 
+    public ArrayType remove(int position) throws XPathException {
+        ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
+
+        Sequence item;
+        for(int i = 0; i < vector.length(); i++) {
+            if (position != i) {
+                item = vector.nth(i);
+                ret = ret.conj(item);
+            }
+        }
+
+        return new ArrayType(context, (IPersistentVector<Sequence>)ret.persistent());
+    }
+
+    public static ArrayType join(XQueryContext context, List<ArrayType> arrays) {
+        final ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
+        for (ArrayType type: arrays) {
+            for (ISeq<Sequence> seq = type.vector.seq(); seq != null; seq = seq.next()) {
+                ret.conj(seq.first());
+            }
+        }
+        return new ArrayType(context, (IPersistentVector<Sequence>)ret.persistent());
+    }
+
     public ArrayType append(Sequence seq) {
         return new ArrayType(this.context, vector.cons(seq));
+    }
+
+    public ArrayType reverse() {
+        final IPersistentVector<Sequence> rvec = PersistentVector.create(vector.rseq());
+        return new ArrayType(this.context, rvec);
     }
 
     public Sequence asSequence() throws XPathException {
@@ -135,6 +164,43 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     @Override
     public int getItemType() {
         return Type.ARRAY;
+    }
+
+    public ArrayType forEach(FunctionReference ref) throws XPathException {
+        final ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
+        final Sequence fargs[] = new Sequence[1];
+        for (ISeq<Sequence> seq = vector.seq(); seq != null; seq = seq.next()) {
+            fargs[0] = seq.first();
+            ret.conj(ref.evalFunction(null, null, fargs));
+        }
+        return new ArrayType(context, (IPersistentVector<Sequence>)ret.persistent());
+    }
+
+    public ArrayType filter(FunctionReference ref) throws XPathException {
+        final ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
+        final Sequence fargs[] = new Sequence[1];
+        for (ISeq<Sequence> seq = vector.seq(); seq != null; seq = seq.next()) {
+            fargs[0] = seq.first();
+            final Sequence fret = ref.evalFunction(null, null, fargs);
+            if (fret.effectiveBooleanValue()) {
+                ret.conj(fargs[0]);
+            }
+        }
+        return new ArrayType(context, (IPersistentVector<Sequence>)ret.persistent());
+    }
+
+    public Sequence foldLeft(FunctionReference ref, Sequence zero) throws XPathException {
+        for (ISeq<Sequence> seq = vector.seq(); seq != null; seq = seq.next()) {
+            zero = ref.evalFunction(null, null, new Sequence[] { zero, seq.first() });
+        }
+        return zero;
+    }
+
+    public Sequence foldRight(FunctionReference ref, Sequence zero) throws XPathException {
+        for (ISeq<Sequence> seq = vector.rseq(); seq != null; seq = seq.next()) {
+            zero = ref.evalFunction(null, null, new Sequence[] { zero, seq.first() });
+        }
+        return zero;
     }
 
     /**

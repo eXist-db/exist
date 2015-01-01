@@ -172,6 +172,7 @@ public class ErrorCodes {
     public static ErrorCode FOTY0013 = new W3CErrorCode("FOTY0013", "The argument to fn:data() contains a function item.");
 
     public static ErrorCode FOAY0001 = new W3CErrorCode("FOAY0001", "Array index out of bounds.");
+    public static ErrorCode FOAY0002 = new W3CErrorCode("FOAY0002", "Negative array length.");
 
     /* XSLT 2.0 and XQuery 1.0 Serialization http://www.w3.org/TR/xslt-xquery-serialization/#serial-err */
     public static ErrorCode SENR0001 = new W3CErrorCode("SENR0001", "It is an error if an item in S6 in sequence normalization is an attribute node or a namespace node.");
