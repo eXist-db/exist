@@ -149,7 +149,7 @@ imaginaryTokenDefinitions
 	FUNCTION_INLINE 
 	FUNCTION_TEST
 	MAP_TEST
-	MAP_LOOKUP
+	LOOKUP
 	ARRAY
 	ARRAY_TEST
 	PROLOG
@@ -1145,21 +1145,36 @@ postfixExpr throws XPathException:
 		|
 		(LPAREN) => dynamicFunCall
 		|
-		(QUESTION) => mapLookup
+		(QUESTION) => lookup
 	)*
 	;
 
-mapLookup throws XPathException
+lookup throws XPathException
 { String name= null; }:
-    QUESTION! (
+    q:QUESTION! (
         name=ncnameOrKeyword
-        { #mapLookup = #(#[MAP_LOOKUP, name]); }
+        {
+        	#lookup = #(#[LOOKUP, name]);
+        	#lookup.copyLexInfo(#q);
+		}
         |
-        s:STRING_LITERAL
-        { #mapLookup = #(#[MAP_LOOKUP, s.getText()]); }
+        pos:INTEGER_LITERAL
+        {
+        	#lookup = #(#[LOOKUP, "?"], #pos);
+        	#lookup.copyLexInfo(#q);
+		}
         |
         paren:parenthesizedExpr
-        { #mapLookup = #(#[MAP_LOOKUP, "?"], #paren); }
+        {
+        	#lookup = #(#[LOOKUP, "?"], #paren);
+        	#lookup.copyLexInfo(#q);
+		}
+        |
+        STAR
+        {
+        	#lookup = #(#[LOOKUP, "?*"]);
+        	#lookup.copyLexInfo(#q);
+        }
     )
     ;
 
@@ -1194,7 +1209,7 @@ primaryExpr throws XPathException
 	|
 	(eqName LPAREN ) => functionCall
 	|
-	( QUESTION ) => mapLookup
+	( QUESTION ) => lookup
 	|
 	contextItemExpr
 	|
@@ -1217,14 +1232,16 @@ mapAssignment throws XPathException
 
 arrayConstructor throws XPathException
     :
-    LPPAREN! (exprSingle ( COMMA! exprSingle )* )? RPPAREN!
+    lp:LPPAREN! (exprSingle ( COMMA! exprSingle )* )? RPPAREN!
     {
         #arrayConstructor = #(#[ARRAY, "["], #arrayConstructor);
+        #arrayConstructor.copyLexInfo(#lp);
     }
     |
-    "array"! LCURLY! (expr )? RCURLY!
+    a:"array"! LCURLY! (expr )? RCURLY!
     {
         #arrayConstructor = #(#[ARRAY, "array"], #arrayConstructor);
+        #arrayConstructor.copyLexInfo(#a);
     }
     ;
 

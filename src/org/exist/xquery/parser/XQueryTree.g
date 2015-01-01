@@ -52,7 +52,6 @@ header {
 	import org.exist.xquery.update.*;
 	import org.exist.storage.ElementValue;
 	import org.exist.xquery.functions.map.MapExpr;
-	import org.exist.xquery.functions.map.MapLookup;
 	import org.exist.xquery.functions.array.ArrayConstructor;
 }
 
@@ -1910,7 +1909,7 @@ throws PermissionDeniedException, EXistException, XPathException
     step=functionDecl [path]
 	{ path.add(step); }
 	|
-	step = mapLookup [null]
+	step = lookup [null]
 	step=postfixExpr [step]
 	{ path.add(step); }
 	;
@@ -2364,7 +2363,7 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
     (
-        step = mapLookup [step]
+        step = lookup [step]
         |
 		#(
         	PREDICATE
@@ -2418,22 +2417,34 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	;
 
-mapLookup [Expression leftExpr]
+lookup [Expression leftExpr]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
 :
     #(
-        lookup:MAP_LOOKUP
+        lookup:LOOKUP
         {
             PathExpr lookupExpr = new PathExpr(context);
+            int position = 0;
         }
-        ( expr [lookupExpr] )*
+        (
+			pos:INTEGER_VALUE { position = Integer.parseInt(pos.getText()); }
+			|
+			( expr [lookupExpr] )+
+		)?
         {
             if (lookupExpr.getLength() == 0) {
-                step = new MapLookup(context, leftExpr, lookup.getText());
+            	if (lookup.getText().equals("?*")) {
+            		step = new Lookup(context, leftExpr);
+            	} else if (position == 0) {
+                	step = new Lookup(context, leftExpr, lookup.getText());
+                } else {
+					step = new Lookup(context, leftExpr, position);
+                }
             } else {
-                step = new MapLookup(context, leftExpr, lookupExpr);
+                step = new Lookup(context, leftExpr, lookupExpr);
             }
+            step.setASTNode(lookup);
         }
     )
     ;
