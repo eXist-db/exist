@@ -134,8 +134,14 @@ function arr:nested2() {
 
 declare
     %test:args(2)
-function arr:size() {
+function arr:size1() {
     array:size([<p>test</p>, 55])
+};
+
+declare
+    %test:args(1)
+function arr:size2() {
+    array:size([[]])
 };
 
 declare
@@ -194,11 +200,266 @@ function arr:tail-empty() {
 
 declare
     %test:args(2)
-    %test:assertEquals("b", 3)
+    %test:assertEquals("b", "c", "d")
+    %test:args(5)
+    %test:assertEmpty
 function arr:subarray1($start as xs:int) {
     let $a := array:subarray(["a", "b", "c", "d"], $start)
     return
-        ($a(1), array:size($a))
+        $a?*
+};
+
+declare
+    %test:args(5, 0)
+    %test:assertEmpty
+    %test:args(2, 0)
+    %test:assertEmpty
+    %test:args(2, 1)
+    %test:assertEquals("b")
+    %test:args(2, 2)
+    %test:assertEquals("b", "c")
+    %test:args(4, 1)
+    %test:assertEquals("d")
+    %test:args(1, 2)
+    %test:assertEquals("a", "b")
+    %test:args(1, 5)
+    %test:assertError("FOAY0001")
+    %test:args(0, 1)
+    %test:assertError("FOAY0001")
+    %test:args(1, "-1")
+    %test:assertError("FOAY0002")
+function arr:subarray2($start as xs:int, $length as xs:int) {
+    let $a := array:subarray(["a", "b", "c", "d"], $start, $length)
+    return
+        $a?*
+};
+
+declare 
+    %test:args(1)
+    %test:assertEquals("b", "c", "d")
+    %test:args(2)
+    %test:assertEquals("a", "c", "d")
+    %test:args(4)
+    %test:assertEquals("a", "b", "c")
+    %test:args(0)
+    %test:assertError("FOAY0001")
+    %test:args(5)
+    %test:assertError("FOAY0001")
+function arr:remove1($pos as xs:int) {
+    array:remove(["a", "b", "c", "d"], $pos)?*
+};
+
+declare 
+    %test:assertEmpty
+function arr:remove2() {
+    array:remove(["a"], 1)?*
+};
+
+declare 
+    %test:assertEquals("d", "c", "b", "a")
+function arr:reverse1() {
+    array:reverse(["a", "b", "c", "d"])?*
+};
+
+declare 
+    %test:assertEquals("c", "d", "a", "b")
+function arr:reverse2() {
+    array:reverse([("a", "b"), ("c", "d")])?*
+};
+
+declare 
+    %test:assertEquals("1", "2", "3", "4", "5")
+function arr:reverse3() {
+    array:reverse([(1 to 5)])?*
+};
+
+declare 
+    %test:assertEmpty
+function arr:reverse4() {
+    array:reverse([])?*
+};
+
+declare 
+    %test:assertEmpty
+function arr:join1() {
+    array:join(())?*
+};
+
+declare 
+    %test:assertEquals("a", "b", "c", "d")
+function arr:join2() {
+    array:join((["a", "b"], ["c", "d"], []))?*
+};
+
+declare 
+    %test:assertEquals(5)
+function arr:join3() {
+    array:size(array:join((["a", "b"], ["c", "d"], [["e", "f"]])))
+};
+
+declare 
+    %test:assertEquals("A", "B", "C", "D")
+function arr:for-each1() {
+    array:for-each(["a", "b", "c", "d"], upper-case#1)?*
+};
+
+declare 
+    %test:assertEquals("false", "false", "true", "true")
+function arr:for-each2() {
+    array:for-each(["a", "b", 1, 2], function($z) { $z instance of xs:integer })?*
+};
+
+declare 
+    %test:assertEquals("1", "2")
+function arr:filter1() {
+    array:filter(["a", "b", 1, 2], function($z) { $z instance of xs:integer })?*
+};
+
+declare 
+    %test:assertEquals("a", "b", 1)
+function arr:filter2() {
+    array:filter(["a", "b", "", 0, 1], boolean#1)?*
+};
+
+declare 
+    %test:assertEquals("the cat", "on the mat")
+function arr:filter3() {
+    array:filter(["the cat", "sat", "on the mat"], function($s) { count(tokenize($s, " ")) gt 1 })?*
+};
+
+declare 
+    %test:assertFalse
+function arr:fold-left1() {
+    array:fold-left([true(), true(), false()], true(), function($x, $y) { $x and $y })
+};
+
+declare 
+    %test:assertTrue
+function arr:fold-left2() {
+    array:fold-left([true(), true(), false()], false(), function($x, $y) { $x or $y })
+};
+
+declare 
+    %test:assertEquals(1)
+function arr:fold-left3() {
+    array:fold-left([], 1, function($x, $y) { $x + $y })
+};
+
+declare 
+    %test:assertEquals(8)
+function arr:fold-left4() {
+    array:fold-left(["abc", "def", "gh"], 0, function($x, $y) { $x + string-length($y) })
+};
+
+declare 
+    %test:assertEquals("abcdefgh")
+    %test:pending
+function arr:fold-left5() {
+    array:fold-left(["abc", "def", "gh"], "a", function($x, $y) { $x || $y })
+};
+
+declare 
+    %test:assertEquals(1)
+function arr:fold-left6() {
+    array:fold-left([1, 2], (), function($x, $y) { [$x, $y] })?1?2
+};
+
+declare 
+    %test:assertFalse
+function arr:fold-right1() {
+    array:fold-right([true(), true(), false()], true(), function($x, $y) { $x and $y })
+};
+
+declare 
+    %test:assertTrue
+function arr:fold-right2() {
+    array:fold-right([true(), true(), false()], false(), function($x, $y) { $x or $y })
+};
+
+declare 
+    %test:assertEquals(2)
+function arr:fold-right3() {
+    array:fold-right([1, 2, 3], (), function($x, $y) { [$x, $y] })?2?1
+};
+
+declare 
+    %test:assertEquals(5, 4, 3, 2, 1)
+function arr:fold-right4() {
+    array:fold-right(
+        array { 1 to 5 },
+        (),
+        function($a, $b) { $b, $a }
+    )
+};
+
+declare
+    %test:assertEquals("AB", "BC", "CD")
+function arr:for-each-pair1() {
+    let $a := ["A", "B", "C", "D"]
+    return
+        array:for-each-pair($a, array:tail($a), concat#2)?*
+};
+
+declare 
+    %test:assertEquals(5, 7, 9)
+function arr:for-each-pair2() {
+    array:for-each-pair(
+        array { 1 to 3 },
+        array { 4 to 6 },
+        function($a, $b) { $a + $b }
+    )?*
+};
+
+declare 
+    %test:assertEmpty
+function arr:for-each-pair3() {
+    array:for-each-pair(
+        [],
+        array { 4 to 6 },
+        function($a, $b) { $a + $b }
+    )?*
+};
+
+declare 
+    %test:assertEquals(1, 4, 6, 5, 3)
+function arr:flatten1() {
+    array:flatten([1, 4, 6, 5, 3])
+};
+
+declare 
+    %test:assertEquals(1, 2, 5, 10, 11, 12, 13)
+function arr:flatten2() {
+    array:flatten(([1, 2, 5], [[10, 11], 12], [], 13))
+};
+
+declare 
+    %test:assertEquals(1, 1, 0, 1, 1)
+function arr:flatten3() {
+    array:flatten((1, [(1, 0), (1, 1)]))
+};
+
+declare 
+    %test:assertEmpty
+function arr:flatten4() {
+    array:flatten(())
+};
+
+declare 
+    %test:assertEquals("a", "b", "x", "c", "d")
+function arr:insert-before1() {
+    array:insert-before(["a", "b", "c", "d"], 3, "x")?*
+};
+
+declare 
+    %test:assertEquals("x", "y")
+function arr:insert-before2() {
+    array:insert-before(["a", "b", "c", "d"], 3, ("x", "y"))?3
+};
+
+declare 
+    %test:assertEquals("a", "b", "c", "d", "x")
+function arr:insert-before3() {
+    array:insert-before(["a", "b", "c", "d"], 5, "x")?*
 };
 
 declare 
