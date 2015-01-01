@@ -1,13 +1,11 @@
 package org.exist.xquery.functions.array;
 
-import com.github.krukow.clj_ds.TransientVector;
 import com.github.krukow.clj_lang.*;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -15,7 +13,7 @@ import java.util.List;
  * {@link FunctionReference} to allow the item to be called in a dynamic function
  * call.
  */
-public class ArrayType extends FunctionReference {
+public class ArrayType extends FunctionReference implements Lookup.LookupSupport {
 
     // the signature of the function which is evaluated if the map is called as a function item
     private static final FunctionSignature ACCESSOR =
@@ -62,6 +60,23 @@ public class ArrayType extends FunctionReference {
 
     public Sequence get(int n) {
         return vector.nth(n);
+    }
+
+    @Override
+    public Sequence get(AtomicValue key) throws XPathException {
+        if (!Type.subTypeOf(key.getType(), Type.INTEGER)) {
+            throw new XPathException(ErrorCodes.XPTY0004, "position argument for array lookup must be a positive integer");
+        }
+        final int pos = ((IntegerValue)key).getInt();
+        if (pos <= 0 || pos > getSize()) {
+            throw new XPathException(ErrorCodes.XPTY0004, "position argument for array lookup must be > 0 and < array:size");
+        }
+        return get(pos - 1);
+    }
+
+    @Override
+    public Sequence keys() throws XPathException {
+        return asSequence();
     }
 
     public Sequence tail() throws XPathException {

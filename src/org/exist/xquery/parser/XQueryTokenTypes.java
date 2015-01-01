@@ -56,7 +56,7 @@ public interface XQueryTokenTypes {
 	int FUNCTION_INLINE = 32;
 	int FUNCTION_TEST = 33;
 	int MAP_TEST = 34;
-	int MAP_LOOKUP = 35;
+	int LOOKUP = 35;
 	int ARRAY = 36;
 	int ARRAY_TEST = 37;
 	int PROLOG = 38;
@@ -230,9 +230,9 @@ public interface XQueryTokenTypes {
 	int LITERAL_ancestor = 206;
 	// "ancestor-or-self" = 207
 	// "preceding-sibling" = 208
-	int DOUBLE_LITERAL = 209;
-	int DECIMAL_LITERAL = 210;
-	int INTEGER_LITERAL = 211;
+	int INTEGER_LITERAL = 209;
+	int DOUBLE_LITERAL = 210;
+	int DECIMAL_LITERAL = 211;
 	// "schema-element" = 212
 	int END_TAG_START = 213;
 	int QUOT = 214;
