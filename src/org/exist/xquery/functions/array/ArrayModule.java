@@ -28,7 +28,10 @@ public class ArrayModule extends AbstractInternalModule {
             new FunctionDef(ArrayFunction.signatures[10], ArrayFunction.class),
             new FunctionDef(ArrayFunction.signatures[11], ArrayFunction.class),
             new FunctionDef(ArrayFunction.signatures[12], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[13], ArrayFunction.class)
+            new FunctionDef(ArrayFunction.signatures[13], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[14], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[15], ArrayFunction.class),
+            new FunctionDef(ArrayFunction.signatures[16], ArrayFunction.class)
     };
 
     public ArrayModule(Map<String, List<? extends Object>> parameters) {
