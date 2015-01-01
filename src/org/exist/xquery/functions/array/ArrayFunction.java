@@ -89,6 +89,16 @@ public class ArrayFunction extends BasicFunction {
                     new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members except the one at $position")
             ),
             new FunctionSignature(
+                    new QName("insert-before", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
+                    "Returns an array containing all the members of the supplied array, with one additional member at a specified position.",
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
+                            new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "Position at which the new member is inserted"),
+                            new FunctionParameterSequenceType("member", Type.ITEM, Cardinality.ZERO_OR_MORE, "The member to insert")
+                    },
+                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members plus the new member")
+            ),
+            new FunctionSignature(
                     new QName("reverse", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all the members of the supplied array, but in reverse order.",
                     new SequenceType[] {
@@ -109,7 +119,7 @@ public class ArrayFunction extends BasicFunction {
                     "Returns an array whose size is the same as array:size($array), in which each member is computed by applying " +
                     "$function to the corresponding member of $array.",
                     new SequenceType[] {
-                        new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.ZERO_OR_MORE, "The array to process"),
+                        new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
                         new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function called on each member of the array")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The resulting array")
@@ -118,7 +128,7 @@ public class ArrayFunction extends BasicFunction {
                     new QName("filter", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing those members of the $array for which $function returns true.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.ZERO_OR_MORE, "The array to process"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
                             new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function called on each member of the array")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The resulting array")
@@ -127,7 +137,7 @@ public class ArrayFunction extends BasicFunction {
                     new QName("fold-left", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Evaluates the supplied function cumulatively on successive values of the supplied array.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.ZERO_OR_MORE, "The array to process"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
                             new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "Start value"),
                             new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to call")
                     },
@@ -137,11 +147,30 @@ public class ArrayFunction extends BasicFunction {
                     new QName("fold-right", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Evaluates the supplied function cumulatively on successive values of the supplied array.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.ZERO_OR_MORE, "The array to process"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
                             new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "Start value"),
                             new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to call")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The result of the cumulative function call")
+            ),
+            new FunctionSignature(
+                    new QName("for-each-pair", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
+                    "Returns an array obtained by evaluating the supplied function once for each pair of members at the same position in the two " +
+                    "supplied arrays.",
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("array1", Type.ARRAY, Cardinality.EXACTLY_ONE, "The first array to process"),
+                            new FunctionParameterSequenceType("array1", Type.ARRAY, Cardinality.EXACTLY_ONE, "The second array to process"),
+                            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to call for each pair")
+                    },
+                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The resulting array")
+            ),
+            new FunctionSignature(
+                    new QName("flatten", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
+                    "Replaces an array appearing in a supplied sequence with the members of the array, recursively.",
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The sequence to flatten")
+                    },
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The resulting sequence")
             )
     };
 
@@ -165,6 +194,10 @@ public class ArrayFunction extends BasicFunction {
                 arrays.add((ArrayType) i.nextItem());
             }
             return ArrayType.join(context, arrays);
+        } else if (isCalledAs("flatten")) {
+            final ValueSequence result = new ValueSequence(args[0].getItemCount());
+            ArrayType.flatten(args[0], result);
+            return result;
         } else {
             final ArrayType array = (ArrayType) args[0].itemAt(0);
             if (isCalledAs("size")) {
@@ -207,26 +240,33 @@ public class ArrayFunction extends BasicFunction {
                     throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to remove (" + position + ") is out of bounds");
                 }
                 return array.remove(position - 1);
+            } else if (isCalledAs("insert-before")) {
+                final int position = ((IntegerValue) args[1].itemAt(0)).getInt();
+                if (position < 1 || position > array.getSize() + 1) {
+                    throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to insert (" + position + ") is out of bounds");
+                }
+                return array.insertBefore(position - 1, args[2]);
             } else if (isCalledAs("reverse")) {
                 return array.reverse();
             } else if (isCalledAs("for-each")) {
-                final FunctionReference ref = (FunctionReference) args[1].itemAt(0);
-                ref.analyze(cachedContextInfo);
-                return array.forEach(ref);
+                return array.forEach(getFunction(args[1]));
             } else if (isCalledAs("filter")) {
-                final FunctionReference ref = (FunctionReference) args[1].itemAt(0);
-                ref.analyze(cachedContextInfo);
-                return array.filter(ref);
+                return array.filter(getFunction(args[1]));
             } else if (isCalledAs("fold-left")) {
-                final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-                ref.analyze(cachedContextInfo);
-                return array.foldLeft(ref, args[1]);
+                return array.foldLeft(getFunction(args[2]), args[1]);
             } else if (isCalledAs("fold-right")) {
-                final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-                ref.analyze(cachedContextInfo);
-                return array.foldRight(ref, args[1]);
+                return array.foldRight(getFunction(args[2]), args[1]);
+            } else if (isCalledAs("for-each-pair")) {
+                final ArrayType array2 = (ArrayType) args[1].itemAt(0);
+                return array.forEachPair(array2, getFunction(args[2]));
             }
         }
         throw new XPathException(this, "Unknown function: " + getName());
+    }
+
+    private FunctionReference getFunction(Sequence arg) throws XPathException {
+        final FunctionReference ref = (FunctionReference) arg.itemAt(0);
+        ref.analyze(cachedContextInfo);
+        return ref;
     }
 }
