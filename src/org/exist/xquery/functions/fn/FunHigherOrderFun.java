@@ -1,13 +1,8 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
+import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -105,7 +100,17 @@ public class FunHigherOrderFun extends BasicFunction {
 	        		"result of the map-pairs operation"),
             FN_FOR_EACH_PAIR
         ),
-        FN_FOR_EACH_PAIR
+        FN_FOR_EACH_PAIR,
+		new FunctionSignature(
+			new QName("apply", Function.BUILTIN_FUNCTION_NS),
+			"Processes the supplied sequence from right to left, applying the supplied function repeatedly to each " +
+					"item in turn, together with an accumulated result value.",
+			new SequenceType[] {
+				new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call"),
+				new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "an array containing the arguments to pass to the function")
+			},
+			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
+				"return value of the function call")),
 	};
     
 	private AnalyzeContextInfo cachedContextInfo;
@@ -211,7 +216,17 @@ public class FunHigherOrderFun extends BasicFunction {
                         new Sequence[] { i1.nextItem().toSequence(), i2.nextItem().toSequence() });
                 result.addAll(r);
             }
-        }
+        } else if (isCalledAs("apply")) {
+			final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
+			ref.analyze(cachedContextInfo);
+			final ArrayType array = (ArrayType) args[1].itemAt(0);
+			if (!ref.getSignature().isOverloaded() && ref.getSignature().getArgumentCount() != array.getSize()) {
+				throw new XPathException(this, ErrorCodes.FOAP0001, "Number of arguments supplied to fn:apply does not match function signature. Expected: " +
+					ref.getSignature().getArgumentCount() + ", got: " + array.getSize());
+			}
+			final Sequence[] fargs = array.toArray();
+			return ref.evalFunction(null, null, fargs);
+		}
 		return result;
 	}
 
