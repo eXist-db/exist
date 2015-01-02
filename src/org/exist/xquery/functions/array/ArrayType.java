@@ -148,6 +148,11 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return result;
     }
 
+    public Sequence[] toArray() {
+        final Sequence[] array = new Sequence[vector.length()];
+        return (Sequence[]) RT.seqToPassedArray(vector.seq(), array);
+    }
+
     public int getSize() {
         return vector.length();
     }

@@ -473,3 +473,60 @@ function arr:array-type1() {
             default return
                 "no array"
 };
+
+declare 
+    %test:assertEquals("<t>test</t>")
+function arr:apply-inline() {
+    let $fn := function($a as xs:string, $b as xs:int, $c as element()) {
+        $c
+    }
+    return
+        apply($fn, ["a", 1, <t>test</t>])
+};
+
+declare
+    %test:assertEquals("abc")
+function arr:apply-internal() {
+    apply(concat#3, ["a", "b", "c"])
+};
+
+declare 
+    %test:assertEquals("a", 1)
+function arr:apply-param-array() {
+    let $fn := function($a as array(*)) {
+        $a?*
+    }
+    return
+        apply($fn, [["a", 1]])
+};
+
+declare 
+    %test:assertEquals("key")
+function arr:apply-param-map() {
+    let $fn := function($m as map(*)) {
+        $m?*
+    }
+    return
+        apply($fn, [map { "key": 1 }])
+};
+
+declare 
+    %test:assertEquals(3)
+function arr:apply-param-seq() {
+    let $fn := function($s as item()*) {
+        count($s)
+    }
+    return
+        apply($fn, [(1, 2, 3)])
+};
+
+declare 
+    %test:assertEquals("HELLO WORLD")
+function arr:apply-closure() {
+    let $s := "Hello world"
+    let $fn := function() {
+        upper-case($s)
+    }
+    return
+        apply($fn, [])
+};

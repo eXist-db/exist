@@ -200,7 +200,7 @@ public class ErrorCodes {
 	
 	public static final ErrorCode FODC0006 = new W3CErrorCode("FODC0006", "String passed to fn:parse-xml is not a well-formed XML document.");
 	
-	
+	public static final ErrorCode FOAP0001 = new W3CErrorCode("FOAP0001", "Wrong number of arguments");
     
     /* eXist specific XQuery and XPath errors
      *
