@@ -19,6 +19,7 @@ extensions/contentextraction/lib/
 extensions/lib/
 extensions/modules/lib/
 extensions/security/oauth/lib/
+extensions/security/openid/lib/
 installer/apps/
 installer/eXist-db-setup-*.jar
 installer/install.xml
