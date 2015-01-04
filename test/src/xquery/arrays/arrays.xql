@@ -7,6 +7,21 @@ module namespace arr="http://exist-db.org/test/arrays";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare 
+    %test:setUp
+function arr:setup() {
+    let $json := '[{"key1": "value1", "key2": "value2", "key1": "value3"}]'
+    let $coll := xmldb:create-collection("/db", "array-test")
+    return
+        xmldb:store($coll, "test.json", $json)
+};
+
+(:declare:)
+(:    %test:tearDown:)
+(:function arr:cleanup() {:)
+(:    xmldb:remove("/db/array-test"):)
+(:};:)
+
+declare 
     %test:args(1)
     %test:assertEquals(13)
     %test:args(3)
@@ -586,4 +601,22 @@ declare
     %test:assertXPath("$result?k1 = 'v2'")
 function arr:parse-json-duplicates($json as xs:string, $duplicates as xs:string) {
     parse-json($json, map { "duplicates": $duplicates })
+};
+
+declare 
+    %test:assertXPath("$result?1?key2 = 'value2'")
+function arr:json-doc-db() {
+    json-doc("/db/array-test/test.json")
+};
+
+declare
+    %test:assertError("FOJS0003")
+function arr:json-doc-options() {
+    json-doc("/db/array-test/test.json", map { "duplicates": "reject" })
+};
+
+declare 
+    %test:assertXPath("$result?1?key2 = 'value2'")
+function arr:json-doc-http() {
+    json-doc("http://localhost:8080/exist/rest/db/array-test/test.json")
 };

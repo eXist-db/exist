@@ -206,6 +206,8 @@ public class ErrorCodes {
     public static ErrorCode FOJS0001 = new W3CErrorCode("FOJS0001", "JSON syntax error.");
     public static ErrorCode FOJS0002 = new W3CErrorCode("FOJS0002", "JSON invalid character.");
     public static ErrorCode FOJS0003 = new W3CErrorCode("FOJS0003", "JSON duplicate keys.");
+
+    public static ErrorCode FOUT1170 = new W3CErrorCode("FOUT1170", "Invalid $href argument to fn:unparsed-text() (etc.)");
     
     /* eXist specific XQuery and XPath errors
      *
