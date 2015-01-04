@@ -530,3 +530,60 @@ function arr:apply-closure() {
     return
         apply($fn, [])
 };
+
+declare 
+    %test:args('"a"')
+    %test:assertEquals("a")
+    %test:args("2")
+    %test:assertEquals(2)
+    %test:args("true")
+    %test:assertTrue
+    %test:args("false")
+    %test:assertFalse
+    %test:args("null")
+    %test:assertEmpty
+    %test:args("[]")
+    %test:assertXPath("array:size($result) = 0")
+    %test:args('[1, "a"]')
+    %test:assertXPath("$result?2 = 'a'")
+    %test:args('[1, ["a", "b"]]')
+    %test:assertXPath("$result?2?2 = 'b'")
+    %test:args('[1, []]')
+    %test:assertXPath("array:size($result?2) = 0")
+    %test:args('[1, null]')
+    %test:assertXPath("array:size($result) = 2")
+    %test:args('{"key1": "val1", "key2": "val2"}')
+    %test:assertXPath("$result?key2 = 'val2'")
+    %test:args('{"key1": "val1", "key2": [1, 2]}')
+    %test:assertXPath("$result?key2?2 = 2")
+    %test:args('{"key1": null, "key2": "val2"}')
+    %test:assertXPath("empty($result?key1)")
+    %test:args('{key: "value"}')
+    %test:assertError("FOJS0001")
+    %test:args("{key: 'value'}")
+    %test:assertError("FOJS0001")
+    %test:args('{"k1": "v1", "k1": "v2"}')
+    %test:assertXPath("$result?k1 = 'v2'")
+function arr:parse-json($json as xs:string) {
+    parse-json($json)
+};
+
+declare 
+    %test:args('{key: "value"}')
+    %test:assertXPath("$result?key = 'value'")
+    %test:args("{'key': 'value'}")
+    %test:assertXPath("$result?key = 'value'")
+function arr:parse-json-liberal($json as xs:string) {
+    parse-json($json, map { "liberal": true() })
+};
+
+declare 
+    %test:args('{"k1": "v1", "k1": "v2"}', "reject")
+    %test:assertError("FOJS0003")
+    %test:args('{"k1": "v1", "k1": "v2"}', "use-first")
+    %test:assertXPath("$result?k1 = 'v1'")
+    %test:args('{"k1": "v1", "k1": "v2"}', "use-last")
+    %test:assertXPath("$result?k1 = 'v2'")
+function arr:parse-json-duplicates($json as xs:string, $duplicates as xs:string) {
+    parse-json($json, map { "duplicates": $duplicates })
+};

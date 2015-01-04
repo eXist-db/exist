@@ -171,9 +171,6 @@ public class ErrorCodes {
     public static ErrorCode FOTY0012 = new W3CErrorCode("FOTY0012", "Argument node does not have a typed value.");
     public static ErrorCode FOTY0013 = new W3CErrorCode("FOTY0013", "The argument to fn:data() contains a function item.");
 
-    public static ErrorCode FOAY0001 = new W3CErrorCode("FOAY0001", "Array index out of bounds.");
-    public static ErrorCode FOAY0002 = new W3CErrorCode("FOAY0002", "Negative array length.");
-
     /* XSLT 2.0 and XQuery 1.0 Serialization http://www.w3.org/TR/xslt-xquery-serialization/#serial-err */
     public static ErrorCode SENR0001 = new W3CErrorCode("SENR0001", "It is an error if an item in S6 in sequence normalization is an attribute node or a namespace node.");
     public static ErrorCode SERE0003 = new W3CErrorCode("SERE0003", "It is an error if the serializer is unable to satisfy the rules for either a well-formed XML document entity or a well-formed XML external general parsed entity, or both, except for content modified by the character expansion phase of serialization.");
@@ -201,6 +198,14 @@ public class ErrorCodes {
 	public static final ErrorCode FODC0006 = new W3CErrorCode("FODC0006", "String passed to fn:parse-xml is not a well-formed XML document.");
 	
 	public static final ErrorCode FOAP0001 = new W3CErrorCode("FOAP0001", "Wrong number of arguments");
+
+    /* XQuery 3.1 */
+    public static ErrorCode FOAY0001 = new W3CErrorCode("FOAY0001", "Array index out of bounds.");
+    public static ErrorCode FOAY0002 = new W3CErrorCode("FOAY0002", "Negative array length.");
+
+    public static ErrorCode FOJS0001 = new W3CErrorCode("FOJS0001", "JSON syntax error.");
+    public static ErrorCode FOJS0002 = new W3CErrorCode("FOJS0002", "JSON invalid character.");
+    public static ErrorCode FOJS0003 = new W3CErrorCode("FOJS0003", "JSON duplicate keys.");
     
     /* eXist specific XQuery and XPath errors
      *

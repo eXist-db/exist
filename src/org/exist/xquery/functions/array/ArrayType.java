@@ -13,6 +13,9 @@ import java.util.List;
  * {@link FunctionReference} to allow the item to be called in a dynamic function
  * call.
  *
+ * Based on immutable, persistent vectors. Operations like append, head, tail, reverse should be fast.
+ * Remove and insert-before require copying the array.
+ *
  * @author Wolf
  */
 public class ArrayType extends FunctionReference implements Lookup.LookupSupport {
@@ -131,6 +134,21 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return new ArrayType(context, (IPersistentVector<Sequence>)ret.persistent());
     }
 
+    /**
+     * Add member. Modifies the array! Don't use unless you're constructing a new array.
+     *
+     * @param seq
+     */
+    public void add(Sequence seq) {
+        vector = vector.cons(seq);
+    }
+
+    /**
+     * Return a new array with a member appended.
+     *
+     * @param seq
+     * @return
+     */
     public ArrayType append(Sequence seq) {
         return new ArrayType(this.context, vector.cons(seq));
     }
