@@ -5,12 +5,17 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
+import org.exist.source.Source;
+import org.exist.source.SourceFactory;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Functions related to JSON parsing.
@@ -33,6 +38,25 @@ public class JSON extends BasicFunction {
                 "Parses a string supplied in the form of a JSON text, returning the results typically in the form of a map or array.",
                 new SequenceType[]{
                         new FunctionParameterSequenceType("json-text", Type.STRING, Cardinality.ZERO_OR_ONE, "JSON string"),
+                        new FunctionParameterSequenceType("options", Type.MAP, Cardinality.EXACTLY_ONE, "Parsing options")
+                },
+                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data, typically a map, array or atomic value")
+        ),
+        new FunctionSignature(
+                new QName("json-doc", Function.BUILTIN_FUNCTION_NS),
+                "Reads an external (or database) resource containing JSON, and returns the results of parsing the resource as JSON. An URL parameter " +
+                "without scheme or scheme 'xmldb:' is considered to point to a database resource.",
+                new SequenceType[]{
+                        new FunctionParameterSequenceType("href", Type.STRING, Cardinality.ZERO_OR_ONE, "URL pointing to a JSON resource")
+                },
+                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data, typically a map, array or atomic value")
+        ),
+        new FunctionSignature(
+                new QName("json-doc", Function.BUILTIN_FUNCTION_NS),
+                "Reads an external (or database) resource containing JSON, and returns the results of parsing the resource as JSON. An URL parameter " +
+                "without scheme or scheme 'xmldb:' is considered to point to a database resource.",
+                new SequenceType[]{
+                        new FunctionParameterSequenceType("href", Type.STRING, Cardinality.ZERO_OR_ONE, "URL pointing to a JSON resource"),
                         new FunctionParameterSequenceType("options", Type.MAP, Cardinality.EXACTLY_ONE, "Parsing options")
                 },
                 new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data, typically a map, array or atomic value")
@@ -80,16 +104,45 @@ public class JSON extends BasicFunction {
             factory.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, true);
         }
 
-        try {
-            JsonParser parser = factory.createParser(args[0].getStringValue());
+        if (isCalledAs("parse-json")) {
+            return parse(args[0], handleDuplicates, factory);
+        } else {
+            return parseResource(args[0], handleDuplicates, factory);
+        }
+    }
 
-            Item result = readValue(context, parser, handleDuplicates);
+    private Sequence parse(Sequence json, String handleDuplicates, JsonFactory factory) throws XPathException {
+        if (json.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        try {
+            final JsonParser parser = factory.createParser(json.itemAt(0).getStringValue());
+            final Item result = readValue(context, parser, handleDuplicates);
             return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
         } catch (IOException e) {
             throw new XPathException(this, ErrorCodes.FOJS0001, e.getMessage());
         } catch (XPathException e) {
             e.setLocation(getLine(), getColumn(), getSource());
             throw e;
+        }
+    }
+
+    private Sequence parseResource(Sequence href, String handleDuplicates, JsonFactory factory) throws XPathException {
+        if (href.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        try {
+            String url = href.getStringValue();
+            if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
+                url = XmldbURI.EMBEDDED_SERVER_URI_PREFIX + url;
+            }
+            final Source source = SourceFactory.getSource(context.getBroker(), "", url, false);
+            final InputStream is = source.getInputStream();
+            final JsonParser parser = factory.createParser(is);
+            final Item result = readValue(context, parser, handleDuplicates);
+            return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+        } catch (IOException | PermissionDeniedException e) {
+            throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
     }
 

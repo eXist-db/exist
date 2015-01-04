@@ -228,7 +228,9 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(ParsingFunctions.signatures[0], ParsingFunctions.class),
         new FunctionDef(ParsingFunctions.signatures[1], ParsingFunctions.class),
         new FunctionDef(JSON.signatures[0], JSON.class),
-        new FunctionDef(JSON.signatures[1], JSON.class)
+        new FunctionDef(JSON.signatures[1], JSON.class),
+        new FunctionDef(JSON.signatures[2], JSON.class),
+        new FunctionDef(JSON.signatures[3], JSON.class)
     };
 
     static {
