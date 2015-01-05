@@ -7,5 +7,6 @@ test:suite((
     inspect:module-functions(xs:anyURI("last.xql")),
     inspect:module-functions(xs:anyURI("namespaces.xql")),
     inspect:module-functions(xs:anyURI("positional.xql")),
-    inspect:module-functions(xs:anyURI("count.xql"))
+    inspect:module-functions(xs:anyURI("count.xql")),
+    inspect:module-functions(xs:anyURI("serializer.xql"))
 ))

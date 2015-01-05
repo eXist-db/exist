@@ -481,7 +481,7 @@ public class XMLWriter {
     	return true;
     }
     
-    private void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
+    protected void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
         final boolean[] specialChars = inAttribute ? attrSpecialChars : textSpecialChars;
         char ch = 0;
         final int len = s.length();

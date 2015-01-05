@@ -34,78 +34,92 @@ import org.exist.util.hashtable.ObjectHashSet;
  */
 public class XHTMLWriter extends IndentingXMLWriter {
 
-    private final static ObjectHashSet<String> emptyTags = new ObjectHashSet<String>(31);
-    
+    protected final static ObjectHashSet<String> EMPTY_TAGS = new ObjectHashSet<String>(31);
     static {
-        emptyTags.add("area");
-        emptyTags.add("base");
-        emptyTags.add("br");
-        emptyTags.add("col");
-        emptyTags.add("hr");
-        emptyTags.add("img");
-        emptyTags.add("input");
-        emptyTags.add("link");
-        emptyTags.add("meta");
-        emptyTags.add("basefont");
-        emptyTags.add("frame");
-        emptyTags.add("isindex");
-        emptyTags.add("param");
+        EMPTY_TAGS.add("area");
+        EMPTY_TAGS.add("base");
+        EMPTY_TAGS.add("br");
+        EMPTY_TAGS.add("col");
+        EMPTY_TAGS.add("hr");
+        EMPTY_TAGS.add("img");
+        EMPTY_TAGS.add("input");
+        EMPTY_TAGS.add("link");
+        EMPTY_TAGS.add("meta");
+        EMPTY_TAGS.add("basefont");
+        EMPTY_TAGS.add("frame");
+        EMPTY_TAGS.add("isindex");
+        EMPTY_TAGS.add("param");
     }
     
-    private final static ObjectHashSet<String> inlineTags = new ObjectHashSet<String>(31);
+    protected final static ObjectHashSet<String> INLINE_TAGS = new ObjectHashSet<String>(31);
     
     static {
-    	inlineTags.add("a");
-    	inlineTags.add("abbr");
-    	inlineTags.add("acronym");
-    	inlineTags.add("b");
-    	inlineTags.add("bdo");
-    	inlineTags.add("big");
-    	inlineTags.add("br");
-    	inlineTags.add("button");
-    	inlineTags.add("cite");
-    	inlineTags.add("code");
-    	inlineTags.add("del");
-    	inlineTags.add("dfn");
-    	inlineTags.add("em");
-    	inlineTags.add("i");
-    	inlineTags.add("img");
-    	inlineTags.add("input");
-    	inlineTags.add("kbd");
-    	inlineTags.add("label");
-    	inlineTags.add("q");
-    	inlineTags.add("samp");
-    	inlineTags.add("select");
-    	inlineTags.add("small");
-    	inlineTags.add("span");
-    	inlineTags.add("strong");
-    	inlineTags.add("sub");
-    	inlineTags.add("sup");
-    	inlineTags.add("textarea");
-    	inlineTags.add("tt");
-    	inlineTags.add("var");
-    }
-    
-    private static boolean isEmptyTag(final String tag) {
-        return emptyTags.contains(tag);
+    	INLINE_TAGS.add("a");
+    	INLINE_TAGS.add("abbr");
+    	INLINE_TAGS.add("acronym");
+    	INLINE_TAGS.add("b");
+    	INLINE_TAGS.add("bdo");
+    	INLINE_TAGS.add("big");
+    	INLINE_TAGS.add("br");
+    	INLINE_TAGS.add("button");
+    	INLINE_TAGS.add("cite");
+    	INLINE_TAGS.add("code");
+    	INLINE_TAGS.add("del");
+    	INLINE_TAGS.add("dfn");
+    	INLINE_TAGS.add("em");
+    	INLINE_TAGS.add("i");
+    	INLINE_TAGS.add("img");
+    	INLINE_TAGS.add("input");
+    	INLINE_TAGS.add("kbd");
+    	INLINE_TAGS.add("label");
+    	INLINE_TAGS.add("q");
+    	INLINE_TAGS.add("samp");
+    	INLINE_TAGS.add("select");
+    	INLINE_TAGS.add("small");
+    	INLINE_TAGS.add("span");
+    	INLINE_TAGS.add("strong");
+    	INLINE_TAGS.add("sub");
+    	INLINE_TAGS.add("sup");
+    	INLINE_TAGS.add("textarea");
+    	INLINE_TAGS.add("tt");
+    	INLINE_TAGS.add("var");
     }
     
     protected String currentTag;
-    
+
+    protected ObjectHashSet<String> emptyTags;
+    protected ObjectHashSet<String> inlineTags;
+
     /**
      * 
      */
     public XHTMLWriter() {
+        this(EMPTY_TAGS, INLINE_TAGS);
+    }
+
+    public XHTMLWriter(ObjectHashSet<String> emptyTags, ObjectHashSet<String> inlineTags) {
         super();
+        this.emptyTags = emptyTags;
+        this.inlineTags = inlineTags;
+    }
+
+    public XHTMLWriter(final Writer writer) {
+        this(writer, EMPTY_TAGS, INLINE_TAGS);
     }
 
     /**
      * @param writer
      */
-    public XHTMLWriter(final Writer writer) {
+    public XHTMLWriter(final Writer writer, ObjectHashSet<String> emptyTags, ObjectHashSet<String> inlineTags) {
         super(writer);
+        this.emptyTags = emptyTags;
+        this.inlineTags = inlineTags;
     }
-    
+
+    protected boolean isEmptyTag(final String tag) {
+        return emptyTags.contains(tag);
+    }
+
     boolean haveCollapsedXhtmlPrefix = false;
 
     @Override
@@ -126,7 +140,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         haveCollapsedXhtmlPrefix = false;
     }
     
-    private QName removeXhtmlPrefix(final QName qname) {
+    protected QName removeXhtmlPrefix(final QName qname) {
         final String prefix = qname.getPrefix();
         final String namespaceURI = qname.getNamespaceURI();
         if(prefix != null && prefix.length() > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
@@ -156,7 +170,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         haveCollapsedXhtmlPrefix = false;
     }
     
-    private String removeXhtmlPrefix(final String namespaceURI, final String qname) {
+    protected String removeXhtmlPrefix(final String namespaceURI, final String qname) {
         
         final int pos = qname.indexOf(':');
         if(pos > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
