@@ -5,7 +5,15 @@
 module namespace arr="http://exist-db.org/test/arrays";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
+declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+declare namespace json="http://www.json.org";
 
+declare variable $arr:SERIALIZE_JSON := 
+    <output:serialization-parameters>
+        <output:method>json</output:method>
+        <output:indent>false</output:indent>
+    </output:serialization-parameters>;
+    
 declare 
     %test:setUp
 function arr:setup() {
@@ -117,6 +125,18 @@ declare
 function arr:curly-constructor2($pos as xs:int) {
     let $a := array { (), (27, 17, 0) }
     return $a($pos)
+};
+
+declare
+    %test:assertTrue
+function arr:deep-equal1() {
+    deep-equal([1, <node/>, "a", ["b", "c"]], [1, <node/>, "a", ["b", "c"]])
+};
+
+declare
+    %test:assertFalse
+function arr:deep-equal2() {
+    deep-equal([1, 2, "a", ["b", "c"]], [1, 2, "a", ["b", "a"]])
 };
 
 declare
@@ -619,4 +639,42 @@ declare
     %test:assertXPath("$result?1?key2 = 'value2'")
 function arr:json-doc-http() {
     json-doc("http://localhost:8080/exist/rest/db/array-test/test.json")
+};
+
+declare 
+    %test:assertEquals('{"a1":22,"a2":["z","b","c"]}')
+function arr:serialize() {
+    let $json :=
+        map {
+            "a1": 22,
+            "a2": [ "z", "b", "c" ]
+        }
+    let $serialized :=
+        serialize($json, $arr:SERIALIZE_JSON)
+    return
+        $serialized
+};
+
+declare 
+    %test:assertTrue
+function arr:serialize-roundtrip() {
+    let $json :=
+        map {
+            "k1": 22,
+            "k2": [ "z", "b", "c" ],
+            "k3": map { "k4": array { 1 to 100 }, "k5": () }
+        }
+    let $serialized :=
+        serialize($json, $arr:SERIALIZE_JSON)
+    let $parsed := parse-json($serialized)
+    return
+        deep-equal($json, $parsed)
+};
+
+declare 
+    %test:assertEquals('{ "status" : true }')
+function arr:serialize-old-json-compat() {
+    let $xmlJson := <result><status json:literal="true">true</status></result>
+    return
+        serialize($xmlJson, $arr:SERIALIZE_JSON)
 };
