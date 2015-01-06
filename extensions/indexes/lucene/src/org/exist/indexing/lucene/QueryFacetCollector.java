@@ -28,21 +28,11 @@ import java.util.Set;
 
 import org.apache.lucene.facet.encoding.DGapVInt8IntDecoder;
 import org.apache.lucene.facet.params.CategoryListParams;
+import org.apache.lucene.facet.params.FacetIndexingParams;
 import org.apache.lucene.facet.params.FacetSearchParams;
 import org.apache.lucene.facet.params.CategoryListParams.OrdinalPolicy;
-import org.apache.lucene.facet.search.CountingFacetsAggregator;
 import org.apache.lucene.facet.search.FacetArrays;
-import org.apache.lucene.facet.search.FacetRequest;
-import org.apache.lucene.facet.search.FacetResult;
-import org.apache.lucene.facet.search.FacetResultNode;
-import org.apache.lucene.facet.search.FacetResultsHandler;
-import org.apache.lucene.facet.search.FacetsAggregator;
-import org.apache.lucene.facet.search.FastCountingFacetsAggregator;
-import org.apache.lucene.facet.search.FloatFacetResultsHandler;
-import org.apache.lucene.facet.search.IntFacetResultsHandler;
-import org.apache.lucene.facet.search.TopKFacetResultsHandler;
-import org.apache.lucene.facet.search.TopKInEachNodeHandler;
-import org.apache.lucene.facet.search.FacetRequest.FacetArraysSource;
+import org.apache.lucene.facet.search.*;
 import org.apache.lucene.facet.search.FacetRequest.ResultMode;
 import org.apache.lucene.facet.search.FacetRequest.SortOrder;
 import org.apache.lucene.facet.search.FacetsCollector.MatchingDocs;
@@ -176,21 +166,16 @@ public abstract class QueryFacetCollector extends Collector {
     }
 
     private FacetResultsHandler createFacetResultsHandler(FacetRequest fr) {
+        final OrdinalValueResolver resolver = fr.createFacetsAggregator(FacetIndexingParams.DEFAULT).createOrdinalValueResolver(fr, facetArrays);
+        final FacetResultsHandler facetResultsHandler;
         if (fr.getDepth() == 1 && fr.getSortOrder() == SortOrder.DESCENDING) {
-            FacetArraysSource fas = fr.getFacetArraysSource();
-            if (fas == FacetArraysSource.INT) {
-                return new IntFacetResultsHandler(taxonomyReader, fr, facetArrays);
-            }
-
-            if (fas == FacetArraysSource.FLOAT) {
-                return new FloatFacetResultsHandler(taxonomyReader, fr, facetArrays);
-            }
+            facetResultsHandler = new DepthOneFacetResultsHandler(taxonomyReader, fr, facetArrays, resolver);
+        } else if (fr.getResultMode() == ResultMode.PER_NODE_IN_TREE) {
+            facetResultsHandler = new TopKInEachNodeHandler(taxonomyReader, fr, resolver, facetArrays);
+        } else {
+            facetResultsHandler = new TopKFacetResultsHandler(taxonomyReader, fr, resolver, facetArrays);
         }
-
-        if (fr.getResultMode() == ResultMode.PER_NODE_IN_TREE) {
-            return new TopKInEachNodeHandler(taxonomyReader, fr, facetArrays);
-        }
-        return new TopKFacetResultsHandler(taxonomyReader, fr, facetArrays);
+        return facetResultsHandler;
     }
 
     private static FacetResult emptyResult(int ordinal, FacetRequest fr) {
