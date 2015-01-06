@@ -6,7 +6,7 @@ This is the GitHub for the [eXist](http://www.exist-db.org "eXist") Native XML D
 
 If you're looking to work with the eXist source code, you've come to the right place. If not, you're probably looking for the [eXist Documentation](http://www.exist-db.org/exist/apps/doc/ "Documentation of eXist").
 
-If you're looking for help or discussion, visit the eXist community [mailing lists](http://www.exist-db.org/exist/apps/doc/getting-help.xml "eXist Mailing Lists") or consider purshasing the [eXist book](http://www.jdoqocy.com/click-7654993-11290546?sid=&url=http%3A%2F%2Fshop.oreilly.com%2Fproduct%2F0636920026525.do%3Fcmp%3Daf-webplatform-books-videos-product_cj_auwidget636_0636920026525_%25zp) from O'Reilly.
+If you're looking for help or discussion, visit the eXist community [mailing lists](http://www.exist-db.org/exist/apps/doc/getting-help.xml "eXist Mailing Lists") or consider purchasing the [eXist book](http://www.jdoqocy.com/click-7654993-11290546?sid=&url=http%3A%2F%2Fshop.oreilly.com%2Fproduct%2F0636920026525.do%3Fcmp%3Daf-webplatform-books-videos-product_cj_auwidget636_0636920026525_%25zp) from O'Reilly.
 
 
 Information for Developers
@@ -76,12 +76,12 @@ If you wish to contribute, the general approach is:
 - `git clone` your fork
 - Make sure you've [GitFlow AVH Edition](https://github.com/petervanderdoes/gitflow) installed
 - Run `git flow init` on the cloned repo using [these settings](#our-git-flow-init-settings).
-- Use Git Flow to *start* a hotfix or feature i.e. git flow feature start *my-magic-feature*
+- Use Git Flow to *start* a hotfix or feature i.e. `git flow feature start my-feature`.
 - Do your stuff! :-)
 - Commit to your repo. We like small, atomic commits that don't mix concerns.
 - **Do NOT** finish the `hotfix` or `feature` with GitFlow.
 - Make sure your branch is based on the latest eXist develop branch before making a pull-request. This will ensure that we can easily merge in your changes. See [Syncing a Fork](#syncing-a-fork).
-- Push your hotfix or feature branch to your GitHub using GitFlow (`git flow feature publish *my-magic-feature*`)
+- Push your hotfix or feature branch to your GitHub using GitFlow: `git flow feature publish my-feature`.
 - Send us a Pull Request on GitHub from your branch to our develop branch.
 - Once the Pull Request is merged you can delete your branch, you need not finish or merge it, you will however want to sync your develop branch to bring back your changes. See [Syncing a Fork](#syncing-a-fork).
 
@@ -113,14 +113,22 @@ Even for a bug-fix you should most probably use a `feature`. If you're certain y
 Help! I am a human, what does this all mean?
 --------------------------------------------
 - You work in features using GitFlow in your own fork of our repo.
-- If you want to push your feature to your fork before you have finished it locally, i.e. for the purposes of backup or collaboration, you can use *git flow feature publish my-magic-feature*.
+- If you want to push your feature to your fork before you have finished it locally, i.e. for the purposes of backup or collaboration, you can use `git flow feature publish my-feature`.
 - You will only ever send Pull Requests between your 'develop' branch and our 'develop' branch. i.e. finished features.
 - If you follow the details above and make it easy for us to accept your Pull Requests, they will get accepted and merged quickly!
 
 
 Syncing a Fork
 --------------
-- Your fork will eventually become out of sync with the upstream repo as others contribute to eXist. To pull upstream changes into your fork, you have two options 1) [merging](https://help.github.com/articles/syncing-a-fork) or 2) rebasing. Rebasing is a much cleaner and is the preferred approach as it is leads to a cleaner revision history which is much easier to follow, however `git rebase` is a very sharp tool and must be used with care. For those new to rebase, we would suggest having a backup of your local (and possibly remote) git repos before continuing. Read on to learn how to sync using rebase:
+Your fork will eventually become out of sync with the upstream repo as others contribute to eXist. To pull upstream changes into your fork, you have two options:
+
+1. [Merging](https://help.github.com/articles/syncing-a-fork).
+2. Rebasing.
+
+Rebasing leads to a cleaner revision history which is much easier to follow and is our preferred approach. However, `git rebase` is a very sharp tool and must be used with care. For those new to rebase, we would suggest having a backup of your local (and possibly remote) git repos before continuing. Read on to learn how to sync using rebase.
+
+
+#### Rebase Example
 
 Lets say that you have a fork of eXist's GitHub repo, and you have been working in your feature branch called `my-feature` for sometime, you are happy with how your work is progressing, but you want to sync so that your changes are based on the latest and greatest changes from eXist. The way to do this using `git rebase` is as follows:
 
@@ -130,23 +138,12 @@ Lets say that you have a fork of eXist's GitHub repo, and you have been working 
 
 3. You need to fetch the latest changes from eXist's GitHub: `git fetch upstream`. This will not yet change your local branches in any way.
 
-4. You should first sync your `develop` branch with eXist's `develop` branch. As you always work in feature branches, this should a simple fast-forward by running:
-```bash
-git checkout develop
-git rebase upstream/develop
-```
+4. You should first sync your `develop` branch with eXist's `develop` branch. As you always work in feature branches, this should a simple fast-forward by running: `git checkout develop` and then `git rebase upstream/develop`.
+  1. If all goes well in (4) then you can push your `develop` branch to your remote server (e.g. GitHub) with `git push origin develop`.
 
-	4.1 If all goes well in (4) then you can push your `develop` branch to your remote server (e.g. GitHub) with `git push origin develop`.
-
-5. You can then replay your work in your feature branch `my-feature` atop the lastest changes from the develop branch by running:
-```bash
-git checkout feature/my-feature
-git rebase develop
-```
-	5.1 Should you encounter any conflicts during (5) you can resolve them using `git mergetool` and then `git rebase --continue`.
-
-	5.2 If all goes well in (5), and take care to check your history is correct with `git log`, then you can force push your `feature/my-feature` branch to your remote server (e.g. GitHub) with `git push -f origin feature/my-feature`. *NOTE* the reason you need to use the `-f` to force the push is because the commit ids of your revisions will have changed after the rebase.
-	
+5. You can then replay your work in your feature branch `my-feature` atop the lastest changes from the develop branch by running: `git checkout feature/my-feature` and then `git rebase develop`.
+  1. Should you encounter any conflicts during (5) you can resolve them using `git mergetool` and then `git rebase --continue`.
+  2. If all goes well in (5), and take care to check your history is correct with `git log`, then you can force push your `feature/my-feature` branch to your remote server (e.g. GitHub) with `git push -f origin feature/my-feature`. *NOTE* the reason you need to use the `-f` to force the push is because the commit ids of your revisions will have changed after the rebase.
 
 Note that it is worth syncing your branches that you are working on relatively frequently to prevent any large rebases which could lead to resolving many conflicting changes where your branch has diverged over a long period of time.
 
