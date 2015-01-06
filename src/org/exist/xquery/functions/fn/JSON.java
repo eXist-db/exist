@@ -188,6 +188,7 @@ public class JSON extends BasicFunction {
                     next = new StringValue(parser.getText()).convertTo(Type.DOUBLE);
                     break;
                 case VALUE_NULL:
+                    next = null;
                     break;
                 default:
                     next = new StringValue(parser.getText());
