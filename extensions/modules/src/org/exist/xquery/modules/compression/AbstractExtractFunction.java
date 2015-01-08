@@ -99,11 +99,15 @@ public abstract class AbstractExtractFunction extends BasicFunction
             throw new XPathException("entry-data function must take at least 3 arguments");
 
         storeParam = args[4];
-        
+		
+		String encoding = "UTF8";
+        if ((args.length >= 6) && !args[5].isEmpty())
+            encoding = args[5].getStringValue();
+		        
         BinaryValue compressedData = ((BinaryValue)args[0].itemAt(0));
         
         try {
-			return processCompressedData(compressedData);
+			return processCompressedData(compressedData, encoding);
 		} catch (XMLDBException e) {
 			throw new XPathException(e);
 		}
@@ -115,7 +119,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
      * @param compressedData the compressed data to extract
      * @return Sequence of results
      */
-    protected abstract Sequence processCompressedData(BinaryValue compressedData) throws XPathException, XMLDBException;
+    protected abstract Sequence processCompressedData(BinaryValue compressedData, String encoding) throws XPathException, XMLDBException;
 
     /**
      * Processes a compressed entry from an archive

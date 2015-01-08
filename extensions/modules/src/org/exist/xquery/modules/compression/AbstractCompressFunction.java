@@ -64,6 +64,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
             "An Entry takes the format <entry name=\"filename.ext\" type=\"collection|uri|binary|xml|text\" method=\"deflate|store\">data</entry>. The method attribute is only effective for the compression:zip function.");
     protected final static SequenceType COLLECTION_HIERARCHY_PARAM = new FunctionParameterSequenceType("use-collection-hierarchy", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Indicates whether the Collection hierarchy (if any) should be preserved in the zip file.");
     protected final static SequenceType STRIP_PREFIX_PARAM = new FunctionParameterSequenceType("strip-prefix", Type.STRING, Cardinality.EXACTLY_ONE, "This prefix is stripped from the Entrys name");
+    protected final static SequenceType ENCODING_PARAM = new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "This encoding to be used for filenames inside the compressed file");
 
 
     public AbstractCompressFunction(XQueryContext context, FunctionSignature signature)
@@ -100,8 +101,14 @@ public abstract class AbstractCompressFunction extends BasicFunction
 			stripOffset = args[2].getStringValue();
 		}
 
+		// Get encoding
+		String encoding = "UTF8";
+        if ((args.length >= 4) && !args[3].isEmpty()) {
+			encoding = args[3].getStringValue();
+		}
+				
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		OutputStream os = stream(baos);
+		OutputStream os = stream(baos, encoding);
 
 		// iterate through the argument sequence
 		for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
@@ -498,7 +505,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		}
 	}
 	
-	protected abstract OutputStream stream(ByteArrayOutputStream baos); 
+	protected abstract OutputStream stream(ByteArrayOutputStream baos, String encoding); 
 	
 	protected abstract Object newEntry(String name);
 	

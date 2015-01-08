@@ -67,6 +67,17 @@ public class TarFunction extends AbstractCompressFunction
                 COLLECTION_HIERARCHY_PARAM,
                 STRIP_PREFIX_PARAM
             },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)),
+
+        new FunctionSignature(
+            TAR_FUNCTION_NAME,
+            TAR_FUNCTION_DESCRIPTION,
+            new SequenceType[] {
+                SOURCES_PARAM,
+                COLLECTION_HIERARCHY_PARAM,
+                STRIP_PREFIX_PARAM,
+				ENCODING_PARAM
+            },
             new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE))
     };
 
@@ -94,8 +105,8 @@ public class TarFunction extends AbstractCompressFunction
     }
 
     @Override
-    protected OutputStream stream(ByteArrayOutputStream baos)
+    protected OutputStream stream(ByteArrayOutputStream baos, String encoding)
     {
-            return new TarArchiveOutputStream(baos);
+            return new TarArchiveOutputStream(baos, encoding);
     }	
 }

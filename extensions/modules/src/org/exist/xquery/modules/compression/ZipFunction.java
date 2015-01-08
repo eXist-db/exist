@@ -25,6 +25,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -67,6 +68,18 @@ public class ZipFunction extends AbstractCompressFunction {
                 STRIP_PREFIX_PARAM
             },
             new SequenceType(Type.BASE64_BINARY,Cardinality.ZERO_OR_MORE)
+        ),
+		
+        new FunctionSignature(
+            ZIP_FUNCTION_NAME,
+            ZIP_FUNCTION_DESCRIPTION,
+            new SequenceType[] {
+                SOURCES_PARAM,
+                COLLECTION_HIERARCHY_PARAM,
+                STRIP_PREFIX_PARAM,
+				ENCODING_PARAM
+            },
+            new SequenceType(Type.BASE64_BINARY,Cardinality.ZERO_OR_MORE)
         )
     };
 
@@ -95,8 +108,8 @@ public class ZipFunction extends AbstractCompressFunction {
     }
 
     @Override
-    protected OutputStream stream(ByteArrayOutputStream baos)
+    protected OutputStream stream(ByteArrayOutputStream baos, String encoding)
     {
-        return new ZipOutputStream(baos);
+        return new ZipOutputStream(baos, Charset.forName(encoding));
     }
 }
