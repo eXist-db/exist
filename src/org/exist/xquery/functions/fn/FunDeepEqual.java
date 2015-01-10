@@ -122,13 +122,13 @@ public class FunDeepEqual extends CollatingFunction {
         }
         final Sequence[] args = getArguments(contextSequence, contextItem);
         final Collator collator = getCollator(contextSequence, contextItem, 3);
-        final Sequence result = BooleanValue.valueOf(deepEquals(args[0], args[1], collator));
+        final Sequence result = BooleanValue.valueOf(deepEqualsSeq(args[0], args[1], collator));
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 
         return result;
     }
 
-    public static boolean deepEquals(Sequence sa, Sequence sb, Collator collator) {
+    public static boolean deepEqualsSeq(Sequence sa, Sequence sb, Collator collator) {
         final int length = sa.getItemCount();
         if (length != sb.getItemCount()) {
             return false;
@@ -167,7 +167,7 @@ public class FunDeepEqual extends CollatingFunction {
                             return false;
                         }
                         for (int i = 0; i < ar.getSize(); i++) {
-                            if (!deepEquals(ar.get(i), br.get(i), collator)) {
+                            if (!deepEqualsSeq(ar.get(i), br.get(i), collator)) {
                                 return false;
                             }
                         }
@@ -185,7 +185,7 @@ public class FunDeepEqual extends CollatingFunction {
                             if (!bmap.contains(aentry.getKey())) {
                                 return false;
                             }
-                            if (!deepEquals(aentry.getValue(), bmap.get(aentry.getKey()), collator)) {
+                            if (!deepEqualsSeq(aentry.getValue(), bmap.get(aentry.getKey()), collator)) {
                                 return false;
                             }
                         }
