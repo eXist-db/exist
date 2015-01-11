@@ -10,6 +10,7 @@ import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.OutputKeys;
 import java.io.StringWriter;
 import java.util.Properties;
 
@@ -49,10 +50,14 @@ public class FunSerialize extends BasicFunction {
         }
 
         final StringWriter writer = new StringWriter();
-        XQuerySerializer xqSerializer = new XQuerySerializer(context, outputProperties);
+        XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), outputProperties, writer);
 
+        Sequence seq = args[0];
+        if (!xqSerializer.isJSON()) {
+            seq = normalize(seq);
+        }
         try {
-            xqSerializer.serialize(args[0], writer);
+            xqSerializer.serialize(seq);
             return new StringValue(writer.toString());
         } catch (final SAXException e) {
             throw new XPathException(this, FnModule.SENR0001, e.getMessage());

@@ -95,6 +95,7 @@ import org.exist.util.VirtualTempFileInputSource;
 import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.util.serializer.XQuerySerializer;
 import org.exist.util.serializer.json.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xqj.Marshaller;
@@ -2064,13 +2065,8 @@ public class RESTServer {
         final boolean wrap) throws BadRequestException {
         
         // serialize the results to the response output stream
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-        SAXSerializer sax = null;
         try {
-            sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
-                    SAXSerializer.class);
 
             // set output headers
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
@@ -2091,13 +2087,10 @@ public class RESTServer {
                 outputProperties.setProperty("method", "xml");
             }
             final Writer writer = new OutputStreamWriter(response.getOutputStream(), encoding);
-            sax.setOutput(writer, outputProperties);
-
-            serializer.setProperties(outputProperties);
-            serializer.setSAXHandlers(sax, sax);
+            final XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, writer);
 
             //Marshaller.marshall(broker, results, start, howmany, serializer.getContentHandler());
-            serializer.toSAX(results, start, howmany, wrap, typed);
+            serializer.serialize(results, start, howmany, wrap, typed);
 
             writer.flush();
             writer.close();
@@ -2110,10 +2103,6 @@ public class RESTServer {
             LOG.warn(e.getMessage(), e);
             throw new BadRequestException("Error while serializing xml: "
                     + e.toString(), e);
-        } finally {
-            if (sax != null) {
-                SerializerPool.getInstance().returnObject(sax);
-            }
         }
     }
 

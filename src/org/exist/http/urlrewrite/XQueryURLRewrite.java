@@ -40,6 +40,7 @@ import org.exist.source.Source;
 import org.exist.source.DBSource;
 import org.exist.source.SourceFactory;
 import org.exist.source.FileSource;
+import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
@@ -452,23 +453,11 @@ public class XQueryURLRewrite extends HttpServlet {
 //        response.addHeader( "pragma", "no-cache" );
 //        response.addHeader( "Cache-Control", "no-cache" );
 
-        final Serializer serializer = broker.getSerializer();
-    	serializer.reset();
-    
-    	final SerializerPool serializerPool = SerializerPool.getInstance();
-
-    	final SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
     	try {
-    		sax.setOutput(output, outputProperties);
-
-	    	serializer.setProperties(outputProperties);
-	    	serializer.setSAXHandlers(sax, sax);
-        	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false, false);
-        	
-    	} catch (final SAXException e) {
+            XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, output);
+        	serializer.serialize(resultSequence);
+    	} catch (final SAXException | XPathException e) {
     		throw new IOException(e);
-    	} finally {
-    		serializerPool.returnObject(sax);
     	}
     	output.flush();
     	output.close();
