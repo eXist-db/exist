@@ -37,6 +37,10 @@ public class ArrayConstructor extends AbstractExpression {
 
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getXQueryVersion() < 31) {
+            throw new XPathException(this, ErrorCodes.EXXQDY0004, "arrays are only available in XQuery 3.1, but version declaration states " +
+                context.getXQueryVersion());
+        }
         switch(type) {
             case SQUARE_ARRAY:
                 final List<Sequence> items = new ArrayList<Sequence>(arguments.size());

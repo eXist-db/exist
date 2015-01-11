@@ -76,6 +76,10 @@ public class JSON extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        if (context.getXQueryVersion() < 31) {
+            throw new XPathException(this, ErrorCodes.EXXQDY0004, "json functions only available in XQuery 3.1, but version declaration states " +
+                    context.getXQueryVersion());
+        }
         // process options if present
         // TODO: jackson does not allow access to raw string, so option "unescape" is not supported
         boolean liberal = false;
