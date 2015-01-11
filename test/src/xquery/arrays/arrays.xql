@@ -23,11 +23,11 @@ function arr:setup() {
         xmldb:store($coll, "test.json", $json)
 };
 
-(:declare:)
-(:    %test:tearDown:)
-(:function arr:cleanup() {:)
-(:    xmldb:remove("/db/array-test"):)
-(:};:)
+declare
+    %test:tearDown
+function arr:cleanup() {
+    xmldb:remove("/db/array-test")
+};
 
 declare 
     %test:args(1)
@@ -669,6 +669,17 @@ function arr:serialize-roundtrip() {
     let $parsed := parse-json($serialized)
     return
         deep-equal($json, $parsed)
+};
+
+declare 
+    %test:assertEquals('{"xml":"<div><p>Test</p></div>"}')
+function arr:serialize-node() {
+    let $json :=
+        map {
+            "xml": <div><p>Test</p></div>
+        }
+    return
+        serialize($json, $arr:SERIALIZE_JSON)
 };
 
 declare 

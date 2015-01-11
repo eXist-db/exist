@@ -56,6 +56,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.MimeTable;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
@@ -69,6 +70,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
 import org.exist.debuggee.DebuggeeFactory;
 import org.exist.dom.persistent.XMLUtil;
+import org.xml.sax.SAXException;
 
 /**
  * Servlet to generate HTML output from an XQuery file.
@@ -523,21 +525,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 request.setAttribute(requestAttr, resultSequence);
                 
             } else {
-            	final Serializer serializer = broker.getSerializer();
-            	serializer.reset();
-            
-            	final SerializerPool serializerPool = SerializerPool.getInstance();
-
-            	final SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
-            	try {
-	            	sax.setOutput(output, outputProperties);
-	            	serializer.setProperties(outputProperties);
-	            	serializer.setSAXHandlers(sax, sax);
-	            	serializer.toSAX(resultSequence, 1, resultSequence.getItemCount(), false, false);
-                    
-            	} finally {
-            		serializerPool.returnObject(sax);
-            	}
+                XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, output);
+                serializer.serialize(resultSequence);
             }
             
 		} catch (final PermissionDeniedException e) {
