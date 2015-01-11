@@ -200,9 +200,12 @@ throws PermissionDeniedException, EXistException, XPathException
         #(
             v:VERSION_DECL
             {
-                if (v.getText().equals("3.0")) {
+            	final String version = v.getText();
+            	if (version.equals("3.1")) {
+            		context.setXQueryVersion(31);
+            	} else if (version.equals("3.0")) {
                     context.setXQueryVersion(30);
-                } else if (v.getText().equals("1.0")) {
+                } else if (version.equals("1.0")) {
                     context.setXQueryVersion(10);
                 } else {
                     throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0 or 3.0");

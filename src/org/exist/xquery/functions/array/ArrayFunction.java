@@ -225,6 +225,10 @@ public class ArrayFunction extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        if (context.getXQueryVersion() < 31) {
+            throw new XPathException(this, ErrorCodes.EXXQDY0004, "arrays are only available in XQuery 3.1, but version declaration states " +
+                    context.getXQueryVersion());
+        }
         final Fn called = Fn.get(getSignature().getName().getLocalPart());
         switch (called) {
             case JOIN:

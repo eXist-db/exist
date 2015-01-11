@@ -1,3 +1,4 @@
+xquery version "3.1";
 
 (:~
  : Tests for the array datatype and associated functions.

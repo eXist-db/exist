@@ -310,7 +310,7 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private DebuggeeJoint                              debuggeeJoint                 = null;
 
-    private int                                        xqueryVersion                 = 10;
+    private int                                        xqueryVersion                 = 31;
     
     protected Database db;
 
