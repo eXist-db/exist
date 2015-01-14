@@ -141,6 +141,9 @@ public class JSON extends BasicFunction {
                 url = XmldbURI.EMBEDDED_SERVER_URI_PREFIX + url;
             }
             final Source source = SourceFactory.getSource(context.getBroker(), "", url, false);
+            if (source == null) {
+                throw new XPathException(this, ErrorCodes.FOUT1170, "failed to load json doc from URI " + url);
+            }
             final InputStream is = source.getInputStream();
             final JsonParser parser = factory.createParser(is);
             final Item result = readValue(context, parser, handleDuplicates);

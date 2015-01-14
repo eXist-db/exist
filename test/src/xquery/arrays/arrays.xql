@@ -643,6 +643,12 @@ function arr:json-doc-http() {
 };
 
 declare 
+    %test:assertError("FOUT1170")
+function arr:json-doc-invalid() {
+    json-doc("notfound.json")
+};
+
+declare 
     %test:assertEquals('{"a1":22,"a2":["z","b","c"]}')
 function arr:serialize() {
     let $json :=
