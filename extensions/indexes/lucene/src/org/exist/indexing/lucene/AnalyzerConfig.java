@@ -373,7 +373,7 @@ public class AnalyzerConfig {
 
             try {
                 // Retrieve value from Field
-                final Class fieldClazz = Class.forName(clazzName);
+                final Class<?> fieldClazz = Class.forName(clazzName);
                 final Field field = fieldClazz.getField(fieldName);
                 field.setAccessible(true);
                 final Object fValue = field.get(fieldClazz.newInstance());
