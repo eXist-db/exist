@@ -28,7 +28,6 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 import org.exist.dom.memtree.NodeImpl;
-import org.exist.util.serializer.json.JSONWriter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Comment;
@@ -37,61 +36,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.helpers.NamespaceSupport;
 
-public class DOMSerializer {
+public class DOMSerializer extends AbstractSerializer {
 
-	private final static Properties defaultProperties = new Properties();
-
-    static {
-        defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-        defaultProperties.setProperty(OutputKeys.INDENT, "false");
-    }
-    
-	private final static int XML_WRITER = 0;
-    private final static int XHTML_WRITER = 1;
-    private final static int TEXT_WRITER = 2;
-    private final static int JSON_WRITER = 3;
-    
-    private XMLWriter writers[] = {
-        new IndentingXMLWriter(),
-        new XHTMLWriter(), 
-        new TEXTWriter(),
-        new JSONWriter()
-    };
-    
-    protected XMLWriter receiver;
     protected NamespaceSupport nsSupport = new NamespaceSupport();
     protected Map<String, String> namespaceDecls = new HashMap<String, String>();
-    protected Properties outputProperties;
-
-    public DOMSerializer() {
-        super();
-        this.receiver = writers[XML_WRITER];
-    }
 
     public DOMSerializer(Writer writer, Properties outputProperties) {
         super();
         setOutput(writer, outputProperties);
-    }
-
-    public void setOutput(Writer writer, Properties properties) {
-        if (properties == null)
-            {outputProperties = defaultProperties;}
-        else
-            {outputProperties = properties;}
-        
-        final String method = outputProperties.getProperty("method", "xml");
-
-        if ("xhtml".equalsIgnoreCase(method))
-            {receiver = writers[XHTML_WRITER];}
-        else if("text".equalsIgnoreCase(method))
-            {receiver = writers[TEXT_WRITER];}
-        else if ("json".equalsIgnoreCase(method))
-        	{receiver = writers[JSON_WRITER];}
-        else
-            {receiver = writers[XML_WRITER];}
-        
-        receiver.setWriter(writer);
-        receiver.setOutputProperties(outputProperties);
     }
 
     public void setWriter(Writer writer) {
@@ -99,10 +51,9 @@ public class DOMSerializer {
     }
 
     public void reset() {
+        super.reset();
         nsSupport.reset();
         namespaceDecls.clear();
-        for (int i = 0; i < writers.length; i++)
-            writers[i].reset();
     }
 
     public void serialize(Node node) throws TransformerException {

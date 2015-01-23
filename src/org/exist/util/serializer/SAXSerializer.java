@@ -31,7 +31,6 @@ import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.XMLString;
-import org.exist.util.serializer.json.JSONWriter;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -40,38 +39,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.NamespaceSupport;
 
-public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
+public class SAXSerializer extends AbstractSerializer implements ContentHandler, LexicalHandler, Receiver {
 
     private final static String XHTML_NS = "http://www.w3.org/1999/xhtml";
 
-    private final static Properties defaultProperties = new Properties();
-
-    static {
-        defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-        defaultProperties.setProperty(OutputKeys.INDENT, "false");
-    }
-
-    private final static int XML_WRITER = 0;
-    private final static int XHTML_WRITER = 1;
-    private final static int TEXT_WRITER = 2;
-    private final static int JSON_WRITER = 3;
-    private final static int XHTML5_WRITER = 4;
-    private final static int MICRO_XML_WRITER = 5;
-    private final static int HTML5_WRITER = 6;
-    
-    private XMLWriter writers[] = {
-        new IndentingXMLWriter(),
-        new XHTMLWriter(), 
-        new TEXTWriter(),
-        new JSONWriter(),
-        new XHTML5Writer(),
-        new MicroXmlWriter(),
-        new HTML5Writer()
-    };
-
-
-    protected XMLWriter receiver;
-    protected Properties outputProperties = defaultProperties;
     protected NamespaceSupport nsSupport = new NamespaceSupport();
     protected HashMap<String, String> namespaceDecls = new HashMap<String, String>();
     protected HashMap<String, String> optionalNamespaceDecls = new HashMap<String, String>();
@@ -79,7 +50,6 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 
     public SAXSerializer() {
         super();
-        receiver = writers[XML_WRITER];
     }
 
     public SAXSerializer(final Writer writer, final Properties outputProperties) {
@@ -88,36 +58,11 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     }
 
     public final void setOutput(final Writer writer, final Properties properties) {
-        if (properties == null) {
-            outputProperties = defaultProperties;
-        } else {
-            outputProperties = properties;
-        }
-        final String method = outputProperties.getProperty("method", "xml");
-
-        if ("xhtml".equalsIgnoreCase(method)) {
-            receiver = writers[XHTML_WRITER];
-        } else if("text".equalsIgnoreCase(method)) {
-            receiver = writers[TEXT_WRITER];
-        } else if ("json".equalsIgnoreCase(method)) {
-        	receiver = writers[JSON_WRITER];
-        } else if ("xhtml5".equalsIgnoreCase(method)) {
-        	receiver = writers[XHTML5_WRITER];
-        } else if ("html5".equalsIgnoreCase(method)) {
-            receiver = writers[HTML5_WRITER];
-        } else if("microxml".equalsIgnoreCase(method)) {
-            receiver = writers[MICRO_XML_WRITER];
-        } else {
-            receiver = writers[XML_WRITER];
-        }
-
+        super.setOutput(writer, properties);
 
         // if set, enforce XHTML namespace on elements with no namespace
         final String xhtml = outputProperties.getProperty(EXistOutputKeys.ENFORCE_XHTML, "no");
         enforceXHTML = xhtml.equalsIgnoreCase("yes");
-
-        receiver.setWriter(writer);
-        receiver.setOutputProperties(outputProperties);
     }
 
     public Writer getWriter() {
@@ -129,12 +74,10 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
     }
 
     public void reset() {
+        super.reset();
         nsSupport.reset();
         namespaceDecls.clear();
         optionalNamespaceDecls.clear();
-        for (int i = 0; i < writers.length; i++) {
-            writers[i].reset();
-        }
     }
 
     /* (non-Javadoc)
