@@ -411,9 +411,8 @@ function arr:fold-left4() {
 
 declare 
     %test:assertEquals("abcdefgh")
-    %test:pending
 function arr:fold-left5() {
-    array:fold-left(["abc", "def", "gh"], "a", function($x, $y) { $x || $y })
+    array:fold-left(["abc", "def", "gh"], "", function($x, $y) { $x || $y })
 };
 
 declare 
