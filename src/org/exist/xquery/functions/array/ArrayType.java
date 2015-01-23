@@ -292,15 +292,28 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return item.toSequence();
     }
 
+    /**
+     * Flatten the given sequence by recursively replacing arrays with their member sequence.
+     *
+     * @param input
+     * @return
+     * @throws XPathException
+     */
     public static Sequence flatten(Sequence input) throws XPathException {
         if (input.hasOne()) {
             return flatten(input.itemAt(0));
         }
         boolean flatten = false;
-        for (SequenceIterator i = input.iterate(); i.hasNext(); ) {
-            if (i.nextItem().getType() == Type.ARRAY) {
-                flatten = true;
-                break;
+        final int itemType = input.getItemType();
+        if (itemType == Type.ARRAY) {
+            flatten = true;
+        } else if (itemType == Type.ITEM) {
+            // may contain arrays - check
+            for (SequenceIterator i = input.iterate(); i.hasNext(); ) {
+                if (i.nextItem().getType() == Type.ARRAY) {
+                    flatten = true;
+                    break;
+                }
             }
         }
         return flatten ? flatten(input, new ValueSequence(input.getItemCount() * 2)) : input;

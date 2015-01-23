@@ -835,3 +835,9 @@ function arr:comment-computed() {
         comment { ["Hello", "world"] }
     }
 };
+
+declare 
+    %test:assertEquals(1, 2, 3, 4)
+function arr:fn-data() {
+    data([1, 2, [3, 4]])
+};
