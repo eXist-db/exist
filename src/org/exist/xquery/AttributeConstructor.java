@@ -105,10 +105,9 @@ public class AttributeConstructor extends NodeConstructor {
 	private void evalEnclosedExpr(Sequence seq, StringBuilder buf) throws XPathException {
 		Item item;
 		AtomicValue atomic;
-		for(final SequenceIterator i = seq.iterate(); i.hasNext();) {
+		for(final SequenceIterator i = Atomize.atomize(seq).iterate(); i.hasNext();) {
 			item = i.nextItem();
-			atomic = item.atomize();
-			buf.append(atomic.getStringValue());
+			buf.append(item.getStringValue());
 			if(i.hasNext())
 				{buf.append(' ');}
 		}

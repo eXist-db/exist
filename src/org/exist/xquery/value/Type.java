@@ -144,7 +144,6 @@ public class Type {
         defineSubType(ATOMIC, NUMBER);
         defineSubType(ATOMIC, UNTYPED_ATOMIC);
         defineSubType(ATOMIC, JAVA_OBJECT);
-        defineSubType(ATOMIC, FUNCTION_REFERENCE);
         defineSubType(ATOMIC, DATE_TIME);
         defineSubType(ATOMIC, DATE);
         defineSubType(ATOMIC, TIME);
@@ -193,6 +192,7 @@ public class Type {
         defineSubType(NCNAME, IDREF);
         defineSubType(NCNAME, ENTITY);
 
+        defineSubType(ITEM, FUNCTION_REFERENCE);
         defineSubType(FUNCTION_REFERENCE, MAP);
         defineSubType(FUNCTION_REFERENCE, ARRAY);
     }

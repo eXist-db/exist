@@ -67,7 +67,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     }
 
     public void setContentExpr(Expression expr) {
-        this.valueExpr  = new Atomize(context, expr);
+        this.valueExpr  = expr;
     }
 
     public Expression getContentExpr() {
@@ -134,7 +134,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             	{value = "";}
             else {
                 final StringBuilder buf = new StringBuilder();
-                for(final SequenceIterator i = valueSeq.iterate(); i.hasNext(); ) {
+                for(final SequenceIterator i = Atomize.atomize(valueSeq).iterate(); i.hasNext(); ) {
                     final Item next = i.nextItem();
                     buf.append(next.getStringValue());
                     if(i.hasNext())

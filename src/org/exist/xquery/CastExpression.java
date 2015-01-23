@@ -60,8 +60,6 @@ public class CastExpression extends AbstractExpression {
 
     public void setExpression(Expression expr) {
         this.expression = expr;
-        if(!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
-            {expression = new Atomize(context, expression);}
     }
 
 	/* (non-Javadoc)
@@ -97,7 +95,7 @@ public class CastExpression extends AbstractExpression {
         }
 
         Sequence result;
-		final Sequence seq = expression.eval(contextSequence, contextItem);
+		final Sequence seq = Atomize.atomize(expression.eval(contextSequence, contextItem));
 		if (seq.isEmpty()) {
 			if ((cardinality & Cardinality.ZERO) == 0)
 				{throw new XPathException(this, "Type error: empty sequence is not allowed here");}

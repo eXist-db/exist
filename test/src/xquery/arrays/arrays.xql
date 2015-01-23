@@ -14,20 +14,42 @@ declare variable $arr:SERIALIZE_JSON :=
         <output:method>json</output:method>
         <output:indent>false</output:indent>
     </output:serialization-parameters>;
+
+declare variable $arr:COLLECTION_CONF := 
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <fulltext default="none" attributes="false"/>
+            <create qname="a" type="xs:int"/>
+            <range>
+                <create qname="b" type="xs:int"/>
+            </range>
+        </index>
+    </collection>;
+
+declare variable $arr:XML_STORED := 
+    <test>
+        <a>1</a>
+        <b>2</b>
+    </test>;
     
 declare 
     %test:setUp
 function arr:setup() {
     let $json := '[{"key1": "value1", "key2": "value2", "key1": "value3"}]'
     let $coll := xmldb:create-collection("/db", "array-test")
-    return
-        xmldb:store($coll, "test.json", $json)
+    let $confColl := xmldb:create-collection("/db/system/config/db", "array-test")
+    return (
+        xmldb:store($confColl, "collection.xconf", $arr:COLLECTION_CONF),
+        xmldb:store($coll, "test.json", $json),
+        xmldb:store($coll, "test.xml", $arr:XML_STORED)
+    )
 };
 
 declare
     %test:tearDown
 function arr:cleanup() {
-    xmldb:remove("/db/array-test")
+    xmldb:remove("/db/array-test"),
+    xmldb:remove("/db/system/config/db/array-test")
 };
 
 declare 
@@ -695,4 +717,121 @@ function arr:serialize-old-json-compat() {
     let $xmlJson := <result><status json:literal="true">true</status></result>
     return
         serialize($xmlJson, $arr:SERIALIZE_JSON)
+};
+
+declare 
+    %test:args(2)
+    %test:assertTrue
+    %test:args(3)
+    %test:assertTrue
+    %test:args(6)
+    %test:assertTrue
+    %test:args(7)
+    %test:assertFalse
+function arr:general-comparison1($val as xs:int) {
+    [1, 2, 3, [5, 6]] = $val
+};
+
+declare
+    %test:assertTrue
+function arr:general-comparison2() {
+    let $xml := <test><a>2</a></test>
+    return
+        $xml/a[. = [2, 3]]
+};
+
+declare
+    %test:assertFalse
+function arr:general-comparison3() {
+    let $xml := <test><a>2</a></test>
+    return
+        $xml/a[. = [3, 4]]
+};
+
+declare 
+    %test:assertEquals("<a>1</a>")
+function arr:general-comparison-range() {
+    collection("/db/array-test")//a[. = [1, 2]]
+};
+
+declare 
+    %test:assertEquals("<b>2</b>")
+function arr:general-comparison-range-new() {
+    collection("/db/array-test")//b[. = [1, 2]]
+};
+
+declare
+    %test:assertError
+function arr:value-comparison() {
+    let $xml := <test><a>3</a></test>
+    return
+        $xml/a[. eq [3, 4]]
+};
+
+declare
+    %test:assertEquals(1)
+function arr:cast-as() {
+    array { 1 } cast as xs:double
+};
+
+declare
+    %test:assertError
+function arr:cast-as-invalid() {
+    array { 1 to 3 } cast as xs:double
+};
+
+declare
+    %test:assertEquals(1)
+function arr:castable-as() {
+    array { 1 } castable as xs:double
+};
+
+declare
+    %test:assertError
+function arr:castable-as-invalid() {
+    array { 1 to 3 } castable as xs:double
+};
+
+declare 
+    %test:assertEquals("<test><p>Hello <b>world</b>!</p></test>")
+function arr:enclosed-expr-element() {
+    <test><p>Hello {[<b>world</b>, "!"]}</p></test>
+};
+
+declare 
+    %test:assertEquals("<p>Hello world !</p>")
+function arr:element-computed() {
+    element p {
+        "Hello", ["world", "!"]
+    }
+};
+
+declare 
+    %test:assertEquals('<test attr="1 2"/>')
+function arr:enclosed-expr-attribute() {
+    <test attr="{[1, 2]}"/>
+};
+
+declare 
+    %test:assertEquals('<p attr="1 2"/>')
+function arr:attribute-computed() {
+    element p {
+        attribute attr { [1, 2] }
+    }
+};
+
+declare 
+    %test:assertEquals('<p>Hello world</p>')
+function arr:text-computed() {
+    element p {
+        text { ["Hello", "world"] }
+    }
+};
+
+declare 
+    %test:assertEquals('<p><!--Hello world--></p>')
+function arr:comment-computed() {
+    element p {
+        comment { ["Hello", "world"] }
+    }
 };

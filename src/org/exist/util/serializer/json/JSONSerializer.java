@@ -73,17 +73,15 @@ public class JSONSerializer {
     }
 
     private void serializeItem(Item item, JsonGenerator generator) throws IOException, XPathException, SAXException {
-        if (Type.subTypeOf(item.getType(), Type.ATOMIC)) {
+        if (item.getType() == Type.ARRAY) {
+            serializeArray((ArrayType) item, generator);
+        } else if (item.getType() == Type.MAP) {
+            serializeMap((MapType) item, generator);
+        } else if (Type.subTypeOf(item.getType(), Type.ATOMIC)) {
             if (Type.subTypeOf(item.getType(), Type.NUMBER)) {
                 generator.writeNumber(item.getStringValue());
             } else {
                 switch (item.getType()) {
-                    case Type.ARRAY:
-                        serializeArray((ArrayType) item, generator);
-                        break;
-                    case Type.MAP:
-                        serializeMap((MapType) item, generator);
-                        break;
                     case Type.BOOLEAN:
                         generator.writeBoolean(((AtomicValue)item).effectiveBooleanValue());
                         break;

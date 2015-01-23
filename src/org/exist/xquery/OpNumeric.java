@@ -51,8 +51,6 @@ public class OpNumeric extends BinaryOp {
     public OpNumeric(XQueryContext context, Expression left, Expression right, int operator) {
         super(context);
         this.operator = operator;
-        left = atomizeIfNecessary(left);
-        right = atomizeIfNecessary(right);
         int ltype = left.returnsType();
         int rtype = right.returnsType();
         if (Type.subTypeOf(ltype, Type.NUMBER) && Type.subTypeOf(rtype, Type.NUMBER)) {
@@ -77,10 +75,6 @@ public class OpNumeric extends BinaryOp {
         }
         add(left);
         add(right);
-    }
-
-    private Expression atomizeIfNecessary(Expression x) {
-        return Type.subTypeOf(x.returnsType(), Type.ATOMIC) ? x : new Atomize(context, x);
     }
 
     @Override
@@ -109,8 +103,8 @@ public class OpNumeric extends BinaryOp {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES,
                     "CONTEXT ITEM", contextItem.toSequence());}
         }
-        final Sequence lseq = getLeft().eval(contextSequence, contextItem);
-        final Sequence rseq = getRight().eval(contextSequence, contextItem);
+        final Sequence lseq = Atomize.atomize(getLeft().eval(contextSequence, contextItem));
+        final Sequence rseq = Atomize.atomize(getRight().eval(contextSequence, contextItem));
         if (lseq.hasMany())
             {throw new XPathException(this, ErrorCodes.XPTY0004,
                 "Too many operands at the left of " + Constants.OPS[operator]);}

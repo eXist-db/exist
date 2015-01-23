@@ -37,7 +37,7 @@ public class FunctionReference extends AtomicValue {
     private final static Logger LOG = Logger.getLogger(FunctionReference.class);
 
     protected FunctionCall functionCall;
-    
+
     public FunctionReference(FunctionCall fcall) {
         this.functionCall = fcall;
     }
@@ -160,4 +160,8 @@ public class FunctionReference extends AtomicValue {
         throw new XPathException("Invalid argument to aggregate function: cannot compare function references");
     }
 
+    @Override
+    public AtomicValue atomize() throws XPathException {
+        throw new XPathException(ErrorCodes.FOTY0013, "A function item other than an array cannot be atomized");
+    }
 }

@@ -144,6 +144,41 @@ public class FunDeepEqual extends CollatingFunction {
 
     public static boolean deepEquals(Item a, Item b, Collator collator) {
         try {
+            if (a.getType() == Type.ARRAY || b.getType() == Type.ARRAY) {
+                if (a.getType() != b.getType()) {
+                    return false;
+                }
+                final ArrayType ar = (ArrayType) a;
+                final ArrayType br = (ArrayType) b;
+                if (ar.getSize() != br.getSize()) {
+                    return false;
+                }
+                for (int i = 0; i < ar.getSize(); i++) {
+                    if (!deepEqualsSeq(ar.get(i), br.get(i), collator)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (a.getType() == Type.MAP || b.getType() == Type.MAP) {
+                if (a.getType() != b.getType()) {
+                    return false;
+                }
+                final MapType amap = (MapType) a;
+                final MapType bmap = (MapType) b;
+                if (amap.size() != bmap.size()) {
+                    return false;
+                }
+                for (Map.Entry<AtomicValue, Sequence> aentry: amap) {
+                    if (!bmap.contains(aentry.getKey())) {
+                        return false;
+                    }
+                    if (!deepEqualsSeq(aentry.getValue(), bmap.get(aentry.getKey()), collator)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
             final boolean aAtomic = Type.subTypeOf(a.getType(), Type.ATOMIC);
             final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ATOMIC);
             if (aAtomic || bAtomic) {
@@ -157,39 +192,6 @@ public class FunDeepEqual extends CollatingFunction {
                         //or if both values are NaN
                         if (((NumericValue) a).isNaN() && ((NumericValue) b).isNaN())
                             {return true;}
-                    } else if (av.getType() == Type.ARRAY || bv.getType() == Type.ARRAY) {
-                        if (av.getType() != bv.getType()) {
-                            return false;
-                        }
-                        final ArrayType ar = (ArrayType) av;
-                        final ArrayType br = (ArrayType) bv;
-                        if (ar.getSize() != br.getSize()) {
-                            return false;
-                        }
-                        for (int i = 0; i < ar.getSize(); i++) {
-                            if (!deepEqualsSeq(ar.get(i), br.get(i), collator)) {
-                                return false;
-                            }
-                        }
-                        return true;
-                    } else if (av.getType() == Type.MAP || bv.getType() == Type.MAP) {
-                        if (av.getType() != bv.getType()) {
-                            return false;
-                        }
-                        final MapType amap = (MapType) av;
-                        final MapType bmap = (MapType) bv;
-                        if (amap.size() != bmap.size()) {
-                            return false;
-                        }
-                        for (Map.Entry<AtomicValue, Sequence> aentry: amap) {
-                            if (!bmap.contains(aentry.getKey())) {
-                                return false;
-                            }
-                            if (!deepEqualsSeq(aentry.getValue(), bmap.get(aentry.getKey()), collator)) {
-                                return false;
-                            }
-                        }
-                        return true;
                     }
                     return ValueComparison.compareAtomic(collator, av, bv,
                         Constants.TRUNC_NONE, Constants.EQ);

@@ -205,6 +205,20 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return Type.ARRAY;
     }
 
+    @Override
+    public AtomicValue atomize() throws XPathException {
+        if (vector.length() == 0) {
+            return null;
+        } else if (vector.length() > 1) {
+            throw new XPathException(ErrorCodes.XPTY0004, "Expected single atomic value but found array with length " + vector.length());
+        }
+        final Sequence member = vector.nth(0);
+        if (member.hasMany()) {
+            throw new XPathException(ErrorCodes.XPTY0004, "Expected single atomic value but found sequence of length " + member.getItemCount());
+        }
+        return member.itemAt(0).atomize();
+    }
+
     public ArrayType forEach(FunctionReference ref) throws XPathException {
         final ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
         final Sequence fargs[] = new Sequence[1];
@@ -257,7 +271,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return ref.evalFunction(null, null, new Sequence[] { head, tailResult });
     }
 
-    public static void flatten(Sequence input, ValueSequence result) throws XPathException {
+    protected static Sequence flatten(Sequence input, ValueSequence result) throws XPathException {
         for (SequenceIterator i = input.iterate(); i.hasNext(); ) {
             final Item item = i.nextItem();
             if (item.getType() == Type.ARRAY) {
@@ -267,6 +281,29 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
                 result.add(item);
             }
         }
+        return result;
+    }
+
+    public static Sequence flatten(Item item) throws XPathException {
+        if (item.getType() == Type.ARRAY) {
+            final Sequence members = ((ArrayType)item).asSequence();
+            return flatten(members, new ValueSequence(members.getItemCount()));
+        }
+        return item.toSequence();
+    }
+
+    public static Sequence flatten(Sequence input) throws XPathException {
+        if (input.hasOne()) {
+            return flatten(input.itemAt(0));
+        }
+        boolean flatten = false;
+        for (SequenceIterator i = input.iterate(); i.hasNext(); ) {
+            if (i.nextItem().getType() == Type.ARRAY) {
+                flatten = true;
+                break;
+            }
+        }
+        return flatten ? flatten(input, new ValueSequence(input.getItemCount() * 2)) : input;
     }
 
     /**
