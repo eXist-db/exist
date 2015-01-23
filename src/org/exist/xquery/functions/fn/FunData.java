@@ -22,13 +22,7 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
@@ -78,16 +72,16 @@ public class FunData extends Function {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES,
                     "CONTEXT ITEM", contextItem.toSequence());}
         }
-        final Sequence arg = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence arg = Atomize.atomize(getArgument(0).eval(contextSequence, contextItem));
         Sequence result;
         if (arg.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
+        } else if (arg.hasOne()) {
+            result = arg;
         } else {
             result = new ValueSequence();
-            Item item;
             for (final SequenceIterator i = arg.iterate(); i.hasNext(); ) {
-                item = i.nextItem();
-                result.add(item.atomize());
+                result.add(i.nextItem());
             }
         }
         if (context.getProfiler().isEnabled()) 
