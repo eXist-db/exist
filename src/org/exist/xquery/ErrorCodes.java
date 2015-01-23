@@ -204,6 +204,7 @@ public class ErrorCodes {
 	public static final ErrorCode FOAP0001 = new W3CErrorCode("FOAP0001", "Wrong number of arguments");
 
     /* XQuery 3.1 */
+    public static ErrorCode XQTY0105 = new W3CErrorCode("XQTY0105", "It is a type error if the content sequence in an element constructor contains a function.");
     public static ErrorCode FOAY0001 = new W3CErrorCode("FOAY0001", "Array index out of bounds.");
     public static ErrorCode FOAY0002 = new W3CErrorCode("FOAY0002", "Negative array length.");
 

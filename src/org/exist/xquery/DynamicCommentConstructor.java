@@ -43,7 +43,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
      */
     public DynamicCommentConstructor(XQueryContext context, Expression contentExpr) {
         super(context);
-        this.content = new Atomize(context, contentExpr);
+        this.content = contentExpr;
     }
 
     /* (non-Javadoc)
@@ -81,7 +81,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
                 final MemTreeBuilder builder = context.getDocumentBuilder();
                 context.proceed(this, builder);
                 final StringBuilder buf = new StringBuilder();
-                for(final SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+                for(final SequenceIterator i = Atomize.atomize(contentSeq).iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
                     final Item next = i.nextItem();
                     if(buf.length() > 0)

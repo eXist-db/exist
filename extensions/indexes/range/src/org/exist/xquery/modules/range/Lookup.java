@@ -174,7 +174,6 @@ public class Lookup extends Function implements Optimizable {
         steps.add(path);
 
         Expression arg = arguments.get(1).simplify();
-        arg = new Atomize(context, arg);
         arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_MORE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
         steps.add(arg);
@@ -286,7 +285,7 @@ public class Lookup extends Function implements Optimizable {
     private AtomicValue[] getKeys(Sequence contextSequence) throws XPathException {
         RangeIndexConfigElement config = findConfiguration(contextSequence);
         int targetType = config != null ? config.getType() : Type.ITEM;
-        Sequence keySeq = getArgument(1).eval(contextSequence);
+        Sequence keySeq = Atomize.atomize(getArgument(1).eval(contextSequence));
         AtomicValue[] keys = new AtomicValue[keySeq.getItemCount()];
         for (int i = 0; i < keys.length; i++) {
             if (targetType == Type.ITEM) {

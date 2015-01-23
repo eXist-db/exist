@@ -166,7 +166,6 @@ public class FieldLookup extends Function implements Optimizable {
         }
         for (int i = j; i < arguments.size(); i++) {
             Expression arg = arguments.get(i).simplify();
-            arg = new Atomize(context, arg);
             arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
                     new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
             steps.add(arg);
@@ -212,7 +211,7 @@ public class FieldLookup extends Function implements Optimizable {
 
         Sequence[] keys = new Sequence[getArgumentCount() - j];
         for (int i = j; i < getArgumentCount(); i++) {
-            keys[i - j] = getArgument(i).eval(contextSequence);
+            keys[i - j] = Atomize.atomize(getArgument(i).eval(contextSequence));
         }
         DocumentSet docs = contextSequence.getDocumentSet();
 

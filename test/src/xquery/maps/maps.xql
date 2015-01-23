@@ -382,14 +382,6 @@ function mt:lookupParenthesized($key as xs:string) {
 };
 
 declare 
-    %test:assertEquals(1)
-function mt:lookupStringLiteral() {
-    let $map := map { "some key": 1, "another key": "2" }
-    return
-        $map?"some key"
-};
-
-declare 
     %test:assertError
 function mt:lookupWrongType() {
     let $map := map { "one": 1, "two": "2" }
@@ -404,4 +396,10 @@ function mt:compat() {
     let $map := map { "one":= 1, "two":= "2" }
     return
         $map("one")
+};
+
+declare 
+    %test:assertError
+function mt:no-atomization() {
+    data(map { "k": "v" })
 };

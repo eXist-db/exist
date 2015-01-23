@@ -52,8 +52,6 @@ public class CastableExpression extends AbstractExpression {
 		this.expression = expr;
 		this.requiredType = requiredType;
 		this.requiredCardinality = requiredCardinality;
-		if (!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
-			{expression = new Atomize(context, expression);}
 	}
 
 	/* (non-Javadoc)
@@ -108,7 +106,7 @@ public class CastableExpression extends AbstractExpression {
         if (requiredType == Type.QNAME && Dependency.dependsOnVar(expression))
         	{result = BooleanValue.FALSE;}
         else {
-			final Sequence seq = expression.eval(contextSequence, contextItem);
+			final Sequence seq = Atomize.atomize(expression.eval(contextSequence, contextItem));
 			if(seq.isEmpty()) {
 				//If ? is specified after the target type, the result of the cast expression is an empty sequence.
 				if (Cardinality.checkCardinality(requiredCardinality, Cardinality.ZERO))
