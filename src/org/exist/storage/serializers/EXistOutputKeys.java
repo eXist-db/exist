@@ -76,4 +76,6 @@ public class EXistOutputKeys {
      * will or will not raise serialization error err:SERE0022.
      */
     public final static String ALLOW_DUPLICATE_NAMES = "allow-duplicate-names";
+
+    public final static String HTML_VERSION = "html-version";
 }
