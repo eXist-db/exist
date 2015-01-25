@@ -21,8 +21,17 @@
  */
 package org.exist.xquery.modules.httpclient;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -38,6 +47,8 @@ import org.exist.xquery.FunctionDef;
  */
 public class HTTPClientModule extends AbstractInternalModule
 {
+    private final static Logger LOG = Logger.getLogger(HTTPClientModule.class);
+
     public final static String         NAMESPACE_URI                  = "http://exist-db.org/xquery/httpclient";
 
     public final static String         PREFIX                         = "httpclient";
@@ -47,7 +58,9 @@ public class HTTPClientModule extends AbstractInternalModule
     public final static String         HTTP_MODULE_PERSISTENT_STATE   = "_eXist_httpclient_module_persistent_state";
     public final static String         HTTP_MODULE_PERSISTENT_OPTIONS = "_eXist_httpclient_module_persistent_options";
 
-	
+    final static HttpClient httpClient = setupHttpClient();
+
+
     private final static FunctionDef[] functions                      = {
         new FunctionDef( GETFunction.signatures[0], GETFunction.class ),
         new FunctionDef( GETFunction.signatures[1], GETFunction.class ),
@@ -92,4 +105,88 @@ public class HTTPClientModule extends AbstractInternalModule
         return( RELEASED_IN_VERSION );
     }
 
+    private static HttpClient setupHttpClient() {
+        final HttpConnectionManager httpConnectionManager = new MultiThreadedHttpConnectionManager();
+        final HttpClient client = new HttpClient(httpConnectionManager);
+
+        //config from file if present
+        final String configFile = System.getProperty("http.configfile");
+        if(configFile != null) {
+            final File f = new File(configFile);
+            if(f.exists()) {
+                setConfigFromFile(f, httpClient);
+            } else {
+                LOG.warn("http.configfile '" + f.getAbsolutePath() + "' does not exist!");
+            }
+        }
+        
+        // Legacy: set the proxy server (if any) from system properties
+        final String proxyHost = System.getProperty("http.proxyHost");
+        if(proxyHost != null) {
+            //TODO: support for http.nonProxyHosts e.g. -Dhttp.nonProxyHosts="*.devonline.gov.uk|*.devon.gov.uk"
+            final ProxyHost proxy = new ProxyHost(proxyHost, Integer.parseInt(System.getProperty("http.proxyPort")));
+            httpClient.getHostConfiguration().setProxyHost(proxy);
+        }
+
+        return client;
+    }
+
+    private static void setConfigFromFile(final File configFile, final HttpClient http) {
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("http.configfile='" + configFile.getAbsolutePath() + "'");
+        }
+
+        final Properties props = new Properties();
+        try(final InputStream is = new FileInputStream(configFile)) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Loading proxy settings from " + configFile.getAbsolutePath());
+            }
+
+            props.load(is);
+
+            // Hostname / port
+            final String proxyHost = props.getProperty("proxy.host");
+            final int proxyPort = Integer.valueOf(props.getProperty("proxy.port", "8080"));
+
+            // Username / password
+            final String proxyUser = props.getProperty("proxy.user");
+            final String proxyPassword = props.getProperty("proxy.password");
+
+            // NTLM specifics
+            String proxyDomain = props.getProperty("proxy.ntlm.domain");
+            if ("NONE".equalsIgnoreCase(proxyDomain)) {
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Forcing removal NTLM");
+                }
+                proxyDomain = null;
+            }
+
+            // Set scope
+            final AuthScope authScope = new AuthScope(proxyHost, proxyPort);
+
+            // Setup right credentials
+            final Credentials credentials;
+            if (proxyDomain == null) {
+                credentials = new UsernamePasswordCredentials(proxyUser, proxyPassword);
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Using NTLM authentication for '" + proxyDomain + "'");
+                }
+                credentials = new NTCredentials(proxyUser, proxyPassword, proxyHost, proxyDomain);
+            }
+
+            // Set details
+            final HttpState state = http.getState();
+            http.getHostConfiguration().setProxy(proxyHost, proxyPort);
+            state.setProxyCredentials(authScope, credentials);
+
+            if (LOG.isDebugEnabled()) {
+                LOG.info("Set proxy: " + proxyUser + "@" + proxyHost + ":"
+                        + proxyPort + (proxyDomain == null ? "" : " (NTLM:'"
+                        + proxyDomain + "')"));
+            }
+        } catch (final IOException ex) {
+            LOG.error("Failed to read proxy configuration from '" + configFile + "'");
+        }
+    }
 }
