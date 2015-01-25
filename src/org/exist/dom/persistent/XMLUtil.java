@@ -49,8 +49,7 @@ public final class XMLUtil {
 
     public static final String dump(final DocumentFragment fragment) {
         final StringWriter writer = new StringWriter();
-        final DOMSerializer serializer = new DOMSerializer();
-        serializer.setWriter(writer);
+        final DOMSerializer serializer = new DOMSerializer(writer, null);
         try {
             serializer.serialize(fragment);
         } catch(final TransformerException e) {

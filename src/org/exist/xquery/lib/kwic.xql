@@ -44,7 +44,7 @@ declare function kwic:display-text($text as text()?) as node()? {
         $text
 };
 
-declare function kwic:callback($callback as function?, $node as node(), $mode as xs:string) as xs:string? {
+declare function kwic:callback($callback as function(*)?, $node as node(), $mode as xs:string) as xs:string? {
     if (exists($callback)) then
         $callback($node, $mode)
     else

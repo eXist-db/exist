@@ -65,4 +65,17 @@ public class EXistOutputKeys {
      * them as JSON properties
      */
     public final static String JSON_PREFIX_ATTRIBUTES = "prefix-attributes";
+
+    /**
+     * Defines the output method to be used for serializing nodes within json output.
+     */
+    public final static String JSON_NODE_OUTPUT_METHOD = "json-node-output-method";
+
+    /**
+     * Determines whether the presence of multiple keys in a map item with the same string value
+     * will or will not raise serialization error err:SERE0022.
+     */
+    public final static String ALLOW_DUPLICATE_NAMES = "allow-duplicate-names";
+
+    public final static String HTML_VERSION = "html-version";
 }

@@ -23,6 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -74,8 +75,11 @@ public class Atomize extends AbstractExpression {
     public static Sequence atomize(Sequence input) throws XPathException {
         if (input.isEmpty())
             {return Sequence.EMPTY_SEQUENCE;}
-        if (input.hasOne())
-            {return input.itemAt(0).atomize();}
+        input = ArrayType.flatten(input);
+        if (input.hasOne()) {return
+            input.itemAt(0).atomize();
+        }
+
         Item next;
         final ValueSequence result = new ValueSequence();
         for(final SequenceIterator i = input.iterate(); i.hasNext(); ) {

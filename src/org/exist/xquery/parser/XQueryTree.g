@@ -52,7 +52,7 @@ header {
 	import org.exist.xquery.update.*;
 	import org.exist.storage.ElementValue;
 	import org.exist.xquery.functions.map.MapExpr;
-	import org.exist.xquery.functions.map.MapLookup;
+	import org.exist.xquery.functions.array.ArrayConstructor;
 }
 
 /**
@@ -200,9 +200,12 @@ throws PermissionDeniedException, EXistException, XPathException
         #(
             v:VERSION_DECL
             {
-                if (v.getText().equals("3.0")) {
+            	final String version = v.getText();
+            	if (version.equals("3.1")) {
+            		context.setXQueryVersion(31);
+            	} else if (version.equals("3.0")) {
                     context.setXQueryVersion(30);
-                } else if (v.getText().equals("1.0")) {
+                } else if (version.equals("1.0")) {
                     context.setXQueryVersion(10);
                 } else {
                     throw new XPathException(v, "err:XQST0031: Wrong XQuery version: require 1.0 or 3.0");
@@ -893,6 +896,24 @@ throws XPathException
 		|
 		#(
 			MAP_TEST { type.setPrimaryType(Type.MAP); }
+			(
+				STAR
+				|
+				(
+					// TODO: parameter types are collected, but not used!
+					// Change SequenceType accordingly.
+					{ List<SequenceType> paramTypes = new ArrayList<SequenceType>(5); }
+					(
+						{ SequenceType paramType = new SequenceType(); }
+						sequenceType [paramType]
+						{ paramTypes.add(paramType); }
+					)*
+				)
+			)
+		)
+		|
+		#(
+			ARRAY_TEST { type.setPrimaryType(Type.ARRAY); }
 			(
 				STAR
 				|
@@ -1857,6 +1878,10 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	step=mapExpr [path]
 	|
+	step=arrayConstr [path]
+	step=postfixExpr [step]
+	{ path.add(step); }
+	|
 	#(
 		PARENTHESIZED
 		{ PathExpr pathExpr= new PathExpr(context); }
@@ -1887,7 +1912,7 @@ throws PermissionDeniedException, EXistException, XPathException
     step=functionDecl [path]
 	{ path.add(step); }
 	|
-	step = mapLookup [null]
+	step = lookup [null]
 	step=postfixExpr [step]
 	{ path.add(step); }
 	;
@@ -2341,6 +2366,8 @@ throws PermissionDeniedException, EXistException, XPathException
 }
 :
     (
+        step = lookup [step]
+        |
 		#(
         	PREDICATE
 			{
@@ -2375,8 +2402,6 @@ throws PermissionDeniedException, EXistException, XPathException
 				step = new DynamicFunctionCall(context, step, params, isPartial);
 			}
 		)
-		|
-		step = mapLookup [step]
 	)*
 ;
 
@@ -2395,22 +2420,34 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	;
 
-mapLookup [Expression leftExpr]
+lookup [Expression leftExpr]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
 :
     #(
-        lookup:MAP_LOOKUP
+        lookup:LOOKUP
         {
             PathExpr lookupExpr = new PathExpr(context);
+            int position = 0;
         }
-        ( expr [lookupExpr] )*
+        (
+			pos:INTEGER_VALUE { position = Integer.parseInt(pos.getText()); }
+			|
+			( expr [lookupExpr] )+
+		)?
         {
             if (lookupExpr.getLength() == 0) {
-                step = new MapLookup(context, leftExpr, lookup.getText());
+            	if (lookup.getText().equals("?*")) {
+            		step = new Lookup(context, leftExpr);
+            	} else if (position == 0) {
+                	step = new Lookup(context, leftExpr, lookup.getText());
+                } else {
+					step = new Lookup(context, leftExpr, position);
+                }
             } else {
-                step = new MapLookup(context, leftExpr, lookupExpr);
+                step = new Lookup(context, leftExpr, lookupExpr);
             }
+            step.setASTNode(lookup);
         }
     )
     ;
@@ -3100,5 +3137,30 @@ throws XPathException, PermissionDeniedException, EXistException
 				{ expr.map(key, value); }
 			)
 		)*
+	)
+	;
+
+arrayConstr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+		t:ARRAY
+		{
+		    String type = t.getText();
+		    ArrayConstructor array;
+		    if (type.equals("[")) {
+		        array = new ArrayConstructor(context, ArrayConstructor.ConstructorType.SQUARE_ARRAY);
+		    } else {
+		        array = new ArrayConstructor(context, ArrayConstructor.ConstructorType.CURLY_ARRAY);
+		    }
+		    step = array;
+		}
+		(
+		    { PathExpr arg = new PathExpr(context); }
+		    expr[arg]
+		    { array.addArgument(arg); }
+        )*
 	)
 	;

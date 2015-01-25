@@ -306,7 +306,7 @@ public abstract class Function extends PathExpr {
         if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
             if (!(Type.subTypeOf(type.getPrimaryType(), returnType) ||
                     //Because () is seen as a node
-                    (type.getPrimaryType() == Type.EMPTY && returnType == Type.NODE))) {
+                    (Cardinality.checkCardinality(type.getCardinality(), Cardinality.ZERO) && returnType == Type.NODE))) {
                 LOG.debug(ExpressionDumper.dump(expr));
                 throw new XPathException(this, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC, 
                     String.valueOf(argPosition), mySignature, type.toString(), Type.getTypeName(returnType)));

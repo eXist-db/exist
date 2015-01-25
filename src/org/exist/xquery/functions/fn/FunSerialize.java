@@ -1,25 +1,16 @@
 package org.exist.xquery.functions.fn;
 
-import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.storage.serializers.Serializer;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
+import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
+import javax.xml.transform.OutputKeys;
 import java.io.StringWriter;
 import java.util.Properties;
 
@@ -58,25 +49,16 @@ public class FunSerialize extends BasicFunction {
                 SerializerUtils.getSerializationOptions(this, (NodeValue) args[1].itemAt(0), outputProperties);
         }
 
-        final StringBuilder out = new StringBuilder();
+        final StringWriter writer = new StringWriter();
+        XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), outputProperties, writer);
 
-        final Serializer serializer = context.getBroker().getSerializer();
-        serializer.reset();
+        Sequence seq = args[0];
+        if (!xqSerializer.isJSON()) {
+            seq = normalize(seq);
+        }
         try {
-            serializer.setProperties(outputProperties);
-            final Sequence normalized = normalize(args[0]);
-            for (final SequenceIterator i = normalized.iterate(); i.hasNext(); ) {
-                final Item next = i.nextItem();
-                if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                    final String val = serializer.serialize((NodeValue) next);
-                    out.append(val);
-                }
-            }
-            return new StringValue(out.toString());
-        } catch (final SAXNotRecognizedException e) {
-            throw new XPathException(this, ErrorCodes.EXXQDY0001, e.getMessage());
-        } catch (final SAXNotSupportedException e) {
-            throw new XPathException(this, ErrorCodes.EXXQDY0001, e.getMessage());
+            xqSerializer.serialize(seq);
+            return new StringValue(writer.toString());
         } catch (final SAXException e) {
             throw new XPathException(this, FnModule.SENR0001, e.getMessage());
         }

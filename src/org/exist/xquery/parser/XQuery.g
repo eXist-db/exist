@@ -149,7 +149,9 @@ imaginaryTokenDefinitions
 	FUNCTION_INLINE 
 	FUNCTION_TEST
 	MAP_TEST
-	MAP_LOOKUP
+	LOOKUP
+	ARRAY
+	ARRAY_TEST
 	PROLOG
 	OPTION
 	ATOMIC_TYPE 
@@ -519,6 +521,8 @@ itemType throws XPathException
 	( "function" LPAREN ) => functionTest
 	|
 	( "map" LPAREN ) => mapType
+	|
+	( "array" LPAREN ) => arrayType
 	| 
 	( LPAREN ) => parenthesizedItemType
 	|
@@ -584,6 +588,30 @@ mapTypeTest throws XPathException
 	m:"map"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN!
 	{ 
 		#mapTypeTest = #(#[MAP_TEST, "map"], #mapTypeTest);
+	}
+	;
+
+arrayType throws XPathException
+:
+	( "array" LPAREN STAR ) => anyArrayTypeTest
+	|
+	arrayTypeTest
+	;
+
+anyArrayTypeTest throws XPathException
+:
+	m:"array"! LPAREN! s:STAR RPAREN!
+	{
+		#anyArrayTypeTest = #(#[ARRAY_TEST, "array"], #s);
+		#anyArrayTypeTest.copyLexInfo(#m);
+	}
+	;
+
+arrayTypeTest throws XPathException
+:
+	m:"array"! LPAREN! sequenceType RPAREN!
+	{
+		#arrayTypeTest = #(#[ARRAY_TEST, "array"], #arrayTypeTest);
 	}
 	;
 
@@ -1014,13 +1042,13 @@ stepExpr throws XPathException
 	=> axisStep
 	|
 	( ( "element" | "attribute" | "text" | "document" | "processing-instruction" | "namespace" |
-	"comment" | "ordered" | "unordered" | "map" ) LCURLY ) => 
+	"comment" | "ordered" | "unordered" | "map" | "array" ) LCURLY ) =>
 	postfixExpr
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => postfixExpr
 	|
 	( MOD | DOLLAR | ( qName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
-	  XML_PI | QUESTION )
+	  XML_PI | QUESTION | LPPAREN)
 	=> postfixExpr
 	|
 	axisStep
@@ -1117,21 +1145,36 @@ postfixExpr throws XPathException:
 		|
 		(LPAREN) => dynamicFunCall
 		|
-		(QUESTION) => mapLookup
+		(QUESTION) => lookup
 	)*
 	;
 
-mapLookup throws XPathException
+lookup throws XPathException
 { String name= null; }:
-    QUESTION! (
+    q:QUESTION! (
         name=ncnameOrKeyword
-        { #mapLookup = #(#[MAP_LOOKUP, name]); }
+        {
+        	#lookup = #(#[LOOKUP, name]);
+        	#lookup.copyLexInfo(#q);
+		}
         |
-        s:STRING_LITERAL
-        { #mapLookup = #(#[MAP_LOOKUP, s.getText()]); }
+        pos:INTEGER_LITERAL
+        {
+        	#lookup = #(#[LOOKUP, "?"], #pos);
+        	#lookup.copyLexInfo(#q);
+		}
         |
         paren:parenthesizedExpr
-        { #mapLookup = #(#[MAP_LOOKUP, "?"], #paren); }
+        {
+        	#lookup = #(#[LOOKUP, "?"], #paren);
+        	#lookup.copyLexInfo(#q);
+		}
+        |
+        STAR
+        {
+        	#lookup = #(#[LOOKUP, "?*"]);
+        	#lookup.copyLexInfo(#q);
+        }
     )
     ;
 
@@ -1156,6 +1199,8 @@ primaryExpr throws XPathException
 	|
 	( "unordered" LCURLY ) => unorderedExpr
 	|
+	( LPPAREN | ( "array" LCURLY ) ) => arrayConstructor
+	|
 	( "map" LCURLY ) => mapExpr
 	|
 	directConstructor
@@ -1164,7 +1209,7 @@ primaryExpr throws XPathException
 	|
 	(eqName LPAREN ) => functionCall
 	|
-	( QUESTION ) => mapLookup
+	( QUESTION ) => lookup
 	|
 	contextItemExpr
 	|
@@ -1184,6 +1229,21 @@ mapAssignment throws XPathException
 	:
 	exprSingle COLON^ ( EQ! )? exprSingle
 	;
+
+arrayConstructor throws XPathException
+    :
+    lp:LPPAREN! (exprSingle ( COMMA! exprSingle )* )? RPPAREN!
+    {
+        #arrayConstructor = #(#[ARRAY, "["], #arrayConstructor);
+        #arrayConstructor.copyLexInfo(#lp);
+    }
+    |
+    a:"array"! LCURLY! (expr )? RCURLY!
+    {
+        #arrayConstructor = #(#[ARRAY, "array"], #arrayConstructor);
+        #arrayConstructor.copyLexInfo(#a);
+    }
+    ;
 
 orderedExpr throws XPathException
 	:
@@ -1920,6 +1980,8 @@ reservedKeywords returns [String name]
 	"xpointer" { name = "xpointer"; }
 	|
 	"map" { name = "map"; }
+	|
+	"array" { name = "array"; }
 	;
 
 /**
