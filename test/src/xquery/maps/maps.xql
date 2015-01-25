@@ -304,7 +304,7 @@ declare
     %test:assertEquals(3)
     %test:args("Three")
     %test:assertEmpty
-function mt:doubleKeys($key as xs:double) {
+function mt:doubleKeys($key as item()) {
     let $map := map { xs:double(1.1) : 1, xs:double(2) : 2 }
     return
         map:new(($map, map:entry(xs:double(2), 3)))($key)

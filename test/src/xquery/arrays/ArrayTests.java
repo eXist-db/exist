@@ -1,4 +1,4 @@
-package xquery.maps;
+package xquery.arrays;
 
 import xquery.TestRunner;
 
