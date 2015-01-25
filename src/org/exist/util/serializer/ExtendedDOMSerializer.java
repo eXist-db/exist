@@ -45,14 +45,6 @@ public class ExtendedDOMSerializer extends DOMSerializer {
     private DBBroker broker;
 
     /**
-     * 
-     */
-    public ExtendedDOMSerializer(DBBroker broker) {
-        super();
-        this.broker = broker;
-    }
-
-    /**
      * @param writer
      * @param outputProperties
      */

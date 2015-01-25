@@ -54,7 +54,7 @@ public class DynamicPIConstructor extends NodeConstructor {
     }
 
     public void setContentExpr(Expression contentExpr) {
-        this.content = new Atomize(context, contentExpr);
+        this.content = contentExpr;
     }
 
     /* (non-Javadoc)
@@ -112,7 +112,7 @@ public class DynamicPIConstructor extends NodeConstructor {
         	{contentString = "";}
             else {
                 final StringBuilder buf = new StringBuilder();
-                for(final SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
+                for(final SequenceIterator i = Atomize.atomize(contentSeq).iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
                     final Item next = i.nextItem();
                     if(buf.length() > 0)

@@ -304,7 +304,7 @@ declare
     %test:assertEquals(3)
     %test:args("Three")
     %test:assertEmpty
-function mt:doubleKeys($key as xs:double) {
+function mt:doubleKeys($key as item()) {
     let $map := map { xs:double(1.1) : 1, xs:double(2) : 2 }
     return
         map:new(($map, map:entry(xs:double(2), 3)))($key)
@@ -382,14 +382,6 @@ function mt:lookupParenthesized($key as xs:string) {
 };
 
 declare 
-    %test:assertEquals(1)
-function mt:lookupStringLiteral() {
-    let $map := map { "some key": 1, "another key": "2" }
-    return
-        $map?"some key"
-};
-
-declare 
     %test:assertError
 function mt:lookupWrongType() {
     let $map := map { "one": 1, "two": "2" }
@@ -404,4 +396,10 @@ function mt:compat() {
     let $map := map { "one":= 1, "two":= "2" }
     return
         $map("one")
+};
+
+declare 
+    %test:assertError
+function mt:no-atomization() {
+    data(map { "k": "v" })
 };

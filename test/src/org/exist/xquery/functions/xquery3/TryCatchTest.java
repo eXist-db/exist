@@ -135,29 +135,6 @@ public class TryCatchTest extends EmbeddedExistTester {
                 fail(t.getMessage());
             }
         }
-
-        // *******************************************
-        
-        String query2 = "try { a + 7 } catch * { 1 }";
-        try {
-            ResourceSet results = executeQuery(query2);
-            String r = (String) results.getResource(0).getContent();
-
-            assertEquals("1", r);
-            fail("exception expected");
-
-        } catch (Throwable t) {
-
-            Throwable cause = t.getCause();
-            if (cause instanceof XPathException) {
-                XPathException ex = (XPathException) cause;
-                assertEquals("exerr:EXXQDY0003", ex.getErrorCode().getErrorQName().getStringValue());
-
-            } else {
-                t.printStackTrace();
-                fail(t.getMessage());
-            }
-        }
     }
 
     @Test

@@ -224,8 +224,8 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Item#effectiveBooleanValue()
-	 */
+         * @see org.exist.xquery.value.Item#effectiveBooleanValue()
+         */
 	public abstract boolean effectiveBooleanValue() throws XPathException;
 	
 	/* (non-Javadoc)

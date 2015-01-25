@@ -131,6 +131,7 @@ public class ErrorCodes {
             "Bind the prefix xmlns to any namespace URI.\n" +
             "Bind a prefix to the namespace URI http://www.w3.org/2000/xmlns/.\n" +
             "Bind any prefix (including the empty prefix) to a zero-length namespace URI.");
+    public static ErrorCode XQDY0138 = new W3CErrorCode("XQDY0138", "Position n does not exist in this array");
 
     /* XQuery 1.0 and XPath 2.0 Functions and Operators http://www.w3.org/TR/xpath-functions/#error-summary */
     public static ErrorCode FOER0000 = new W3CErrorCode("FOER0000", "Unidentified error.");
@@ -187,6 +188,10 @@ public class ErrorCodes {
     public static ErrorCode SERE0015 = new W3CErrorCode("SERE0015", "It is an error to use the HTML output method when > appears within a processing instruction in the data model instance being serialized.");
     public static ErrorCode SEPM0016 = new W3CErrorCode("SEPM0016", "It is a an error if a parameter value is invalid for the defined domain.");
 
+    /* XQuery 3.1 Serialization */
+    public final static ErrorCodes.ErrorCode SERE0021 = new ErrorCodes.ErrorCode("SERE0021", "It is an error if a sequence being serialized using the JSON " +
+            "output method includes items for which no rules are provided in the appropriate section of the serialization rules");
+
     /* XQuery 3.0 functions and operators */
     public static ErrorCode FOFD1340 = new W3CErrorCode("FOFD1340", "Invalid date/time formatting picture string");
     public static ErrorCode FOFD1350 = new W3CErrorCode("FOFD1350", " Invalid date/time formatting component");
@@ -196,7 +201,18 @@ public class ErrorCodes {
 	
 	public static final ErrorCode FODC0006 = new W3CErrorCode("FODC0006", "String passed to fn:parse-xml is not a well-formed XML document.");
 	
-	
+	public static final ErrorCode FOAP0001 = new W3CErrorCode("FOAP0001", "Wrong number of arguments");
+
+    /* XQuery 3.1 */
+    public static ErrorCode XQTY0105 = new W3CErrorCode("XQTY0105", "It is a type error if the content sequence in an element constructor contains a function.");
+    public static ErrorCode FOAY0001 = new W3CErrorCode("FOAY0001", "Array index out of bounds.");
+    public static ErrorCode FOAY0002 = new W3CErrorCode("FOAY0002", "Negative array length.");
+
+    public static ErrorCode FOJS0001 = new W3CErrorCode("FOJS0001", "JSON syntax error.");
+    public static ErrorCode FOJS0002 = new W3CErrorCode("FOJS0002", "JSON invalid character.");
+    public static ErrorCode FOJS0003 = new W3CErrorCode("FOJS0003", "JSON duplicate keys.");
+
+    public static ErrorCode FOUT1170 = new W3CErrorCode("FOUT1170", "Invalid $href argument to fn:unparsed-text() (etc.)");
     
     /* eXist specific XQuery and XPath errors
      *
@@ -213,6 +229,7 @@ public class ErrorCodes {
     public static ErrorCode EXXQDY0001 = new EXistErrorCode("EXXQDY0001", "Index cannot be applied to the given expression.");
     public static ErrorCode EXXQDY0002 = new EXistErrorCode("EXXQDY0002", "Error parsing XML.");
     public static ErrorCode EXXQDY0003 = new EXistErrorCode("EXXQDY0003", "Only Supported for xquery version \"3.0\" and later.");
+    public static ErrorCode EXXQDY0004 = new EXistErrorCode("EXXQDY0004", "Only Supported for xquery version \"3.1\" and later.");
     
     public static ErrorCode ERROR = new EXistErrorCode("ERROR", "Error.");
     
