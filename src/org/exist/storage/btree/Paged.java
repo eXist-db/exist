@@ -1,5 +1,3 @@
-package org.exist.storage.btree;
-
 /*
  *  eXist Open Source Native XML Database
  *  Copyright (C) 2001-05 The eXist Project
@@ -71,6 +69,7 @@ package org.exist.storage.btree;
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package org.exist.storage.btree;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
