@@ -3591,6 +3591,8 @@ public class NativeBroker extends DBBroker {
         nodesCount = 0;
     }
 
+    long nextReportTS = System.currentTimeMillis();
+
     @Override
     public void sync(final int syncEvent) {
         if(isReadOnly()) {
@@ -3620,13 +3622,18 @@ public class NativeBroker extends DBBroker {
                 }
                 notifySync();
                 pool.getIndexManager().sync();
-                final NumberFormat nf = NumberFormat.getNumberInstance();
-                LOG_STATS.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
-                    nf.format(run.maxMemory() / 1024) + "K max; " +
-                    nf.format(run.freeMemory() / 1024) + "K free");
-                domDb.printStatistics();
-                collectionsDb.printStatistics();
-                notifyPrintStatistics();
+
+                if (System.currentTimeMillis() > nextReportTS) {
+	                final NumberFormat nf = NumberFormat.getNumberInstance();
+    	            LOG_STATS.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
+        	                nf.format(run.maxMemory() / 1024) + "K max; " +
+            	            nf.format(run.freeMemory() / 1024) + "K free");
+               		domDb.printStatistics();
+                	collectionsDb.printStatistics();
+                	notifyPrintStatistics();
+
+                    nextReportTS = System.currentTimeMillis() + (10 * 60 * 1000); // occurs after 10 minutes from now
+                }
             }
         } catch(final DBException dbe) {
             dbe.printStackTrace();
