@@ -36,7 +36,7 @@ import com.siemens.ct.exi.EXIFactory;
 import com.siemens.ct.exi.GrammarFactory;
 import com.siemens.ct.exi.api.sax.SAXEncoder;
 import com.siemens.ct.exi.exceptions.EXIException;
-import com.siemens.ct.exi.grammar.Grammar;
+import com.siemens.ct.exi.grammars.Grammars;
 import com.siemens.ct.exi.helpers.DefaultEXIFactory;
 
 public class EXISerializer implements ContentHandler, Receiver {
@@ -54,8 +54,8 @@ public class EXISerializer implements ContentHandler, Receiver {
 	public EXISerializer(OutputStream exiOutputStream, InputStream xsdInputStream) throws EXIException, IOException {
 		final EXIFactory exiFactory = DefaultEXIFactory.newInstance();
 		final GrammarFactory grammarFactory = GrammarFactory.newInstance();
-		final Grammar g = grammarFactory.createGrammar(xsdInputStream);
-		exiFactory.setGrammar(g);
+		final Grammars g = grammarFactory.createGrammars(xsdInputStream);
+		exiFactory.setGrammars(g);
 		encoder = new SAXEncoder(exiFactory);
 		encoder.setOutputStream(exiOutputStream);
 	}
