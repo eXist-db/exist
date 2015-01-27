@@ -18,14 +18,14 @@
 	<!-- import default properties from file -->
     <property file="build.properties"/>
  
-	<!-- You must put tools/ant/lib/jdepend-2.9.jar in the classpath,
+	<!-- You must put tools/ant/lib/jdepend-2.9.1.jar in the classpath,
 	     sorry this an Ant problem. -->
     <target name="jdepend" description="Run jdepend" depends="compile">
     
         <taskdef name="jdepend" loaderref="ant.classpath"
                 classname="org.apache.tools.ant.taskdefs.optional.jdepend.JDependTask">
             <classpath>
-                <pathelement path="$(tools.ant)/lib/jdepend-2.9.jar" />
+                <pathelement path="$(tools.ant)/lib/jdepend-2.9.1.jar" />
             </classpath>
         </taskdef>
 
@@ -41,7 +41,7 @@
             </classespath>
         </jdepend>
 
-        <style  destdir="test/jdepend/html"
+        <xslt  destdir="test/jdepend/html"
                includes="test/jdepend/data/jdepend.xml" 
                style="${tools.ant}/etc/jdepend-frames.xsl" />
 
