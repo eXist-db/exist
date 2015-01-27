@@ -114,7 +114,7 @@ public class HTTPClientModule extends AbstractInternalModule
         if(configFile != null) {
             final File f = new File(configFile);
             if(f.exists()) {
-                setConfigFromFile(f, httpClient);
+                setConfigFromFile(f, client);
             } else {
                 LOG.warn("http.configfile '" + f.getAbsolutePath() + "' does not exist!");
             }
@@ -125,7 +125,7 @@ public class HTTPClientModule extends AbstractInternalModule
         if(proxyHost != null) {
             //TODO: support for http.nonProxyHosts e.g. -Dhttp.nonProxyHosts="*.devonline.gov.uk|*.devon.gov.uk"
             final ProxyHost proxy = new ProxyHost(proxyHost, Integer.parseInt(System.getProperty("http.proxyPort")));
-            httpClient.getHostConfiguration().setProxyHost(proxy);
+            client.getHostConfiguration().setProxyHost(proxy);
         }
 
         return client;
