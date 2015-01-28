@@ -62,8 +62,6 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.Configuration.StartupTriggerConfig;
-import org.exist.util.hashtable.MapRWLock;
-import org.exist.util.hashtable.MapRWLock.LongOperation;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
@@ -76,6 +74,7 @@ import java.io.StringWriter;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class controls all available instances of the database.
@@ -460,12 +459,12 @@ public class BrokerPool implements Database {
     /**
      * The number of inactive brokers for the database instance
      */
-    private Stack<DBBroker> inactiveBrokers = new Stack<>();
+    private final Stack<DBBroker> inactiveBrokers = new Stack<>();
 
     /**
      * The number of active brokers for the database instance
      */
-    private MapRWLock<Thread, DBBroker> activeBrokers = new MapRWLock<>(new IdentityHashMap<Thread, DBBroker>());
+    private final Map<Thread, DBBroker> activeBrokers = new ConcurrentHashMap<>();
 
     /**
      * The configuration object for the database instance
@@ -1221,16 +1220,7 @@ public class BrokerPool implements Database {
     }
 
     public Map<Thread, DBBroker> getActiveBrokers() {
-        final Map<Thread, DBBroker> res = new HashMap<>(activeBrokers.size());
-
-        activeBrokers.readOperation(new LongOperation<Thread, DBBroker>() {
-            @Override
-            public void execute(final Map<Thread, DBBroker> map) {
-                res.putAll(map);
-            }
-        });
-
-        return res;
+        return new HashMap<>(activeBrokers);
     }
 
     /**
@@ -1529,21 +1519,14 @@ public class BrokerPool implements Database {
             sb.append(Thread.currentThread());
             sb.append("'.");
             sb.append(System.getProperty("line.separator"));
-            activeBrokers.readOperation(new LongOperation<Thread, DBBroker>() {
-                @Override
-                public void execute(Map<Thread, DBBroker> map) {
-                    for(final Entry<Thread, DBBroker> entry : map.entrySet()) {
 
-//							if (entry.getKey().equals(Thread.currentThread()))
-//								return entry.getValue();
+            for(final Entry<Thread, DBBroker> entry : activeBrokers.entrySet()) {
+                sb.append(entry.getKey());
+                sb.append(" = ");
+                sb.append(entry.getValue());
+                sb.append(System.getProperty("line.separator"));
+            }
 
-                        sb.append(entry.getKey());
-                        sb.append(" = ");
-                        sb.append(entry.getValue());
-                        sb.append(System.getProperty("line.separator"));
-                    }
-                }
-            });
             LOG.debug(sb.toString());
             throw new RuntimeException(sb.toString());
         }
@@ -1680,21 +1663,14 @@ public class BrokerPool implements Database {
             if(activeBrokers.remove(Thread.currentThread()) == null) {
                 LOG.error("release() has been called from the wrong thread for broker " + broker.getId());
                 // Cleanup the state of activeBrokers
-
-                activeBrokers.writeOperation(new LongOperation<Thread, DBBroker>() {
-                    @Override
-                    public void execute(Map<Thread, DBBroker> map) {
-                        for(final Object t : map.keySet()) {
-                            if(map.get(t) == broker) {
-                                final EXistException ex = new EXistException();
-                                LOG.error("release() has been called from '" + Thread.currentThread() + "', but occupied at '" + t + "'.", ex);
-
-                                map.remove(t);
-                                break;
-                            }
-                        }
+                for(final Thread t : activeBrokers.keySet()) {
+                    if(activeBrokers.get(t) == broker) {
+                        final EXistException ex = new EXistException();
+                        LOG.error("release() has been called from '" + Thread.currentThread() + "', but occupied at '" + t + "'.", ex);
+                        activeBrokers.remove(t);
+                        break;
                     }
-                });
+                }
             }
             final Subject lastUser = broker.getSubject();
             broker.setSubject(securityManager.getGuestSubject());
