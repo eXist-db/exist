@@ -102,11 +102,12 @@ public class TransactionManager implements BrokerPoolService {
                     journalManager.get().journal(new TxnStart(txnId));
                 } catch(final JournalException e) {
                     LOG.error("Failed to create transaction. Error writing to log file.", e);
-                }
+	            }
             }
 
             final Txn txn = new Txn(TransactionManager.this, txnId);
             transactions.put(txn.getId(), new TxnCounter());
+            broker.setCurrentTransaction(txn);
             return txn;
         });
     }
@@ -180,13 +181,20 @@ public class TransactionManager implements BrokerPoolService {
         if (txn.getState() == Txn.State.CLOSED) {
             return;
         }
-
         try {
             //if the transaction is started, then we should auto-abort the uncommitted transaction
             if (txn.getState() == Txn.State.STARTED) {
                 LOG.warn("Transaction was not committed or aborted, auto aborting!");
                 abort(txn);
             }
+
+            try(final DBBroker broker = pool.getBroker()) {
+                broker.setCurrentTransaction(null);
+            } catch(final EXistException ee) {
+                LOG.fatal(ee.getMessage(), ee);
+                throw new RuntimeException(ee);
+            }
+
         } finally {
             txn.setState(Txn.State.CLOSED); //transaction is now closed!
         }

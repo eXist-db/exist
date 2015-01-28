@@ -962,6 +962,25 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         pool.release(this);
     }
 
+    public final static String PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS = "exist.disable-single-thread-overlapping-transaction-checks";
+    private final static boolean DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS = Boolean.valueOf(System.getProperty(PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS, "false"));
+    private Txn currentTransaction = null;
+    public synchronized void setCurrentTransaction(final Txn transaction) {
+        if (DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS) {
+            currentTransaction = transaction;
+        } else {
+            if (currentTransaction == null ^ transaction == null) {
+                currentTransaction = transaction;
+            } else {
+                throw new IllegalStateException("Broker already has a transaction set");
+            }
+        }
+    }
+
+    public synchronized Txn getCurrentTransaction() {
+        return currentTransaction;
+    }
+
     /**
      * Represents a {@link Subject} change
      * made to a broker
