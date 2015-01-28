@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -16,12 +16,11 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id$
  */
 package org.exist.storage.lock;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 
 import org.exist.Debuggable;
 
@@ -103,9 +102,9 @@ public class LockInfo implements Debuggable {
         out.println("Lock type: " + getLockType());
         out.println("Lock mode: " + getLockMode());
         out.println("Lock id: " + getId());
-        out.println("Held by: " + DeadlockDetection.arrayToString(getOwners()));
-        out.println("Read locks: " + DeadlockDetection.arrayToString(getReadLocks()));
-        out.println("Wait for read: " + DeadlockDetection.arrayToString(getWaitingForRead()));
-        out.println("Wait for write: " + DeadlockDetection.arrayToString(getWaitingForWrite()));
+        out.println("Held by: " + Arrays.toString(getOwners()));
+        out.println("Read locks: " + Arrays.toString(getReadLocks()));
+        out.println("Wait for read: " + Arrays.toString(getWaitingForRead()));
+        out.println("Wait for write: " + Arrays.toString(getWaitingForWrite()));
     }
 }
