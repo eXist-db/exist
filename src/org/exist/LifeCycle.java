@@ -22,6 +22,7 @@
 package org.exist;
 
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -29,7 +30,7 @@ import org.exist.storage.DBBroker;
  */
 public interface LifeCycle {
 
-	public void start(DBBroker broker) throws EXistException;
+	public void start(DBBroker broker, final Txn transaction) throws EXistException;
 
 	public void sync(DBBroker broker) throws EXistException;
 

@@ -65,6 +65,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.util.io.FastByteArrayOutputStream;
@@ -716,8 +717,10 @@ public class Configurator {
                 }
                 
                 if (db != null) {
-                    try(final DBBroker broker = db.getBroker()) {
-                        ((LifeCycle) obj).start(broker);
+                    try(final DBBroker broker = db.getBroker();
+                        final Txn transaction = broker.continueOrBeginTransaction()) {
+                        ((LifeCycle) obj).start(broker, transaction);
+                        transaction.commit();
                     }
                 }
                 
@@ -1285,43 +1288,51 @@ public class Configurator {
         FullXmldbURI fullURI = null;
         final BrokerPool pool = broker.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
-        Txn txn = null;
         LOG.info("Storing configuration " + collection.getURI() + "/" + uri);
-        
+
         try {
             broker.pushSubject(pool.getSecurityManager().getSystemSubject());
-            txn = transact.beginTransaction();
-            txn.acquireCollectionLock(() -> pool.getLockManager().acquireCollectionWriteLock(collection.getURI()));
-            final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
-            final DocumentImpl doc = info.getDocument();
-            doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-            PermissionFactory.chmod(broker, doc.getPermissions(), Optional.of(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM), Optional.empty());
-            fullURI = getFullURI(pool, doc.getURI());
-            saving.add(fullURI);
-            collection.store(txn, broker, info, data);
-            broker.saveCollection(txn, doc.getCollection());
-            transact.commit(txn);
+            Txn txn = broker.getCurrentTransaction();
+            final boolean txnInProgress = txn != null;
+            if(!txnInProgress) {
+                txn = transact.beginTransaction();
+            }
+
+            try {
+                txn.acquireCollectionLock(() -> pool.getLockManager().acquireCollectionWriteLock(collection.getURI()));
+                final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
+                final DocumentImpl doc = info.getDocument();
+                doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
+                PermissionFactory.chmod(broker, doc.getPermissions(), Optional.of(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM), Optional.empty());
+                fullURI = getFullURI(pool, doc.getURI());
+                saving.add(fullURI);
+                collection.store(txn, broker, info, data);
+                broker.saveCollection(txn, doc.getCollection());
+                if (!txnInProgress) {
+                    transact.commit(txn);
+                }
+            } catch(final EXistException | PermissionDeniedException | SAXException | LockException e) {
+                if(!txnInProgress) {
+                    transact.abort(txn);
+                }
+                throw e;
+            } finally {
+                if(!txnInProgress) {
+                    txn.close();
+                }
+            }
             saving.remove(fullURI);
             broker.flush();
             broker.sync(Sync.MAJOR);
             return collection.getDocument(broker, uri.lastSegment());
-            
-        } catch (final Exception e) {
 
+        } catch(final EXistException | PermissionDeniedException | SAXException | LockException e) {
             LOG.error(e);
-
             if (fullURI != null) {
                 saving.remove(fullURI);
             }
-
-            if (txn != null) {
-                transact.abort(txn);
-            }
-
             throw new IOException(e);
-            
         } finally {
-            transact.close(txn);
             broker.popSubject();
         }
     }

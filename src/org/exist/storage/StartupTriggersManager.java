@@ -22,6 +22,7 @@ package org.exist.storage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.plugin.PluginsManagerImpl;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class StartupTriggersManager implements BrokerPoolService {
     }
 
     @Override
-    public void startPreMultiUserSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    public void startPreMultiUserSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         for(final Configuration.StartupTriggerConfig startupTriggerConfig : startupTriggerConfigs) {
             try {
                 final Class<StartupTrigger> clazz = (Class<StartupTrigger>) Class.forName(startupTriggerConfig.getClazz());

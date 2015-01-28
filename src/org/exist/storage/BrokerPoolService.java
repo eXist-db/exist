@@ -19,6 +19,7 @@
  */
 package org.exist.storage;
 
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 
 /**
@@ -65,10 +66,11 @@ public interface BrokerPoolService {
      * and the only system broker is passed to this function
      *
      * @param systemBroker The system mode broker
+     * @param transaction The transaction for the system service
      *
      * @throws BrokerPoolServiceException if an error occurs when starting the system service
      */
-    default void startSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    default void startSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         // nothing to start
     }
 
@@ -78,16 +80,17 @@ public interface BrokerPoolService {
      * mode
      *
      * As this point the database is not generally available,
-     * {@link #startSystem(DBBroker)} has already been called
+     * {@link #startSystem(DBBroker, Txn)} has already been called
      * for all services, any reindexing and recovery has completed
      * but there is still only a system broker which is passed to this
      * function
      *
      * @param systemBroker The system mode broker
+     * @param transaction The transaction for the pre-multi-user system service
      *
      * @throws BrokerPoolServiceException if an error occurs when starting the pre-multi-user system service
      */
-    default void startPreMultiUserSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    default void startPreMultiUserSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         //nothing to start
     }
 
@@ -96,7 +99,7 @@ public interface BrokerPoolService {
      * start of multi-user mode
      *
      * As this point the database is generally available,
-     * {@link #startPreMultiUserSystem(DBBroker)} has already been called
+     * {@link #startPreMultiUserSystem(DBBroker, Txn)} has already been called
      * for all services. You may be competing with other services and/or
      * users for database access
      *

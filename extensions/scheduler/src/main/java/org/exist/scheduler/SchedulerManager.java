@@ -21,6 +21,7 @@
  */
 package org.exist.scheduler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -28,14 +29,17 @@ import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.config.*;
 import org.exist.config.annotation.*;
 import org.exist.plugin.Plug;
 import org.exist.plugin.PluginsManager;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -69,7 +73,7 @@ public class SchedulerManager implements Plug {
     }
 
     @Override
-    public void start(final DBBroker broker) throws EXistException {
+    public void start(final DBBroker broker, final Txn transaction) throws EXistException {
 
         final Collection systemCollection;
         try {
@@ -80,28 +84,21 @@ public class SchedulerManager implements Plug {
         } catch(final PermissionDeniedException e) {
             throw new EXistException(e);
         }
-
-        final TransactionManager transaction = broker.getDatabase().getTransactionManager();
-        Txn txn = null;
         
         try {
             collection = broker.getCollection(COLLECTION_URI);
             if (collection == null) {
-                txn = transaction.beginTransaction();
-                collection = broker.getOrCreateCollection(txn, COLLECTION_URI);
+                collection = broker.getOrCreateCollection(transaction, COLLECTION_URI);
                 if (collection == null){
                     return;
                 }
                 //if db corrupted it can lead to unrunnable issue
                 //throw new ConfigurationException("Collection '/db/system/scheduler' can't be created.");
 
-                collection.setPermissions(broker,0770);
-                broker.saveCollection(txn, collection);
-
-                transaction.commit(txn);
-            } 
-        } catch (final Exception e) {
-            transaction.abort(txn);
+                collection.setPermissions(broker, Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
+                broker.saveCollection(transaction, collection);
+            }
+        } catch(final TriggerException | PermissionDeniedException | IOException | LockException e) {
             e.printStackTrace();
             LOG.debug("loading configuration failed: " + e.getMessage(), e);
         }

@@ -574,8 +574,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                         statusReporter.setStatus(SIGNAL_READINESS);
 
-                        try {
-                            servicesManager.startSystemServices(systemBroker);
+                        try(final Txn transaction = transactionManager.beginTransaction()) {
+                            servicesManager.startSystemServices(systemBroker, transaction);
+                            transaction.commit();
                         } catch(final BrokerPoolServiceException e) {
                             throw new EXistException(e);
                         }
@@ -627,8 +628,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                         // we have completed all system mode operations
                         // we can now prepare those services which need
                         // system mode before entering multi-user mode
-                        try {
-                            servicesManager.startPreMultiUserSystemServices(systemBroker);
+                        try(final Txn transaction = transactionManager.beginTransaction()) {
+                            servicesManager.startPreMultiUserSystemServices(systemBroker, transaction);
+							transaction.commit();
                         } catch(final BrokerPoolServiceException e) {
                             throw new EXistException(e);
                         }

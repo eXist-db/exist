@@ -22,6 +22,7 @@ package org.exist.collections;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
@@ -40,6 +41,7 @@ import org.xml.sax.XMLReader;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 import java.util.Map.Entry;
@@ -82,10 +84,10 @@ public class CollectionConfigurationManager implements BrokerPoolService {
     }
 
     @Override
-    public void startSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    public void startSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         try {
-            checkCreateCollection(systemBroker, CONFIG_COLLECTION_URI);
-            checkCreateCollection(systemBroker, ROOT_COLLECTION_CONFIG_URI);
+            checkCreateCollection(systemBroker, transaction, CONFIG_COLLECTION_URI);
+            checkCreateCollection(systemBroker, transaction, ROOT_COLLECTION_CONFIG_URI);
             loadAllConfigurations(systemBroker);
             defaultConfig.setIndexConfiguration(systemBroker.getIndexConfiguration());
         } catch(final EXistException | CollectionConfigurationException | PermissionDeniedException | LockException e) {
@@ -369,17 +371,15 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      * @param uri
      * @throws EXistException
      */
-    private void checkCreateCollection(DBBroker broker, XmldbURI uri) throws EXistException {
-        final TransactionManager transact = broker.getDatabase().getTransactionManager();
-        try(final Txn txn = transact.beginTransaction()) {
+    private void checkCreateCollection(final DBBroker broker, final Txn txn, final XmldbURI uri) throws EXistException {
+        try {
             Collection collection = broker.getCollection(uri);
             if (collection == null) {
                 collection = broker.getOrCreateCollection(txn, uri);
                 SanityCheck.THROW_ASSERT(collection != null);
                 broker.saveCollection(txn, collection);
             }
-            transact.commit(txn);
-        } catch (final Exception e) {
+        } catch(final TriggerException | PermissionDeniedException | IOException e) {
             throw new EXistException("Failed to initialize '" + uri + "' : " + e.getMessage());
         }
     }

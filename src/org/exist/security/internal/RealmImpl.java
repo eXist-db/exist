@@ -125,8 +125,8 @@ public class RealmImpl extends AbstractRealm {
     }
 
     @Override
-    public void start(final DBBroker broker) throws EXistException {
-        super.start(broker);
+    public void start(final DBBroker broker, final Txn transaction) throws EXistException {
+        super.start(broker, transaction);
         try {
             createAdminAndGuestIfNotExist(broker);
         } catch(final PermissionDeniedException pde) {

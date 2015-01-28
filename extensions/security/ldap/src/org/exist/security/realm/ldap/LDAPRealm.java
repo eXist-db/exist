@@ -57,6 +57,7 @@ import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.security.realm.ldap.AbstractLDAPSearchPrincipal.LDAPSearchAttributeKey;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -103,8 +104,8 @@ public class LDAPRealm extends AbstractRealm {
     }
 
     @Override
-    public void start(DBBroker broker) throws EXistException {
-        super.start(broker);
+    public void start(DBBroker broker, final Txn transaction) throws EXistException {
+        super.start(broker, transaction);
     }
 
     private String ensureCase(final String username) {
