@@ -42,66 +42,60 @@ public class UpdateTest extends AbstractUpdateTest {
     @Test
     public void update() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = null;        
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);            
-            TransactionManager mgr = pool.getTransactionManager();
-            assertNotNull(mgr);            
+        final BrokerPool pool = startDB();
+        final TransactionManager mgr = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             IndexInfo info = init(broker, mgr);
             assertNotNull(info);
             MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
-            Txn transaction = mgr.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
-            
-            String xupdate;
-            Modification modifications[];
-            
-            // append some new element to records
-            for (int i = 1; i <= 200; i++) {
-                xupdate =
-                    "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                    "   <xu:append select=\"/products\">" +
-                    "       <product>" +
-                    "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
-                    "           <description>Product " + i + "</description>" +
-                    "           <price>" + (i * 2.5) + "</price>" +
-                    "           <stock>" + (i * 10) + "</stock>" +
-                    "       </product>" +
-                    "   </xu:append>" +
-                    "</xu:modifications>";
-                proc.setBroker(broker);
-                proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-                assertNotNull(modifications);
-                modifications[0].process(transaction);                
-                proc.reset();
+
+            try(final Txn transaction = mgr.beginTransaction()) {
+                assertNotNull(transaction);
+                System.out.println("Transaction started ...");
+
+                // append some new element to records
+                for (int i = 1; i <= 200; i++) {
+                    final String xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:append select=\"/products\">" +
+                                    "       <product>" +
+                                    "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
+                                    "           <description>Product " + i + "</description>" +
+                                    "           <price>" + (i * 2.5) + "</price>" +
+                                    "           <stock>" + (i * 10) + "</stock>" +
+                                    "       </product>" +
+                                    "   </xu:append>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                    assertNotNull(modifications);
+                    modifications[0].process(transaction);
+                    proc.reset();
+                }
+
+                mgr.commit(transaction);
+                System.out.println("Transaction commited ...");
             }
-            
-            mgr.commit(transaction);
-            System.out.println("Transaction commited ...");
-            
+
             // the following transaction will not be committed and thus undone during recovery
-            transaction = mgr.beginTransaction();
+            final Txn transaction = mgr.beginTransaction();
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
             // update elements
             for (int i = 1; i <= 200; i++) {
-                xupdate =
+                final String xupdate =
                     "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
                     "   <xu:update select=\"/products/product[" + i + "]/price\">19.99</xu:update>" +
                     "</xu:modifications>";
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
                 assertNotNull(transaction);
                 modifications[0].process(transaction);
                 proc.reset();
@@ -111,10 +105,8 @@ public class UpdateTest extends AbstractUpdateTest {
             pool.getTransactionManager().getJournal().flushToLog(true);
             System.out.println("Transaction interrupted ...");
 
-        } catch (Exception e) {            
-            fail(e.getMessage());              
-        } finally {
-            pool.release(broker);
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
     }
 

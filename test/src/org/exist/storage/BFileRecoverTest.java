@@ -51,39 +51,35 @@ public class BFileRecoverTest extends TestCase {
     
     public void testAdd() {
         TransactionManager mgr = pool.getTransactionManager();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             broker.flush();
             broker.sync(Sync.MAJOR_SYNC);
-            
-            Txn txn = mgr.beginTransaction();
-            System.out.println("Transaction started ...");
-            
-            BFile collectionsDb = (BFile) ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
+
+            final BFile collectionsDb = (BFile) ((NativeBroker) broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             BrokerPool.FORCE_CORRUPTION = true;
             
-            for (int i = 1; i < 1001; i++) {
-                String value = "test" + i;
-                byte[] data = value.getBytes(UTF_8);
-                collectionsDb.put(txn, new Value(data), new FixedByteArray(data, 0, data.length), true);
+            try(final Txn txn = mgr.beginTransaction()) {
+
+                for (int i = 1; i < 1001; i++) {
+                    String value = "test" + i;
+                    byte[] data = value.getBytes(UTF_8);
+                    collectionsDb.put(txn, new Value(data), new FixedByteArray(data, 0, data.length), true);
+                }
+
+                byte[] replacement = "new value".getBytes(UTF_8);
+                for (int i = 1; i < 101; i++) {
+                    String value = "test" + i;
+                    byte[] data = value.getBytes(UTF_8);
+                    collectionsDb.put(txn, new Value(data), new FixedByteArray(replacement, 0, replacement.length), true);
+                }
+                mgr.commit(txn);
             }
-            
-            byte[] replacement = "new value".getBytes(UTF_8);
-            for (int i = 1; i < 101; i++) {
-                String value = "test" + i;
-                byte[] data = value.getBytes(UTF_8);
-                collectionsDb.put(txn, new Value(data), new FixedByteArray(replacement, 0, replacement.length), true);
-            }
-            mgr.commit(txn);
             
             Writer writer = new StringWriter();
             collectionsDb.dump(writer);
             System.out.println(writer.toString());
         } catch (Exception e) {            
             fail(e.getMessage());            
-        } finally {
-            pool.release(broker);
         }
     }
     

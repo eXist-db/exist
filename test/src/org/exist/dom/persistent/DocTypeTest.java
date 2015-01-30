@@ -1,5 +1,7 @@
 package org.exist.dom.persistent;
 
+import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import javax.xml.transform.OutputKeys;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -19,10 +22,9 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.FileInputSource;
-import org.exist.util.VirtualTempFile;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
+import org.junit.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
@@ -65,118 +67,91 @@ public class DocTypeTest extends XMLTestCase {
 	
 	private BrokerPool pool = null;
 	private Collection root = null;
-	
+
+    @Test
 	public void testDocType_usingInputSource() throws Exception{
-		DBBroker broker = null;
 		DocumentImpl doc = null;
-		TransactionManager transact = null;
-		Txn transaction = null;
-		try {
-			assertNotNull(pool);
-			
-			
-			File existHome = pool.getConfiguration().getExistHome();
-			
-			File testFile = new File(existHome, "/test/src/org/exist/dom/persistent/test_content.xml");
-			
+		final TransactionManager transact = pool.getTransactionManager();
+
+		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+			final File existHome = pool.getConfiguration().getExistHome();
+			final File testFile = new File(existHome, "/test/src/org/exist/dom/persistent/test_content.xml");
 			System.out.println("path: " + testFile);
-			
-			assertNotNull(testFile);
-			
 			assertEquals(true, testFile.canRead());
 			
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			assertNotNull(broker);
-			
-			InputSource is = new FileInputSource(testFile);
-			transact = pool.getTransactionManager();
-			assertNotNull(transact);
-			transaction = transact.beginTransaction();
-			IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), is);
-			
-			assertNotNull(info);
-			root.store(transaction, broker, info, is, false);
+			final InputSource is = new FileInputSource(testFile);
 
-			transact.commit(transaction);
+			try(final Txn transaction = transact.beginTransaction()) {
+                final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), is);
+
+                assertNotNull(info);
+                root.store(transaction, broker, info, is, false);
+
+                transact.commit(transaction);
+            }
 
 			doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test2.xml")),Lock.READ_LOCK);
 
-			DocumentType docType = doc.getDoctype();
-			
+			final DocumentType docType = doc.getDoctype();
 			assertNotNull(docType);
-			
 			assertEquals("-//OASIS//DTD DITA Reference//EN", docType.getPublicId());
 			
-			Serializer serializer = broker.getSerializer();
+			final Serializer serializer = broker.getSerializer();
 			serializer.reset();
 			
 			serializer.setProperties(OUTPUT_PROPERTIES);
 			
-			String serialized = serializer.serialize(doc);
+			final String serialized = serializer.serialize(doc);
 
 			System.out.println(serialized);
 			assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Reference//EN"));
-				
-			
-		} catch (Exception e) {
-        	transact.abort(transaction);
-		    e.printStackTrace();
-		    fail(e.getMessage());
+
 		} finally {
-		    if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
-		    if (pool != null) pool.release(broker);
+		    if (doc != null) {
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            }
 		}
 	}
-	
+
+    @Test
 	public void testDocType_usingString() throws Exception{
-		DBBroker broker = null;
 		DocumentImpl doc = null;
-		try {
-			assertNotNull(pool);
+		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test.xml")),Lock.READ_LOCK);
+            doc = broker.getXMLResource(root.getURI().append(XmldbURI.create("test.xml")), Lock.READ_LOCK);
 
-			DocumentType docType = doc.getDoctype();
-			
-			assertNotNull(docType);
-			
-			assertEquals("-//OASIS//DTD DITA Topic//EN", docType.getPublicId());
-			
-			Serializer serializer = broker.getSerializer();
-			serializer.reset();
-			
-			serializer.setProperties(OUTPUT_PROPERTIES);
-			
-			String serialized = serializer.serialize(doc);
-			
-			System.out.println(serialized);
-			
-			assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Topic//EN"));
-			
-		} catch (Exception e) {
-		    e.printStackTrace();
-		    fail(e.getMessage());
-		} finally {
-		    if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
-		    if (pool != null) pool.release(broker);
+            DocumentType docType = doc.getDoctype();
+
+            assertNotNull(docType);
+
+            assertEquals("-//OASIS//DTD DITA Topic//EN", docType.getPublicId());
+
+            Serializer serializer = broker.getSerializer();
+            serializer.reset();
+
+            serializer.setProperties(OUTPUT_PROPERTIES);
+
+            String serialized = serializer.serialize(doc);
+
+            System.out.println(serialized);
+
+            assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Topic//EN"));
+
+        } finally {
+		    if (doc != null) {
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            }
 		}
 	}
     
     
-	protected void setUp() throws Exception {        
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);            
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
+	@Override
+    protected void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {
+        pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
             System.out.println("NodeTest#setUp ...");
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
@@ -190,40 +165,27 @@ public class DocTypeTest extends XMLTestCase {
             
             transact.commit(transaction);
             System.out.println("NodeTest#setUp finished.");
-        } catch (Exception e) {
-        	transact.abort(transaction);
-	        fail(e.getMessage()); 	        
-        } finally {
-        	if (pool != null) pool.release(broker);
         }
 	}
 	
-	protected BrokerPool startDB() {
-        String home, file = "conf.xml";
-        home = System.getProperty("exist.home");
-        if (home == null)
+	protected BrokerPool startDB() throws DatabaseConfigurationException, EXistException {
+        final String file = "conf.xml";
+        String home = System.getProperty("exist.home");
+        if (home == null) {
             home = System.getProperty("user.dir");
-        try {
-            Configuration config = new Configuration(file, home);
-            BrokerPool.configure(1, 5, config);
-            return BrokerPool.getInstance();
-        } catch (Exception e) {            
-            fail(e.getMessage());
         }
-        return null;
+
+        final Configuration config = new Configuration(file, home);
+        BrokerPool.configure(1, 5, config);
+        return BrokerPool.getInstance();
+
     }
 
-    protected void tearDown() {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);            
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
+    @Override
+    protected void tearDown() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
             System.out.println("BasicNodeSetTest#tearDown >>>");
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
@@ -231,14 +193,8 @@ public class DocTypeTest extends XMLTestCase {
             broker.removeCollection(transaction, root);
             
             transact.commit(transaction);
-        } catch (Exception e) {
-        	transact.abort(transaction);
-            e.printStackTrace();
         } finally {
-            if (pool != null) pool.release(broker);
+            BrokerPool.stopAll(false);
         }
-        BrokerPool.stopAll(false);
-        root = null;
-        pool = null;
     }
 }

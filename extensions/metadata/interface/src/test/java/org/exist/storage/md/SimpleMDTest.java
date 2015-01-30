@@ -40,6 +40,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Test;
@@ -247,11 +248,8 @@ public class SimpleMDTest {
     	assertNotNull(md);
     	
     	String docUUID = null;
-    	
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
@@ -265,13 +263,8 @@ public class SimpleMDTest {
 	    	docMD.put(KEY1, VALUE1);
 	    	docMD.put(KEY2, VALUE2);
 	    	
-	        TransactionManager txnManager = null;
-	        Txn txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
+	        final TransactionManager txnManager = pool.getTransactionManager();
+	        try(final Txn txn = txnManager.beginTransaction()) {
 
 		    	IndexInfo info = col.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
 	            assertNotNull(info);
@@ -282,12 +275,9 @@ public class SimpleMDTest {
 
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 	        
-        } finally {
-        	pool.release(broker);
         }
 	        
         shutdown();
@@ -295,24 +285,15 @@ public class SimpleMDTest {
 
     	md = MetaData.get();
     	assertNotNull(md);
-    	
-    	try {
-	    	
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection root = broker.getCollection(col1uri);
         	assertNotNull(root);
 
-	        TransactionManager txnManager = null;
-	        Txn txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
+	        final TransactionManager txnManager = pool.getTransactionManager();
+            try(final Txn txn = txnManager.beginTransaction()) {
 
-            
 		    	IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
 	            assertNotNull(info);
 	            root.store(txn, broker, info, XML1, false);
@@ -321,7 +302,6 @@ public class SimpleMDTest {
 	            
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 
@@ -330,8 +310,6 @@ public class SimpleMDTest {
 	    	
 	    	assertNotSame(docUUID, docMD.getUUID());
 
-        } finally {
-        	pool.release(broker);
         }
 
     	cleanup();
@@ -354,28 +332,19 @@ public class SimpleMDTest {
     	docMD.put(KEY1, VALUE1);
 
     	System.out.println("MOVING...");
-    	DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
-        	TransactionManager txnManager = null;
-	        Txn txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
+        	final TransactionManager txnManager = pool.getTransactionManager();
+            try(final Txn txn = txnManager.beginTransaction()) {
             
 	            broker.moveResource(txn, doc1, col, doc2uri.lastSegment());
 
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 	    	System.out.println("MOVED.");
@@ -385,9 +354,7 @@ public class SimpleMDTest {
 	    	
 	    	assertEquals(uuid, docMD.getUUID());
 
-        } finally {
-    		pool.release(broker);
-    	}
+        }
         
 
     	cleanup();
@@ -409,28 +376,17 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-    	DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection col = broker.getCollection(col2uri);
         	assertNotNull(col);
 
-        	TransactionManager txnManager = null;
-	        Txn txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
-            
+        	final TransactionManager txnManager = pool.getTransactionManager();
+	        try(final Txn txn = txnManager.beginTransaction()) {
 	            broker.moveResource(txn, doc1, col, doc3uri.lastSegment());
-
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 
@@ -439,10 +395,7 @@ public class SimpleMDTest {
 	    	
 	    	assertEquals(uuid, docMD.getUUID());
 
-        } finally {
-    		pool.release(broker);
-    	}
-        
+        }
 
     	cleanup();
 	}
@@ -463,10 +416,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-    	DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection parent = broker.getCollection(col3uri.removeLastSegment());
         	assertNotNull(parent);
@@ -475,20 +425,14 @@ public class SimpleMDTest {
         	assertNotNull(col);
 
         	System.out.println("MOVING...");
-        	TransactionManager txnManager = null;
-	        Txn txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
+            final TransactionManager txnManager = pool.getTransactionManager();
+            try(final Txn txn = txnManager.beginTransaction()) {
 	            
 	            broker.moveCollection(txn, col, parent, col3uri.lastSegment());
             
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 	    	System.out.println("MOVED.");
@@ -503,14 +447,7 @@ public class SimpleMDTest {
 	    	assertEquals(VALUE1, docMD.get(KEY1).getValue());
 
 	    	Collection nCol = null;
-	    	txnManager = null;
-	        txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
-	            
+            try(final Txn txn = txnManager.beginTransaction()) {
 	            nCol = broker.getOrCreateCollection(txn, col1uri);
 	            assertNotNull(nCol);
 	            broker.saveCollection(txn, nCol);
@@ -518,7 +455,6 @@ public class SimpleMDTest {
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 
@@ -529,9 +465,7 @@ public class SimpleMDTest {
 	    	assertNotNull(doc);
 	    	assertEquals(doc4uri.toString(), doc.getURI().toString());
 	    	
-        } finally {
-    		pool.release(broker);
-    	}
+        }
 
     	cleanup();
 	}
@@ -544,17 +478,9 @@ public class SimpleMDTest {
         Collection test2;
         DocumentImpl doc3;
 
-    	DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
-        try {
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            
-            txnManager = pool.getTransactionManager();
-            assertNotNull(txnManager);
-            txn = txnManager.beginTransaction();
-            assertNotNull(txn);
+        final TransactionManager txnManager = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn txn = txnManager.beginTransaction()) {
             
             test2 = broker.getOrCreateCollection(txn, col2uri);
             assertNotNull(test2);
@@ -566,11 +492,7 @@ public class SimpleMDTest {
             txnManager.commit(txn);
         } catch (Exception e) {
             e.printStackTrace();
-            txnManager.abort(txn);
             fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
 
     	MetaData md = MetaData.get();
@@ -593,9 +515,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY2, VALUE2);
 
-    	try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection parent = broker.getCollection(col3uri.removeLastSegment());
         	assertNotNull(parent);
@@ -604,18 +524,13 @@ public class SimpleMDTest {
         	assertNotNull(col);
 
         	System.out.println("MOVING...");
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
+            try(final Txn txn = txnManager.beginTransaction()) {
 	            
 	            broker.moveCollection(txn, col, parent, col3uri.lastSegment());
             
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 	    	System.out.println("MOVED.");
@@ -636,13 +551,7 @@ public class SimpleMDTest {
 	    	assertEquals(VALUE2, docMD.get(KEY2).getValue());
 
 	    	Collection nCol = null;
-	    	txnManager = null;
-	        txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
+            try(final Txn txn = txnManager.beginTransaction()) {
 	            
 	            nCol = broker.getOrCreateCollection(txn, col1uri);
 	            assertNotNull(nCol);
@@ -651,7 +560,6 @@ public class SimpleMDTest {
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 
@@ -662,9 +570,7 @@ public class SimpleMDTest {
 	    	assertNotNull(doc);
 	    	assertEquals(doc4uri.toString(), doc.getURI().toString());
 	    	
-        } finally {
-    		pool.release(broker);
-    	}
+        }
 
     	cleanup();
 	}
@@ -685,10 +591,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-    	DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection parent = broker.getCollection(col3uri.removeLastSegment());
         	assertNotNull(parent);
@@ -697,20 +600,14 @@ public class SimpleMDTest {
         	assertNotNull(col);
 
         	System.out.println("COPY...");
-        	TransactionManager txnManager = null;
-	        Txn txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
+            final TransactionManager txnManager = pool.getTransactionManager();
+            try(final Txn txn = txnManager.beginTransaction()) {
 	            
 	            broker.copyCollection(txn, col, parent, col3uri.lastSegment());
             
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 	    	System.out.println("DONE.");
@@ -731,10 +628,7 @@ public class SimpleMDTest {
 	    	assertNotNull(doc);
 	    	assertEquals(doc1uri.toString(), doc.getURI().toString());
 	    	
-        } finally {
-    		pool.release(broker);
-    	}
-        
+        }
 
     	cleanup();
 	}
@@ -760,10 +654,7 @@ public class SimpleMDTest {
     	//add first key-value
     	docMD.put(KEY1, VALUE1);
 
-    	DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection parent = broker.getCollection(col3uri.removeLastSegment());
         	assertNotNull(parent);
@@ -772,20 +663,14 @@ public class SimpleMDTest {
         	assertNotNull(col);
 
         	System.out.println("DELETE...");
-        	TransactionManager txnManager = null;
-	        Txn txn = null;
-	        try {
-	            txnManager = pool.getTransactionManager();
-	            assertNotNull(txnManager);
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
+            final TransactionManager txnManager = pool.getTransactionManager();
+            try(final Txn txn = txnManager.beginTransaction()) {
 	            
 	            broker.removeCollection(txn, col);
             
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
 	        }
 	    	System.out.println("DONE.");
@@ -808,103 +693,84 @@ public class SimpleMDTest {
 	    	doc = md.getDocument(uuid2);
 	    	assertNull(doc);
 
-        } finally {
-    		pool.release(broker);
-    	}
-        
+        }
 
     	cleanup();
 	}
 
 	@Test
 	public void test_08() throws Exception {
-    	
-        DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
+
         try {
-            File confFile = ConfigurationHelper.lookup("conf.xml");
-            Configuration config = new Configuration(confFile.getAbsolutePath());
+            final File confFile = ConfigurationHelper.lookup("conf.xml");
+            final Configuration config = new Configuration(confFile.getAbsolutePath());
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        	assertNotNull(pool);
         	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
 
-        	MetaData md = MetaData.get();
-        	assertNotNull(md);
+            try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            txnManager = pool.getTransactionManager();
-            assertNotNull(txnManager);
-            
-            Collection root = null;
-            
-            try {
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
-	            System.out.println("Transaction started ...");
-	
-	            root = broker.getOrCreateCollection(txn, col1uri);
-	            assertNotNull(root);
-	            broker.saveCollection(txn, root);
-	
-	            CollectionConfigurationManager mgr = pool.getConfigurationManager();
-	            mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
-	
-	            System.out.println("store "+doc1uri);
-	            IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
-	            assertNotNull(info);
-	            root.store(txn, broker, info, XML1, false);
-	
-	            txnManager.commit(txn);
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            txnManager.abort(txn);
-	            fail(e.getMessage());
-	        }
-            
-	    	Metas docMD = md.getMetas(doc1uri);
-	    	assertNotNull(docMD);
-	    	
-	    	String uuid = docMD.getUUID();
+                final MetaData md = MetaData.get();
+                assertNotNull(md);
 
-            try {
-	            txn = txnManager.beginTransaction();
-	            assertNotNull(txn);
-	            System.out.println("Transaction started ...");
-	
-	            root = broker.getOrCreateCollection(txn, col1uri);
-	            assertNotNull(root);
-	            broker.saveCollection(txn, root);
-	
-	            CollectionConfigurationManager mgr = pool.getConfigurationManager();
-	            mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
-	
-	            System.out.println("store "+doc1uri);
-	            IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), wrongXML);
-	            assertNotNull(info);
-	            root.store(txn, broker, info, wrongXML, false);
-	
-	            txnManager.commit(txn);
-	        } catch (Exception e) {
-	            //e.printStackTrace();
-	            txnManager.abort(txn);
-	            //fail(e.getMessage());
-	        }
-            
-	    	docMD = md.getMetas(doc1uri);
-	    	assertNotNull(docMD);
-	    	
-	    	assertEquals(uuid, docMD.getUUID());
+                final TransactionManager txnManager = pool.getTransactionManager();
+
+                try(final Txn txn = txnManager.beginTransaction()) {
+
+                    final Collection root = broker.getOrCreateCollection(txn, col1uri);
+                    assertNotNull(root);
+                    broker.saveCollection(txn, root);
+
+                    final CollectionConfigurationManager mgr = pool.getConfigurationManager();
+                    mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
+
+                    System.out.println("store " + doc1uri);
+                    final IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
+                    assertNotNull(info);
+                    root.store(txn, broker, info, XML1, false);
+
+                    txnManager.commit(txn);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    fail(e.getMessage());
+                }
+
+                Metas docMD = md.getMetas(doc1uri);
+                assertNotNull(docMD);
+
+                final String uuid = docMD.getUUID();
+
+                try(final Txn txn = txnManager.beginTransaction()) {
+
+                    final Collection root = broker.getOrCreateCollection(txn, col1uri);
+                    assertNotNull(root);
+                    broker.saveCollection(txn, root);
+
+                    final CollectionConfigurationManager mgr = pool.getConfigurationManager();
+                    mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
+
+                    System.out.println("store " + doc1uri);
+                    final IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), wrongXML);
+                    assertNotNull(info);
+                    root.store(txn, broker, info, wrongXML, false);
+
+                    txnManager.commit(txn);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //txnManager.abort(txn);
+                    //fail(e.getMessage());
+                }
+
+                docMD = md.getMetas(doc1uri);
+                assertNotNull(docMD);
+
+                assertEquals(uuid, docMD.getUUID());
+            }
             
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
 	}
 
@@ -928,29 +794,20 @@ public class SimpleMDTest {
 	}
 
 	//@BeforeClass
-    public static void startDB() {
-        DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
-        try {
-            File confFile = ConfigurationHelper.lookup("conf.xml");
-            Configuration config = new Configuration(confFile.getAbsolutePath());
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        	assertNotNull(pool);
-        	pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
+    public static void startDB() throws DatabaseConfigurationException, EXistException {
+        final File confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+        assertNotNull(pool);
+        pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
+
+        final TransactionManager txnManager = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn txn = txnManager.beginTransaction()) {
             
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            
-            clean();
-            
-            txnManager = pool.getTransactionManager();
-            assertNotNull(txnManager);
-            txn = txnManager.beginTransaction();
-            assertNotNull(txn);
-            
-            System.out.println("Transaction started ...");
+            clean(broker, txn);
 
             Collection root = broker.getOrCreateCollection(txn, col1uri);
             assertNotNull(root);
@@ -972,17 +829,13 @@ public class SimpleMDTest {
             txnManager.commit(txn);
         } catch (Exception e) {
             e.printStackTrace();
-            txnManager.abort(txn);
             fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 
     //@AfterClass
-    public static void cleanup() {
-    	clean();
+    public static void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        clean();
     	shutdown();
     }
 
@@ -995,41 +848,30 @@ public class SimpleMDTest {
         System.out.println("stopped");
     }
 
-    private static void clean() {
-    	System.out.println("CLEANING...");
-    	
-        DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            txnManager = pool.getTransactionManager();
-            assertNotNull(txnManager);
-            txn = txnManager.beginTransaction();
-            assertNotNull(txn);
-            System.out.println("Transaction started ...");
+    private static void clean() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+        final TransactionManager txnManager = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn txn = txnManager.beginTransaction()) {
+            clean(broker, txn);
+            txn.commit();
+        }
+    }
 
-            Collection col = broker.getOrCreateCollection(txn, col1uri);
-            assertNotNull(col);
-        	broker.removeCollection(txn, col);
+    private static void clean(final DBBroker broker, final Txn txn) throws PermissionDeniedException, IOException, TriggerException {
+    	System.out.println("CLEANING...");
+
+        Collection col = broker.getOrCreateCollection(txn, col1uri);
+        assertNotNull(col);
+        broker.removeCollection(txn, col);
 
 //            col = broker.getOrCreateCollection(txn, col2uri);
 //            assertNotNull(col);
 //        	broker.removeCollection(txn, col);
 
-            col = broker.getOrCreateCollection(txn, col3uri);
-            assertNotNull(col);
-        	broker.removeCollection(txn, col);
+        col = broker.getOrCreateCollection(txn, col3uri);
+        assertNotNull(col);
+        broker.removeCollection(txn, col);
 
-        	txnManager.commit(txn);
-        } catch (Exception e) {
-        	txnManager.abort(txn);
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (pool != null) pool.release(broker);
-        }
     	System.out.println("CLEANED.");
     }
 }

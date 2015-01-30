@@ -21,11 +21,13 @@
  */
 package org.exist.xqj;
 
+import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.value.*;
 import org.exist.collections.Collection;
@@ -156,48 +158,39 @@ public class MarshallerTest {
     }
 
     @BeforeClass
-    public static void startDB() {
-        DBBroker broker = null;
-        try {
-            Configuration config = new Configuration();
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
+    public static void startDB() throws EXistException, DatabaseConfigurationException {
+        final Configuration config = new Configuration();
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
 
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        final TransactionManager transact = pool.getTransactionManager();
 
-            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
+
+            final Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
 
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), TEST_DOC);
+            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), TEST_DOC);
             root.store(transaction, broker, info, TEST_DOC, false);
 
             transact.commit(transaction);
         } catch (Exception e) {
             fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 
     @AfterClass
     public static void shutdown() {
-        DBBroker broker = null;
-        try {
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.removeCollection(transaction, root);
             transact.commit(transaction);
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
         BrokerPool.stopAll(false);
         pool = null;

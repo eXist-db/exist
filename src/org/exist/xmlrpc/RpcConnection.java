@@ -183,11 +183,9 @@ public class RpcConnection implements RpcAPI {
      * @exception PermissionDeniedException if an error occurs
      */
     private boolean createCollection(XmldbURI collUri, Date created) throws PermissionDeniedException, EXistException {
-        DBBroker broker = null;
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             Collection current = broker.getCollection(collUri);
             if (current != null)
             	{return true;}
@@ -208,12 +206,7 @@ public class RpcConnection implements RpcAPI {
             return true;
 
         } catch (final Throwable e) {
-            transact.abort(transaction);
             handleException(e);
-            
-        } finally {
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
         }
         return false;
     }
@@ -246,12 +239,10 @@ public class RpcConnection implements RpcAPI {
      */
     private boolean configureCollection(XmldbURI collUri, String configuration)
     throws EXistException, PermissionDeniedException {
-        DBBroker broker = null;
         Collection collection = null;
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             try {
 	            collection = broker.openCollection(collUri, Lock.READ_LOCK);
 	            if (collection == null) {
@@ -267,11 +258,7 @@ public class RpcConnection implements RpcAPI {
             transact.commit(transaction);
             LOG.info("Configured '" + collection.getURI() + "'");  
         } catch (final CollectionConfigurationException e) {
-            transact.abort(transaction);
             throw new EXistException(e.getMessage());
-        } finally {
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
         }
         return false;
     }
@@ -1219,10 +1206,8 @@ public class RpcConnection implements RpcAPI {
     throws SAXException, LockException, PermissionDeniedException, EXistException,
             XPathException {
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        DBBroker broker = null;
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             final Collection collection = broker.getCollection(collUri);
             if (collection == null) {
                 transact.abort(transaction);
@@ -1239,15 +1224,8 @@ public class RpcConnection implements RpcAPI {
             }
             transact.commit(transaction);
             return (int) mods;
-        } catch (final ParserConfigurationException e) {
-            transact.abort(transaction);
+        } catch (final ParserConfigurationException | IOException e) {
             throw new EXistException(e.getMessage());
-        } catch (final IOException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
-        } finally {
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
         }
     }
     
@@ -1290,10 +1268,8 @@ public class RpcConnection implements RpcAPI {
     throws SAXException, LockException, PermissionDeniedException, EXistException,
             XPathException {
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        DBBroker broker = null;
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             final DocumentImpl doc = broker.getResource(docUri, Permission.READ);
             if (doc == null) {
                 transact.abort(transaction);
@@ -1312,15 +1288,8 @@ public class RpcConnection implements RpcAPI {
             }
             transact.commit(transaction);
             return (int) mods;
-        } catch (final ParserConfigurationException e) {
-            transact.abort(transaction);
+        } catch (final ParserConfigurationException | IOException e) {
             throw new EXistException(e.getMessage());
-        } catch (final IOException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
-        } finally {
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
         }
     }
     
@@ -2225,13 +2194,14 @@ public class RpcConnection implements RpcAPI {
      */
     private boolean parse(byte[] xml, XmldbURI docUri,
             int overwrite, Date created, Date modified) throws EXistException, PermissionDeniedException {
-        DBBroker broker = null;       
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
+
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction();
+            final InputStream is = new ByteArrayInputStream(xml)) {
+
             final long startTime = System.currentTimeMillis();
-            broker = factory.getBrokerPool().get(user);
-         
+
             IndexInfo info = null;
             InputSource source = null;
             Collection collection = null;
@@ -2250,8 +2220,7 @@ public class RpcConnection implements RpcAPI {
 	                    throw new PermissionDeniedException("Document exists and overwrite is not allowed");
 	                }
 	            }
-	            
-	            final InputStream is = new ByteArrayInputStream(xml);
+
 	            source = new InputSource(is);
 	            info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
 	            final MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri.lastSegment());
@@ -2276,13 +2245,8 @@ public class RpcConnection implements RpcAPI {
             return true;
 
         } catch (final Throwable e) {
-            transact.abort(transaction);
             handleException(e);
             return false;
-            
-        } finally {
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
         }
     }
     
@@ -2420,8 +2384,6 @@ public class RpcConnection implements RpcAPI {
     	}
 
     	final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-    	final Txn transaction = transact.beginTransaction();
-    	DBBroker broker = null;
     	DocumentImpl doc = null;
 
     	// DWES
@@ -2430,8 +2392,8 @@ public class RpcConnection implements RpcAPI {
     		{mime = MimeType.BINARY_TYPE;}
 
     	final boolean treatAsXML=(isXML!=null && isXML.booleanValue()) || (isXML==null && mime.isXMLType());
-    	try {
-    		broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
     		Collection collection = null;
     		IndexInfo info = null;
 
@@ -2483,12 +2445,8 @@ public class RpcConnection implements RpcAPI {
     		transact.commit(transaction);
 
     	} catch (final Throwable e) {
-    		transact.abort(transaction);
     		handleException(e);
-
     	} finally {
-            transact.close(transaction);
-    		factory.getBrokerPool().release(broker);
         	// DWES there are situations the file is not cleaned up
     		if(source!=null)
     			{source.free();}
@@ -2556,12 +2514,10 @@ public class RpcConnection implements RpcAPI {
      */
     private boolean storeBinary(byte[] data, XmldbURI docUri, String mimeType,
             int overwrite, Date created, Date modified) throws EXistException, PermissionDeniedException {
-        DBBroker broker = null;
         DocumentImpl doc = null;   
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             final Collection collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
             if (collection == null) {
             	transact.abort(transaction);
@@ -2586,13 +2542,9 @@ public class RpcConnection implements RpcAPI {
             transact.commit(transaction);
 
         } catch (final Throwable e) {
-            transact.abort(transaction);
             handleException(e);
             return false;
 
-        } finally {
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
         }
         return doc != null;
     }
@@ -3085,11 +3037,9 @@ public class RpcConnection implements RpcAPI {
      */
     private boolean remove(XmldbURI docUri) throws EXistException, PermissionDeniedException {
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        DBBroker broker = null;
         Collection collection = null;
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
             if (collection == null) {
                 transact.abort(transaction);
@@ -3112,13 +3062,8 @@ public class RpcConnection implements RpcAPI {
             return true;
 
         } catch (final Throwable e) {
-            transact.abort(transaction);
             handleException(e);
             return false;
-            
-        } finally {
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
         }
     }
     
@@ -3144,11 +3089,9 @@ public class RpcConnection implements RpcAPI {
      */
     private boolean removeCollection(XmldbURI collURI) throws EXistException, PermissionDeniedException {
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        DBBroker broker = null;
         Collection collection = null;
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             collection = broker.openCollection(collURI, Lock.WRITE_LOCK);
             if (collection == null) {
             	transact.abort(transaction);
@@ -3162,13 +3105,8 @@ public class RpcConnection implements RpcAPI {
             return removed;
 
         } catch (final Throwable e) {
-            transact.abort(transaction);
             handleException(e);
             return false;
-
-        } finally {
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
         }
     }
     
@@ -4397,12 +4335,10 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     private boolean lockResource(XmldbURI docURI, String userName) throws EXistException, PermissionDeniedException {
-        DBBroker broker = null;
         DocumentImpl doc = null;
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             doc = broker.getXMLResource(docURI, Lock.WRITE_LOCK);           
             if (doc == null) {
                 throw new EXistException("Resource " + docURI + " not found");
@@ -4424,15 +4360,12 @@ public class RpcConnection implements RpcAPI {
             return true;
 
         } catch (final Throwable e) {
-            transact.abort(transaction);
             handleException(e);
             return false;
-
         } finally {
-            transact.close(transaction);
-            if(doc != null)
-                {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
-            factory.getBrokerPool().release(broker);
+            if(doc != null) {
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            }
         }
     }
     
@@ -4501,12 +4434,10 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     private boolean unlockResource(XmldbURI docURI) throws EXistException, PermissionDeniedException {
-        DBBroker broker = null;
         DocumentImpl doc = null;
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        Txn transaction = null;
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             doc = broker.getXMLResource(docURI, Lock.WRITE_LOCK);
             if (doc == null)
                 {throw new EXistException("Resource " + docURI + " not found");}
@@ -4517,22 +4448,18 @@ public class RpcConnection implements RpcAPI {
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 {throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());}
-            transaction = transact.beginTransaction();
             doc.setUserLock(null);
             broker.storeXMLResource(transaction, doc);
             transact.commit(transaction);
             return true;
 
         } catch (final Throwable e) {
-            transact.abort(transaction);
             handleException(e);
             return false;
-
         } finally {
-            if(doc != null)
-                {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
+            if(doc != null) {
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            }
         }
     }
     
@@ -5005,14 +4932,12 @@ public class RpcConnection implements RpcAPI {
             XmldbURI newName, boolean move)
             throws EXistException, PermissionDeniedException {
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        DBBroker broker = null;
         Collection collection = null;
         Collection destination = null;
         DocumentImpl doc = null;
-        try {
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
         	//TODO : use  transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
-            broker = factory.getBrokerPool().get(user);
             collection = broker.openCollection(docUri.removeLastSegment(), move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
             if (collection == null) {
                 transact.abort(transaction);
@@ -5038,27 +4963,19 @@ public class RpcConnection implements RpcAPI {
             transact.commit(transaction);
             return true;
         } catch (final LockException e) {
-
-            transact.abort(transaction);
             throw new PermissionDeniedException("Could not acquire lock on document " + docUri);
-
-        } catch (final IOException e) {
-            transact.abort(transaction);
-            throw new EXistException("Get exception ["+e.getMessage()+"] on document " + docUri);
-            
-        } catch (final TriggerException e) {
-            transact.abort(transaction);
-            throw new EXistException("Get exception ["+e.getMessage()+"] on document " + docUri);
-
+        } catch (final IOException | TriggerException e) {
+            throw new EXistException("Exception [" + e.getMessage() + "] on document " + docUri);
         } finally {
-            if(doc != null)
-                {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
-            if(collection != null)
-                {collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);}
-            if(destination != null)
-                {destination.release(Lock.WRITE_LOCK);}
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
+            if(doc != null) {
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            }
+            if(collection != null) {
+                collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
+            }
+            if(destination != null) {
+                destination.release(Lock.WRITE_LOCK);
+            }
         }
     }
     
@@ -5096,12 +5013,10 @@ public class RpcConnection implements RpcAPI {
             XmldbURI newName, boolean move)
             throws EXistException, PermissionDeniedException {
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        DBBroker broker = null;
         Collection collection = null;
         Collection destination = null;
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             // get source document
             //TODO : use  transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             collection = broker.openCollection(collUri, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
@@ -5115,28 +5030,24 @@ public class RpcConnection implements RpcAPI {
                 transact.abort(transaction);
                 throw new EXistException("Destination collection " + destUri + " not found");
             }            
-            if(move)
-                {broker.moveCollection(transaction, collection, destination, newName);}
-            else
-                {broker.copyCollection(transaction, collection, destination, newName);}
+            if(move) {
+                broker.moveCollection(transaction, collection, destination, newName);
+            } else {
+                broker.copyCollection(transaction, collection, destination, newName);
+            }
             transact.commit(transaction);
             return true;
         } catch (final LockException e) {
-            transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
-        } catch (final IOException e) {
-            transact.abort(transaction);
-            throw new EXistException(e.getMessage());
-        } catch (final TriggerException e) {
-            transact.abort(transaction);
+        } catch (final IOException | TriggerException e) {
             throw new EXistException(e.getMessage());
 		} finally {
-            transact.close(transaction);
-            if(collection != null)
-                {collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);}
-            if(destination != null)
-                {destination.release(Lock.WRITE_LOCK);}
-            factory.getBrokerPool().release(broker);
+            if(collection != null) {
+                collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
+            }
+            if(destination != null) {
+                destination.release(Lock.WRITE_LOCK);
+            }
         }
     }
     
@@ -5346,13 +5257,11 @@ public class RpcConnection implements RpcAPI {
      * @exception Exception if an error occurs
      */
     private boolean setDocType(XmldbURI docUri, String doctypename, String publicid, String systemid) throws EXistException, PermissionDeniedException {
-        DBBroker broker = null;
         DocumentImpl doc = null;
         DocumentType result = null;
         final TransactionManager transact = factory.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
-            broker = factory.getBrokerPool().get(user);
+        try(final DBBroker broker = factory.getBrokerPool().get(user);
+            final Txn transaction = transact.beginTransaction()) {
             doc = broker.getXMLResource(docUri, Lock.WRITE_LOCK);          
             if (doc == null) {
             	transact.abort(transaction);
@@ -5376,15 +5285,12 @@ public class RpcConnection implements RpcAPI {
             return true;
 
         } catch (final Throwable e) {
-            transact.abort(transaction);
             handleException(e);
             return false;
-
         } finally {
-            if(doc != null)
-                {doc.getUpdateLock().release(Lock.WRITE_LOCK);}
-            transact.close(transaction);
-            factory.getBrokerPool().release(broker);
+            if(doc != null) {
+                doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            }
         }
     }
 

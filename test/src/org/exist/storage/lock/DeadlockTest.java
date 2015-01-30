@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.exist.EXistException;
 import org.exist.TestDataGenerator;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
@@ -42,6 +43,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
@@ -143,19 +145,15 @@ public class DeadlockTest {
 	}
 	
 	@BeforeClass
-	public static void startDB() {
-		TransactionManager transact = null;
-		Txn transaction = null;
-		DBBroker broker = null;
-		try {
-			Configuration config = new Configuration();
-			BrokerPool.configure(1, 40, config);
-			pool = BrokerPool.getInstance();
+	public static void startDB() throws DatabaseConfigurationException, EXistException {
+        final Configuration config = new Configuration();
+        BrokerPool.configure(1, 40, config);
+        pool = BrokerPool.getInstance();
+        final TransactionManager transact = pool.getTransactionManager();
 
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			transact = pool.getTransactionManager();
-			assertNotNull(transact);
-			transaction = transact.beginTransaction();
+		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction();) {
+
 			Collection root = broker.getOrCreateCollection(transaction,
 					XmldbURI.ROOT_COLLECTION_URI);
 			assertNotNull(root);
@@ -183,11 +181,8 @@ public class DeadlockTest {
 			Database database = (Database) cl.newInstance();
 			DatabaseManager.registerDatabase(database);
 		} catch (Exception e) {
-			transact.abort(transaction);
 			e.printStackTrace();
 			fail(e.getMessage());
-		} finally {
-			pool.release(broker);
 		}
 	}
 
@@ -260,48 +255,42 @@ public class DeadlockTest {
 		}
 
 		public void run() {
-			TransactionManager transact = null;
-			Txn transaction = null;
-			DBBroker broker = null;
-			try {
-				broker = pool.get(pool.getSecurityManager().getSystemSubject());
-				transact = pool.getTransactionManager();
-				assertNotNull(transact);
+			final TransactionManager transact = pool.getTransactionManager();
+			try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
 				TestDataGenerator generator = new TestDataGenerator("xdb", docCount);
 				Collection coll;
 				int fileCount = 0;
 				for (int i = 0; i < collectionCount; i++) {
-                    transaction = transact.beginTransaction();
-                    coll = broker.getOrCreateCollection(transaction,
-							TestConstants.TEST_COLLECTION_URI.append(Integer
-									.toString(i)));
-					assertNotNull(coll);
-					broker.saveCollection(transaction, coll);
-                    transact.commit(transaction);
-
-                    transaction = transact.beginTransaction();
-                    System.out.println("Generating " + docCount + " files...");
-					File[] files = generator.generate(broker, coll, generateXQ);
-					for (int j = 0; j < files.length; j++, fileCount++) {
-						InputSource is = new InputSource(files[j].toURI()
-								.toASCIIString());
-						assertNotNull(is);
-						IndexInfo info = coll.validateXMLResource(transaction,
-								broker, XmldbURI.create("test" + fileCount
-										+ ".xml"), is);
-						assertNotNull(info);
-						coll.store(transaction, broker, info, is, false);
+                    try(final Txn transaction = transact.beginTransaction()) {
+                        coll = broker.getOrCreateCollection(transaction,
+                                TestConstants.TEST_COLLECTION_URI.append(Integer
+                                        .toString(i)));
+                        assertNotNull(coll);
+                        broker.saveCollection(transaction, coll);
                         transact.commit(transaction);
+                    }
+
+                    System.out.println("Generating " + docCount + " files...");
+                    final File[] files = generator.generate(broker, coll, generateXQ);
+                    for (int j = 0; j < files.length; j++, fileCount++) {
+                        try(final Txn transaction = transact.beginTransaction()) {
+                            InputSource is = new InputSource(files[j].toURI()
+                                    .toASCIIString());
+                            assertNotNull(is);
+                            IndexInfo info = coll.validateXMLResource(transaction,
+                                    broker, XmldbURI.create("test" + fileCount
+                                            + ".xml"), is);
+                            assertNotNull(info);
+                            coll.store(transaction, broker, info, is, false);
+                            transact.commit(transaction);
+                        }
                     }
 					generator.releaseAll();
 				}
 			} catch (Exception e) {
-				transact.abort(transaction);
 				e.printStackTrace();
 //				fail(e.getMessage());
-			} finally {
-				pool.release(broker);
 			}
 		}
 	}

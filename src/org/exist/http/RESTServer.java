@@ -717,9 +717,8 @@ public class RESTServer {
             String query = null;
 
             final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-            final Txn transaction = transact.beginTransaction();
 
-            try {
+            try(final Txn transaction = transact.beginTransaction()) {
                 final String content = getRequestContent(request);
                 final NamespaceExtractor nsExtractor = new NamespaceExtractor();
                 final ElementImpl root = parseXML(content, nsExtractor);
@@ -897,7 +896,6 @@ public class RESTServer {
                 }
 
             } catch (final SAXException e) {
-                transact.abort(transaction);
                 Exception cause = e;
                 if (e.getException() != null) {
                     cause = e.getException();
@@ -906,26 +904,15 @@ public class RESTServer {
                 throw new BadRequestException("SAX exception while parsing request: " + cause.getMessage());
 
             } catch (final ParserConfigurationException e) {
-                transact.abort(transaction);
                 throw new BadRequestException("Parser exception while parsing request: " + e.getMessage());
-
             } catch (final XPathException e) {
-                transact.abort(transaction);
                 throw new BadRequestException("Query exception while parsing request: " + e.getMessage());
-
             } catch (final IOException e) {
-                transact.abort(transaction);
                 throw new BadRequestException("IO exception while parsing request: " + e.getMessage());
-
             } catch (final EXistException e) {
-                transact.abort(transaction);
                 throw new BadRequestException(e.getMessage());
-
             } catch (final LockException e) {
-                transact.abort(transaction);
                 throw new PermissionDeniedException(e.getMessage());
-            } finally {
-                transact.close(transaction);
             }
 
             // content type = application/x-www-form-urlencoded
@@ -1020,37 +1007,36 @@ public class RESTServer {
         }
 
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        Txn transaction = null;
         VirtualTempFile vtempFile = null;
-        try {
+        try(final Txn transaction = transact.beginTransaction()) {
             // fourth, process the request
-            InputStream is = request.getInputStream();
-            long len = request.getContentLength();
-            final String lenstr = request.getHeader("Content-Length");
-            if (lenstr != null) {
-                len = Long.parseLong(lenstr);
-            }
-            // put may send a lot of data, so save it
-            // to a temporary file first.
+            try(final InputStream is = request.getInputStream()) {
+                long len = request.getContentLength();
+                final String lenstr = request.getHeader("Content-Length");
+                if (lenstr != null) {
+                    len = Long.parseLong(lenstr);
+                }
+                // put may send a lot of data, so save it
+                // to a temporary file first.
 
-            vtempFile = new VirtualTempFile();
-            vtempFile.setTempPrefix("existSRV");
-            vtempFile.setTempPostfix(".tmp");
-            vtempFile.write(is, len);
-            vtempFile.close();
+                vtempFile = new VirtualTempFile();
+                vtempFile.setTempPrefix("existSRV");
+                vtempFile.setTempPostfix(".tmp");
+                vtempFile.write(is, len);
+                vtempFile.close();
+            }
 
             final XmldbURI docUri = path.lastSegment();
             final XmldbURI collUri = path.removeLastSegment();
 
             if (docUri == null || collUri == null) {
-                //transact.abort(transaction);
+                transact.abort(transaction);
                 throw new BadRequestException("Bad path: " + path);
             }
             // TODO : use getOrCreateCollection() right now ?
             Collection collection = broker.getCollection(collUri);
             if (collection == null) {
                 LOG.debug("creating collection " + collUri);
-                transaction = transact.beginTransaction();
                 collection = broker.getOrCreateCollection(transaction, collUri);
                 broker.saveCollection(transaction, collection);
             }
@@ -1082,10 +1068,6 @@ public class RESTServer {
                 contentType = mime.getName();
             }
 
-            if (transaction == null) {
-                transaction = transact.beginTransaction();
-            }
-
             if (mime.isXMLType()) {
                 final InputSource vtfis = new VirtualTempFileInputSource(vtempFile, charset);
 
@@ -1095,45 +1077,35 @@ public class RESTServer {
                 response.setStatus(HttpServletResponse.SC_CREATED);
             } else {
 
-                is = vtempFile.getByteStream();
-                try {
+                try(final InputStream is = vtempFile.getByteStream()) {
                     collection.addBinaryResource(transaction, broker, docUri, is,
                             contentType, vtempFile.length());
-                } finally {
-                    is.close();
                 }
                 response.setStatus(HttpServletResponse.SC_CREATED);
             }
 
             transact.commit(transaction);
         } catch (final SAXParseException e) {
-            transact.abort(transaction);
             throw new BadRequestException("Parsing exception at "
                     + e.getLineNumber() + "/" + e.getColumnNumber() + ": "
                     + e.toString());
         } catch (final TriggerException e) {
-            transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
-        } catch (SAXException e) {
-            transact.abort(transaction);
+        } catch (final SAXException e) {
             Exception o = e.getException();
             if (o == null) {
                 o = e;
             }
             throw new BadRequestException("Parsing exception: " + o.getMessage());
         } catch (final EXistException e) {
-            transact.abort(transaction);
             throw new BadRequestException("Internal error: " + e.getMessage());
         } catch (final LockException e) {
-            transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
         } finally {
-            transact.close(transaction);
             if (vtempFile != null) {
                 vtempFile.delete();
             }
         }
-        return;
     }
 
     public void doDelete(final DBBroker broker, final String path, final HttpServletRequest request, final HttpServletResponse response)
@@ -1144,16 +1116,16 @@ public class RESTServer {
         }
 
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        Txn txn = null;
         try {
             final Collection collection = broker.getCollection(pathURI);
             if (collection != null) {
                 // remove the collection
                 LOG.debug("removing collection " + path);
 
-                txn = transact.beginTransaction();
-
-                broker.removeCollection(txn, collection);
+                try(final Txn txn = transact.beginTransaction()) {
+                    broker.removeCollection(txn, collection);
+                    transact.commit(txn);
+                }
                 response.setStatus(HttpServletResponse.SC_OK);
 
             } else {
@@ -1164,33 +1136,25 @@ public class RESTServer {
                 } else {
                     // remove the document
                     LOG.debug("removing document " + path);
-                    txn = transact.beginTransaction();
-
-                    if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                        doc.getCollection().removeBinaryResource(txn, broker, pathURI.lastSegment());
-                    } else {
-                        doc.getCollection().removeXMLResource(txn, broker, pathURI.lastSegment());
+                    try(final Txn txn = transact.beginTransaction()) {
+                        if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                            doc.getCollection().removeBinaryResource(txn, broker, pathURI.lastSegment());
+                        } else {
+                            doc.getCollection().removeXMLResource(txn, broker, pathURI.lastSegment());
+                        }
+                        transact.commit(txn);
                     }
 
                     response.setStatus(HttpServletResponse.SC_OK);
                 }
             }
-            if (txn != null) //should not happen, just in case ...
-            {
-                transact.commit(txn);
-            }
 
         } catch (final TriggerException e) {
-            transact.abort(txn);
             throw new PermissionDeniedException("Trigger failed: " + e.getMessage());
         } catch (final LockException e) {
-            transact.abort(txn);
             throw new PermissionDeniedException("Could not acquire lock: " + e.getMessage());
         } catch (final TransactionException e) {
-            transact.abort(txn);
             LOG.warn("Transaction aborted: " + e.getMessage(), e);
-        } finally {
-            transact.close(txn);
         }
     }
 

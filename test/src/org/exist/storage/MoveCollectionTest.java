@@ -50,17 +50,12 @@ public class MoveCollectionTest extends TestCase {
 
     public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
+
             System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction,	TestConstants.TEST_COLLECTION_URI);
@@ -88,8 +83,6 @@ public class MoveCollectionTest extends TestCase {
             System.out.println("Transaction commited ...");
 	    } catch (Exception e) {            
 	        fail(e.getMessage());              
-        } finally {
-            if (pool != null) pool.release(broker);
         }
     }
     
@@ -121,39 +114,38 @@ public class MoveCollectionTest extends TestCase {
     
     public void testStoreAborted() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
+        BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
 
-            Collection root = broker.getOrCreateCollection(transaction,	TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
-            assertNotNull(test2);
-            broker.saveCollection(transaction, test2);
-    
-            String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
-            File f = new File(existDir,"samples/biblio.rdf");
-            assertNotNull(f);
-            IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
-            assertNotNull(info);            
-            test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+            Collection test2;
+
+            try(final Txn transaction = transact.beginTransaction()) {
+
+                System.out.println("Transaction started ...");
+
+                Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
+
+                test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
+                assertNotNull(test2);
+                broker.saveCollection(transaction, test2);
+
+                String existHome = System.getProperty("exist.home");
+                File existDir = existHome == null ? new File(".") : new File(existHome);
+                File f = new File(existDir, "samples/biblio.rdf");
+                assertNotNull(f);
+                IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
+                assertNotNull(info);
+                test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
+            }
             
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
-            
-            transaction = transact.beginTransaction();
+            final Txn transaction = transact.beginTransaction();
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
@@ -167,8 +159,6 @@ public class MoveCollectionTest extends TestCase {
             System.out.println("Transaction interrupted ...");
 	    } catch (Exception e) {            
 	        fail(e.getMessage());  
-        } finally {
-        	if (pool != null) pool.release(broker);
         }
     }
     

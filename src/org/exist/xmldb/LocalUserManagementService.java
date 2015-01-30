@@ -1085,10 +1085,9 @@ public class LocalUserManagementService implements EXistUserManagementService {
     
     private <R> R modifyResource(DBBroker broker, Resource resource, DatabaseItemModifier<DocumentImpl, R> modifier) throws XMLDBException, LockException, PermissionDeniedException, EXistException, SyntaxException {
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
         
         DocumentImpl document = null;
-        try {
+        try(final Txn transaction = transact.beginTransaction()) {
             document = ((AbstractEXistResource) resource).openDocument(broker, Lock.WRITE_LOCK);
             final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
             if(!document.getPermissions().validate(user, Permission.WRITE) && !sm.hasAdminPrivileges(user)) {
@@ -1101,24 +1100,10 @@ public class LocalUserManagementService implements EXistUserManagementService {
             transact.commit(transaction);
             
             return result;
-            
-        } catch(final EXistException ee) {
-            transact.abort(transaction);
-            throw ee;
-        } catch(final XMLDBException xmldbe) {
-            transact.abort(transaction);
-            throw xmldbe;
-        } catch(final LockException le) {
-            transact.abort(transaction);
-            throw le;
-        } catch(final PermissionDeniedException pde) {
-            transact.abort(transaction);
-            throw pde;
-        } catch(final SyntaxException se) {
-            transact.abort(transaction);
-            throw se;
+
+        } catch(final EXistException | XMLDBException | SyntaxException | PermissionDeniedException | LockException e) {
+            throw e;
         } finally {
-            transact.close(transaction);
             if(document != null) {
                 ((AbstractEXistResource)resource).closeDocument(document, Lock.WRITE_LOCK);
             }
@@ -1127,11 +1112,10 @@ public class LocalUserManagementService implements EXistUserManagementService {
     
     private <R> R modifyCollection(DBBroker broker, XmldbURI collectionURI, DatabaseItemModifier<org.exist.collections.Collection, R> modifier) throws XMLDBException, LockException, PermissionDeniedException, IOException, EXistException, TriggerException, SyntaxException {
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
         
         org.exist.collections.Collection coll = null;
         
-        try {
+        try(final Txn transaction = transact.beginTransaction()) {
             coll = broker.openCollection(collectionURI, Lock.WRITE_LOCK);
             if(coll == null) {
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collectionURI.toString() + " not found");
@@ -1145,29 +1129,9 @@ public class LocalUserManagementService implements EXistUserManagementService {
             
             return result;
             
-        } catch(final EXistException ee) {
-            transact.abort(transaction);
-            throw ee;
-        } catch(final XMLDBException xmldbe) {
-            transact.abort(transaction);
-            throw xmldbe;
-        } catch(final LockException le) {
-            transact.abort(transaction);
-            throw le;
-        } catch(final PermissionDeniedException pde) {
-            transact.abort(transaction);
-            throw pde;
-        } catch(final IOException ioe) {
-            transact.abort(transaction);
-            throw ioe;
-        } catch(final TriggerException te) {
-            transact.abort(transaction);
-            throw te;
-        } catch(final SyntaxException se) {
-            transact.abort(transaction);
-            throw se;
+        } catch(final EXistException | SyntaxException | TriggerException | IOException | PermissionDeniedException | LockException | XMLDBException e) {
+            throw e;
         } finally {
-            transact.close(transaction);
             if(coll != null) {
                 coll.release(Lock.WRITE_LOCK);
             }

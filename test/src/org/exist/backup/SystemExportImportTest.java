@@ -24,17 +24,21 @@ package org.exist.backup;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import org.exist.EXistException;
 import org.exist.backup.SystemExport;
 import org.exist.backup.SystemImport;
 import org.exist.backup.restore.listener.DefaultRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -46,11 +50,14 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -173,23 +180,18 @@ public class SystemExportImportTest {
 	}
     
 	//@BeforeClass
-    public static void startDB() {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            File confFile = ConfigurationHelper.lookup("conf.xml");
-            Configuration config = new Configuration(confFile.getAbsolutePath());
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        	assertNotNull(pool);
-        	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+    public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
 
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
+        File confFile = ConfigurationHelper.lookup("conf.xml");
+        Configuration config = new Configuration(confFile.getAbsolutePath());
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+        assertNotNull(pool);
+        pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+
+        try (final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
 
@@ -200,83 +202,61 @@ public class SystemExportImportTest {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG);
 
-            System.out.println("store "+doc01uri);
+            System.out.println("store " + doc01uri);
             IndexInfo info = root.validateXMLResource(transaction, broker, doc01uri.lastSegment(), XML1);
             assertNotNull(info);
             root.store(transaction, broker, info, XML1, false);
 
-            System.out.println("store "+doc02uri);
+            System.out.println("store " + doc02uri);
             info = root.validateXMLResource(transaction, broker, doc02uri.lastSegment(), XML2);
             assertNotNull(info);
             root.store(transaction, broker, info, XML2, false);
 
-            System.out.println("store "+doc03uri);
+            System.out.println("store " + doc03uri);
             info = root.validateXMLResource(transaction, broker, doc03uri.lastSegment(), XML3);
             assertNotNull(info);
             root.store(transaction, broker, info, XML3, false);
 
-            System.out.println("store "+doc11uri);
+            System.out.println("store " + doc11uri);
             root.addBinaryResource(transaction, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
 
-            transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            transact.abort(transaction);
-            fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
+            pool.getTransactionManager().commit(transaction);
         }
 
         rundb();
     }
 
 
-    private static void rundb() {
-		try {
-			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-			Database database = (Database) cl.newInstance();
-			database.setProperty("create-database", "true");
-			DatabaseManager.registerDatabase(database);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    private static void rundb() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
+        Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+        Database database = (Database) cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
     }
     
     //@AfterClass
-    public static void cleanup() {
+    public static void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException {
     	clean();
         BrokerPool.stopAll(false);
         pool = null;
         System.out.println("stoped");
     }
 
-    private static void clean() {
+    private static void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {
     	System.out.println("CLEANING...");
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
             System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, col1uri);
             assertNotNull(root);
             broker.removeCollection(transaction, root);
 
-            transact.commit(transaction);
-        } catch (Exception e) {
-        	transact.abort(transaction);
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (pool != null) pool.release(broker);
+            pool.getTransactionManager().commit(transaction);
         }
+
     	System.out.println("CLEANED.");
     }
 }

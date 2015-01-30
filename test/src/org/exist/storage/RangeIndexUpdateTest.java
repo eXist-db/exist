@@ -21,6 +21,7 @@
  */
 package org.exist.storage;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
@@ -34,6 +35,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.ValueOccurrences;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
@@ -89,11 +91,9 @@ public class RangeIndexUpdateTest {
 
     @Test
     public void updates() {
-        DBBroker broker = null;
-        try {
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction();) {
 
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Chair"), 1);
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Table892.25"), 1);
@@ -151,10 +151,6 @@ public class RangeIndexUpdateTest {
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null) {
-                pool.release(broker);
-            }
         }
     }
 
@@ -176,22 +172,17 @@ public class RangeIndexUpdateTest {
     }
 
     @BeforeClass
-    public static void startDB() {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            File confFile = ConfigurationHelper.lookup("conf.xml");
-            Configuration config = new Configuration(confFile.getAbsolutePath());
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+    public static void startDB() throws DatabaseConfigurationException, EXistException {
+        final File confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+
+
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
             System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -218,26 +209,15 @@ public class RangeIndexUpdateTest {
             transact.commit(transaction);
         } catch (Exception e) {
             e.printStackTrace();
-            transact.abort(transaction);
             fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 
     @AfterClass
     public static void cleanup() {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
             System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -251,12 +231,10 @@ public class RangeIndexUpdateTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-        	transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null) pool.release(broker);
         }
+
         BrokerPool.stopAll(false);
         pool = null;
         docs = null;

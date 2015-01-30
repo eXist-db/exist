@@ -219,18 +219,16 @@ public class ExistCollection extends ExistResource {
      */
     void delete() {
 
-        if(LOG.isDebugEnabled())
+        if(LOG.isDebugEnabled()) {
             LOG.debug(String.format("Deleting '%s'", xmldbUri));
+        }
 
-        DBBroker broker = null;
         Collection collection = null;
 
-        TransactionManager txnManager = brokerPool.getTransactionManager();
-        Txn txn = txnManager.beginTransaction();
+        final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try {
-            broker = brokerPool.get(subject);
-
+        try(final DBBroker broker = brokerPool.get(subject);
+            final Txn txn = txnManager.beginTransaction()) {
 
             // Open collection if possible, else abort
             collection = broker.openCollection(xmldbUri, Lock.WRITE_LOCK);
@@ -245,14 +243,11 @@ public class ExistCollection extends ExistResource {
             // Commit change
             txnManager.commit(txn);
 
-            if(LOG.isDebugEnabled())
+            if(LOG.isDebugEnabled()) {
                 LOG.debug("Document deleted sucessfully");
-
-
+            }
         } catch (EXistException | IOException | PermissionDeniedException | TriggerException e) {
             LOG.error(e);
-            txnManager.abort(txn);
-
         } finally {
 
             // TODO: check if can be done earlier
@@ -260,30 +255,25 @@ public class ExistCollection extends ExistResource {
                 collection.release(Lock.WRITE_LOCK);
             }
 
-            txnManager.close(txn);
-            brokerPool.release(broker);
-
-            if(LOG.isDebugEnabled())
+            if(LOG.isDebugEnabled()) {
                 LOG.debug("Finished delete");
+            }
         }
     }
 
     public XmldbURI createCollection(String name) throws PermissionDeniedException, CollectionExistsException, EXistException {
 
-        if(LOG.isDebugEnabled())
+        if(LOG.isDebugEnabled()) {
             LOG.debug(String.format("Create  '%s' in '%s'", name, xmldbUri));
+        }
 
         XmldbURI newCollection = xmldbUri.append(name);
-
-
-        DBBroker broker = null;
         Collection collection = null;
 
-        TransactionManager txnManager = brokerPool.getTransactionManager();
-        Txn txn = txnManager.beginTransaction();
+        final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try {
-            broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(subject);
+            final Txn txn = txnManager.beginTransaction()) {
 
             // Check if collection exists. not likely to happen since availability is
             // checked by ResourceFactory
@@ -306,22 +296,18 @@ public class ExistCollection extends ExistResource {
             // Commit change
             txnManager.commit(txn);
 
-            if(LOG.isDebugEnabled())
+            if(LOG.isDebugEnabled()) {
                 LOG.debug("Collection created sucessfully");
-
-
+            }
         } catch (EXistException | PermissionDeniedException e) {
             LOG.error(e);
-            txnManager.abort(txn);
             throw e;
 
         } catch (IOException e) {
             LOG.error(e);
-            txnManager.abort(txn);
 
         } catch (Throwable e) {
             LOG.error(e);
-            txnManager.abort(txn);
             throw new EXistException(e);
 
         } finally {
@@ -330,12 +316,10 @@ public class ExistCollection extends ExistResource {
             if (collection != null) {
                 collection.release(Lock.WRITE_LOCK);
             }
-            txnManager.close(txn);
 
-            brokerPool.release(broker);
-
-            if(LOG.isDebugEnabled())
+            if(LOG.isDebugEnabled()) {
                 LOG.debug("Finished creation");
+            }
         }
 
         return newCollection;
@@ -356,21 +340,17 @@ public class ExistCollection extends ExistResource {
         }
 
         // References to the database
-        DBBroker broker = null;
         Collection collection = null;
 
         // create temp file and store. Existdb needs to read twice from a stream.
-        BufferedInputStream bis = new BufferedInputStream(is);
-
         VirtualTempFile vtf = new VirtualTempFile();
+        try(final BufferedInputStream bis = new BufferedInputStream(is);
+            final BufferedOutputStream bos = new BufferedOutputStream(vtf)) {
 
-        BufferedOutputStream bos = new BufferedOutputStream(vtf);
-
-        // Perform actual copy
-        IOUtils.copy(bis, bos);
-        bis.close();
-        bos.close();
-        vtf.close();
+            // Perform actual copy
+            IOUtils.copy(bis, bos);
+            vtf.close();
+        }
 
         // To support LockNullResource, a 0-byte XML document can received. Since 0-byte
         // XML documents are not supported a small file will be created.
@@ -384,12 +364,10 @@ public class ExistCollection extends ExistResource {
             vtf.close();
         }
 
-        // Start transaction
-        TransactionManager txnManager = brokerPool.getTransactionManager();
-        Txn txn = txnManager.beginTransaction();
+        final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        try {
-            broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(subject);
+            final Txn txn = txnManager.beginTransaction()) {
 
             // Check if collection exists. not likely to happen since availability is checked
             // by ResourceFactory
@@ -419,10 +397,10 @@ public class ExistCollection extends ExistResource {
                     LOG.debug(String.format("Inserting BINARY document '%s'", mime.getName()));
 
                 // Stream into database
-                InputStream fis = vtf.getByteStream();
-                bis = new BufferedInputStream(fis);
-                collection.addBinaryResource(txn, broker, newNameUri, bis, mime.getName(), length);
-                bis.close();
+                try(final InputStream fis = vtf.getByteStream();
+                    final InputStream bis = new BufferedInputStream(fis)) {
+                    collection.addBinaryResource(txn, broker, newNameUri, bis, mime.getName(), length);
+                }
             }
 
             // Commit change
@@ -435,17 +413,14 @@ public class ExistCollection extends ExistResource {
 
         } catch (EXistException | SAXException e) {
             LOG.error(e);
-            txnManager.abort(txn);
             throw new IOException(e);
 
         } catch (LockException e) {
             LOG.error(e);
-            txnManager.abort(txn);
             throw new PermissionDeniedException(xmldbUri + "");
 
         } catch (IOException | PermissionDeniedException e) {
             LOG.error(e);
-            txnManager.abort(txn);
             throw e;
 
         } finally {
@@ -458,11 +433,10 @@ public class ExistCollection extends ExistResource {
             if (collection != null) {
                 collection.release(Lock.WRITE_LOCK);
             }
-            txnManager.close(txn);
-            brokerPool.release(broker);
 
-            if(LOG.isDebugEnabled())
+            if(LOG.isDebugEnabled()) {
                 LOG.debug("Finished creation");
+            }
         }
 
         // Send the result back to the client
@@ -485,16 +459,13 @@ public class ExistCollection extends ExistResource {
             throw new EXistException(ex.getMessage());
         }
 
-        DBBroker broker = null;
         Collection srcCollection = null;
         Collection destCollection = null;
 
+        final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-        TransactionManager txnManager = brokerPool.getTransactionManager();
-        Txn txn = txnManager.beginTransaction();
-
-        try {
-            broker = brokerPool.get(subject);
+        try(final DBBroker broker = brokerPool.get(subject);
+            final Txn txn = txnManager.beginTransaction()) {
 
             // This class contains already the URI of the resource that shall be moved/copied
             XmldbURI srcCollectionUri = xmldbUri;
@@ -526,24 +497,19 @@ public class ExistCollection extends ExistResource {
             // Commit change
             txnManager.commit(txn);
 
-            if(LOG.isDebugEnabled())
+            if(LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Collection %sd sucessfully", mode));
+            }
 
         } catch (LockException e) {
             LOG.error("Resource is locked.", e);
-            txnManager.abort(txn);
             throw new EXistException(e.getMessage());
-
         } catch (EXistException e) {
             LOG.error(e);
-            txnManager.abort(txn);
             throw e;
-
         } catch (IOException | PermissionDeniedException | TriggerException e) {
             LOG.error(e);
-            txnManager.abort(txn);
             throw new EXistException(e.getMessage());
-
         } finally {
 
             if (destCollection != null) {
@@ -553,9 +519,6 @@ public class ExistCollection extends ExistResource {
             if (srcCollection != null) {
                 srcCollection.release(Lock.WRITE_LOCK);
             }
-
-            txnManager.close(txn);
-            brokerPool.release(broker);
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Finished %s", mode));

@@ -40,53 +40,49 @@ public class AppendTest extends AbstractUpdateTest {
     @Test
     public void update() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = null;       
-        DBBroker broker = null;
+
+        final BrokerPool pool = startDB();
+        final TransactionManager mgr = pool.getTransactionManager();
         
-        try {
-        	pool = startDB();
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            
-            TransactionManager mgr = pool.getTransactionManager();
-            
-            IndexInfo info = init(broker, mgr);
-            MutableDocumentSet docs = new DefaultDocumentSet();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
+            final IndexInfo info = init(broker, mgr);
+            final MutableDocumentSet docs = new DefaultDocumentSet();
             docs.add(info.getDocument());
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
-            
-            Txn transaction = mgr.beginTransaction();
-            
-            String xupdate;
-            Modification modifications[];
-            
-            // append some new element to records
-            for (int i = 1; i <= 50; i++) {
-                xupdate =
-                    "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                    "   <xu:append select=\"/products\">" +
-                    "       <product>" +
-                    "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
-                    "           <description>Product " + i + "</description>" +
-                    "           <price>" + (i * 2.5) + "</price>" +
-                    "           <stock>" + (i * 10) + "</stock>" +
-                    "       </product>" +
-                    "   </xu:append>" +
-                    "</xu:modifications>";
-                proc.setBroker(broker);
-                proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-                modifications[0].process(transaction);
-                proc.reset();
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+
+            try(final Txn transaction = mgr.beginTransaction()) {
+
+                // append some new element to records
+                for (int i = 1; i <= 50; i++) {
+                    final String xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:append select=\"/products\">" +
+                                    "       <product>" +
+                                    "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
+                                    "           <description>Product " + i + "</description>" +
+                                    "           <price>" + (i * 2.5) + "</price>" +
+                                    "           <stock>" + (i * 10) + "</stock>" +
+                                    "       </product>" +
+                                    "   </xu:append>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                    modifications[0].process(transaction);
+                    proc.reset();
+                }
+
+                mgr.commit(transaction);
             }
-            
-            mgr.commit(transaction);
-            
+
+
             // the following transaction will not be committed and thus undone during recovery
-            transaction = mgr.beginTransaction();
+            final Txn transaction = mgr.beginTransaction();
             
             // append new element
             for (int i = 1; i <= 50; i++) {
-                xupdate =
+                final String xupdate =
                     "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
                     "   <xu:append select=\"/products/product[" + i + "]\">" +
                     "       <date><xu:value-of select=\"current-dateTime()\"/></date>" +
@@ -94,15 +90,13 @@ public class AppendTest extends AbstractUpdateTest {
                     "</xu:modifications>";
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
                 modifications[0].process(transaction);
                 proc.reset();
             }
             pool.getTransactionManager().getJournal().flushToLog(true);
         } catch (Exception e) {            
             fail(e.getMessage());            
-        } finally {
-            if (pool != null) pool.release(broker);
         }
     }
 

@@ -98,13 +98,9 @@ public class ConcurrentStoreTest extends TestCase {
     }
     
     protected void setupCollections() {
-        DBBroker broker = null;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            
-            System.out.println("Transaction started ...");
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction();) {
             
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
@@ -117,16 +113,13 @@ public class ConcurrentStoreTest extends TestCase {
             
             transact.commit(transaction);
         } catch (Exception e) {
-            transact.abort(transaction);            
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
     
     protected BrokerPool startDB() {
         try {
-            Configuration config = new Configuration();
+            final Configuration config = new Configuration();
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
         } catch (Exception e) {            
@@ -142,12 +135,9 @@ public class ConcurrentStoreTest extends TestCase {
     class StoreThread1 extends Thread {
         
         public void run() {
-            DBBroker broker = null;
-            try {
-                broker = pool.get(pool.getSecurityManager().getSystemSubject());
-                
-                TransactionManager transact = pool.getTransactionManager();
-                Txn transaction = transact.beginTransaction();
+            final TransactionManager transact = pool.getTransactionManager();
+            try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                    final Txn transaction = transact.beginTransaction()) {
                 
                 System.out.println("Transaction started ...");
                 XMLFilenameFilter filter = new XMLFilenameFilter();
@@ -177,22 +167,15 @@ public class ConcurrentStoreTest extends TestCase {
                 System.out.println("Transaction interrupted ...");
     	    } catch (Exception e) {            
     	        fail(e.getMessage()); 
-            } finally {
-                pool.release(broker);
             }
         }
     }
     
     class StoreThread2 extends Thread {
         public void run() {
-            DBBroker broker = null;
-            try {
-                broker = pool.get(pool.getSecurityManager().getSystemSubject());
-                
-                TransactionManager transact = pool.getTransactionManager();
-                Txn transaction = transact.beginTransaction();
-                
-                System.out.println("Transaction started ...");
+            final TransactionManager transact = pool.getTransactionManager();
+            try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                    final Txn transaction = transact.beginTransaction()) {
                 
                 Iterator<DocumentImpl> i = test.iterator(broker);
                 DocumentImpl doc = i.next();
@@ -212,8 +195,6 @@ public class ConcurrentStoreTest extends TestCase {
             } catch (Exception e) {
                 e.printStackTrace();
                 fail(e.getMessage());
-            } finally {
-                pool.release(broker);
             }
         }
     }

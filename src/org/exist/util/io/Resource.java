@@ -38,6 +38,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.Collection.CollectionEntry;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentMetadata;
@@ -180,17 +181,16 @@ public class Resource extends File {
     }
     
     public boolean mkdir() {
-    	DBBroker broker = null; 
-		BrokerPool db = null;
-		TransactionManager tm;
 
-		try {
-			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (final EXistException e) {
-				return false;
-			}
+		final BrokerPool db;
+
+        try {
+            db = BrokerPool.getInstance();
+        } catch (final EXistException e) {
+            return false;
+        }
+
+		try(final DBBroker broker = db.get(null);) {
 	
 	        final Collection collection = broker.getCollection(uri.toCollectionPathURI());
 	        if (collection != null) {return true;}
@@ -198,66 +198,50 @@ public class Resource extends File {
 	        final Collection parent_collection = broker.getCollection(uri.toCollectionPathURI().removeLastSegment());
 	        if (parent_collection == null) {return false;}
 	
-	        tm = db.getTransactionManager();
-			final Txn transaction = tm.beginTransaction();
+	        final TransactionManager tm = db.getTransactionManager();
+
 			
-			try {
+			try(final Txn transaction = tm.beginTransaction()) {
 				final Collection child = broker.getOrCreateCollection(transaction, uri.toCollectionPathURI());
 				broker.saveCollection(transaction, child);
 				tm.commit(transaction);
 			} catch (final Exception e) {
-	    		tm.abort(transaction);
 				return false;
-			} finally {
-                tm.close(transaction);
-            }
+			}
         } catch (final Exception e) {
 			return false;
-			
-		} finally {
-			if (db != null)
-				{db.release(broker);}
 		}
     	
     	return true;
     }
 
     public boolean mkdirs() {
-    	DBBroker broker = null; 
-		BrokerPool db = null;
-		TransactionManager tm;
+		final BrokerPool db;
 
-		try {
-			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (final EXistException e) {
-				return false;
-			}
-	
+        try {
+            db = BrokerPool.getInstance();
+
+        } catch (final EXistException e) {
+            return false;
+        }
+
+		try(final DBBroker broker = db.get(null)) {
+
 	        final Collection collection = broker.getCollection(uri.toCollectionPathURI());
 	        if (collection != null) {return true;}
 	
-			tm = db.getTransactionManager();
-			final Txn transaction = tm.beginTransaction();
-			
-			try {
+			final TransactionManager tm = db.getTransactionManager();
+
+			try(final Txn transaction = tm.beginTransaction()) {
 				final Collection child = broker.getOrCreateCollection(transaction, uri.toCollectionPathURI());
 				broker.saveCollection(transaction, child);
 				tm.commit(transaction);
 			} catch (final Exception e) {
-	    		tm.abort(transaction);
 				return false;
-			} finally {
-                tm.close(transaction);
-            }
+			}
 
 		} catch (final Exception e) {
 			return false;
-		
-		} finally {
-			if (db != null)
-				{db.release(broker);}
 		}
     	
     	return true;
@@ -297,57 +281,48 @@ public class Resource extends File {
     public boolean _renameTo(File dest) {
     	final XmldbURI destinationPath = ((Resource)dest).uri;
 
-    	DBBroker broker = null; 
 		BrokerPool db = null;
 		TransactionManager tm;
 
-		try {
-			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (final EXistException e) {
-				return false;
-			}
-	
-			tm = db.getTransactionManager();
-			Txn transaction = null;
-	
-	        org.exist.collections.Collection destination = null;
-	        org.exist.collections.Collection source = null;
-	        XmldbURI newName;
-			try {
-	     		source = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
-	    		if(source == null) {
-	    			return false;
-	            }
-	    		final DocumentImpl doc = source.getDocument(broker, uri.lastSegment());
-	            if(doc == null) {
-	                return false;
-	            }
-	            destination = broker.openCollection(destinationPath.removeLastSegment(), Lock.WRITE_LOCK);
-	            if(destination == null) {
-	                return false;
-	            }
-	            
-	            newName = destinationPath.lastSegment();
-	
-	            transaction = tm.beginTransaction();
-	            broker.moveResource(transaction, doc, destination, newName);
-	            tm.commit(transaction);
-	            return true;
-	            
-	        } catch ( final Exception e ) {
-	        	e.printStackTrace();
-	        	if (transaction != null) {tm.abort(transaction);}
-	        	return false;
-	        } finally {
-                tm.close(transaction);
-	        	if(source != null) {source.release(Lock.WRITE_LOCK);}
-	        	if(destination != null) {destination.release(Lock.WRITE_LOCK);}
-	        }
+        try {
+            db = BrokerPool.getInstance();
+            tm = db.getTransactionManager();
+        } catch (final EXistException e) {
+            return false;
+        }
+
+        org.exist.collections.Collection destination = null;
+        org.exist.collections.Collection source = null;
+        XmldbURI newName;
+
+        try(final DBBroker broker = db.get(null);) {
+            source = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
+            if(source == null) {
+                return false;
+            }
+            final DocumentImpl doc = source.getDocument(broker, uri.lastSegment());
+            if(doc == null) {
+                return false;
+            }
+            destination = broker.openCollection(destinationPath.removeLastSegment(), Lock.WRITE_LOCK);
+            if(destination == null) {
+                return false;
+            }
+
+            newName = destinationPath.lastSegment();
+
+            try(final Txn transaction = tm.beginTransaction()) {
+                broker.moveResource(transaction, doc, destination, newName);
+                tm.commit(transaction);
+            }
+            return true;
+
+        } catch ( final Exception e ) {
+            e.printStackTrace();
+            return false;
         } finally {
-        	if (db != null)
-        		{db.release( broker );}
+            if(source != null) {source.release(Lock.WRITE_LOCK);}
+            if(destination != null) {destination.release(Lock.WRITE_LOCK);}
         }
     }
     
@@ -357,24 +332,19 @@ public class Resource extends File {
     	
         final XmldbURI destinationPath = ((Resource)dest).uri;
 
-        DBBroker broker = null; 
-        BrokerPool db = null;
-        TransactionManager tm;
-
+        final BrokerPool db;
         try {
-            try {
-                db = BrokerPool.getInstance();
-                broker = db.get(null);
-            } catch (final EXistException e) {
-                return false;
-            }
-    
-            tm = db.getTransactionManager();
-            Txn transaction = null;
+            db = BrokerPool.getInstance();
+        } catch (final EXistException e) {
+            return false;
+        }
+
+        try(final DBBroker broker = db.get(null);) {
     
             org.exist.collections.Collection destination = null;
             org.exist.collections.Collection source = null;
             XmldbURI newName;
+
             try {
                 source = broker.openCollection(uri.removeLastSegment(), Lock.WRITE_LOCK);
                 if(source == null) {
@@ -390,30 +360,29 @@ public class Resource extends File {
                 }
                 
                 newName = destinationPath.lastSegment();
-    
-                transaction = tm.beginTransaction();
-                moveResource(broker, transaction, doc, source, destination, newName);
+
+                final TransactionManager tm = db.getTransactionManager();
+                try(final Txn transaction = tm.beginTransaction()) {
+                    moveResource(broker, transaction, doc, source, destination, newName);
 
 //                resource = null;
 //                collection = null;
 //                initialized = false;
 //                uri = ((Resource)dest).uri;
 
-                tm.commit(transaction);
-                return true;
+                    tm.commit(transaction);
+                    return true;
+                }
                 
             } catch ( final Exception e ) {
                 e.printStackTrace();
-                if (transaction != null) {tm.abort(transaction);}
                 return false;
             } finally {
-                tm.close(transaction);
                 if(source != null) {source.release(Lock.WRITE_LOCK);}
                 if(destination != null) {destination.release(Lock.WRITE_LOCK);}
             }
-        } finally {
-            if (db != null)
-                {db.release( broker );}
+        } catch(final EXistException e) {
+            return false;
         }
     }
     
@@ -460,22 +429,18 @@ public class Resource extends File {
     protected synchronized void uploadTmpFile() throws IOException {
     	if (file == null)
     		{throw new IOException();}
-    	
-        DBBroker broker = null; 
-        BrokerPool db = null;
-        TransactionManager tm = null;
-        Txn txn = null;
+
+        final BrokerPool db;
 
         try {
-            try {
-                db = BrokerPool.getInstance();
-                broker = db.get(null);
-            } catch (final EXistException e) {
-                throw new IOException(e);
-            }
-    
-            tm = db.getTransactionManager();
-            txn = tm.beginTransaction();
+            db = BrokerPool.getInstance();
+        } catch (final EXistException e) {
+            throw new IOException(e);
+        }
+
+        final TransactionManager tm = db.getTransactionManager();
+        try(final DBBroker broker = db.get(null);
+                final Txn txn = tm.beginTransaction();) {
 
             FileInputSource is = new FileInputSource(file);
 	        
@@ -489,11 +454,6 @@ public class Resource extends File {
             
         } catch ( final Exception e ) {
             e.printStackTrace();
-            if (txn != null) {tm.abort(txn);}
-	    } finally {
-            tm.close(txn);
-	        if (db != null)
-	            {db.release( broker );}
 	    }
     }
 
@@ -584,70 +544,56 @@ public class Resource extends File {
     }
     
     public boolean delete() {
-    	DBBroker broker = null; 
-		BrokerPool db = null;
-		TransactionManager tm;
+		final BrokerPool db;
+        final TransactionManager tm;
 
-		try {
-			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (final EXistException e) {
-				return false;
-			}
-	
-			tm = db.getTransactionManager();
-	        Txn txn = null;
-	        try {
-	            collection = broker.openCollection(uri.removeLastSegment(), Lock.NO_LOCK);
-	            if (collection == null) {
-	                return false;
-	            }
-	            // keep the write lock in the transaction
-	            //transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
-	
-	            final DocumentImpl doc = collection.getDocument(broker, uri.lastSegment());
-	            if (doc == null) {
-	            	return true;
-	            }
-	            
-	            txn = tm.beginTransaction();
-	            if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
-	                {collection.removeBinaryResource(txn, broker, doc);}
-	            else
-	                {collection.removeXMLResource(txn, broker, uri.lastSegment());}
+        try {
+            db = BrokerPool.getInstance();
+            tm = db.getTransactionManager();
+        } catch (final EXistException e) {
+            return false;
+        }
+
+		try(final DBBroker broker = db.get(null)) {
+
+            collection = broker.openCollection(uri.removeLastSegment(), Lock.NO_LOCK);
+            if (collection == null) {
+                return false;
+            }
+            // keep the write lock in the transaction
+            //transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+
+            final DocumentImpl doc = collection.getDocument(broker, uri.lastSegment());
+            if (doc == null) {
+                return true;
+            }
+
+            try(final Txn txn = tm.beginTransaction()) {
+	            if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    collection.removeBinaryResource(txn, broker, doc);
+                } else {
+                    collection.removeXMLResource(txn, broker, uri.lastSegment());
+                }
 	            
 	            tm.commit(txn);
-	            return true;
-	
-	        } catch (final Exception e) {
-	        	if (txn != null) {tm.abort(txn);}
-	            return false;
-	        } finally {
-                tm.close(txn);
-            }
-        } finally {
-        	if (db != null)
-        		{db.release(broker);}
 
-            resource = null;
-            collection = null;
-            initialized = false;
+                return true;
+	        }
+        } catch (final EXistException | PermissionDeniedException | LockException | TriggerException e) {
+            return false;
         }
     }
 
     public boolean createNewFile() throws IOException {
-    	DBBroker broker = null; 
-		BrokerPool db = null;
-		TransactionManager tm;
+		final BrokerPool db;
 
-		try {
-			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (final EXistException e) {
-				throw new IOException(e);
-			}
+        try {
+            db = BrokerPool.getInstance();
+        } catch (final EXistException e) {
+            throw new IOException(e);
+        }
+
+		try(final DBBroker broker = db.get(null)) {
 			
 //			if (!uri.startsWith("/db"))
 //				uri = XmldbURI.DB.append(uri);
@@ -698,11 +644,9 @@ public class Resource extends File {
 				mimeType = MimeType.BINARY_TYPE;
 			}
 			
-			tm = db.getTransactionManager();
-			final Txn transaction = tm.beginTransaction();
-	
-			InputStream is = null;
-			try {
+
+            final TransactionManager tm = db.getTransactionManager();
+			try(final Txn transaction = tm.beginTransaction()) {
 				if (mimeType.isXMLType()) {
 					// store as xml resource
 					final String str = "<empty/>"; 
@@ -713,24 +657,18 @@ public class Resource extends File {
 	
 				} else {
 					// store as binary resource
-					is = new ByteArrayInputStream("".getBytes(UTF_8));
-					
-					final BinaryDocument blob = new BinaryDocument(db, collection, fileName);
-	
-					blob.getPermissions().setMode(DEFAULT_RESOURCE_PERM);
-
-					collection.addBinaryResource(transaction, broker, blob, is,
-							mimeType.getName(), 0L , new Date(), new Date());
-	
+					try(final InputStream is = new ByteArrayInputStream("".getBytes(UTF_8))) {
+                        final BinaryDocument blob = new BinaryDocument(db, collection, fileName);
+                        blob.getPermissions().setMode(DEFAULT_RESOURCE_PERM);
+                        collection.addBinaryResource(transaction, broker, blob, is,
+                                mimeType.getName(), 0L, new Date(), new Date());
+                    }
 				}
+
 				tm.commit(transaction);
 			} catch (final Exception e) {
-				tm.abort(transaction);
 				throw new IOException(e);
 			} finally {
-                tm.close(transaction);
-				closeFile(is);
-	
 				if (resource != null)
 					{resource.getUpdateLock().release(Lock.READ_LOCK);}
 			}
@@ -738,9 +676,6 @@ public class Resource extends File {
 		} catch (final Exception e) {
 			return false;
 			
-		} finally {
-			if (db != null)
-				{db.release(broker);}
 		}
 		
 		return true;
@@ -1264,20 +1199,18 @@ public class Resource extends File {
     
     private void modifyMetadata(ModifyMetadata method) throws IOException {
 //    	if (initialized) {return;}
-    	
-		DBBroker broker = null; 
-		BrokerPool db = null;
 
-		try {
-			try {
-				db = BrokerPool.getInstance();
-				broker = db.get(null);
-			} catch (final EXistException e) {
-				throw new IOException(e);
-			}
-	
+		final BrokerPool db;
+
+        try {
+            db = BrokerPool.getInstance();
+        } catch (final EXistException e) {
+            throw new IOException(e);
+        }
+
+		try(final DBBroker broker = db.get(null)) {
+
 			final TransactionManager tm = db.getTransactionManager();
-			Txn txn = null;
 			
 			try {
 				//collection
@@ -1296,43 +1229,33 @@ public class Resource extends File {
 							throw new IOException("Resource not found: "+uri);
 						}
 						
-						txn = tm.beginTransaction();
+						try(final Txn txn = tm.beginTransaction()) {
+                            method.modify(collection);
+                            broker.saveCollection(txn, collection);
 
-						method.modify(collection);
-						broker.saveCollection(txn, collection);
-						
-						tm.commit(txn);
+                            tm.commit(txn);
+                        }
 
 					} else {
 						collection = resource.getCollection();
 
-						txn = tm.beginTransaction();
-						
-						method.modify(resource);
-			            broker.storeMetadata(txn, resource);
-						
-						tm.commit(txn);
+						try(final Txn txn = tm.beginTransaction()) {
+                            method.modify(resource);
+                            broker.storeMetadata(txn, resource);
+
+                            tm.commit(txn);
+                        }
 					}
 				}
-			} catch (final IOException e) {
-				if (txn != null) {
-					tm.abort(txn);
-				}
-				throw e;
 			} catch (final Exception e) {
-				if (txn != null) {
-					tm.abort(txn);
-				}
 				throw new IOException(e);
 			} finally {
-                tm.close(txn);
 				if (resource != null)
 					{resource.getUpdateLock().release(Lock.READ_LOCK);}
 			}
-		} finally {
-			if (db != null)
-				{db.release(broker);}
-		}
+        } catch (final EXistException e) {
+            throw new IOException(e);
+        }
 		
 		initialized = true;
     }

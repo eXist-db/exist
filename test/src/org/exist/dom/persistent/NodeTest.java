@@ -1,11 +1,15 @@
 package org.exist.dom.persistent;
 
 import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -15,6 +19,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.io.IOException;
 
 /**
  * Tests basic DOM methods like getChildNodes(), getAttribute() ...
@@ -41,13 +47,8 @@ public class NodeTest extends XMLTestCase {
 	private Collection root = null;
 	
     public void testDocument() {
-        DBBroker broker = null;
         DocumentImpl doc = null;
-        try {
-            assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
@@ -58,19 +59,15 @@ public class NodeTest extends XMLTestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
-            if (pool != null) pool.release(broker);
+            if (doc != null) {
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            }
         }
     }
     
 	public void testChildAxis() {
-		DBBroker broker = null;
 		DocumentImpl doc = null;
-        try {
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             
@@ -105,19 +102,15 @@ public class NodeTest extends XMLTestCase {
         	e.printStackTrace();
 	        fail(e.getMessage());
         } finally {
-        	if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
-        	if (pool != null) pool.release(broker);
+        	if (doc != null) {
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            }
         }
 	}
 	
     public void testSiblingAxis() {
-        DBBroker broker = null;
         DocumentImpl doc = null;
-        try {
-            assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             System.out.println("testSiblingAxis() ...");
             
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
@@ -153,19 +146,15 @@ public class NodeTest extends XMLTestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
-            if (pool != null) pool.release(broker);
+            if (doc != null) {
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            }
         }
     }
     
 	public void testAttributeAxis() {
-		DBBroker broker = null;
 		DocumentImpl doc = null;
-        try {
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),Lock.READ_LOCK);
             Element rootNode = doc.getDocumentElement();
             Element first = (Element) rootNode.getFirstChild();
@@ -208,18 +197,14 @@ public class NodeTest extends XMLTestCase {
 	        fail(e.getMessage());
         } finally {
         	if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
-        	if (pool != null) pool.release(broker);
         }
 	}
 	
 	@Deprecated
     public void testVisitor() {
-        DBBroker broker = null;
+
         DocumentImpl doc = null;
-        try {
-            assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             
             System.out.println("testVisitor() ...");
             
@@ -237,24 +222,20 @@ public class NodeTest extends XMLTestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
-            if (pool != null) pool.release(broker);
+            if (doc != null) {
+                doc.getUpdateLock().release(Lock.READ_LOCK);
+            }
         }
     }
     
-	protected void setUp() throws Exception {        
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);            
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
+	@Override
+    protected void setUp() throws Exception {
+        pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
+
             System.out.println("NodeTest#setUp ...");
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
@@ -269,10 +250,7 @@ public class NodeTest extends XMLTestCase {
             transact.commit(transaction);
             System.out.println("NodeTest#setUp finished.");
         } catch (Exception e) {
-        	transact.abort(transaction);
 	        fail(e.getMessage()); 	        
-        } finally {
-        	if (pool != null) pool.release(broker);
         }
 	}
 	
@@ -291,17 +269,14 @@ public class NodeTest extends XMLTestCase {
         return null;
     }
 
-    protected void tearDown() {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);            
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
+    @Override
+    protected void tearDown() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
+
             System.out.println("BasicNodeSetTest#tearDown >>>");
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
@@ -309,14 +284,8 @@ public class NodeTest extends XMLTestCase {
             broker.removeCollection(transaction, root);
             
             transact.commit(transaction);
-        } catch (Exception e) {
-        	transact.abort(transaction);
-            e.printStackTrace();
-        } finally {
-            if (pool != null) pool.release(broker);
         }
+
         BrokerPool.stopAll(false);
-        root = null;
-        pool = null;
     }
 }
