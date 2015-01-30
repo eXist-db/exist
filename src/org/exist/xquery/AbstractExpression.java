@@ -71,26 +71,12 @@ public abstract class AbstractExpression implements Expression {
         return eval(contextSequence, null);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
-    @Override
-    public abstract Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException;
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#returnsType()
-     */
-    @Override
-    public abstract int returnsType();
-
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#resetState()
-     */
     @Override
     public void resetState(boolean postOptimization) {
         contextDocSet = null;
     }
 
+    @Override
     public boolean needsReset() {
         // always return true unless a subclass overwrites this
         return true;
@@ -123,9 +109,6 @@ public abstract class AbstractExpression implements Expression {
         return Constants.UNKNOWN_AXIS;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#setContextDocSet(org.exist.dom.persistent.DocumentSet)
-     */
     @Override
     public void setContextDocSet(DocumentSet contextSet) {
         this.contextDocSet = contextSet;

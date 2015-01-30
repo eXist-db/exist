@@ -39,7 +39,7 @@ public abstract class BasicFunction extends Function {
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
+	public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));

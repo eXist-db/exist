@@ -323,7 +323,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         return null;
     }
 
-    //TODO: @Deprecated //use getSubExpression
+    /**
+     * @deprecated use getSubExpression
+     */
+    @Deprecated
     public Expression getExpression(final int pos) {
         return steps.isEmpty() ? null : steps.get(pos);
     }

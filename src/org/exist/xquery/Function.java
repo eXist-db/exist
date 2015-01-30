@@ -360,9 +360,6 @@ public abstract class Function extends PathExpr {
         }
     }
 
-    public abstract Sequence eval(final Sequence contextSequence, final Item contextItem)
-            throws XPathException;
-
     public Sequence[] getArguments(Sequence contextSequence, final Item contextItem)
             throws XPathException {
         if (contextItem != null) {
