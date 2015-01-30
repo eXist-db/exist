@@ -66,9 +66,9 @@ public class ExampleTrigger extends FilteringTrigger implements DocumentTrigger 
 	 * @see org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
 	 */
     @Override
-    public void configure(DBBroker broker, Collection parent, Map parameters)
+    public void configure(DBBroker broker, Txn transaction, Collection parent, Map parameters)
             throws TriggerException {
-            super.configure(broker, parent, parameters);
+            super.configure(broker, transaction, parent, parameters);
             // the name of the contents file can be set through parameters
             XmldbURI contentsFile = null;
             String contentsName = (String)parameters.get("contents");

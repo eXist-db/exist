@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 
 /**
  * Defines the base interface for collection triggers. Triggers are registered through the
@@ -123,5 +124,5 @@ public interface Trigger {
      * @throws CollectionConfigurationException
      *             if the trigger cannot be initialized.
      */
-    public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException;
+    public void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException;
 }

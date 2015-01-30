@@ -294,7 +294,7 @@ public abstract class Modification extends AbstractExpression
         final Collection col = doc.getCollection();
         final DBBroker broker = context.getBroker();
 
-        final DocumentTrigger trigger = new DocumentTriggers(broker, col);
+        final DocumentTrigger trigger = new DocumentTriggers(broker, transaction, col);
 
         //prepare the trigger
         trigger.beforeUpdateDocument(context.getBroker(), transaction, doc);

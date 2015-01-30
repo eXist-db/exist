@@ -824,9 +824,9 @@ public class NativeBroker extends DBBroker {
 
         final CollectionTrigger trigger;
         if(parentCollection == null) {
-            trigger = new CollectionTriggers(this);
+            trigger = new CollectionTriggers(this, transaction);
         } else {
-            trigger = new CollectionTriggers(this, parentCollection);
+            trigger = new CollectionTriggers(this, transaction, parentCollection);
         }
         trigger.beforeCreateCollection(this, transaction, collectionUri);
 
@@ -1125,10 +1125,10 @@ public class NativeBroker extends DBBroker {
             // READ_LOCK the parent of the source Collection for the triggers
             try(final Collection sourceCollectionParent = sourceCollectionParentUri == null ? sourceCollection : openCollection(sourceCollectionParentUri, LockMode.READ_LOCK)) {
                 // fire before copy collection triggers
-                final CollectionTrigger trigger = new CollectionTriggers(this, sourceCollectionParent);
+                final CollectionTrigger trigger = new CollectionTriggers(this, transaction, sourceCollectionParent);
                 trigger.beforeCopyCollection(this, transaction, sourceCollection, destinationCollectionUri);
 
-                final DocumentTrigger docTrigger = new DocumentTriggers(this);
+                final DocumentTrigger docTrigger = new DocumentTriggers(this, transaction);
 
                 // pessimistically obtain READ_LOCKs on all descendant documents of sourceCollection, and WRITE_LOCKs on all target documents
                 final Collection newCollection;
@@ -1476,7 +1476,7 @@ public class NativeBroker extends DBBroker {
 
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_MOVE_COLLECTION, sourceCollection.getURI());
             try {
-                final CollectionTrigger trigger = new CollectionTriggers(this, sourceCollectionParent);
+                final CollectionTrigger trigger = new CollectionTriggers(this, transaction, sourceCollectionParent);
                 trigger.beforeMoveCollection(this, transaction, sourceCollection, destinationCollectionUri);
 
                 // pessimistically obtain WRITE_LOCKs on all descendant documents of sourceCollection, and WRITE_LOCKs on all target documents
@@ -1734,7 +1734,7 @@ public class NativeBroker extends DBBroker {
                 throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
             }
 
-            final CollectionTrigger colTrigger = new CollectionTriggers(this, parentCollection == null ? collection : parentCollection);
+            final CollectionTrigger colTrigger = new CollectionTriggers(this, transaction, parentCollection == null ? collection : parentCollection);
             colTrigger.beforeDeleteCollection(this, transaction, collection);
 
             // 2) remove descendant collections
@@ -1847,7 +1847,7 @@ public class NativeBroker extends DBBroker {
     private void removeCollectionsDocumentNodes(final Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection collection)
             throws TriggerException, PermissionDeniedException, LockException {
-        final DocumentTrigger docTrigger = new DocumentTriggers(this, collection);
+        final DocumentTrigger docTrigger = new DocumentTriggers(this, transaction, collection);
 
         for (final Iterator<DocumentImpl> itDocument = collection.iteratorNoLock(this); itDocument.hasNext(); ) {       // NOTE: we already have a WRITE_LOCK on the collection
             final DocumentImpl doc = itDocument.next();
@@ -2315,7 +2315,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public void storeMetadata(final Txn transaction, final DocumentImpl doc) throws TriggerException {
         final Collection col = doc.getCollection();
-        final DocumentTrigger trigger = new DocumentTriggers(this, col);
+        final DocumentTrigger trigger = new DocumentTriggers(this, transaction, col);
 
         trigger.beforeUpdateDocumentMetadata(this, transaction, doc);
 
@@ -2671,7 +2671,7 @@ public class NativeBroker extends DBBroker {
         }
 
         try(final LockedDocument oldLockedDoc = targetCollection.getDocumentWithLock(this, newName, LockMode.WRITE_LOCK)) {
-            final DocumentTrigger trigger = new DocumentTriggers(this, targetCollection);
+            final DocumentTrigger trigger = new DocumentTriggers(this, transaction, targetCollection);
 
             final DocumentImpl oldDoc = oldLockedDoc == null ? null : oldLockedDoc.getDocument();
             if (oldDoc == null) {
@@ -2870,7 +2870,7 @@ public class NativeBroker extends DBBroker {
             );
         }
 
-        final DocumentTrigger trigger = new DocumentTriggers(this, sourceCollection);
+        final DocumentTrigger trigger = new DocumentTriggers(this, transaction, sourceCollection);
 
         // check if the move would overwrite a collection
         final DocumentImpl oldDoc = targetCollection.getDocument(this, newName);
@@ -2954,7 +2954,7 @@ public class NativeBroker extends DBBroker {
                     " (" + document.getDocId() + ") ...");
             }
 
-            final DocumentTrigger trigger = new DocumentTriggers(this);
+            final DocumentTrigger trigger = new DocumentTriggers(this, transaction);
 
             if(freeDocId) {
                 trigger.beforeDeleteDocument(this, transaction, document);

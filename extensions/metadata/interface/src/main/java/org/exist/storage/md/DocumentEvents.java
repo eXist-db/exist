@@ -106,6 +106,6 @@ public class DocumentEvents extends FilteringTrigger {
 	}
 
 	@Override
-	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
+	public void configure(DBBroker broker, Txn txn, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
 	}
 }

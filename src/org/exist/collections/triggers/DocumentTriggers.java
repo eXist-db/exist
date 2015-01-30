@@ -54,15 +54,15 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
     
     private final List<DocumentTrigger> triggers;
     
-    public DocumentTriggers(DBBroker broker) throws TriggerException {
-        this(broker, null, null, null);
+    public DocumentTriggers(DBBroker broker, Txn transaction) throws TriggerException {
+        this(broker, transaction, null, null, null);
     }
     
-    public DocumentTriggers(DBBroker broker, Collection collection) throws TriggerException {
-        this(broker, null, collection, collection.isTriggersEnabled() ? collection.getConfiguration(broker) : null);
+    public DocumentTriggers(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
+        this(broker, transaction, null, collection, collection.isTriggersEnabled() ? collection.getConfiguration(broker) : null);
     }
 
-    public DocumentTriggers(DBBroker broker, Indexer indexer, Collection collection, CollectionConfiguration config) throws TriggerException {
+    public DocumentTriggers(DBBroker broker, Txn transaction, Indexer indexer, Collection collection, CollectionConfiguration config) throws TriggerException {
         
         List<TriggerProxy<? extends DocumentTrigger>> docTriggers = null;
         if (config != null) {
@@ -75,7 +75,7 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
         
         for (TriggerProxy<? extends DocumentTrigger> docTrigger : masterTriggers) {
             
-            DocumentTrigger instance = docTrigger.newInstance(broker, collection);
+            DocumentTrigger instance = docTrigger.newInstance(broker, transaction, collection);
 
             register(instance);
         }
@@ -83,7 +83,7 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
         if (docTriggers != null) {
             for (TriggerProxy<? extends DocumentTrigger> docTrigger : docTriggers) {
                 
-                DocumentTrigger instance = docTrigger.newInstance(broker, collection);
+                DocumentTrigger instance = docTrigger.newInstance(broker, transaction, collection);
                 
                 register(instance);
             }
@@ -129,7 +129,7 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
     }
 
     @Override
-    public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
+    public void configure(DBBroker broker, Txn txn, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
     }
 
     @Override

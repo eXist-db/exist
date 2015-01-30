@@ -37,15 +37,15 @@ public class CollectionTriggers implements CollectionTrigger {
     
     private final List<CollectionTrigger> triggers;
 
-    public CollectionTriggers(DBBroker broker) throws TriggerException {
-        this(broker, null, null);
+    public CollectionTriggers(DBBroker broker, Txn transaction) throws TriggerException {
+        this(broker, transaction, null, null);
     }
 
-    public CollectionTriggers(DBBroker broker, Collection collection) throws TriggerException {
-        this(broker, collection, collection.getConfiguration(broker));
+    public CollectionTriggers(DBBroker broker, Txn transaction, Collection collection) throws TriggerException {
+        this(broker, transaction, collection, collection.getConfiguration(broker));
     }
 
-    public CollectionTriggers(DBBroker broker, Collection collection, CollectionConfiguration config) throws TriggerException {
+    public CollectionTriggers(DBBroker broker, Txn transaction, Collection collection, CollectionConfiguration config) throws TriggerException {
         
         List<TriggerProxy<? extends CollectionTrigger>> colTriggers = null;
         if (config != null) {
@@ -58,7 +58,7 @@ public class CollectionTriggers implements CollectionTrigger {
         
         for (TriggerProxy<? extends CollectionTrigger> colTrigger : masterTriggers) {
             
-            CollectionTrigger instance = colTrigger.newInstance(broker, collection);
+            CollectionTrigger instance = colTrigger.newInstance(broker, transaction, collection);
             
             register(instance);
         }
@@ -66,7 +66,7 @@ public class CollectionTriggers implements CollectionTrigger {
         if (colTriggers != null) {
             for (TriggerProxy<? extends CollectionTrigger> colTrigger : colTriggers) {
                 
-                CollectionTrigger instance = colTrigger.newInstance(broker, collection);
+                CollectionTrigger instance = colTrigger.newInstance(broker, transaction, collection);
                 
                 register(instance);
             }
@@ -78,7 +78,7 @@ public class CollectionTriggers implements CollectionTrigger {
     }
     
     @Override
-    public void configure(DBBroker broker, Collection col, Map<String, List<? extends Object>> parameters) throws TriggerException {
+    public void configure(DBBroker broker, Txn transaction, Collection col, Map<String, List<? extends Object>> parameters) throws TriggerException {
     }
 
     @Override

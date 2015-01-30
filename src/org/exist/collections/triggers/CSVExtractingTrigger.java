@@ -101,8 +101,8 @@ public class CSVExtractingTrigger extends FilteringTrigger {
 
 
     @Override
-    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
-        super.configure(broker, parent, parameters);
+    public void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
+        super.configure(broker, transaction, parent, parameters);
 
         //get the separator
         final List<String> separators = (List<String>)parameters.get("separator");

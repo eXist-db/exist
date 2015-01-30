@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 
 /**
  *
@@ -38,7 +39,7 @@ public abstract class AbstractTriggersVisitor<T extends Trigger> implements Trig
     }
     
     @Override
-    public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
+    public void configure(DBBroker broker, Txn Transaction, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
     }
     
     public List<T> getTriggers() throws TriggerException {

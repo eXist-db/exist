@@ -41,7 +41,7 @@ import org.exist.util.LockException;
 public class CollectionEvents implements CollectionTrigger {
 
 	@Override
-	public void configure(DBBroker broker, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
+	public void configure(DBBroker broker, Txn txn, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
 	}
 
 	@Override

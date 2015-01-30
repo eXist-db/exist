@@ -243,9 +243,9 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) {
     }
 
-    @Override
-    public void configure(DBBroker broker, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
-    }
+	@Override
+	public void configure(final DBBroker broker, final Txn transaction, final Collection parent, final Map<String, List<? extends Object>> parameters) throws TriggerException {
+	}
 
     @Override
     public void startElement(final String namespaceURI, final String localName, final String qname, final Attributes attributes) throws SAXException {

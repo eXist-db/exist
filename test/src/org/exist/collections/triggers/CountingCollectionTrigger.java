@@ -12,7 +12,7 @@ public class CountingCollectionTrigger implements CollectionTrigger {
     final CountingCollectionTriggerState state = CountingCollectionTriggerState.getInstance();
 
     @Override
-    public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
+    public void configure(DBBroker broker, Txn transaction, org.exist.collections.Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException {
         state.incConfigure();
     }
 

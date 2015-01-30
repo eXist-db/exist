@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 
 /**
  *
@@ -58,10 +59,12 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
     }
 
     @Override
-    public T newInstance(final DBBroker broker, final Collection collection) throws TriggerException {
+    public T newInstance(final DBBroker broker, final Txn transaction, final Collection collection) throws TriggerException {
         try {
             final T trigger = getClazz().newInstance();
-            trigger.configure(broker, collection, getParameters());
+
+            trigger.configure(broker, transaction, collection, getParameters());
+
             return trigger;
         } catch (final InstantiationException | IllegalAccessException ie) {
             throw new TriggerException("Unable to instantiate Trigger '"  + getClazz().getName() + "': " + ie.getMessage(), ie);

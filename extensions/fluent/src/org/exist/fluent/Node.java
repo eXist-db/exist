@@ -377,7 +377,7 @@ public class Node extends Item {
 		DocumentImpl docimpl = ((NodeProxy) item).getOwnerDocument();
 		Collection col = docimpl.getCollection();
 		
-		DocumentTrigger trigger = new DocumentTriggers(tx.broker, null, col, col.getConfiguration(tx.broker));
+		DocumentTrigger trigger = new DocumentTriggers(tx.broker, tx.tx, null, col, col.getConfiguration(tx.broker));
 			
 		trigger.beforeUpdateDocument(tx.broker, tx.tx, docimpl);
 
