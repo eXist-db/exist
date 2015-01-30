@@ -1612,6 +1612,10 @@ public class BrokerPool implements Database {
             //activate the broker
             activeBrokers.put(Thread.currentThread(), broker);
 
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("+++ " + Thread.currentThread() + stackTop(Thread.currentThread().getStackTrace(), 10));
+            }
+            
             if(watchdog != null) {
                 watchdog.add(broker);
             }
@@ -1627,6 +1631,30 @@ public class BrokerPool implements Database {
             this.notifyAll();
             return broker;
         }
+    }
+    
+    /**
+     * Gets the top N frames from the stack returns
+     * them as a string
+     * 
+     * Excludes the callee and self stack frames
+     * 
+     * @param stack The stack
+     * @param top The number of frames to examine
+     *
+     * @return String representation of the top frames of the stack
+     */
+    private String stackTop(final StackTraceElement[] stack, final int top) {
+        final StringBuilder builder = new StringBuilder();
+        final int start = 2;
+        
+        for(int i = start; i < start + top && i < stack.length; i++) {
+            builder
+                    .append(" <- ")
+                    .append(stack[i]);
+        }
+        
+        return builder.toString();
     }
 
     /**
@@ -1671,7 +1699,12 @@ public class BrokerPool implements Database {
                         break;
                     }
                 }
+            } else {
+                if(LOG.isTraceEnabled()) {
+                    LOG.trace("--- " + Thread.currentThread() + stackTop(Thread.currentThread().getStackTrace(), 10));
+                }
             }
+            
             final Subject lastUser = broker.getSubject();
             broker.setSubject(securityManager.getGuestSubject());
             inactiveBrokers.push(broker);
