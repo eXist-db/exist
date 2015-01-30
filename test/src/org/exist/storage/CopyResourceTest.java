@@ -67,18 +67,12 @@ public class CopyResourceTest {
 
 	private void store(final String testCollectionName, final String subCollection) {
 		BrokerPool.FORCE_CORRUPTION = true;
-		BrokerPool pool = null;
-		DBBroker broker = null;
-		
-		try {
-			pool = startDB();
-			assertNotNull(pool);
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			assertNotNull(broker);			
-			TransactionManager transact = pool.getTransactionManager();
-			assertNotNull(transact);
-			Txn transaction = transact.beginTransaction();
-			assertNotNull(transaction);
+		final BrokerPool pool = startDB();
+
+        final TransactionManager transact = pool.getTransactionManager();
+		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
+
 			System.out.println("Transaction started ...");
 
 			Collection root = broker.getOrCreateCollection(transaction,	XmldbURI.ROOT_COLLECTION_URI.append("test"));
@@ -109,8 +103,6 @@ public class CopyResourceTest {
 	    } catch (Exception e) {
             e.printStackTrace();
 	        fail(e.getMessage()); 	      			
-		} finally {
-			if (pool != null) pool.release(broker);
 		}
 	}
 
@@ -143,43 +135,42 @@ public class CopyResourceTest {
 
     private void storeAborted(final String testCollectionName, final String subCollection) {
 		BrokerPool.FORCE_CORRUPTION = true;
-		BrokerPool pool = null;
-		DBBroker broker = null;
-		try {
-			pool = startDB();
-			assertNotNull(pool);
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			assertNotNull(broker);
-			TransactionManager transact = pool.getTransactionManager();
-			assertNotNull(transact);
-			Txn transaction = transact.beginTransaction();
-			assertNotNull(transaction);
-			System.out.println("Transaction started ...");
+        final BrokerPool pool = startDB();
 
-			Collection root = broker.getOrCreateCollection(transaction,	XmldbURI.ROOT_COLLECTION_URI.append("test"));
-			assertNotNull(root);
-			broker.saveCollection(transaction, root);
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            Collection testCollection = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName));
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
+            Collection testCollection;
+            IndexInfo info;
 
-			Collection subTestCollection = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append(subCollection));
-			assertNotNull(subTestCollection);
-			broker.saveCollection(transaction, subTestCollection);
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Transaction started ...");
 
-            String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
-			File f = new File(existDir,"samples/shakespeare/r_and_j.xml");
-			assertNotNull(f);
-			IndexInfo info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toURI().toASCIIString()));
-			assertNotNull(info);
-			subTestCollection.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                Collection root = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test"));
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
 
-			transact.commit(transaction);
-			System.out.println("Transaction commited ...");
+                testCollection = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName));
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
 
-			transaction = transact.beginTransaction();
+                Collection subTestCollection = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test").append(testCollectionName).append(subCollection));
+                assertNotNull(subTestCollection);
+                broker.saveCollection(transaction, subTestCollection);
+
+                String existHome = System.getProperty("exist.home");
+                File existDir = existHome == null ? new File(".") : new File(existHome);
+                File f = new File(existDir, "samples/shakespeare/r_and_j.xml");
+                assertNotNull(f);
+                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toURI().toASCIIString()));
+                assertNotNull(info);
+                subTestCollection.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
+            }
+
+			final Txn transaction = transact.beginTransaction();
 			System.out.println("Transaction started ...");
 
 			broker.copyResource(transaction, info.getDocument(), testCollection, XmldbURI.create("new_test2.xml"));
@@ -190,8 +181,6 @@ public class CopyResourceTest {
 			System.out.println("Transaction interrupted ...");
 	    } catch (Exception e) {            
 	        fail(e.getMessage());			
-		} finally {
-			if (pool != null) pool.release(broker);
 		}
 	}
 

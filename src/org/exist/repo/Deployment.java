@@ -460,8 +460,7 @@ public class Deployment {
             }
         }
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
-        final Txn txn = mgr.beginTransaction();
-        try {
+        try(final Txn txn = mgr.beginTransaction()) {
             Collection collection = broker.getOrCreateCollection(txn, targetCollection);
             if (collection != null)
                 {broker.removeCollection(txn, collection);}
@@ -474,9 +473,6 @@ public class Deployment {
             mgr.commit(txn);
         } catch (final Exception e) {
             LOG.error("Exception occurred while removing package.", e);
-            mgr.abort(txn);
-        } finally {
-            mgr.close(txn);
         }
     }
 
@@ -503,8 +499,7 @@ public class Deployment {
         final DocumentImpl updatedXML = builder.getDocument();
 
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
-        final Txn txn = mgr.beginTransaction();
-        try {
+        try(final Txn txn = mgr.beginTransaction()) {
             final Collection collection = broker.getOrCreateCollection(txn, targetCollection);
             final XmldbURI name = XmldbURI.createInternal("repo.xml");
             final IndexInfo info = collection.validateXMLResource(txn, broker, name, updatedXML);
@@ -515,9 +510,7 @@ public class Deployment {
 
             mgr.commit(txn);
         } catch (final Exception e) {
-            mgr.abort(txn);
-        } finally {
-            mgr.close(txn);
+            LOG.warn(e);
         }
     }
 
@@ -585,17 +578,14 @@ public class Deployment {
      */
     private void scanDirectory(File directory, XmldbURI target, boolean inRootDir) {
         final TransactionManager mgr = broker.getBrokerPool().getTransactionManager();
-        final Txn txn = mgr.beginTransaction();
         Collection collection = null;
-        try {
+        try(final Txn txn = mgr.beginTransaction()) {
             collection = broker.getOrCreateCollection(txn, target);
             setPermissions(true, null, collection.getPermissionsNoLock());
             broker.saveCollection(txn, collection);
             mgr.commit(txn);
         } catch (final Exception e) {
-            mgr.abort(txn);
-        } finally {
-            mgr.close(txn);
+            LOG.warn(e);
         }
 
         try {
@@ -637,8 +627,7 @@ public class Deployment {
                     {mime = MimeType.BINARY_TYPE;}
                 final XmldbURI name = XmldbURI.create(file.getName());
 
-                final Txn txn = mgr.beginTransaction();
-                try {
+                try(final Txn txn = mgr.beginTransaction()) {
                     if (mime.isXMLType()) {
                         final InputSource is = new InputSource(file.toURI().toASCIIString());
                         final IndexInfo info = targetCollection.validateXMLResource(txn, broker, name, is);
@@ -649,22 +638,19 @@ public class Deployment {
                         targetCollection.store(txn, broker, info, is, false);
                     } else {
                         final long size = file.length();
-                        final FileInputStream is = new FileInputStream(file);
-                        final BinaryDocument doc =
-                                targetCollection.addBinaryResource(txn, broker, name, is, mime.getName(), size);
-                        is.close();
+                        try(final FileInputStream is = new FileInputStream(file)) {
+                            final BinaryDocument doc =
+                                    targetCollection.addBinaryResource(txn, broker, name, is, mime.getName(), size);
 
-                        final Permission permission = doc.getPermissions();
-                        setPermissions(false, mime, permission);
-                        doc.getMetadata().setMimeType(mime.getName());
-                        broker.storeXMLResource(txn, doc);
+                            final Permission permission = doc.getPermissions();
+                            setPermissions(false, mime, permission);
+                            doc.getMetadata().setMimeType(mime.getName());
+                            broker.storeXMLResource(txn, doc);
+                        }
                     }
                     mgr.commit(txn);
                 } catch (final Exception e) {
-                    mgr.abort(txn);
                     e.printStackTrace();
-                } finally {
-                    mgr.close(txn);
                 }
             }
         }

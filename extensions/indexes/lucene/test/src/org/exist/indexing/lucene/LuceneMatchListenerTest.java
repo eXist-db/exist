@@ -23,6 +23,7 @@ import org.custommonkey.xmlunit.NamespaceContext;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
@@ -37,6 +38,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -304,23 +306,15 @@ public class LuceneMatchListenerTest {
     }
 
     @BeforeClass
-    public static void startDB() {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            File confFile = ConfigurationHelper.lookup("conf.xml");
-            Configuration config = new Configuration(confFile.getAbsolutePath());
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-            assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
+    public static void startDB() throws DatabaseConfigurationException, EXistException {
+        final File confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
@@ -328,13 +322,8 @@ public class LuceneMatchListenerTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
         HashMap<String, String> m = new HashMap<String, String>();
         m.put("exist", "http://exist.sourceforge.net/NS/exist");
@@ -350,16 +339,9 @@ public class LuceneMatchListenerTest {
     }
 
     private void configureAndStore(String config, String data) {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
@@ -372,11 +354,8 @@ public class LuceneMatchListenerTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-            transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 

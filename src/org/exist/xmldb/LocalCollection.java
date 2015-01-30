@@ -173,12 +173,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
     protected void saveCollection() throws XMLDBException {
     	final Subject subject = brokerPool.getSubject();
-        DBBroker broker = null;
         Collection collection = null;
         final TransactionManager transact = brokerPool.getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
-            broker = brokerPool.get(user);
+        try(final DBBroker broker = brokerPool.get(user);
+            final Txn transaction = transact.beginTransaction()) {
             collection = broker.openCollection(path, Lock.WRITE_LOCK);
             if(collection == null) {
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
@@ -186,23 +184,17 @@ public class LocalCollection extends Observable implements CollectionImpl {
             broker.saveCollection(transaction, collection);
             transact.commit(transaction);
         } catch(final IOException e) {
-            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
         } catch(final EXistException e) {
-            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
         } catch(final PermissionDeniedException e) {
-            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         } catch(final TriggerException e) {
-            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
         } finally {
-            transact.close(transaction);
             if(collection != null) {
                 collection.release(Lock.WRITE_LOCK);
             }
-            brokerPool.release(broker);
             brokerPool.setSubject(subject);
         }
     }
@@ -695,14 +687,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
         
     	final Subject subject = brokerPool.getSubject();
         Collection collection = null;
-        DBBroker broker = null;
         final TransactionManager transact = brokerPool.getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
+
+        try(final DBBroker broker = brokerPool.get(user);
+            final Txn transaction = transact.beginTransaction()) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("removing " + resURI);
             }
-            broker = brokerPool.get(user);
+
             collection = broker.openCollection(path, Lock.WRITE_LOCK);
             if(collection == null) {
                 transact.abort(transaction);
@@ -722,23 +714,17 @@ public class LocalCollection extends Observable implements CollectionImpl {
             }
             transact.commit(transaction);
         } catch(final EXistException e) {
-            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } catch(final PermissionDeniedException e) {
-            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         } catch(final TriggerException e) {
-            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
         } catch(final LockException e) {
-            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
-            transact.close(transaction);
             if(collection != null) {
                 collection.getLock().release(Lock.WRITE_LOCK);
             }
-            brokerPool.release(broker);
             brokerPool.setSubject(subject);
         }
         needsSync = true;
@@ -789,12 +775,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
         
     	final Subject subject = brokerPool.getSubject();
         final TransactionManager transact = brokerPool.getTransactionManager();
-        final Txn txn = transact.beginTransaction();
         
         Collection collection = null;
-        DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
+        try(final DBBroker broker = brokerPool.get(user);
+            final Txn txn = transact.beginTransaction()) {
             collection = broker.openCollection(path, Lock.WRITE_LOCK);
             if(collection == null) {
                 transact.abort(txn);
@@ -810,14 +794,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
             
             transact.commit(txn);
         } catch(final Exception e) {
-            transact.abort(txn);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Exception while storing binary resource: " + e.getMessage(), e);
         } finally {
-            transact.close(txn);
             if(collection != null) {
                 collection.getLock().release(Lock.WRITE_LOCK);
             }
-            brokerPool.release(broker);
             brokerPool.setSubject(subject);
         }
     }
@@ -832,11 +813,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
         
     	final Subject subject = brokerPool.getSubject();
         final TransactionManager transact = brokerPool.getTransactionManager();
-        final Txn txn = transact.beginTransaction();
         
-        DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
+        try(final DBBroker broker = brokerPool.get(user);
+                final Txn txn = transact.beginTransaction()) {
             String uri = null;
             if(res.file != null) {
                 uri = res.file.toURI().toASCIIString();
@@ -888,12 +867,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
             transact.commit(txn);
             collection.deleteObservers();
         } catch(final Exception e) {
-            transact.abort(txn);
             LOG.error(e);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
-            transact.close(txn);
-            brokerPool.release(broker);
             brokerPool.setSubject(subject);
         }
     }

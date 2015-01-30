@@ -75,17 +75,13 @@ public class LexerTest extends TestCase {
 			e1.printStackTrace();
 			fail(e1.getMessage());
 		}
-		DBBroker broker = null;
-		TransactionManager transact = null;
-		Txn transaction = null;
-		try {
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			try {
+
+		final TransactionManager transact = pool.getTransactionManager();
+		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
+			try(final Txn transaction = transact.beginTransaction()) {
 				// parse the xml source
-				transact = pool.getTransactionManager();
-	            assertNotNull(transact);
-	            transaction = transact.beginTransaction();
-	            assertNotNull(transaction);
+
 	            Collection collection = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
 	            broker.saveCollection(transaction, collection);
 	
@@ -94,7 +90,6 @@ public class LexerTest extends TestCase {
 	            collection.store(transaction, broker, info, xml, false);
 	            transact.commit(transaction);
 			} catch (Exception e) {
-				transact.abort(transaction);
 	            e.printStackTrace();
 	            fail(e.getMessage());
 			}
@@ -134,8 +129,6 @@ public class LexerTest extends TestCase {
 		} catch (EXistException e) {
             e.printStackTrace();
             fail(e.getMessage());
-		} finally {
-			pool.release(broker);
 		}
 		if (localDb)
 			try {

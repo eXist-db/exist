@@ -573,12 +573,10 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	
 	public void setDocType(DocumentType doctype) throws XMLDBException {
 		final Subject preserveSubject = pool.getSubject();
-		DBBroker broker = null;
 		DocumentImpl document = null;
 		 final TransactionManager transact = pool.getTransactionManager();
-	        final Txn transaction = transact.beginTransaction();
-		try {
-			broker = pool.get(user);
+        try(final DBBroker broker = pool.get(user);
+            final Txn transaction = transact.beginTransaction()) {
 			document = openDocument(broker, Lock.WRITE_LOCK);
            	
 			if (document == null) {
@@ -596,13 +594,10 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
 
 		} catch (final EXistException e) {
-            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(),
 					e);
 		} finally {
-            transact.close(transaction);
 			closeDocument(document, Lock.WRITE_LOCK);
-			pool.release(broker);
 			pool.setSubject(preserveSubject);
 		}
 }

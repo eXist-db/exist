@@ -130,9 +130,6 @@ public class EmbeddedUpload {
         
         Collection collection = null;
         BrokerPool pool =null;
-        DBBroker broker =null;
-        TransactionManager transact = null;
-        Txn txn = null;
         
         boolean collectionLocked = true;
         
@@ -152,93 +149,69 @@ public class EmbeddedUpload {
                 }
             }
             
-            broker = pool.get(user);
-            
-            final XmldbURI collectionUri = XmldbURI.create(xmldbURL.getCollection());
-            final XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());
-            
-            collection = broker.openCollection(collectionUri, Lock.READ_LOCK);
-            
-            if(collection == null)
-                {throw new IOException("Resource "+collectionUri.toString()+" is not a collection.");}
-            
-            if(collection.hasChildCollection(broker, documentUri))
-                {throw new IOException("Resource "+documentUri.toString()+" is a collection.");}
-            
-            MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
-            String contentType=null;
-            if (mime != null){
-                contentType = mime.getName();
-            } else {
-                mime = MimeType.BINARY_TYPE;
-            }
-            
-            transact = pool.getTransactionManager();
-            txn = transact.beginTransaction();
-            
-            if(mime.isXMLType()) {
-                LOG.debug("storing XML resource");
-                final InputSource inputsource = new InputSource(tmp.toURI().toASCIIString());
-                final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
-                final DocumentImpl doc = info.getDocument();
-                doc.getMetadata().setMimeType(contentType);
-                collection.release(Lock.READ_LOCK);
-                collectionLocked = false;
-                collection.store(txn, broker, info, inputsource, false);
-                LOG.debug("done");
-                
-            } else {
-                LOG.debug("storing Binary resource");
-                final InputStream is = new FileInputStream(tmp);
-                try {
-                	collection.addBinaryResource(txn, broker, documentUri, is, contentType, tmp.length());
-                } finally {
-                	is.close();
+            try(final DBBroker broker = pool.get(user)) {
+
+                final XmldbURI collectionUri = XmldbURI.create(xmldbURL.getCollection());
+                final XmldbURI documentUri = XmldbURI.create(xmldbURL.getDocumentName());
+
+                collection = broker.openCollection(collectionUri, Lock.READ_LOCK);
+
+                if (collection == null) {
+                    throw new IOException("Resource " + collectionUri.toString() + " is not a collection.");
                 }
-                LOG.debug("done");
+
+                if (collection.hasChildCollection(broker, documentUri)) {
+                    throw new IOException("Resource " + documentUri.toString() + " is a collection.");
+                }
+
+                MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
+                String contentType = null;
+                if (mime != null) {
+                    contentType = mime.getName();
+                } else {
+                    mime = MimeType.BINARY_TYPE;
+                }
+
+                final TransactionManager transact = pool.getTransactionManager();
+                try (final Txn txn = transact.beginTransaction()) {
+
+                    if (mime.isXMLType()) {
+                        LOG.debug("storing XML resource");
+                        final InputSource inputsource = new InputSource(tmp.toURI().toASCIIString());
+                        final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
+                        final DocumentImpl doc = info.getDocument();
+                        doc.getMetadata().setMimeType(contentType);
+                        collection.release(Lock.READ_LOCK);
+                        collectionLocked = false;
+                        collection.store(txn, broker, info, inputsource, false);
+                        LOG.debug("done");
+
+                    } else {
+                        LOG.debug("storing Binary resource");
+                        try (final InputStream is = new FileInputStream(tmp)) {
+                            collection.addBinaryResource(txn, broker, documentUri, is, contentType, tmp.length());
+                        }
+                        LOG.debug("done");
+                    }
+
+                    LOG.debug("commit");
+                }
             }
-            
-            LOG.debug("commit");
-            transact.commit(txn);
-            
         } catch (final IOException ex) {
-            try { 
-            	// is it still actual? -shabanovd
-                // Throws an exception when the user is unknown!
-            	if (transact != null)
-            		{transact.abort(txn);}
-            } catch (final Exception abex) {
-                LOG.debug(abex);
-            }
             //ex.printStackTrace();
             LOG.debug(ex);
             throw ex;
             
         } catch (final Exception ex) {
-            try { 
-            	// is it still actual? -shabanovd
-                // Throws an exception when the user is unknown!
-            	if (transact != null)
-            		{transact.abort(txn);}
-            } catch (final Exception abex) {
-                LOG.debug(abex);
-            }
             //ex.printStackTrace();
             LOG.debug(ex);
             throw new IOException(ex.getMessage(), ex);
             
         } finally {
-            if (transact != null) {
-                transact.close(txn);
-            }
             LOG.debug("Done.");
             if(collectionLocked && collection != null){
                 collection.release(Lock.READ_LOCK);
             }
-            
-            pool.release(broker);
         }
-        
     }
-    
 }

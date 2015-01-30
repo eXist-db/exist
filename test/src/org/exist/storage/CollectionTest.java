@@ -67,16 +67,10 @@ public class CollectionTest {
     private void store() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
-        DBBroker broker = null;
-        Txn transaction = null;
-        TransactionManager transact = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());            
-            transact = pool.getTransactionManager();
-            
-            transaction = transact.beginTransaction();            
-            System.out.println("Transaction started ...");
-            
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
+
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
             
@@ -84,12 +78,8 @@ public class CollectionTest {
             broker.saveCollection(transaction, test);
             
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         } catch (Exception e) {
-        	transact.abort(transaction);
             fail(e.getMessage());              
-        } finally {
-            pool.release(broker);
         }
     }
     

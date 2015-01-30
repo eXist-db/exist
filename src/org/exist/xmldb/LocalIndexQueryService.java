@@ -119,24 +119,18 @@ public class LocalIndexQueryService implements IndexQueryService {
     @Override
 	public void configureCollection(String configData) throws XMLDBException {
     	final Subject preserveSubject = pool.getSubject();
-		DBBroker broker = null;
         final TransactionManager transact = pool.getTransactionManager();
-        final Txn txn = transact.beginTransaction();
-        try {
-            broker = pool.get(user);
+        try(final DBBroker broker = pool.get(user); 
+                final Txn txn = transact.beginTransaction()) {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(txn, broker, parent.getCollection(), configData);
             transact.commit(txn);
             System.out.println("Configured '" + parent.getCollection().getURI() + "'");
         } catch (final CollectionConfigurationException e) {
-            transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} catch (final EXistException e) {
-            transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		} finally {
-            transact.close(txn);
-            pool.release(broker);
 			pool.setSubject(preserveSubject);
         }
 	}

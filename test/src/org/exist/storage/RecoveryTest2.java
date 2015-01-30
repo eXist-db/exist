@@ -65,17 +65,12 @@ public class RecoveryTest2 extends TestCase {
     
     public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = null;        
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);            
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction();) {
+
             System.out.println("Transaction started ...");
             
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -114,8 +109,6 @@ public class RecoveryTest2 extends TestCase {
             
 	    } catch (Exception e) {            
 	        fail(e.getMessage());          
-        } finally {
-        	if (pool != null) pool.release(broker);
         }
     }
     

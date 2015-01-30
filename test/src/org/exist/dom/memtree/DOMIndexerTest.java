@@ -97,16 +97,12 @@ public class DOMIndexerTest {
 
     @Test
     public void store() throws PermissionDeniedException, IOException, EXistException, SAXException, LockException, AuthenticationException {
-    	BrokerPool pool = null;
-    	DBBroker broker = null;
-        TransactionManager txnMgr = null;
-        Txn txn = null;
-    	try {
-            pool = BrokerPool.getInstance();
-            txnMgr = pool.getTransactionManager();
-            txn = txnMgr.beginTransaction();
-            Subject admin = pool.getSecurityManager().authenticate("admin", "");
-            broker = pool.get(admin);
+    	final BrokerPool pool = BrokerPool.getInstance();
+        final TransactionManager txnMgr = pool.getTransactionManager();
+
+    	try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate("admin", ""));
+                final Txn txn = txnMgr.beginTransaction()) {
+
             Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
             IndexInfo info = collection.validateXMLResource(txn, broker, TestConstants.TEST_XML_URI, XML);
             //TODO : unlock the collection here ?
@@ -116,13 +112,6 @@ public class DOMIndexerTest {
             broker.flush();
             broker.saveCollection(txn, collection);
             txnMgr.commit(txn);
-        } finally {
-            if(txn != null) {
-                txn.close();
-            }
-            if (pool != null) {
-                pool.release(broker);
-            }
         }
     }
 

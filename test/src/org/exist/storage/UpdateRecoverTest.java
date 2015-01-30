@@ -82,211 +82,207 @@ public class UpdateRecoverTest {
 
     private void store() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = null;        
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
-            
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
-            
-            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
-            assertNotNull(test2);
-            broker.saveCollection(transaction, test2);
-            
-            IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, TEST_XML);
-            assertNotNull(info);
-            //TODO : unlock the collection here ?
-            
-            test2.store(transaction, broker, info, TEST_XML, false);
-            
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
-            
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
-            
-            MutableDocumentSet docs = new DefaultDocumentSet();
-            docs.add(info.getDocument());
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
-            assertNotNull(proc);
-            
-            String xupdate;
-            Modification modifications[];
-            
-            System.out.println("Inserting new items  ...");
-            // insert some nodes
-            for (int i = 1; i <= 200; i++) {
-                xupdate =
-                    "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                    "   <xu:insert-before select=\"/products/product[1]\">" +
-                    "       <product>" +
-                    "           <description>Product " + i + "</description>" +
-                    "           <price>" + (i * 2.5) + "</price>" +
-                    "           <stock>" + (i * 10) + "</stock>" +
-                    "       </product>" +
-                    "   </xu:insert-before>" +
-                    "</xu:modifications>";
-                proc.setBroker(broker);
-                proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-                assertNotNull(modifications);
-                modifications[0].process(transaction);
-                proc.reset();
-            }
-            
-            System.out.println("Adding attributes  ...");
-            // add attribute
-            for (int i = 1; i <= 200; i++) {
-              xupdate =
-                  "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                  "   <xu:append select=\"/products/product[" + i + "]\">" +
-                  "         <xu:attribute name=\"id\">" + i + "</xu:attribute>" +
-                  " </xu:append>" +
-                  "</xu:modifications>";
-              proc.setBroker(broker);
-              proc.setDocumentSet(docs);
-              modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-              assertNotNull(modifications);
-              modifications[0].process(transaction);
-              proc.reset();
-          }
-            
-            System.out.println("Replacing elements  ...");
-            // replace some
-            for (int i = 1; i <= 100; i++) {
-              xupdate =
-                  "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                  "   <xu:replace select=\"/products/product[" + i + "]\">" +
-                  "     <product id=\"" + i + "\">" +
-                  "         <description>Replaced product</description>" +
-                  "         <price>" + (i * 0.75) + "</price>" +
-                  "     </product>" +
-                  " </xu:replace>" +
-                  "</xu:modifications>";
-              proc.setBroker(broker);
-              proc.setDocumentSet(docs);
-              modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-              assertNotNull(modifications);
-              long mods = modifications[0].process(transaction);
-              System.out.println("Modifications: " + mods);
-              proc.reset();
-          }
-                
-            System.out.println("Removing some elements ...");
-            // remove some
-            for (int i = 1; i <= 100; i++) {
-                xupdate =
-                    "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                    "   <xu:remove select=\"/products/product[last()]\"/>" +
-                    "</xu:modifications>";
-                proc.setBroker(broker);
-                proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-                assertNotNull(modifications);
-                modifications[0].process(transaction);
-                proc.reset();
-            }
-            
-            System.out.println("Appending some elements ...");
-            for (int i = 1; i <= 100; i++) {
-                xupdate =
-                    "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                    "   <xu:append select=\"/products\">" +
-                    "       <product>" +
-                    "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
-                    "           <description>Product " + i + "</description>" +
-                    "           <price>" + (i * 2.5) + "</price>" +
-                    "           <stock>" + (i * 10) + "</stock>" +
-                    "       </product>" +
-                    "   </xu:append>" +
-                    "</xu:modifications>";
-                proc.setBroker(broker);
-                proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-                assertNotNull(modifications);
-                modifications[0].process(transaction);
-                proc.reset();
-            }
-            
-            System.out.println("Renaming elements  ...");
-            // rename element "description" to "descript"
-            xupdate =
-                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                "   <xu:rename select=\"/products/product/description\">descript</xu:rename>" +
-                "</xu:modifications>";
-            proc.setBroker(broker);
-            proc.setDocumentSet(docs);
-            modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-            assertNotNull(modifications);
-            modifications[0].process(transaction);
-            proc.reset();
-            
-            System.out.println("Updating attribute values ...");
-            // update attribute values
-            for (int i = 1; i <= 200; i++) {
-                xupdate =
-                    "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                    "   <xu:update select=\"/products/product[" + i + "]/@id\">" + i + "u</xu:update>" +
-                    "</xu:modifications>";
-                proc.setBroker(broker);
-                proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-                assertNotNull(modifications);
-                long mods = modifications[0].process(transaction);
-                System.out.println(mods + " records modified.");
-                proc.reset();
-            }
-            System.out.println("Append new element to each item ...");
-            // append new element to records
-            for (int i = 1; i <= 200; i++) {
-                xupdate =
-                    "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                    "   <xu:append select=\"/products/product[" + i + "]\">" +
-                    "       <date><xu:value-of select=\"current-dateTime()\"/></date>" +
-                    "   </xu:append>" +
-                    "</xu:modifications>";
-                proc.setBroker(broker);
-                proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-                assertNotNull(modifications);
-                modifications[0].process(transaction);
-                proc.reset();
-            }
-            
-            System.out.println("Updating element content ...");
-            // update element content
-            for (int i = 1; i <= 200; i++) {
-                xupdate =
-                    "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-                    "   <xu:update select=\"/products/product[" + i + "]/price\">19.99</xu:update>" +
-                    "</xu:modifications>";
-                proc.setBroker(broker);
-                proc.setDocumentSet(docs);
-                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
-                assertNotNull(modifications);
-                long mods = modifications[0].process(transaction);
-                System.out.println(mods + " records modified.");
-                proc.reset();
-            }           
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
 
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");            
-           
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
+            IndexInfo info;
+
+            try(final Txn transaction = transact.beginTransaction()) {
+
+                System.out.println("Transaction started ...");
+
+                Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
+
+                Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
+                assertNotNull(test2);
+                broker.saveCollection(transaction, test2);
+
+                info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, TEST_XML);
+                assertNotNull(info);
+                //TODO : unlock the collection here ?
+
+                test2.store(transaction, broker, info, TEST_XML, false);
+
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
+            }
+            
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Transaction started ...");
+
+                MutableDocumentSet docs = new DefaultDocumentSet();
+                docs.add(info.getDocument());
+                XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+                assertNotNull(proc);
+
+                String xupdate;
+                Modification modifications[];
+
+                System.out.println("Inserting new items  ...");
+                // insert some nodes
+                for (int i = 1; i <= 200; i++) {
+                    xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:insert-before select=\"/products/product[1]\">" +
+                                    "       <product>" +
+                                    "           <description>Product " + i + "</description>" +
+                                    "           <price>" + (i * 2.5) + "</price>" +
+                                    "           <stock>" + (i * 10) + "</stock>" +
+                                    "       </product>" +
+                                    "   </xu:insert-before>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                    assertNotNull(modifications);
+                    modifications[0].process(transaction);
+                    proc.reset();
+                }
+
+                System.out.println("Adding attributes  ...");
+                // add attribute
+                for (int i = 1; i <= 200; i++) {
+                    xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:append select=\"/products/product[" + i + "]\">" +
+                                    "         <xu:attribute name=\"id\">" + i + "</xu:attribute>" +
+                                    " </xu:append>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                    assertNotNull(modifications);
+                    modifications[0].process(transaction);
+                    proc.reset();
+                }
+
+                System.out.println("Replacing elements  ...");
+                // replace some
+                for (int i = 1; i <= 100; i++) {
+                    xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:replace select=\"/products/product[" + i + "]\">" +
+                                    "     <product id=\"" + i + "\">" +
+                                    "         <description>Replaced product</description>" +
+                                    "         <price>" + (i * 0.75) + "</price>" +
+                                    "     </product>" +
+                                    " </xu:replace>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                    assertNotNull(modifications);
+                    long mods = modifications[0].process(transaction);
+                    System.out.println("Modifications: " + mods);
+                    proc.reset();
+                }
+
+                System.out.println("Removing some elements ...");
+                // remove some
+                for (int i = 1; i <= 100; i++) {
+                    xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:remove select=\"/products/product[last()]\"/>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                    assertNotNull(modifications);
+                    modifications[0].process(transaction);
+                    proc.reset();
+                }
+
+                System.out.println("Appending some elements ...");
+                for (int i = 1; i <= 100; i++) {
+                    xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:append select=\"/products\">" +
+                                    "       <product>" +
+                                    "           <xu:attribute name=\"id\"><xu:value-of select=\"count(/products/product) + 1\"/></xu:attribute>" +
+                                    "           <description>Product " + i + "</description>" +
+                                    "           <price>" + (i * 2.5) + "</price>" +
+                                    "           <stock>" + (i * 10) + "</stock>" +
+                                    "       </product>" +
+                                    "   </xu:append>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                    assertNotNull(modifications);
+                    modifications[0].process(transaction);
+                    proc.reset();
+                }
+
+                System.out.println("Renaming elements  ...");
+                // rename element "description" to "descript"
+                xupdate =
+                        "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                "   <xu:rename select=\"/products/product/description\">descript</xu:rename>" +
+                                "</xu:modifications>";
+                proc.setBroker(broker);
+                proc.setDocumentSet(docs);
+                modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                assertNotNull(modifications);
+                modifications[0].process(transaction);
+                proc.reset();
+
+                System.out.println("Updating attribute values ...");
+                // update attribute values
+                for (int i = 1; i <= 200; i++) {
+                    xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:update select=\"/products/product[" + i + "]/@id\">" + i + "u</xu:update>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                    assertNotNull(modifications);
+                    long mods = modifications[0].process(transaction);
+                    System.out.println(mods + " records modified.");
+                    proc.reset();
+                }
+                System.out.println("Append new element to each item ...");
+                // append new element to records
+                for (int i = 1; i <= 200; i++) {
+                    xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:append select=\"/products/product[" + i + "]\">" +
+                                    "       <date><xu:value-of select=\"current-dateTime()\"/></date>" +
+                                    "   </xu:append>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                    assertNotNull(modifications);
+                    modifications[0].process(transaction);
+                    proc.reset();
+                }
+
+                System.out.println("Updating element content ...");
+                // update element content
+                for (int i = 1; i <= 200; i++) {
+                    xupdate =
+                            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+                                    "   <xu:update select=\"/products/product[" + i + "]/price\">19.99</xu:update>" +
+                                    "</xu:modifications>";
+                    proc.setBroker(broker);
+                    proc.setDocumentSet(docs);
+                    modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+                    assertNotNull(modifications);
+                    long mods = modifications[0].process(transaction);
+                    System.out.println(mods + " records modified.");
+                    proc.reset();
+                }
+
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
+            }
         } catch (Exception e) {
         	fail(e.getMessage());  
-        } finally {
-        	if (pool!= null) pool.release(broker);
         }
     }
 

@@ -47,24 +47,46 @@ public class DirtyShutdownTest {
     }
 
     public void storeRepeatedly() {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            transact = pool.getTransactionManager();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            transaction = transact.beginTransaction();
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
-            transact.commit(transaction);
+            Collection root;
+
+            try(final Txn transaction = transact.beginTransaction()) {
+                root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
+                transact.commit(transaction);
+            }
 
             for (int i = 0; i < 50; i++) {
                 System.out.println("Storing " + i + " out of 50...");
-                transaction = transact.beginTransaction();
+                try(final Txn transaction = transact.beginTransaction()) {
 
-                File f = new File("samples/shakespeare/macbeth.xml");
+                    File f = new File("samples/shakespeare/macbeth.xml");
+                    IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
+                            new InputSource(f.toURI().toASCIIString()));
+                    assertNotNull(info);
+                    root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+
+                    transact.commit(transaction);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    public void storeAndWait() {
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
+            try(final Txn transaction = transact.beginTransaction()) {
+                Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
+
+                File f = new File("samples/shakespeare/hamlet.xml");
                 IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
                         new InputSource(f.toURI().toASCIIString()));
                 assertNotNull(info);
@@ -72,42 +94,15 @@ public class DirtyShutdownTest {
 
                 transact.commit(transaction);
             }
+
+            try(final Txn transaction = transact.beginTransaction()) {
+                XQuery xquery = broker.getXQueryService();
+                xquery.execute(query, null, AccessContext.TEST);
+                transact.commit(transaction);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
-        }
-    }
-    public void storeAndWait() {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            transact = pool.getTransactionManager();
-            transaction = transact.beginTransaction();
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
-
-            File f = new File("samples/shakespeare/hamlet.xml");
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
-                    new InputSource(f.toURI().toASCIIString()));
-            assertNotNull(info);
-            root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
-
-            transact.commit(transaction);
-
-            transaction = transact.beginTransaction();
-            XQuery xquery = broker.getXQueryService();
-            xquery.execute(query, null, AccessContext.TEST);
-            transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 

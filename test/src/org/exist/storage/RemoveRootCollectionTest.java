@@ -20,27 +20,30 @@ public class RemoveRootCollectionTest {
 	Collection root;
 	
 	@Test public void removeEmptyRootCollection() throws Exception {
-		Txn transaction = transact.beginTransaction();
-		broker.removeCollection(transaction, root);
-		transact.commit(transaction);
+		try(final Txn transaction = transact.beginTransaction()) {
+            broker.removeCollection(transaction, root);
+            transact.commit(transaction);
+        }
 		assertEquals(0, root.getChildCollectionCount(broker));
 		assertEquals(0, root.getDocumentCount(broker));
 	}
 
 	@Test public void removeRootCollectionWithChildCollection() throws Exception {
 		addChildToRoot();
-		Txn transaction = transact.beginTransaction();
-		broker.removeCollection(transaction, root);
-		transact.commit(transaction);
+		try(final Txn transaction = transact.beginTransaction()) {
+            broker.removeCollection(transaction, root);
+            transact.commit(transaction);
+        }
 		assertEquals(0, root.getChildCollectionCount(broker));
 		assertEquals(0, root.getDocumentCount(broker));
 	}
 
 	@Ignore @Test public void removeRootCollectionWithDocument() throws Exception {
 		addDocumentToRoot();
-		Txn transaction = transact.beginTransaction();
-		broker.removeCollection(transaction, root);
-		transact.commit(transaction);
+		try(final Txn transaction = transact.beginTransaction()) {
+            broker.removeCollection(transaction, root);
+            transact.commit(transaction);
+        }
 		assertEquals(0, root.getChildCollectionCount(broker));
 		assertEquals(0, root.getDocumentCount(broker));
 	}
@@ -61,19 +64,21 @@ public class RemoveRootCollectionTest {
 	}
 	
 	private void addDocumentToRoot() throws Exception {
-		Txn transaction = transact.beginTransaction();
-		InputSource is = new InputSource(new File("samples/shakespeare/hamlet.xml").toURI().toASCIIString());
-		assertNotNull(is);
-		IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
-		assertNotNull(info);
-		root.store(transaction, broker, info, is, false);
-		transact.commit(transaction);
+		try(final Txn transaction = transact.beginTransaction()) {
+            final InputSource is = new InputSource(new File("samples/shakespeare/hamlet.xml").toURI().toASCIIString());
+            assertNotNull(is);
+            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
+            assertNotNull(info);
+            root.store(transaction, broker, info, is, false);
+            transact.commit(transaction);
+        }
 	}
 	
 	private void addChildToRoot() throws Exception {
-		Txn transaction = transact.beginTransaction();
-		Collection child = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("child"));
-		broker.saveCollection(transaction, child);
-		transact.commit(transaction);
+		try(final Txn transaction = transact.beginTransaction()) {
+            final Collection child = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("child"));
+            broker.saveCollection(transaction, child);
+            transact.commit(transaction);
+        }
 	}
 }

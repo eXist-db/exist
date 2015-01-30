@@ -22,14 +22,19 @@ package org.exist.storage.md;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -39,6 +44,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -119,29 +126,21 @@ public class DocumentAsValueTest {
 	}
 
 	//@BeforeClass
-    public static void startDB() {
-        DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
-        try {
-            File confFile = ConfigurationHelper.lookup("conf.xml");
-            Configuration config = new Configuration(confFile.getAbsolutePath());
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        	assertNotNull(pool);
-        	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
-            
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            
-            clean();
-            
-            txnManager = pool.getTransactionManager();
-            assertNotNull(txnManager);
-            txn = txnManager.beginTransaction();
-            assertNotNull(txn);
-            
-            System.out.println("Transaction started ...");
+    public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
+
+        final File confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+        assertNotNull(pool);
+        pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+
+        final TransactionManager txnManager = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn txn = txnManager.beginTransaction()) {
+
+            clean(broker, txn);
 
             Collection root = broker.getOrCreateCollection(txn, col1uri);
             assertNotNull(root);
@@ -164,25 +163,29 @@ public class DocumentAsValueTest {
             assertNotNull(info);
             root.store(txn, broker, info, XML2, false);
 
-            doc2 =  info.getDocument();
+            doc2 = info.getDocument();
 
-            System.out.println("store "+doc3uri);
+            System.out.println("store " + doc3uri);
             root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);
-        } catch (Exception e) {
-            e.printStackTrace();
-            txnManager.abort(txn);
-            fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 
     //@AfterClass
     public static void cleanup() {
-    	clean();
+        final TransactionManager txnManager = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn txn = txnManager.beginTransaction()) {
+
+            clean(broker, txn);
+
+            txnManager.commit(txn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+
     	shutdown();
     }
 
@@ -195,33 +198,13 @@ public class DocumentAsValueTest {
         System.out.println("stopped");
     }
 
-    private static void clean() {
+    private static void clean(final DBBroker broker, final Txn txn) throws PermissionDeniedException, IOException, TriggerException {
     	System.out.println("CLEANING...");
-    	
-        DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            txnManager = pool.getTransactionManager();
-            assertNotNull(txnManager);
-            txn = txnManager.beginTransaction();
-            assertNotNull(txn);
-            System.out.println("Transaction started ...");
 
-            Collection col = broker.getOrCreateCollection(txn, col1uri);
-            assertNotNull(col);
-        	broker.removeCollection(txn, col);
+        final Collection col = broker.getOrCreateCollection(txn, col1uri);
+        assertNotNull(col);
+        broker.removeCollection(txn, col);
 
-        	txnManager.commit(txn);
-        } catch (Exception e) {
-        	txnManager.abort(txn);
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (pool != null) pool.release(broker);
-        }
     	System.out.println("CLEANED.");
     }
 }

@@ -204,19 +204,13 @@ public class RealmImpl extends AbstractRealm {
                     remove_account.setCollection(broker, collectionRemovedAccounts, XmldbURI.create(UUIDGenerator.getUUID()+".xml"));
 
                     final TransactionManager transaction = getDatabase().getTransactionManager();
-                    Txn txn = null;
-                    try {
-                        txn = transaction.beginTransaction();
-
+                    try(final Txn txn = transaction.beginTransaction()) {
                         collectionAccounts.removeXMLResource(txn, broker, XmldbURI.create( remove_account.getName() + ".xml"));
 
                         transaction.commit(txn);
                     } catch(final Exception e) {
-                        transaction.abort(txn);
                         e.printStackTrace();
                         LOG.debug("loading configuration failed: " + e.getMessage());
-                    } finally {
-                        transaction.close(txn);
                     }
 
                     getSecurityManager().addUser(remove_account.getId(), remove_account);
@@ -252,18 +246,13 @@ public class RealmImpl extends AbstractRealm {
                 remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID() + ".xml"));
 		
                 final TransactionManager transaction = getDatabase().getTransactionManager();
-                Txn txn = null;
-                try {
-                    txn = transaction.beginTransaction();
+                try(final Txn txn = transaction.beginTransaction()) {
 
                     collectionGroups.removeXMLResource(txn, broker, XmldbURI.create(remove_group.getName() + ".xml" ));
 
                     transaction.commit(txn);
                 } catch (final Exception e) {
-                    transaction.abort(txn);
                     LOG.debug(e);
-                } finally {
-                    transaction.close(txn);
                 }
 
                 getSecurityManager().addGroup(remove_group.getId(), (Group)remove_group);

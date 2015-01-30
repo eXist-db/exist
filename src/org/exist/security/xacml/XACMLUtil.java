@@ -239,35 +239,15 @@ public class XACMLUtil implements UpdateListener
 		if(policyCollection == null)
 		{
 			final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-			final Txn txn = transact.beginTransaction();
-			try
-			{
+			try(final Txn txn = transact.beginTransaction()) {
 				policyCollection = broker.getOrCreateCollection(txn, XACMLConstants.POLICY_COLLECTION_URI);
 				broker.saveCollection(txn, policyCollection);
 				transact.commit(txn);
 			}
-			catch (final IOException e) {
-				transact.abort(txn);
+			catch (final IOException | EXistException | PermissionDeniedException | TriggerException e) {
 				LOG.error("Error creating policy collection", e);
 				return null;
-			
-			} catch (final EXistException e) {
-				transact.abort(txn);
-				LOG.error("Error creating policy collection", e);
-				return null;
-			
-			} catch (final PermissionDeniedException e) {
-				transact.abort(txn);
-				LOG.error("Error creating policy collection", e);
-				return null;
-			
-			} catch (final TriggerException e) {
-				transact.abort(txn);
-				LOG.error("Error creating policy collection", e);
-				return null;
-			} finally {
-                transact.close(txn);
-            }
+			}
         }
 		
 		return policyCollection;
@@ -604,23 +584,16 @@ public class XACMLUtil implements UpdateListener
 			{return;}
 		
 		final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-		final Txn txn = transact.beginTransaction();
-		try
-		{
+		try(final Txn txn = transact.beginTransaction()) {
 			final IndexInfo info = collection.validateXMLResource(txn, broker, docName, content);
 			//TODO : unlock the collection here ?
 			collection.store(txn, broker, info, content, false);
 			transact.commit(txn);
-		}
-		catch(final Exception e)
-		{
-			transact.abort(txn);
+		} catch(final Exception e) {
 			if(e instanceof EXistException)
 				{throw (EXistException)e;}
 			throw new EXistException("Error storing policy '" + docPath + "'", e);
-		} finally {
-            transact.close(txn);
-        }
+		}
     }
 
 	/** Reads an <code>InputStream</code> into a string.

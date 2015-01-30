@@ -306,10 +306,8 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
         LOG.info(String.format("Creating %s", AUTOSTART_COLLECTION));
 
-        TransactionManager txnManager = broker.getBrokerPool().getTransactionManager();
-        Txn txn = txnManager.beginTransaction();
-
-        try {
+        final TransactionManager txnManager = broker.getBrokerPool().getTransactionManager();
+        try(final Txn txn = txnManager.beginTransaction()) {
             XmldbURI newCollection = XmldbURI.create(AUTOSTART_COLLECTION, true);
 
             // Create collection
@@ -332,10 +330,6 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
         } catch (Throwable ex) {
             LOG.error(ex);
-            txnManager.abort(txn);
-
-        } finally {
-            txnManager.close(txn);
         }
     }
 

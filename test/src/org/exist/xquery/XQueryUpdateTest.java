@@ -539,27 +539,23 @@ public class XQueryUpdateTest extends TestCase {
         }
     }
 
-	private void store(DBBroker broker, String docName, String data) throws PermissionDeniedException, EXistException, TriggerException, SAXException, LockException, TransactionException {
-		TransactionManager mgr = pool.getTransactionManager();
-		Txn transaction = mgr.beginTransaction();        
-		System.out.println("Transaction started ...");
-		
-		try {
-			Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
-			broker.saveCollection(transaction, root);
-			
-			IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
-			//TODO : unlock the collection here ?
-			root.store(transaction, broker, info, data, false);
-	   
-			mgr.commit(transaction);
-			
-			DocumentImpl doc = root.getDocument(broker, XmldbURI.create(docName));
-		    broker.getSerializer().serialize(doc);
-		} catch (IOException e) {
-			mgr.abort(transaction);
-			fail();
-		}
+	private void store(DBBroker broker, String docName, String data) throws PermissionDeniedException, EXistException, SAXException, LockException, IOException {
+        Collection root;
+        final TransactionManager mgr = pool.getTransactionManager();
+        try(final Txn transaction = mgr.beginTransaction()) {
+            System.out.println("Transaction started ...");
+
+            root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+            broker.saveCollection(transaction, root);
+
+            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
+            //TODO : unlock the collection here ?
+            root.store(transaction, broker, info, data, false);
+
+            mgr.commit(transaction);
+        }
+        DocumentImpl doc = root.getDocument(broker, XmldbURI.create(docName));
+        broker.getSerializer().serialize(doc);
 	}
     
     protected BrokerPool startDB() {

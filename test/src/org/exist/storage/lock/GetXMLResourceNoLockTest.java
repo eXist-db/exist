@@ -97,13 +97,12 @@ public class GetXMLResourceNoLockTest {
 
     private void storeTestResource() throws EXistException {
         
-        BrokerPool pool = BrokerPool.getInstance();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            TransactionManager transact = pool.getTransactionManager();
-            
-            Txn transaction = transact.beginTransaction();
+        final BrokerPool pool = BrokerPool.getInstance();
+
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
+
             System.out.println("Transaction started ...");
             
             Collection collection = broker
@@ -121,8 +120,6 @@ public class GetXMLResourceNoLockTest {
         } catch (Exception e) {
             fail(e.getMessage());
             
-        } finally {
-            pool.release(broker);
         }
     }
 }

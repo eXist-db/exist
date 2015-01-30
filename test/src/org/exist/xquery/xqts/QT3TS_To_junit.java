@@ -92,15 +92,11 @@ public class QT3TS_To_junit {
 		Assert.assertNotNull(broker);
 
         TransactionManager txnMgr = db.getTransactionManager();
-        Txn txn = null;
-        try {
-            txn = txnMgr.beginTransaction();
+        try(final Txn txn = txnMgr.beginTransaction()) {
             collection = broker.getOrCreateCollection(txn, QT3TS_case.QT3_URI);
             Assert.assertNotNull(collection);
             broker.saveCollection(txn, collection);
             txnMgr.commit(txn);
-        } finally {
-            txn.close();
         }
     }
 
@@ -121,9 +117,8 @@ public class QT3TS_To_junit {
 
 
         final TransactionManager txnMgr = broker.getBrokerPool().getTransactionManager();
-        Txn txn = null;
-        try {
-            txn = txnMgr.beginTransaction();
+        try(final Txn txn = txnMgr.beginTransaction()) {
+
 
             for(File file : files) {
                 if(file.isDirectory()) {
@@ -142,10 +137,6 @@ public class QT3TS_To_junit {
             }
 
             txnMgr.commit(txn);
-        } finally {
-            if(txn != null) {
-                txn.close();
-            }
         }
     }
 

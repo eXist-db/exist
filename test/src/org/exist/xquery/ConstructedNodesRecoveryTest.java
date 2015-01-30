@@ -91,89 +91,89 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	private void storeTestDocument(DBBroker broker, TransactionManager transact, String documentName) throws Exception
 	{
 		//create a transaction
-		Txn transaction = transact.beginTransaction();
-        assertNotNull(transaction);            
-        System.out.println("Transaction started ...");
-		
-		//get the test collection
-        Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-        assertNotNull(root);
-        broker.saveCollection(transaction, root);
-		
-		//store test document
-        IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(documentName), testDocument);
-        assertNotNull(info);
-        root.store(transaction, broker, info, new InputSource(new StringReader(testDocument)), false);
-        
-        //commit the transaction
-        transact.commit(transaction);
-        System.out.println("Transaction commited ...");
+		try(final Txn transaction = transact.beginTransaction()) {
+            System.out.println("Transaction started ...");
+
+            //get the test collection
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            assertNotNull(root);
+            broker.saveCollection(transaction, root);
+
+            //store test document
+            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(documentName), testDocument);
+            assertNotNull(info);
+            root.store(transaction, broker, info, new InputSource(new StringReader(testDocument)), false);
+
+            //commit the transaction
+            transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+        }
 	}
 	
 	private void createTempChildCollection(DBBroker broker, TransactionManager transact, String childCollectionName) throws Exception
 	{
 		//create a transaction
-		Txn transaction = transact.beginTransaction();
-        assertNotNull(transaction);            
-        System.out.println("Transaction started ...");
-		
-		//get the test collection
-        Collection root = broker.getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI.append(childCollectionName));
-        assertNotNull(root);
-        broker.saveCollection(transaction, root);
-		        
-        //commit the transaction
-        transact.commit(transaction);
-        System.out.println("Transaction commited ...");
+		try(final Txn transaction = transact.beginTransaction()) {
+            System.out.println("Transaction started ...");
+
+            //get the test collection
+            Collection root = broker.getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI.append(childCollectionName));
+            assertNotNull(root);
+            broker.saveCollection(transaction, root);
+
+            //commit the transaction
+            transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+        }
 	}
 	
 	private void testDocumentIsValid(DBBroker broker, TransactionManager transact, String documentName) throws Exception
 	{
 		//create a transaction
-		Txn transaction = transact.beginTransaction();
-        assertNotNull(transaction);            
-        System.out.println("Transaction started ...");
-		
-		//get the test collection
-        Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-        assertNotNull(root);
-        broker.saveCollection(transaction, root);
-        
-        //get the test document
-        DocumentImpl doc = root.getDocumentWithLock(broker, XmldbURI.create(documentName), Lock.READ_LOCK);
-        
-        Serializer serializer = broker.getSerializer();
-        serializer.reset();
-        SAXSerializer sax = null;
-        StringWriter writer = new StringWriter();
-        sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-        Properties outputProperties = new Properties();
-        outputProperties.setProperty(OutputKeys.INDENT, "no");
-        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
-        sax.setOutput(writer, outputProperties);
-        serializer.setProperties(outputProperties);
-        serializer.setSAXHandlers(sax, sax);
-        serializer.toSAX(doc);
-        SerializerPool.getInstance().returnObject(sax);
-        
-        assertEquals(testDocument, writer.toString());
-        
-        transact.commit(transaction);
+        try(final Txn transaction = transact.beginTransaction()) {
+            System.out.println("Transaction started ...");
+
+            //get the test collection
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            assertNotNull(root);
+            broker.saveCollection(transaction, root);
+
+            //get the test document
+            DocumentImpl doc = root.getDocumentWithLock(broker, XmldbURI.create(documentName), Lock.READ_LOCK);
+
+            Serializer serializer = broker.getSerializer();
+            serializer.reset();
+            SAXSerializer sax = null;
+            StringWriter writer = new StringWriter();
+            sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+            Properties outputProperties = new Properties();
+            outputProperties.setProperty(OutputKeys.INDENT, "no");
+            outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+            sax.setOutput(writer, outputProperties);
+            serializer.setProperties(outputProperties);
+            serializer.setSAXHandlers(sax, sax);
+            serializer.toSAX(doc);
+            SerializerPool.getInstance().returnObject(sax);
+
+            assertEquals(testDocument, writer.toString());
+
+            transact.commit(transaction);
+        }
 	}
 	
 	private void testTempChildCollectionExists(DBBroker broker, TransactionManager transact, String childCollectionName) throws Exception
 	{
 		//create a transaction
-		Txn transaction = transact.beginTransaction();
-        assertNotNull(transaction);            
-        System.out.println("Transaction started ...");
-		
-		//get the temp child collection
-        Collection tempChildCollection = broker.getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI.append(childCollectionName));
-        assertNotNull(tempChildCollection);
-        broker.saveCollection(transaction, tempChildCollection);
-        
-        transact.commit(transaction);
+        try(final Txn transaction = transact.beginTransaction()) {
+            System.out.println("Transaction started ...");
+
+            //get the temp child collection
+            Collection tempChildCollection = broker.getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI.append(childCollectionName));
+            assertNotNull(tempChildCollection);
+            broker.saveCollection(transaction, tempChildCollection);
+
+            transact.commit(transaction);
+        }
 	}
 	
 	/**

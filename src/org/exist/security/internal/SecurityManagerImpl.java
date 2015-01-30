@@ -163,33 +163,27 @@ public class SecurityManagerImpl implements SecurityManager {
     	this.pool = pool;
     	
         final TransactionManager transaction = pool.getTransactionManager();
-        Txn txn = null;
 		
         Collection systemCollection = null;
-        try {
+        try(final Txn txn = transaction.beginTransaction()) {
 	        systemCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
-                if(systemCollection == null) {
-                    txn = transaction.beginTransaction();
-                    systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
-                    if (systemCollection == null)
-                            {return;}
-                    systemCollection.setPermissions(Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
-                    broker.saveCollection(txn, systemCollection);
+            if(systemCollection == null) {
+                systemCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
+                if (systemCollection == null)
+                        {return;}
+                systemCollection.setPermissions(Permission.DEFAULT_SYSTEM_COLLECTION_PERM);
+                broker.saveCollection(txn, systemCollection);
 
-                    transaction.commit(txn);
-                }
+                transaction.commit(txn);
+            }
         } catch (final Exception e) {
-            transaction.abort(txn);
             e.printStackTrace();
             LOG.debug("loading acl failed: " + e.getMessage());
-        } finally {
-            transaction.close(txn);
         }
 
-        try {
+        try(final Txn txn = transaction.beginTransaction()) {
             collection = broker.getCollection(SECURITY_COLLECTION_URI);
             if (collection == null) {
-                txn = transaction.beginTransaction();
                 collection = broker.getOrCreateCollection(txn, SECURITY_COLLECTION_URI);
                 if (collection == null){
                     return;
@@ -203,11 +197,8 @@ public class SecurityManagerImpl implements SecurityManager {
                 transaction.commit(txn);
             } 
         } catch (final Exception e) {
-            transaction.abort(txn);
             e.printStackTrace();
             LOG.debug("loading configuration failed: " + e.getMessage());
-        } finally {
-            transaction.close(txn);
         }
 			
         final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);

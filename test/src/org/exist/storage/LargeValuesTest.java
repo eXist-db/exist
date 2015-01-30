@@ -84,38 +84,38 @@ public class LargeValuesTest {
      * Store some documents, reindex the collection and crash without commit.
      */
     private void storeDocuments() {
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
+            Collection root;
 
-            pool.getConfigurationManager().addConfiguration(transaction, broker, root, CONFIG_QNAME);
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Transaction started ...");
 
-            transact.commit(transaction);
+                root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
+
+                pool.getConfigurationManager().addConfiguration(transaction, broker, root, CONFIG_QNAME);
+
+                transact.commit(transaction);
+            }
+
             transact.getJournal().flushToLog(true);
-            
             BrokerPool.FORCE_CORRUPTION = true;
-            transaction = transact.beginTransaction();
-            File file = createDocument();
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
-                    new InputSource(file.toURI().toASCIIString()));
-            assertNotNull(info);
-            root.store(transaction, broker, info, new InputSource(file.toURI().toASCIIString()), false);
-            broker.saveCollection(transaction, root);
 
-            transact.commit(transaction);
+            final File file = createDocument();
+
+            try(final Txn transaction = transact.beginTransaction()) {
+                IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
+                        new InputSource(file.toURI().toASCIIString()));
+                assertNotNull(info);
+                root.store(transaction, broker, info, new InputSource(file.toURI().toASCIIString()), false);
+                broker.saveCollection(transaction, root);
+
+                transact.commit(transaction);
+            }
 
             transact.getJournal().flushToLog(true);
             System.out.println("Transaction interrupted ...");
@@ -123,9 +123,6 @@ public class LargeValuesTest {
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 
@@ -175,18 +172,12 @@ public class LargeValuesTest {
     }
 
     private void remove() {
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        try {
-        	System.out.println("remove() ...\n");
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        System.out.println("remove() ...\n");
+
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);
             assertNotNull(root);
@@ -196,9 +187,6 @@ public class LargeValuesTest {
         } catch (Exception e) {
             e.printStackTrace();
 	        fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 
