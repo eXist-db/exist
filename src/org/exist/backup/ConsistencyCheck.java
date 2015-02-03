@@ -382,7 +382,7 @@ public class ConsistencyCheck {
         private boolean checkDocs;
         private int lastPercentage = -1;
         private Agent jmxAgent = AgentFactory.getInstance();
-        private ArrayList<DocumentImpl> docs = new ArrayList<>(8192);
+        private ArrayList docs = new ArrayList(8192);
 
 
         private DocumentCallback(List errors, ProgressCallback progress, boolean checkDocs) {
