@@ -187,7 +187,7 @@ public class Database {
 			try {
 				DBBroker broker = pool.enterServiceMode(SecurityManager.SYSTEM_USER);
 				try {
-					List<ErrorReport> errors = new ConsistencyCheck(broker, false).checkAll(NULL_PROGRESS_CALLBACK);
+					List<ErrorReport> errors = new ConsistencyCheck(broker, false, false).checkAll(NULL_PROGRESS_CALLBACK);
 					if (errors.isEmpty()) return true;
 					LOG.fatal("database corrupted");
 					for (ErrorReport error : errors) LOG.error(error.toString().replace("\n", " "));

@@ -37,81 +37,83 @@ import java.io.File;
 
 import java.util.List;
 
+public class ExportMain {
 
-public class ExportMain
-{
     // command-line options
-    private final static int                  HELP_OPT          = 'h';
-    private final static int                  EXPORT_OPT        = 'x';
-    private final static int                  OUTPUT_DIR_OPT    = 'd';
-    private final static int                  CONFIG_OPT        = 'c';
-    private final static int                  INCREMENTAL_OPT   = 'i';
-    private final static int				  NO_CHECK_OPT 		= 'n';
-    private final static int                  DIRECT_ACCESS_OPT = 'D';
-    private final static int                  ZIP_OPT 			= 'z';
+    private final static int HELP_OPT = 'h';
+    private final static int EXPORT_OPT = 'x';
+    private final static int OUTPUT_DIR_OPT = 'd';
+    private final static int CONFIG_OPT = 'c';
+    private final static int INCREMENTAL_OPT = 'i';
+    private final static int NO_CHECK_OPT = 'n';
+    private final static int DIRECT_ACCESS_OPT = 'D';
+    private final static int ZIP_OPT = 'z';
+    private final static int CHECK_DOCS_OPT = 's';
+    private final static int VERBOSE_OPT = 'v';
 
-    private final static CLOptionDescriptor[] OPTIONS           = new CLOptionDescriptor[] {
-        new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit." ),
-        new CLOptionDescriptor( "dir", CLOptionDescriptor.ARGUMENT_REQUIRED, OUTPUT_DIR_OPT, "the directory to which all output will be written." ),
-        new CLOptionDescriptor( "config", CLOptionDescriptor.ARGUMENT_REQUIRED, CONFIG_OPT, "the database configuration (conf.xml) file to use " + "for launching the db." ),
-        new CLOptionDescriptor( "direct", CLOptionDescriptor.ARGUMENT_DISALLOWED, DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " + "index structures" ),
-        new CLOptionDescriptor( "nocheck", CLOptionDescriptor.ARGUMENT_DISALLOWED, NO_CHECK_OPT, "do not run a consistency check. Just export the data." ),
-        new CLOptionDescriptor( "export", CLOptionDescriptor.ARGUMENT_DISALLOWED, EXPORT_OPT, "export database contents while preserving as much data as possible" ),
-        new CLOptionDescriptor( "incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT, "create incremental backup (use with --export|-x)" ),
-        new CLOptionDescriptor( "zip", CLOptionDescriptor.ARGUMENT_DISALLOWED, ZIP_OPT, "write output to a ZIP instead of a file system directory" )
+    private final static CLOptionDescriptor[] OPTIONS = new CLOptionDescriptor[]{
+        new CLOptionDescriptor("help", CLOptionDescriptor.ARGUMENT_DISALLOWED, HELP_OPT, "print help on command line options and exit."),
+        new CLOptionDescriptor("dir", CLOptionDescriptor.ARGUMENT_REQUIRED, OUTPUT_DIR_OPT, "the directory to which all output will be written."),
+        new CLOptionDescriptor("config", CLOptionDescriptor.ARGUMENT_REQUIRED, CONFIG_OPT, "the database configuration (conf.xml) file to use " + "for launching the db."),
+        new CLOptionDescriptor("direct", CLOptionDescriptor.ARGUMENT_DISALLOWED, DIRECT_ACCESS_OPT, "use an (even more) direct access to the db, bypassing some " + "index structures"),
+        new CLOptionDescriptor("nocheck", CLOptionDescriptor.ARGUMENT_DISALLOWED, NO_CHECK_OPT, "do not run a consistency check. Just export the data."),
+        new CLOptionDescriptor("export", CLOptionDescriptor.ARGUMENT_DISALLOWED, EXPORT_OPT, "export database contents while preserving as much data as possible"),
+        new CLOptionDescriptor("incremental", CLOptionDescriptor.ARGUMENT_DISALLOWED, INCREMENTAL_OPT, "create incremental backup (use with --export|-x)"),
+        new CLOptionDescriptor("check-docs", CLOptionDescriptor.ARGUMENT_DISALLOWED, CHECK_DOCS_OPT, "scan every document to find errors in the "
+        + "the nodes stored (costs time)"),
+        new CLOptionDescriptor("zip", CLOptionDescriptor.ARGUMENT_DISALLOWED, ZIP_OPT, "write output to a ZIP instead of a file system directory"),
+        new CLOptionDescriptor("verbose", CLOptionDescriptor.ARGUMENT_DISALLOWED, VERBOSE_OPT, "print processed resources "
+        + "to stdout")
     };
 
-    protected static BrokerPool startDB( String configFile )
-    {
+    protected static BrokerPool startDB(String configFile) {
         try {
             Configuration config;
 
-            if( configFile == null ) {
+            if (configFile == null) {
                 config = new Configuration();
             } else {
-                config = new Configuration( configFile, null );
+                config = new Configuration(configFile, null);
             }
             config.setProperty(BrokerPool.PROPERTY_EXPORT_ONLY, Boolean.TRUE);
-            BrokerPool.configure( 1, 5, config );
-            return( BrokerPool.getInstance() );
+            BrokerPool.configure(1, 5, config);
+            return (BrokerPool.getInstance());
+        } catch (DatabaseConfigurationException e) {
+            System.err.println("ERROR: Failed to open database: " + e.getMessage());
+        } catch (EXistException e) {
+            System.err.println("ERROR: Failed to open database: " + e.getMessage());
         }
-        catch( DatabaseConfigurationException e ) {
-            System.err.println( "ERROR: Failed to open database: " + e.getMessage() );
-        }
-        catch( EXistException e ) {
-            System.err.println( "ERROR: Failed to open database: " + e.getMessage() );
-        }
-        return( null );
+        return (null);
     }
 
+    @SuppressWarnings("unchecked")
+    public static void main(String[] args) {
+        CLArgsParser optParser = new CLArgsParser(args, OPTIONS);
 
-    @SuppressWarnings( "unchecked" )
-    public static void main( String[] args )
-    {
-        CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
-
-        if( optParser.getErrorString() != null ) {
-            System.err.println( "ERROR: " + optParser.getErrorString() );
+        if (optParser.getErrorString() != null) {
+            System.err.println("ERROR: " + optParser.getErrorString());
             return;
         }
-        boolean        export       = false;
-        boolean        incremental  = false;
-        boolean        direct       = false;
-        boolean		   zip			= false;
-        boolean		   nocheck		= false;
-        String         exportTarget = "export/";
-        String         dbConfig     = null;
+        boolean export = false;
+        boolean incremental = false;
+        boolean direct = false;
+        boolean zip = false;
+        boolean nocheck = false;
+        boolean verbose = false;
+        boolean checkDocs = false;
+        String exportTarget = "export/";
+        String dbConfig = null;
 
-        List<CLOption> opts         = optParser.getArguments();
+        List<CLOption> opts = optParser.getArguments();
 
-        for( CLOption option : opts ) {
+        for (CLOption option : opts) {
 
-            switch( option.getId() ) {
+            switch (option.getId()) {
 
                 case HELP_OPT: {
-                    System.out.println( "Usage: java " + ExportMain.class.getName() + " [options]" );
-                    System.out.println( CLUtil.describeOptions( OPTIONS ).toString() );
-                    System.exit( 0 );
+                    System.out.println("Usage: java " + ExportMain.class.getName() + " [options]");
+                    System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+                    System.exit(0);
                     break;
                 }
 
@@ -139,107 +141,113 @@ public class ExportMain
                     incremental = true;
                     break;
                 }
-                
+
                 case ZIP_OPT: {
                     zip = true;
                     break;
                 }
-                
+
                 case NO_CHECK_OPT: {
-                	nocheck = true;
-                	break;
+                    nocheck = true;
+                    break;
+                }
+
+                case CHECK_DOCS_OPT: {
+                    checkDocs = true;
+                    break;
+                }
+
+                case VERBOSE_OPT: {
+                    verbose = true;
+                    break;
                 }
             }
         }
 
-        BrokerPool pool = startDB( dbConfig );
+        BrokerPool pool = startDB(dbConfig);
 
-        if( pool == null ) {
-            System.exit( 1 );
+        if (pool == null) {
+            System.exit(1);
         }
-        int      retval = 0; // return value
+        int retval = 0; // return value
         DBBroker broker = null;
 
         try {
-            broker = pool.get( org.exist.security.SecurityManager.SYSTEM_USER );
+            broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
             List<ErrorReport> errors = null;
             if (!nocheck) {
-	            ConsistencyCheck  checker = new ConsistencyCheck( broker, direct );
-	            errors  = checker.checkAll( new CheckCallback() );
+                final ConsistencyCheck checker = new ConsistencyCheck(broker, direct, checkDocs);
+                errors = checker.checkAll(new CheckCallback());
             }
 
-            if( errors != null && errors.size() > 0 ) {
-                System.err.println( "ERRORS FOUND." );
+            if (errors != null && errors.size() > 0) {
+                System.err.println("ERRORS FOUND.");
                 retval = 1;
             } else {
-                System.out.println( "No errors." );
+                System.out.println("No errors.");
             }
 
-            if( export ) {
-                File dir = new File( exportTarget );
+            if (export) {
+                File dir = new File(exportTarget);
 
-                if( !dir.exists() ) {
+                if (!dir.exists()) {
                     dir.mkdirs();
                 }
-                SystemExport sysexport = new SystemExport( broker, new Callback(), null, direct );
-                sysexport.export( exportTarget, incremental, true, errors );
+                final SystemExport sysexport = new SystemExport(broker, new Callback(verbose), null, direct);
+                sysexport.export(exportTarget, incremental, zip, errors);
             }
-        }
-        catch( EXistException e ) {
-            System.err.println( "ERROR: Failed to retrieve database broker: " + e.getMessage() );
+        } catch (EXistException e) {
+            System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
             retval = 2;
-        }
-        catch( TerminatedException e ) {
-            System.err.println( "WARN: Export was terminated by db." );
+        } catch (TerminatedException e) {
+            System.err.println("WARN: Export was terminated by db.");
             retval = 3;
+        } finally {
+            pool.release(broker);
+            BrokerPool.stopAll(false);
         }
-        finally {
-            pool.release( broker );
-            BrokerPool.stopAll( false );
-        }
-        System.exit( retval );
+        System.exit(retval);
     }
 
-    private static class Callback implements SystemExport.StatusCallback
-    {
-        public void startCollection( String path )
-        {
-            System.out.println( "Entering collection " + path + " ..." );
+    private static class Callback implements SystemExport.StatusCallback {
+
+        private boolean verbose = false;
+
+        public Callback(boolean verbose) {
+            this.verbose = verbose;
         }
 
-
-        public void startDocument( String name, int count, int docsCount )
-        {
-            System.out.println( "Writing document " + name + " [" + count + " of " + docsCount + ']' );
+        public void startCollection(String path) {
+            if (verbose) {
+                System.out.println("Entering collection " + path + " ...");
+            }
         }
 
+        public void startDocument(String name, int count, int docsCount) {
+            if (verbose) {
+                System.out.println("Writing document " + name + " [" + count + " of " + docsCount + ']');
+            }
+        }
 
-        public void error( String message, Throwable exception )
-        {
-            System.err.println( message );
+        public void error(String message, Throwable exception) {
+            System.err.println(message);
 
-            if( exception != null ) {
+            if (exception != null) {
                 exception.printStackTrace();
             }
         }
     }
 
+    private static class CheckCallback implements org.exist.backup.ConsistencyCheck.ProgressCallback {
 
-    private static class CheckCallback implements org.exist.backup.ConsistencyCheck.ProgressCallback
-    {
-        public void startDocument( String name, int current, int count )
-        {
+        public void startDocument(String name, int current, int count) {
         }
 
-
-        public void startCollection( String path )
-        {
+        public void startCollection(String path) {
         }
 
-
-        public void error( ErrorReport error )
-        {
-            System.out.println( error.toString() );
+        public void error(ErrorReport error) {
+            System.out.println(error.toString());
         }
     }
 }
