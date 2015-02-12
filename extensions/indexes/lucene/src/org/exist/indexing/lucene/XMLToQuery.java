@@ -28,6 +28,7 @@ import org.apache.lucene.search.spans.SpanFirstQuery;
 import org.apache.lucene.search.spans.SpanNearQuery;
 import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.search.spans.SpanTermQuery;
+import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.Automaton;
 import org.apache.lucene.util.automaton.CompiledAutomaton;
@@ -190,9 +191,9 @@ public class XMLToQuery {
                         case "first":
                             list.add(getSpanFirst(field, (Element) child, analyzer));
                             break;
-//                      case "regex":
-//                          list.add(getSpanRegex(field, (Element) child, analyzer));
-
+                        case "regex":
+                            list.add(getSpanRegex(field, (Element) child, analyzer));
+                            break;
                         default:
                             throw new XPathException("Unknown query element: " + child.getNodeName());
                     }
@@ -209,10 +210,10 @@ public class XMLToQuery {
     		list.add(new SpanTermQuery(new Term(field, termStr)));
     }
 
-//    private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) {
-//    	String regex = getText(node);
-//    	return new SpanRegexQuery(new Term(field, regex));
-//    }
+    private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) {
+    	String regex = getText(node);
+    	return new SpanMultiTermQueryWrapper<RegexpQuery>(new RegexpQuery(new Term(field, regex)));
+    }
     
     private SpanQuery getSpanFirst(String field, Element node, Analyzer analyzer) throws XPathException {
     	int slop = getSlop(node);
