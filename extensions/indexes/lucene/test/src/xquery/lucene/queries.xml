@@ -210,7 +210,7 @@
 		</expected>
 	</test>
 	<test output="xml">
-		<task>XML query test 11: near, first</task>
+		<task>XML query test 12: near, first</task>
 		<code><![CDATA[
 			let $qu := 
 				<query>
@@ -228,7 +228,7 @@
 		</expected>
 	</test>
 	<test output="xml">
-		<task>XML query test 12: wildcard</task>
+		<task>XML query test 13: wildcard</task>
 		<code><![CDATA[
 			let $qu := <query><term>eins</term><wildcard>sech*</wildcard></query>
 			for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., $qu)]
@@ -240,7 +240,7 @@
 		</expected>
 	</test>
 	<test output="xml">
-		<task>XML query test 13: regex</task>
+		<task>XML query test 14: regex</task>
 		<code><![CDATA[
 			let $qu := <query><term>eins</term><regex>sech.*</regex></query>
 			for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., $qu)]
@@ -252,30 +252,42 @@
 		</expected>
 	</test>
 	<test output="xml">
-		<task>XML query test 14: wildcard context</task>
+		<task>XML query test 15: near with regex</task>
+		<code><![CDATA[
+			let $qu := <query><near slop="5"><regex>[ei][ei]ns</regex><regex>s.ch.</regex></near></query>
+			for $hit in doc("/db/test/test1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected>
+			<p>Eins zwei drei vier zwei fünf sechs.</p>
+		</expected>
+	</test>
+	<test output="xml">
+		<task>Query test: wildcard context</task>
 		<code> doc("/db/lucene/text1.xml")/test[ft:query(*, "acht")] </code>
 		<xpath>$output/p</xpath>
 	</test>
 
 	<test output="xml">
-		<task>XML query test 15: wildcard context</task>
+		<task>Query test: wildcard context</task>
 		<code> doc("/db/lucene/text1.xml")/test[ft:query(*, "should")] </code>
 		<xpath>$output/p</xpath>
 	</test>
 	<test output="xml">
-		<task>XML query test 16: wildcard context</task>
+		<task>Query test: wildcard context</task>
 		<code> doc("/db/lucene/text1.xml")/test/p[ft:query(*, "neun")] </code>
 		<expected>
 			<p>Sieben acht <b>neun</b> zehn acht.</p>
 		</expected>
 	</test>
 	<test output="xml">
-		<task>XML query test 17: wildcard context, no match</task>
+		<task>Query test: wildcard context, no match</task>
 		<code> doc("/db/lucene/text1.xml")/test/p[ft:query(*, "acht")] </code>
 		<expected/>
 	</test>
 	<test output="xml">
-		<task>XML query test: wildcard context, no match in nested</task>
+		<task>Query test: wildcard context, no match in nested</task>
 		<code> doc("/db/lucene/text1.xml")/test/x[ft:query(*, "nodes")] </code>
 		<expected/>
 	</test>
@@ -287,29 +299,29 @@
 		</expected>
 	</test>
 	<test output="xml">
-		<task>XML query test: wildcard context, match on descendant</task>
+		<task>Query test: wildcard context, match on descendant</task>
 		<code> doc("/db/lucene/text1.xml")/test[ft:query(.//*, "neun")] </code>
 		<xpath>$output/p</xpath>
 	</test>
 	<test output="xml">
-		<task>XML query test: wildcard context, match on self/child</task>
+		<task>Query test: wildcard context, match on self/child</task>
 		<code> doc("/db/lucene/text1.xml")//p[ft:query(./*, "neun")] </code>
 		<expected>
 			<p>Sieben acht <b>neun</b> zehn acht.</p>
 		</expected>
 	</test>
 	<test output="xml">
-		<task>XML query test: wildcard context, match descendant</task>
+		<task>Query test: wildcard context, match descendant</task>
 		<code> doc("/db/lucene/text1.xml")/x[ft:query(.//*, "nodes")] </code>
 		<expected/>
 	</test>
 	<test output="xml">
-		<task>XML query test: wildcard context, long path</task>
+		<task>Query test: wildcard context, long path</task>
 		<code> doc("/db/lucene/text1.xml")/x[ft:query(./y/*, "nodes")] </code>
 		<expected/>
 	</test>
 	<test output="xml">
-		<task>XML query test: wildcard context, no match in child</task>
+		<task>Query test: wildcard context, no match in child</task>
 		<code> doc("/db/lucene/text1.xml")/x[ft:query(./*, "nodes")] </code>
 		<expected/>
 	</test>
