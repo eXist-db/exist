@@ -22,12 +22,18 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
-import org.exist.xquery.*;
+import org.exist.xquery.Atomize;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
@@ -37,21 +43,30 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunData extends Function {
 
-    public final static FunctionSignature signature =
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("data", Function.BUILTIN_FUNCTION_NS),
-            "Returns the sequence of atomic values from the items in $items.",
+            "Atomizes the context item, replacing all nodes in the sequence by their typed values.",
+            new SequenceType[0],
+            new FunctionReturnSequenceType(Type.ATOMIC,
+                Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items")
+        ),
+        new FunctionSignature(
+            new QName("data", Function.BUILTIN_FUNCTION_NS),
+            "Atomizes the sequence $items, replacing all nodes in the sequence by their typed values.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("items", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The items")
             },
             new FunctionReturnSequenceType(Type.ATOMIC,
-                Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items"));
+                Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items")
+        )
+    };
 
     /**
      * @param context
      */
-    public FunData(XQueryContext context) {
+    public FunData(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -65,27 +80,36 @@ public class FunData extends Function {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());}
-        }
-        final Sequence arg = Atomize.atomize(getArgument(0).eval(contextSequence, contextItem));
-        Sequence result;
-        if (arg.isEmpty()) {
-            result = Sequence.EMPTY_SEQUENCE;
-        } else if (arg.hasOne()) {
-            result = arg;
-        } else {
-            result = new ValueSequence();
-            for (final SequenceIterator i = arg.iterate(); i.hasNext(); ) {
-                result.add(i.nextItem());
+			if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
             }
         }
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);}
-        return result;
+
+		final Sequence items;
+        if (getArgumentCount() == 1) {
+            items = Atomize.atomize(getArgument(0).eval(contextSequence, contextItem));
+        } else {
+            items = Atomize.atomize(contextItem.toSequence());
+        }
+
+        final Sequence result;
+        if (items.isEmpty()) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else if (items.hasOne()) {
+            result = items;
+        } else {
+            result = new ValueSequence(items);
+        }
+
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
+
+		return result;
     }
 }
