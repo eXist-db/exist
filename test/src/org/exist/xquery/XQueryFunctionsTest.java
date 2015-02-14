@@ -891,18 +891,40 @@ public class XQueryFunctionsTest extends TestCase {
         }
       }    
     
-    public void testData() {
-        String query = "let $a := <a><b>1</b><b>1</b></a> " +
-        	"for $b in $a/b[data(.) = '1'] return $b";
-        
-        try {
-          ResourceSet result = service.query(query);          
-          assertEquals(2, result.getSize());
-        } catch (XMLDBException e) {
-          e.printStackTrace();
-          fail(e.getMessage());
-        }
-      }  
+    public void testData0() throws XMLDBException {
+        final String query = "let $a := <a><b>1</b><b>1</b></a> " +
+                "for $b in $a/b[data() = '1'] return $b";
+
+        final ResourceSet result = service.query(query);
+        assertEquals(2, result.getSize());
+    }
+
+    public void testData0_atomization() throws XMLDBException {
+        final String query = "(<a>1<b>2</b>three</a>, <four>4</four>)/data()";
+
+        final ResourceSet result = service.query(query);
+        assertEquals(2, result.getSize());
+        assertEquals("12three", result.getResource(0).getContent().toString());
+        assertEquals("4", result.getResource(1).getContent());
+    }
+
+    public void testData1() throws XMLDBException {
+        final String query = "let $a := <a><b>1</b><b>1</b></a> " +
+                "for $b in $a/b[data() = '1'] return $b";
+
+        final ResourceSet result = service.query(query);
+            assertEquals(2, result.getSize());
+    }
+
+    public void testData1_atomization() throws XMLDBException {
+        final String query = "data((<a>1<b>2</b>three</a>, <four>4</four>, xs:integer(5)))";
+
+        final ResourceSet result = service.query(query);
+        assertEquals(3, result.getSize());
+        assertEquals("12three", result.getResource(0).getContent().toString());
+        assertEquals("4", result.getResource(1).getContent());
+        assertEquals("5", result.getResource(2).getContent());
+    }
     
     public void testCeiling() {
         String query = "let $a := <a><b>-1</b><b>-2</b></a> " +
