@@ -51,8 +51,7 @@
     <!-- additional set of ant tasks -->
     <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist.jar"/>
     
-    <!-- setup class path -->
-    <path id="classpath.core">
+    <path id="classpath.external">
         <fileset dir="${lib.core}">
             <include name="*.jar"/>
         </fileset>
@@ -62,20 +61,25 @@
         <fileset dir="${lib.endorsed}">
             <include name="*.jar"/>
         </fileset>
-
+        
         <fileset dir="${lib.user}">
             <include name="*.jar"/>
         </fileset>
         <fileset dir="${lib.extensions}" erroronmissingdir="false">
             <include name="*.jar"/>
         </fileset>
-
+        
         <fileset dir="extensions" erroronmissingdir="false">
             <include name="**/lib/*.jar"/>
         </fileset>
         <fileset dir="${tools.ant}/lib">
             <include name="*.jar"/>
         </fileset>
+    </path>
+    
+    <!-- setup class path -->
+    <path id="classpath.core">
+        <path refid="classpath.external"/>
 
         <pathelement path="exist.jar"/>
         <pathelement path="exist-optional.jar"/>
@@ -178,8 +182,11 @@
             fork="true" memoryInitialSize="512m" memoryMaximumSize="1024m">
 
             <include name="org/**"/>
-            <include name="org/exist/schema/**"/>
-            <classpath>
+
+            <!-- Do not compile Aspects here, compiled below by iajc -->
+	    <exclude name="org/exist/security/PermissionRequiredAspect.java"/>
+
+	    <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
                 <path refid="classpath.aspectj"/>
@@ -196,7 +203,7 @@
     <!-- =================================================================== -->
 	<target name="check.aspects.uptodate">
     	<uptodate property="aspectj.uptodate" targetfile="exist.jar">
-			<srcfiles dir= "${src}" includes="org/exist/security/*.java"/>
+			<srcfiles dir= "${src}" includes="org/exist/security/PermissionRequiredAspect.java"/>
     	</uptodate>
   	</target>
 
@@ -209,19 +216,20 @@
         <echo
             message="Compiling aspects with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
 
+        <path id="classpath.compile-aspectj">
+            <path refid="classpath.aspectj"/>
+            <path refid="classpath.external"/>
+            <path refid="classpath.jetty"/>
+        </path>
+
         <iajc debug="${build.debug}" deprecation="${build.deprecation}" destdir="${build.classes}"
             encoding="UTF-8" srcdir="${src}"
             source="${build.compiler.source}" target="${build.compiler.target}"
-            fork="true" maxmem="1024m" showWeaveInfo="true">
+            fork="true" maxmem="1024m" showWeaveInfo="true" inpath="${build.classes}">
 
-            <include name="org/**"/>
-            <!-- <include name="org/exist/security/**"/> -->
+            <include name="org/exist/security/PermissionRequiredAspect.java"/>
 
-            <classpath>
-                <path refid="classpath.aspectj"/>
-                <path refid="classpath.core"/>
-                <path refid="classpath.jetty"/>
-            </classpath>
+            <classpath refid="classpath.compile-aspectj"/>
         </iajc>
     </target>
 
