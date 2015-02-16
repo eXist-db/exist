@@ -178,24 +178,15 @@ public class FunHigherOrderFun extends BasicFunction {
         } else if (isCalledAs("fold-left")) {
             final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
             ref.analyze(cachedContextInfo);
-        	Sequence zero = args[1];
-        	Sequence input = args[0];
-        	while (!input.isEmpty()) {
-        		final SequenceIterator i = input.iterate();
-        		zero = ref.evalFunction(contextSequence, null, new Sequence[] { zero, i.nextItem().toSequence() });
-        		ValueSequence tail = new ValueSequence();
-        		while (i.hasNext()) {
-        			tail.add(i.nextItem());
-        		}
-        		input = tail;
-        	}
-        	result = zero;
+            final Sequence seq = args[0];
+            final Sequence zero = args[1];
+            result = foldLeft(ref, zero, seq.iterate(), contextSequence);
         } else if (isCalledAs("fold-right")) {
             final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
             ref.analyze(cachedContextInfo);
         	final Sequence zero = args[1];
-        	final Sequence input = args[0];
-        	result = foldRight(ref, zero, input, contextSequence);
+        	final Sequence seq = args[0];
+        	result = foldRight(ref, zero, seq, contextSequence);
         } else if (isCalledAs("map-pairs")) {
             final FunctionReference ref = (FunctionReference) args[0];
             ref.analyze(cachedContextInfo);
@@ -230,9 +221,20 @@ public class FunHigherOrderFun extends BasicFunction {
 		return result;
 	}
 
-	private Sequence foldRight(FunctionReference ref, Sequence zero, Sequence seq, Sequence contextSequence) throws XPathException {
-		if (seq.isEmpty())
-			{return zero;}
+    private Sequence foldLeft(final FunctionReference ref, Sequence accum, final SequenceIterator seq, final Sequence contextSequence) throws XPathException {
+        final Sequence refArgs[] = new Sequence[2];
+        while(seq.hasNext()) {
+            refArgs[0] = accum;
+            refArgs[1] = seq.nextItem().toSequence();
+            accum = ref.evalFunction(contextSequence, null, refArgs);
+        }
+        return accum;
+    }
+
+	private Sequence foldRight(final FunctionReference ref, final Sequence zero, final Sequence seq, final Sequence contextSequence) throws XPathException {
+		if (seq.isEmpty()) {
+            return zero;
+        }
 		final Sequence head = seq.itemAt(0).toSequence();
 		final Sequence tailResult = foldRight(ref, zero, seq.tail(), contextSequence);
 		return ref.evalFunction(contextSequence, null, new Sequence[] { head, tailResult });
