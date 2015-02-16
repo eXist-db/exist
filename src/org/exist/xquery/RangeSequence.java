@@ -34,42 +34,63 @@ public class RangeSequence extends AbstractSequence {
 		return Type.INTEGER;
 	}
 
+    @Override
 	public SequenceIterator iterate() throws XPathException {
-		return new RangeSequenceIterator(start.getLong());
+		return new RangeSequenceIterator(start.getLong(), end.getLong());
 	}
 
+    @Override
 	public SequenceIterator unorderedIterator() throws XPathException {
-		return new RangeSequenceIterator(start.getLong());
+		return new RangeSequenceIterator(start.getLong(), end.getLong());
 	}
 
-	private class RangeSequenceIterator implements SequenceIterator {
+    public SequenceIterator iterateInReverse() throws XPathException {
+        return new ReverseRangeSequenceIterator(start.getLong(), end.getLong());
+    }
 
-		long current;
+	private static class RangeSequenceIterator implements SequenceIterator {
+		private long current;
+        private final long end;
 
-		public RangeSequenceIterator(long start) {
+		public RangeSequenceIterator(final long start, final long end) {
 			this.current = start;
+            this.end = end;
 		}
 
 		public Item nextItem() {
-			try {
-				if (current <= end.getLong())
-					{return new IntegerValue(current++);}
-			} catch (final XPathException e) {
-				LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
-			}
-			return null;
+            if (current <= end) {
+                return new IntegerValue(current++);
+            } else {
+                return null;
+            }
 		}
 
 		public boolean hasNext() {
-			try {
-				return current <= end.getLong();
-			} catch (final XPathException e) {
-				LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
-				return false;
-			}
+            return current <= end;
 		}
-		
 	}
+
+    private static class ReverseRangeSequenceIterator implements SequenceIterator {
+        private final long start;
+        private long current;
+
+        public ReverseRangeSequenceIterator(final long start, final long end) {
+            this.start = start;
+            this.current = end;
+        }
+
+        public Item nextItem() {
+            if (current >= start) {
+                return new IntegerValue(current--);
+            } else {
+                return null;
+            }
+        }
+
+        public boolean hasNext() {
+            return current >= start;
+        }
+    }
 	
 	public int getItemCount() {
 		if (start.compareTo(end) > 0)

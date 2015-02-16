@@ -186,7 +186,13 @@ public class FunHigherOrderFun extends BasicFunction {
             ref.analyze(cachedContextInfo);
         	final Sequence zero = args[1];
         	final Sequence seq = args[0];
-        	result = foldRight(ref, zero, seq, contextSequence);
+            if(seq instanceof ValueSequence) {
+                result = foldRightNonRecursive(ref, zero, ((ValueSequence) seq).iterateInReverse(), contextSequence);
+            } else if(seq instanceof RangeSequence) {
+                result = foldRightNonRecursive(ref, zero, ((RangeSequence)seq).iterateInReverse(), contextSequence);
+            } else {
+                result = foldRight(ref, zero, seq, contextSequence);
+            }
         } else if (isCalledAs("map-pairs")) {
             final FunctionReference ref = (FunctionReference) args[0];
             ref.analyze(cachedContextInfo);
@@ -231,8 +237,24 @@ public class FunHigherOrderFun extends BasicFunction {
         return accum;
     }
 
+    /**
+     * High performance non-recurisve implementation of fold-right
+     * relies on the provided iterator moving in reverse
+     *
+     * @param seq An iterator which moves from right to left
+     */
+    private Sequence foldRightNonRecursive(final FunctionReference ref, Sequence accum, final SequenceIterator seq, final Sequence contextSequence) throws XPathException {
+        final Sequence refArgs[] = new Sequence[2];
+        while (seq.hasNext()) {
+            refArgs[0] = seq.nextItem().toSequence();
+            refArgs[1] = accum;
+            accum = ref.evalFunction(contextSequence, null, refArgs);
+        }
+        return accum;
+    }
+
 	private Sequence foldRight(final FunctionReference ref, final Sequence zero, final Sequence seq, final Sequence contextSequence) throws XPathException {
-		if (seq.isEmpty()) {
+        if (seq.isEmpty()) {
             return zero;
         }
 		final Sequence head = seq.itemAt(0).toSequence();
