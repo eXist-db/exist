@@ -491,9 +491,19 @@ return
         <expected>210</expected>
     </test>
     <test output="text">
+        <task>fn:fold-left function 3</task>
+        <code>fn:fold-left(1 to 5, "$zero", fn:concat("$f(", ?, ", ", ?, ")"))</code>
+        <expected>$f($f($f($f($f($zero, 1), 2), 3), 4), 5)</expected>
+    </test>
+    <test output="text">
         <task>fn:fold-left with partial application</task>
         <code>fn:fold-left(1 to 5, "", fn:concat(?, ".", ?))</code>
         <expected>.1.2.3.4.5</expected>
+    </test>
+    <test output="text">
+        <task>fn:fold-left non-associative</task>
+        <code>fold-left(1 to 1000000, 10, function($a, $b){ ($a - ($a - 1)) div $b })</code>
+        <expected>0.000001</expected>
     </test>
     <test output="text">
         <task>fn:fold-right function 1</task>
