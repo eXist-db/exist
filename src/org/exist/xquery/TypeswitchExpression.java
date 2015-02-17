@@ -44,12 +44,12 @@ public class TypeswitchExpression extends AbstractExpression {
      * Internal class used to hold a single case clause.
      */
     private class Case {
-        SequenceType type;
+        SequenceType[] types;
         Expression returnClause;
         QName variable;
         
-        public Case(SequenceType type, QName variable, Expression caseClause) {
-            this.type = type;
+        public Case(SequenceType[] types, QName variable, Expression caseClause) {
+            this.types = types;
             this.variable = variable;
             this.returnClause = caseClause;
         }
@@ -67,8 +67,8 @@ public class TypeswitchExpression extends AbstractExpression {
     /**
      * Add a case clause with a sequence type and an optional variable declaration.
      */
-    public void addCase(SequenceType type, QName var, Expression caseClause) {
-        cases.add(new Case(type, var, caseClause));
+    public void addCase(SequenceType[] types, QName var, Expression caseClause) {
+        cases.add(new Case(types, var, caseClause));
     }
     
     /**
@@ -88,20 +88,22 @@ public class TypeswitchExpression extends AbstractExpression {
         final LocalVariable mark = context.markLocalVariables(false);
         try {
         	for (int i = 0; i < cases.size(); i++) {
-        		final Case next = (Case) cases.get(i);
-        		if (checkType(next.type, opSeq)) {
-        			if (next.variable != null) {
-        				final LocalVariable var = new LocalVariable(next.variable);
-        				var.setSequenceType(next.type);
-        				var.setValue(opSeq);
-        				var.setContextDocs(operand.getContextDocSet());
-        				var.checkType();
-        				context.declareVariableBinding(var);
-        			}
-        			
-        			result = next.returnClause.eval(contextSequence);
-        			break;
-        		}
+        		final Case next = cases.get(i);
+                for (SequenceType type: next.types) {
+                    if (checkType(type, opSeq)) {
+                        if (next.variable != null) {
+                            final LocalVariable var = new LocalVariable(next.variable);
+                            var.setSequenceType(type);
+                            var.setValue(opSeq);
+                            var.setContextDocs(operand.getContextDocSet());
+                            var.checkType();
+                            context.declareVariableBinding(var);
+                        }
+
+                        result = next.returnClause.eval(contextSequence);
+                        break;
+                    }
+                }
         	}
         	
         	if (result == null) {
@@ -163,7 +165,7 @@ public class TypeswitchExpression extends AbstractExpression {
         		try {
         			if (next.variable != null) {
         				final LocalVariable var = new LocalVariable(next.variable);
-        				var.setSequenceType(next.type);
+        				var.setSequenceType(next.types[0]);
         				context.declareVariableBinding(var);
         			}
         			next.returnClause.analyze(contextInfo);
@@ -203,11 +205,16 @@ public class TypeswitchExpression extends AbstractExpression {
         for (int i = 0; i < cases.size(); i++) {
             final Case caseClause = (Case) cases.get(i);
             dumper.display("case ");
-            dumper.display(caseClause.type);
             if (caseClause.variable != null) {
                 dumper.display('$');
                 dumper.display(caseClause.variable.getStringValue());
                 dumper.display(" as ");
+            }
+            for (int j = 0; j < caseClause.types.length; j++) {
+                if (j > 0) {
+                    dumper.display(" | ");
+                }
+                dumper.display(caseClause.types[j]);
             }
             dumper.display(" return ");
             dumper.display(caseClause.returnClause).nl();
