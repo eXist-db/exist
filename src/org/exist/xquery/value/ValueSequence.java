@@ -181,7 +181,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
-	public SequenceIterator iterate() throws XPathException {
+	@Override
+    public SequenceIterator iterate() throws XPathException {
         sortInDocumentOrder();
 		return new ValueSequenceIterator();
 	}
@@ -189,10 +190,16 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#unorderedIterator()
 	 */
+    @Override
 	public SequenceIterator unorderedIterator() throws XPathException {
         sortInDocumentOrder();
         return new ValueSequenceIterator();
 	}
+
+    public SequenceIterator iterateInReverse() throws XPathException {
+        sortInDocumentOrder();
+        return new ReverseValueSequenceIterator();
+    }
 
     public boolean isOrdered() {
         return enforceOrder;
@@ -800,11 +807,37 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */
 		public Item nextItem() {
-			if(pos <= size)
-				{return values[pos++];}
+			if(pos <= size) {
+                return values[pos++];
+            }
 			return null;
 		}
 	}
+
+    private class ReverseValueSequenceIterator implements SequenceIterator {
+
+        private int pos = size - 1;
+
+        public ReverseValueSequenceIterator() {
+        }
+
+        /* (non-Javadoc)
+         * @see org.exist.xquery.value.SequenceIterator#hasNext()
+         */
+        public boolean hasNext() {
+            return pos >= 0;
+        }
+
+        /* (non-Javadoc)
+         * @see org.exist.xquery.value.SequenceIterator#nextItem()
+         */
+        public Item nextItem() {
+            if(pos >= 0) {
+                return values[pos--];
+            }
+            return null;
+        }
+    }
 
     private static class InMemoryNodeComparator implements Comparator<Item> {
 
