@@ -848,6 +848,12 @@ public class SVNWCClient extends SVNBasicClient {
                     String mimeType = props.getStringValue(SVNProperty.MIME_TYPE);
                     isBinary = Boolean.valueOf(SVNProperty.isBinaryMimeType(mimeType));
                 }
+
+		public SVNPropertyValue getProperty(String propertyName) throws SVNException {
+		    SVNProperties props = new SVNProperties();
+		    repos.getFile("", baseRev, props, null);
+		    return SVNPropertyValue.create(props.getStringValue(propertyName));
+		}
             });
         }
 
