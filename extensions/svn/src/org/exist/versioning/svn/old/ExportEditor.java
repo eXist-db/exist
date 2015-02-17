@@ -278,6 +278,8 @@ public class ExportEditor implements ISVNEditor {
 			// }
 			String charset = SVNTranslator.getCharset(fileProperties
 					.getStringValue(SVNProperty.CHARSET),
+								  fileProperties
+					.getStringValue(SVNProperty.MIME_TYPE),
 					currentFile.getPath(), options);
 			byte[] eolBytes = null;
 			if (SVNProperty.EOL_STYLE_NATIVE.equals(fileProperties

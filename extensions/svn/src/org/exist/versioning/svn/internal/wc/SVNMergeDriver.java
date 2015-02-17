@@ -1473,9 +1473,9 @@ public abstract class SVNMergeDriver extends SVNBasicClient implements ISVNMerge
             rightURL = myCurrentMergeSource.myURL2;
         }
         
-        SVNConflictVersion leftConflictVersion = new SVNConflictVersion(srcReposRoot, SVNURLUtil.getRelativeURL(srcReposRoot, leftURL), 
+        SVNConflictVersion leftConflictVersion = new SVNConflictVersion(srcReposRoot, SVNURLUtil.getRelativeURL(srcReposRoot, leftURL, false),
                 myCurrentMergeSource.myRevision1, kind);
-        SVNConflictVersion rightConflictVersion = new SVNConflictVersion(srcReposRoot, SVNURLUtil.getRelativeURL(srcReposRoot, rightURL), 
+        SVNConflictVersion rightConflictVersion = new SVNConflictVersion(srcReposRoot, SVNURLUtil.getRelativeURL(srcReposRoot, rightURL, false),
                 myCurrentMergeSource.myRevision2, kind);
         SVNTreeConflictDescription conflictDescription  = new SVNTreeConflictDescription(victim, kind, action, reason, SVNOperation.MERGE, 
                 leftConflictVersion, rightConflictVersion);
@@ -2415,8 +2415,8 @@ public abstract class SVNMergeDriver extends SVNBasicClient implements ISVNMerge
             if (myTarget.equals(child.myPath)) {
                 childRelativePath = "";
             } else {
-                childRelativePath = SVNPathUtil.getRelativePath(myTarget.getAbsolutePath(), 
-                		child.myPath.getAbsolutePath());
+                childRelativePath = SVNPathUtil.getRelativePath(myTarget.getAbsolutePath(),
+                               child.myPath.getAbsolutePath());
             }
             MergePath parent = null;
             SVNURL childURL1 = url1.appendPath(childRelativePath, false);

@@ -179,9 +179,13 @@ public class SVNPropertiesManager {
                 }
 
                 public boolean fileIsBinary() throws SVNException {
-                    SVNPropertyValue mimeType = getProperty(access, path, SVNProperty.MIME_TYPE);
+                    SVNPropertyValue mimeType = SVNPropertiesManager.getProperty(access, path, SVNProperty.MIME_TYPE);
                     return mimeType != null && SVNProperty.isBinaryMimeType(mimeType.getString());
                 }
+		public SVNPropertyValue getProperty(String propertyName) throws SVNException {
+		    SVNVersionedProperties wcProps = dir.getWCProperties(entry.getName());
+		    return wcProps.getPropertyValue(propertyName);
+	        }
             });
         }
 
