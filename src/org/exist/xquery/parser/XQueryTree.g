@@ -1666,9 +1666,10 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 		(
 			{
-				SequenceType type = new SequenceType();
 				PathExpr returnExpr = new PathExpr(context);
 				QName qn = null;
+				List<SequenceType> types = new ArrayList<SequenceType>(2);
+				SequenceType type = new SequenceType();
 			}
 			#(
 				"case"                     
@@ -1676,14 +1677,25 @@ throws PermissionDeniedException, EXistException, XPathException
 					var:VARIABLE_BINDING
 					{ qn = QName.parse(staticContext, var.getText()); }
 				)?
-                sequenceType [type]
+                (
+                    sequenceType[type]
+                    {
+                        types.add(type);
+                        type = new SequenceType();
+                    }
+                )+
                 // Need return as root in following to disambiguate 
                 // e.g. ( case a xs:integer ( * 3 3 ) )
                 // which gives xs:integer* and no operator left for 3 3 ...
                 // Now ( case a xs:integer ( return ( + 3 3 ) ) ) /ljo
-                #( "return"
-		        step= expr [returnExpr]
-				{ tswitch.addCase(type, qn, returnExpr); }
+                #(
+                    "return"
+                    step= expr [returnExpr]
+                    {
+                        SequenceType[] atype = new SequenceType[types.size()];
+                        atype = types.toArray(atype);
+                        tswitch.addCase(atype, qn, returnExpr);
+                    }
                 )
 			)
 
