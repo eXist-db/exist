@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.Collections;
 import java.util.Date;
@@ -458,11 +459,11 @@ public class SVNTranslator {
             return new SVNTranslatorOutputStream(out, eol, repair, keywords, expand);
         }
         if (expand) {
-            out = new SVNCharsetOutputStream(out, UTF8_CHARSET, Charset.forName(charset));
+            out = new SVNCharsetOutputStream(out, UTF8_CHARSET, Charset.forName(charset), CodingErrorAction.IGNORE, CodingErrorAction.IGNORE);
             return new SVNTranslatorOutputStream(out, eol, repair, keywords, expand);
         }
         out = new SVNTranslatorOutputStream(out, eol, repair, keywords, expand);
-        return new SVNCharsetOutputStream(out, Charset.forName(charset), UTF8_CHARSET);
+        return new SVNCharsetOutputStream(out, Charset.forName(charset), UTF8_CHARSET, CodingErrorAction.IGNORE, CodingErrorAction.IGNORE);
     }
 
     public static InputStream getTranslatingInputStream(InputStream in, String charset, byte[] eol, boolean repair, Map keywords, boolean expand) {
@@ -471,9 +472,9 @@ public class SVNTranslator {
         }
         if (expand) {
             in = new SVNTranslatorInputStream(in, eol, repair, keywords, expand);
-            return new SVNCharsetInputStream(in, UTF8_CHARSET, Charset.forName(charset));
+            return new SVNCharsetInputStream(in, UTF8_CHARSET, Charset.forName(charset), CodingErrorAction.IGNORE, CodingErrorAction.IGNORE);
         }
-        in = new SVNCharsetInputStream(in, Charset.forName(charset), UTF8_CHARSET);
+        in = new SVNCharsetInputStream(in, Charset.forName(charset), UTF8_CHARSET, CodingErrorAction.IGNORE, CodingErrorAction.IGNORE);
         return new SVNTranslatorInputStream(in, eol, repair, keywords, expand);
     }
 

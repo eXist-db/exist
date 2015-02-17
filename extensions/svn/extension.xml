@@ -17,10 +17,11 @@
     <echo>Retrieving 3rd party jar files '${extension.name}'</echo>
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask" classpathref="classpath.core"/>
     <fetch classpathref="classpath.core" dest="${existhome.dir}/${lib.user}" 
-                 url="http://www.svnkit.com/org.tmatesoft.svn_1.3.3.standalone.zip" classname="org.tmatesoft.svn.cli.SVN">
+           url="http://www.svnkit.com/org.tmatesoft.svn_1.8.8.standalone.zip" classname="org.tmatesoft.svn.cli.SVN">
          <patternset>
-            <include name="**/svnkit.jar"/>
-            <include name="**/svnkit-cli.jar"/>
+            <include name="**/svnkit-1.8.8.jar"/>
+            <include name="**/svnkit-cli-1.8.8.jar"/>
+            <include name="**/sequence-library-*.jar"/>
      </patternset>
    </fetch>
  </target>
