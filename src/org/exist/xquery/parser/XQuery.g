@@ -854,9 +854,14 @@ typeswitchExpr throws XPathException
 caseClause throws XPathException
 { String varName; }:
 	"case"^ ( caseVar )?
-	sequenceType caseReturn
+	sequenceTypeUnion caseReturn
 	;
-	
+
+sequenceTypeUnion throws XPathException
+:
+    sequenceType ( UNION! sequenceType )*
+    ;
+
 caseReturn throws XPathException
 :
     "return"^ exprSingle
