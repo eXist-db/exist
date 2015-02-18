@@ -165,7 +165,9 @@ public class TypeswitchExpression extends AbstractExpression {
         		try {
         			if (next.variable != null) {
         				final LocalVariable var = new LocalVariable(next.variable);
-        				var.setSequenceType(next.types[0]);
+                        if (next.types.length == 1) {
+                            var.setSequenceType(next.types[0]);
+                        }
         				context.declareVariableBinding(var);
         			}
         			next.returnClause.analyze(contextInfo);
