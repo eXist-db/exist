@@ -87,7 +87,7 @@ public class TypeswitchExpression extends AbstractExpression {
         
         final LocalVariable mark = context.markLocalVariables(false);
         try {
-        	for (int i = 0; i < cases.size(); i++) {
+        	for (int i = 0; i < cases.size() && result == null; i++) {
         		final Case next = cases.get(i);
                 for (SequenceType type: next.types) {
                     if (checkType(type, opSeq)) {

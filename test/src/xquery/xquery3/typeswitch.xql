@@ -27,6 +27,28 @@ function tsw:elements2() {
 };
 
 declare 
+    %test:assertEquals("a")
+function tsw:elements-match-first() {
+    let $node := <root><a/><b/><c/></root>
+    return
+        typeswitch($node/a)
+            case $a as element(a) return "a"
+            case $a as element() return "other element"
+            default return "unknown"
+};
+
+declare 
+    %test:assertEquals("other element")
+function tsw:elements-match-supertype() {
+    let $node := <root><a/><b/><c/></root>
+    return
+        typeswitch($node/b)
+            case $a as element(a) return "a"
+            case $a as element() return "other element"
+            default return "unknown"
+};
+
+declare 
     %test:assertEquals("unknown")
 function tsw:element-empty() {
     let $node := <root><a/><b/><c/></root>
