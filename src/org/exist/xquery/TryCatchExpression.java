@@ -240,15 +240,11 @@ public class TryCatchExpression extends AbstractExpression {
     // can reference it without raising an error. The purpose of this 
     // variable is to allow implementations to provide any additional 
     // information that might be useful.
-    private void addErrAdditional(XPathException xpe) throws XPathException {
-        final String additional = null;
+    private void addErrAdditional(final XPathException xpe) throws XPathException {
         final LocalVariable err_additional = new LocalVariable(QN_ADDITIONAL);
-        err_additional.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
-        if(additional == null){
-            err_additional.setValue(Sequence.EMPTY_SEQUENCE);
-        } else {
-            err_additional.setValue(new StringValue("to do"));
-        } 
+        err_additional.setSequenceType(new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
+        err_additional.setValue(Sequence.EMPTY_SEQUENCE);
+
         context.declareVariableBinding(err_additional);
     }
 
@@ -256,19 +252,18 @@ public class TryCatchExpression extends AbstractExpression {
     // The column number within the stylesheet module of the instruction 
     // where the error occurred, or an empty sequence if the information 
     // is not available. The value may be approximate.
-    private void addErrColumnNumber(XPathException xpe) throws XPathException {
-        Integer column_nr = null ; 
-        if (xpe != null) {
-            column_nr=xpe.getColumn();
-        }
-
+    private void addErrColumnNumber(final XPathException xpe) throws XPathException {
         final LocalVariable err_column_nr = new LocalVariable(QN_COLUMN_NUM);
-        err_column_nr.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
-        if(column_nr == null){
-            err_column_nr.setValue(Sequence.EMPTY_SEQUENCE);
+        err_column_nr.setSequenceType(new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
+
+        final Sequence colNum;
+        if (xpe != null) {
+            colNum = new IntegerValue(xpe.getColumn());
         } else {
-            err_column_nr.setValue(new IntegerValue(column_nr));
-        } 
+            colNum = Sequence.EMPTY_SEQUENCE;
+        }
+        err_column_nr.setValue(colNum);
+
         context.declareVariableBinding(err_column_nr);
     }
 
@@ -276,20 +271,18 @@ public class TryCatchExpression extends AbstractExpression {
     // The line number within the stylesheet module of the instruction 
     // where the error occurred, or an empty sequence if the information 
     // is not available. The value may be approximate.
-    private void addErrLineNumber(XPathException xpe) throws XPathException {
-
-        Integer line_nr = null ; 
-        if (xpe != null) {
-            line_nr=xpe.getLine();
-        }
-
+    private void addErrLineNumber(final XPathException xpe) throws XPathException {
         final LocalVariable err_line_nr = new LocalVariable(QN_LINE_NUM);
-        err_line_nr.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
-        if(line_nr == null){
-            err_line_nr.setValue(Sequence.EMPTY_SEQUENCE);
+        err_line_nr.setSequenceType(new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
+
+        final Sequence lineNum;
+        if (xpe != null) {
+            lineNum = new IntegerValue(xpe.getLine());
         } else {
-            err_line_nr.setValue(new IntegerValue(line_nr));
-        } 
+            lineNum = Sequence.EMPTY_SEQUENCE;
+        }
+        err_line_nr.setValue(lineNum);
+
         context.declareVariableBinding(err_line_nr);
     }
 
@@ -297,23 +290,18 @@ public class TryCatchExpression extends AbstractExpression {
     // The URI (or system ID) of the module containing the expression 
     // where the error occurred, or an empty sequence if the information 
     // is not available.
-    private void addErrModule(XPathException xpe) throws XPathException {
-        String module = null ; // to be defined where to get
-        if (xpe != null) {
-            final XACMLSource src = xpe.getXACMLSource();
-            if(src!=null){
-                module=src.getKey();
-            }
-        } 
-        
-
+    private void addErrModule(final XPathException xpe) throws XPathException {
         final LocalVariable err_module = new LocalVariable(QN_MODULE);
-        err_module.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
-        if(module == null){
-            err_module.setValue(Sequence.EMPTY_SEQUENCE);
+        err_module.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+
+        final Sequence module;
+        if (xpe != null && xpe.getXACMLSource() != null) {
+            module = new StringValue(xpe.getXACMLSource().getKey());
         } else {
-            err_module.setValue(new StringValue(module));
-        } 
+            module = Sequence.EMPTY_SEQUENCE;
+        }
+        err_module.setValue(module);
+
         context.declareVariableBinding(err_module);
     }
 
@@ -321,23 +309,24 @@ public class TryCatchExpression extends AbstractExpression {
     // Value associated with the error. For an error raised by calling 
     // the error function, this is the value of the third  argument 
     // (if supplied).
-    private void addErrValue(XPathException xpe) throws XPathException {
+    private void addErrValue(final XPathException xpe) throws XPathException {
         final LocalVariable err_value = new LocalVariable(QN_VALUE);
-        err_value.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_MORE));                           
-        
-        if (xpe != null) {
-            // Get errorcode from exception
-            Sequence sequence = xpe.getErrorVal();
-            if (sequence == null) {
-                sequence = Sequence.EMPTY_SEQUENCE;
-            }
-            err_value.setValue(sequence);
+        err_value.setSequenceType(new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
 
+        final Sequence errorValue;
+        if (xpe != null) {
+            // Get error value from exception
+            if(xpe.getErrorVal() != null) {
+                errorValue = xpe.getErrorVal();
+            } else {
+                errorValue = Sequence.EMPTY_SEQUENCE;
+            }
         } else {
             // fill data from throwable object
-            final StringValue value = new StringValue(getStackTrace(xpe));
-            err_value.setValue(value);
+            errorValue = new StringValue(getStackTrace(xpe));
         }
+        err_value.setValue(errorValue);
+
         context.declareVariableBinding(err_value);
     }
 
@@ -345,10 +334,11 @@ public class TryCatchExpression extends AbstractExpression {
     // A description of the error condition; an empty sequence if no 
     // description is available (for example, if the error function 
     // was called with one argument).
-    private void addErrDescription(XPathException xpe, ErrorCode errorCode) throws XPathException {
+    private void addErrDescription(final XPathException xpe, final ErrorCode errorCode) throws XPathException {
         String description = errorCode.getDescription();
-        if (description == null && xpe != null)
-            {description = xpe.getDetailMessage();}
+        if (description == null && xpe != null) {
+            description = xpe.getDetailMessage();
+        }
 
         final LocalVariable err_description = new LocalVariable(QN_DESCRIPTION);
         err_description.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
