@@ -49,6 +49,14 @@ public class TryCatchExpression extends AbstractExpression {
 
     protected static final Logger LOG = Logger.getLogger(TryCatchExpression.class);
 
+    private static final QName QN_CODE = new QName("code", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+    private static final QName QN_DESCRIPTION = new QName("description", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+    private static final QName QN_VALUE = new QName("value", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+    private static final QName QN_MODULE = new QName("module", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+    private static final QName QN_LINE_NUM = new QName("line-number", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+    private static final QName QN_COLUMN_NUM = new QName("column-number", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+    private static final QName QN_ADDITIONAL = new QName("additional", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+
     private final Expression tryTargetExpr;
     private final List<CatchClause> catchClauses = new ArrayList<CatchClause>();
 
@@ -234,9 +242,7 @@ public class TryCatchExpression extends AbstractExpression {
     // information that might be useful.
     private void addErrAdditional(XPathException xpe) throws XPathException {
         final String additional = null;
-        
-        final QName q_additional = new QName("additional", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
-        final LocalVariable err_additional = new LocalVariable( q_additional);
+        final LocalVariable err_additional = new LocalVariable(QN_ADDITIONAL);
         err_additional.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
         if(additional == null){
             err_additional.setValue(Sequence.EMPTY_SEQUENCE);
@@ -251,14 +257,12 @@ public class TryCatchExpression extends AbstractExpression {
     // where the error occurred, or an empty sequence if the information 
     // is not available. The value may be approximate.
     private void addErrColumnNumber(XPathException xpe) throws XPathException {
-
         Integer column_nr = null ; 
         if (xpe != null) {
             column_nr=xpe.getColumn();
-        } 
-        
-        final QName q_column_nr = new QName("column-number", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
-        final LocalVariable err_column_nr = new LocalVariable( q_column_nr);
+        }
+
+        final LocalVariable err_column_nr = new LocalVariable(QN_COLUMN_NUM);
         err_column_nr.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
         if(column_nr == null){
             err_column_nr.setValue(Sequence.EMPTY_SEQUENCE);
@@ -277,10 +281,9 @@ public class TryCatchExpression extends AbstractExpression {
         Integer line_nr = null ; 
         if (xpe != null) {
             line_nr=xpe.getLine();
-        } 
-        
-        final QName q_line_nr = new QName("line-number", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
-        final LocalVariable err_line_nr = new LocalVariable( q_line_nr);
+        }
+
+        final LocalVariable err_line_nr = new LocalVariable(QN_LINE_NUM);
         err_line_nr.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
         if(line_nr == null){
             err_line_nr.setValue(Sequence.EMPTY_SEQUENCE);
@@ -295,7 +298,6 @@ public class TryCatchExpression extends AbstractExpression {
     // where the error occurred, or an empty sequence if the information 
     // is not available.
     private void addErrModule(XPathException xpe) throws XPathException {
-      
         String module = null ; // to be defined where to get
         if (xpe != null) {
             final XACMLSource src = xpe.getXACMLSource();
@@ -304,8 +306,8 @@ public class TryCatchExpression extends AbstractExpression {
             }
         } 
         
-        final QName q_module = new QName("module", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
-        final LocalVariable err_module = new LocalVariable( q_module);
+
+        final LocalVariable err_module = new LocalVariable(QN_MODULE);
         err_module.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
         if(module == null){
             err_module.setValue(Sequence.EMPTY_SEQUENCE);
@@ -320,9 +322,7 @@ public class TryCatchExpression extends AbstractExpression {
     // the error function, this is the value of the third  argument 
     // (if supplied).
     private void addErrValue(XPathException xpe) throws XPathException {
-
-        final QName q_value = new QName("value", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
-        final LocalVariable err_value = new LocalVariable( q_value);
+        final LocalVariable err_value = new LocalVariable(QN_VALUE);
         err_value.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_MORE));                           
         
         if (xpe != null) {
@@ -346,13 +346,11 @@ public class TryCatchExpression extends AbstractExpression {
     // description is available (for example, if the error function 
     // was called with one argument).
     private void addErrDescription(XPathException xpe, ErrorCode errorCode) throws XPathException {
-
         String description = errorCode.getDescription();
         if (description == null && xpe != null)
             {description = xpe.getDetailMessage();}
-        
-        final QName q_description = new QName("description", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
-        final LocalVariable err_description = new LocalVariable( q_description);
+
+        final LocalVariable err_description = new LocalVariable(QN_DESCRIPTION);
         err_description.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE));
         if(description == null){
             err_description.setValue(Sequence.EMPTY_SEQUENCE);
@@ -364,12 +362,9 @@ public class TryCatchExpression extends AbstractExpression {
 
     // err:code	xs:QName	
     // The error code
-    private void addErrCode(QName errorCodeQname) throws XPathException {
-
+    private void addErrCode(final QName errorCodeQname) throws XPathException {
         final String code = errorCodeQname.getStringValue();
-        
-        final QName q_code = new QName("code", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
-        final LocalVariable err_code = new LocalVariable( q_code);
+        final LocalVariable err_code = new LocalVariable(QN_CODE);
         err_code.setSequenceType(new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE));
         err_code.setValue(new StringValue(code));
         context.declareVariableBinding(err_code);
