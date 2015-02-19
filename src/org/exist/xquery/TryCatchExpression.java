@@ -363,10 +363,9 @@ public class TryCatchExpression extends AbstractExpression {
     // err:code	xs:QName	
     // The error code
     private void addErrCode(final QName errorCodeQname) throws XPathException {
-        final String code = errorCodeQname.getStringValue();
         final LocalVariable err_code = new LocalVariable(QN_CODE);
         err_code.setSequenceType(new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE));
-        err_code.setValue(new StringValue(code));
+        err_code.setValue(new QNameValue(context, errorCodeQname));
         context.declareVariableBinding(err_code);
     }
     
