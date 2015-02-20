@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet>
+    <testName>braced uri literal</testName>
+    <description>
+        <p>Test xquery3 braced uri literals</p>
+        <author>Adam Retter</author>
+    </description>
+
+    <test>
+        <task>Test URIBracedLiteral in element name test</task>
+        <code><![CDATA[
+	xquery version "3.0";
+    declare namespace s = "https://stuff";
+
+    typeswitch(<s:create-collection/>)
+        case element(Q{https://stuff}create-collection) return
+            <create/>
+        default return
+            <default/>
+]]>
+        </code>
+        <expected><create/></expected>
+    </test>
+    <test>
+        <task>Test URIBracedLiteral as function name</task>
+        <code><![CDATA[
+	xquery version "3.0";
+    declare namespace o = "https://other";
+
+    declare function Q{https://other}hello() {
+        <hello/>
+    };
+
+    o:hello()
+]]>
+        </code>
+        <expected><hello/></expected>
+    </test>
+</TestSet>
