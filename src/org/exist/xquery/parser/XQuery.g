@@ -425,15 +425,27 @@ eqName! returns [String name]
 {
 	name= null;
 }
-:	(name=qName! | name=uriQualifiedName!)
+:	( name=qName! | name=uriQualifiedName! )
 ;
 
-uriQualifiedName! returns [String name]
+uriQualifiedName returns [String name]
 {
-	name= null;
+    name = null;
+    String uri;
 }
-:	sl:STRING_LITERAL ":" nc:NCNAME
-        { name = sl.getText() + ":" + nc.getText(); }
+:
+    ( uri=bracedUriLiteral name=ncnameOrKeyword )
+    // convert to Clark notation
+    { name = "{" + uri + "}" + name; }
+;
+
+bracedUriLiteral returns [String uri]
+{
+    uri= null;
+}
+:
+    lit:BRACED_URI_LITERAL
+    { uri = lit.getText(); }
 ;
 
 functionDeclUp! throws XPathException
@@ -2185,7 +2197,15 @@ options {
 	'\''! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '\''! '\'' ) | ~ ( '\'' | '&' ) )*
 	'\''!
 	;
-	
+
+protected BRACED_URI_LITERAL
+options {
+    paraphrase="braced uri literal";
+}
+:
+    'Q'! LCURLY! ( PREDEFINED_ENTITY_REF | CHAR_REF |  ~( '&' | '{' | '}' ) )* RCURLY!
+;
+
 protected QUOT_ATTRIBUTE_CONTENT
 options {
 	testLiterals=false;
@@ -2382,6 +2402,8 @@ options {
 	|
 	{ parseStringLiterals && !inElementContent }?
 	STRING_LITERAL { $setType(STRING_LITERAL); }
+	|
+	BRACED_URI_LITERAL { $setType(BRACED_URI_LITERAL); }
 	|
 	( '|' '|' ) =>
 	CONCAT { $setType(CONCAT); }
