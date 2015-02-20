@@ -209,24 +209,8 @@ catch err:FORG0001 | err:XPTY0004 {
         </code>
         <expected>0</expected>
     </test>
+
 <!--
-    <test output="text">
-        <task>This try/catch expression shows how to bind variables to
-        the error code, error description, and error value. Since the
-        CatchErrorList is a wildcard, it catches any error:
-        </task>
-        <code><![CDATA[
-try {
-    fn:error(fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000'))
-}
-catch * ($errcode, $errdesc, $errval) {
-    $errcode, $errdesc
-}
-]]>
-        </code>
-        <expected>err:FOER0000</expected>
-    </test>
- 
     <test output="text">
         <task>Errors raised by using the result of a try/catch expression
         are not caught, since they are outside the scope of the try expression.
@@ -325,5 +309,29 @@ catch * {
         </code>
         <expected>err:FOER0000  module:  String ( 4 , 5 )</expected>
     </test>
-    
+
+<test output="text">
+    <task>Check that the $err:code is the correct QName</task>
+    <code><![CDATA[
+xquery version '3.0';
+try {
+    let $xq := "
+	    let $x as xs:string := 1
+	    return $x
+    " return
+	    util:eval($xq)
+}
+catch * {
+    <code>
+        <ns>{namespace-uri-from-QName($err:code)}</ns>
+        <local-name>{local-name-from-QName($err:code)}</local-name>
+    </code>
+}
+]]>
+    </code>
+    <expected>
+        <code><ns>http://www.w3.org/2005/xqt-errors/</ns><local-name>XPTY0004</local-name></code>
+    </expected>
+</test>
+
 </TestSet>

@@ -33,6 +33,7 @@ import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -139,10 +140,38 @@ public abstract class TestRunner {
         } else {
             final NodeList nlExpected = test.getElementsByTagName("expected");
             if(nlExpected.getLength() == 1) {
-                return nlExpected.item(0).getNodeValue();
+                final Node expected = nlExpected.item(0);
+                final Element expectedElement = getFirstChildElement(expected);
+                if(expectedElement != null) {
+                    return serialize(expectedElement);
+                } else {
+                    return nlExpected.item(0).getNodeValue();
+                }
             }
         }
         return "";
+    }
+
+    private Element getFirstChildElement(final Node n) {
+        final NodeList nl = n.getChildNodes();
+        for(int i = 0; i < nl.getLength(); i++) {
+            if(nl.item(i) instanceof Element) {
+                return (Element)nl.item(i);
+            }
+        }
+        return null;
+    }
+
+    private final String serialize(final Element elem) {
+        try(final StringWriter writer = new StringWriter()) {
+            final Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.transform(new DOMSource(elem), new StreamResult(writer));
+            return writer.toString();
+        } catch(final TransformerException | IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private final String extractActual(final Element test) throws TransformerException {
