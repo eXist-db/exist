@@ -161,6 +161,15 @@ ex:apply(function($a) { upper-case($a) }, ("Hello", "world!"))
         <expected>HELLO WORLD!</expected>
     </test>
     <test output="text">
+        <task>Immediate execution of inline function</task>
+        <code><![CDATA[xquery version "3.0";
+
+function($x) { $x }("Hello")
+]]>
+        </code>
+        <expected>Hello</expected>
+    </test>
+    <test output="text">
         <task>Combine named function reference, dynamic calls and inline functions</task>
         <code><![CDATA[xquery version "3.0";
 
