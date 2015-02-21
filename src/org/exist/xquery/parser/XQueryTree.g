@@ -832,9 +832,9 @@ throws XPathException
 		}
         )
         |
-        #(qn:QNAME
+        #(eq:EQNAME
         {
-			catchErrors.add(qn.toString());
+			catchErrors.add(eq.toString());
 		}   
         )
 	)
@@ -944,20 +944,20 @@ throws XPathException
 			(
 				WILDCARD
 				|
-				qn1:QNAME
+				eq1:EQNAME
 				{
 					try {
-						QName qname= QName.parse(staticContext, qn1.getText());
+						QName qname= QName.parse(staticContext, eq1.getText());
 						type.setNodeName(qname);
 					} catch (XPathException e) {
 						e.setLocation(lelement.getLine(), lelement.getColumn());
                     	throw e;
 					}
 				}
-				( qn12:QNAME
+				( eq12:EQNAME
 					{
 						try {
-	                        QName qname12= QName.parse(staticContext, qn12.getText());
+	                        QName qname12= QName.parse(staticContext, eq12.getText());
 	                        TypeTest test = new TypeTest(Type.getType(qname12));
 	                    } catch (XPathException e) {
 							e.setLocation(lelement.getLine(), lelement.getColumn());
@@ -972,10 +972,10 @@ throws XPathException
 			lattr:ATTRIBUTE_TEST 
 			{ type.setPrimaryType(Type.ATTRIBUTE); }
 			(
-				qn2:QNAME
+				eq2:EQNAME
 				{
 					try {
-            QName qname = QName.parse(staticContext, qn2.getText(), XMLConstants.DEFAULT_NS_PREFIX);
+            QName qname = QName.parse(staticContext, eq2.getText(), XMLConstants.DEFAULT_NS_PREFIX);
             qname = new QName(qname, ElementValue.ATTRIBUTE);
 						type.setNodeName(qname);
 					} catch (XPathException e) {
@@ -985,10 +985,10 @@ throws XPathException
 				}
 				|
 				WILDCARD
-				( qn21:QNAME
+				( eq21:EQNAME
 					{
 						try {
-	                        QName qname21= QName.parse(staticContext, qn21.getText());
+	                        QName qname21= QName.parse(staticContext, eq21.getText());
 	                        TypeTest test = new TypeTest(Type.getType(qname21));
 	                    } catch (XPathException e) {
 		                    e.setLocation(lattr.getLine(), lattr.getColumn());
@@ -1029,10 +1029,10 @@ throws XPathException
             (
                 #( lelement2:"element"
                     (
-                    dnqn:QNAME
+                    dneq:EQNAME
                     {
                     	try {
-						    QName qname= QName.parse(staticContext, dnqn.getText());
+						    QName qname= QName.parse(staticContext, dneq.getText());
 	                        type.setNodeName(qname);
 	                        NameTest test= new NameTest(Type.DOCUMENT, qname);
 	                    } catch(XPathException e) {
@@ -1045,10 +1045,10 @@ throws XPathException
                     {
                         TypeTest test= new TypeTest(Type.DOCUMENT);
                     }
-                        ( dnqn2:QNAME
+                        ( dneq2:EQNAME
                             {
                             	try {
-		                            QName qname = QName.parse(staticContext, dnqn2.getText());
+		                            QName qname = QName.parse(staticContext, dneq2.getText());
 		                            test = new TypeTest(Type.getType(qname));
 		                        } catch(XPathException e) {
 		                        	e.setLocation(lelement2.getLine(), lelement2.getColumn());
@@ -1059,7 +1059,7 @@ throws XPathException
                     )?
                 )
                 |
-                #( "schema-element" QNAME )
+                #( "schema-element" EQNAME )
             )?
 		)
 	)
@@ -1944,20 +1944,20 @@ throws PermissionDeniedException, EXistException, XPathException
 		XQueryAST ast = null;
 	}
 	(
-		qn:QNAME
+		eq:EQNAME
 		{
 			try {
-				QName qname= QName.parse(staticContext, qn.getText());
+				QName qname= QName.parse(staticContext, eq.getText());
 				if (axis == Constants.ATTRIBUTE_AXIS) {
-	        qname = new QName(qname, ElementValue.ATTRIBUTE);
-	        test= new NameTest(Type.ATTRIBUTE, qname);
+	                qname = new QName(qname, ElementValue.ATTRIBUTE);
+	                test= new NameTest(Type.ATTRIBUTE, qname);
 
-        } else {
-          test= new NameTest(Type.ELEMENT, qname);
-        }
-				ast = qn;
+                } else {
+                    test= new NameTest(Type.ELEMENT, qname);
+                }
+				ast = eq;
 			} catch(XPathException ex1) {
-				ex1.setLocation(qn.getLine(), qn.getColumn());
+				ex1.setLocation(eq.getLine(), eq.getColumn());
 				throw ex1;
 			}
 		}
@@ -2025,16 +2025,16 @@ throws PermissionDeniedException, EXistException, XPathException
 				ast = e;
 			}
 			(
-				qn2:QNAME 
+				eq2:EQNAME
 				{ 
-					QName qname= QName.parse(staticContext, qn2.getText());
+					QName qname= QName.parse(staticContext, eq2.getText());
 					test= new NameTest(Type.ELEMENT, qname);
 				}
 				|
 				WILDCARD
-				( qn21:QNAME
+				( eq21:EQNAME
 					{
-                        QName qname= QName.parse(staticContext, qn21.getText());
+                        QName qname= QName.parse(staticContext, eq21.getText());
                         test = new TypeTest(Type.getType(qname));
 					}
 				)?
@@ -2047,18 +2047,18 @@ throws PermissionDeniedException, EXistException, XPathException
 				ast = att;
 			}
 			(
-				qn3:QNAME 
+				eq3:EQNAME
 				{ 
-					QName qname = QName.parse(staticContext, qn3.getText());
+					QName qname = QName.parse(staticContext, eq3.getText());
 					qname = new QName(qname, ElementValue.ATTRIBUTE);
 					test= new NameTest(Type.ATTRIBUTE, qname);
 					axis= Constants.ATTRIBUTE_AXIS;
 				}
 				|
 				WILDCARD
-				( qn31:QNAME
+				( eq31:EQNAME
 					{
-                        QName qname= QName.parse(staticContext, qn31.getText());
+                        QName qname= QName.parse(staticContext, eq31.getText());
                         test = new TypeTest(Type.getType(qname));
 					}
 				)?
@@ -2105,23 +2105,23 @@ throws PermissionDeniedException, EXistException, XPathException
             (
                 #( "element"
                     (
-                    dnqn:QNAME
+                    dneq:EQNAME
                         {
-                        QName qname= QName.parse(staticContext, dnqn.getText());
+                        QName qname= QName.parse(staticContext, dneq.getText());
                         test= new NameTest(Type.DOCUMENT, qname);
                         }
                     |
                     WILDCARD
-                        ( dnqn1:QNAME
+                        ( dneq1:EQNAME
                             {
-                            QName qname= QName.parse(staticContext, dnqn1.getText());
+                            QName qname= QName.parse(staticContext, dneq1.getText());
                             test= new TypeTest(Type.getType(qname));
                             }
                         )?
                     )?
                 )
                 |
-                #( "schema-element" QNAME )
+                #( "schema-element" EQNAME )
             )?
 	)
 	{
@@ -2135,7 +2135,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	at:AT
 	{ QName qname= null; }
 	(
-		attr:QNAME
+		attr:EQNAME
 		{
           qname= QName.parse(staticContext, attr.getText(), "");
           qname = new QName(qname, ElementValue.ATTRIBUTE);

@@ -29,6 +29,8 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import javax.xml.XMLConstants;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents a QName, consisting of a local name, a namespace URI and a prefix.
@@ -259,12 +261,15 @@ public class QName implements Comparable<QName> {
         }
     }
 
+    private final static Pattern ptnClarkNotation = Pattern.compile("\\{([^&{}]*)\\}([^&{}:]+)");
+
     /**
      * Parses the given string into a QName. The method uses context to look up
      * a namespace URI for an existing prefix.
      * 
      * @param context
-     * @param qname
+     * @param qname The QName may be either in Clark Notation
+     *              e.g. `{namespace}local-part` or XDM literal qname form e.g. `prefix:local-part`.
      * @param defaultNS the default namespace to use if no namespace prefix is present.
      * @return QName
      * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
@@ -272,31 +277,41 @@ public class QName implements Comparable<QName> {
     public static QName parse(final Context context, final String qname, final String defaultNS)
             throws XPathException {
 
-        final String prefix = extractPrefix(qname);
+        final Matcher clarkNotation = ptnClarkNotation.matcher(qname);
 
-        String namespaceURI;
-        if (prefix != null) {
-            namespaceURI = context.getURIForPrefix(prefix);
-            if(namespaceURI == null) {
-                throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + prefix);
-            }
+        if(clarkNotation.matches()) {
+            //parse as clark notation
+            final String ns = clarkNotation.group(1);
+            final String localPart = clarkNotation.group(2);
+            return new QName(localPart, ns);
         } else {
-            namespaceURI = defaultNS;
+            final String prefix = extractPrefix(qname);
+            String namespaceURI;
+            if (prefix != null) {
+                namespaceURI = context.getURIForPrefix(prefix);
+                if (namespaceURI == null) {
+                    throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + prefix);
+                }
+            } else {
+                namespaceURI = defaultNS;
+            }
+            if (namespaceURI == null) {
+                namespaceURI = XMLConstants.NULL_NS_URI;
+            }
+            return new QName(extractLocalName(qname), namespaceURI, prefix);
         }
-        if (namespaceURI == null) {
-            namespaceURI = XMLConstants.NULL_NS_URI;
-        }
-        return new QName(extractLocalName(qname), namespaceURI, prefix);
     }
 
     /**
      * Parses the given string into a QName. The method uses context to look up
-     * a namespace URI for an existing prefix.
+     * a namespace URI for an optional existing prefix.
      * 
      * This method uses the default element namespace for qnames without prefix.
      * 
      * @param context
-     * @param qname
+     * @param qname The QName may be either in Clark Notation
+     *              e.g. `{namespace}local-part` or XDM literal qname form
+     *              e.g. `prefix:local-part` or `local-part`.
      * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
      */
     public static QName parse(final Context context, final String qname) throws XPathException {

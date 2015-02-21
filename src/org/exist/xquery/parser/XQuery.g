@@ -119,6 +119,7 @@ options {
 imaginaryTokenDefinitions
 :
 	QNAME
+	EQNAME
 	PREDICATE 
 	FLWOR 
 	PARENTHESIZED 
@@ -338,10 +339,16 @@ varDeclUp! throws XPathException
 	decl:"declare"! v:varDecl[#decl, null] { #varDeclUp = #v; }
 ;
 
+varName returns [String name]
+:
+    ( name=eq:eqName )
+    { #varName.copyLexInfo(#eq); }
+;
+
 varDecl [XQueryAST decl, XQueryAST ann] throws XPathException
 { String varName= null; }
 :
-	"variable"! DOLLAR! varName=qName! ( typeDeclaration )?
+	"variable"! DOLLAR! varName=varName! ( typeDeclaration )?
 	(
 		LCURLY! e1:expr RCURLY! // deprecated
 		|
@@ -356,11 +363,11 @@ varDecl [XQueryAST decl, XQueryAST ann] throws XPathException
 	;
 
 optionDecl
-{ String qn = null; }
+{ String eq = null; }
 :
-	decl:"declare"! opt:"option"! qn=qName! STRING_LITERAL
+	decl:"declare"! opt:"option"! eq=eqName! STRING_LITERAL
 	{
-		#optionDecl = #(#[OPTION, qn], #optionDecl);
+		#optionDecl = #(#[OPTION, eq], #optionDecl);
 		#optionDecl.copyLexInfo(#decl);
 	}
 	;
@@ -421,19 +428,31 @@ annotation
         { #annotation= #(#[ANNOT_DECL, name], #annotation); }
 ;
 
-eqName! returns [String name]
+eqName returns [String name]
 {
 	name= null;
 }
-:	(name=qName! | name=uriQualifiedName!)
+:	( name=qName | name=uriQualifiedName )
 ;
 
-uriQualifiedName! returns [String name]
+uriQualifiedName returns [String name]
 {
-	name= null;
+    name = null;
+    String uri;
 }
-:	sl:STRING_LITERAL ":" nc:NCNAME
-        { name = sl.getText() + ":" + nc.getText(); }
+:
+    ( uri=bracedUriLiteral name=ncnameOrKeyword )
+    // convert to Clark notation
+    { name = "{" + uri + "}" + name; }
+;
+
+bracedUriLiteral returns [String uri]
+{
+    uri= null;
+}
+:
+    lit:BRACED_URI_LITERAL
+    { uri = lit.getText(); }
 ;
 
 functionDeclUp! throws XPathException
@@ -444,7 +463,7 @@ functionDeclUp! throws XPathException
 functionDecl [XQueryAST ann] throws XPathException
 { String name= null; }
 :
-	"function"! name=qName! lp:LPAREN! ( paramList )?
+	"function"! name=eqName! lp:LPAREN! ( paramList )?
 	RPAREN! ( returnType )?
 	( functionBody | "external" )
 	{ 
@@ -480,7 +499,7 @@ paramList throws XPathException
 param throws XPathException
 { String varName= null; }
 :
-	DOLLAR! varName=qName ( t:typeDeclaration )?
+	DOLLAR! varName=eqName ( t:typeDeclaration )?
 	{ #param= #(#[VARIABLE_BINDING, varName], #t); }
 	;
 
@@ -746,7 +765,7 @@ letClause throws XPathException
 inVarBinding throws XPathException
 { String varName; }
 :
-	DOLLAR! varName=v:qName! ( typeDeclaration )?
+	DOLLAR! varName=v:varName! ( typeDeclaration )?
 	( positionalVar )?
 	"in"! exprSingle
 	{ 
@@ -758,14 +777,14 @@ inVarBinding throws XPathException
 positionalVar
 { String varName; }
 :
-	"at" DOLLAR! varName=qName
+	"at" DOLLAR! varName=varName
 	{ #positionalVar= #[POSITIONAL_VAR, varName]; }
 	;
 
 letVarBinding throws XPathException
 { String varName; }
 :
-	DOLLAR! varName=v:qName! ( typeDeclaration )?
+	DOLLAR! varName=v:varName! ( typeDeclaration )?
 	COLON! EQ! exprSingle
 	{ 
 		#letVarBinding= #(#[VARIABLE_BINDING, varName], #letVarBinding); 
@@ -806,7 +825,7 @@ groupingSpecList throws XPathException
 groupingSpec throws XPathException
 	{ String groupKeyVarName; }
 	:
-	DOLLAR! groupKeyVarName=qName! ( COLON! EQ! exprSingle )? ( "collation" STRING_LITERAL )?
+	DOLLAR! groupKeyVarName=varName! ( COLON! EQ! exprSingle )? ( "collation" STRING_LITERAL )?
     { #groupingSpec = #(#[VARIABLE_BINDING, groupKeyVarName], #groupingSpec); }
     ; 
  
@@ -825,7 +844,7 @@ quantifiedExpr throws XPathException:
 
 quantifiedInVarBinding throws XPathException
 { String varName; }:
-	DOLLAR! varName=qName! ( typeDeclaration )? "in"! exprSingle
+	DOLLAR! varName=varName! ( typeDeclaration )? "in"! exprSingle
 	{ #quantifiedInVarBinding = #(#[VARIABLE_BINDING, varName], #quantifiedInVarBinding); }
 	;
 
@@ -869,13 +888,13 @@ caseReturn throws XPathException
 
 caseVar throws XPathException
 { String varName; }:
-	DOLLAR! varName=qName! "as"
+	DOLLAR! varName=varName! "as"
 	{ #caseVar = #[VARIABLE_BINDING, varName]; }
 	;
 
 defaultVar throws XPathException
 { String varName; }:
-	DOLLAR! varName=qName!
+	DOLLAR! varName=varName!
 	{ #defaultVar = #[VARIABLE_BINDING, varName]; }
 	;
 
@@ -987,7 +1006,7 @@ extensionExpr throws XPathException
 pragma throws XPathException
 { String name = null; }
 :
-	PRAGMA_START! name=qName! PRAGMA_END
+	PRAGMA_START! name=eqName! PRAGMA_END
 	{
         lexer.wsExplicit = false;
 		#pragma = #(#[PRAGMA, name], #pragma);
@@ -1117,9 +1136,9 @@ nameTest throws XPathException
 	( ( ncnameOrKeyword COLON STAR ) | STAR )
 	=> wildcard
 	|
-	name=n:qName
+	name=n:eqName
 	{ 
-		#nameTest= #[QNAME, name]; 
+		#nameTest= #[EQNAME, name];
 		#nameTest.copyLexInfo(#n);
 	}
 	;
@@ -1263,7 +1282,7 @@ unorderedExpr throws XPathException
 varRef throws XPathException
 { String varName = null; }
 :
-	DOLLAR! varName=v:qName
+	DOLLAR! varName=v:varName
 	{ 
 		#varRef= #[VARIABLE_REF, varName];
 		#varRef.copyLexInfo(#v);
@@ -1329,7 +1348,7 @@ inlineFunctionExpr throws XPathException
 functionCall throws XPathException
 { String fnName= null; }
 :
-	fnName=q:qName
+	fnName=eq:eqName
 	{ 
         #functionCall = #[FUNCTION, fnName];
     }
@@ -1337,7 +1356,7 @@ functionCall throws XPathException
 		params:argumentList
 		{ #functionCall= #(#[FUNCTION, fnName], #params); }
 	)?
-    { #functionCall.copyLexInfo(#q); }
+    { #functionCall.copyLexInfo(#eq); }
 	;
 
 argumentList throws XPathException
@@ -1369,16 +1388,16 @@ anyKindTest : "node"^ LPAREN! RPAREN! ;
 elementTest : "element"^ LPAREN! ( elementNameOrWildcard ( COMMA! typeName ( QUESTION )? )?  )? RPAREN! ;
 
 typeName 
-{ String qn = null; }: 
-	qn=qName 
-	{ #typeName = #[QNAME, qn]; }
+{ String eq = null; }:
+	eq=eqName
+	{ #typeName = #[EQNAME, eq]; }
 	;
 	
 elementNameOrWildcard 
-{ String qn = null; }:
+{ String eq = null; }:
 	STAR { #elementNameOrWildcard = #[WILDCARD, "*"]; }
 	|
-	qn=qName { #elementNameOrWildcard = #[QNAME, qn]; }
+	eq=eqName { #elementNameOrWildcard = #[EQNAME, eq]; }
 	;
 
 attributeTest : "attribute"! LPAREN! ( attributeNameOrWildcard ( COMMA! typeName ( QUESTION )? )? ) ? RPAREN! 
@@ -1386,10 +1405,10 @@ attributeTest : "attribute"! LPAREN! ( attributeNameOrWildcard ( COMMA! typeName
 	;
 
 attributeNameOrWildcard
-{ String qn = null; }:
+{ String eq = null; }:
 	STAR { #attributeNameOrWildcard = #[WILDCARD, "*"]; }
 	|
-	qn=qName { #attributeNameOrWildcard = #[QNAME, qn]; }
+	eq=eqName { #attributeNameOrWildcard = #[EQNAME, eq]; }
 	;
 	
 commentTest : "comment"^ LPAREN! RPAREN! ;
@@ -1398,7 +1417,7 @@ piTest : "processing-instruction"^ LPAREN! ( NCNAME | STRING_LITERAL )? RPAREN! 
 
 documentTest : "document-node"^ LPAREN! ( elementTest | schemaElementTest )? RPAREN! ;
 
-schemaElementTest : "schema-element"^ LPAREN! qName RPAREN! ;
+schemaElementTest : "schema-element"^ LPAREN! eqName RPAREN! ;
 
 qName returns [String name]
 {
@@ -1444,28 +1463,28 @@ computedConstructor throws XPathException
 
 compElemConstructor throws XPathException
 {
-	String qn;
+	String eq;
 }
 :
 	( "element" LCURLY ) =>
 	"element"! LCURLY! expr RCURLY! LCURLY! (expr)? RCURLY!
 	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR], #compElemConstructor); }
 	|
-	"element"! qn=qName LCURLY! (e3:expr)? RCURLY!
-	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
+	"element"! eq=eqName LCURLY! (e3:expr)? RCURLY!
+	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR, eq], #[STRING_LITERAL, eq], #e3); }
 	;
 
 compAttrConstructor throws XPathException
 {
-	String qn;
+	String eq;
 }
 :
 	( "attribute" LCURLY ) =>
 	"attribute"! LCURLY! e1:expr RCURLY! e2:compConstructorValue
 	{ #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR], #compAttrConstructor); }
 	|
-	"attribute"! qn=qName e3:compConstructorValue
-    { #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
+	"attribute"! eq=eqName e3:compConstructorValue
+    { #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR, eq], #[STRING_LITERAL, eq], #e3); }
 	;
 
 compConstructorValue throws XPathException
@@ -2185,7 +2204,15 @@ options {
 	'\''! ( PREDEFINED_ENTITY_REF | CHAR_REF | ( '\''! '\'' ) | ~ ( '\'' | '&' ) )*
 	'\''!
 	;
-	
+
+protected BRACED_URI_LITERAL
+options {
+    paraphrase="braced uri literal";
+}
+:
+    'Q'! LCURLY! ( PREDEFINED_ENTITY_REF | CHAR_REF |  ~( '&' | '{' | '}' ) )* RCURLY!
+;
+
 protected QUOT_ATTRIBUTE_CONTENT
 options {
 	testLiterals=false;
@@ -2382,6 +2409,8 @@ options {
 	|
 	{ parseStringLiterals && !inElementContent }?
 	STRING_LITERAL { $setType(STRING_LITERAL); }
+	|
+	BRACED_URI_LITERAL { $setType(BRACED_URI_LITERAL); }
 	|
 	( '|' '|' ) =>
 	CONCAT { $setType(CONCAT); }
