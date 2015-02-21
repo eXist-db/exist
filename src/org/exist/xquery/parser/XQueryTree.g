@@ -145,6 +145,47 @@ options {
                      || ns.equals(Namespaces.XQUERY_OPTIONS_NS));
 		}
 	}
+
+	private static void processAnnotations(List annots, FunctionSignature signature) {
+	    Annotation[] anns = new Annotation[annots.size()];
+
+        //iterate the declare Annotations
+        for(int i = 0; i < anns.length; i++) {
+           List la = (List)annots.get(i);
+
+           //extract the Value for the Annotation
+           LiteralValue[] aValue;
+           if(la.size() > 1) {
+
+            PathExpr aPath = (PathExpr)la.get(1);
+
+            aValue = new LiteralValue[aPath.getSubExpressionCount()];
+            for(int j = 0; j < aValue.length; j++) {
+                aValue[j] = (LiteralValue)aPath.getExpression(j);
+            }
+           } else {
+            aValue = new LiteralValue[0];
+           }
+
+           Annotation a = new Annotation((QName)la.get(0), aValue, signature);
+           anns[i] = a;
+        }
+
+        //set the Annotations on the Function Signature
+        signature.setAnnotations(anns);
+	}
+
+	private static void processParams(List varList, UserDefinedFunction func, FunctionSignature signature)
+	throws XPathException {
+	    SequenceType[] types= new SequenceType[varList.size()];
+        int j= 0;
+        for (Iterator i= varList.iterator(); i.hasNext(); j++) {
+            FunctionParameterSequenceType param= (FunctionParameterSequenceType) i.next();
+            types[j]= param;
+            func.addVariable(param.getAttributeName());
+        }
+        signature.setArgumentTypes(types);
+	}
 }
 
 xpointer [PathExpr path]
@@ -633,7 +674,7 @@ throws XPathException
 ;
 
 /**
- * Parse a declared function.
+ * Parse a function declared in the prolog.
  */
 functionDecl [PathExpr path]
 returns [Expression step]
@@ -643,15 +684,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		name:FUNCTION_DECL // for inline functions, name is null
 		{ 
 			PathExpr body= new PathExpr(context);
-			boolean inline = name.getText() == null;
 		}
 		{
 			QName qn= null;
 			try {
-				if (!inline)
-					qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
-				else
-					qn = InlineFunction.INLINE_FUNCTION_QNAME;
+                qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
 			} catch(XPathException e) {
 				// throw exception with correct source location
 				e.setLocation(name.getLine(), name.getColumn());
@@ -665,64 +702,13 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
                 { List annots = new ArrayList(); }
                 (annotations [annots] 
-                 { 
-                    Annotation[] anns = new Annotation[annots.size()];
-
-                    //iterate the declare Annotations
-                    for(int i = 0; i < anns.length; i++) {
-                       List la = (List)annots.get(i);
-                       
-                       //extract the Value for the Annotation
-                       LiteralValue[] aValue;
-                       if(la.size() > 1) {
-
-                        PathExpr aPath = (PathExpr)la.get(1);
-                        
-                        aValue = new LiteralValue[aPath.getSubExpressionCount()];
-                        for(int j = 0; j < aValue.length; j++) {
-                            aValue[j] = (LiteralValue)aPath.getExpression(j);
-                        }
-                       } else {
-                        aValue = new LiteralValue[0];
-                       }
-
-                       Annotation a = new Annotation((QName)la.get(0), aValue, signature);
-                       anns[i] = a;
-                    }
-
-                    //set the Annotations on the Function Signature
-                    signature.setAnnotations(anns);
-                    
-                //TODO ADAM WAS HERE
-                   /*
-                   int i, j; 
-                   System.out.println("annotations nb: " + annots.size());
-                   for (i = 0; i < annots.size(); i++)
-                   { PathExpr annotPath = null;
-                     System.out.println("annotation name: " + ((List)annots.get(i)).get(0).toString());
-                     if (((List)annots.get(i)).size() > 1)
-                     {
-                       annotPath = (PathExpr)((List)annots.get(i)).get(1);
-                       for (j = 0; j < annotPath.getLength(); j++) {
-                         Expression value = annotPath.getExpression(j);
-                         System.out.println("literal expr id: " + value.getExpressionId());
-                       }
-                     }
-                   }
-                   */
-
+                 {
+                    processAnnotations(annots, signature);
                   }
                 )?
 		( paramList [varList] )?
 		{
-			SequenceType[] types= new SequenceType[varList.size()];
-			int j= 0;
-			for (Iterator i= varList.iterator(); i.hasNext(); j++) {
-				FunctionParameterSequenceType param= (FunctionParameterSequenceType) i.next();
-				types[j]= param;
-				func.addVariable(param.getAttributeName());
-			}
-			signature.setArgumentTypes(types);
+			processParams(varList, func, signature);
 		}
 		(
 			#(
@@ -738,19 +724,64 @@ throws PermissionDeniedException, EXistException, XPathException
 				LCURLY expr [body]
 				{ 
 					func.setFunctionBody(body);
-					if (!inline) {
-						context.declareFunction(func);
-						if(myModule != null)
-							myModule.declareFunction(func);
-					} else {
-						// anonymous function
-						step = new InlineFunction(context, func);
-					}
+                    context.declareFunction(func);
+                    if(myModule != null)
+                        myModule.declareFunction(func);
 				}
 			)
 			|
 			"external"
 		)
+	)
+	;
+
+/**
+ * Parse an inline function declaration.
+ */
+inlineFunctionDecl [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{ step = null; }:
+	#(
+		name:INLINE_FUNCTION_DECL // for inline functions, name is null
+		{
+			PathExpr body= new PathExpr(context);
+		}
+		{
+			FunctionSignature signature= new FunctionSignature(InlineFunction.INLINE_FUNCTION_QNAME);
+			signature.setDescription(name.getDoc());
+			UserDefinedFunction func= new UserDefinedFunction(context, signature);
+			func.setASTNode(name);
+			List varList= new ArrayList(3);
+		}
+        { List annots = new ArrayList(); }
+        (
+            annotations [annots]
+            {
+                processAnnotations(annots, signature);
+            }
+        )?
+		( paramList [varList] )?
+		{
+			processParams(varList, func, signature);
+		}
+		(
+			#(
+				"as"
+				{ SequenceType type= new SequenceType(); }
+				sequenceType [type]
+				{ signature.setReturnType(type); }
+			)
+		)?
+        // the function body:
+        #(
+            LCURLY expr [body]
+            {
+                func.setFunctionBody(body);
+                // anonymous function
+                step = new InlineFunction(context, func);
+            }
+        )
 	)
 	;
 
@@ -1921,7 +1952,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	step=functionReference [path]
 	{ path.add(step); }
 	|
-    step=functionDecl [path]
+    step=inlineFunctionDecl [path]
+    step=postfixExpr [step]
 	{ path.add(step); }
 	|
 	step = lookup [null]
