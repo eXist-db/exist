@@ -1070,9 +1070,9 @@ stepExpr throws XPathException
 	"comment" | "ordered" | "unordered" | "map" | "array" ) LCURLY ) =>
 	postfixExpr
 	|
-	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => postfixExpr
+	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) eqName LCURLY ) => postfixExpr
 	|
-	( MOD | DOLLAR | ( qName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
+	( MOD | DOLLAR | ( eqName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
 	  XML_PI | QUESTION | LPPAREN)
 	=> postfixExpr
 	|
