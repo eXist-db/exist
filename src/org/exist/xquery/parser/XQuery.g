@@ -147,6 +147,7 @@ imaginaryTokenDefinitions
 	ANNOT_DECL 
 	GLOBAL_VAR 
 	FUNCTION_DECL
+	INLINE_FUNCTION_DECL
 	FUNCTION_INLINE 
 	FUNCTION_TEST
 	MAP_TEST
@@ -1330,7 +1331,7 @@ inlineFunctionExpr throws XPathException
 	RPAREN! ( returnType )?
 	functionBody
 	{ 
-	  	#inlineFunctionExpr = #(#[FUNCTION_DECL, null], null, #inlineFunctionExpr); 
+	  	#inlineFunctionExpr = #(#[INLINE_FUNCTION_DECL, null], null, #inlineFunctionExpr);
 		#inlineFunctionExpr.copyLexInfo(#lp);
 	}
 	exception catch [RecognitionException e]
