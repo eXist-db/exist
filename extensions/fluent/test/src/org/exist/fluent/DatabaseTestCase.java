@@ -58,8 +58,7 @@ public abstract class DatabaseTestCase {
 	}
     
 	private static void wipeDatabase() throws Exception {
-		Transaction tx = db.requireTransactionWithBroker();
-		try {
+		try(final Transaction tx = db.requireTransactionWithBroker()) {
 			Collection root = tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI);
 			for (Iterator<XmldbURI> it = root.collectionIterator(tx.broker); it.hasNext(); ) {
 				XmldbURI childName = it.next();
@@ -76,8 +75,6 @@ public abstract class DatabaseTestCase {
 				}
 			}
 			tx.commit();
-		} finally {
-			tx.abortIfIncomplete();
 		}
 	}
 
