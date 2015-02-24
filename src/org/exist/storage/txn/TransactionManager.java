@@ -268,18 +268,23 @@ public class TransactionManager {
      * 
      * @throws TransactionException
      */
-	public void checkpoint(boolean switchFiles) throws TransactionException {
-        if (!enabled)
-            {return;}
+    public void checkpoint(boolean switchFiles) throws TransactionException {
+        if (!enabled) {
+            return;
+        }
         
-		final long txnId = nextTxnId++;
-		journal.checkpoint(txnId, switchFiles);
-	}
+	final long txnId = nextTxnId++;
+	journal.checkpoint(txnId, switchFiles);
+    }
 	
-	public Journal getJournal() {
-		return journal;
-	}
-    
+    public Journal getJournal() {
+	return journal;
+    }
+
+    /**
+     * @Deprecated This mixes concerns and should not be here.
+     */
+    @Deprecated
     public void reindex(DBBroker broker) {
     	final Subject currentUser = broker.getSubject();
     	
