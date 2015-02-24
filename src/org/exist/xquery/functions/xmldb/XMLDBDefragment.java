@@ -27,6 +27,7 @@ import org.exist.EXistException;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
+import org.exist.util.LockException;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -103,7 +104,7 @@ public class XMLDBDefragment extends BasicFunction {
                 Modification.checkFragmentation(context, docs);
             }
             
-        } catch (final EXistException e) {
+        } catch (final LockException | EXistException e) {
             logger.error("An error occurred while defragmenting documents: " + e.getMessage());
             throw new XPathException(this, "An error occurred while defragmenting documents: " + e.getMessage(), e);
         }

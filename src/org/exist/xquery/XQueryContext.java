@@ -65,6 +65,9 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
@@ -1373,7 +1376,7 @@ public class XQueryContext implements BinaryValueManager, Context
             try {
                 Modification.checkFragmentation( this, modifiedDocuments );
             }
-            catch( final EXistException e ) {
+            catch( final LockException | EXistException e ) {
                 LOG.warn( "Error while checking modified documents: " + e.getMessage(), e );
             }
             modifiedDocuments = null;
