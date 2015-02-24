@@ -7766,7 +7766,7 @@ inputState.guessing--;
 						}
 						}
 						}
-						qName();
+						eqName();
 						match(LCURLY);
 						}
 					}
@@ -7830,6 +7830,7 @@ inputState.guessing--;
 							case 101:
 							case LITERAL_external:
 							case LITERAL_schema:
+							case BRACED_URI_LITERAL:
 							case LITERAL_as:
 							case LITERAL_at:
 							case LITERAL_item:
@@ -7902,7 +7903,7 @@ inputState.guessing--;
 							case LITERAL_validate:
 							{
 								{
-								qName();
+								eqName();
 								{
 								switch ( LA(1)) {
 								case LPAREN:

@@ -36,4 +36,19 @@
         </code>
         <expected><hello/></expected>
     </test>
+    <test output="text">
+        <task>Test URIBracedLiteral as function call</task>
+        <code><![CDATA[
+	xquery version "3.0";
+    declare namespace o = "https://other";
+
+    declare function o:hello() {
+        <hello/>
+    };
+
+    fn:count(Q{https://other}hello())
+]]>
+        </code>
+        <expected>1</expected>
+    </test>
 </TestSet>
