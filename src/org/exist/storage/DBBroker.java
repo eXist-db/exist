@@ -46,6 +46,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
@@ -59,6 +60,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * This is the base class for all database backends. All the basic database
@@ -982,6 +984,48 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
     }
 
     /**
+     * Gets the current transaction, or if there is no current transaction
+     * for this thread (i.e. broker), then we begin a new transaction.
+     *
+     * The callee is *always* responsible for calling .close on the transaction
+     *
+     * Note - When there is an existing transaction, calling .close on the object
+     * returned (e.g. ResusableTxn) from this function will only cause a minor state
+     * change and not close the original transaction. That is intentional, as it will
+     * eventually be closed by the creator of the original transaction (i.e. the code
+     * site that began the first transaction)
+     *
+     * @Deprecated This is a stepping-stone; Transactions should be explicitly passed
+     *   around. This will be removed in the near future.
+     */
+    @Deprecated
+    public synchronized Txn continueOrBeginTransaction() {
+        final Txn currentTransaction = getCurrentTransaction();
+        if(currentTransaction != null) {
+            return new Txn.ReusableTxn(currentTransaction);
+        } else {
+            final TransactionManager tm = getBrokerPool().getTransactionManager();
+            return tm.beginTransaction(); //TransactionManager will call this#setCurrentTransaction
+        }
+    }
+
+    //TODO the object passed to the function e.g. Txn should not implement .close
+    //if we are using a function passing approach like this, i.e. one point of
+    //responsibility and WE HERE should be responsible for closing the transaction.
+    //we could return a sub-class of Txn which is uncloseable like Txn.reuseable or similar
+    //also getCurrentTransaction should then be made private
+//    private <T> T transact(final Function<Txn, T> transactee) throws EXistException {
+//        final Txn existing = getCurrentTransaction();
+//        if(existing == null) {
+//            try(final Txn txn = pool.getTransactionManager().beginTransaction()) {
+//                return transactee.apply(txn);
+//            }
+//        } else {
+//            return transactee.apply(existing);
+//        }
+//    }
+
+    /**
      * Represents a {@link Subject} change
      * made to a broker
      *
@@ -1044,4 +1088,3 @@ public abstract class DBBroker extends Observable implements AutoCloseable {
         PRESERVE
     }
 }
-

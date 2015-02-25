@@ -120,6 +120,12 @@ public class TransactionManager implements BrokerPoolService {
      */
     public void commit(final Txn txn) throws TransactionException {
 
+        if(txn instanceof Txn.ReusableTxn) {
+            txn.commit();
+            return;
+            //throw new IllegalStateException("Commit should be called on the transaction and not via the TransactionManager"); //TODO(AR) remove later when API is cleaned up?
+        }
+
         //we can only commit something which is in the STARTED state
         if (txn.getState() != Txn.State.STARTED) {
             return;
