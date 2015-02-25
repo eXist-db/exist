@@ -2023,39 +2023,28 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void reindexCollection(final XmldbURI collectionUri) throws PermissionDeniedException, IOException, LockException {
+    public void reindexCollection(final Txn transaction, final XmldbURI collectionUri) throws PermissionDeniedException, IOException, LockException {
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
         final XmldbURI fqUri = prepend(collectionUri.toCollectionPathURI());
+        final long start = System.currentTimeMillis();
         try(final Collection collection = openCollection(fqUri, LockMode.READ_LOCK)) {
             if (collection == null) {
                 LOG.warn("Collection {} not found!", fqUri);
                 return;
             }
-            reindexCollection(collection, IndexMode.STORE);
-        }
-    }
 
-    private void reindexCollection(@EnsureLocked(mode=LockMode.READ_LOCK) final Collection collection,
-            final IndexMode mode) throws PermissionDeniedException, LockException {
-        final TransactionManager transact = pool.getTransactionManager();
-
-        final long start = System.currentTimeMillis();
-
-        try(final Txn transaction = transact.beginTransaction()) {
             LOG.info("Start indexing collection {}", collection.getURI().toString());
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REINDEX_COLLECTION, collection.getURI());
-            reindexCollection(transaction, collection, mode);
-            transaction.commit();
-
-        } catch(final PermissionDeniedException | IOException | TransactionException e) {
+            reindexCollection(transaction, collection, IndexMode.STORE);
+        } catch(final PermissionDeniedException | IOException e) {
             LOG.error("An error occurred during reindex: " + e.getMessage(), e);
         } finally {
             pool.getProcessMonitor().endJob();
             LOG.info(String.format("Finished indexing collection %s in %s ms.",
-                collection.getURI().toString(), System.currentTimeMillis() - start));
+                fqUri, System.currentTimeMillis() - start));
         }
     }
 

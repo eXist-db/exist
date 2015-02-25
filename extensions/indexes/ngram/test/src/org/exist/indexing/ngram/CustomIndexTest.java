@@ -457,7 +457,7 @@ public class CustomIndexTest {
             	final Txn transaction = transact.beginTransaction()) {
 
             //Doh ! This reindexes *all* the collections for *every* index
-            broker.reindexCollection(XmldbURI.xmldbUriFor("/db"));
+            broker.reindexCollection(transaction, XmldbURI.xmldbUriFor("/db"));
 
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);

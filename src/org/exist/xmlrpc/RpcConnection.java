@@ -3163,13 +3163,13 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean reindexCollection(final String collectionName) throws URISyntaxException, EXistException, PermissionDeniedException {
-        reindexCollection(XmldbURI.xmldbUriFor(collectionName));
+    	reindexCollection(XmldbURI.xmldbUriFor(collectionName));
         return true;
     }
 
     private void reindexCollection(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
         withDb((broker, transaction) -> {
-            broker.reindexCollection(collUri);
+            broker.reindexCollection(transaction, collUri);
             if(LOG.isDebugEnabled()) {
                 LOG.debug("collection " + collUri + " and sub-collections reindexed");
             }

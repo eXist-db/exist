@@ -106,14 +106,14 @@ public class Database {
 		}
 		
 		// Now force reload and reindex so it'll pick up the new settings.
-		try(final Transaction tx = db.requireTransactionWithBroker()) {
-			pool.getConfigurationManager().addConfiguration(tx.tx, tx.broker, tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI), configXml.toString());
-			tx.commit();
-			DBBroker broker = db.acquireBroker();
-			try {
-				broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
-			} finally {
-				db.releaseBroker(broker);
+		try {
+			try(final Transaction tx = db.requireTransactionWithBroker()) {
+				pool.getConfigurationManager().addConfiguration(tx.tx, tx.broker, tx.broker.getCollection(XmldbURI.ROOT_COLLECTION_URI), configXml.toString());
+				tx.commit();
+			}
+			try(final Transaction tx = db.requireTransactionWithBroker()) {
+				tx.broker.reindexCollection(tx.tx, XmldbURI.ROOT_COLLECTION_URI);
+				tx.commit();
 			}
 		} catch (final PermissionDeniedException | IOException | LockException | CollectionConfigurationException e) {
 			throw new DatabaseException(e);

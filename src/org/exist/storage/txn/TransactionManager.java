@@ -253,9 +253,10 @@ public class TransactionManager implements BrokerPoolService {
     @Deprecated
     public void reindex(final DBBroker broker) throws IOException {
         broker.pushSubject(broker.getBrokerPool().getSecurityManager().getSystemSubject());
-        try {
-            broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
-        } catch (final PermissionDeniedException | LockException e) {
+        try(final Txn transaction = beginTransaction()) {
+            broker.reindexCollection(transaction, XmldbURI.ROOT_COLLECTION_URI);
+            commit(transaction);
+        } catch (final PermissionDeniedException | LockException | TransactionException e) {
             LOG.error("Exception during reindex: " + e.getMessage(), e);
         } finally {
         	broker.popSubject();

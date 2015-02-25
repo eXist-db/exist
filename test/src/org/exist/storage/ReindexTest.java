@@ -81,7 +81,9 @@ public class ReindexTest {
             }
 
             final Txn transaction = transact.beginTransaction();
-            broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
+            broker.reindexCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+
+            //NOTE: do not commit the transaction
 
             pool.getJournalManager().get().flush(true, false);
         }
