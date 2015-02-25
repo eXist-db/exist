@@ -1453,10 +1453,6 @@ public class Configuration implements ErrorHandler
 
     private void configureValidation( String dbHome, Document doc, Element validation ) throws DatabaseConfigurationException
     {
-        // Register custom protocol URL
-        // TODO DWES move to different location?
-        eXistURLStreamHandlerFactory.init();
-
         // Determine validation mode
         final String mode = getConfigAttributeValue( validation, XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE );
 
