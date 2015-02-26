@@ -26,6 +26,7 @@ import org.exist.storage.StartupTrigger;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Startup Trigger to register eXists URL Stream Handler
@@ -40,34 +41,43 @@ public class URLStreamHandlerStartupTrigger implements StartupTrigger {
     public final static String JAVA_PROTOCOL_HANDLER_PKGS="java.protocol.handler.pkgs";
     public final static String EXIST_PROTOCOL_HANDLER="org.exist.protocolhandler.protocols";
 
+    /*
+    eXist may be started and stopped multiple times within the same JVM,
+    for example when running the test suite. This guard ensures that
+    we only attempt the registration once per JVM session
+    */
+    private final static AtomicBoolean registered = new AtomicBoolean();
+
     @Override
     public void execute(final DBBroker sysBroker, final Map<String, List<? extends Object>> params) {
         registerStreamHandlerFactory();
     }
 
     private void registerStreamHandlerFactory() {
-        try {
-            URL.setURLStreamHandlerFactory(new eXistURLStreamHandlerFactory());
-            LOG.info("Successfully registered eXistURLStreamHandlerFactory.");
-        } catch (final Error ex) {
-            LOG.warn("The JVM has already an URLStreamHandlerFactory registered, skipping...");
+        if(registered.compareAndSet(false, true)) {
+            try {
+                URL.setURLStreamHandlerFactory(new eXistURLStreamHandlerFactory());
+                LOG.info("Successfully registered eXistURLStreamHandlerFactory.");
+            } catch (final Error ex) {
+                LOG.warn("The JVM already has a URLStreamHandlerFactory registered, skipping...");
 
-            String currentSystemProperty = System.getProperty(JAVA_PROTOCOL_HANDLER_PKGS);
+                String currentSystemProperty = System.getProperty(JAVA_PROTOCOL_HANDLER_PKGS);
 
-            if(currentSystemProperty == null) {
-                // Nothing setup yet
-                LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to "
-                        + EXIST_PROTOCOL_HANDLER);
-                System.setProperty( JAVA_PROTOCOL_HANDLER_PKGS, EXIST_PROTOCOL_HANDLER );
-            } else {
-                // java.protocol.handler.pkgs is already setup, preserving settings
-                if(currentSystemProperty.indexOf(EXIST_PROTOCOL_HANDLER) == -1) {
-                    // eXist handler is not setup yet
-                    currentSystemProperty = currentSystemProperty + "|" + EXIST_PROTOCOL_HANDLER;
-                    LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to " + currentSystemProperty);
-                    System.setProperty(JAVA_PROTOCOL_HANDLER_PKGS, currentSystemProperty);
+                if (currentSystemProperty == null) {
+                    // Nothing setup yet
+                    LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to "
+                            + EXIST_PROTOCOL_HANDLER);
+                    System.setProperty(JAVA_PROTOCOL_HANDLER_PKGS, EXIST_PROTOCOL_HANDLER);
                 } else {
-                    LOG.info("System property " + JAVA_PROTOCOL_HANDLER_PKGS + " has not been updated.");
+                    // java.protocol.handler.pkgs is already setup, preserving settings
+                    if (currentSystemProperty.indexOf(EXIST_PROTOCOL_HANDLER) == -1) {
+                        // eXist handler is not setup yet
+                        currentSystemProperty = currentSystemProperty + "|" + EXIST_PROTOCOL_HANDLER;
+                        LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to " + currentSystemProperty);
+                        System.setProperty(JAVA_PROTOCOL_HANDLER_PKGS, currentSystemProperty);
+                    } else {
+                        LOG.info("System property " + JAVA_PROTOCOL_HANDLER_PKGS + " has not been updated.");
+                    }
                 }
             }
         }
