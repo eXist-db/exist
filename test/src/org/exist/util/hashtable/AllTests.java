@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+    NamePoolTest.class,
 	HashtableTest.class,
 	SequencedLongHashMapTest.class,
 	Object2IntHashMapTest.class,
