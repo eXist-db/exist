@@ -77,6 +77,14 @@ public class NamePool {
         }
 
         @Override
+        public int hashCode() {
+            int h = qname.getNameType() + 31 + qname.getLocalPart().hashCode();
+            h += 31 * h + (qname.getNamespaceURI() == null ? 1 : qname.getNamespaceURI().hashCode());
+            h += 31 * h + (qname.getPrefix() == null ? 1 : qname.getPrefix().hashCode());
+            return h;
+        }
+
+        @Override
         public boolean equals(Object obj) {
             if(obj == null || !(obj instanceof WrappedQName)) {
                 return false;
