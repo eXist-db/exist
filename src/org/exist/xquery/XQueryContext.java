@@ -2825,20 +2825,8 @@ public class XQueryContext implements BinaryValueManager, Context
 
     private ExternalModule compileOrBorrowModule( String prefix, String namespaceURI, String location, Source source ) throws XPathException
     {
-        ExternalModule module = getBroker().getBrokerPool().getXQueryPool().borrowModule( getBroker(), source, this );
+        final ExternalModule module = compileModule( prefix, namespaceURI, location, source );
 
-        if( module == null ) {
-            module = compileModule( prefix, namespaceURI, location, source );
-        } else {
-
-            for( final Iterator<Module> it = module.getContext().getAllModules(); it.hasNext(); ) {
-                final Module importedModule = it.next();
-
-                if( ( importedModule != null ) && !allModules.containsKey( importedModule.getNamespaceURI() ) ) {
-                    setRootModule( importedModule.getNamespaceURI(), importedModule );
-                }
-            }
-        }
         setModule( module.getNamespaceURI(), module );
         declareModuleVars( module );
         return( module );
