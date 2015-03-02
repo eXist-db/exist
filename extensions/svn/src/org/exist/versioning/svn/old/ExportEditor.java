@@ -443,10 +443,12 @@ public class ExportEditor implements ISVNEditor {
 		try {
 			transact.commit(transaction);
 		} catch (TransactionException e) {
-			SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR,
-					"error: failed on transaction's commit.");
-			throw new SVNException(err);
-		}
+            SVNErrorMessage err = SVNErrorMessage.create(SVNErrorCode.IO_ERROR,
+                    "error: failed on transaction's commit.");
+            throw new SVNException(err);
+        } finally {
+            transact.close(transaction);
+        }
 
 		return null;
 	}

@@ -489,18 +489,11 @@ public class DebuggerTest implements ResponseListener {
 	}
 	
     private void store(String name,  String data) throws EXistException {
-    	Database pool = BrokerPool.getInstance();;
-    	
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+    	Database pool = BrokerPool.getInstance();
+        final TransactionManager = transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
     		broker.saveCollection(transaction, root);
@@ -510,12 +503,8 @@ public class DebuggerTest implements ResponseListener {
 
             transact.commit(transaction);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 

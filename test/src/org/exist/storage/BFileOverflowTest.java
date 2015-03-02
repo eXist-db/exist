@@ -48,37 +48,36 @@ public class BFileOverflowTest extends TestCase {
     
     public void testAdd() {
         TransactionManager mgr = pool.getTransactionManager();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
             broker.flush();
             broker.sync(Sync.MAJOR_SYNC);
-            
-            Txn txn = mgr.beginTransaction();
-            System.out.println("Transaction started ...");
-            
-            BFile collectionsDb = (BFile) ((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
+
+            final BFile collectionsDb = (BFile) ((NativeBroker) broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             BrokerPool.FORCE_CORRUPTION = true;
-            
-            Value key = new Value("test".getBytes());
-            
-            byte[] data = "_HELLO_YOU_".getBytes();
-            collectionsDb.put(txn, key, new FixedByteArray(data, 0, data.length), true);
-            
-            for (int i = 1; i < 101; i++) {
-                String value = "_HELLO_" + i;
-                data = value.getBytes(UTF_8);
-                collectionsDb.append(txn, key, new FixedByteArray(data, 0, data.length));
+
+            final Value key = new Value("test".getBytes());
+
+            try(final Txn txn = mgr.beginTransaction()) {
+
+                byte[] data = "_HELLO_YOU_".getBytes();
+                collectionsDb.put(txn, key, new FixedByteArray(data, 0, data.length), true);
+
+                for (int i = 1; i < 101; i++) {
+                    String value = "_HELLO_" + i;
+                    data = value.getBytes(UTF_8);
+                    collectionsDb.append(txn, key, new FixedByteArray(data, 0, data.length));
+                }
+
+                mgr.commit(txn);
             }
             
-            mgr.commit(txn);
-            
             // start a new transaction that will not be committed and thus undone
-            txn = mgr.beginTransaction();            
+            final Txn txn = mgr.beginTransaction();
             
             for (int i = 1001; i < 2001; i++) {
                 String value = "_HELLO_" + i;
-                data = value.getBytes(UTF_8);
+                final byte[] data = value.getBytes(UTF_8);
                 collectionsDb.append(txn, key, new FixedByteArray(data, 0, data.length));
             }
        
@@ -88,8 +87,6 @@ public class BFileOverflowTest extends TestCase {
 
         } catch (Exception e) {
             fail(e.getMessage());            
-        } finally {
-            pool.release(broker);
         }
     }
     

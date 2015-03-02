@@ -122,19 +122,13 @@ public class StoreBinaryTest {
     }
 
     private BinaryDocument storeBinary(String name,  String data, String mimeType) throws EXistException {
-    	BinaryDocument binaryDoc = null;
-        Database pool = BrokerPool.getInstance();;
 
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        final Database pool = BrokerPool.getInstance();;
+        final TransactionManager transact = pool.getTransactionManager();
+
+        BinaryDocument binaryDoc = null;
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
     		broker.saveCollection(transaction, root);
@@ -142,16 +136,10 @@ public class StoreBinaryTest {
 
             binaryDoc = root.addBinaryResource(transaction, broker, XmldbURI.create(name), data.getBytes(), mimeType);
 
-            if(transact != null) {
-                transact.commit(transaction);
-            }
+            transact.commit(transaction);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
 
         return binaryDoc;

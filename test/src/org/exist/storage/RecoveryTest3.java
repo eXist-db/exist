@@ -62,33 +62,28 @@ public class RecoveryTest3 extends TestCase {
     
     public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = null;        
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);            
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
+
             System.out.println("Transaction started ...");
-            
+
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
-            
+
             Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test2);
-            broker.saveCollection(transaction, test2);            
-            
+            broker.saveCollection(transaction, test2);
+
             File files[] = dir.listFiles();
             assertNotNull(files);
-            
+
             File f;
             IndexInfo info;
-            
+
             // store some documents.
             for (int i = 0; i < files.length && i < RESOURCE_COUNT; i++) {
                 f = files[i];
@@ -98,89 +93,79 @@ public class RecoveryTest3 extends TestCase {
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
-                	//TODO : why store invalid documents ?
+                    //TODO : why store invalid documents ?
                     System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
                 }
             }
-            
+
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
 	    } catch (Exception e) {
             e.printStackTrace();
 	        fail(e.getMessage());             
-        } finally {
-            pool.release(broker);
         }
     }
     
     public void testRead() {
+        System.out.println("testRead() ...\n");
+
     	BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-        	System.out.println("testRead() ...\n");
-        	pool = startDB();
-        	assertNotNull(pool);
-            
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
             BrokerPool.FORCE_CORRUPTION = true;
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
-            
-            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
-            assertNotNull(root);
-            transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);            
-            broker.removeCollection(transaction, root);   
-            
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
-            
-            transaction = transact.beginTransaction();
-            System.out.println("Transaction started ...");
-            
-            root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
-            
-            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
-            assertNotNull(test2);
-            broker.saveCollection(transaction, test2);
-            
-            File files[] = dir.listFiles();
-            assertNotNull(files);
-            
-            File f;
-            IndexInfo info;
-            
-            // store some documents.
-            for (int i = 0; i < files.length && i < RESOURCE_COUNT; i++) {
-                f = files[i];
-                assertNotNull(f);
-                try {
-                    info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
-                    assertNotNull(info);
-                    test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
-                } catch (SAXException e) {
-                    System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
-                }
+            Collection root;
+
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Transaction started ...");
+
+                root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
+                assertNotNull(root);
+                transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
+                broker.removeCollection(transaction, root);
+
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
             }
             
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Transaction started ...");
+
+                root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
+
+                Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
+                assertNotNull(test2);
+                broker.saveCollection(transaction, test2);
+
+                File files[] = dir.listFiles();
+                assertNotNull(files);
+
+                File f;
+                IndexInfo info;
+
+                // store some documents.
+                for (int i = 0; i < files.length && i < RESOURCE_COUNT; i++) {
+                    f = files[i];
+                    assertNotNull(f);
+                    try {
+                        info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+                        assertNotNull(info);
+                        test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                    } catch (SAXException e) {
+                        System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
+                    }
+                }
+
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
+            }
 	    } catch (Exception e) {
-            transact.abort(transaction);
             e.printStackTrace();
-	        fail(e.getMessage());              
-        } finally {
-            if (pool != null)
-                pool.release(broker);
+            fail(e.getMessage());
         }
     }
     

@@ -21,8 +21,11 @@
  */
 package org.exist.collections;
 
+import org.exist.EXistException;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -32,6 +35,8 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
@@ -41,11 +46,14 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import java.io.IOException;
 
 /**
  * Creates 3 collections, /db/test/test2, /db/test/test2/test3 and /db/test/test2/test4
@@ -97,27 +105,20 @@ public class CollectionRemovalTest {
     }
 
     private void removeCollection(String user, String password, XmldbURI uri) {
-        TransactionManager transact = null;
-		Txn transaction = null;
-		DBBroker broker = null;
         Collection test = null;
-        try {
-            Subject guest = pool.getSecurityManager().authenticate(user, password);
-            broker = pool.get(guest);
-			transact = pool.getTransactionManager();
-			assertNotNull(transact);
-			transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().authenticate(user, password));
+            final Txn transaction = transact.beginTransaction()) {
 
             test = broker.openCollection(uri, Lock.WRITE_LOCK);
             broker.removeCollection(transaction, test);
             transact.commit(transaction);
         } catch (Exception e) {
-			transact.abort(transaction);
 			e.printStackTrace();
 		} finally {
-            if (test != null)
+            if (test != null) {
                 test.release(Lock.WRITE_LOCK);
-            pool.release(broker);
+            }
 		}
     }
 
@@ -179,19 +180,14 @@ public class CollectionRemovalTest {
     }
 
     @Before
-	public void initDB() {
-		TransactionManager transact = null;
-		Txn transaction = null;
-		DBBroker broker = null;
-		try {
-			Configuration config = new Configuration();
-			BrokerPool.configure(1, 40, config);
-			pool = BrokerPool.getInstance();
+	public void initDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+        final Configuration config = new Configuration();
+        BrokerPool.configure(1, 40, config);
+        this.pool = BrokerPool.getInstance();
 
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			transact = pool.getTransactionManager();
-			assertNotNull(transact);
-			transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
 			Collection root = broker.getOrCreateCollection(transaction,
 					TestConstants.TEST_COLLECTION_URI);
@@ -245,12 +241,6 @@ public class CollectionRemovalTest {
 			Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database) cl.newInstance();
 			DatabaseManager.registerDatabase(database);
-		} catch (Exception e) {
-			transact.abort(transaction);
-			e.printStackTrace();
-			fail(e.getMessage());
-		} finally {
-			pool.release(broker);
 		}
 	}
 

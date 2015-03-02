@@ -40,6 +40,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Test;
@@ -98,12 +99,11 @@ public class SearchTest {
 	public void test_00() throws Exception {
     	
     	startDB();
-    	
-        BrokerPool db = null;
-        DBBroker broker = null;
-        try {
-            db = BrokerPool.getInstance();
-            broker = db.get(db.getSecurityManager().getSystemSubject());
+
+
+        BrokerPool db = BrokerPool.getInstance();
+
+        try (final DBBroker broker = db.get(db.getSecurityManager().getSystemSubject())) {
             
         	MetaData md = MetaData.get();
         	
@@ -203,9 +203,6 @@ public class SearchTest {
 //
 //    	assertEquals(VALUE1, meta.getValue());
 
-        } finally {
-            if (db != null)
-                db.release(broker);
         }
 
     	cleanup();
@@ -224,29 +221,20 @@ public class SearchTest {
 	}
 
 	//@BeforeClass
-    public static void startDB() {
-        DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
-        try {
-            File confFile = ConfigurationHelper.lookup("conf.xml");
-            Configuration config = new Configuration(confFile.getAbsolutePath());
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        	assertNotNull(pool);
-        	pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
+    public static void startDB() throws DatabaseConfigurationException, EXistException {
+        final File confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+        assertNotNull(pool);
+        pool.getPluginsManager().addPlugin("org.exist.storage.md.MDStorageManager");
+
+        final TransactionManager txnManager = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn txn = txnManager.beginTransaction()) {
             
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            
-            clean();
-            
-            txnManager = pool.getTransactionManager();
-            assertNotNull(txnManager);
-            txn = txnManager.beginTransaction();
-            assertNotNull(txn);
-            
-            System.out.println("Transaction started ...");
+            clean(broker, txn);
 
             Collection root = broker.getOrCreateCollection(txn, col1uri);
             assertNotNull(root);
@@ -268,17 +256,22 @@ public class SearchTest {
             txnManager.commit(txn);
         } catch (Exception e) {
             e.printStackTrace();
-            txnManager.abort(txn);
             fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 
     //@AfterClass
     public static void cleanup() {
-    	clean();
+        final TransactionManager txnManager = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn txn = txnManager.beginTransaction()) {
+            clean(broker, txn);
+            txnManager.commit(txn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+
     	shutdown();
     }
 
@@ -291,41 +284,21 @@ public class SearchTest {
         System.out.println("stopped");
     }
 
-    private static void clean() {
+    private static void clean(final DBBroker broker, final Txn txn) throws PermissionDeniedException, IOException, TriggerException {
     	System.out.println("CLEANING...");
-    	
-        DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            txnManager = pool.getTransactionManager();
-            assertNotNull(txnManager);
-            txn = txnManager.beginTransaction();
-            assertNotNull(txn);
-            System.out.println("Transaction started ...");
 
-            Collection col = broker.getOrCreateCollection(txn, col1uri);
-            assertNotNull(col);
-        	broker.removeCollection(txn, col);
+        Collection col = broker.getOrCreateCollection(txn, col1uri);
+        assertNotNull(col);
+        broker.removeCollection(txn, col);
 
 //            col = broker.getOrCreateCollection(txn, col2uri);
 //            assertNotNull(col);
 //        	broker.removeCollection(txn, col);
 
-            col = broker.getOrCreateCollection(txn, col3uri);
-            assertNotNull(col);
-        	broker.removeCollection(txn, col);
+        col = broker.getOrCreateCollection(txn, col3uri);
+        assertNotNull(col);
+        broker.removeCollection(txn, col);
 
-        	txnManager.commit(txn);
-        } catch (Exception e) {
-        	txnManager.abort(txn);
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            if (pool != null) pool.release(broker);
-        }
     	System.out.println("CLEANED.");
     }
 }

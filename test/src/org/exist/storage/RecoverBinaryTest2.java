@@ -62,17 +62,12 @@ public class RecoverBinaryTest2 {
     //@Test
     public void store() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = null;        
-        DBBroker broker = null;
-        try {
-            pool = startDB();
-            assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);            
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
+
             System.out.println("Transaction started ...");
             
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -89,23 +84,17 @@ public class RecoverBinaryTest2 {
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());             
-        } finally {
-            pool.release(broker);
         }
     }
 
     //@Test
     public void read() {
-        BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        try {
-            System.out.println("testRead2() ...\n");
-            pool = startDB();
-            assertNotNull(pool);        
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        System.out.println("testRead2() ...\n");
 
+        BrokerPool.FORCE_CORRUPTION = false;
+        final BrokerPool pool = startDB();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
             for (Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
@@ -113,36 +102,31 @@ public class RecoverBinaryTest2 {
             }
             
             BrokerPool.FORCE_CORRUPTION = true;
-            TransactionManager transact = pool.getTransactionManager();
+            final TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
-            System.out.println("Transaction started ...");
-            
-            storeFiles(broker, transaction, test2);
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
+            try(final Txn transaction = transact.beginTransaction()) {
+                assertNotNull(transaction);
+                System.out.println("Transaction started ...");
+
+                storeFiles(broker, transaction, test2);
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
+            }
             
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());              
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 
     //@Test
     public void read2() {
+        System.out.println("testRead2() ...\n");
+
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        try {
-            System.out.println("testRead2() ...\n");
-            pool = startDB();
-            assertNotNull(pool);        
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        final BrokerPool pool = startDB();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
             for (Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
@@ -150,21 +134,19 @@ public class RecoverBinaryTest2 {
                 System.out.println(doc.getURI().toString());
             }
             
-            TransactionManager transact = pool.getTransactionManager();
+            final TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
-            Collection test1 = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
-            broker.removeCollection(transaction, test1);
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
+            try(final Txn transaction = transact.beginTransaction()) {
+                assertNotNull(transaction);
+                System.out.println("Transaction started ...");
+                Collection test1 = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+                broker.removeCollection(transaction, test1);
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());              
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
     

@@ -74,13 +74,11 @@ public class ResourceTest {
 
     private void store() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = startDB();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            TransactionManager transact = pool.getTransactionManager();
-            
-            Txn transaction = transact.beginTransaction();
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
             System.out.println("Transaction started ...");
             
             Collection collection = broker
@@ -97,28 +95,21 @@ public class ResourceTest {
             System.out.println("Transaction commited ...");
         } catch (Exception e) {
             fail(e.getMessage());
-            
-        } finally {
-            pool.release(broker);
         }
     }
 
     private void read() {
-        BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-        
         System.out.println("testRead() ...\n");
-        
-        DBBroker broker = null;
-        
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
         
         byte[] data = null;
         
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            
-            TransactionManager transact = pool.getTransactionManager();            
-            Txn transaction = transact.beginTransaction();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction();) {
+
             System.out.println("Transaction started ...");
             
             XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
@@ -130,10 +121,10 @@ public class ResourceTest {
             if(binDoc == null){
                 fail("Binary document '" + docPath + " does not exist.");
             } else {
-               InputStream is = broker.getBinaryResource(binDoc);
-               data = new byte[(int)broker.getBinaryResourceSize(binDoc)];
-               is.read(data);
-               is.close();
+               try(final InputStream is = broker.getBinaryResource(binDoc)) {
+                   data = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                   is.read(data);
+               }
                 binDoc.getUpdateLock().release(Lock.READ_LOCK);
             }
             
@@ -147,10 +138,6 @@ public class ResourceTest {
         } catch (Exception ex){
             fail("Error opening document" + ex);
             
-        } finally {
-            if(pool!=null){
-                pool.release(broker);
-            }
         }
         
         assertEquals(0, data.length);
@@ -163,21 +150,17 @@ public class ResourceTest {
 
     @Test
     public void removeCollection() {
-    	BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDB();
-        
         System.out.println("testRemoveCollection() ...\n");
-        
-        DBBroker broker = null;
-        
-        
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
         byte[] data = null;
         
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            
-            TransactionManager transact = pool.getTransactionManager();            
-            Txn transaction = transact.beginTransaction();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
+
             System.out.println("Transaction started ...");
             
             XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
@@ -189,10 +172,10 @@ public class ResourceTest {
             if(binDoc == null){
                 fail("Binary document '" + docPath + " does not exist.");
             } else {
-               InputStream is = broker.getBinaryResource(binDoc);
-               data = new byte[(int)broker.getBinaryResourceSize(binDoc)];
-               is.read(data);
-               is.close();
+                try(InputStream is = broker.getBinaryResource(binDoc)) {
+                    data = new byte[(int) broker.getBinaryResourceSize(binDoc)];
+                    is.read(data);
+                }
                 binDoc.getUpdateLock().release(Lock.READ_LOCK);
             }
             
@@ -204,10 +187,6 @@ public class ResourceTest {
         } catch (Exception ex){
             fail("Error opening document" + ex);
             
-        } finally {
-            if(pool!=null){
-                pool.release(broker);
-            }
         }
         
         assertEquals(0, data.length);

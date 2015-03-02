@@ -86,144 +86,134 @@ public class RemoveCollectionTest {
     
     public void removeCollection() {
     	BrokerPool.FORCE_CORRUPTION = true;
-        DBBroker broker = null;
-        BrokerPool pool = startDB();
-        assertNotNull(pool);
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);                       
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Collection test = storeDocs(broker, transact);
-            Txn transaction;
-            
-            transaction = transact.beginTransaction();
-            System.out.println("Transaction started ...");
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
 
-            System.out.println("Removing collection ...");
-            broker.removeCollection(transaction, test);
-            
-            transact.commit(transaction);
-            System.out.println("Transaction interrupted ...");
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+            final Collection test = storeDocs(broker, transact);
+
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Transaction started ...");
+
+                System.out.println("Removing collection ...");
+                broker.removeCollection(transaction, test);
+
+                transact.commit(transaction);
+                System.out.println("Transaction interrupted ...");
+            }
 	    } catch (Exception e) {  
 	    	e.printStackTrace();
 	        fail(e.getMessage());               
         } finally {
-        	if (pool != null) pool.release(broker);
             stopDB();
         }
     }
 
     public void removeResources() {
     	BrokerPool.FORCE_CORRUPTION = true;
-        DBBroker broker = null;
-        BrokerPool pool = startDB();
-        assertNotNull(pool);
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Collection test = storeDocs(broker, transact);
-            Txn transaction;
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
 
-            transaction = transact.beginTransaction();
-            System.out.println("Transaction started ...");
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            System.out.println("Removing documents one by one ...");
-            for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
-                DocumentImpl doc = i.next();
-                broker.removeXMLResource(transaction, doc);
+            final Collection test = storeDocs(broker, transact);
+
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Transaction started ...");
+
+                System.out.println("Removing documents one by one ...");
+                for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
+                    DocumentImpl doc = i.next();
+                    broker.removeXMLResource(transaction, doc);
+                }
+                broker.saveCollection(transaction, test);
+                transact.commit(transaction);
+
+                System.out.println("Transaction committed ...");
             }
-            broker.saveCollection(transaction, test);
-            transact.commit(transaction);
-
-            System.out.println("Transaction committed ...");
 	    } catch (Exception e) {
 	        fail(e.getMessage());
         } finally {
-        	if (pool != null) pool.release(broker);
             stopDB();
         }
     }
 
     public void replaceResources() {
     	BrokerPool.FORCE_CORRUPTION = true;
-        DBBroker broker = null;
-        BrokerPool pool = startDB();
-        assertNotNull(pool);
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Collection test = storeDocs(broker, transact);
-            Txn transaction;
+        final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
 
-            transaction = transact.beginTransaction();
-            System.out.println("Transaction started ...");
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+            final Collection test = storeDocs(broker, transact);
 
-            System.out.println("Replacing resources ...");
-            TestDataGenerator generator = new TestDataGenerator("xdb", COUNT);
-            System.out.println("Generating " + COUNT + " files...");
-            File[] files = generator.generate(broker, test, generateXQ);
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Transaction started ...");
 
-            int j = 0;
-            for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext() && j < files.length; j++) {
-                DocumentImpl doc = i.next();
-                InputSource is = new InputSource(files[j].toURI().toASCIIString());
-                assertNotNull(is);
-                IndexInfo info = test.validateXMLResource(transaction, broker, doc.getURI(), is);
-                assertNotNull(info);
-                test.store(transaction, broker, info, is, false);
+                System.out.println("Replacing resources ...");
+                TestDataGenerator generator = new TestDataGenerator("xdb", COUNT);
+                System.out.println("Generating " + COUNT + " files...");
+                File[] files = generator.generate(broker, test, generateXQ);
+
+                int j = 0;
+                for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext() && j < files.length; j++) {
+                    DocumentImpl doc = i.next();
+                    InputSource is = new InputSource(files[j].toURI().toASCIIString());
+                    assertNotNull(is);
+                    IndexInfo info = test.validateXMLResource(transaction, broker, doc.getURI(), is);
+                    assertNotNull(info);
+                    test.store(transaction, broker, info, is, false);
+                }
+                generator.releaseAll();
+                transact.commit(transaction);
+                System.out.println("Transaction committed ...");
             }
-            generator.releaseAll();
-            transact.commit(transaction);
-            System.out.println("Transaction committed ...");
 	    } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-        	if (pool != null) pool.release(broker);
             stopDB();
         }
     }
 
     private Collection storeDocs(DBBroker broker, TransactionManager transact) throws Exception {
-        Txn transaction = transact.beginTransaction();
-        assertNotNull(transaction);
-        System.out.println("Transaction started ...");
+        Collection test;
 
-        Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-        assertNotNull(test);
-        broker.saveCollection(transaction, test);
+        try(final Txn transaction = transact.beginTransaction()) {
 
-        CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
-        mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
+            System.out.println("Transaction started ...");
 
-        InputSource is = new InputSource(new File("samples/shakespeare/hamlet.xml").toURI().toASCIIString());
-        assertNotNull(is);
-        IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
-        assertNotNull(info);
-        test.store(transaction, broker, info, is, false);
-        transact.commit(transaction);
-        System.out.println("Transaction commited ...");
+            test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            assertNotNull(test);
+            broker.saveCollection(transaction, test);
 
-        transaction = transact.beginTransaction();
-        TestDataGenerator generator = new TestDataGenerator("xdb", COUNT);
-        System.out.println("Generating " + COUNT + " files...");
-        File[] files = generator.generate(broker, test, generateXQ);
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            is = new InputSource(file.toURI().toASCIIString());
+            CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
+            mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
+
+            final InputSource is = new InputSource(new File("samples/shakespeare/hamlet.xml").toURI().toASCIIString());
             assertNotNull(is);
-            info = test.validateXMLResource(transaction, broker, XmldbURI.create(file.getName()), is);
+            final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
             assertNotNull(info);
             test.store(transaction, broker, info, is, false);
+            transact.commit(transaction);
+            System.out.println("Transaction commited ...");
         }
-        generator.releaseAll();
-        transact.commit(transaction);
-        System.out.println("Transaction commited ...");
+
+        try(final Txn transaction = transact.beginTransaction()) {
+            TestDataGenerator generator = new TestDataGenerator("xdb", COUNT);
+            System.out.println("Generating " + COUNT + " files...");
+            File[] files = generator.generate(broker, test, generateXQ);
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                final InputSource is = new InputSource(file.toURI().toASCIIString());
+                assertNotNull(is);
+                final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(file.getName()), is);
+                assertNotNull(info);
+                test.store(transaction, broker, info, is, false);
+            }
+            generator.releaseAll();
+            transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+        }
         return test;
     }
 

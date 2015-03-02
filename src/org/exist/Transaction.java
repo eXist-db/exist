@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -22,12 +22,44 @@ package org.exist;
 import org.exist.storage.txn.TransactionException;
 
 /**
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ * Represents an atomic Transaction on the database
  *
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public interface Transaction extends AutoCloseable {
-    
+
+    /**
+     * @Deprecated use org.exist.Transaction#commit() instead
+     */
+    @Deprecated
     public void success() throws TransactionException;
     
+    /**
+     * Performs an atomic commit of the transaction
+     *
+     * @throws org.exist.storage.txn.TransactionException if an error occurred
+     *   during writing any part of the transaction
+     */
+    public void commit() throws TransactionException;
+
+    /**
+     * @Deprecated use org.exist.Transaction#abort() instead
+     */
+    @Deprecated
     public void failure();
+
+    /**
+     * Performs an atomic abort of the transaction
+     */
+    public void abort();
+
+    /**
+     * Closes the transaction
+     *
+     * If the transaction has not been committed then
+     * it will be auto-aborted.
+     */
+    @Override
+    public void close();
 }

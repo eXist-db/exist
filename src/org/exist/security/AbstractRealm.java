@@ -91,9 +91,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         final XmldbURI realmCollectionURL = SecurityManager.SECURITY_COLLECTION_URI.append(getId());
         
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        final Txn txn = transact.beginTransaction();
-        
-        try {    
+        try(final Txn txn = transact.beginTransaction()) {
             collectionRealm = Utils.getOrCreateCollection(broker, txn, realmCollectionURL);
 
             collectionAccounts = Utils.getOrCreateCollection(broker, txn, realmCollectionURL.append("accounts"));
@@ -104,20 +102,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
 
             transact.commit(txn);
             
-        } catch(final PermissionDeniedException pde) {
-            transact.abort(txn);
-            throw new EXistException(pde);
-        } catch(final IOException ioe) {
-            transact.abort(txn);
-            throw new EXistException(ioe);
-        } catch(final LockException le) {
-            transact.abort(txn);
-            throw new EXistException(le);
-        } catch(final TriggerException te) {
-            transact.abort(txn);
-            throw new EXistException(te);
-        } finally {
-            transact.close(txn);
+        } catch(final PermissionDeniedException | IOException | TriggerException | LockException e) {
+            throw new EXistException(e);
         }
     }
     

@@ -460,8 +460,7 @@ public class CollectionConfigurationManager {
         + "</collection>";
 
         final TransactionManager transact = broker.getDatabase().getTransactionManager();
-        final Txn txn = transact.beginTransaction();
-        try {
+        try(final Txn txn = transact.beginTransaction()) {
             Collection collection = null;
             try {
                 collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.READ_LOCK);
@@ -488,10 +487,7 @@ public class CollectionConfigurationManager {
             transact.commit(txn);
             LOG.info("Configured '" + collection.getURI() + "'");
         } catch (final CollectionConfigurationException e) {
-            transact.abort(txn);
             throw new EXistException(e.getMessage());
-        } finally {
-            transact.close(txn);
         }
     }
 
