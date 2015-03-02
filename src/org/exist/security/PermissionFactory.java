@@ -113,12 +113,10 @@ public class PermissionFactory {
     }
 
     public static void updatePermissions(DBBroker broker, XmldbURI pathUri, PermissionModifier permissionModifier) throws PermissionDeniedException {
-        Collection collection = null;
         DocumentImpl doc = null;
         final TransactionManager transact = broker.getBrokerPool().getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
-            collection = broker.openCollection(pathUri, Lock.WRITE_LOCK);
+        try(final Txn transaction = transact.beginTransaction()) {
+            final Collection collection = broker.openCollection(pathUri, Lock.WRITE_LOCK);
             if (collection == null) {
                 doc = broker.getXMLResource(pathUri, Lock.WRITE_LOCK);
                 if(doc == null) {
@@ -143,23 +141,9 @@ public class PermissionFactory {
                 transact.commit(transaction);
                 broker.flush();
             }
-        } catch(final XPathException xpe) {
-            transact.abort(transaction);
-            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + xpe.getMessage(), xpe);
-        } catch (final PermissionDeniedException pde) {
-            transact.abort(transaction);
-            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + pde.getMessage(), pde);
-        } catch (final IOException ioe) {
-            transact.abort(transaction);
-            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + ioe.getMessage(), ioe);
-        } catch (final TriggerException te) {
-            transact.abort(transaction);
-            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + te.getMessage(), te);
-        } catch(final TransactionException te) {
-            transact.abort(transaction);
-            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + te.getMessage(), te);
+        } catch(final XPathException | PermissionDeniedException | IOException | TriggerException | TransactionException e) {
+            throw new PermissionDeniedException("Permission to modify permissions is denied for user '" + broker.getSubject().getName() + "' on '" + pathUri.toString() + "': " + e.getMessage(), e);
         } finally {
-            transact.close(transaction);
             if(doc != null) {
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
             }

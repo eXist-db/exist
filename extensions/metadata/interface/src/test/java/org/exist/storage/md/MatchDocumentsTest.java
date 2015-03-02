@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.List;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
@@ -36,6 +37,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
@@ -93,10 +95,8 @@ public class MatchDocumentsTest {
     	final Metas doc3Metadata = md.getMetas(doc3uri);
     	assertNotNull(doc3Metadata);
 
-    	DBBroker broker = null;
         Collection col1 = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             col1 = broker.openCollection(col1uri, Lock.READ_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -121,17 +121,14 @@ public class MatchDocumentsTest {
 
         	System.out.println("DELETE...");
             final TransactionManager txnManager = pool.getTransactionManager();
-            final Txn txn = txnManager.beginTransaction();
-	        try {
+
+	        try(final Txn txn = txnManager.beginTransaction()) {
 	            broker.removeCollection(txn, col1);
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
-	        } finally {
-                txnManager.close(txn);
-            }
+	        }
 	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
@@ -143,9 +140,6 @@ public class MatchDocumentsTest {
         } finally {
             if(col1 != null) {
                 col1.release(Lock.READ_LOCK);
-            }
-            if(broker != null) {
-                pool.release(broker);
             }
         }
     }
@@ -161,11 +155,9 @@ public class MatchDocumentsTest {
     	final Metas doc3metadata = md.getMetas(doc3uri);
     	assertNotNull(doc3metadata);
 
-    	DBBroker broker = null;
         Collection col1 = null;
         Collection parentCol = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
             parentCol = broker.openCollection(col2uri.removeLastSegment(), Lock.WRITE_LOCK);
 
@@ -192,17 +184,13 @@ public class MatchDocumentsTest {
         	System.out.println("MOVE...");
 
             final TransactionManager txnManager = pool.getTransactionManager();
-            final Txn txn = txnManager.beginTransaction();
-	        try {
+	        try(final Txn txn = txnManager.beginTransaction()) {
 	            broker.moveCollection(txn, col1, parentCol, col2uri.lastSegment());
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
                 e.printStackTrace();
-                txnManager.abort(txn);
 	            fail(e.getMessage());
-	        } finally {
-                txnManager.close(txn);
-            }
+	        }
 	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
@@ -217,9 +205,6 @@ public class MatchDocumentsTest {
             if(col1 != null) {
                 col1.release(Lock.WRITE_LOCK);
             }
-            if(broker != null) {
-                pool.release(broker);
-            }
         }
     }
 
@@ -231,10 +216,8 @@ public class MatchDocumentsTest {
     	final Metas doc1Metadata = md.getMetas(doc1uri);
     	assertNotNull(doc1Metadata);
 
-        DBBroker broker = null;
         Collection col1 = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -253,17 +236,13 @@ public class MatchDocumentsTest {
         	assertNotNull(col);
 
             final TransactionManager txnManager = pool.getTransactionManager();
-            final Txn txn = txnManager.beginTransaction();
-	        try {
+	        try(final Txn txn = txnManager.beginTransaction()) {
                 final DocumentImpl doc1 = col1.getDocument(broker, doc1uri.lastSegment());
 	            broker.moveResource(txn, doc1, col, doc2uri.lastSegment());
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
                 e.printStackTrace();
-                txnManager.abort(txn);
 	            fail(e.getMessage());
-            } finally {
-                txnManager.close(txn);
             }
 	    	System.out.println("DONE.");
 
@@ -276,9 +255,6 @@ public class MatchDocumentsTest {
             if(col1 != null) {
                 col1.release(Lock.WRITE_LOCK);
             }
-            if(broker != null) {
-                pool.release(broker);
-            }
         }
     }
 
@@ -290,10 +266,8 @@ public class MatchDocumentsTest {
     	final Metas doc1Metadata = md.getMetas(doc1uri);
     	assertNotNull(doc1Metadata);
 
-        DBBroker broker = null;
         Collection col1 = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -309,8 +283,7 @@ public class MatchDocumentsTest {
 
 	    	System.out.println("MOVING...");
             final TransactionManager txnManager = pool.getTransactionManager();
-            final Txn txn = txnManager.beginTransaction();
-	        try {
+	        try(final Txn txn = txnManager.beginTransaction()) {
 	            Collection col2 = broker.getOrCreateCollection(txn, col2uri);
 	    		broker.saveCollection(txn, col2);
 
@@ -320,11 +293,8 @@ public class MatchDocumentsTest {
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
-	        } finally {
-                txnManager.close(txn);
-            }
+	        }
 	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
@@ -335,9 +305,6 @@ public class MatchDocumentsTest {
         } finally {
             if(col1 != null) {
                 col1.release(Lock.WRITE_LOCK);
-            }
-            if(broker != null) {
-                pool.release(broker);
             }
         }
     }
@@ -359,10 +326,8 @@ public class MatchDocumentsTest {
     	assertNotNull(doc1Metadata);
 
         //add some test key-values to metadata of doc1
-        DBBroker broker = null;
         Collection col1 = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             final DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -379,18 +344,14 @@ public class MatchDocumentsTest {
             System.out.println("DELETING...");
 
             final TransactionManager txnManager = pool.getTransactionManager();
-            final Txn txn = txnManager.beginTransaction();
-            try {
+            try(final Txn txn = txnManager.beginTransaction()) {
                 DocumentImpl doc1 = col1.getDocument(broker, doc1uri.lastSegment());
                 broker.removeXMLResource(txn, doc1);
                 broker.saveCollection(txn, col1);
                 txnManager.commit(txn);
             } catch(Exception e) {
                 e.printStackTrace();
-                txnManager.abort(txn);
                 fail(e.getMessage());
-            } finally {
-                txnManager.close(txn);
             }
             System.out.println("DONE.");
 
@@ -401,9 +362,6 @@ public class MatchDocumentsTest {
         } finally {
             if(col1 != null) {
                 col1.release(Lock.WRITE_LOCK);
-            }
-            if(broker != null) {
-                pool.release(broker);
             }
         }
     }
@@ -416,10 +374,8 @@ public class MatchDocumentsTest {
     	final Metas doc3Metadata = md.getMetas(doc3uri);
     	assertNotNull(doc3Metadata);
 
-        DBBroker broker = null;
         Collection col1 = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -458,9 +414,6 @@ public class MatchDocumentsTest {
             if(col1 != null) {
                 col1.release(Lock.WRITE_LOCK);
             }
-            if(broker != null) {
-                pool.release(broker);
-            }
         }
     }
 
@@ -472,10 +425,8 @@ public class MatchDocumentsTest {
     	final Metas doc3Metadata = md.getMetas(doc3uri);
     	assertNotNull(doc3Metadata);
 
-        DBBroker broker = null;
         Collection col1 = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -492,8 +443,7 @@ public class MatchDocumentsTest {
 	    	System.out.println("MOVING...");
 
             final TransactionManager txnManager = pool.getTransactionManager();
-            final Txn txn = txnManager.beginTransaction();
-	        try {
+	        try(final Txn txn = txnManager.beginTransaction()) {
 	            Collection col2 = broker.getOrCreateCollection(txn, col2uri);
 	    		broker.saveCollection(txn, col2);
 
@@ -503,11 +453,8 @@ public class MatchDocumentsTest {
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            txnManager.abort(txn);
 	            fail(e.getMessage());
-	        } finally {
-                txnManager.close(txn);
-            }
+	        }
 	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
@@ -518,9 +465,6 @@ public class MatchDocumentsTest {
         } finally {
             if(col1 != null) {
                 col1.release(Lock.WRITE_LOCK);
-            }
-            if(broker != null) {
-                pool.release(broker);
             }
         }
     }
@@ -533,10 +477,9 @@ public class MatchDocumentsTest {
     	final Metas doc3Metadata = md.getMetas(doc3uri);
     	assertNotNull(doc3Metadata);
 
-        DBBroker broker = null;
         Collection col1 = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
 
             DocumentImpl doc2 = col1.getDocument(broker, doc2uri.lastSegment());
@@ -553,18 +496,15 @@ public class MatchDocumentsTest {
 	    	System.out.println("DELETING...");
 
             final TransactionManager txnManager = pool.getTransactionManager();
-            final Txn txn = txnManager.beginTransaction();
-	        try {
+
+	        try(final Txn txn = txnManager.beginTransaction()) {
                 DocumentImpl doc3 = col1.getDocument(broker, doc3uri.lastSegment());
 	            broker.removeXMLResource(txn, doc3);
                 broker.saveCollection(txn, col1);
 	            txnManager.commit(txn);
 	        } catch (Exception e) {
-	            e.printStackTrace();
-	            txnManager.abort(txn);
-	            fail(e.getMessage());
-	        } finally {
-                txnManager.close(txn);
+                e.printStackTrace();
+                fail(e.getMessage());
             }
 	    	System.out.println("DONE.");
 
@@ -575,29 +515,22 @@ public class MatchDocumentsTest {
             if(col1 != null) {
                 col1.release(Lock.WRITE_LOCK);
             }
-            if(broker != null) {
-                pool.release(broker);
-            }
         }
     }
 
 	@Before
-    public void startDB() {
-        DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
-        try {
-            File confFile = ConfigurationHelper.lookup("conf.xml");
-            Configuration config = new Configuration(confFile.getAbsolutePath());
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-        	pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            
-            txnManager = pool.getTransactionManager();
-            txn = txnManager.beginTransaction();
-            assertNotNull(txn);
+    public void startDB() throws DatabaseConfigurationException, EXistException {
 
+        final File confFile = ConfigurationHelper.lookup("conf.xml");
+        Configuration config = new Configuration(confFile.getAbsolutePath());
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+        pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
+
+        final TransactionManager txnManager = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn txn = txnManager.beginTransaction()) {
             final Collection root = broker.getOrCreateCollection(txn, col1uri);
             assertNotNull(root);
             broker.saveCollection(txn, root);
@@ -615,13 +548,7 @@ public class MatchDocumentsTest {
             txnManager.commit(txn);
         } catch (Exception e) {
             e.printStackTrace();
-            txnManager.abort(txn);
             fail(e.getMessage());
-        } finally {
-            txnManager.close(txn);
-            if (pool != null) {
-                pool.release(broker);
-            }
         }
     }
 
@@ -640,16 +567,12 @@ public class MatchDocumentsTest {
 
     private void clean() {
     	System.out.println("CLEANING...");
-    	
-        DBBroker broker = null;
-        TransactionManager txnManager = null;
-        Txn txn = null;
+
+        final TransactionManager txnManager = pool.getTransactionManager();
         Collection col1 = null;
         Collection col2 = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            txnManager = pool.getTransactionManager();
-            txn = txnManager.beginTransaction();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn txn = txnManager.beginTransaction()) {
 
             col1 = broker.openCollection(col1uri, Lock.WRITE_LOCK);
             if(col1 != null) {
@@ -663,7 +586,6 @@ public class MatchDocumentsTest {
 
         	txnManager.commit(txn);
         } catch (Exception e) {
-        	txnManager.abort(txn);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -672,10 +594,6 @@ public class MatchDocumentsTest {
             }
             if(col1 != null) {
                 col1.release(Lock.WRITE_LOCK);
-            }
-            txnManager.close(txn);
-            if (pool != null) {
-                pool.release(broker);
             }
         }
     	System.out.println("CLEANED.");

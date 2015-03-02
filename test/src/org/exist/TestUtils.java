@@ -28,50 +28,41 @@ import java.util.Iterator;
 public class TestUtils {
 	
     public static void cleanupDB() {
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
+
         try {
-            pool = BrokerPool.getInstance();
+            BrokerPool pool = BrokerPool.getInstance();
             assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+            try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
-            // Remove all collections below the /db root, except /db/system
-            Collection root = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI);
-            assertNotNull(root);
-            for (Iterator<DocumentImpl> i = root.iterator(broker); i.hasNext(); ) {
-                DocumentImpl doc = i.next();
-                root.removeXMLResource(transaction, broker, doc.getURI().lastSegment());
+                // Remove all collections below the /db root, except /db/system
+                Collection root = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI);
+                assertNotNull(root);
+                for (Iterator<DocumentImpl> i = root.iterator(broker); i.hasNext(); ) {
+                    DocumentImpl doc = i.next();
+                    root.removeXMLResource(transaction, broker, doc.getURI().lastSegment());
+                }
+                broker.saveCollection(transaction, root);
+                for (Iterator<XmldbURI> i = root.collectionIterator(broker); i.hasNext(); ) {
+                    XmldbURI childName = i.next();
+                    if (childName.equals("system"))
+                        continue;
+                    Collection childColl = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append(childName));
+                    assertNotNull(childColl);
+                    broker.removeCollection(transaction, childColl);
+                }
+
+                // Remove /db/system/config/db and all collection configurations with it
+                Collection config = broker.getOrCreateCollection(transaction,
+                        XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db"));
+                assertNotNull(config);
+                broker.removeCollection(transaction, config);
+                
+                pool.getTransactionManager().commit(transaction);
             }
-            broker.saveCollection(transaction, root);
-            for (Iterator<XmldbURI> i = root.collectionIterator(broker); i.hasNext(); ) {
-                XmldbURI childName = i.next();
-                if (childName.equals("system"))
-                    continue;
-                Collection childColl = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append(childName));
-                assertNotNull(childColl);
-                broker.removeCollection(transaction, childColl);
-            }
-
-            // Remove /db/system/config/db and all collection configurations with it
-            Collection config = broker.getOrCreateCollection(transaction,
-                XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db"));
-            assertNotNull(config);
-            broker.removeCollection(transaction, config);
-
-            transact.commit(transaction);
         } catch (Exception e) {
-        	transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null) pool.release(broker);
         }
     }
 

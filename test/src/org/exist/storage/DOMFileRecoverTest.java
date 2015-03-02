@@ -55,87 +55,88 @@ public class DOMFileRecoverTest extends TestCase {
 	
 	public void testAdd() {		
 		BrokerPool.FORCE_CORRUPTION = false;
-		DBBroker broker = null;
-		NodeIdFactory idFact = pool.getNodeFactory();
-		try {
-			System.out.println("Add some random data and force db corruption ...\n");
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-			assertNotNull(broker);
-			//TODO : is this necessary ?
-            broker.flush();
-			TransactionManager mgr = pool.getTransactionManager();
-			assertNotNull(mgr);
-			Txn txn = mgr.beginTransaction();
-			assertNotNull(txn);
-			System.out.println("Transaction started ...");
-            
-            DOMFile domDb = ((NativeBroker) broker).getDOMFile();
-            assertNotNull(domDb);
-            domDb.setOwnerObject(this);
-            
-            // put 1000 values into the btree
-            long firstToRemove = -1;
-            for (int i = 1; i <= 10000; i++) {
-                byte[] data = ("Value" + i).getBytes();
-                NodeId id = idFact.createInstance(i);
-                long addr = domDb.put(txn, new NativeBroker.NodeRef(500, id), data);
-//              TODO : test addr ?
-                if (i == 1)
-                    firstToRemove = addr;
-            }
 
-            domDb.closeDocument();
-            
-            // remove all
-            NativeBroker.NodeRef ref = new NativeBroker.NodeRef(500);
-            assertNotNull(ref);
-            IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-            assertNotNull(idx);
-            domDb.remove(txn, idx, null);
-            domDb.removeAll(txn, firstToRemove);
-            
-            // put some more
-            for (int i = 1; i <= 10000; i++) {
-                byte[] data = ("Value" + i).getBytes();
-                @SuppressWarnings("unused")
-				long addr = domDb.put(txn, new NativeBroker.NodeRef(500, idFact.createInstance(i)), data);
+        final NodeIdFactory idFact = pool.getNodeFactory();
+
+		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+			System.out.println("Add some random data and force db corruption ...\n");
+
+            broker.flush();
+            final DOMFile domDb = ((NativeBroker) broker).getDOMFile();
+            domDb.setOwnerObject(this);
+
+            final TransactionManager mgr = pool.getTransactionManager();
+
+            long firstToRemove = -1;
+
+            try(final Txn txn = mgr.beginTransaction()) {
+                System.out.println("Transaction started ...");
+
+                // put 1000 values into the btree
+                for (int i = 1; i <= 10000; i++) {
+                    byte[] data = ("Value" + i).getBytes();
+                    NodeId id = idFact.createInstance(i);
+                    long addr = domDb.put(txn, new NativeBroker.NodeRef(500, id), data);
 //              TODO : test addr ?
+                    if (i == 1)
+                        firstToRemove = addr;
+                }
+
+                domDb.closeDocument();
+
+                // remove all
+                NativeBroker.NodeRef ref = new NativeBroker.NodeRef(500);
+                assertNotNull(ref);
+                IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                assertNotNull(idx);
+                domDb.remove(txn, idx, null);
+                domDb.removeAll(txn, firstToRemove);
+
+                // put some more
+                for (int i = 1; i <= 10000; i++) {
+                    byte[] data = ("Value" + i).getBytes();
+                    @SuppressWarnings("unused")
+                    long addr = domDb.put(txn, new NativeBroker.NodeRef(500, idFact.createInstance(i)), data);
+//              TODO : test addr ?
+                }
+
+                domDb.closeDocument();
+                mgr.commit(txn);
+                System.out.println("Transaction commited ...");
             }
             
-            domDb.closeDocument();
-            mgr.commit(txn);
-            System.out.println("Transaction commited ...");
-            
-            txn = mgr.beginTransaction();
-            System.out.println("Transaction started ...");
-            
-            // put 1000 new values into the btree
-            for (int i = 1; i <= 1000; i++) {
-                byte[] data = ("Value" + i).getBytes();
-                long addr = domDb.put(txn, new NativeBroker.NodeRef(501, idFact.createInstance(i)), data);
+            try(final Txn txn = mgr.beginTransaction()) {
+                System.out.println("Transaction started ...");
+
+                // put 1000 new values into the btree
+                for (int i = 1; i <= 1000; i++) {
+                    byte[] data = ("Value" + i).getBytes();
+                    long addr = domDb.put(txn, new NativeBroker.NodeRef(501, idFact.createInstance(i)), data);
 //              TODO : test addr ?                
-                if (i == 1)
-                    firstToRemove = addr;
-            }            
-            
-            domDb.closeDocument();
-            mgr.commit(txn);
-            System.out.println("Transaction commited ...");
+                    if (i == 1)
+                        firstToRemove = addr;
+                }
+
+                domDb.closeDocument();
+                mgr.commit(txn);
+                System.out.println("Transaction commited ...");
+            }
             
             // the following transaction is not committed and will be rolled back during recovery
-            txn = mgr.beginTransaction();
-            System.out.println("Transaction started ...");
-            
-            for (int i = 1; i <= 200; i++) {
-                domDb.remove(txn, new NativeBroker.NodeRef(500, idFact.createInstance(i)));
-            }
+            try(final Txn txn = mgr.beginTransaction()) {
+                System.out.println("Transaction started ...");
 
-            idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, new NativeBroker.NodeRef(501));
-            domDb.remove(txn, idx, null);
-            domDb.removeAll(txn, firstToRemove);
-            
-//          Don't commit...
-            mgr.commit(txn);
+                for (int i = 1; i <= 200; i++) {
+                    domDb.remove(txn, new NativeBroker.NodeRef(500, idFact.createInstance(i)));
+                }
+
+                final IndexQuery idx = new IndexQuery(IndexQuery.TRUNC_RIGHT, new NativeBroker.NodeRef(501));
+                domDb.remove(txn, idx, null);
+                domDb.removeAll(txn, firstToRemove);
+
+                // Don't commit...
+                mgr.commit(txn);
+            }
             mgr.getJournal().flushToLog(true);
             System.out.println("Transaction interrupted ...");
             
@@ -145,8 +146,6 @@ public class DOMFileRecoverTest extends TestCase {
 	    } catch (Exception e) {
 	    	e.printStackTrace();
 	        fail(e.getMessage());               
-		} finally {
-			pool.release(broker);
 		}
 	}
 	

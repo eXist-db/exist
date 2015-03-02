@@ -61,12 +61,10 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 		final long start = System.currentTimeMillis();
 		MutableDocumentSet docs = new DefaultDocumentSet();
         final TransactionManager transact = pool.getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
     	final Subject preserveSubject = pool.getSubject();
-		DBBroker broker = null;
 		final org.exist.collections.Collection c = parent.getCollection();
-		try {
-			broker = pool.get(user);
+        try(final DBBroker broker = pool.get(user);
+            final Txn transaction = transact.beginTransaction()) {
 			if (resource == null) {
 				docs = c.allDocs(broker, docs, true);
 			} else {
@@ -99,35 +97,21 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
             LOG.debug("xupdate took " + (System.currentTimeMillis() - start) +
             	"ms.");
 			return mods;
-		} catch (final ParserConfigurationException e) {
-            transact.abort(transaction);
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch (final IOException e) {
-            transact.abort(transaction);
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch (final SAXException e) {
-            transact.abort(transaction);
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch (final URISyntaxException e) {
-            transact.abort(transaction);
+		} catch (final ParserConfigurationException | URISyntaxException | SAXException | IOException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (final PermissionDeniedException e) {
-            transact.abort(transaction);
 			throw new XMLDBException(
 				ErrorCodes.PERMISSION_DENIED,
 				e.getMessage());
 		} catch (final EXistException e) {
-            transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch(final Exception e) {
-            transact.abort(transaction);
 			e.printStackTrace();
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} finally {
-            transact.close(transaction);
-			if(processor != null)
-				{processor.reset();}
-			pool.release(broker);
+			if(processor != null) {
+                processor.reset();
+            }
 			pool.setSubject(preserveSubject);
 		}
 	}

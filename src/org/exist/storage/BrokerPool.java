@@ -1118,8 +1118,7 @@ public class BrokerPool implements Database {
         Collection collection = sysBroker.getCollection(sysCollectionUri);
         if(collection == null) {
             final TransactionManager transact = getTransactionManager();
-            final Txn txn = transact.beginTransaction();
-            try {
+            try(final Txn txn = transact.beginTransaction()) {
                 collection = sysBroker.getOrCreateCollection(txn, sysCollectionUri);
                 if(collection == null) {
                     throw new IOException("Could not create system collection: " + sysCollectionUri);
@@ -1129,13 +1128,10 @@ public class BrokerPool implements Database {
 
                 transact.commit(txn);
             } catch(final Exception e) {
-                transact.abort(txn);
                 e.printStackTrace();
                 final String msg = "Initialisation of system collections failed: " + e.getMessage();
                 LOG.error(msg, e);
                 throw new EXistException(msg, e);
-            } finally {
-                transact.close(txn);
             }
         }
     }

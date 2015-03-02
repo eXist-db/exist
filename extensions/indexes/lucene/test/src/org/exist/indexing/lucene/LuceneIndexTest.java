@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.util.*;
 
+import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
@@ -583,16 +584,9 @@ public class LuceneIndexTest {
     public void dropSingleDoc() {
         System.out.println("Test removal of single document ...");
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
 
             System.out.println("Removing document dropDocument.xml");
             root.removeXMLResource(transaction, broker, XmldbURI.create("dropDocument.xml"));
@@ -602,12 +596,8 @@ public class LuceneIndexTest {
 
             System.out.println("Test PASSED.");
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
@@ -615,49 +605,39 @@ public class LuceneIndexTest {
     public void dropDocuments() {
         System.out.println("Test removal of multiple documents ...");
         configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//LINE[ft:query(., 'bark')]", null, AccessContext.TEST);
-            assertNotNull(seq);
-            assertEquals(6, seq.getItemCount());
 
-            System.out.println("Removing document r_and_j.xml");
-            root.removeXMLResource(transaction, broker, XmldbURI.create("r_and_j.xml"));
-            transact.commit(transaction);
+            try(final Txn transaction = transact.beginTransaction()) {
+                Sequence seq = xquery.execute("//LINE[ft:query(., 'bark')]", null, AccessContext.TEST);
+                assertNotNull(seq);
+                assertEquals(6, seq.getItemCount());
 
-            seq = xquery.execute("//LINE[ft:query(., 'bark')]", null, AccessContext.TEST);
-            assertNotNull(seq);
-            assertEquals(3, seq.getItemCount());
+                System.out.println("Removing document r_and_j.xml");
+                root.removeXMLResource(transaction, broker, XmldbURI.create("r_and_j.xml"));
+                transact.commit(transaction);
 
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Removing document hamlet.xml");
-            root.removeXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"));
-            transact.commit(transaction);
+                seq = xquery.execute("//LINE[ft:query(., 'bark')]", null, AccessContext.TEST);
+                assertNotNull(seq);
+                assertEquals(3, seq.getItemCount());
+            }
 
-            seq = xquery.execute("//LINE[ft:query(., 'bark')]", null, AccessContext.TEST);
-            assertNotNull(seq);
-            assertEquals(1, seq.getItemCount());
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Removing document hamlet.xml");
+                root.removeXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"));
+                transact.commit(transaction);
 
-            System.out.println("Test PASSED.");
+                Sequence seq = xquery.execute("//LINE[ft:query(., 'bark')]", null, AccessContext.TEST);
+                assertNotNull(seq);
+                assertEquals(1, seq.getItemCount());
+
+                System.out.println("Test PASSED.");
+            }
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
@@ -665,16 +645,9 @@ public class LuceneIndexTest {
     public void removeCollection() {
         System.out.println("Test removal of collection ...");
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
@@ -698,12 +671,8 @@ public class LuceneIndexTest {
 
             System.out.println("Test PASSED.");
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
@@ -741,13 +710,9 @@ public class LuceneIndexTest {
     @Test
     public void xupdateRemove() {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            transact = pool.getTransactionManager();
-            transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
@@ -814,14 +779,8 @@ public class LuceneIndexTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null) {
-                pool.release(broker);
-            }
         }
     }
 
@@ -832,13 +791,9 @@ public class LuceneIndexTest {
     @Test
     public void xupdateInsert() {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-        	broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            transact = pool.getTransactionManager();
-            transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
@@ -999,27 +954,17 @@ public class LuceneIndexTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null) {
-                pool.release(broker);
-            }
         }
     }
 
     @Test
     public void xupdateUpdate() {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            transact = pool.getTransactionManager();
-            transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
@@ -1090,27 +1035,17 @@ public class LuceneIndexTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null) {
-                pool.release(broker);
-            }
         }
     }
 
     @Test
     public void xupdateReplace() {
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            transact = pool.getTransactionManager();
-            transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
@@ -1175,29 +1110,16 @@ public class LuceneIndexTest {
 
             transact.commit(transaction);
          } catch (Exception e) {
-             if (transact != null)
-                 transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null) {
-                pool.release(broker);
-            }
         }
     }
 
     private DocumentSet configureAndStore(String configuration, String data, String docName) {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
         MutableDocumentSet docs = new DefaultDocumentSet();
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             if (configuration != null) {
                 CollectionConfigurationManager mgr = pool.getConfigurationManager();
@@ -1211,28 +1133,19 @@ public class LuceneIndexTest {
             docs.add(info.getDocument());
             transact.commit(transaction);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
         return docs;
     }
 
     private DocumentSet configureAndStore(String configuration, String directory) {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
+
         MutableDocumentSet docs = new DefaultDocumentSet();
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
 
             if (configuration != null) {
                 CollectionConfigurationManager mgr = pool.getConfigurationManager();
@@ -1257,12 +1170,8 @@ public class LuceneIndexTest {
             }
             transact.commit(transaction);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
         return docs;
     }
@@ -1293,16 +1202,9 @@ public class LuceneIndexTest {
 
     @Before
     public void setup() {
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            final Txn transaction = transact.beginTransaction()) {
 
             root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
@@ -1314,31 +1216,17 @@ public class LuceneIndexTest {
             savedConfig = (Boolean) config.getProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT);
             config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.TRUE);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null)
-                pool.release(broker);
         }
     }
 
     @After
-    public void cleanup() {
-        BrokerPool pool = null;
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            pool = BrokerPool.getInstance();
-            assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+    public void cleanup() throws EXistException {
+        final BrokerPool pool = BrokerPool.getInstance();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
 
             Collection collConfig = broker.getOrCreateCollection(transaction,
                 XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db"));
@@ -1354,12 +1242,8 @@ public class LuceneIndexTest {
             Configuration config = BrokerPool.getInstance().getConfiguration();
             config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, savedConfig);
         } catch (Exception e) {
-            if (transact != null)
-                transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            if (pool != null) pool.release(broker);
         }
     }
 

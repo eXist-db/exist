@@ -68,13 +68,10 @@ public class CopyCollectionTest {
     private void store() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
-        DBBroker broker = null;
-        
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
-            TransactionManager transact = pool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
             System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -100,8 +97,6 @@ public class CopyCollectionTest {
             
 	    } catch (Exception e) {            
 	        fail(e.getMessage());              
-        } finally {
-            pool.release(broker);
         }
     }
 
@@ -135,39 +130,37 @@ public class CopyCollectionTest {
 
     private void storeAborted() {
         BrokerPool.FORCE_CORRUPTION = true;
-        BrokerPool pool = null;
+        final BrokerPool pool = startDB();
 
-        DBBroker broker = null;
-        try {
-        	pool = startDB();
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);
-            System.out.println("Transaction started ...");
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
+            Collection test2;
 
-            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append("test2"));
-            assertNotNull(test2);
-            broker.saveCollection(transaction, test2);
-    
-            String existHome = System.getProperty("exist.home");
-            File existDir = existHome==null ? new File(".") : new File(existHome);
-            File f = new File(existDir,"samples/biblio.rdf");
-            assertNotNull(f);
-            IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toURI().toASCIIString()));
-            test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+            try(final Txn transaction = transact.beginTransaction()) {
+
+                System.out.println("Transaction started ...");
+
+                Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                assertNotNull(root);
+                broker.saveCollection(transaction, root);
+
+                test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append("test2"));
+                assertNotNull(test2);
+                broker.saveCollection(transaction, test2);
+
+                String existHome = System.getProperty("exist.home");
+                File existDir = existHome == null ? new File(".") : new File(existHome);
+                File f = new File(existDir, "samples/biblio.rdf");
+                assertNotNull(f);
+                IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toURI().toASCIIString()));
+                test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
+            }
             
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
-            
-            transaction = transact.beginTransaction();
+            final Txn transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");
             
             Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
@@ -181,8 +174,6 @@ public class CopyCollectionTest {
 	    } catch (Exception e) {    
 	    	e.printStackTrace();
 	        fail(e.getMessage());              
-        } finally {
-            if (pool != null) pool.release(broker);
         }
     }
 

@@ -20,8 +20,10 @@
  */
 package org.exist.dom.persistent;
 
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.txn.TransactionException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.exist.EXistException;
@@ -55,6 +57,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.File;
+import java.io.IOException;
+
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
@@ -428,14 +432,12 @@ public class BasicNodeSetTest {
 	
     @BeforeClass
     public static void setUp() throws Exception {
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {
-            pool = startDB();
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            transact = pool.getTransactionManager();
-            transaction = transact.beginTransaction();
+        pool = startDB();
 
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final Txn transaction = transact.beginTransaction()) {
+
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
             broker.saveCollection(transaction, root);
 
@@ -463,9 +465,8 @@ public class BasicNodeSetTest {
             if (pool != null) {
                 pool.release(broker);
                 BrokerPool.stopAll(false);
-                pool = null;
-                root = null;
             }
+
             throw e;
         }
     }
@@ -483,26 +484,17 @@ public class BasicNodeSetTest {
     }
 
     @AfterClass
-    public static void tearDown() {
+    public static void tearDown() throws PermissionDeniedException, IOException, TriggerException, TransactionException {
         
-        TransactionManager transact = null;
-        Txn transaction = null;
-        try {    
-            transact = pool.getTransactionManager();
-            transaction = transact.beginTransaction();
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final Txn transaction = transact.beginTransaction()) {
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test"));
 //          broker.removeCollection(transaction, root);
-            
+
             transact.commit(transaction);
-        } catch(Exception e) {
-            if(transaction != null) {
-                transact.abort(transaction);
-            }
         } finally {
-            if (pool != null) pool.release(broker);
+            pool.release(broker);
+            BrokerPool.stopAll(false);
         }
-        BrokerPool.stopAll(false);
-        pool = null;
-        root = null;
     }
 }

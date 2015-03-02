@@ -1723,21 +1723,19 @@ public class NativeBroker extends DBBroker {
 
     public void reindexCollection(final Collection collection, final int mode) throws PermissionDeniedException {
         final TransactionManager transact = pool.getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        long start = System.currentTimeMillis();
 
-        try {
+        final long start = System.currentTimeMillis();
+
+        try(final Txn transaction = transact.beginTransaction()) {
             LOG.info(String.format("Start indexing collection %s", collection.getURI().toString()));
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REINDEX_COLLECTION, collection.getURI());
             reindexCollection(transaction, collection, mode);
             transact.commit(transaction);
 
         } catch(final Exception e) {
-            transact.abort(transaction);
             LOG.warn("An error occurred during reindex: " + e.getMessage(), e);
 
         } finally {
-            transact.close(transaction);
             pool.getProcessMonitor().endJob();
             LOG.info(String.format("Finished indexing collection %s in %s ms.",
                 collection.getURI().toString(), System.currentTimeMillis() - start));
@@ -1830,14 +1828,13 @@ public class NativeBroker extends DBBroker {
         setSubject(pool.getSecurityManager().getSystemSubject());
         //start a transaction
         final TransactionManager transact = pool.getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
         //create a name for the temporary document
         final XmldbURI docName = XmldbURI.create(MessageDigester.md5(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()), false) + ".xml");
 
         //get the temp collection
         Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
         boolean created = false;
-        try {
+        try(final Txn transaction = transact.beginTransaction()) {
             //if no temp collection
             if(temp == null) {
                 //creates temp collection (with write lock)
@@ -1879,9 +1876,7 @@ public class NativeBroker extends DBBroker {
         } catch(final Exception e) {
             LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
             //abort the transaction
-            transact.abort(transaction);
         } finally {
-            transact.close(transaction);
             //restore the user
             setUser(currentUser);
         }
@@ -1900,15 +1895,11 @@ public class NativeBroker extends DBBroker {
             return;
         }
         final TransactionManager transact = pool.getTransactionManager();
-        final Txn transaction = transact.beginTransaction();
-        try {
+        try(final Txn transaction = transact.beginTransaction()) {
             removeCollection(transaction, temp);
             transact.commit(transaction);
         } catch(final Exception e) {
-            transact.abort(transaction);
             LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
-        } finally {
-            transact.close(transaction);
         }
     }
 

@@ -57,17 +57,14 @@ public class RecoverBinaryTest {
     }
 
     private void store() {
+        System.out.println("store() ...\n");
+
     	BrokerPool.FORCE_CORRUPTION = true;
-        DBBroker broker = null;
-        try {
-            System.out.println("store() ...\n");
-        	assertNotNull(pool);
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+
+        final TransactionManager transact = pool.getTransactionManager();
+
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
             System.out.println("Transaction started ...");
             
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -99,8 +96,6 @@ public class RecoverBinaryTest {
             transact.getJournal().flushToLog(true);
 		} catch (Exception e) {            
 	        fail(e.getMessage());             
-        } finally {
-            if (pool != null) pool.release(broker);
         }
     }
     

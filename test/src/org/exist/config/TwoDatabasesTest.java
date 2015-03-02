@@ -133,19 +133,20 @@ public class TwoDatabasesTest extends TestCase
       throws Exception
    {
       System.out.println("Putting documents.");
-      DBBroker broker1 = pool1.get(user1);
-      Txn transaction1 = pool1.getTransactionManager().beginTransaction();
-      Collection top1 = storeBin(broker1,transaction1,"1");
-      pool1.getTransactionManager().commit(transaction1);
-      top1.release(Lock.READ_LOCK);
-      pool1.release(broker1);
+
+      try(final DBBroker broker1 = pool1.get(user1);
+            final Txn transaction1 = pool1.getTransactionManager().beginTransaction()) {
+          Collection top1 = storeBin(broker1, transaction1, "1");
+          pool1.getTransactionManager().commit(transaction1);
+          top1.release(Lock.READ_LOCK);
+      }
       
-      DBBroker broker2 = pool2.get(user1);
-      Txn transaction2 = pool2.getTransactionManager().beginTransaction();
-      Collection top2 = storeBin(broker2,transaction2,"2");
-      pool2.getTransactionManager().commit(transaction2);
-      top2.release(Lock.READ_LOCK);
-      pool2.release(broker2);
+      try(final DBBroker broker2 = pool2.get(user1);
+            final Txn transaction2 = pool2.getTransactionManager().beginTransaction()) {
+          Collection top2 = storeBin(broker2, transaction2, "2");
+          pool2.getTransactionManager().commit(transaction2);
+          top2.release(Lock.READ_LOCK);
+      }
    }
    
    public void get()

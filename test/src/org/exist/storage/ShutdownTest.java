@@ -41,68 +41,65 @@ public class ShutdownTest {
 	}
 	
 	public void storeAndShutdown() {
-		BrokerPool pool = null;
-		DBBroker broker = null;
-		try {
-			pool = startDB();
-			assertNotNull(pool);
-			broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
-            assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);            
-            System.out.println("Transaction started ...");
-            
-            Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(test); 
-            broker.saveCollection(transaction, test);
-            
-            File files[] = dir.listFiles(new FilenameFilter() {
-	        	public boolean accept(File dir, String name) {
-	        		if (name.endsWith(".xml"))
-	        			return true;
-	        		return false;
-	        	}
-	        });
-            assertNotNull(files); 
-            
-            File f;
-            IndexInfo info;
-            
-            // store some documents.
-            for (int i = 0; i < files.length; i++) {
-                f = files[i];
-                assertNotNull(f); 
-                try {
-                    info = test.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
-                    assertNotNull(info); 
-                    test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
-                } catch (SAXException e) {
-                    System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
+		final BrokerPool pool = startDB();
+        final TransactionManager transact = pool.getTransactionManager();
+
+		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+            Collection test;
+
+            try(final Txn transaction = transact.beginTransaction()) {
+
+                System.out.println("Transaction started ...");
+
+                test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+                assertNotNull(test);
+                broker.saveCollection(transaction, test);
+
+                File files[] = dir.listFiles(new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
+                        if (name.endsWith(".xml"))
+                            return true;
+                        return false;
+                    }
+                });
+                assertNotNull(files);
+
+                File f;
+                IndexInfo info;
+
+                // store some documents.
+                for (int i = 0; i < files.length; i++) {
+                    f = files[i];
+                    assertNotNull(f);
+                    try {
+                        info = test.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
+                        assertNotNull(info);
+                        test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
+                    } catch (SAXException e) {
+                        System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
+                    }
                 }
+
+                XQuery xquery = broker.getXQueryService();
+                assertNotNull(xquery);
+                Sequence result = xquery.execute("//SPEECH[ft:query(LINE, 'love')]", Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
+                assertNotNull(result);
+                assertEquals(result.getItemCount(), 160);
+
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
             }
-            
-            XQuery xquery = broker.getXQueryService();
-            assertNotNull(xquery); 
-            Sequence result = xquery.execute("//SPEECH[ft:query(LINE, 'love')]", Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
-            assertNotNull(result); 
-            assertEquals(result.getItemCount(), 160);
-            
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
-            
-            transaction = transact.beginTransaction();
-            System.out.println("Transaction started ...");
-            
-            broker.removeCollection(transaction, test);
-            
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
+
+            try(final Txn transaction = transact.beginTransaction()) {
+                System.out.println("Transaction started ...");
+
+                broker.removeCollection(transaction, test);
+
+                transact.commit(transaction);
+                System.out.println("Transaction commited ...");
+            }
         } catch (Exception e) {            
             fail(e.getMessage()); 
-		} finally {
-			pool.release(broker);
 		}
 		
 		// shut down the database

@@ -58,32 +58,29 @@ public class BTreeRecoverTest extends TestCase {
         
         TransactionManager mgr = pool.getTransactionManager();
         NodeIdFactory idFact = pool.getNodeFactory();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
+
             broker.flush();
-            Txn txn = mgr.beginTransaction();
-            System.out.println("Transaction started ...");
-            
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             domDb.setOwnerObject(this);
-            
+
             BrokerPool.FORCE_CORRUPTION = true;
-            
-            // put 1000 values into the btree
-            NodeId id;
-            for (int i = 1; i < 1001; i++) {
-            	id = idFact.createInstance(i);
-                domDb.addValue(txn, new NativeBroker.NodeRef(500, id), i);
+
+            try(final Txn txn = mgr.beginTransaction()) {
+                // put 1000 values into the btree
+                for (int i = 1; i < 1001; i++) {
+                    final NodeId id = idFact.createInstance(i);
+                    domDb.addValue(txn, new NativeBroker.NodeRef(500, id), i);
+                }
+
+                final IndexQuery idx = new IndexQuery(IndexQuery.GT, new NativeBroker.NodeRef(500, idFact.createInstance(800)));
+                domDb.remove(txn, idx, null);
+
+                mgr.commit(txn);
             }
             
-            IndexQuery idx = new IndexQuery(IndexQuery.GT, new NativeBroker.NodeRef(500, idFact.createInstance(800)));
-            domDb.remove(txn, idx, null);
-            
-            mgr.commit(txn);
-            
             // start a dirty, uncommitted transaction. This will be rolled back by the recovery.
-            txn = mgr.beginTransaction();
+            final Txn txn = mgr.beginTransaction();
             
             for (int i = 801; i < 2001; i++) {
                 domDb.addValue(txn, new NativeBroker.NodeRef(500, idFact.createInstance(i)), i);
@@ -93,7 +90,7 @@ public class BTreeRecoverTest extends TestCase {
                 domDb.addValue(txn, new NativeBroker.NodeRef(500, idFact.createInstance(i)), i * 3);
             }
             
-            idx = new IndexQuery(IndexQuery.GT, new NativeBroker.NodeRef(500, idFact.createInstance(600)));
+            final IndexQuery idx = new IndexQuery(IndexQuery.GT, new NativeBroker.NodeRef(500, idFact.createInstance(600)));
             domDb.remove(txn, idx, null);
             
             mgr.getJournal().flushToLog(true);
@@ -104,8 +101,6 @@ public class BTreeRecoverTest extends TestCase {
         } catch (Exception e) {
         	e.printStackTrace();
             fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
     
