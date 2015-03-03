@@ -349,8 +349,8 @@ public class ExistCollection extends ExistResource {
 
             // Perform actual copy
             IOUtils.copy(bis, bos);
-            vtf.close();
         }
+        vtf.close();
 
         // To support LockNullResource, a 0-byte XML document can received. Since 0-byte
         // XML documents are not supported a small file will be created.
