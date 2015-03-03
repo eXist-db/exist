@@ -380,11 +380,10 @@ public abstract class BaseHTTPClientFunction extends BasicFunction
                         final byte buf[] = new byte[4096];
                         int read = -1;
                         while((read = cfis.read(buf)) > -1) {
-                            baos.write(buf);
+                            baos.write(buf, 0, read);
                         }
-                        
-                        builder.characters(URLEncoder.encode(EncodingUtil.getString(baos.toByteArray(), ((HttpMethodBase)method).getResponseCharSet()), "UTF-8"));
                         baos.close();
+                        builder.characters(URLEncoder.encode(EncodingUtil.getString(baos.toByteArray(), ((HttpMethodBase)method).getResponseCharSet()), "UTF-8"));
                     } else {
 
                         // Assume it's a binary body and Base64 encode it
