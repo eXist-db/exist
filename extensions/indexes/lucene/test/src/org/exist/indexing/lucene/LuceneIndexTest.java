@@ -124,6 +124,15 @@ public class LuceneIndexTest {
         "   von ruhigem Dasein versunken, daß meine Kunst darunter leidet.</p>" +
         "</section>";
 
+    private static String XML8 =
+            "<a>" +
+            "   <b att='att on b1'>AAA on b1</b>" +
+            "   <b att='att on b2' attr='attr on b2'>AAA on b2</b>" +
+            "   <b att='att on b3' attr='attr on b3'>AAA on b3</b>" +
+            "   <c att='att on c1'>AAA on c1</c>" +
+            "   <c>AAA on c2</c>" +
+            "</a>";
+
     private static String COLLECTION_CONFIG1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
@@ -215,6 +224,29 @@ public class LuceneIndexTest {
             "       </lucene>" +
             "   </index>" +
             "</collection>";
+
+     private static String COLLECTION_CONFIG7 =
+            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
+            "       <fulltext default=\"none\" attributes=\"no\">" +
+            "       </fulltext>" +
+            "       <lucene>" +
+            "           <text qname='c'>" +
+            "               <has-attribute qname='att' boost='30'/>" +
+            "           </text>" +
+            "           <text qname='b' boost='5'>" +
+            "               <match-attribute qname='att' value='att on b2' boost='30'/>" +
+            "               <match-attribute qname='attr' value='attr on b3' boost='5'/>" +
+            "               <has-attribute qname='attr' boost='15'/>" +
+            "           </text>" +
+            "           <text qname='@att'>" +
+            "               <match-sibling-attribute qname='attr' value='attr on b2' boost='2'/>" +
+            "               <has-sibling-attribute qname='attr' boost='2'/>" +
+            "           </text>" +
+            "       </lucene>" +
+            "   </index>" +
+            "</collection>";
+
 
     private static BrokerPool pool;
     private static Collection root;
@@ -380,6 +412,81 @@ public class LuceneIndexTest {
             seq = xquery.execute("/article[ft:query(., 'ignore')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    @Test
+    public void attributeMatch() {
+        DocumentSet docs
+                = configureAndStore(COLLECTION_CONFIG7, XML8, "test.xml");
+        DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
+        try {
+            broker = pool.get(pool.getSecurityManager().getSystemSubject());
+            transact = pool.getTransactionManager();
+            transaction = transact.beginTransaction();
+
+            assertNotNull(broker);
+            assertNotNull(transact);
+            assertNotNull(transaction);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+
+            Sequence seq = xquery.execute("for $a in ft:query((//b|//c), 'AAA') order by ft:score($a) descending return xs:string($a)", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(5, seq.getItemCount());
+            assertEquals("AAA on b2", seq.itemAt(0).getStringValue());
+            assertEquals("AAA on c1", seq.itemAt(1).getStringValue());
+            assertEquals("AAA on b3", seq.itemAt(2).getStringValue());
+            assertEquals("AAA on b1", seq.itemAt(3).getStringValue());
+            assertEquals("AAA on c2", seq.itemAt(4).getStringValue());
+
+            seq = xquery.execute("for $a in ft:query(//@att, 'att') order by ft:score($a) descending return xs:string($a)", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(4, seq.getItemCount());
+            assertEquals("att on b2", seq.itemAt(0).getStringValue());
+            assertEquals("att on b3", seq.itemAt(1).getStringValue());
+            assertEquals("att on b1", seq.itemAt(2).getStringValue());
+            assertEquals("att on c1", seq.itemAt(3).getStringValue());
+
+
+            // modify with xupdate and check if boosts are updated accordingly
+            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            assertNotNull(proc);
+            proc.setBroker(broker);
+            proc.setDocumentSet(docs);
+
+            // remove 'att' attribute from c element: c element gets no boost
+            String xupdate =
+                    XUPDATE_START +
+                    "   <xu:remove select=\"//c[1]/@att\"/>" +
+                    "   <xu:append select=\"//c[2]\"><xu:attribute name=\"att\">att on c2</xu:attribute></xu:append>" +
+                    XUPDATE_END;
+
+            Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+            assertNotNull(modifications);
+
+            modifications[0].process(transaction);
+            modifications[1].process(transaction);
+            proc.reset();
+            transact.commit(transaction);
+
+            seq = xquery.execute("for $a in ft:query((//b|//c), 'AAA') order by ft:score($a) descending return xs:string($a)", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(5, seq.getItemCount());
+            assertEquals("AAA on b2", seq.itemAt(0).getStringValue());
+            assertEquals("AAA on c2", seq.itemAt(1).getStringValue());
+            assertEquals("AAA on b3", seq.itemAt(2).getStringValue());
+            assertEquals("AAA on b1", seq.itemAt(3).getStringValue());
+            assertEquals("AAA on c1", seq.itemAt(4).getStringValue());
+
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
