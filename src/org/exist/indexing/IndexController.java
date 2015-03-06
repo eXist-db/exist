@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist-db Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -58,6 +58,7 @@ public class IndexController {
     protected StreamListener listener = null;    
     protected DocumentImpl currentDoc = null;
     protected int currentMode = StreamListener.UNKNOWN;
+    private boolean isReindexing;
 
     public IndexController(DBBroker broker) {
         this.broker = broker;
@@ -218,11 +219,21 @@ public class IndexController {
     public void reindex(Txn transaction, IStoredNode<? extends IStoredNode> reindexRoot, int mode) {
         if (reindexRoot == null)
             {return;}
+        setReindexing(true);
         reindexRoot = broker.objectWith(new NodeProxy(reindexRoot.getOwnerDocument(), reindexRoot.getNodeId()));
         setDocument(reindexRoot.getOwnerDocument(), mode);
         getStreamListener();
         IndexUtils.scanNode(broker, transaction, reindexRoot, listener);
         flush();
+        setReindexing(false);
+    }
+
+    public boolean isReindexing() {
+        return isReindexing;
+    }
+
+    protected void setReindexing(final boolean b) {
+        isReindexing = b;
     }
 
     /**

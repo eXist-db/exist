@@ -234,6 +234,10 @@
         <xs:sequence>
             <xs:element ref="inline" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element ref="ignore" minOccurs="0" maxOccurs="unbounded"/>
+	    <xs:element name="match-attribute" minOccurs="0" maxOccurs="unbounded" type="matchAttrBoostType"/>
+	    <xs:element name="has-attribute" minOccurs="0" maxOccurs="unbounded" type="hasAttrBoostType"/>
+	    <xs:element name="match-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="matchAttrBoostType"/>
+	    <xs:element name="has-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="hasAttrBoostType"/>
         </xs:sequence>
     </xs:group>
 
@@ -251,6 +255,23 @@
         <xs:attribute name="analyzer" use="optional" type="xs:IDREF"/>
         <xs:attribute name="boost" use="optional" type="xs:double"/>
         <xs:attribute name="field" use="optional" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="matchAttrBoostType">
+      <xs:annotation>
+        <xs:documentation>text element children match-attr or match-sibling-attr</xs:documentation>
+      </xs:annotation>
+      <xs:attributeGroup ref="qnameReq"/>
+      <xs:attributeGroup ref="valueReq"/>
+      <xs:attribute name="boost" use="required" type="xs:double"/>
+    </xs:complexType>
+
+    <xs:complexType name="hasAttrBoostType">
+      <xs:annotation>
+        <xs:documentation>text element children has-attr or has-sibling-attr</xs:documentation>
+      </xs:annotation>
+      <xs:attributeGroup ref="qnameReq"/>
+      <xs:attribute name="boost" use="required" type="xs:double"/>
     </xs:complexType>
 
     <xs:complexType name="singleQnameAttrType">
