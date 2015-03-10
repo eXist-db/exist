@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2001-2015 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -19,10 +19,8 @@
  *
  *  $Id: eXistURLStreamHandlerFactory.java 189 2007-03-30 15:02:18Z dizzzz $
  */
-
 package org.exist.protocolhandler;
 
-import java.net.URL;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 
@@ -38,64 +36,28 @@ import org.exist.protocolhandler.protocols.xmldb.Handler;
  * @author Dannes Wessels
  */
 public class eXistURLStreamHandlerFactory implements URLStreamHandlerFactory {
-    
+
     private final static Logger LOG = Logger.getLogger(eXistURLStreamHandlerFactory.class);
-    
-    public final static String JAVA_PROTOCOL_HANDLER_PKGS="java.protocol.handler.pkgs";
-    public final static String EXIST_PROTOCOL_HANDLER="org.exist.protocolhandler.protocols";
-    
-    public static void init(){
-        
-        boolean initOK=false;
-        try {
-            URL.setURLStreamHandlerFactory(new eXistURLStreamHandlerFactory());
-            initOK=true;
-            LOG.info("Succesfully registered eXistURLStreamHandlerFactory.");
-        } catch (final Error ex){
-            LOG.warn("The JVM has already an URLStreamHandlerFactory registered, skipping...");
-        }
-        
-        if(!initOK){
-            String currentSystemProperty = System.getProperty(JAVA_PROTOCOL_HANDLER_PKGS);
-            
-            if(currentSystemProperty==null){
-                // Nothing setup yet
-                LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to "
-                    + EXIST_PROTOCOL_HANDLER);
-                System.setProperty( JAVA_PROTOCOL_HANDLER_PKGS, EXIST_PROTOCOL_HANDLER );
-                
-            } else {
-                // java.protocol.handler.pkgs is already setup, preserving settings
-                if(currentSystemProperty.indexOf(EXIST_PROTOCOL_HANDLER)==-1){
-                    // eXist handler is not setup yet
-                    currentSystemProperty=currentSystemProperty+"|"+EXIST_PROTOCOL_HANDLER;
-                    LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to " + currentSystemProperty);
-                    System.setProperty( JAVA_PROTOCOL_HANDLER_PKGS, currentSystemProperty );
-                } else {
-                    LOG.info( "System property " + JAVA_PROTOCOL_HANDLER_PKGS + " has not been updated."); 
-                }
-            }
-        }
-    }
-    
+    private final static URLStreamHandler handler = new Handler();
+
     /**
      *  Create Custom URL streamhandler for the <B>xmldb</B> protocol.
      *
      * @param protocol Protocol
      * @return Custom Xmldb stream handler.
      */
-    public URLStreamHandler createURLStreamHandler(String protocol) {
-        
-        URLStreamHandler handler=null;
-        
-        if("xmldb".equals(protocol)){
-            LOG.debug(protocol);
-            handler=new Handler();
+    public URLStreamHandler createURLStreamHandler(final String protocol) {
+        if("xmldb".equals(protocol)) {
+
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(protocol);
+            }
+
+            return handler;
         } else {
             //LOG.error("Protocol should be xmldb, not "+protocol);
+            return null;
         }
-        
-        return handler;
     }
     
 }
