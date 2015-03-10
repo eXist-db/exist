@@ -1,5 +1,7 @@
 eXist Native XML Database
 =========================
+
+[![Join the chat at https://gitter.im/eXist-db/exist](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/eXist-db/exist?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/eXist-db/exist.png?branch=develop)](https://travis-ci.org/eXist-db/exist)
 
 This is the GitHub for the [eXist](http://www.exist-db.org "eXist") Native XML Database. 
