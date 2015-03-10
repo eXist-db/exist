@@ -235,6 +235,11 @@
                 <exclude name=".*"/>
             </fileset>
         </copy>
+        <copy todir="${dist.dir}/autodeploy">
+            <fileset dir="./autodeploy">
+                <include name="*.xar"/>
+            </fileset>
+        </copy>
         <copy todir="${dist.dir}/bin">
             <fileset dir="./bin">
                 <exclude name="**/*~"/>
