@@ -1226,6 +1226,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.boost = boost;
         }
     }
+
+    private class PendingAttr {
+	NodeProxy proxy;
+	LuceneIndexConfig conf;
+
+        public PendingAttr(NodeProxy proxy, LuceneIndexConfig conf) {
+            this.proxy = proxy;
+            this.conf = conf;
+        }
+    }
     
     private void write() {
         if (nodesToWrite == null || nodesToWrite.isEmpty()) {
@@ -1353,7 +1363,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private class LuceneStreamListener extends AbstractStreamListener {
-        private ArrayList<PendingDoc> pendingAttrs = new ArrayList<PendingDoc>();
+        private ArrayList<PendingAttr> pendingAttrs = new ArrayList<PendingAttr>();
 
         @Override
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
@@ -1426,7 +1436,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     while (configIter.hasNext()) {
                         LuceneIndexConfig configuration = configIter.next();
                         if (configuration.match(path)) {
-			    appendAttrToBeIndexedLater(attrib, configuration);
+                            appendAttrToBeIndexedLater(attrib, configuration);
                         }
                     }
                 }
@@ -1456,22 +1466,26 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 	 * delay indexing of attributes until we have them all to calculate boost
 	 */
         private void appendAttrToBeIndexedLater(AttrImpl attr, LuceneIndexConfig conf) {
-            pendingAttrs.add(new PendingDoc(attr.getNodeId(), attr.getQName(), conf.getNodePath(), attr.getValue(), conf.getBoost(), conf));
+            pendingAttrs.add(new PendingAttr(new NodeProxy(currentDoc, attr.getNodeId(), attr.getNodeType(), attr.getInternalAddress()), conf));
         }
+
 	/*
 	 * put pending attribute nodes in indexing cache
 	 * and then clear pending attributes
 	 */
 	private void indexPendingAttrs() {
 	    if (mode == STORE && config != null) {
-		for (PendingDoc pending : pendingAttrs) {
-                    pending.boost = pending.idxConf.getBoost(broker.objectWith(currentDoc, pending.nodeId));
-		    addPending(pending);
+		try {
+		    for (PendingAttr pending : pendingAttrs) {
+			org.exist.dom.persistent.NodeImpl node = (org.exist.dom.persistent.NodeImpl) pending.proxy.getNode();
+			PendingDoc pdoc = new PendingDoc(node.getNodeId(), node.getQName(), pending.conf.getNodePath(), node.getNodeValue(), pending.conf.getBoost(node), pending.conf);
+			addPending(pdoc);
+		    }
+		} finally {
+		    pendingAttrs.clear();
 		}
-		pendingAttrs.clear();
             }
 	}
-
     }
 
     /**
