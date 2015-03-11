@@ -5,7 +5,14 @@
 # $Id$
 # -----------------------------------------------------------------------------
 
-## @UNIX_INSTALLER_1@ 
+if [ ! -d "$JAVA_HOME" ]; then
+    JAVA_HOME="%{JAVA_HOME}"
+fi
+
+# will be set by the installer
+if [ -z "$EXIST_HOME" ]; then
+	EXIST_HOME="%{INSTALL_PATH}"
+fi
 
 case "$0" in
 	/*)
