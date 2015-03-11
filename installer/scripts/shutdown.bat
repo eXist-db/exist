@@ -26,7 +26,12 @@ if not "%JAVA_HOME%" == "" (
     goto gotJavaHome
 )
 
-rem @WINDOWS_INSTALLER_1@
+rem will be set by the installer
+set JAVA_HOME="$JDKPath"
+
+rem second check
+if not "%JAVA_HOME%" == "" goto gotJavaHome
+
 
 echo WARNING: JAVA_HOME not found in your environment.
 echo.
@@ -35,15 +40,16 @@ echo location of the Java Virtual Machine you want to use in case of run fail.
 echo.
 
 :gotJavaHome
+rem will be set by the installer
+set EXIST_HOME=$INSTALL_PATH
+
+
 if not "%EXIST_HOME%" == "" goto gotExistHome
 
-rem try to guess (will be overridden by the installer)
+rem try to guess (will be set by the installer)
 set EXIST_HOME=.
 
-rem @WINDOWS_INSTALLER_2@
-
 if exist "%EXIST_HOME%\start.jar" goto gotExistHome
-
 set EXIST_HOME=..
 if exist "%EXIST_HOME%\start.jar" goto gotExistHome
 
@@ -53,12 +59,5 @@ echo home directory of eXist.
 goto :eof
 
 :gotExistHome
-set MX=768
-rem @WINDOWS_INSTALLER_3@
-
-set JAVA_ENDORSED_DIRS="%EXIST_HOME%\lib\endorsed"
-set JAVA_OPTS="-Xms128m -Xmx%MX%m -Dfile.encoding=UTF-8 -Djava.endorsed.dirs=%JAVA_ENDORSED_DIRS%"
-
-%JAVA_RUN% "%JAVA_OPTS%"  -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" backup %CMD_LINE_ARGS%
+%JAVA_RUN% -Dexist.home="%EXIST_HOME%" -jar "%EXIST_HOME%\start.jar" shutdown %CMD_LINE_ARGS%
 :eof
-

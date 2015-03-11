@@ -46,7 +46,7 @@
         </bundleapp>
     </target>
     
-    <target depends="all,samples,xars,copy_scripts,macosx" name="prepare-installer">
+    <target depends="all,samples,xars,macosx" name="prepare-installer">
 	    <path id="izpackdeps">
 	        <fileset dir="${izpack.dir}/lib/">
 	            <include name="*.jar"/>
@@ -201,7 +201,7 @@
 			txtProductVersion="${project.version}-${git.commit}"/>
 	</target>
 
-    <target name="copy_scripts">
+    <!--<target name="copy_scripts">
         <filter filtersfile="installer/scripts/scripts.properties" />
         
         <copy todir="installer/scripts" filtering="true" overwrite="true">
@@ -213,7 +213,7 @@
                 <exclude name="run.bat"/>
             </fileset>
         </copy>
-    </target>
+    </target>-->
     
     <target name="extract-apps">
         <mkdir dir="installer/temp"/>
