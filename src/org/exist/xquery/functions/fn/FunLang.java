@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2001-2015 The eXist-db Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id$
  */
 package org.exist.xquery.functions.fn;
 
@@ -130,32 +129,21 @@ public class FunLang extends Function {
         else {
 			final String lang = getArgument(0).eval(contextSequence).getStringValue();
 			
-			String langValue = null;
-			Sequence seq = null;
-			if (contextSequence.hasOne()) {
-				final Item item = contextSequence.itemAt(0);
-				if (item.getType() == Type.ATTRIBUTE) {
-					langValue = item.getStringValue(); 
-				}
-			} else {
-				seq = query.eval(contextSequence);
-			}
-			
-			if (seq != null && seq.isEmpty()) {
-				result = BooleanValue.FALSE ;   
-			} else if (langValue != null || (seq != null && seq.hasOne())) {
-				if (seq != null)
-					{langValue = seq.getStringValue();}
+			Sequence seq = query.eval(contextSequence);
+			if (seq.isEmpty()) {
+				result = BooleanValue.FALSE ;
+			} else if (seq.hasOne()) {
+			    String langValue = seq.getStringValue();
 	            
-				boolean include = lang.equalsIgnoreCase(langValue);
-				if (!include) {
-	                final int hyphen = langValue.indexOf('-');
-					if (hyphen != Constants.STRING_NOT_FOUND) {
-						langValue = langValue.substring(0, hyphen);
-						include = lang.equalsIgnoreCase(langValue);
-					}				
+			    boolean include = lang.equalsIgnoreCase(langValue);
+			    if (!include) {
+				final int hyphen = langValue.indexOf('-');
+				if (hyphen != Constants.STRING_NOT_FOUND) {
+				    langValue = langValue.substring(0, hyphen);
+				    include = lang.equalsIgnoreCase(langValue);
 				}
-				result = new BooleanValue(include);
+			    }
+			    result = new BooleanValue(include);
 			}
             else 
             	{throw new XPathException(this, ErrorCodes.XPTY0004, "Sequence returned more than one item !");}
