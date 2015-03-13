@@ -1903,6 +1903,9 @@ public class BrokerPool implements Database {
             // they will have a lock on the transactionManager
             lock.lock();
 
+            //Shutdown the scheduler
+            scheduler.shutdown(true);
+
             synchronized(this) {
                 // these may be used and set by other threads for the same or some other purpose
                 // (unlikely). Take no chances.
@@ -1923,9 +1926,6 @@ public class BrokerPool implements Database {
                 }
 
                 //Notify all running tasks that we are shutting down
-
-                //Shutdown the scheduler
-                scheduler.shutdown(true);
 
                 //Notify all running XQueries that we are shutting down
                 processMonitor.killAll(500);
