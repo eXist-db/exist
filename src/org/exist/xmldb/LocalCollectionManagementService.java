@@ -1,502 +1,267 @@
 /*
  * eXist Open Source Native XML Database
- *   
- * Copyright (C) 2001-2006 The eXist team
+ * Copyright (C) 2001-2015 The eXist Project
  * http://exist-db.org
- * 
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- * 
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * 
- * $Id$
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
-import org.w3c.dom.Document;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
-public class LocalCollectionManagementService implements CollectionManagementServiceImpl {
-    
-    protected BrokerPool brokerPool;
+public class LocalCollectionManagementService extends AbstractLocalService implements CollectionManagementServiceImpl {
 
-    protected LocalCollection parent = null;
-    protected Subject user;
-    protected AccessContext accessCtx;
+    private final AccessContext accessCtx;
 
-    private static Logger LOG =
-        LogManager.getLogger( LocalCollectionManagementService.class );
-        
-    @SuppressWarnings("unused")
-	private LocalCollectionManagementService() {}
-    public LocalCollectionManagementService( Subject user, BrokerPool pool,
-                                             LocalCollection parent,
-											 AccessContext accessCtx) {
-    	if(accessCtx == null)
-    		{throw new NullAccessContextException();}
+    public LocalCollectionManagementService(final Subject user, final BrokerPool pool, final LocalCollection parent, final AccessContext accessCtx) {
+    	super(user, pool, parent);
+        if(accessCtx == null) {
+            throw new NullAccessContextException();
+        }
     	this.accessCtx = accessCtx;
-        if ( user == null )
-            {throw new NullPointerException("User cannot be null");}
-        this.parent = parent;
-        this.brokerPool = pool;
-        this.user = user;
     }
 
-    /**
-     * @deprecated Use XmldbURI version instead
-     */
-    public Collection createCollection( String collName ) throws XMLDBException {
-        return createCollection (collName, (Date)null);
+    @Override
+    public String getName() throws XMLDBException {
+        return "CollectionManagementService";
     }
 
-    public Collection createCollection( XmldbURI collName ) throws XMLDBException {
-        return createCollection (collName, (Date)null);
+    @Override
+    public String getVersion() throws XMLDBException {
+        return "1.0";
     }
 
-    /**
-     * @deprecated Use XmldbURI version instead
-     */
-    public Collection createCollection( String collName, Date created ) throws XMLDBException {
-    	try{
+    @Override
+    public Collection createCollection(final String collName) throws XMLDBException {
+        return createCollection(collName, (Date)null);
+    }
+
+    @Override
+    public Collection createCollection(final XmldbURI collName) throws XMLDBException {
+        return createCollection(collName, null);
+    }
+
+    @Override
+    public Collection createCollection(final String collName, final Date created) throws XMLDBException {
+    	try {
     		return createCollection(XmldbURI.xmldbUriFor(collName), created);
     	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
-    
-    public Collection createCollection( XmldbURI collName, Date created ) throws XMLDBException {
-        if (parent != null)
-        	{collName = parent.getPathURI().resolveCollectionPath(collName);}        
 
-    	final Subject preserveSubject = brokerPool.getSubject();
-		final TransactionManager transact = brokerPool.getTransactionManager();
-        try(final DBBroker broker = brokerPool.get(user);
-            final Txn transaction = transact.beginTransaction()) {
-            final org.exist.collections.Collection coll =
-                broker.getOrCreateCollection( transaction, collName );
-            if (created != null)
-                {coll.setCreationTime(created.getTime());}
-            broker.saveCollection(transaction, coll);
-            transact.commit(transaction);
-        } catch ( final EXistException e ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to create collection " + collName, e);
-        } catch ( final IOException e ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to create collection " + collName, e);
-        } catch ( final PermissionDeniedException e ) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                "not allowed to create collection", e );
-        } catch (final TriggerException e) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                "not allowed to create collection", e );
-		} finally {
-            brokerPool.setSubject(preserveSubject);
-        }
-        return new LocalCollection( user, brokerPool, parent, collName, accessCtx );
+    @Override
+    public Collection createCollection(final XmldbURI name, final Date created) throws XMLDBException {
+        final XmldbURI collName = resolve(name);
+
+        withDb((broker, transaction) -> {
+            try {
+                final org.exist.collections.Collection coll = broker.getOrCreateCollection(transaction, collName);
+                if (created != null) {
+                    coll.setCreationTime(created.getTime());
+                }
+                broker.saveCollection(transaction, coll);
+                return null;
+            } catch (final TriggerException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            }
+        });
+
+        return new LocalCollection(user, brokerPool, collection, collName, accessCtx);
     }
 
-    /**
-     *  Creates a new collection in the database identified by name and using
-     *  the provided configuration.
-     *
-     * @deprecated Use XmldbURI version instead
-     *
-     *@param  path                the path of the new collection
-     *@param  configuration       the XML collection configuration to use for
-     *      creating this collection.
-     *@return                     The newly created collection
-     *@exception  XMLDBException
-     */
-    public Collection createCollection( String path, Document configuration )
-         throws XMLDBException {
-        return createCollection( path );
-    }
-
-    public String getName() throws XMLDBException {
-        return "CollectionManagementService";
-    }
-
-    public String getProperty( String property ) {
+    @Override
+    public String getProperty(final String property ) {
         return null;
     }
 
-    public String getVersion() throws XMLDBException {
-        return "1.0";
-    }
-
-    /**
-     * @deprecated Use XmldbURI version instead
-     */
-    public void removeCollection( String collName ) throws XMLDBException {
+    @Override
+    public void removeCollection(final String collName) throws XMLDBException {
     	try{
     		removeCollection(XmldbURI.xmldbUriFor(collName));
     	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
-    public void removeCollection( XmldbURI collName ) throws XMLDBException {
-        if (parent != null)
-        	{collName = parent.getPathURI().resolveCollectionPath(collName);}        
-        
 
-    	final Subject preserveSubject = brokerPool.getSubject();
-    	final TransactionManager transact = brokerPool.getTransactionManager();
-        org.exist.collections.Collection collection = null;
-        try(final DBBroker broker = brokerPool.get(user);
-            final Txn transaction = transact.beginTransaction()) {
-            collection = broker.openCollection(collName, Lock.WRITE_LOCK);
-            if(collection == null) {
-                transact.abort(transaction);
-            	throw new XMLDBException(ErrorCodes.INVALID_COLLECTION,
-            			"Collection " + collName + " not found");
-            }
-            LOG.debug( "removing collection " + collName );
-            broker.removeCollection(transaction, collection);
-            transact.commit(transaction);
-        } catch ( final EXistException e ) {
-        	e.printStackTrace();
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to remove collection " + collName, e );
-        } catch ( final IOException e ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to remove collection " + collName, e );
-        } catch ( final PermissionDeniedException e ) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                e.getMessage(), e );
-        } catch (final TriggerException e) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to remove collection " + collName, e );
-		} finally {
-        	if(collection != null)
-        		{collection.release(Lock.WRITE_LOCK);}
-            brokerPool.setSubject(preserveSubject);
-        }
+    @Override
+    public void removeCollection(final XmldbURI name) throws XMLDBException {
+        final XmldbURI collName = resolve(name);
+        modify(collName).apply((collection, broker, transaction) -> broker.removeCollection(transaction, collection));
     }
 
-    
-    /**
-     * @deprecated Use XmldbURI version instead
-     */
-    public void move(String collectionPath, String destinationPath,
-            String newName) throws XMLDBException {
+    @Override
+    public void move(final String collectionPath, final String destinationPath, final String newName) throws XMLDBException {
     	try{
     		move(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName));
     	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
-   /* (non-Javadoc)
-     * @see org.exist.xmldb.CollectionManagementServiceImpl#move(org.xmldb.api.base.Collection, org.xmldb.api.base.Collection, java.lang.String)
-     */
-    public void move(XmldbURI collectionPath, XmldbURI destinationPath,
-            XmldbURI newName) throws XMLDBException {
-    	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
-    	destinationPath = destinationPath == null ? collectionPath.removeLastSegment() : parent.getPathURI().resolveCollectionPath(destinationPath);
-    	
 
-    	final Subject preserveSubject = brokerPool.getSubject();
-        final TransactionManager transact = brokerPool.getTransactionManager();
-        org.exist.collections.Collection collection = null;
-        org.exist.collections.Collection destination = null;
-        try(final DBBroker broker = brokerPool.get(user);
-            final Txn transaction = transact.beginTransaction()) {
-            collection = broker.openCollection(collectionPath, Lock.WRITE_LOCK);
-            if(collection == null) {
-                transact.abort(transaction);
-                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + collectionPath + " not found");
-            }
-            destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
-            if(destination == null) {
-                transact.abort(transaction);
-                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + destinationPath + " not found");
-            }
-            if (newName == null)
-                {newName = collectionPath.lastSegment();}
-            broker.moveCollection(transaction, collection, destination, newName);
-            transact.commit(transaction);
-        } catch ( final EXistException e ) {
-        	e.printStackTrace();
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move collection " + collectionPath, e );
-        } catch ( final IOException e ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move collection " + collectionPath, e );
-        } catch ( final PermissionDeniedException e ) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                e.getMessage(), e );
-        } catch (final LockException e) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                    e.getMessage(), e );
-        } catch (final TriggerException e) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move collection " + collectionPath, e );
-		} finally {
-        	if(destination != null)
-        		{destination.release(Lock.WRITE_LOCK);}
-        	if(collection != null)
-        		{collection.release(Lock.WRITE_LOCK);}
-            brokerPool.setSubject(preserveSubject);
+    @Override
+    public void move(final XmldbURI src, final XmldbURI dest, final XmldbURI name) throws XMLDBException {
+    	final XmldbURI srcPath = resolve(src);
+    	final XmldbURI destPath = dest == null ? srcPath.removeLastSegment() : resolve(dest);
+        final XmldbURI newName;
+        if (name == null) {
+            newName = srcPath.lastSegment();
+        } else {
+            newName = name;
         }
+
+        withDb((broker, transaction) ->
+                modify(broker, transaction, srcPath).apply((source, b1, t1) ->
+                        modify(b1, t1, destPath).apply((destination, b2, t2) -> {
+                            b2.moveCollection(t2, source, destination, newName);
+                            return null;
+                        })
+                )
+        );
     }
-    
-    /**
-     * @deprecated Use XmldbURI version instead
-     */
-    public void moveResource(String resourcePath, String destinationPath,
-            String newName) throws XMLDBException {
+
+    @Override
+    public void moveResource(final String resourcePath, final String destinationPath, final String newName) throws XMLDBException {
     	try{
     		moveResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName));
     	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
-    public void moveResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
-    		throws XMLDBException { 
-    	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
-    	if (destinationPath == null)
-    		{destinationPath = resourcePath.removeLastSegment();}
-    	else
-    		{destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);}
 
-
-    	final Subject preserveSubject = brokerPool.getSubject();
-        final TransactionManager transact = brokerPool.getTransactionManager();
-        org.exist.collections.Collection destination = null;
-        org.exist.collections.Collection source = null;
-        try(final DBBroker broker = brokerPool.get(user);
-            final Txn transaction = transact.beginTransaction()) {
-     		source = broker.openCollection(resourcePath.removeLastSegment(), Lock.WRITE_LOCK);
-    		if(source == null) {
-                transact.abort(transaction);
-    			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + resourcePath.removeLastSegment() + " not found");
-            }
-    		final DocumentImpl doc = source.getDocument(broker, resourcePath.lastSegment());
-            if(doc == null) {
-                transact.abort(transaction);
-                throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + resourcePath + " not found");
-            }
-            destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
-            if(destination == null) {
-                transact.abort(transaction);
-                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + destinationPath + " not found");
-            }
-            if (newName == null)
-                {newName = resourcePath.lastSegment();}
-            
-            broker.moveResource(transaction, doc, destination, newName);
-            transact.commit(transaction);
-        } catch ( final EXistException e ) {
-        	e.printStackTrace();
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move resource " + resourcePath, e );
-        } catch ( final IOException e ) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move resource " + resourcePath, e );
-        } catch ( final PermissionDeniedException e ) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                e.getMessage(), e );
-        } catch (final LockException e) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                    e.getMessage(), e );
-        } catch (final TriggerException e) {
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move resource " + resourcePath, e );
-		} finally {
-        	if(source != null)
-        		{source.release(Lock.WRITE_LOCK);}
-        	if(destination != null)
-        		{destination.release(Lock.WRITE_LOCK);}
-            brokerPool.setSubject(preserveSubject);
+    @Override
+    public void moveResource(final XmldbURI src, final XmldbURI dest, final XmldbURI name) throws XMLDBException {
+        final XmldbURI srcPath = resolve(src);
+        final XmldbURI destPath = dest == null ? srcPath.removeLastSegment() : resolve(dest);
+        final XmldbURI newName;
+        if (name == null) {
+            newName = srcPath.lastSegment();
+        } else {
+            newName = name;
         }
+
+        withDb((broker, transaction) ->
+                modify(broker, transaction, srcPath.removeLastSegment()).apply((sourceCol, b1, t1) -> {
+                    final DocumentImpl source = sourceCol.getDocument(b1, srcPath.lastSegment());
+                    if(source == null) {
+                        throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + srcPath + " not found");
+                    }
+
+                    return modify(b1, t1, destPath).apply((destinationCol, b2, t2) -> {
+                        b2.moveResource(t2, source, destinationCol, newName);
+                        return null;
+                    });
+                })
+        );
     }
     
-    /**
-     * @deprecated Use XmldbURI version instead
-     */
-    public void copy(String collectionPath, String destinationPath,
-            String newName) throws XMLDBException {
+    @Override
+    public void copy(final String collectionPath, final String destinationPath, final String newName) throws XMLDBException {
     	try{
     		copy(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
     	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.CollectionManagementServiceImpl#copy(java.lang.String, java.lang.String, java.lang.String)
-	 */
-    public void copy(XmldbURI collectionPath, XmldbURI destinationPath,
-            XmldbURI newName) throws XMLDBException {
-    	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
-    	destinationPath = destinationPath == null ? collectionPath.removeLastSegment() : parent.getPathURI().resolveCollectionPath(destinationPath);
 
-
-    	final Subject preserveSubject = brokerPool.getSubject();
-        final TransactionManager transact = brokerPool.getTransactionManager();
-        org.exist.collections.Collection collection = null;
-        org.exist.collections.Collection destination = null;
-        try(final DBBroker broker = brokerPool.get(user);
-            final Txn transaction = transact.beginTransaction()) {
-            collection = broker.openCollection(collectionPath, Lock.READ_LOCK);
-            if(collection == null) {
-                transact.abort(transaction);
-                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection '" + collectionPath + "' not found");
-            }
-            destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
-            if(destination == null) {
-                transact.abort(transaction);
-                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection '" + destinationPath + "' not found");
-            }
-	    if (newName == null) {
-		newName = collectionPath.lastSegment();
-	    }
-            broker.copyCollection(transaction, collection, destination, newName);
-            transact.commit(transaction);
-        } catch ( final EXistException e ) {
-        	e.printStackTrace();
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move collection " + collectionPath, e );
-        } catch ( final IOException e ) {
-        	e.printStackTrace();
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move collection " + collectionPath, e );
-        } catch ( final PermissionDeniedException e ) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                e.getMessage(), e );
-        } catch (final LockException e) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                    e.getMessage(), e );
-        } catch (final TriggerException e) {
-        	e.printStackTrace();
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move collection " + collectionPath, e );
-		} finally {
-        	if(collection != null) {collection.release(Lock.READ_LOCK);}
-        	if(destination != null) {destination.release(Lock.WRITE_LOCK);}
-            brokerPool.setSubject(preserveSubject);
+    @Override
+    public void copy(final XmldbURI src, final XmldbURI dest, final XmldbURI name) throws XMLDBException {
+        final XmldbURI srcPath = resolve(src);
+        final XmldbURI destPath = dest == null ? srcPath.removeLastSegment() : resolve(dest);
+        final XmldbURI newName;
+        if (name == null) {
+            newName = srcPath.lastSegment();
+        } else {
+            newName = name;
         }
+
+        withDb((broker, transaction) ->
+                modify(broker, transaction, srcPath).apply((source, b1, t1) ->
+                        modify(b1, t1, destPath).apply((destination, b2, t2) -> {
+                            try {
+                                b2.copyCollection(t2, source, destination, newName);
+                                return null;
+                            } catch (final EXistException e) {
+                                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "failed to move collection " + srcPath, e);
+                            }
+                        })
+                )
+        );
     }
 
-	/**
-	 * @deprecated Use XmldbURI version instead
-	 */
-    public void copyResource(String resourcePath, String destinationPath,
-            String newName) throws XMLDBException {
+    @Override
+    public void copyResource(final String resourcePath, final String destinationPath, final String newName) throws XMLDBException {
     	try{
     		copyResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
     	} catch(final URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
-    
-    public void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
-    		throws XMLDBException { 
-    	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
 
-    	if(destinationPath == null) {
-            destinationPath = resourcePath.removeLastSegment();
+    @Override
+    public void copyResource(final XmldbURI src, final XmldbURI dest, final XmldbURI name) throws XMLDBException {
+        final XmldbURI srcPath = resolve(src);
+        final XmldbURI destPath = dest == null ? srcPath.removeLastSegment() : resolve(dest);
+        final XmldbURI newName;
+        if (name == null) {
+            newName = srcPath.lastSegment();
         } else {
-            destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+            newName = name;
         }
 
-    	final Subject preserveSubject = brokerPool.getSubject();
-    	final TransactionManager transact = brokerPool.getTransactionManager();
-        org.exist.collections.Collection destination = null;
-        org.exist.collections.Collection source = null;
-        try(final DBBroker broker = brokerPool.get(user);
-            final Txn transaction = transact.beginTransaction()) {
-     		source = broker.openCollection(resourcePath.removeLastSegment(), Lock.WRITE_LOCK);
-    		if(source == null) {
-                transact.abort(transaction);
-    			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + resourcePath.removeLastSegment() + " not found");
-            }
-    		final DocumentImpl doc = source.getDocument(broker, resourcePath.lastSegment());
-            if(doc == null) {
-                transact.abort(transaction);
-                throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + resourcePath + " not found");
-            }
-            destination = broker.openCollection(destinationPath, Lock.WRITE_LOCK);
-            if(destination == null) {
-                transact.abort(transaction);
-                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + destinationPath + " not found");
-            }
-	        if(newName == null) {
-		        newName = resourcePath.lastSegment();
-	        }
-            broker.copyResource(transaction, doc, destination, newName);
-            transact.commit(transaction);
-        } catch ( final EXistException e ) {
-        	e.printStackTrace();
-            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
-                "failed to move resource " + resourcePath, e );
-        } catch ( final PermissionDeniedException e ) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                e.getMessage(), e );
-        } catch (final LockException e) {
-            throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
-                    e.getMessage(), e );
-        } finally {
-        	if(source != null) {source.release(Lock.WRITE_LOCK);}
-        	if(destination != null) {destination.release(Lock.WRITE_LOCK);}
-            brokerPool.setSubject(preserveSubject);
-        }
-    }
-	
-    public void setCollection(Collection parent) throws XMLDBException {
-        this.parent = (LocalCollection) parent;
+        withDb((broker, transaction) ->
+                        modify(broker, transaction, srcPath.removeLastSegment()).apply((sourceCol, b1, t1) -> {
+                            final DocumentImpl source = sourceCol.getDocument(b1, srcPath.lastSegment());
+                            if(source == null) {
+                                throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + srcPath + " not found");
+                            }
+
+                            return modify(b1, t1, destPath).apply((destinationCol, b2, t2) -> {
+                                try {
+                                    b2.copyResource(t2, source, destinationCol, newName);
+                                    return null;
+                                } catch (final EXistException e) {
+                                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "failed to copy resource " + srcPath, e);
+                                }
+                            });
+                        })
+        );
     }
 
-    public void setProperty(String property,
-                             String value) {
+    @Override
+    public void setProperty(final String property, final String value) {
     }
 	
     @Override
-	public void runCommand(String[] params) throws XMLDBException {
-    	
-
-    	final Subject preserveSubject = brokerPool.getSubject();
-    	DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
-            
-            org.exist.plugin.command.Commands.command(XmldbURI.create(parent.getPath()), params);
-
-        } catch (final EXistException e) {
-        	throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "", e);
-		} finally {
-        	brokerPool.release(broker);
-            brokerPool.setSubject(preserveSubject);
-        }
-	}
+    public void runCommand(final String[] params) throws XMLDBException {
+    	withDb((broker, transaction) -> {
+            org.exist.plugin.command.Commands.command(XmldbURI.create(collection.getPath()), params);
+            return null;
+        });
+    }
 }
 

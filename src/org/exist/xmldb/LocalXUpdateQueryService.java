@@ -1,160 +1,136 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.exist.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.EXistException;
 
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
+import org.exist.util.LockException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 
 /**
- * LocalXUpdateQueryService.java
- * 
  * @author Wolfgang Meier
  */
-public class LocalXUpdateQueryService implements XUpdateQueryService {
+public class LocalXUpdateQueryService extends AbstractLocalService implements XUpdateQueryService {
 
-	private final static Logger LOG = 
-		LogManager.getLogger(LocalXUpdateQueryService.class);
+	private final static Logger LOG = LogManager.getLogger(LocalXUpdateQueryService.class);
 
-	private BrokerPool pool;
-	private Subject user;
-	private LocalCollection parent;
-	private XUpdateProcessor processor = null;
-	
-	/**
-	 * Constructor for LocalXUpdateQueryService.
-	 */
-	public LocalXUpdateQueryService(
-		Subject user,
-		BrokerPool pool,
-		LocalCollection parent) {
-		this.pool = pool;
-		this.user = user;
-		this.parent = parent;
-	}
+    private XUpdateProcessor processor = null;
 
-	/**
-	 * @see org.xmldb.api.modules.XUpdateQueryService#updateResource(java.lang.String, java.lang.String)
-	 */
-	public long updateResource(String resource, String xupdate)
-		throws XMLDBException {
-		final long start = System.currentTimeMillis();
-		MutableDocumentSet docs = new DefaultDocumentSet();
-        final TransactionManager transact = pool.getTransactionManager();
-    	final Subject preserveSubject = pool.getSubject();
-		final org.exist.collections.Collection c = parent.getCollection();
-        try(final DBBroker broker = pool.get(user);
-            final Txn transaction = transact.beginTransaction()) {
-			if (resource == null) {
-				docs = c.allDocs(broker, docs, true);
-			} else {
-				final XmldbURI resourceURI = XmldbURI.xmldbUriFor(resource);
-				final DocumentImpl doc = c.getDocument(broker, resourceURI);
-				if(doc == null) {
-                    transact.abort(transaction);
-					throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource not found: " + resource);
+    public LocalXUpdateQueryService(final Subject user, final BrokerPool pool, final LocalCollection parent) {
+        super(user, pool, parent);
+    }
+
+    @Override
+    public String getName() throws XMLDBException {
+        return "XUpdateQueryService";
+    }
+
+    @Override
+    public String getVersion() throws XMLDBException {
+        return "1.0";
+    }
+
+    @Override
+    public long updateResource(final String id, final String commands) throws XMLDBException {
+
+        return this.<Long>withDb((broker, transaction) -> {
+
+            final long start = System.currentTimeMillis();
+
+            final MutableDocumentSet docs = this.<MutableDocumentSet>read(broker, transaction, collection.getPathURI()).apply((collection, broker1, transaction1) -> {
+                MutableDocumentSet d = new DefaultDocumentSet();
+                if (id == null) {
+                    d = collection.allDocs(broker1, d, true);
+                } else {
+                    try {
+                        final XmldbURI resourceURI = XmldbURI.xmldbUriFor(id);
+                        final DocumentImpl doc = collection.getDocument(broker1, resourceURI);
+                        if (doc == null) {
+                            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource not found: " + id);
+                        }
+                        d.add(doc);
+                    } catch(final URISyntaxException e) {
+                        throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+                    }
                 }
-				docs.add(doc);
-			}
-			if(processor == null)
-				{processor = new XUpdateProcessor(broker, docs, parent.getAccessContext());}
-			else {
-				processor.setBroker(broker);
-				processor.setDocumentSet(docs);
-			}
-			final Modification modifications[] =
-				processor.parse(new InputSource(new StringReader(xupdate)));
-			long mods = 0;
-			for (int i = 0; i < modifications.length; i++) {
-				mods += modifications[i].process(transaction);
-				broker.flush();
-			}
-            transact.commit(transaction);
+                return d;
+            });
 
-            //Cluster event send (removed)
+            try {
+                if (processor == null) {
+                    processor = new XUpdateProcessor(broker, docs, collection.getAccessContext());
+                } else {
+                    processor.setBroker(broker);
+                    processor.setDocumentSet(docs);
+                }
 
+                final Modification modifications[] = processor.parse(new InputSource(new StringReader(commands)));
+                long mods = 0;
+                for (int i = 0; i < modifications.length; i++) {
+                    mods += modifications[i].process(transaction);
+                    broker.flush();
+                }
 
-            LOG.debug("xupdate took " + (System.currentTimeMillis() - start) +
-            	"ms.");
-			return mods;
-		} catch (final ParserConfigurationException | URISyntaxException | SAXException | IOException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch (final PermissionDeniedException e) {
-			throw new XMLDBException(
-				ErrorCodes.PERMISSION_DENIED,
-				e.getMessage());
-		} catch (final EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} catch(final Exception e) {
-			e.printStackTrace();
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
-		} finally {
-			if(processor != null) {
-                processor.reset();
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("xupdate took " + (System.currentTimeMillis() - start) + "ms.");
+                }
+
+                return mods;
+            } catch(final ParserConfigurationException | SAXException | LockException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+            } finally {
+                if (processor != null) {
+                    processor.reset();
+                }
             }
-			pool.setSubject(preserveSubject);
-		}
-	}
 
-	/**
-	 * * @see org.xmldb.api.modules.XUpdateQueryService#update(java.lang.String)
-	 */
-	public long update(String arg1) throws XMLDBException {
-		return updateResource(null, arg1);
-	}
+        });
+    }
 
-	/**
-	 * @see org.xmldb.api.base.Service#getName()
-	 */
-	public String getName() throws XMLDBException {
-		return "XUpdateQueryService";
-	}
+    @Override
+    public long update(final String commands) throws XMLDBException {
+        return updateResource(null, commands);
+    }
 
-	/**
-	 * @see org.xmldb.api.base.Service#getVersion()
-	 */
-	public String getVersion() throws XMLDBException {
-		return "1.0";
-	}
+    @Override
+    public String getProperty(final String name) throws XMLDBException {
+        return null;
+    }
 
-	/**
-	 * @see org.xmldb.api.base.Service#setCollection(org.xmldb.api.base.Collection)
-	 */
-	public void setCollection(Collection arg0) throws XMLDBException {
-	}
-
-	/**
-	 * @see org.xmldb.api.base.Configurable#getProperty(java.lang.String)
-	 */
-	public String getProperty(String arg0) throws XMLDBException {
-		return null;
-	}
-
-	/**
-	 * @see org.xmldb.api.base.Configurable#setProperty(java.lang.String, java.lang.String)
-	 */
-	public void setProperty(String arg0, String arg1) throws XMLDBException {
-	}
-
+    @Override
+        public void setProperty(final String name, final String value) throws XMLDBException {
+    }
 }

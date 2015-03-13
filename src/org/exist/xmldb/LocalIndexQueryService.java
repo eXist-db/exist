@@ -1,262 +1,121 @@
 /*
  * eXist Open Source Native XML Database
- *   
- * Copyright (C) 2001-04 Wolfgang M. Meier wolfgang@exist-db.org
- * 
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
- * 
+ * Copyright (C) 2001-2015 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- * $Id$
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.xmldb;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.exist.EXistException;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
 import org.exist.util.Occurrences;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import java.net.URISyntaxException;
 
-public class LocalIndexQueryService implements IndexQueryService {
+public class LocalIndexQueryService extends AbstractLocalService implements IndexQueryService {
 
-    private final static Logger LOG = LogManager.getLogger(LocalIndexQueryService.class);
-
-	private LocalCollection parent = null;
-	private BrokerPool pool = null;
-	private Subject user;
-	
-	public LocalIndexQueryService(
-		Subject user,
-		BrokerPool pool,
-		LocalCollection parent) {
-		this.user = user;
-		this.pool = pool;
-		this.parent = parent;
-	}
-
-	
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.IndexQueryService#reindexCollection()
-     */
-    public void reindexCollection() throws XMLDBException {
-    	final Subject preserveSubject = pool.getSubject();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(user);
-            broker.reindexCollection(parent.getCollection().getURI());
-            broker.sync(Sync.MAJOR_SYNC);
-        } catch (final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch (final EXistException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
-            pool.release(broker);
-			pool.setSubject(preserveSubject);
-        }
+    public LocalIndexQueryService(final Subject user, final BrokerPool pool, final LocalCollection parent) {
+        super(user, pool, parent);
     }
-    
-    
-    /** (non-Javadoc)
-     * @deprecated Use XmldbURI version instead
-     * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
-     */
-    public void reindexCollection(String collectionPath) throws XMLDBException {
-    	try{
-    		reindexCollection(XmldbURI.xmldbUriFor(collectionPath));
+
+    @Override
+    public String getName() throws XMLDBException {
+        return "IndexQueryService";
+    }
+
+    @Override
+    public String getVersion() throws XMLDBException {
+        return "1.0";
+    }
+
+    @Override
+    public void reindexCollection() throws XMLDBException {
+        reindexCollection(collection.getURI().toCollectionPathURI());
+    }
+
+    @Override
+    public void reindexCollection(final String collectionPath) throws XMLDBException {
+    	try {
+            reindexCollection(XmldbURI.xmldbUriFor(collectionPath));
     	} catch(final URISyntaxException e) {
-    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+            throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
-        /* (non-Javadoc)
-         * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
-         */
-   public void reindexCollection(XmldbURI collectionPath) throws XMLDBException {
-       if (parent != null)
-    	   {collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);}        
-   		final Subject preserveSubject = pool.getSubject();
-        DBBroker broker = null;
-        try {
-            broker = pool.get(user);
+
+    @Override
+    public void reindexCollection(final XmldbURI col) throws XMLDBException {
+        final XmldbURI collectionPath = resolve(col);
+        withDb((broker, transaction) -> {
             broker.reindexCollection(collectionPath);
             broker.sync(Sync.MAJOR_SYNC);
-        } catch (final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch (final EXistException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
-            pool.release(broker);
-			pool.setSubject(preserveSubject);
-        }
+            return null;
+        });
     }
-    
-    /* (non-Javadoc)
-	 * @see org.exist.xmldb.IndexQueryService#configure(java.lang.String)
-	 */
+
     @Override
-	public void configureCollection(String configData) throws XMLDBException {
-    	final Subject preserveSubject = pool.getSubject();
-        final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(user); 
-                final Txn txn = transact.beginTransaction()) {
-            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
-            mgr.addConfiguration(txn, broker, parent.getCollection(), configData);
-            transact.commit(txn);
-            LOG.info("Configured '" + parent.getCollection().getURI() + "'");
-        } catch (final CollectionConfigurationException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} catch (final EXistException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-		} finally {
-			pool.setSubject(preserveSubject);
-        }
-	}
+    public void configureCollection(final String configData) throws XMLDBException {
+        modify(collection.getPathURI()).apply((collection, broker, transaction) -> {
+            final CollectionConfigurationManager mgr = brokerPool.getConfigurationManager();
+            try {
+                mgr.addConfiguration(transaction, broker, collection, configData);
+                return null;
+            } catch (final CollectionConfigurationException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+            }
+        });
+    }
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.IndexQueryService#getIndexedElements(boolean)
-	 */
-	public Occurrences[] getIndexedElements(boolean inclusive)
-		throws XMLDBException {
-    	final Subject preserveSubject = pool.getSubject();
-		DBBroker broker = null;
-		try {
-			broker = pool.get(user);
-			return broker.getElementIndex().scanIndexedElements(parent.getCollection(), inclusive);
-		} catch (final EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				"database access error",
-				e);
-		} catch (final PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
-				"permission denied", e);
-		} finally {
-			pool.release(broker);
-			pool.setSubject(preserveSubject);
-		}
-	}
+    @Override
+    public Occurrences[] getIndexedElements(final boolean inclusive) throws XMLDBException {
+    	return this.<Occurrences[]>read(collection.getPathURI()).apply((collection, broker, transaction) -> broker.getElementIndex().scanIndexedElements(collection, inclusive));
+    }
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Service#getName()
-	 */
-	public String getName() throws XMLDBException {
-		return "IndexQueryService";
-	}
+    @Override
+    public String getProperty(final String name) throws XMLDBException {
+        return null;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Service#getVersion()
-	 */
-	public String getVersion() throws XMLDBException {
-		return "1.0";
-	}
+    @Override
+    public void setProperty(final String name, final String value) throws XMLDBException {
+    }
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Service#setCollection(org.xmldb.api.base.Collection)
-	 */
-	public void setCollection(Collection col) throws XMLDBException {
-		if (!(col instanceof LocalCollection))
-			{throw new XMLDBException(
-				ErrorCodes.INVALID_COLLECTION,
-				"incompatible collection type: " + col.getClass().getName());}
-		parent = (LocalCollection) col;
-	}
+    @Override
+    public Occurrences[] scanIndexTerms(final String start, final String end, final boolean inclusive) throws XMLDBException {
+        return this.<Occurrences[]>read(collection.getPathURI()).apply((collection, broker, transaction) -> {
+            final MutableDocumentSet docs = new DefaultDocumentSet();
+            collection.allDocs(broker, docs, inclusive);
+            return broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(),  start, end);
+        });
+    }
 
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Configurable#getProperty(java.lang.String)
-	 */
-	public String getProperty(String name) throws XMLDBException {
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xmldb.api.base.Configurable#setProperty(java.lang.String, java.lang.String)
-	 */
-	public void setProperty(String name, String value) throws XMLDBException {
-	}
-
-	/* (non-Javadoc)
-	 * @see org.exist.xmldb.IndexQueryService#scanIndexTerms(java.lang.String, java.lang.String, boolean)
-	 */
-	public Occurrences[] scanIndexTerms(
-		String start,
-		String end,
-		boolean inclusive)
-		throws XMLDBException {
-    	final Subject preserveSubject = pool.getSubject();
-		DBBroker broker = null;
-		try {
-			broker = pool.get(user);
-			final MutableDocumentSet docs = new DefaultDocumentSet();
-			parent.getCollection().allDocs(broker, docs, inclusive);
-			return broker.getTextEngine().scanIndexTerms(docs, docs.docsToNodeSet(),  start, end);
-		} catch (final PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-				"permission denied", e);
-		} catch (final EXistException e) {
-			throw new XMLDBException(
-				ErrorCodes.VENDOR_ERROR,
-				"database access error",
-				e);
-		} finally {
-			pool.release(broker);
-			pool.setSubject(preserveSubject);
-		}
-	}
-	
-	public Occurrences[] scanIndexTerms(
-			String xpath,
-			String start,
-			String end)
-			throws XMLDBException {
-    	final Subject preserveSubject = pool.getSubject();
-		DBBroker broker = null;
-		try {
-			broker = pool.get(user);
-			final XQuery xquery = broker.getXQueryService();
-			final Sequence nodes = xquery.execute(xpath, null, parent.getAccessContext());
-			return broker.getTextEngine().scanIndexTerms(nodes.getDocumentSet(), 
-					nodes.toNodeSet(),  start, end);
-		} catch (final EXistException e) {
-			throw new XMLDBException(
-					ErrorCodes.VENDOR_ERROR,
-					"database access error",
-					e);
-		} catch (final XPathException e) {
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-					e.getMessage(), e);
-		} catch (final PermissionDeniedException e) {
-			throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-					e.getMessage(), e);
-		} finally {
-			pool.release(broker);
-			pool.setSubject(preserveSubject);
-		}
-	}
+    @Override
+    public Occurrences[] scanIndexTerms(final String xpath, final String start, final String end) throws XMLDBException {
+    	return this.<Occurrences[]>withDb((broker, transaction) -> {
+            final XQuery xquery = broker.getXQueryService();
+            final Sequence nodes = xquery.execute(xpath, null, collection.getAccessContext());
+            return broker.getTextEngine().scanIndexTerms(nodes.getDocumentSet(), nodes.toNodeSet(),  start, end);
+        });
+    }
 }
