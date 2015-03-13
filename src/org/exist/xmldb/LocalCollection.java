@@ -1,35 +1,29 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2015 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Properties;
 import java.util.Random;
 import javax.xml.transform.OutputKeys;
@@ -38,29 +32,29 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockToken;
 import org.exist.security.Account;
 import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
+import org.exist.util.function.FunctionE;
+import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.XMLResource;
 
 /**
  *  A local implementation of the Collection interface. This
@@ -71,9 +65,9 @@ import org.xmldb.api.base.XMLDBException;
  * progress of the indexer by passing an object of type ProgressIndicator
  * to the observer.
  *
- *@author     wolf
+ * @author     wolf
  */
-public class LocalCollection extends Observable implements CollectionImpl {
+public class LocalCollection extends AbstractLocal implements CollectionImpl {
 
     private static Logger LOG = LogManager.getLogger(LocalCollection.class);
 
@@ -85,7 +79,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
      */
     public final static String NORMALIZE_HTML = "normalize-html";
 
-    protected final static Properties defaultProperties = new Properties();
+    private final static Properties defaultProperties = new Properties();
     static {
         defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
@@ -94,17 +88,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
         defaultProperties.setProperty(NORMALIZE_HTML, "no");
     }
 
-    protected XmldbURI path = null;
-    protected BrokerPool brokerPool = null;
-    protected Properties properties = new Properties(defaultProperties);
-    protected LocalCollection parent = null;
-    protected Subject user = null;
-    protected ArrayList<Observer> observers = new ArrayList<Observer>(1);
-    protected boolean needsSync = false;
-
+    private final XmldbURI path;
+    private Properties properties = new Properties(defaultProperties);
+    private boolean needsSync = false;
+    private final AccessContext accessCtx;
     private XMLReader userReader = null;
-
-    private AccessContext accessCtx;
 
     /**
      * Create a collection with no parent (root collection).
@@ -128,97 +116,28 @@ public class LocalCollection extends Observable implements CollectionImpl {
      * @throws XMLDBException
      */
     public LocalCollection(Subject user, final BrokerPool brokerPool, final LocalCollection parent, final XmldbURI name, final AccessContext accessCtx) throws XMLDBException {
+        super(user, brokerPool, parent);
+
         if(accessCtx == null) {
             throw new NullAccessContextException();
         }
         this.accessCtx = accessCtx;
-        if (user == null) {
-            user = brokerPool.getSecurityManager().getGuestSubject();
+
+        if(name == null) {
+            this.path = XmldbURI.ROOT_COLLECTION_URI.toCollectionPathURI();
+        } else {
+            this.path = name.toCollectionPathURI();
         }
-        this.user = user;
-        this.parent = parent;
-        this.brokerPool = brokerPool;
-        this.path = name;
-        if (path == null) {
-            path = XmldbURI.ROOT_COLLECTION_URI;
-        }
-        path = path.toCollectionPathURI();
-        getCollection();
+
+        read().apply((collection, broker, transaction) -> {
+            /* no-op, used to make sure the current user can open the collection!
+               will throw an XMLDBException if they cannot */
+            return null;
+        });
     }
 
     public AccessContext getAccessContext() {
         return accessCtx;
-    }
-
-    protected Collection getCollectionWithLock(final int lockMode) throws XMLDBException {
-    	final Subject subject = brokerPool.getSubject();
-        DBBroker broker = null;
-        Collection collection = null;
-        try {
-            broker = brokerPool.get(user);
-            collection = broker.openCollection(path, lockMode);
-            if(collection == null) {
-                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-            }
-            collection.setReader(userReader);
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-        } finally {
-            brokerPool.release(broker);
-            brokerPool.setSubject(subject);
-        }
-        return collection;
-    }
-
-    protected void saveCollection() throws XMLDBException {
-    	final Subject subject = brokerPool.getSubject();
-        Collection collection = null;
-        final TransactionManager transact = brokerPool.getTransactionManager();
-        try(final DBBroker broker = brokerPool.get(user);
-            final Txn transaction = transact.beginTransaction()) {
-            collection = broker.openCollection(path, Lock.WRITE_LOCK);
-            if(collection == null) {
-                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-            }
-            broker.saveCollection(transaction, collection);
-            transact.commit(transaction);
-        } catch(final IOException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final TriggerException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-        } finally {
-            if(collection != null) {
-                collection.release(Lock.WRITE_LOCK);
-            }
-            brokerPool.setSubject(subject);
-        }
-    }
-
-    protected Collection getCollection() throws XMLDBException {
-    	final Subject subject = brokerPool.getSubject();
-        DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
-            final org.exist.collections.Collection collection = broker.getCollection(path);
-            if(collection == null) {
-                throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + path + " not found");
-            }
-            collection.setReader(userReader);
-            return collection;
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
-            brokerPool.release(broker);
-            brokerPool.setSubject(subject);
-        }
     }
 
     protected boolean checkOwner(final Collection collection, final Account account) throws XMLDBException {
@@ -236,17 +155,10 @@ public class LocalCollection extends Observable implements CollectionImpl {
     @Override
     public void close() throws XMLDBException {
         if (needsSync) {
-            final Subject subject = brokerPool.getSubject();
-            DBBroker broker = null;
-            try {
-                broker = brokerPool.get(user);
+            withDb((broker, transaction) -> {
                 broker.sync(Sync.MAJOR_SYNC);
-            } catch(final EXistException e) {
-                throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-            } finally {
-                brokerPool.release(broker);
-                brokerPool.setSubject(subject);
-            }
+                return null;
+            });
         }
     }
 
@@ -262,12 +174,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
      */
     @Override
     public String createId() throws XMLDBException {
-        //TODO: API change to XmldbURI ?
-    	final Subject subject = brokerPool.getSubject();
-        final Collection collection = getCollectionWithLock(Lock.READ_LOCK);
-        DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
+        return this.<String>read().apply((collection, broker, transaction) ->{
             XmldbURI id;
             final Random rand = new Random();
             boolean ok;
@@ -278,27 +185,16 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 if (collection.hasDocument(broker, id)) {
                     ok = false;
                 }
-                
+
                 if (collection.hasSubcollection(broker, id)) {
                     ok = false;
                 }
-                
+
             } while (!ok);
             return id.toString();
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
-            if(broker != null) {
-                brokerPool.release(broker);
-                brokerPool.setSubject(subject);
-            }
-            collection.getLock().release(Lock.READ_LOCK);
-        }
+        });
     }
 
-    //TODO: API change to XmldbURI?
     @Override
     public Resource createResource(String id, final String type) throws XMLDBException {
         if(id == null) {
@@ -312,98 +208,62 @@ public class LocalCollection extends Observable implements CollectionImpl {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
         final Resource r;
-        if ("XMLResource".equals(type)) {
-            r = new LocalXMLResource(user, brokerPool, this, idURI);
-        } else if ("BinaryResource".equals(type)) {
-            r = new LocalBinaryResource(user, brokerPool, this, idURI);
-        } else {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Unknown resource type: " + type);
+        switch(type) {
+            case XMLResource.RESOURCE_TYPE:
+                r = new LocalXMLResource(user, brokerPool, this, idURI);
+                break;
+
+            case BinaryResource.RESOURCE_TYPE:
+                r = new LocalBinaryResource(user, brokerPool, this, idURI);
+                break;
+
+            default:
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Unknown resource type: " + type);
         }
         
         ((AbstractEXistResource)r).isNewResource = true;
         return r;
     }
 
-    //TODO: API change to XmldbURI ?
-    /**
-     *
-     * @param name
-     * @return
-     * @throws XMLDBException
-     */
     @Override
-    public org.xmldb.api.base.Collection getChildCollection(String name) throws XMLDBException {
-        XmldbURI childName = null;
+    public org.xmldb.api.base.Collection getChildCollection(final String name) throws XMLDBException {
+
         final XmldbURI childURI;
         try {
             childURI = XmldbURI.xmldbUriFor(name);
         } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
-        
-        final Collection collection = getCollectionWithLock(Lock.READ_LOCK);
-    	final Subject subject = brokerPool.getSubject();
-        DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
-            if(!checkPermissions(collection, Permission.READ)) {
-                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "You are not allowed to read this collection");
-            }
-            if(collection.hasChildCollection(broker, childURI)) {
+
+        final XmldbURI nameUri = this.<XmldbURI>read().apply((collection, broker, transaction) -> {
+            XmldbURI childName = null;
+            if (collection.hasChildCollection(broker, childURI)) {
                 childName = getPathURI().append(childURI);
             }
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
-            if(broker != null) {
-                brokerPool.release(broker);
-                brokerPool.setSubject(subject);
-            }
-            collection.release(Lock.READ_LOCK);
+            return childName;
+        });
+
+        if(nameUri != null) {
+            return new LocalCollection(user, brokerPool, this, nameUri, accessCtx);
+        } else {
+            return null;
         }
-        if(childName != null) {
-            return new LocalCollection(user, brokerPool, this, childName, accessCtx);
-        }
-        
-        return null;
     }
 
     @Override
     public int getChildCollectionCount() throws XMLDBException {
-        final Collection collection = getCollectionWithLock(Lock.READ_LOCK);
-    	final Subject subject = brokerPool.getSubject();
-        DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
+        return this.<Integer>read().apply((collection, broker, transaction) -> {
             if(checkPermissions(collection, Permission.READ)) {
                 return collection.getChildCollectionCount(broker);
             } else {
                 return 0;
             }
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
-            if(broker != null) {
-                brokerPool.release(broker);
-                brokerPool.setSubject(subject);
-            }
-            collection.getLock().release(Lock.READ_LOCK);
-        }
+        });
     }
 
-    //TODO: API change to XmldbURI?
     @Override
     public String getName() throws XMLDBException {
-        final Collection collection = getCollectionWithLock(Lock.READ_LOCK);
-        try {
-            return collection.getURI().toString();
-        } finally {
-            collection.release(Lock.READ_LOCK);
-        }
+        return this.<String>read().apply((collection, broker, transaction) -> collection.getURI().toString());
     }
 
     @Override
@@ -412,31 +272,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
             return null;
         }
         
-        if(parent == null) {
-            // load the collection to check if it is valid
-            final Subject subject = brokerPool.getSubject();
-            DBBroker broker = null;
-            Collection collection = null;
-            try {
-                broker = brokerPool.get(user);
-                collection = broker.openCollection(path, Lock.READ_LOCK);
-                if(collection == null) {
-                    throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-                }
-                parent = new LocalCollection(user, brokerPool, null, collection.getParentURI(), accessCtx);
-            } catch(final PermissionDeniedException e) {
-                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-            } catch(final EXistException e) {
-                throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "Error while retrieving parent collection: " + e.getMessage(), e);
-            } finally {
-                if(collection != null) {
-                    collection.getLock().release(Lock.READ_LOCK);
-                }
-                brokerPool.release(broker);
-                brokerPool.setSubject(subject);
-            }
+        if(collection == null) {
+            final XmldbURI parentUri = this.<XmldbURI>read().apply((collection, broker, transaction) -> collection.getParentURI());
+            this.collection = new LocalCollection(user, brokerPool, null, parentUri, accessCtx);
         }
-        return parent;
+        return collection;
     }
 
     public String getPath() throws XMLDBException {
@@ -449,88 +289,48 @@ public class LocalCollection extends Observable implements CollectionImpl {
     }
 
     @Override
-    public String getProperty(final String property) throws XMLDBException {
-        return properties.getProperty(property);
-    }
-
-    @Override
     public Resource getResource(final String id) throws XMLDBException {
-    	final Subject subject = brokerPool.getSubject();
-        Collection collection = null;
-        DBBroker broker = null;
-        
         final XmldbURI idURI;
         try {
             idURI = XmldbURI.xmldbUriFor(id);
         } catch(final URISyntaxException e) {
-            throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+            throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
-        
-        try {
-            broker = brokerPool.get(user);
-            collection = broker.openCollection(path, Lock.READ_LOCK);
-            if(collection == null) {
-                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-            }
 
-            //you only need execute access on the collection, this is enforced in broker.openCollection above!
-            /*if (!checkPermissions(collection, Permission.READ)) {
-                throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
-                    "Not allowed to read collection");
-            }*/
-            
+        return this.<Resource>read().apply((collection, broker, transaction) -> {
             final DocumentImpl document = collection.getDocument(broker, idURI);
             if(document == null) {
                 LOG.warn("Resource " + idURI + " not found");
                 return null;
             }
+
             final Resource r;
-            if(document.getResourceType() == DocumentImpl.XML_FILE) {
-                r = new LocalXMLResource(user, brokerPool, this, idURI);
-            } else if(document.getResourceType() == DocumentImpl.BINARY_FILE) {
-                r = new LocalBinaryResource(user, brokerPool, this, idURI);
-            } else {
-                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Unknown resource type");
+            switch(document.getResourceType()) {
+                case DocumentImpl.XML_FILE:
+                    r = new LocalXMLResource(user, brokerPool, this, idURI);
+                    break;
+
+                case DocumentImpl.BINARY_FILE:
+                    r = new LocalBinaryResource(user, brokerPool, this, idURI);
+                    break;
+
+                default:
+                    throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Unknown resource type");
             }
             ((AbstractEXistResource)r).setMimeType(document.getMetadata().getMimeType());
             return r;
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR,
-                "Error while retrieving resource: " + e.getMessage(), e);
-        } finally {
-            if(collection != null) {
-                collection.release(Lock.READ_LOCK);
-            }
-            brokerPool.release(broker);
-            brokerPool.setSubject(subject);
-        }
+        });
     }
 
     @Override
     public int getResourceCount() throws XMLDBException {
-        final Collection collection = getCollectionWithLock(Lock.READ_LOCK);
-    	final Subject subject = brokerPool.getSubject();
-        DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
-            if(!checkPermissions(collection, Permission.READ)) {
-                return 0;
-            } else {
+        return this.<Integer>read().apply((collection, broker, transaction) -> {
+            if(checkPermissions(collection, Permission.READ)) {
                 return collection.getDocumentCount(broker);
+            } else {
+                return 0;
             }
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
-            if(broker != null) {
-                brokerPool.release(broker);
-                brokerPool.setSubject(subject);
-            }
-            collection.getLock().release(Lock.READ_LOCK);
-        }
+        });
     }
 
     /** Possible services: XPathQueryService, XQueryService,
@@ -539,39 +339,50 @@ public class LocalCollection extends Observable implements CollectionImpl {
      * ValidationService. */
     @Override
     public Service getService(final String name, final String version) throws XMLDBException {
-        if("XPathQueryService".equals(name)) {
-            return new LocalXPathQueryService(user, brokerPool, this, accessCtx);
+        final Service service;
+        switch(name) {
+            case "XPathQueryService":
+            case "XQueryService":
+                service = new LocalXPathQueryService(user, brokerPool, this, accessCtx);
+                break;
+
+            case "CollectionManagementService":
+            case "CollectionManager":
+                service = new LocalCollectionManagementService(user, brokerPool, this, accessCtx);
+                break;
+
+            case "UserManagementService":
+                service = new LocalUserManagementService(user, brokerPool, this);
+                break;
+
+            case "DatabaseInstanceManager":
+                service = new LocalDatabaseInstanceManager(user, brokerPool);
+                break;
+
+            case "XUpdateQueryService":
+                service = new LocalXUpdateQueryService(user, brokerPool, this);
+                break;
+
+            case "IndexQueryService":
+                service = new LocalIndexQueryService(user, brokerPool, this);
+                break;
+
+            default:
+                throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
         }
-        if("XQueryService".equals(name)) {
-            return new LocalXPathQueryService(user, brokerPool, this, accessCtx);
-        }
-        if("CollectionManagementService".equals(name) || "CollectionManager".equals(name)) {
-            return new LocalCollectionManagementService(user, brokerPool, this, accessCtx);
-        }
-        if("UserManagementService".equals(name)) {
-            return new LocalUserManagementService(user, brokerPool, this);
-        }
-        if("DatabaseInstanceManager".equals(name)) {
-            return new LocalDatabaseInstanceManager(user, brokerPool);
-        }
-        if("XUpdateQueryService".equals(name)) {
-            return new LocalXUpdateQueryService(user, brokerPool, this);
-        }
-        if("IndexQueryService".equals(name)) {
-            return new LocalIndexQueryService(user, brokerPool, this);
-        }
-        throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
+        return service;
     }
 
     @Override
     public Service[] getServices() throws XMLDBException {
-        final Service[] services = new Service[6];
-        services[0] = new LocalXPathQueryService(user, brokerPool, this, accessCtx);
-        services[1] = new LocalCollectionManagementService(user, brokerPool, this, accessCtx);
-        services[2] = new LocalUserManagementService(user, brokerPool, this);
-        services[3] = new LocalDatabaseInstanceManager(user, brokerPool);
-        services[4] = new LocalXUpdateQueryService(user, brokerPool, this);
-        services[5] = new LocalIndexQueryService(user, brokerPool, this);
+        final Service[] services = {
+                new LocalXPathQueryService(user, brokerPool, this, accessCtx),
+                new LocalCollectionManagementService(user, brokerPool, this, accessCtx),
+                new LocalUserManagementService(user, brokerPool, this),
+                new LocalDatabaseInstanceManager(user, brokerPool),
+                new LocalXUpdateQueryService(user, brokerPool, this),
+                new LocalIndexQueryService(user, brokerPool, this)
+        };
         return services;
     }
 
@@ -580,35 +391,16 @@ public class LocalCollection extends Observable implements CollectionImpl {
         return true;
     }
 
-    //TODO: API change to XmldbURI?
     @Override
     public String[] listChildCollections() throws XMLDBException {
-    	final Subject subject = brokerPool.getSubject();
-        Collection collection = null;
-        DBBroker broker = null;
-        try {
-            collection = getCollectionWithLock(Lock.READ_LOCK);
-            broker = brokerPool.get(user);
+    	return this.<String[]>read().apply((collection, broker, transaction) -> {
             final String[] collections = new String[collection.getChildCollectionCount(broker)];
             int j = 0;
             for(final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); j++) {
                 collections[j] = i.next().toString();
             }
             return collections;
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "error while retrieving resource: " + e.getMessage(), e);
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "error while retrieving resource: " + e.getMessage(), e);
-        } finally {
-            if(broker != null) {
-                brokerPool.release(broker);
-                brokerPool.setSubject(subject);
-            }
-            
-            if(collection != null) {
-                collection.release(Lock.READ_LOCK);
-            }
-        }
+        });
     }
 
     @Override
@@ -623,24 +415,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
      */
     @Override
     public String[] listResources() throws XMLDBException {
-    	final Subject subject = brokerPool.getSubject();
-        Collection collection = null;
-        DBBroker broker = null;
-        try {
-            broker = brokerPool.get(user);
-            collection = broker.openCollection(path, Lock.READ_LOCK);
-            if(collection == null) {
-                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-            }
-            
-            final List<XmldbURI> allresources = new ArrayList<XmldbURI>();
-            DocumentImpl doc;
+    	return this.<String[]>read().apply((collection, broker, transaction) -> {
+            final List<XmldbURI> allresources = new ArrayList<>();
             for(final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
-                doc = i.next();
+                final DocumentImpl doc = i.next();
                 // Include only when (1) lockToken is present or (2)
                 // lockToken indicates that it is not a null resource
                 final LockToken lock = doc.getMetadata().getLockToken();
-                if (lock==null || (!lock.isNullResource())){
+                if(lock == null || (!lock.isNullResource())){
                     allresources.add(doc.getFileURI());
                 }
             }
@@ -651,17 +433,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 resources[j] = i.next().toString();
             }
             return resources;
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "Error while retrieving resource: " + e.getMessage(), e);
-        } finally {
-            if(collection != null) {
-                collection.release(Lock.READ_LOCK);
-            }
-            brokerPool.release(broker);
-            brokerPool.setSubject(subject);
-        }
+        });
     }
 
     @Override
@@ -685,50 +457,41 @@ public class LocalCollection extends Observable implements CollectionImpl {
         } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
-        
-    	final Subject subject = brokerPool.getSubject();
-        Collection collection = null;
-        final TransactionManager transact = brokerPool.getTransactionManager();
 
-        try(final DBBroker broker = brokerPool.get(user);
-            final Txn transaction = transact.beginTransaction()) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("removing " + resURI);
-            }
-
-            collection = broker.openCollection(path, Lock.WRITE_LOCK);
-            if(collection == null) {
-                transact.abort(transaction);
-                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-            }
+        modify().apply((collection, broker, transaction) -> {
             //Check that the document exists
             final DocumentImpl doc = collection.getDocument(broker, resURI);
-            if(doc == null) {
-                transact.abort(transaction);
+            if (doc == null) {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resURI + " not found");
             }
-            
-            if("XMLResource".equals(res.getResourceType())) {
+
+            if ("XMLResource".equals(res.getResourceType())) {
                 collection.removeXMLResource(transaction, broker, resURI);
             } else {
                 collection.removeBinaryResource(transaction, broker, resURI);
             }
-            transact.commit(transaction);
-        } catch(final EXistException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } catch(final PermissionDeniedException e) {
-            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
-        } catch(final TriggerException e) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
-        } catch(final LockException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
-            if(collection != null) {
-                collection.getLock().release(Lock.WRITE_LOCK);
-            }
-            brokerPool.setSubject(subject);
-        }
-        needsSync = true;
+
+            return null;
+        });
+
+        this.needsSync = true;
+    }
+
+    public Properties getProperties() {
+        return properties;
+    }
+
+    @Override
+    public String getProperty(final String property) throws XMLDBException {
+        return properties.getProperty(property);
+    }
+
+    public String getProperty(final String property, final String defaultValue) throws XMLDBException {
+        return properties.getProperty(property, defaultValue);
+    }
+
+    public void setProperties(final Properties properties) {
+        this.properties = properties;
     }
 
     @Override
@@ -743,15 +506,15 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
     @Override
     public void storeResource(final Resource resource, final Date a, final Date b) throws XMLDBException {
-        if("XMLResource".equals(resource.getResourceType())) {
+        if(resource.getResourceType().equals(XMLResource.RESOURCE_TYPE)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("storing document " + resource.getId());
             }
-            
             ((LocalXMLResource)resource).datecreated = a;
             ((LocalXMLResource)resource).datemodified = b;
             storeXMLResource((LocalXMLResource) resource);
-        } else if("BinaryResource".equals(resource.getResourceType())) {
+
+        } else if(resource.getResourceType().equals(BinaryResource.RESOURCE_TYPE)) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("storing binary resource " + resource.getId());
             }
@@ -763,7 +526,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
         }
         
         ((AbstractEXistResource)resource).isNewResource = false;
-        needsSync = true;
+        this.needsSync = true;
     }
 
     private void storeBinaryResource(final LocalBinaryResource res) throws XMLDBException {
@@ -773,35 +536,20 @@ public class LocalCollection extends Observable implements CollectionImpl {
         } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
-        
-    	final Subject subject = brokerPool.getSubject();
-        final TransactionManager transact = brokerPool.getTransactionManager();
-        
-        Collection collection = null;
-        try(final DBBroker broker = brokerPool.get(user);
-            final Txn txn = transact.beginTransaction()) {
-            collection = broker.openCollection(path, Lock.WRITE_LOCK);
-            if(collection == null) {
-                transact.abort(txn);
-                throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
+
+        modify().apply((collection, broker, transaction) -> {
+            try {
+                final long conLength = res.getStreamLength();
+                if (conLength != -1) {
+                    collection.addBinaryResource(transaction, broker, resURI, res.getStreamContent(), res.getMimeType(), conLength, res.datecreated, res.datemodified);
+                } else {
+                    collection.addBinaryResource(transaction, broker, resURI, (byte[]) res.getContent(), res.getMimeType(), res.datecreated, res.datemodified);
+                }
+            } catch(final EXistException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
             }
-            
-            final long conLength = res.getStreamLength();
-            if(conLength != -1) {
-                collection.addBinaryResource(txn, broker, resURI, res.getStreamContent(), res.getMimeType(), conLength, res.datecreated, res.datemodified);
-            } else {
-                collection.addBinaryResource(txn, broker, resURI, (byte[])res.getContent(), res.getMimeType(), res.datecreated, res.datemodified);
-            }
-            
-            transact.commit(txn);
-        } catch(final Exception e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Exception while storing binary resource: " + e.getMessage(), e);
-        } finally {
-            if(collection != null) {
-                collection.getLock().release(Lock.WRITE_LOCK);
-            }
-            brokerPool.setSubject(subject);
-        }
+            return null;
+        });
     }
 
     private void storeXMLResource(final LocalXMLResource res) throws XMLDBException {
@@ -811,68 +559,52 @@ public class LocalCollection extends Observable implements CollectionImpl {
         } catch(final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
-        
-    	final Subject subject = brokerPool.getSubject();
-        final TransactionManager transact = brokerPool.getTransactionManager();
-        
-        try(final DBBroker broker = brokerPool.get(user);
-                final Txn txn = transact.beginTransaction()) {
+
+        modify().apply((collection, broker, transaction) -> {
             String uri = null;
             if(res.file != null) {
                 uri = res.file.toURI().toASCIIString();
             }
-            
-            Collection collection = null;
-            final IndexInfo info;
+
+//          for(final Observer observer : observers) {
+//              collection.addObserver(observer);
+//          }
+
             try {
-                collection = broker.openCollection(path, Lock.WRITE_LOCK);
-                if(collection == null) {
-                    transact.abort(txn);
-                    throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-                }
-                for(final Observer observer : observers) {
-                    collection.addObserver(observer);
-                }
-                if (uri != null || res.inputSource!=null) {
+                final IndexInfo info;
+                if (uri != null || res.inputSource != null) {
                     setupParser(collection, res);
-                    info = collection.validateXMLResource(txn, broker, resURI, (uri != null) ? new InputSource(uri) : res.inputSource);
+                    info = collection.validateXMLResource(transaction, broker, resURI, (uri != null) ? new InputSource(uri) : res.inputSource);
                 } else if (res.root != null) {
-                    info = collection.validateXMLResource(txn, broker, resURI, res.root);
+                    info = collection.validateXMLResource(transaction, broker, resURI, res.root);
                 } else {
-                    info = collection.validateXMLResource(txn, broker, resURI, res.content);
+                    info = collection.validateXMLResource(transaction, broker, resURI, res.content);
                 }
                 //Notice : the document should now have a Lock.WRITE_LOCK update lock
                 //TODO : check that no exception occurs in order to allow it to be released
                 info.getDocument().getMetadata().setMimeType(res.getMimeType());
-                if (res.datecreated  != null) {
+                if (res.datecreated != null) {
                     info.getDocument().getMetadata().setCreated(res.datecreated.getTime());
                 }
                 if (res.datemodified != null) {
                     info.getDocument().getMetadata().setLastModified(res.datemodified.getTime());
                 }
-            } finally {
-                if(collection != null) {
-                    collection.release(Lock.WRITE_LOCK);
+
+                if (uri != null || res.inputSource != null) {
+                    collection.store(transaction, broker, info, (uri != null) ? new InputSource(uri) : res.inputSource, false);
+                } else if (res.root != null) {
+                    collection.store(transaction, broker, info, res.root, false);
+                } else {
+                    collection.store(transaction, broker, info, res.content, false);
                 }
-            }
+
+                return null;
             
-            if (uri != null || res.inputSource!=null) {
-                collection.store(txn, broker, info, (uri!=null) ? new InputSource(uri):res.inputSource, false);
-            } else if (res.root != null) {
-                collection.store(txn, broker, info, res.root, false);
-            } else {
-                collection.store(txn, broker, info, res.content, false);
+//              collection.deleteObservers();
+            } catch(final EXistException | SAXException e) {
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
             }
-            
-            //Notice : the document should now have its update lock released
-            transact.commit(txn);
-            collection.deleteObservers();
-        } catch(final Exception e) {
-            LOG.error(e.getMessage());
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        } finally {
-            brokerPool.setSubject(subject);
-        }
+        });
     }
 
     private void setupParser(final Collection collection, final LocalXMLResource res) throws XMLDBException {
@@ -901,42 +633,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
     @Override
     public Date getCreationTime() throws XMLDBException {
-        final Collection collection = getCollectionWithLock(Lock.READ_LOCK);
-        try {
-            return new Date(collection.getCreationTime());
-        } finally {
-            collection.getLock().release(Lock.READ_LOCK);
-        }
+        return this.<Date>read().apply((collection, broker, transaction) -> new Date(collection.getCreationTime()));
     }
 
-    /**
-     * Add a new observer to the list. Observers are just passed
-     * on to the indexer to be notified about the indexing progress.
-     */
-    @Override
-    public void addObserver(final Observer o) {
-        if(!observers.contains(o)) {
-            observers.add(o);
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.CollectionImpl#isRemoteCollection()
-     */
     @Override
     public boolean isRemoteCollection() throws XMLDBException {
         return false;
     }
 
-    /** set user-defined Reader
-     * @param reader
-     */
-    public void setReader(final XMLReader reader){
-        userReader = reader;
-    }
-
-    //You probably will have to call this method from this cast :
-    //((org.exist.xmldb.CollectionImpl)collection).getURI()
     public XmldbURI getURI() {
         final StringBuilder accessor = new StringBuilder(XmldbURI.XMLDB_URI_PREFIX);
         //TODO : get the name from client
@@ -958,7 +662,92 @@ public class LocalCollection extends Observable implements CollectionImpl {
 
     @Override
     public void setTriggersEnabled(final boolean triggersEnabled) throws XMLDBException {
-        final Collection collection = getCollection();
-        collection.setTriggersEnabled(triggersEnabled);
+        modify().apply((collection, broker, transaction) -> {
+            collection.setTriggersEnabled(triggersEnabled);
+            return null;
+        });
+    }
+
+    /**
+     * Set a user defined reader
+     * @param reader
+     */
+    public void setReader(final XMLReader reader){
+        userReader = reader;
+    }
+
+    /**
+     * Higher-order-function for performing read-only operations against this collection
+     *
+     * NOTE this read will occur using the database user set on the collection
+     *
+     * @return A function to receive a read-only operation to perform against the collection
+     */
+    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read() throws XMLDBException {
+        return readOp -> this.<R>read(path).apply((collection, broker, transaction) -> {
+            collection.setReader(userReader);
+            return readOp.apply(collection, broker, transaction);
+        });
+    }
+
+    /**
+     * Higher-order-function for performing read-only operations against this collection
+     *
+     * NOTE this read will occur using the database user set on the collection
+     *
+     * @param broker The broker to use for the operation
+     * @param transaction The transaction to use for the operation
+     * @return A function to receive a read-only operation to perform against the collection
+     */
+    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction) throws XMLDBException {
+        return readOp -> this.<R>read(broker, transaction, path).apply((collection, broker1, transaction1) -> {
+            collection.setReader(userReader);
+            return readOp.apply(collection, broker1, transaction1);
+        });
+    }
+
+    /**
+     * Higher-order-function for performing read/write operations against this collection
+     *
+     * NOTE this read/write will occur using the database user set on the collection
+     *
+     * @return A function to receive a read/write operation to perform against the collection
+     */
+    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify() throws XMLDBException {
+        return modifyOp -> this.<R>modify(path).apply((collection, broker, transaction) -> {
+            collection.setReader(userReader);
+            return modifyOp.apply(collection, broker, transaction);
+        });
+    }
+
+    /**
+     * Higher-order-function for performing read/write operations against this collection
+     *
+     * NOTE this read/write will occur using the database user set on the collection
+     *
+     * @param broker The database broker to use when accessing the collection
+     * @param transaction The transaction to use when accessing the collection
+     * @return A function to receive a read/write operation to perform against the collection
+     */
+    private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify(final DBBroker broker, final Txn transaction) throws XMLDBException {
+        return modifyOp -> this.<R>modify(broker, transaction, path).apply((collection, broker1, transaction1) -> {
+            collection.setReader(userReader);
+            return modifyOp.apply(collection, broker1, transaction1);
+        });
+    }
+
+    /**
+     * Higher-order function for performing lockable operations on this collection
+     *
+     * @param lockMode
+     * @param broker The broker to use for the operation
+     * @param transaction The transaction to use for the operation
+     * @return A function to receive an operation to perform on the locked database collection
+     */
+    protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final int lockMode, final DBBroker broker, final Txn transaction) throws XMLDBException {
+        return op -> this.<R>with(lockMode, broker, transaction, path).apply((collection, broker1, transaction1) -> {
+            collection.setReader(userReader);
+            return op.apply(collection, broker1, transaction1);
+        });
     }
 }
