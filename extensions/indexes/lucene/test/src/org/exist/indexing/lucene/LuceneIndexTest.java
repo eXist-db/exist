@@ -19,26 +19,28 @@
  */
 package org.exist.indexing.lucene;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.QName;
 import org.exist.indexing.OrderedValuesIndex;
 import org.exist.indexing.QNamedKeysIndex;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -48,6 +50,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.Occurrences;
@@ -55,17 +59,22 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import org.junit.After;
+
 import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xml.sax.InputSource;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import javax.xml.XMLConstants;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 
 public class LuceneIndexTest {
 
@@ -75,30 +84,30 @@ public class LuceneIndexTest {
     protected static String XUPDATE_END =
         "</xu:modifications>";
     
-    private static String XML1 =
+    private static final String XML1 =
             "<section>" +
             "   <head>The title in big letters</head>" +
             "   <p rend=\"center\">A simple paragraph with <hi>just</hi> text in it.</p>" +
             "   <p rend=\"right\">paragraphs with <span>mix</span><span>ed</span> content are <span>danger</span>ous.</p>" +
             "</section>";
 
-    private static String XML2 =
+    private static final String XML2 =
             "<test>" +
             "   <item id='1' attr='attribute'><description>Chair</description></item>" +
             "   <item id='2'><description>Table</description>\n<condition>good</condition></item>" +
             "   <item id='3'><description>Cabinet</description>\n<condition>bad</condition></item>" +
             "</test>";
 
-    private static String XML3 =
+    private static final String XML3 =
             "<section>" +
             "   <head>TITLE IN UPPERCASE LETTERS</head>" +
             "   <p>UPPERCASE PARAGRAPH</p>" +
             "</section>";
 
-    private static String XML4 =
+    private static final String XML4 =
             "<test><a>A X</a><b><c>B X</c> C</b></test>";
 
-    private static String XML5 =
+    private static final String XML5 =
             "<article>" +
             "   <head>The <b>title</b>of it</head>" +
             "   <p>A simple paragraph with <hi>highlighted</hi> text <note>and a note</note> " +
@@ -107,14 +116,14 @@ public class LuceneIndexTest {
             "   <p><note1>ignore</note1> <s2>warn</s2>ings</p>" +
             "</article>";
 
-    private static String XML6 =
+    private static final String XML6 =
             "<a>" +
             "   <b>AAA</b>" +
             "   <c>AAA</c>" +
             "   <b>AAA</b>" +
             "</a>";
 
-    private static String XML7 =
+    private static final String XML7 =
         "<section>" +
         "   <head>Query Test</head>" +
         "   <p>Eine wunderbare Heiterkeit hat meine ganze Seele eingenommen, gleich den " +
@@ -124,7 +133,7 @@ public class LuceneIndexTest {
         "   von ruhigem Dasein versunken, daß meine Kunst darunter leidet.</p>" +
         "</section>";
 
-    private static String XML8 =
+    private static final String XML8 =
             "<a>" +
             "   <b att='att on b1'>AAA on b1</b>" +
             "   <b att='att on b2' attr='attr on b2'>AAA on b2</b>" +
@@ -133,7 +142,7 @@ public class LuceneIndexTest {
             "   <c>AAA on c2</c>" +
             "</a>";
 
-    private static String COLLECTION_CONFIG1 =
+    private static final String COLLECTION_CONFIG1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
     	"		<fulltext default=\"none\">" +
@@ -149,7 +158,7 @@ public class LuceneIndexTest {
         "	</index>" +
     	"</collection>";
 
-    private static String COLLECTION_CONFIG2 =
+    private static final String COLLECTION_CONFIG2 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
     	"		<fulltext default=\"none\">" +
@@ -167,7 +176,7 @@ public class LuceneIndexTest {
         "	</index>" +
     	"</collection>";
 
-    private static String COLLECTION_CONFIG3 =
+    private static final String COLLECTION_CONFIG3 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "	<index>" +
         "		<fulltext default=\"none\">" +
@@ -180,7 +189,7 @@ public class LuceneIndexTest {
         "	</index>" +
         "</collection>";
 
-    private static String COLLECTION_CONFIG4 =
+    private static final String COLLECTION_CONFIG4 =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
             "	<index>" +
             "		<fulltext default=\"none\">" +
@@ -192,7 +201,7 @@ public class LuceneIndexTest {
             "	</index>" +
             "</collection>";
 
-    private static String COLLECTION_CONFIG5 =
+    private static final String COLLECTION_CONFIG5 =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
             "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
             "       <fulltext default=\"none\" attributes=\"no\">" +
@@ -213,7 +222,7 @@ public class LuceneIndexTest {
             "   </index>" +
             "</collection>";
 
-    private static String COLLECTION_CONFIG6 =
+    private static final String COLLECTION_CONFIG6 =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
             "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
             "       <fulltext default=\"none\" attributes=\"no\">" +
@@ -225,7 +234,7 @@ public class LuceneIndexTest {
             "   </index>" +
             "</collection>";
 
-     private static String COLLECTION_CONFIG7 =
+     private static final String COLLECTION_CONFIG7 =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
             "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
             "       <fulltext default=\"none\" attributes=\"no\">" +
@@ -253,25 +262,22 @@ public class LuceneIndexTest {
     private Boolean savedConfig;
 
     @Test
-    public void simpleQueries() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "test.xml");
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+    public void simpleQueries() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "test.xml");
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             checkIndex(docs, broker, new QName[] { new QName("head") }, "title", 1);
-            Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p")}, "with", 1);
+            final Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p")}, "with", 1);
             assertEquals(2, o[0].getOccurrences());
             checkIndex(docs, broker, new QName[] { new QName("hi") }, "just", 1);
             checkIndex(docs, broker, null, "in", 1);
 
-            QName attrQN = new QName("rend", XMLConstants.NULL_NS_URI, ElementValue.ATTRIBUTE);
+            final QName attrQN = new QName("rend", XMLConstants.NULL_NS_URI, ElementValue.ATTRIBUTE);
             checkIndex(docs, broker, new QName[] { attrQN }, null, 2);
             checkIndex(docs, broker, new QName[] { attrQN }, "center", 1);
             checkIndex(docs, broker, new QName[] { attrQN }, "right", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("/section[ft:query(p, 'content')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -292,26 +298,18 @@ public class LuceneIndexTest {
             seq = xquery.execute("/section[ft:query(head/*, 'just')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void configuration() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG4, XML4, "test.xml");
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+    public void configuration() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG4, XML4, "test.xml");
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             checkIndex(docs, broker, new QName[] { new QName("a") }, "x", 1);
             checkIndex(docs, broker, new QName[] { new QName("c") }, "x", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("/test[ft:query(a, 'x')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -324,21 +322,13 @@ public class LuceneIndexTest {
             seq = xquery.execute("/test[ft:query(b, 'x')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void inlineAndIgnore() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG5, XML5, "test.xml");
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+    public void inlineAndIgnore() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG5, XML5, "test.xml");
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             checkIndex(docs, broker, new QName[] { new QName("head") }, "title", 1);
             checkIndex(docs, broker, new QName[] { new QName("p") }, "simple", 1);
@@ -348,7 +338,7 @@ public class LuceneIndexTest {
             checkIndex(docs, broker, new QName[] { new QName("p") }, "ignore", 0);
             checkIndex(docs, broker, new QName[] { new QName("p") }, "warnings", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("/article[ft:query(head, 'title')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -409,35 +399,20 @@ public class LuceneIndexTest {
             seq = xquery.execute("/article[ft:query(., 'ignore')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void attributeMatch() {
-        DocumentSet docs
-                = configureAndStore(COLLECTION_CONFIG7, XML8, "test.xml");
-        DBBroker broker = null;
-        TransactionManager transact = null;
-        Txn transaction = null;
-        Sequence seq = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            transact = pool.getTransactionManager();
-            transaction = transact.beginTransaction();
+    public void attributeMatch() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG7, XML8, "test.xml");
+        final TransactionManager transact = pool.getTransactionManager();
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
+                final Txn transaction = transact.beginTransaction()) {
 
-            assertNotNull(broker);
-            assertNotNull(transact);
-            assertNotNull(transaction);
-
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
-            seq = xquery.execute("for $a in ft:query((//b|//c), 'AAA') order by ft:score($a) descending return xs:string($a)", null, AccessContext.TEST);
+            Sequence seq = xquery.execute("for $a in ft:query((//b|//c), 'AAA') order by ft:score($a) descending return xs:string($a)", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(5, seq.getItemCount());
             assertEquals("AAA on b2", seq.itemAt(0).getStringValue());
@@ -463,21 +438,21 @@ public class LuceneIndexTest {
 
 
             // modify with xupdate and check if boosts are updated accordingly
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
 
             // remove 'att' attribute from first c element: it gets no boost
-	    // also append an 'att' attribute on second c element which will
-	    // make the two switch order in the result sequence.
+	    	// also append an 'att' attribute on second c element which will
+	    	// make the two switch order in the result sequence.
             String xupdate =
                     XUPDATE_START +
                     "   <xu:remove select=\"//c[1]/@att\"/>" +
                     "   <xu:append select=\"//c[2]\"><xu:attribute name=\"att\">att on c2</xu:attribute></xu:append>" +
                     XUPDATE_END;
 
-            Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+            final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             assertNotNull(modifications);
 
             modifications[0].process(transaction);
@@ -494,50 +469,34 @@ public class LuceneIndexTest {
             assertEquals("AAA on b1", seq.itemAt(3).getStringValue());
             assertEquals("AAA on c1", seq.itemAt(4).getStringValue());
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void boosts() {
+    public void boosts() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         configureAndStore(COLLECTION_CONFIG6, XML6, "test.xml");
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("for $a in ft:query((//b|//c), 'AAA') " +
                     "order by ft:score($a) descending return $a/local-name(.)", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(3, seq.getItemCount());
             assertEquals("c", seq.getStringValue());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void queryTranslation() {
+    public void queryTranslation() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         configureAndStore(COLLECTION_CONFIG1, XML7, "test.xml");
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
-            XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
-            CompiledXQuery compiled = xquery.compile(context, "declare variable $q external; " +
+            final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+            final CompiledXQuery compiled = xquery.compile(context, "declare variable $q external; " +
                     "ft:query(//p, util:parse($q)/query)");
 
             context.declareVariable("q", "<query><term>heiterkeit</term></query>");
@@ -654,26 +613,18 @@ public class LuceneIndexTest {
             seq = xquery.execute(compiled, null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void analyzers() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG3, XML3, "test.xml");
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+    public void analyzers() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG3, XML3, "test.xml");
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             checkIndex(docs, broker, new QName[] { new QName("head") }, "TITLE", 1);
             checkIndex(docs, broker, new QName[] { new QName("p") }, "uppercase", 1);
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("/section[ft:query(p, 'UPPERCASE')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -686,17 +637,12 @@ public class LuceneIndexTest {
             seq = xquery.execute("/section[ft:query(head, 'title')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
     @Test
-    public void dropSingleDoc() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
+    public void dropSingleDoc() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
@@ -705,19 +651,15 @@ public class LuceneIndexTest {
             transact.commit(transaction);
 
             checkIndex(docs, broker, null, null, 0);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @Test
-    public void dropDocuments() {
+    public void dropDocuments() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
         configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
 
             try(final Txn transaction = transact.beginTransaction()) {
@@ -741,20 +683,17 @@ public class LuceneIndexTest {
                 assertNotNull(seq);
                 assertEquals(1, seq.getItemCount());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @Test
-    public void removeCollection() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
+    public void removeCollection() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//SPEECH[ft:query(LINE, 'love')]", null, AccessContext.TEST);
             assertNotNull(seq);
@@ -771,37 +710,25 @@ public class LuceneIndexTest {
             root = null;
             
             checkIndex(docs, broker, null, null, 0);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @Test
-    public void reindex() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
-        DBBroker broker = null;
-        try {
-            broker = pool.get(pool.getSecurityManager().getSystemSubject());
-            assertNotNull(broker);
+    public void reindex() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
+        try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
 
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
 
             checkIndex(docs, broker, new QName[] { new QName("head") }, "title", 1);
-            Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p")}, "with", 1);
+            final Occurrences[] o = checkIndex(docs, broker, new QName[]{new QName("p")}, "with", 1);
             assertEquals(2, o[0].getOccurrences());
             checkIndex(docs, broker, new QName[] { new QName("hi") }, "just", 1);
             checkIndex(docs, broker, null, "in", 1);
 
-            QName attrQN = new QName("rend", XMLConstants.NULL_NS_URI, ElementValue.ATTRIBUTE);
+            final QName attrQN = new QName("rend", XMLConstants.NULL_NS_URI, ElementValue.ATTRIBUTE);
             checkIndex(docs, broker, new QName[] { attrQN }, null, 2);
             checkIndex(docs, broker, new QName[] { attrQN }, "center", 1);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        } finally {
-            pool.release(broker);
         }
     }
 
@@ -810,8 +737,8 @@ public class LuceneIndexTest {
      * correctly updated.
      */
     @Test
-    public void xupdateRemove() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
+    public void xupdateRemove() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
@@ -820,13 +747,13 @@ public class LuceneIndexTest {
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
             checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 2);
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[ft:query(description, 'chair')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -880,9 +807,6 @@ public class LuceneIndexTest {
             checkIndex(docs, broker, new QName[] { new QName("item") }, "chair", 0);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
@@ -891,24 +815,24 @@ public class LuceneIndexTest {
      * correctly updated.
      */
     @Test
-    public void xupdateInsert() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
+    public void xupdateInsert() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
 
-            Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
+            final Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[ft:query(description, 'chair')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
             // Append to root node
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -1051,32 +975,28 @@ public class LuceneIndexTest {
             checkIndex(docs, broker, qnattr, "attribute", 0);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @Test
-    public void xupdateUpdate() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
+    public void xupdateUpdate() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
 
-            Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
+            final Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[ft:query(description, 'chair')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
             // Update element content
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
-            assertNotNull(proc);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
             String xupdate =
@@ -1126,36 +1046,33 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            QName qnattr[] = { new QName("attr", XMLConstants.NULL_NS_URI, XMLConstants.DEFAULT_NS_PREFIX, ElementValue.ATTRIBUTE) };
+            final QName qnattr[] = { new QName("attr", XMLConstants.NULL_NS_URI, XMLConstants.DEFAULT_NS_PREFIX, ElementValue.ATTRIBUTE) };
             o = checkIndex(docs, broker, qnattr, null, 1);
             assertEquals("abc", o[0].getTerm());
             checkIndex(docs, broker, qnattr, "attribute", 0);
 
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @Test
-    public void xupdateReplace() {
-        DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
+    public void xupdateReplace() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException, ParserConfigurationException {
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG2, XML2, "xupdate.xml");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
 
-            Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
+            final Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
 
-            XQuery xquery = broker.getXQueryService();
+            final XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[ft:query(description, 'chair')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
+            final XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -1207,93 +1124,81 @@ public class LuceneIndexTest {
             assertEquals("armchair", o[0].getTerm());
 
             transact.commit(transaction);
-         } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+         }
     }
 
-    private DocumentSet configureAndStore(String configuration, String data, String docName) {
-        MutableDocumentSet docs = new DefaultDocumentSet();
+    private DocumentSet configureAndStore(final String configuration, final String data, final String docName) throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
+        final MutableDocumentSet docs = new DefaultDocumentSet();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
 
             if (configuration != null) {
-                CollectionConfigurationManager mgr = pool.getConfigurationManager();
+                final CollectionConfigurationManager mgr = pool.getConfigurationManager();
                 mgr.addConfiguration(transaction, broker, root, configuration);
             }
 
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
+            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
             assertNotNull(info);
             root.store(transaction, broker, info, data, false);
 
             docs.add(info.getDocument());
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
         return docs;
     }
 
-    private DocumentSet configureAndStore(String configuration, String directory) {
+    private DocumentSet configureAndStore(String configuration, String directory) throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
 
-        MutableDocumentSet docs = new DefaultDocumentSet();
+        final MutableDocumentSet docs = new DefaultDocumentSet();
 
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
             if (configuration != null) {
-                CollectionConfigurationManager mgr = pool.getConfigurationManager();
+                final CollectionConfigurationManager mgr = pool.getConfigurationManager();
                 mgr.addConfiguration(transaction, broker, root, configuration);
             }
 
-            File file = new File(directory);
-            File[] files = file.listFiles();
-            MimeTable mimeTab = MimeTable.getInstance();
-            for (int j = 0; j < files.length; j++) {
-                MimeType mime = mimeTab.getContentTypeFor(files[j].getName());
+            final File file = new File(directory);
+            final File[] files = file.listFiles();
+            final MimeTable mimeTab = MimeTable.getInstance();
+            for (final File f : files) {
+                MimeType mime = mimeTab.getContentTypeFor(f.getName());
                 if(mime != null && mime.isXMLType()) {
-                    InputSource is = new InputSource(files[j].getAbsolutePath());
-                    IndexInfo info =
-                            root.validateXMLResource(transaction, broker, XmldbURI.create(files[j].getName()), is);
+                    InputSource is = new InputSource(f.getAbsolutePath());
+                    final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), is);
                     assertNotNull(info);
-                    is = new InputSource(files[j].getAbsolutePath());
+                    is = new InputSource(f.getAbsolutePath());
                     root.store(transaction, broker, info, is, false);
                     docs.add(info.getDocument());
                 }
             }
             transact.commit(transaction);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
         return docs;
     }
 
-    private Occurrences[] checkIndex(DocumentSet docs, DBBroker broker, QName[] qn, 
-            String term, int expected) {
-        LuceneIndexWorker index = (LuceneIndexWorker)
-            broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        Map<String, Object> hints = new HashMap<String, Object>();
-        if (term != null)
+    private Occurrences[] checkIndex(final DocumentSet docs, final DBBroker broker, final QName[] qn, final String term, final int expected) {
+        final LuceneIndexWorker index = (LuceneIndexWorker)broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+        final Map<String, Object> hints = new HashMap<>();
+        if (term != null) {
             hints.put(OrderedValuesIndex.START_VALUE, term);
+        }
         if (qn != null && qn.length > 0) {
-            List<QName> qnlist = new ArrayList<QName>(qn.length);
-            for (int i = 0; i < qn.length; i++)
-                qnlist.add(qn[i]);
+            final List<QName> qnlist = new ArrayList<>(qn.length);
+            qnlist.addAll(Arrays.asList(qn));
             hints.put(QNamedKeysIndex.QNAMES_KEY, qnlist);
         }
-        XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
-        Occurrences[] occur = index.scanIndex(context, docs, null, hints);
+        final XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
+        final Occurrences[] occur = index.scanIndex(context, docs, null, hints);
         assertEquals(expected, occur.length);
         return occur;
     }
 
     @Before
-    public void setup() {
+    public void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
             final Txn transaction = transact.beginTransaction()) {
@@ -1304,23 +1209,20 @@ public class LuceneIndexTest {
 
             transact.commit(transaction);
 
-            Configuration config = BrokerPool.getInstance().getConfiguration();
+            final Configuration config = BrokerPool.getInstance().getConfiguration();
             savedConfig = (Boolean) config.getProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT);
             config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.TRUE);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @After
-    public void cleanup() throws EXistException {
+    public void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            Collection collConfig = broker.getOrCreateCollection(transaction,
+            final Collection collConfig = broker.getOrCreateCollection(transaction,
                 XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db"));
             assertNotNull(collConfig);
             broker.removeCollection(transaction, collConfig);
@@ -1331,28 +1233,20 @@ public class LuceneIndexTest {
             }
             transact.commit(transaction);
 
-            Configuration config = BrokerPool.getInstance().getConfiguration();
+            final Configuration config = BrokerPool.getInstance().getConfiguration();
             config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, savedConfig);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
         }
     }
 
     @BeforeClass
-    public static void startDB() {
-        try {
-            File confFile = ConfigurationHelper.lookup("conf.xml");
-            Configuration config = new Configuration(confFile.getAbsolutePath());
-            config.setProperty(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none");
-            config.setProperty(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE);
-            BrokerPool.configure(1, 5, config);
-            pool = BrokerPool.getInstance();
-            assertNotNull(pool);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+    public static void startDB() throws DatabaseConfigurationException, EXistException {
+        final File confFile = ConfigurationHelper.lookup("conf.xml");
+        final Configuration config = new Configuration(confFile.getAbsolutePath());
+        config.setProperty(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none");
+        config.setProperty(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE);
+        BrokerPool.configure(1, 5, config);
+        pool = BrokerPool.getInstance();
+        assertNotNull(pool);
     }
 
     @AfterClass
