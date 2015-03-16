@@ -63,9 +63,19 @@ highlight-matches=none
   <!-- copy file="${src.dir}/atom-example.xq" todir="${dist.minimal}"/ -->
   <copy file="${src.dir}/start.jar" todir="${dist.minimal}"/>
   <mkdir dir="${dist.minimal}/bin"/>
+  <!-- Since most of the scripts were moved from bin to installer/scripts, copy what's left in bin. -->
   <copy todir="${dist.minimal}/bin">
-    <fileset dir="${src.dir}/bin">
+    <fileset dir="${src.dir}/bin"/>
+  </copy>
+  <copy todir="${dist.minimal}/bin">
+    <fileset dir="${src.dir}/installer/scripts">
+        <!-- Exclude the scripts not required for this build. -->
         <exclude name="startup*"/>      <!-- we only support server.sh standalone mode for minimal dist -->
+        <!-- the below files were in installer/scripts before the script migration -->
+        <exclude name="eXist-settings.sh"/>
+        <exclude name="icon.icns"/>
+        <exclude name="build*"/>
+        <exclude name="setup*"/>
     </fileset>
   </copy>
   <mkdir dir="${dist.minimal}/data"/>

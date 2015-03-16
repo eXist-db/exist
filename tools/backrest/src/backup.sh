@@ -5,7 +5,14 @@
 # $Id: backup.sh 10899 2009-12-28 18:07:14Z dizzzz $
 # -----------------------------------------------------------------------------
 
-## @UNIX_INSTALLER_1@ 
+if [ ! -d "$JAVA_HOME" ]; then
+    JAVA_HOME="%{JAVA_HOME}"
+fi
+
+# will be set by the installer
+if [ -z "$EXIST_HOME" ]; then
+	EXIST_HOME="%{INSTALL_PATH}"
+fi
 
 #
 # In addition to the other parameter options for the interactive client 
