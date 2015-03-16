@@ -8,6 +8,14 @@ to add: -pre-compile steps
 
    <import file="git-support.xml"/>
 
+   <condition property="junit.haltonerror" value="true" else="false">
+       <isset property="test.haltonerror"/>
+   </condition>
+
+   <condition property="junit.haltonfailure" value="true" else="false">
+       <isset property="test.haltonfailure"/>
+   </condition>
+
    <!-- must be overridden by scripts -->
    <property name="extension.name" value="NONAME"/>
 
@@ -301,7 +309,7 @@ to add: -pre-compile steps
 
       <mkdir dir="${junit.report.dir}"/>
 
-      <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}"
+      <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}"
          maxmemory="${junit.forked.VM.maxmemory}">
 
         <sysproperty key="jetty.port" value="${jetty.port}" />

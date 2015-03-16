@@ -1,4 +1,4 @@
 language: java
 jdk:
  - oraclejdk8
-script: ./build.sh travis
+script: ./build.sh -Dtest.haltonerror=true -Dtest.haltonfailure=true travis
