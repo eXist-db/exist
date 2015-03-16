@@ -22,6 +22,15 @@
         </fileset>
     </path>
 
+    <condition property="junit.haltonerror" value="true" else="false">
+    	<isset property="test.haltonerror"/>
+    </condition>
+
+    <condition property="junit.haltonfailure" value="true" else="false">
+        <isset property="test.haltonfailure"/>
+    </condition>
+
+
 
     <target name="test"
         depends="test-prepare, test-local, test-extensions, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
@@ -105,7 +114,7 @@
         <echo message="Running tests on a local database instance"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" 
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" 
             maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
 	    <!-- local database, so should not be needed. /ljo -->
@@ -181,7 +190,7 @@
         <echo message="Running tests on a remote Jetty Server"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
 	    <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -212,7 +221,7 @@
         <echo message="-----------------"/>
         <echo message="Concurrency tests on local database"/>
         <echo message="-----------------"/>
-        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="no">
             <sysproperty key="exist.home" value="${basedir}" />
 	    <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -234,7 +243,7 @@
         <echo message="--------------"/>
         <echo message="Recovery tests"/>
         <echo message="--------------"/>
-        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
 	    <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -283,7 +292,7 @@
         <echo message="--------------------------------"/>
         <echo message="Running tests on remote database"/>
         <echo message="--------------------------------"/>
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
 	    <!-- fixme! - jetty.port.standalone /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port.standalone}" />
@@ -312,7 +321,7 @@
         <echo message="--------------------------------"/>
         <echo message="Running antunit tests on eXist-db ant tasks"/>
         <echo message="--------------------------------"/>
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
 	    <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -334,7 +343,7 @@
         <echo message="Running additional tests, which may take some time"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
 	    <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -493,7 +502,7 @@
         <echo message="--------------"/>
         <echo message="XQTS tests    "/>
         <echo message="--------------"/>
-        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
 	    <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -519,7 +528,7 @@
         <echo message="--------------"/>
         <echo message="XSLTS tests    "/>
         <echo message="--------------"/>
-        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
 	    <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -576,7 +585,7 @@
         <echo message="--------------"/>
         <echo message="QT3 tests    "/>
         <echo message="--------------"/>
-        <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
+        <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
 
             <classpath refid="classpath.core"/>
