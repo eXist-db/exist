@@ -1897,14 +1897,15 @@ public class BrokerPool implements Database {
         status = SHUTDOWN;
 
         processMonitor.stopRunningJobs();
+
+        //Shutdown the scheduler
+        scheduler.shutdown(true);
+
         final java.util.concurrent.locks.Lock lock = transactionManager.getLock();
         try {
             // wait for currently running system tasks before we shutdown
             // they will have a lock on the transactionManager
             lock.lock();
-
-            //Shutdown the scheduler
-            scheduler.shutdown(true);
 
             synchronized(this) {
                 // these may be used and set by other threads for the same or some other purpose
