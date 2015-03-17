@@ -25,6 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.exist.EXistException;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.jetty.JettyStart;
+import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.RealmImpl;
@@ -66,6 +67,8 @@ public class BackupRestoreSecurityPrincipalsTest {
     private final static String JOE_USER = "joe";
     private final static String JACK_USER = "jack";
 
+    private String autodeploy;
+
     private void startupDatabase() throws EXistException, DatabaseConfigurationException {
         server = new JettyStart();
         server.run();
@@ -80,6 +83,10 @@ public class BackupRestoreSecurityPrincipalsTest {
      */
     @Before
     public void setup() throws PermissionDeniedException, EXistException, XMLDBException, SAXException, IOException, DatabaseConfigurationException, AuthenticationException {
+        //we need to temporarily disable the auto-deploy trigger, as deploying eXide creates user accounts which interferes with this test
+	autodeploy = System.getProperty(AUTODEPLOY_PROPERTY, "off");
+	System.setProperty(AUTODEPLOY_PROPERTY, "off");
+
         startupDatabase();
 
         createUser(FRANK_USER, FRANK_USER);   //should have id RealmImpl.INITIAL_LAST_ACCOUNT_ID + 1
@@ -141,6 +148,7 @@ public class BackupRestoreSecurityPrincipalsTest {
     public void shutdownDatabase() {
         server.shutdown();
         server = null;
+	System.setProperty(AUTODEPLOY_PROPERTY, autodeploy); //set the autodeploy trigger enablement back to how it was before this test class
     }
 
     /**
