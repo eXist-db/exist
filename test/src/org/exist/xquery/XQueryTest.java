@@ -1577,7 +1577,7 @@ public class XQueryTest extends XMLTestCase {
             assertEquals("XQuery: " + query, "true", result.getResource(0).getContent());
 
             System.out.println("testFunctionDocExternal 4: ========");
-            query = "doc-available(\"http://www.404brain.net/true404\")";
+            query = "doc-available(\"http://www.google.com/404\")";
             result = service.query(query);
             assertEquals("XQuery: " + query, 1, result.getSize());
             assertEquals("XQuery: " + query, "false", result.getResource(0).getContent());
