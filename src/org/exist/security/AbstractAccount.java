@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2015 The eXist Project
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.security;
 
@@ -35,15 +33,15 @@ import org.exist.storage.DBBroker;
 @ConfigurationClass("")
 public abstract class AbstractAccount extends AbstractPrincipal implements Account {
 	
-	@ConfigurationFieldAsElement("group")
-	@ConfigurationReferenceBy("name")
-	protected List<Group> groups = new ArrayList<Group>();
+    @ConfigurationFieldAsElement("group")
+    @ConfigurationReferenceBy("name")
+    protected List<Group> groups = new ArrayList<>();
 	
-	//used for internal locking
-	private boolean accountLocked = false;
+    //used for internal locking
+    private boolean accountLocked = false;
 	
-	@ConfigurationFieldAsElement("expired")
-	private boolean accountExpired = false;
+    @ConfigurationFieldAsElement("expired")
+    private boolean accountExpired = false;
 	
     //@ConfigurationFieldAsElement("credentials-expired")
     private boolean credentialsExpired = false;
@@ -56,56 +54,60 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     private int umask = Permission.DEFAULT_UMASK;
 
     @ConfigurationFieldAsElement("metadata")
-    private Map<String, String> metadata = new HashMap<String, String>();
+    private Map<String, String> metadata = new HashMap<>();
     
-	protected Credential _cred = null;
+    protected Credential _cred = null;
 
-	/**
-	 * Indicates if the user belongs to the dba group, i.e. is a superuser.
-	 */
-	protected boolean hasDbaRole = false;
+    /**
+     * Indicates if the user belongs to the dba group, i.e. is a superuser.
+     */
+    protected boolean hasDbaRole = false;
 
-	public AbstractAccount(AbstractRealm realm, int id, String name) throws ConfigurationException {
-		super(realm, realm.collectionAccounts, id, name);
-	}
+    public AbstractAccount(final AbstractRealm realm, final int id, final String name) throws ConfigurationException {
+        super(realm, realm.collectionAccounts, id, name);
+    }
 	
-    protected AbstractAccount(DBBroker broker, AbstractRealm realm, int id, String name) throws ConfigurationException {
-		super(broker, realm, realm.collectionAccounts, id, name);
-	}
+    protected AbstractAccount(final DBBroker broker, final AbstractRealm realm, final int id, final String name) throws ConfigurationException {
+        super(broker, realm, realm.collectionAccounts, id, name);
+    }
         
-	public AbstractAccount(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
-		super(realm, configuration);
-	}
+    public AbstractAccount(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {
+        super(realm, configuration);
+    }
 
 
-    public boolean checkCredentials(Object credentials) {
+    public boolean checkCredentials(final Object credentials) {
         return _cred == null ? false : _cred.check(credentials);
     }
 
-        @Override
-	public Group addGroup(String name) throws PermissionDeniedException {
+    @Override
+    public Group addGroup(final String name) throws PermissionDeniedException {
         Group group = getRealm().getGroup(name);
 
         //if we cant find the group in our own realm, try other realms
         if(group == null) {
             group = getRealm().getSecurityManager().getGroup(name);
         }
-        
-        return addGroup(group);
-	}
 
-	//this method used by Configurator
-	protected final Group addGroup(Configuration conf) throws PermissionDeniedException {
-		if (conf == null) {return null;}
-		
-		final String name = conf.getProperty("name");
-		if (name == null) {return null;}
-		
-		return addGroup(name);
-	}
+        return addGroup(group);
+    }
+
+    //this method used by Configurator
+    protected final Group addGroup(final Configuration conf) throws PermissionDeniedException {
+        if (conf == null) {
+            return null;
+        }
+
+        final String name = conf.getProperty("name");
+        if (name == null) {
+            return null;
+        }
+
+        return addGroup(name);
+    }
 
     @Override
-    public Group addGroup(Group group) throws PermissionDeniedException {
+    public Group addGroup(final Group group) throws PermissionDeniedException {
 
         if(group == null){
             return null;
@@ -135,20 +137,17 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
             addGroup(group);
         }
 
-        Collections.sort(groups, new Comparator<Group>(){
-            @Override
-            public int compare(final Group o1, final Group o2) {
-                if(o1.getName().equals(group.getName())) {
-                    return -1;
-                } else {
-                    return 1;
-                }
+        Collections.sort(groups, (final Group o1, final Group o2) -> {
+            if(o1.getName().equals(group.getName())) {
+                return -1;
+            } else {
+                return 1;
             }
         });
     }
 	
     @Override
-    public final void remGroup(String name) throws PermissionDeniedException {
+    public final void remGroup(final String name) throws PermissionDeniedException {
 
         final Account subject = getDatabase().getSubject();
 
