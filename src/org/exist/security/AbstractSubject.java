@@ -95,6 +95,11 @@ public abstract class AbstractSubject implements Subject {
     }
 
     @Override
+    public void setCredential(final Credential credential) {
+        account.setCredential(credential);
+    }
+
+    @Override
     public Realm getRealm() {
         return account.getRealm();
     }

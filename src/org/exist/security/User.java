@@ -83,8 +83,17 @@ public interface User extends Principal {
      * Sets the password attribute of the User object
      *
      * @param passwd The new password value
+     * @deprecated {@see org.exist.security.User#setCredential(org.exist.security.Credential)}
      */
+    @Deprecated
     public void setPassword(String passwd);
+
+    /**
+     * Sets the authentication credential for the user
+     *
+     * @param credential The authentication credential
+     */
+    public void setCredential(Credential credential);
 
     /**
      * Get the user's password
