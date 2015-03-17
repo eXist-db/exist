@@ -48,6 +48,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(AccountManagementFunction.FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP_WITH_METADATA, AccountManagementFunction.class),
         new FunctionDef(AccountManagementFunction.FNS_REMOVE_ACCOUNT, AccountManagementFunction.class),
         new FunctionDef(AccountManagementFunction.FNS_PASSWD, AccountManagementFunction.class),
+        new FunctionDef(AccountManagementFunction.FNS_PASSWD_HASH, AccountManagementFunction.class),
         
         new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_USERNAME, FindUserFunction.class),
         new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_NAME, FindUserFunction.class),
