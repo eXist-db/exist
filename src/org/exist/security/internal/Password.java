@@ -105,7 +105,7 @@ public class Password implements Credential {
     }
     
     final byte[] ripemd160Hash(String p) {
-        //ripemd 160 hash
+        //ripemd160 hash
         final RipeMD160 ripemd160 = new RipeMD160();
         final byte[] data = p.getBytes();
         ripemd160.update(data, 0, data.length);
@@ -114,7 +114,7 @@ public class Password implements Credential {
     }
     
     final byte[] md5Hash(String p) {
-        //ripemd 160 hash
+        //md5 hash
         final MD5 md5 = new MD5();
         final byte[] data = p.getBytes();
         md5.update(data, 0, data.length);

@@ -34,24 +34,18 @@ public abstract class AbstractSubject implements Subject {
     protected final AbstractAccount account;
     protected final Session session;
 
-    public AbstractSubject(AbstractAccount account) {
+    public AbstractSubject(final AbstractAccount account) {
         this.account = account;
         this.session = new Session(this);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#addGroup(java.lang.String)
-     */
     @Override
-    public Group addGroup(String name) throws PermissionDeniedException {
+    public Group addGroup(final String name) throws PermissionDeniedException {
         return account.addGroup(name);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#addGroup(org.exist.security.Group)
-     */
     @Override
-    public Group addGroup(Group group) throws PermissionDeniedException {
+    public Group addGroup(final Group group) throws PermissionDeniedException {
         return account.addGroup(group);
     }
 
@@ -60,17 +54,11 @@ public abstract class AbstractSubject implements Subject {
         account.setPrimaryGroup(group);
     }
 
-    /* (non-Javadoc)
-         * @see org.exist.security.User#remGroup(java.lang.String)
-         */
     @Override
-    public void remGroup(String group) throws PermissionDeniedException {
+    public void remGroup(final String group) throws PermissionDeniedException {
         account.remGroup(group);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getGroups()
-     */
     @Override
     public String[] getGroups() {
         return account.getGroups();
@@ -81,75 +69,48 @@ public abstract class AbstractSubject implements Subject {
         return account.getGroupIds();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#hasDbaRole()
-     */
     @Override
     public boolean hasDbaRole() {
         return account.hasDbaRole();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getPrimaryGroup()
-     */
     @Override
     public String getPrimaryGroup() {
         return account.getPrimaryGroup();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getDefaultGroup()
-     */
     @Override
     public Group getDefaultGroup() {
         return account.getDefaultGroup();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#hasGroup(java.lang.String)
-     */
     @Override
-    public boolean hasGroup(String group) {
+    public boolean hasGroup(final String group) {
         return account.hasGroup(group);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#setPassword(java.lang.String)
-     */
     @Override
-    public void setPassword(String passwd) {
+    public void setPassword(final String passwd) {
         account.setPassword(passwd);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getRealm()
-     */
     @Override
     public Realm getRealm() {
         return account.getRealm();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getPassword()
-     */
     @Override
     public String getPassword() {
         return account.getPassword();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getDigestPassword()
-     */
     @Override
     public String getDigestPassword() {
         return account.getDigestPassword();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#setGroups(java.lang.String[])
-     */
     @Override
-    public void setGroups(String[] groups) {
+    public void setGroups(final String[] groups) {
         account.setGroups(groups);
     }
 
@@ -158,33 +119,21 @@ public abstract class AbstractSubject implements Subject {
         return account.getRealmId();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.Principal#getId()
-     */
     @Override
     public int getId() {
         return account.getId();
     }
 
-    /* (non-Javadoc)
-     * @see java.security.Principal#getName()
-     */
     @Override
     public String getName() {
         return account.getName();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.config.Configurable#isConfigured()
-     */
     @Override
     public boolean isConfigured() {
         return account.isConfigured();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.config.Configurable#getConfiguration()
-     */
     @Override
     public Configuration getConfiguration() {
         return account.getConfiguration();
@@ -221,7 +170,7 @@ public abstract class AbstractSubject implements Subject {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         return account.equals(obj);
     }
 
@@ -241,17 +190,17 @@ public abstract class AbstractSubject implements Subject {
     }
     
     @Override
-    public void save(DBBroker broker) throws PermissionDeniedException {
+    public void save(final DBBroker broker) throws PermissionDeniedException {
         //do nothing
     }
 
     @Override
-    public String getMetadataValue(SchemaType schemaType) {
+    public String getMetadataValue(final SchemaType schemaType) {
         return account.getMetadataValue(schemaType);
     }
 
     @Override
-    public void setMetadataValue(SchemaType schemaType, String value) {
+    public void setMetadataValue(final SchemaType schemaType, final String value) {
         account.setMetadataValue(schemaType, value);
     }
 
@@ -261,7 +210,7 @@ public abstract class AbstractSubject implements Subject {
     }
 
     @Override
-    public void assertCanModifyAccount(Account user) throws PermissionDeniedException {
+    public void assertCanModifyAccount(final Account user) throws PermissionDeniedException {
         account.assertCanModifyAccount(user);
     }
 

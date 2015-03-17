@@ -22,79 +22,83 @@ package org.exist.security;
 @Deprecated //use Account
 public interface User extends Principal {
 
-	public final static int PLAIN_ENCODING = 0;
-	public final static int SIMPLE_MD5_ENCODING = 1;
-	public final static int MD5_ENCODING = 2;
+    public final static int PLAIN_ENCODING = 0;
+    public final static int SIMPLE_MD5_ENCODING = 1;
+    public final static int MD5_ENCODING = 2;
 
-	/**
-	 * Add the user to a group
-	 *
-	 * @param  name  The feature to be added to the Group attribute
-	 */
-	public Group addGroup(String name) throws PermissionDeniedException;;
+    /**
+     * Add the user to a group
+     *
+     * @param group The group to add the user to
+     * @return The group the user was added to
+     * @throws org.exist.security.PermissionDeniedException
+     */
+    public Group addGroup(String group) throws PermissionDeniedException;;
 
-	/**
-	 * Add the user to a group
-	 *
-	 * @param  group  The feature to be added to the Group attribute
-	 */
-	public Group addGroup(Group group) throws PermissionDeniedException;;
+    /**
+     * Add the user to a group
+     *
+     * @param group The group to add the user to
+     * @return The group the user was added to
+     * @throws org.exist.security.PermissionDeniedException
+     */
+    public Group addGroup(Group group) throws PermissionDeniedException;;
 
-	/**
-	 *  Remove the user to a group
-	 *  Added by {Marco.Tampucci and Massimo.Martinelli}@isti.cnr.it  
-	 *
-	 *@param  group  The feature to be removed to the Group attribute
-	 */
-	public void remGroup(String group) throws PermissionDeniedException;
+    /**
+     * Remove the user to a group
+     *
+     * @param group The group to remove the user from
+     * @throws org.exist.security.PermissionDeniedException
+     */
+    public void remGroup(String group) throws PermissionDeniedException;
 
-	/**
-	 *  Get all groups this user belongs to
-	 *
-	 *@return    The groups value
-	 */
-	public String[] getGroups();
-        
-	public int[] getGroupIds();
+    /**
+     * Get all groups this user belongs to
+     *
+     * @return The groups that the user belongs to
+     */
+    public String[] getGroups();
 
-	public boolean hasDbaRole();
+    public int[] getGroupIds();
 
-	/**
-	 *  Get the primary group this user belongs to
-	 *
-	 *@return    The primaryGroup value
-	 */
-	public String getPrimaryGroup();
-	public Group getDefaultGroup();
+    public boolean hasDbaRole();
 
-	/**
-	 *  Is the user a member of group?
-	 *
-	 *@param  group  Description of the Parameter
-	 *@return        Description of the Return Value
-	 */
-	public boolean hasGroup(String group);
+    /**
+     * Get the primary group this user belongs to
+     *
+     * @return The primary group that the use belongs to
+     */
+    public String getPrimaryGroup();
+    public Group getDefaultGroup();
 
-	/**
-	 *  Sets the password attribute of the User object
-	 *
-	 * @param  passwd  The new password value
-	 */
-	public void setPassword(String passwd);
+    /**
+     * Is the user a member of group?
+     *
+     * @param group The group to check if the user is a member of
+     * @return true if the user is a member of the group
+     */
+    public boolean hasGroup(String group);
 
-	/**
-	 * Get the user's password
-	 * 
-	 * @return Description of the Return Value
-	 * @deprecated
-	 */
-	public String getPassword();
+    /**
+     * Sets the password attribute of the User object
+     *
+     * @param passwd The new password value
+     */
+    public void setPassword(String passwd);
 
-	@Deprecated
-	public String getDigestPassword();
+    /**
+     * Get the user's password
+     * 
+     * @return The users password
+     * @deprecated
+     */
+    public String getPassword();
 
-	@Deprecated
-	public void setGroups(String[] groups);
+    @Deprecated
+    public String getDigestPassword();
+
+    @Deprecated
+    public void setGroups(String[] groups);
     
     /**
      * Returns the person full name or account name.
