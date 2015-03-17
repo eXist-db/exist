@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Properties;
+import org.exist.security.Credential;
 
 import org.exist.storage.DBBroker;
 
@@ -260,6 +261,13 @@ public class AccountImpl extends AbstractAccount {
             this.password = _cred.toString();
             this.digestPassword = _cred.getDigest();
         }
+    }
+
+    @Override
+    public void setCredential(final Credential credential) {
+        this._cred = credential;
+        this.password = _cred.toString();
+        this.digestPassword = _cred.getDigest();
     }
 
     public final static class SecurityProperties {

@@ -179,5 +179,9 @@ public class AbstractAccountTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public void setCredential(Credential credential) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }
