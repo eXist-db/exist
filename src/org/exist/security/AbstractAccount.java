@@ -168,123 +168,125 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     }
 
     @Override
-	public final void setGroups(String[] groups) {
+    public final void setGroups(final String[] groups) {
 //		this.groups = groups;
 //		for (int i = 0; i < groups.length; i++)
 //			if (SecurityManager.DBA_GROUP.equals(groups[i]))
 //				hasDbaRole = true;
-	}
-
-    @Override
-	public String[] getGroups() {
-		if (groups == null) {return new String[0];}
-		
-		int i = 0;
-		final String[] names = new String[groups.size()];
-		for (final Group role : groups) {
-                    names[i++] = role.getName();
-		}
-		
-		return names;
-	}
-
-    @Override
-    public int[] getGroupIds() {
-        if(groups == null) {return new int[0];}
-
-		int i = 0;
-		final int[] ids = new int[groups.size()];
-		for (final Group group : groups) {
-	                ids[i++] = group.getId();
-		}
-	
-		return ids;
     }
 
     @Override
-	public final boolean hasGroup(String name) {
-		if (groups == null) {
-			return false;
-                }
-		
-		for (final Group group : groups) {
-                    if (group.getName().equals(name)) {
-				return true;
-                    }
-		}
-		
-		return false;
-	}
+    public String[] getGroups() {
+        if (groups == null) {
+            return new String[0];
+        }
+
+        int i = 0;
+        final String[] names = new String[groups.size()];
+        for (final Group role : groups) {
+            names[i++] = role.getName();
+        }
+
+        return names;
+    }
 
     @Override
-	public final boolean hasDbaRole() {
-		return hasDbaRole;
-	}
+    public int[] getGroupIds() {
+        if(groups == null) {
+            return new int[0];
+        }
+
+        int i = 0;
+        final int[] ids = new int[groups.size()];
+        for (final Group group : groups) {
+            ids[i++] = group.getId();
+        }
+
+        return ids;
+    }
 
     @Override
-	public final String toString() {
-		final StringBuilder buf = new StringBuilder();
-		buf.append("<account name=\"");
-		buf.append(name);
-		buf.append("\" ");
-		buf.append("id=\"");
-		buf.append(Integer.toString(id));
-		buf.append("\"");
-                buf.append(">");
-		if (groups != null) {
-			for (final Group group : groups) {
-                            buf.append(group.toString());
-			}
-		}
-		buf.append("</account>");
-		return buf.toString();
-	}
+    public final boolean hasGroup(final String name) {
+        if (groups == null) {
+            return false;
+        }
 
-    @Override
-	public boolean equals(Object obj) {
-		AbstractAccount other;
-		
-		if (obj instanceof AbstractSubject) {
-			other = ((AbstractSubject) obj).account;
-			
-		} else if (obj instanceof AbstractAccount) {
-			other = (AbstractAccount) obj;
-		
-		} else {
-			return false;
-		}
-	
-		if (other != null)
-			{return (getRealm() == other.getRealm() && name.equals(other.name));} //id == other.id;
-
-		return false;
-	}
-
-        @Override
-	public final String getPrimaryGroup() {
-            
-            //TODO this function should return Group and not String
-            
-            final Group defaultGroup = getDefaultGroup();
-            if(defaultGroup != null) {
-                return defaultGroup.getName();
-            } else {
-                return null;
+        for (final Group group : groups) {
+            if (group.getName().equals(name)) {
+                return true;
             }
-	}
-    
-        /**
-         * @deprecated user getPrimaryGroup instead;
-         */
-        @Deprecated
-	@Override
-	public Group getDefaultGroup() {
-            if(groups != null && groups.size() > 0) {
-                return groups.get(0);
-            }
+        }
 
+        return false;
+    }
+
+    @Override
+    public final boolean hasDbaRole() {
+        return hasDbaRole;
+    }
+
+    @Override
+    public final String toString() {
+        final StringBuilder buf = new StringBuilder();
+        buf.append("<account name=\"");
+        buf.append(name);
+        buf.append("\" ");
+        buf.append("id=\"");
+        buf.append(Integer.toString(id));
+        buf.append("\"");
+        buf.append(">");
+        if (groups != null) {
+            for (final Group group : groups) {
+                buf.append(group.toString());
+            }
+        }
+        buf.append("</account>");
+        return buf.toString();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        final AbstractAccount other;
+        if (obj instanceof AbstractSubject) {
+            other = ((AbstractSubject) obj).account;
+        } else if (obj instanceof AbstractAccount) {
+            other = (AbstractAccount) obj;
+        } else {
+            other = null;
+        }
+
+        if (other != null){
+            return (getRealm() == other.getRealm() && name.equals(other.name));
+        } //id == other.id;
+
+        return false;
+    }
+
+    @Override
+    public final String getPrimaryGroup() {
+
+        //TODO this function should return Group and not String
+
+        final Group defaultGroup = getDefaultGroup();
+        if(defaultGroup != null) {
+            return defaultGroup.getName();
+        } else {
             return null;
-	}
+        }
+    }
+
+    /**
+     * @deprecated user getPrimaryGroup instead;
+     */
+    @Deprecated
+    @Override
+    public Group getDefaultGroup() {
+        if(groups != null && groups.size() > 0) {
+            return groups.get(0);
+        }
+
+        return null;
+    }
 
     @Override
     public String getUsername() {
@@ -328,7 +330,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
     @Override
     public Set<SchemaType> getMetadataKeys() {
-        final Set<SchemaType> metadataKeys = new HashSet<SchemaType>();
+        final Set<SchemaType> metadataKeys = new HashSet<>();
         
         for(final String key : metadata.keySet()) {
             //XXX: other types?
@@ -349,7 +351,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     }
 
     @Override
-    public void assertCanModifyAccount(Account user) throws PermissionDeniedException {
+    public void assertCanModifyAccount(final Account user) throws PermissionDeniedException {
         if(user == null) {
             throw new PermissionDeniedException("Unspecified User is not allowed to modify account '" + getName() + "'");
         } else if(!user.hasDbaRole() && !user.getName().equals(getName())) {

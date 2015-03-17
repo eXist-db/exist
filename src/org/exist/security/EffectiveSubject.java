@@ -133,7 +133,7 @@ public class EffectiveSubject implements Subject {
     @Override
     public String[] getGroups() {
         if(group != null) {
-            final Set<String> groups = new HashSet<String>(Arrays.asList(account.getGroups()));
+            final Set<String> groups = new HashSet<>(Arrays.asList(account.getGroups()));
             groups.add(group.getName());
             return groups.toArray(new String[groups.size()]);
         } else {
@@ -144,7 +144,7 @@ public class EffectiveSubject implements Subject {
     @Override
     public int[] getGroupIds() {
         if(group != null) {
-            final Set<Integer> groupIds = new HashSet<Integer>(Arrays.asList(ArrayUtils.toObject(account.getGroupIds())));
+            final Set<Integer> groupIds = new HashSet<>(Arrays.asList(ArrayUtils.toObject(account.getGroupIds())));
             groupIds.add(group.getId());
             return ArrayUtils.toPrimitive(groupIds.toArray(new Integer[groupIds.size()]));
         } else {
@@ -233,7 +233,7 @@ public class EffectiveSubject implements Subject {
 
     @Override
     public void setUserMask(final int umask) {
-        throw new UnsupportedOperationException("You cannot set the UserMask of the Effective User"); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("You cannot set the UserMask of the Effective User");
     }
     
     //<editor-fold desc="metadata">
@@ -248,7 +248,7 @@ public class EffectiveSubject implements Subject {
     }
     
     @Override
-    public void setMetadataValue(SchemaType schemaType, String value) {
+    public void setMetadataValue(final SchemaType schemaType, final String value) {
          throw new UnsupportedOperationException("You cannot modify the metadata of the Effective User");
     }
 
