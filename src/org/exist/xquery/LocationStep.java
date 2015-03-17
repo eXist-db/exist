@@ -123,11 +123,8 @@ public class LocationStep extends Step {
 		int deps = Dependency.CONTEXT_SET;
 
 		// self axis has an obvious dependency on the context item
-		// TODO : I guess every other axis too... so we might consider using
-		// Constants.UNKNOWN_AXIS here
-		// BUT
-		// in a predicate, the expression can't depend on... itself
-		if (!this.inPredicate && this.axis == Constants.SELF_AXIS)
+		// likewise we depend on the context item if this is a single path step (outside a predicate)
+		if (!this.inPredicate && (this.axis == Constants.SELF_AXIS || (parent != null && parent.getSubExpressionCount() == 1)))
 			{deps = deps | Dependency.CONTEXT_ITEM;}
 
 		// TODO : normally, we should call this one...
