@@ -313,7 +313,8 @@ public class Eval extends BasicFunction {
 
         final LocalVariable mark = evalContext.markLocalVariables(false);
 
-        final DocumentSet oldDocs = evalContext.getStaticallyKnownDocuments();
+        // save the static document set of the current context, so it can be restored later
+        final DocumentSet oldDocs = evalContext.getStaticDocs();
         if(exprContext != null) {
             evalContext.setStaticallyKnownDocuments(exprContext.getDocumentSet());
         }
@@ -323,8 +324,6 @@ public class Eval extends BasicFunction {
         }
 
         // fixme! - hook for debugger here /ljo
-
-        final Sequence sequence = null;
 
         final XQuery xqueryService = evalContext.getBroker().getXQueryService();
         final XQueryContext innerContext;
@@ -396,7 +395,7 @@ public class Eval extends BasicFunction {
                 result = execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext, cache);
                 return result;
             } finally {
-                cleanup(evalContext, innerContext, oldDocs, mark, expr, sequence, result);
+                cleanup(evalContext, innerContext, oldDocs, mark, expr, result);
             }
         } catch(final XPathException e) {
             try {
@@ -409,8 +408,7 @@ public class Eval extends BasicFunction {
         }
     }
 
-    private void cleanup(XQueryContext evalContext, XQueryContext innerContext, DocumentSet oldDocs, LocalVariable mark, Item expr,
-                         Sequence sequence, Sequence resultSequence) {
+    private void cleanup(XQueryContext evalContext, XQueryContext innerContext, DocumentSet oldDocs, LocalVariable mark, Item expr, Sequence resultSequence) {
         if(innerContext != evalContext) {
            innerContext.reset();
         }
@@ -423,7 +421,7 @@ public class Eval extends BasicFunction {
         evalContext.popNamespaceContext();
 
         if(evalContext.isProfilingEnabled(2)) {
-            evalContext.getProfiler().end(this, "eval: " + expr, sequence);
+            evalContext.getProfiler().end(this, "eval: " + expr, resultSequence);
         }
     }
 
