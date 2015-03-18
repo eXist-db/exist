@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2015 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.security.internal;
 
@@ -49,7 +47,7 @@ public class Password implements Credential {
     private final String pw;
     private final String digestPw;
     
-    private final static Hash DEFAULT_ALGORITHM = Hash.RIPEMD160;
+    public final static Hash DEFAULT_ALGORITHM = Hash.RIPEMD160;
     private final Hash algorithm;
     
     final Pattern ptnHash = Pattern.compile("\\{([A-Z0-9]+)\\}(.*)");
@@ -75,8 +73,13 @@ public class Password implements Credential {
             this.digestPw = digest(account.getName(), account.getRealmId(), pw);
         }
     }
-
     
+    public Password(final Account account, final Hash algorithm, final String encodedHash) {
+        this.algorithm = algorithm;
+        this.pw = encodedHash;
+        this.digestPw = digest(account.getName(), account.getRealmId(), pw);
+    }
+
     @Override
     public String getDigest() {
         return digestPw;
@@ -107,7 +110,7 @@ public class Password implements Credential {
     }
     
     final byte[] ripemd160Hash(String p) {
-        //ripemd 160 hash
+        //ripemd160 hash
         final RipeMD160 ripemd160 = new RipeMD160();
         final byte[] data = p.getBytes();
         ripemd160.update(data, 0, data.length);
@@ -116,7 +119,7 @@ public class Password implements Credential {
     }
     
     final byte[] md5Hash(String p) {
-        //ripemd 160 hash
+        //md5 hash
         final MD5 md5 = new MD5();
         final byte[] data = p.getBytes();
         md5.update(data, 0, data.length);
