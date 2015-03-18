@@ -109,6 +109,14 @@
             <DefaultRolloverStrategy max="${rollover.max}"/>
             <PatternLayout pattern="${exist.file.pattern}"/>
         </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="expath.repo" filePattern="${logs}/expath-repo.${rollover.file.pattern}.log.gz" fileName="${logs}/expath-repo.log">
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${rollover.max}"/>
+            <PatternLayout pattern="${exist.file.pattern}"/>
+        </RollingRandomAccessFile>
         
     </Appenders>
     
@@ -198,6 +206,14 @@
         <!-- Metadata Storage extension -->
         <Logger name="mdStorage" additivity="false" level="warn">
             <AppenderRef ref="exist.mdStorage"/>
+        </Logger>
+
+        <!-- expath pkg repo -->
+        <Logger name="org.expath.pkg" additivity="false" level="trace">
+            <AppenderRef ref="expath.repo"/>
+        </Logger>
+        <Logger name="org.exist.repo" additivity="false" level="trace">
+            <AppenderRef ref="expath.repo"/>
         </Logger>
         
         <Root level="info">
