@@ -81,24 +81,17 @@ public class CollectionConfigurationValidationModeTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        System.out.println("Clear grammar cache");
         @SuppressWarnings("unused")
 		ResourceSet result = xpqservice.query("validation:clear-grammar-cache()");
     }
 
     @Before
     public void setUp() throws Exception {
-        System.out.println("Clear grammar cache");
         @SuppressWarnings("unused")
 		ResourceSet result = xpqservice.query("validation:clear-grammar-cache()");
     }
 
-    @After
-    public void tearDown() throws Exception {
-    }
-
     private void createCollection(String collection) throws XMLDBException {
-        System.out.println("createCollection=" + collection);
         Collection testCollection = cmservice.createCollection(collection);
         assertNotNull(testCollection);
 
@@ -107,14 +100,12 @@ public class CollectionConfigurationValidationModeTest {
     }
 
     private void storeCollectionXconf(String collection, String document) throws XMLDBException {
-        System.out.println("storeCollectionXconf=" + collection);
         ResourceSet result = xpqservice.query("xmldb:store(\"" + collection + "\", \"collection.xconf\", " + document + ")");
         String r = (String) result.getResource(0).getContent();
         assertEquals("Store xconf", collection + "/collection.xconf", r);
     }
 
     private void storeDocument(String collection, String name, String document) throws XMLDBException {
-        System.out.println("storeDocument=" + collection + " " + name);
         ResourceSet result = xpqservice.query("xmldb:store(\"" + collection + "\", \"" + name + "\", " + document + ")");
         String r = (String) result.getResource(0).getContent();
         assertEquals("Store doc", collection + "/" + name, r);
@@ -167,9 +158,7 @@ public class CollectionConfigurationValidationModeTest {
             fail("should have failed");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            if (msg.contains("cvc-complex-type.2.4.a: Invalid content was found")) {
-                System.out.println("OK: " + msg);
-            } else {
+            if (!msg.contains("cvc-complex-type.2.4.a: Invalid content was found")) {
                 fail(msg);
             }
         }
@@ -180,9 +169,7 @@ public class CollectionConfigurationValidationModeTest {
             fail("should have failed");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            if (msg.contains("Cannot find the declaration of element 'schema'.")) {
-                System.out.println("OK: " + msg);
-            } else {
+            if (!msg.contains("Cannot find the declaration of element 'schema'.")) {
                 fail(msg);
             }
         }
@@ -194,9 +181,7 @@ public class CollectionConfigurationValidationModeTest {
             fail("should have failed");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            if (msg.contains("Cannot find the declaration of element 'asd:schema'.")) {
-                System.out.println("OK: " + msg);
-            } else {
+            if (!msg.contains("Cannot find the declaration of element 'asd:schema'.")) {
                 fail(msg);
             }
         }
@@ -222,9 +207,7 @@ public class CollectionConfigurationValidationModeTest {
             fail("should have failed");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            if (msg.contains("cvc-complex-type.2.4.a: Invalid content was found")) {
-                System.out.println("OK: " + msg);
-            } else {
+            if (!msg.contains("cvc-complex-type.2.4.a: Invalid content was found")) {
                 fail(msg);
             }
         }
@@ -234,9 +217,7 @@ public class CollectionConfigurationValidationModeTest {
             storeDocument("/db/auto", "anonymous.xml", anonymous);
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            if (msg.contains("Cannot find the declaration of element 'schema'.")) {
-                System.out.println("OK: " + msg);
-            } else {
+            if (!msg.contains("Cannot find the declaration of element 'schema'.")) {
                 fail(msg);
             }
         }

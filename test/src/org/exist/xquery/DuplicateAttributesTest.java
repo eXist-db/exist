@@ -123,7 +123,7 @@ public class DuplicateAttributesTest {
         String query =
             "<results>{fn:idref(('id1', 'id2'), doc('/db/test/docdtd.xml')/IDS)}</results>";
         ResourceSet result = xqs.query(query);
-        System.out.println(result.getResource(0).getContent());
+        result.getResource(0).getContent();
     }
 
     @BeforeClass

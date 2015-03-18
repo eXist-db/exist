@@ -60,7 +60,6 @@ public class DirtyShutdownTest {
             }
 
             for (int i = 0; i < 50; i++) {
-                System.out.println("Storing " + i + " out of 50...");
                 try(final Txn transaction = transact.beginTransaction()) {
 
                     File f = new File("samples/shakespeare/macbeth.xml");

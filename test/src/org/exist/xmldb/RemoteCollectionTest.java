@@ -106,7 +106,6 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	
 	public void testGetNonExistentResource() {
 		try {
-			System.out.println("Retrieving non-existing resource");
 			Collection collection = getCollection();
 			Resource resource = collection.getResource("unknown.xml");
 			assertNull(resource);
@@ -129,7 +128,6 @@ public class RemoteCollectionTest extends RemoteDBTest {
 		    createResources(binaryNames, "BinaryResource");
 	
 		    String[] actualContents = getCollection().listResources();
-		    System.out.println("Resources found: " + actualContents.length);
 		    for (int i = 0; i < actualContents.length; i++) {
 		        xmlNames.remove(actualContents[i]);
 		        binaryNames.remove(actualContents[i]);

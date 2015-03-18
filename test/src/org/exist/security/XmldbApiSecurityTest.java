@@ -368,8 +368,7 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
 //            DatabaseManager.registerDatabase(database);
 //            Collection root = DatabaseManager.getCollection("xmldb:exist:///db", "admin", "");
 //            assertNotNull(root);
-            
-            System.out.println("Starting standalone server...");
+
             server = new JettyStart();
             server.run();
     }
@@ -384,7 +383,6 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
 //        } catch (XMLDBException e) {
 //            e.printStackTrace();
 //        }
-        System.out.println("Shutdown standalone server...");
         server.shutdown();
         server = null;
     }

@@ -110,7 +110,6 @@ public class AdditionalJingXsdRngTest extends EmbeddedExistTester {
             assertEquals("false", r);
 
         } catch (XMLDBException e) {
-            System.out.println("testValidateXSDwithJing_invalid(): " + e);
             fail(e.getMessage());
         }
 
@@ -225,7 +224,6 @@ public class AdditionalJingXsdRngTest extends EmbeddedExistTester {
     public void repeatTests() {
         for (int i = 0; i < 1000; i++) {
             try {
-                System.out.println("nr=" + i);
                 testValidateRNGwithJing();
                 testValidateRNGwithJing_invalid();
                 testValidateXSDwithJing();

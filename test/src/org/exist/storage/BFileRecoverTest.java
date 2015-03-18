@@ -77,8 +77,7 @@ public class BFileRecoverTest extends TestCase {
             
             Writer writer = new StringWriter();
             collectionsDb.dump(writer);
-            System.out.println(writer.toString());
-        } catch (Exception e) {            
+        } catch (Exception e) {
             fail(e.getMessage());            
         }
     }
@@ -91,16 +90,11 @@ public class BFileRecoverTest extends TestCase {
             BFile collectionsDb = (BFile)((NativeBroker)broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
             Writer writer = new StringWriter();
             collectionsDb.dump(writer);
-            System.out.println(writer.toString());
-            
+
             for (int i = 1; i < 1001; i++) {
                 String key = "test" + i;
                 byte[] data = key.getBytes(UTF_8);
                 Value value = collectionsDb.get(new Value(data));
-                if (value == null)
-                    System.out.println("Key " + key + " not found.");
-                else
-                    System.out.println(new String(value.data(), value.start(), value.getLength(), UTF_8));
             }
         } catch (Exception e) {            
             fail(e.getMessage());            

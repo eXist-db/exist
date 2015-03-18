@@ -126,7 +126,6 @@ public class XQTS_To_junit {
     }
 
     private void loadDirectory(File folder, Collection col) throws Exception {
-//        System.out.println("******* loadDirectory "+folder.getName());
         if (!(folder.exists() && folder.canRead()))
             return;
         
@@ -150,8 +149,6 @@ public class XQTS_To_junit {
     }
 
     private void loadFile(File file, Collection col) throws Exception {
-//        System.out.println("******* loadFile "+file.getName());
-        
         if (file.getName().endsWith(".html") 
                 || file.getName().endsWith(".xsd")
 //                || file.getName().equals("")
@@ -183,7 +180,6 @@ public class XQTS_To_junit {
             System.out.println("fail to load file "+file.getName());
             e.printStackTrace();
         }
-        //System.out.println(file);
     }
 
     private MimeTable mtable = null;

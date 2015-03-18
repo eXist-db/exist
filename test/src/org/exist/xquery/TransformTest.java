@@ -33,14 +33,12 @@ public class TransformTest extends TestCase {
     		"import module namespace transform='http://exist-db.org/xquery/transform';\n";
     	
 		try {
-			System.out.println("-- transform:transform with relative stylesheet paths");
 			String query = 
 				"import module namespace transform='http://exist-db.org/xquery/transform';\n" +
 				"let $xml := <empty />,\n" +
 				"	$xsl := 'xmldb:exist:///db/"+TEST_COLLECTION_NAME+"/xsl1/1.xsl'\n" +
 				"return transform:transform($xml, $xsl, ())";
 			String result = execQuery(query);
-			System.out.println("RESULT = "+result);
 			assertEquals(result, "<doc>" +
 					"<p>Start Template 1</p>" +
 					"<p>Start Template 2</p>" +
@@ -169,7 +167,6 @@ public class TransformTest extends TestCase {
 	        dim.shutdown();
             database = null;
             testCollection = null;
-	        System.out.println("tearDown PASSED");
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}

@@ -85,8 +85,6 @@ public class DocumentAsValueTest {
 
     @Test
 	public void test_00() throws Exception {
-    	System.out.println("test");
-    	
     	startDB();
     	
     	MetaData md = MetaData.get();
@@ -149,13 +147,10 @@ public class DocumentAsValueTest {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(txn, broker, root, COLLECTION_CONFIG);
 
-            System.out.println("STORING DOCUMENT....");
             IndexInfo info = root.validateXMLResource(txn, broker, doc1uri.lastSegment(), XML1);
             assertNotNull(info);
-            System.out.println("STORING DOCUMENT....SECOND ROUND....");
             root.store(txn, broker, info, XML1, false);
             assertNotNull(info.getDocument());
-            System.out.println("STORING DOCUMENT....DONE.");
 
             doc1 = info.getDocument();
 
@@ -165,7 +160,6 @@ public class DocumentAsValueTest {
 
             doc2 = info.getDocument();
 
-            System.out.println("store " + doc3uri);
             root.addBinaryResource(txn, broker, doc3uri.lastSegment(), BINARY.getBytes(), null);
 
             txnManager.commit(txn);
@@ -195,16 +189,11 @@ public class DocumentAsValueTest {
         pool = null;
         doc1 = null;
         doc2 = null;
-        System.out.println("stopped");
     }
 
     private static void clean(final DBBroker broker, final Txn txn) throws PermissionDeniedException, IOException, TriggerException {
-    	System.out.println("CLEANING...");
-
         final Collection col = broker.getOrCreateCollection(txn, col1uri);
         assertNotNull(col);
         broker.removeCollection(txn, col);
-
-    	System.out.println("CLEANED.");
     }
 }

@@ -54,7 +54,6 @@ public class ReplaceTest extends AbstractUpdateTest {
             assertNotNull(proc);
             
             try(final Txn transaction = mgr.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 String xupdate =
                         "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
@@ -96,16 +95,13 @@ public class ReplaceTest extends AbstractUpdateTest {
 
                 DOMFile domDb = ((NativeBroker) broker).getDOMFile();
                 assertNotNull(domDb);
-                System.out.println(domDb.debugPages(info.getDocument(), false));
+                domDb.debugPages(info.getDocument(), false);
 
                 mgr.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
             
             // the following transaction will not be committed and thus undone during recovery
             final Txn transaction = mgr.beginTransaction();
-            System.out.println("Transaction started...");   
-            
             // replace elements
             for (int i = 1; i <= 100; i++) {
                 final String xupdate =
@@ -127,8 +123,7 @@ public class ReplaceTest extends AbstractUpdateTest {
             
 //          Don't commit...              
             pool.getTransactionManager().getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
 	        fail(e.getMessage());             
         }
     }

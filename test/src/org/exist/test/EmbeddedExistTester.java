@@ -76,7 +76,6 @@ public class EmbeddedExistTester {
     @BeforeClass
     public static void before() {
         try {
-            System.out.println("Starting test..");
             LOG.info("Starting test..");
 
             Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -108,11 +107,6 @@ public class EmbeddedExistTester {
             LOG.error(ex);
             fail(ex.getMessage());
         }
-    }
-
-    @Before
-    public void before_test(){
-        System.out.println("\n-------------------------------------------------------\n");
     }
 
     protected static Collection createCollection(Collection collection, String collectionName) throws XMLDBException {

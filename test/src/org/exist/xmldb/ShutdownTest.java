@@ -73,7 +73,6 @@ public class ShutdownTest extends TestCase {
 	public void testShutdown() {
 		try {
 			for (int i = 0; i < 50; i++) {
-				System.out.println("Starting the database ...");
 				Collection rootCol = DBUtils.setupDB(URI);
 				
 				// after restarting the db, we first try a bunch of queries
@@ -96,14 +95,11 @@ public class ShutdownTest extends TestCase {
 				String xml =
 					"<data now=\"" + System.currentTimeMillis() + "\" count=\"" +
 					i + "\">" + XML + "</data>";
-				System.out.println("Storing resource ...");
 				DBUtils.addXMLResource(testCol, "R1.xml", xml);
-				
-				System.out.println("Storing large file ...");
+
 				File tempFile = DBUtils.generateXMLFile(5000, 7, wordList);
 				DBUtils.addXMLResource(testCol, "R2.xml", tempFile);
-				
-				System.out.println("Shut down the database ...");
+
 				DBUtils.shutdownDB(URI);
 			}
         } catch (Exception e) {            

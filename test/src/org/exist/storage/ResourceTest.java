@@ -79,8 +79,7 @@ public class ResourceTest {
 
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
-            System.out.println("Transaction started ...");
-            
+
             Collection collection = broker
                     .getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             
@@ -92,14 +91,12 @@ public class ResourceTest {
                     DOCUMENT_NAME_URI , EMPTY_BINARY_FILE.getBytes(), "text/text");
             
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         } catch (Exception e) {
             fail(e.getMessage());
         }
     }
 
     private void read() {
-        System.out.println("testRead() ...\n");
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
@@ -110,8 +107,6 @@ public class ResourceTest {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction();) {
 
-            System.out.println("Transaction started ...");
-            
             XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
             
             BinaryDocument binDoc = (BinaryDocument) broker
@@ -134,7 +129,6 @@ public class ResourceTest {
             broker.saveCollection(transaction, collection);
             
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         } catch (Exception ex){
             fail("Error opening document" + ex);
             
@@ -150,7 +144,6 @@ public class ResourceTest {
 
     @Test
     public void removeCollection() {
-        System.out.println("testRemoveCollection() ...\n");
 
         BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDB();
@@ -161,8 +154,6 @@ public class ResourceTest {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            System.out.println("Transaction started ...");
-            
             XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
             
             BinaryDocument binDoc = (BinaryDocument) broker
@@ -183,7 +174,6 @@ public class ResourceTest {
             broker.removeCollection(transaction, collection);
             
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         } catch (Exception ex){
             fail("Error opening document" + ex);
             

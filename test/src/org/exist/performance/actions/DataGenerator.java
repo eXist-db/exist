@@ -111,7 +111,6 @@ public class DataGenerator extends AbstractAction {
         service.declareVariable("filename", "");
         service.declareVariable("count", "0");
         String query = IMPORT + xqueryContent;
-        System.out.println("query: " + query);
         CompiledExpression compiled = service.compile(query);
         try {
             for (int i = 0; i < count; i++) {

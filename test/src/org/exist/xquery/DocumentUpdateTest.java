@@ -31,7 +31,7 @@ public class DocumentUpdateTest extends TestCase {
     		"import module namespace util='http://exist-db.org/xquery/util';\n";
     	
 		try {
-			System.out.println("-- TEST 1: doc() function --");
+			//TEST 1: doc() function
 			String query = imports +
 	    		"declare function local:get-doc($path as xs:string) {\n" + 
 	    		"    if (doc-available($path)) then doc($path) else ()\n" + 
@@ -45,7 +45,7 @@ public class DocumentUpdateTest extends TestCase {
 			String result = execQuery(query);
 			assertEquals(result, "0 false");
 			
-			System.out.println("-- TEST 2: xmldb:document() function --");
+			//TEST 2: xmldb:document()
 			query = imports +
 	    		"declare function local:get-doc($path as xs:string) {\n" + 
 	    		"    if (doc-available($path)) then xmldb:document($path) else ()\n" + 
@@ -58,7 +58,7 @@ public class DocumentUpdateTest extends TestCase {
 			result = execQuery(query);
 			assertEquals(result, "1 true");
 			
-			System.out.println("-- TEST 3: collection() function --");
+			//TEST 3: collection()
 			query = imports +
 				"declare function local:xpath($collection as xs:string) {\n" + 
 	    		"    for $c in collection($collection) return $c//n\n" + 
@@ -71,7 +71,7 @@ public class DocumentUpdateTest extends TestCase {
 			result = execQuery(query);
 			assertEquals(result, "1");
 		
-			System.out.println("-- TEST 4: 'update insert' statement --");
+			//TEST 4: 'update insert' statement
 			query = imports +
 				"declare function local:xpath($collection as xs:string) {\n" + 
 	    		"    collection($collection)\n" + 
@@ -87,7 +87,7 @@ public class DocumentUpdateTest extends TestCase {
 			result = execQuery(query);
 			assertEquals(result, "2");
 
-			System.out.println("-- TEST 5: 'update replace' statement --");
+			//TEST 5: 'update replace' statement
 			query = imports + "let $doc := xdb:store('/db', 'test1.xml', " +
 				"<test> " +
 					"<link href=\"features\"/> " +
@@ -195,7 +195,6 @@ public class DocumentUpdateTest extends TestCase {
 	        dim.shutdown();
             database = null;
             testCollection = null;
-	        System.out.println("tearDown PASSED");
 		} catch (XMLDBException e) {
 			fail(e.getMessage());
 		}

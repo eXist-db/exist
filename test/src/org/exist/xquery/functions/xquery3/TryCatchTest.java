@@ -35,11 +35,6 @@ public class TryCatchTest extends EmbeddedExistTester {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
-        System.out.println("***********************");
-    }
-
     @After
     public void tearDown() {
     }

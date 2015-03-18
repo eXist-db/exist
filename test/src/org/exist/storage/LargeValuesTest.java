@@ -46,8 +46,6 @@ public class LargeValuesTest {
     @Test
     public void storeAndRecover() {
         for (int i = 0; i < 1; i++) {
-            System.out.println("-----------------------------------------------------");
-            System.out.println("Run: " + i);
             storeDocuments();
             restart();
             remove();
@@ -91,7 +89,6 @@ public class LargeValuesTest {
             Collection root;
 
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
@@ -118,7 +115,6 @@ public class LargeValuesTest {
             }
 
             transact.getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");
             file.delete();
         } catch (Exception e) {
             e.printStackTrace();
@@ -134,7 +130,6 @@ public class LargeValuesTest {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("restart() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -172,7 +167,6 @@ public class LargeValuesTest {
     }
 
     private void remove() {
-        System.out.println("remove() ...\n");
 
         final BrokerPool pool = startDB();
         final TransactionManager transact = pool.getTransactionManager();

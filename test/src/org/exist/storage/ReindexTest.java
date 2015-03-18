@@ -56,7 +56,6 @@ public class ReindexTest {
 
             try(final Txn transaction = transact.beginTransaction()) {
                 assertNotNull(transaction);
-                System.out.println("Transaction started ...");
 
                 Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
@@ -86,7 +85,6 @@ public class ReindexTest {
             broker.reindexCollection(TestConstants.TEST_COLLECTION_URI);
 
             transact.getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -106,15 +104,12 @@ public class ReindexTest {
 
             BrokerPool.FORCE_CORRUPTION = true;
 
-            System.out.println("Transaction started ...");
-
             Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
             assertNotNull(root);
             transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);
             broker.removeCollection(transaction, root);
             transact.getJournal().flushToLog(true);
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -129,7 +124,6 @@ public class ReindexTest {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead2() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());

@@ -82,8 +82,6 @@ public class XUpdateTest {
                         Account guest = ums.getAccount("guest");
                         ums.chown(guest, guest.getPrimaryGroup());
                         ums.chmod(Permission.DEFAULT_COLLECTION_PERM);
-
-                        System.out.println("collection created.");
                     }
             } catch (Exception e) {
                     e.printStackTrace();
@@ -106,7 +104,6 @@ public class XUpdateTest {
 		removeWhiteSpace(referenceXML);
         
 		//compare
-		System.out.println("\n");
         new CompareDocuments().compare(referenceXML, xupdateResult);
         
 		removeDocument();
@@ -124,13 +121,11 @@ public class XUpdateTest {
 			System.err.println("can't read file " + sourceFile);
 		document.setContent(f);
 		col.storeResource(document);
-		System.out.println("document stored.");
 	}
 
 	public void removeDocument() throws Exception {
 		Resource document = col.getResource(XUPDATE_FILE);
 		col.removeResource(document);
-		System.out.println("document removed.");
 	}
 
 	private Document updateDocument(String updateFile) throws Exception {
@@ -138,14 +133,12 @@ public class XUpdateTest {
 			(XUpdateQueryService) col.getService("XUpdateQueryService", "1.0");
 
 		// Read XUpdate-Modifcations
-		System.out.println("update file: " + updateFile);
 		File file = new File(updateFile);
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		char[] characters = new char[new Long(file.length()).intValue()];
 		br.read(characters, 0, Long.valueOf(file.length()).intValue());
 		br.close();
 		String xUpdateModifications = new String(characters);
-		System.out.println("modifications: " + xUpdateModifications);
 		//
 
 		service.update(xUpdateModifications);
@@ -154,8 +147,6 @@ public class XUpdateTest {
 		//col.setProperty("encoding", "UTF-8");
 		XMLResource ret = (XMLResource) col.getResource(XUPDATE_FILE);
 		String xmlString = ((String) ret.getContent());
-		System.out.println("Result:");
-		System.out.println(xmlString);
 
 		// convert xml string to dom
 		// todo: make it nicer

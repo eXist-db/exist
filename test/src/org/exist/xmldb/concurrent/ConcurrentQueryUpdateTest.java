@@ -51,7 +51,7 @@ public class ConcurrentQueryUpdateTest extends ConcurrentTestBase {
 			assertEquals(result.getSize(), 41);
 			for (int i = 0; i < result.getSize(); i++) {
 				XMLResource next = (XMLResource) result.getResource((long)i);
-				System.out.println(next.getContent());
+				next.getContent();
 			}
 			
 			super.tearDown();

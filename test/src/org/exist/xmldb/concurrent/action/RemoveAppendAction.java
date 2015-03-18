@@ -60,7 +60,6 @@ public class RemoveAppendAction extends Action {
 	}
 	
 	private void remove(XUpdateQueryService service) throws XMLDBException {
-		System.out.println(Thread.currentThread().getName() + ": removing elements ...");
 		for(int i = 0; i < 10; i++)
 			service.update(REMOVE);
 	}
@@ -72,7 +71,6 @@ public class RemoveAppendAction extends Action {
 		final String updateClose =
 			"</xu:append>" +
 			"</xu:modifications>";
-		System.out.println(Thread.currentThread().getName() + ": inserting elements ...");
 		for (int i = 0; i < 10; i++) {
 			String update = updateOpen + xmlGenerator.generateElement() + updateClose;
 			service.update(update);

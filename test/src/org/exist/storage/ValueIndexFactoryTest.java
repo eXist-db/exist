@@ -25,9 +25,9 @@ public class ValueIndexFactoryTest {
         byte[] data2 = encode(1.0);
         long v2 = ByteConversion.byteToLong(data2, 0);
 
-        // print data
-        print(data1);
-        print(data2);
+//        // print data
+//        print(data1);
+//        print(data2);
 
         // -8.6 < 1.0
         assertTrue("v1= " + v1 + " v2 = " + v2, v1 < v2);
@@ -47,9 +47,9 @@ public class ValueIndexFactoryTest {
         byte[] data2 = encode(-1.0);
         long v2 = ByteConversion.byteToLong(data2, 0);
 
-        // print data
-        print(data1);
-        print(data2);
+//        // print data
+//        print(data1);
+//        print(data2);
 
         // -8.6 < 1.0
         assertTrue("v1= " + v1 + " v2 = " + v2, v1 < v2);
@@ -69,9 +69,9 @@ public class ValueIndexFactoryTest {
         byte[] data2 = encode(1.0);
         long v2 = ByteConversion.byteToLong(data2, 0);
 
-        // print data
-        print(data1);
-        print(data2);
+//        // print data
+//        print(data1);
+//        print(data2);
 
         // -8.6 < 1.0
         assertTrue("v1= " + v1 + " v2 = " + v2, v1 > v2);
@@ -91,9 +91,9 @@ public class ValueIndexFactoryTest {
         byte[] data2 = encode(-1.0);
         long v2 = ByteConversion.byteToLong(data2, 0);
 
-        // print data
-        print(data1);
-        print(data2);
+//        // print data
+//        print(data1);
+//        print(data2);
 
         // -8.6 < 1.0
         assertTrue("v1= " + v1 + " v2 = " + v2, v1 > v2);
@@ -121,10 +121,9 @@ public class ValueIndexFactoryTest {
         return data;
     }
 
-    private static void print(byte[] data) {
-        for (int i = 0; i < data.length; i++) {
-            System.out.print(Byte.toString(data[i]) + " ");
-        }
-        System.out.println();
-    }
+//    private static void print(byte[] data) {
+//        for (int i = 0; i < data.length; i++) {
+//            System.out.print(Byte.toString(data[i]) + " ");
+//        }
+//    }
 }

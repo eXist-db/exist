@@ -37,7 +37,6 @@ public class RemoveCollection extends AbstractAction {
 
     public void configure(Runner runner, Action parent, Element config) throws EXistException {
         super.configure(runner, parent, config);
-        System.out.println(config.getNodeName());
         if (!config.hasAttribute("parent"))
             throw new EXistException(RemoveCollection.class.getName() + " requires an attribute 'parent'");
         parentPath = config.getAttribute("parent");

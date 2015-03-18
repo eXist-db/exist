@@ -56,8 +56,6 @@ public class MoveCollectionTest extends TestCase {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            System.out.println("Transaction started ...");
-
             Collection root = broker.getOrCreateCollection(transaction,	TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
@@ -80,8 +78,7 @@ public class MoveCollectionTest extends TestCase {
             broker.moveCollection(transaction, test, dest, XmldbURI.create("test3"));
 
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
-	    } catch (Exception e) {            
+        } catch (Exception e) {
 	        fail(e.getMessage());              
         }
     }
@@ -91,7 +88,6 @@ public class MoveCollectionTest extends TestCase {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -103,7 +99,6 @@ public class MoveCollectionTest extends TestCase {
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
-            System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
 	    } catch (Exception e) {            
 	        fail(e.getMessage());              
@@ -123,8 +118,6 @@ public class MoveCollectionTest extends TestCase {
 
             try(final Txn transaction = transact.beginTransaction()) {
 
-                System.out.println("Transaction started ...");
-
                 Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
@@ -142,13 +135,11 @@ public class MoveCollectionTest extends TestCase {
                 test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
             
             final Txn transaction = transact.beginTransaction();
             assertNotNull(transaction);
-            System.out.println("Transaction started ...");
-            
+
             Collection dest = broker.getOrCreateCollection(transaction, TestConstants.DESTINATION_COLLECTION_URI2);
             assertNotNull(dest);
             broker.saveCollection(transaction, dest);            
@@ -156,8 +147,7 @@ public class MoveCollectionTest extends TestCase {
 
 //          Don't commit...
             pool.getTransactionManager().getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
 	        fail(e.getMessage());  
         }
     }
@@ -167,7 +157,6 @@ public class MoveCollectionTest extends TestCase {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead() ...\n");
         	pool = startDB();
         	assertNotNull(pool);
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -236,8 +225,7 @@ public class MoveCollectionTest extends TestCase {
         	Resource res = test.getResource("test_xmldb.xml");
         	assertNotNull(res);
         	assertNotNull("Document should not be null", res);        	
-        	System.out.println(res.getContent());
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
 	        fail(e.getMessage());  	  
 	    }        	
     }

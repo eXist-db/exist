@@ -41,13 +41,10 @@ public class RetrieveResourceAction extends Action {
 	public boolean execute() throws Exception {
 		Collection col = DatabaseManager.getCollection(collectionPath);
 		XMLResource res = (XMLResource)col.getResource(resourceName);
-		
-//		System.out.println(res.getContent());
+
 		DefaultHandler handler = new DefaultHandler();
 		res.getContentAsSAX(handler);
-		
-		System.out.println(Thread.currentThread()
-				+ " - Retrieved resource: " + resourceName);
+
 		return false;
 	}
 }

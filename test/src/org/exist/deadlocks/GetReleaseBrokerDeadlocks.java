@@ -63,7 +63,6 @@ public class GetReleaseBrokerDeadlocks {
 		        Thread.sleep(1000);
 	        	
 	        } finally {
-		        System.out.println("release broker"+Thread.currentThread());
 	        	db.release(broker);
 	        }
 	        
@@ -86,7 +85,6 @@ public class GetReleaseBrokerDeadlocks {
 	        	Subject subject = db.getSecurityManager().getSystemSubject();
 				try {
 					db.enterServiceMode(subject);
-			        System.out.println("enter servise mode "+Thread.currentThread());
 					
 					//do something
 					Thread.sleep(100);
@@ -116,8 +114,6 @@ public class GetReleaseBrokerDeadlocks {
 	        	thread = new Thread(new GetRelease());
 	        	thread.start();
 		        Thread.sleep(rd.nextInt(250));
-		        
-		        System.out.println(""+i+", "+db.countActiveBrokers());
 		        
 		        if (ex != null) {
 		        	ex.printStackTrace();
@@ -149,12 +145,11 @@ public class GetReleaseBrokerDeadlocks {
 		            if (stackTraces.isEmpty())
 		            	sb.append("No threads.");
 		            
-		            System.out.println(sb.toString());
+//		            System.out.println(sb.toString());
 		        }
 	        }
 	        
 	        while (db.countActiveBrokers() > 0) {
-		        System.out.println(db.countActiveBrokers());
 		        Thread.sleep(100);
 	        }
 	        	
@@ -179,7 +174,6 @@ public class GetReleaseBrokerDeadlocks {
 	        	DBBroker broker = null;
 				try {
 					broker = db.get(subject);
-			        System.out.println("get broker "+Thread.currentThread());
 					
 					//do something
 					Thread.sleep(rd.nextInt(5000));
@@ -194,7 +188,6 @@ public class GetReleaseBrokerDeadlocks {
 					}
 
 				} finally {
-			        System.out.println("releasing broker "+Thread.currentThread());
 					db.release(broker);
 				}
 				

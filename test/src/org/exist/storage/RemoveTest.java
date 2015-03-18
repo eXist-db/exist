@@ -59,8 +59,6 @@ public class RemoveTest extends AbstractUpdateTest {
             
             try(final Txn transaction = mgr.beginTransaction()) {
 
-                System.out.println("Transaction started ...");
-
                 // append some new element to records
                 for (int i = 1; i <= 50; i++) {
                     final String xupdate =
@@ -83,7 +81,6 @@ public class RemoveTest extends AbstractUpdateTest {
                 }
 
                 mgr.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
             
             Serializer serializer = broker.getSerializer();
@@ -92,13 +89,11 @@ public class RemoveTest extends AbstractUpdateTest {
             DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_XML_URI), Lock.READ_LOCK);
             assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
             String data = serializer.serialize(doc);
-            System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             // the following transaction will not be committed and thus undone during recovery
             final Txn transaction = mgr.beginTransaction();
-            System.out.println("Transaction started ...");
-            
+
             // remove elements
             for (int i = 1; i <= 25; i++) {
                 final String xupdate =
@@ -115,8 +110,7 @@ public class RemoveTest extends AbstractUpdateTest {
             
 //          Don't commit...            
             pool.getTransactionManager().getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
 	        fail(e.getMessage());  
 	    }
     }

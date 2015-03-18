@@ -119,7 +119,6 @@ public class MatchDocumentsTest {
 	    	assertEquals(1, matching.size());
 	    	assertEquals(doc3uri, matching.get(0).getURI());
 
-        	System.out.println("DELETE...");
             final TransactionManager txnManager = pool.getTransactionManager();
 
 	        try(final Txn txn = txnManager.beginTransaction()) {
@@ -129,7 +128,6 @@ public class MatchDocumentsTest {
 	            e.printStackTrace();
 	            fail(e.getMessage());
 	        }
-	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
 	    	assertEquals(0, matching.size());
@@ -181,7 +179,6 @@ public class MatchDocumentsTest {
 	    	assertEquals(1, matching.size());
 	    	assertEquals(doc3uri, matching.get(0).getURI());
 
-        	System.out.println("MOVE...");
 
             final TransactionManager txnManager = pool.getTransactionManager();
 	        try(final Txn txn = txnManager.beginTransaction()) {
@@ -191,7 +188,6 @@ public class MatchDocumentsTest {
                 e.printStackTrace();
 	            fail(e.getMessage());
 	        }
-	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
 
@@ -231,7 +227,6 @@ public class MatchDocumentsTest {
 	    	assertEquals(1, matching.size());
 	    	assertEquals(doc1uri, matching.get(0).getURI());
 
-	    	System.out.println("RENAMING...");
             Collection col = broker.getCollection(col1uri);
         	assertNotNull(col);
 
@@ -244,7 +239,6 @@ public class MatchDocumentsTest {
                 e.printStackTrace();
 	            fail(e.getMessage());
             }
-	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
 
@@ -281,7 +275,6 @@ public class MatchDocumentsTest {
 	    	assertEquals(1, matching.size());
 	    	assertEquals(doc1uri, matching.get(0).getURI());
 
-	    	System.out.println("MOVING...");
             final TransactionManager txnManager = pool.getTransactionManager();
 	        try(final Txn txn = txnManager.beginTransaction()) {
 	            Collection col2 = broker.getOrCreateCollection(txn, col2uri);
@@ -295,7 +288,6 @@ public class MatchDocumentsTest {
 	            e.printStackTrace();
 	            fail(e.getMessage());
 	        }
-	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
 
@@ -341,7 +333,6 @@ public class MatchDocumentsTest {
             assertEquals(1, matching.size());
             assertEquals(doc1uri, matching.get(0).getURI());
 
-            System.out.println("DELETING...");
 
             final TransactionManager txnManager = pool.getTransactionManager();
             try(final Txn txn = txnManager.beginTransaction()) {
@@ -353,7 +344,6 @@ public class MatchDocumentsTest {
                 e.printStackTrace();
                 fail(e.getMessage());
             }
-            System.out.println("DONE.");
 
             //check the metadata was deleted
             matching = md.matchDocuments(KEY2, VALUE1);
@@ -388,8 +378,6 @@ public class MatchDocumentsTest {
 	    	assertEquals(1, matching.size());
 	    	assertEquals(doc3uri, matching.get(0).getURI());
 
-	    	System.out.println("MOVING...");
-
             final TransactionManager txnManager = pool.getTransactionManager();
             final Txn txn = txnManager.beginTransaction();
 	        try {
@@ -403,7 +391,6 @@ public class MatchDocumentsTest {
 	        } finally {
                 txnManager.close(txn);
             }
-	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
 
@@ -440,8 +427,6 @@ public class MatchDocumentsTest {
 	    	assertEquals(1, matching.size());
 	    	assertEquals(doc3uri, matching.get(0).getURI());
 
-	    	System.out.println("MOVING...");
-
             final TransactionManager txnManager = pool.getTransactionManager();
 	        try(final Txn txn = txnManager.beginTransaction()) {
 	            Collection col2 = broker.getOrCreateCollection(txn, col2uri);
@@ -455,7 +440,6 @@ public class MatchDocumentsTest {
 	            e.printStackTrace();
 	            fail(e.getMessage());
 	        }
-	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
 
@@ -493,8 +477,6 @@ public class MatchDocumentsTest {
 	    	assertEquals(1, matching.size());
 	    	assertEquals(doc3uri, matching.get(0).getURI());
 
-	    	System.out.println("DELETING...");
-
             final TransactionManager txnManager = pool.getTransactionManager();
 
 	        try(final Txn txn = txnManager.beginTransaction()) {
@@ -506,7 +488,6 @@ public class MatchDocumentsTest {
                 e.printStackTrace();
                 fail(e.getMessage());
             }
-	    	System.out.println("DONE.");
 
 	    	matching = md.matchDocuments(KEY2, VALUE1);
 	    	assertEquals(0, matching.size());
@@ -562,12 +543,9 @@ public class MatchDocumentsTest {
     private void shutdown() {
         BrokerPool.stopAll(false);
         pool = null;
-        System.out.println("stopped");
     }
 
     private void clean() {
-    	System.out.println("CLEANING...");
-
         final TransactionManager txnManager = pool.getTransactionManager();
         Collection col1 = null;
         Collection col2 = null;
@@ -596,6 +574,5 @@ public class MatchDocumentsTest {
                 col1.release(Lock.WRITE_LOCK);
             }
         }
-    	System.out.println("CLEANED.");
     }
 }

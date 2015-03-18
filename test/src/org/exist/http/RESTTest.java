@@ -21,7 +21,6 @@ public abstract class RESTTest {
         try {
             if(server == null) {
                 server = new JettyStart();
-                System.out.println("Starting standalone server...");
                 server.run();
             }
         } catch(Exception e) {

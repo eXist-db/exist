@@ -83,7 +83,6 @@ public class DTMHandleTest extends TestCase {
 					foundFieldText = false;
 					
 					Node field = rootChildren.item(r);
-					System.out.println("Found field node[" + 1 + "]");
 					
 					NodeList fieldChildren = field.getChildNodes();
 					for(int f=0; f < fieldChildren.getLength(); f++)
@@ -102,8 +101,6 @@ public class DTMHandleTest extends TestCase {
 					assertTrue("Failed to read existing field[" + 1 + "]/name/text()", foundFieldText);
 				}
 			}
-			
-			System.out.println("Test succeeded");			
 		}
 		catch (Exception e)
 		{		    

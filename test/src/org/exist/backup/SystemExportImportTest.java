@@ -30,9 +30,7 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.EXistException;
-import org.exist.backup.SystemExport;
-import org.exist.backup.SystemImport;
-import org.exist.backup.restore.listener.DefaultRestoreListener;
+import org.exist.backup.restore.listener.LogRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
@@ -45,7 +43,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
@@ -98,7 +95,6 @@ public class SystemExportImportTest {
 
     @Test
 	public void test_01() throws Exception {
-    	System.out.println("test_01");
     	
     	startDB();
     	
@@ -132,7 +128,7 @@ public class SystemExportImportTest {
         }
 
     	SystemImport restore = new SystemImport(pool);
-		RestoreListener listener = new DefaultRestoreListener();
+		RestoreListener listener = new LogRestoreListener();
 		restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
 
         broker = null;
@@ -193,7 +189,6 @@ public class SystemExportImportTest {
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             assertNotNull(transaction);
-            System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, col1uri);
             assertNotNull(root);
@@ -202,22 +197,18 @@ public class SystemExportImportTest {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG);
 
-            System.out.println("store " + doc01uri);
             IndexInfo info = root.validateXMLResource(transaction, broker, doc01uri.lastSegment(), XML1);
             assertNotNull(info);
             root.store(transaction, broker, info, XML1, false);
 
-            System.out.println("store " + doc02uri);
             info = root.validateXMLResource(transaction, broker, doc02uri.lastSegment(), XML2);
             assertNotNull(info);
             root.store(transaction, broker, info, XML2, false);
 
-            System.out.println("store " + doc03uri);
             info = root.validateXMLResource(transaction, broker, doc03uri.lastSegment(), XML3);
             assertNotNull(info);
             root.store(transaction, broker, info, XML3, false);
 
-            System.out.println("store " + doc11uri);
             root.addBinaryResource(transaction, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
 
             pool.getTransactionManager().commit(transaction);
@@ -239,16 +230,12 @@ public class SystemExportImportTest {
     	clean();
         BrokerPool.stopAll(false);
         pool = null;
-        System.out.println("stoped");
     }
 
     private static void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {
-    	System.out.println("CLEANING...");
         
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-
-            System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, col1uri);
             assertNotNull(root);
@@ -256,7 +243,5 @@ public class SystemExportImportTest {
 
             pool.getTransactionManager().commit(transaction);
         }
-
-    	System.out.println("CLEANED.");
     }
 }

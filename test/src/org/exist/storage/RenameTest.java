@@ -54,7 +54,6 @@ public class RenameTest extends AbstractUpdateTest {
             assertNotNull(proc);
             
             try(final Txn transaction = mgr.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 // append some new element to records
                 for (int i = 1; i <= 200; i++) {
@@ -79,16 +78,14 @@ public class RenameTest extends AbstractUpdateTest {
 
                 DOMFile domDb = ((NativeBroker) broker).getDOMFile();
                 assertNotNull(domDb);
-                System.out.println(domDb.debugPages(info.getDocument(), false));
+                domDb.debugPages(info.getDocument(), false);
 
                 mgr.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
             
             // the following transaction will not be committed and thus undone during recovery
             final Txn transaction = mgr.beginTransaction();
-            System.out.println("Transaction started ...");
-            
+
             // rename elements
             final String xupdate =
                 "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
@@ -103,7 +100,6 @@ public class RenameTest extends AbstractUpdateTest {
             
 //          Don't commit...            
             pool.getTransactionManager().getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");
 	    } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

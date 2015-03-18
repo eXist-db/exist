@@ -85,10 +85,8 @@ public class ConcurrentStoreTest extends TestCase {
             assertNotNull(test);
             test2 = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
             assertNotNull(test2);
-            System.out.println("Contents of collection " + test.getURI() + ":");
             for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
                 DocumentImpl next = i.next();
-                System.out.println("- " + next.getURI());
             }
 	    } catch (Exception e) {            
 	        fail(e.getMessage());              
@@ -138,8 +136,6 @@ public class ConcurrentStoreTest extends TestCase {
             final TransactionManager transact = pool.getTransactionManager();
             try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                     final Txn transaction = transact.beginTransaction()) {
-                
-                System.out.println("Transaction started ...");
                 XMLFilenameFilter filter = new XMLFilenameFilter();
                 File files[] = dir.listFiles(filter);
                 
@@ -164,8 +160,7 @@ public class ConcurrentStoreTest extends TestCase {
                 
 //              Don't commit...
                 transact.getJournal().flushToLog(true);
-                System.out.println("Transaction interrupted ...");
-    	    } catch (Exception e) {            
+    	    } catch (Exception e) {
     	        fail(e.getMessage()); 
             }
         }
@@ -179,8 +174,7 @@ public class ConcurrentStoreTest extends TestCase {
                 
                 Iterator<DocumentImpl> i = test.iterator(broker);
                 DocumentImpl doc = i.next();
-                
-                System.out.println("\nREMOVING DOCUMENT\n");
+
                 test.removeXMLResource(transaction, broker, doc.getFileURI());
                 
                 File f = new File(dir + File.separator + "hamlet.xml");

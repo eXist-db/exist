@@ -150,7 +150,7 @@ public class StoredModuleTest {
         for (int i = 0; i < cols.length; i++) {
             xqService.declareVariable("itg-modules:coll", cols[i]);
             ResourceSet result = xqService.execute(compiledQuery);
-            System.out.println("Result: " + result.getResource(0).getContent());
+            result.getResource(0).getContent();
         }
     }
 

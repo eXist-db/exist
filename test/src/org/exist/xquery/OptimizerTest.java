@@ -211,7 +211,6 @@ public class OptimizerTest {
 
     private int execute(String query, boolean optimize) {
         try {
-            System.out.println("--- Query: " + query + "; Optimize: " + Boolean.toString(optimize));
             XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
             if (optimize)
                 query = OPTIMIZE + query;
@@ -219,7 +218,6 @@ public class OptimizerTest {
                 query = NO_OPTIMIZE + query;
             query = NAMESPACES + query;
             ResourceSet result = service.query(query);
-            System.out.println("-- Found: " + result.getSize());
             return (int) result.getSize();
         } catch (XMLDBException e) {
             e.printStackTrace();
@@ -230,14 +228,12 @@ public class OptimizerTest {
 
     private void execute(String query, boolean optimize, String message, int expected) {
         try {
-            System.out.println("--- Query: " + query + "; Optimize: " + Boolean.toString(optimize));
             XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
             if (optimize)
                 query = NAMESPACES + OPTIMIZE + query;
             else
                 query = NAMESPACES + NO_OPTIMIZE + query;
             ResourceSet result = service.query(query);
-            System.out.println("-- Found: " + result.getSize());
             Assert.assertEquals(message, expected, result.getSize());
         } catch (XMLDBException e) {
             e.printStackTrace();
@@ -279,7 +275,6 @@ public class OptimizerTest {
                 throw new IOException("Unable to read samples directory");
             File[] files = dir.listFiles(new XMLFilenameFilter());
             for (File file : files) {
-                System.out.println("Create resource from "+file.getAbsolutePath());
                 resource = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
                 resource.setContent(file);
                 testCollection.storeResource(resource);
@@ -303,7 +298,5 @@ public class OptimizerTest {
             Assert.fail(e.getMessage());
         }
         testCollection = null;
-
-		System.out.println("tearDown PASSED");
 	}
 }

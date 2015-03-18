@@ -124,9 +124,7 @@ public class XMLNodeAsXQueryParameterTest extends TestCase {
 		// issue xpath query
 		try {
 			Node node = root.getFirstChild();
-			if (node != null) {
-				System.out.println("Found '" + node.getNodeName() + "'");
-			} else {
+			if (node == null) {
 				fail("XUpdate:append using w3c dom node failed! Content node was not returned.");
 			}
 		} catch (Exception e) {

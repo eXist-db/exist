@@ -208,19 +208,15 @@ public class CreateCollectionsTest  {
     }
 
     private XMLResource storeResourceFromFile(File file, Collection testCollection) throws XMLDBException, IOException {
-        System.out.println("storing " + file.getAbsolutePath());
         XMLResource res = (XMLResource) testCollection.createResource(file.getName(), "XMLResource");
         assertNotNull("storeResourceFromFile", res);
         String xml = XMLUtil.readFile(file, "UTF-8");
         res.setContent(xml);
         testCollection.storeResource(res);
-        System.out.println("stored " + file.getAbsolutePath());
         return res;
     }
 
     private byte[] storeBinaryResourceFromFile(File file, Collection testCollection) throws XMLDBException, IOException {
-        System.out.println("storing " + file.getAbsolutePath());
-
         Resource res = (BinaryResource)testCollection.createResource(file.getName(), "BinaryResource");
         assertNotNull("store binary Resource From File", res);
 
@@ -234,7 +230,6 @@ public class CreateCollectionsTest  {
 
         res.setContent(data);
         testCollection.storeResource(res);
-        System.out.println("stored " + file.getAbsolutePath());
         return data;
     }
 
@@ -246,7 +241,6 @@ public class CreateCollectionsTest  {
         assertNotNull(cms);
 
         cms.createCollection("dummy1");
-        printChildren(testCol);
         Collection c1 = testCol.getChildCollection("dummy1");
         assertNotNull(c1);
 
@@ -262,16 +256,7 @@ public class CreateCollectionsTest  {
 
         cms.setCollection(testCol);
         cms.removeCollection("dummy1");
-        printChildren(testCol);
         c1 = testCol.getChildCollection("dummy1");
         assertNull(c1);
-    }
-
-    private static void printChildren(Collection c) throws XMLDBException {
-        System.out.print("Children of " + c.getName() + ":");
-        for (String childCollectionName : c.listChildCollections()) {
-            System.out.print(" " + childCollectionName);
-        }
-        System.out.println();
     }
 }

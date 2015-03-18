@@ -99,8 +99,7 @@ public class DBUtils {
 		File file = File.createTempFile(Thread.currentThread().getName(), ".xml");
 		if(file.exists() && !file.canWrite())
 			throw new IllegalArgumentException("Cannot write to output file " + file.getAbsolutePath());
-		
-		System.out.println("Generating XML file " + file.getAbsolutePath());
+
 		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
 		
 		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, depth, wordList, namespaces);

@@ -57,15 +57,11 @@ public class XQueryAction extends Action {
 	    
 		Collection col = DatabaseManager.getCollection(collectionPath);
 		
-		System.out.println(Thread.currentThread().getName() + ": executing query: " + xquery);
-		
 		XPathQueryServiceImpl service = (XPathQueryServiceImpl)
 			col.getService("XPathQueryService", "1.0");
 		
 //		service.beginProtected();
 		ResourceSet result = service.query(xquery);
-
-		System.out.println(Thread.currentThread().getName() + ": found " + result.getSize());
 		
 		DefaultHandler handler = new DefaultHandler();
 		for (int i = 0; i < result.getSize(); i++) {
@@ -76,8 +72,7 @@ public class XQueryAction extends Action {
 		
 		runningTime += (System.currentTimeMillis() - start);
 		called++;
-		
-		System.out.println(Thread.currentThread().getName() + ": XQuery completed.");
+
 		return false;
 	}
 	

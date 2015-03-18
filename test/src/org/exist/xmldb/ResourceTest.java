@@ -86,19 +86,14 @@ public class ResourceTest {
         String[] resources = testCollection.listResources();
         assertEquals(resources.length, testCollection.getResourceCount());
 
-        System.out.println("reading " + resources[0]);
         XMLResource doc = (XMLResource) testCollection.getResource(resources[0]);
         assertNotNull(doc);
 
-        System.out.println("testing XMLResource.getContentAsSAX()");
         StringWriter sout = new StringWriter();
         OutputFormat format = new OutputFormat("xml", "ISO-8859-1", true);
         format.setLineWidth(60);
         XMLSerializer xmlout = new XMLSerializer(sout, format);
         doc.getContentAsSAX(xmlout);
-        System.out.println("----------------------------------------");
-        System.out.println(sout.toString());
-        System.out.println("----------------------------------------");
     }
 
     @Test
@@ -117,16 +112,13 @@ public class ResourceTest {
         }
         assertNotNull(elem);
         assertEquals(elem.getNodeName(), "PLAY");
-        System.out.println("Root element: " + elem.getNodeName());
         NodeList children = elem.getChildNodes();
         Node node;
         for(int i = 0; i < children.getLength(); i++) {
             node = children.item(i);
-            System.out.println("Child: " + node.getNodeName());
             assertNotNull(node);
             node = node.getFirstChild();
             while(node != null) {
-                System.out.println("child: " + node.getNodeName());
                 node = node.getNextSibling();
             }
         }

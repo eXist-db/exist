@@ -83,7 +83,7 @@ public class RemoveAppendTest extends TestCase {
 //            
 //            ResourceSet result = query.query("/test/item[@id='" + which + "']");
 //            assertEquals(result.getSize(), 1);
-//            System.out.println(result.getResource(0).getContent());
+//            result.getResource(0).getContent();
 //        }
 //    }
     
@@ -97,7 +97,6 @@ public class RemoveAppendTest extends TestCase {
             
             ResourceSet result = query.query("/test/item[@id='" + i + "']");
             assertEquals(result.getSize(), 1);
-            System.out.println(result.getResource(0).getContent());
         }
         
         for (int i = 100; i > 10; i--) {
@@ -109,7 +108,6 @@ public class RemoveAppendTest extends TestCase {
             assertEquals(mods, 1);
             
             ResourceSet result = query.query("/test/item/e0");
-            System.out.println(result.getResource(0).getContent());
         }
     }
     

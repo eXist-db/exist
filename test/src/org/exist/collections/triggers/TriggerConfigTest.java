@@ -105,7 +105,6 @@ public class TriggerConfigTest {
             Resource resource = root.createResource("data.xml", "XMLResource");
             resource.setContent(DOCUMENT_CONTENT);
             root.storeResource(resource);
-            printMessages();
             XQueryService qs = (XQueryService) root.getService("XQueryService", "1.0");
             ResourceSet result = qs.queryResource("messages.xml", "string(//event[last()]/@collection)");
             assertEquals(1, result.getSize());
@@ -179,17 +178,6 @@ public class TriggerConfigTest {
             ResourceSet result = qs.query("if (doc-available('" + testCollection + "/messages.xml')) then doc('" + testCollection + "/messages.xml')/events/event[@id = 'STORE-DOCUMENT']/string(@collection) else ()");
             assertEquals(1, result.getSize());
             assertEquals(testCollection, result.getResource(0).getContent());
-        } catch (XMLDBException e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-
-    private void printMessages() {
-        try {
-            Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
-            XMLResource messages = (XMLResource) root.getResource("messages.xml");
-            System.out.println(messages.getContent().toString());
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());

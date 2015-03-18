@@ -46,7 +46,6 @@ public class AttributeUpdateAction extends RemoveAppendAction {
 		for (int i = 0; i < 10; i++) {
 			String xupdate = XUPDATE_START + xmlGenerator.generateText(attrSize) + XUPDATE_END;
 			long mods = service.update(xupdate);
-			System.out.println(Thread.currentThread().getName() + ": " + mods + " attributes updated ...");
 		}
 		return false;
 	}
