@@ -1202,6 +1202,9 @@ public class XQueryContext implements BinaryValueManager, Context
         return( staticDocuments );
     }
 
+    public DocumentSet getStaticDocs() {
+        return staticDocuments;
+    }
 
     public ExtendedXMLStreamReader getXMLStreamReader( NodeValue nv ) throws XMLStreamException, IOException
     {
