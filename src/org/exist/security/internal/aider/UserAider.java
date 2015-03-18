@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2011 The eXist Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2015 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.security.internal.aider;
 
@@ -25,6 +23,7 @@ import java.util.*;
 
 import org.exist.config.Configuration;
 import org.exist.security.Account;
+import org.exist.security.Credential;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -47,11 +46,11 @@ public class UserAider implements Account {
     private final String realmId;
     private final String name;
     private final int id;
-    private Map<SchemaType, String> metadata = new HashMap<SchemaType, String>();
+    private final Map<SchemaType, String> metadata = new HashMap<>();
     private String password = null;
     private String passwordDigest = null;
     private Group defaultRole = null;
-    private Map<String, Group> roles = new LinkedHashMap<String, Group>();
+    private Map<String, Group> roles = new LinkedHashMap<>();
     private int umask = Permission.DEFAULT_UMASK;
     private boolean enabled = true;
 
@@ -83,9 +82,6 @@ public class UserAider implements Account {
         defaultRole = addGroup(group);
     }
 
-    /* (non-Javadoc)
-     * @see java.security.Principal#getName()
-     */
     @Override
     public String getName() {
         return name;
@@ -96,17 +92,11 @@ public class UserAider implements Account {
         return realmId;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.Principal#getId()
-     */
     @Override
     public int getId() {
         return id;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#addGroup(java.lang.String)
-     */
     @Override
     public Group addGroup(final String name) {
         final Group role = new GroupAider(realmId, name);	
@@ -114,9 +104,6 @@ public class UserAider implements Account {
         return role;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#addGroup(org.exist.security.Group)
-     */
     @Override
     public Group addGroup(final Group group) {
         if (group == null) {
@@ -132,47 +119,35 @@ public class UserAider implements Account {
             addGroup(group);
         }
 
-        final List<Map.Entry<String, Group>> entries = new ArrayList<Map.Entry<String, Group>>(roles.entrySet());
-        Collections.sort(entries, new Comparator<Map.Entry<String, Group>>() {
-            @Override
-            public int compare(final Map.Entry<String, Group> o1, final Map.Entry<String, Group> o2) {
-                if (o1.getKey().equals(group.getName())) {
-                    return -1;
-                } else {
-                    return 1;
-                }
+        final List<Map.Entry<String, Group>> entries = new ArrayList<>(roles.entrySet());
+        Collections.sort(entries, (final Map.Entry<String, Group> o1, final Map.Entry<String, Group> o2) -> {
+            if (o1.getKey().equals(group.getName())) {
+                return -1;
+            } else {
+                return 1;
             }
         });
 
-        roles = new LinkedHashMap<String, Group>();
+        roles = new LinkedHashMap<>();
         for(final Map.Entry<String, Group> entry : entries) {
             roles.put(entry.getKey(), entry.getValue());
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#remGroup(java.lang.String)
-     */
     @Override
     public void remGroup(final String role) {
         roles.remove(role);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#setGroups(java.lang.String[])
-     */
     @Override
     public void setGroups(final String[] names) {
-        roles = new HashMap<String, Group>();
+        roles = new HashMap<>();
 
-        for(int i = 0; i < names.length; i++) {
-            addGroup(names[i]);
+        for (final String name : names) {
+            addGroup(name);
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getGroups()
-     */
     @Override
     public String[] getGroups() {
         return roles.keySet().toArray(new String[0]);
@@ -183,17 +158,11 @@ public class UserAider implements Account {
         return new int[0];
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#hasDbaRole()
-     */
     @Override
     public boolean hasDbaRole() {
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getPrimaryGroup()
-     */
     @Override
     public String getPrimaryGroup() {
         if(defaultRole == null) {
@@ -202,17 +171,11 @@ public class UserAider implements Account {
         return defaultRole.getName();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#hasGroup(java.lang.String)
-     */
     @Override
     public boolean hasGroup(final String group) {
         return roles.containsKey(group);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getRealm()
-     */
     @Override
     public Realm getRealm() {
         return null;
@@ -247,17 +210,16 @@ public class UserAider implements Account {
         password = passwd;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#setPassword(java.lang.String)
-     */
     @Override
     public void setPassword(final String passwd) {
         password = passwd;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getPassword()
-     */
+    @Override
+    public void setCredential(final Credential credential) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
     @Override
     public String getPassword() {
         return password;
@@ -267,9 +229,6 @@ public class UserAider implements Account {
         passwordDigest = password;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.security.User#getDigestPassword()
-     */
     @Override
     public String getDigestPassword() {
         return passwordDigest;
@@ -277,37 +236,31 @@ public class UserAider implements Account {
 
     @Override
     public boolean isConfigured() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public Configuration getConfiguration() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getUsername() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        // TODO Auto-generated method stub
         return false;
     }
 

@@ -22,7 +22,6 @@
 package org.exist.security;
 
 import java.util.List;
-import java.util.Set;
 
 public interface Group extends Principal {
 

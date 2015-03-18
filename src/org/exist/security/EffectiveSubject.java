@@ -1,23 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2013 The eXist-db Project
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2015 The eXist Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.security;
 
@@ -135,7 +133,7 @@ public class EffectiveSubject implements Subject {
     @Override
     public String[] getGroups() {
         if(group != null) {
-            final Set<String> groups = new HashSet<String>(Arrays.asList(account.getGroups()));
+            final Set<String> groups = new HashSet<>(Arrays.asList(account.getGroups()));
             groups.add(group.getName());
             return groups.toArray(new String[groups.size()]);
         } else {
@@ -146,7 +144,7 @@ public class EffectiveSubject implements Subject {
     @Override
     public int[] getGroupIds() {
         if(group != null) {
-            final Set<Integer> groupIds = new HashSet<Integer>(Arrays.asList(ArrayUtils.toObject(account.getGroupIds())));
+            final Set<Integer> groupIds = new HashSet<>(Arrays.asList(ArrayUtils.toObject(account.getGroupIds())));
             groupIds.add(group.getId());
             return ArrayUtils.toPrimitive(groupIds.toArray(new Integer[groupIds.size()]));
         } else {
@@ -214,6 +212,11 @@ public class EffectiveSubject implements Subject {
     }
 
     @Override
+    public void setCredential(final Credential credential) {
+        throw new UnsupportedOperationException("The Effective User has no credential!");
+    }
+
+    @Override
     public String getPassword() {
         throw new UnsupportedOperationException("The Effective User has no password!");
     }
@@ -235,7 +238,7 @@ public class EffectiveSubject implements Subject {
 
     @Override
     public void setUserMask(final int umask) {
-        throw new UnsupportedOperationException("You cannot set the UserMask of the Effective User"); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("You cannot set the UserMask of the Effective User");
     }
     
     //<editor-fold desc="metadata">
@@ -250,7 +253,7 @@ public class EffectiveSubject implements Subject {
     }
     
     @Override
-    public void setMetadataValue(SchemaType schemaType, String value) {
+    public void setMetadataValue(final SchemaType schemaType, final String value) {
          throw new UnsupportedOperationException("You cannot modify the metadata of the Effective User");
     }
 

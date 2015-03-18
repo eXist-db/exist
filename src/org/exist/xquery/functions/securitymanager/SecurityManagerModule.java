@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2013 The eXist Project
+ * Copyright (C) 2015 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
  */
 package org.exist.xquery.functions.securitymanager;
 
@@ -50,6 +48,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
         new FunctionDef(AccountManagementFunction.FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP_WITH_METADATA, AccountManagementFunction.class),
         new FunctionDef(AccountManagementFunction.FNS_REMOVE_ACCOUNT, AccountManagementFunction.class),
         new FunctionDef(AccountManagementFunction.FNS_PASSWD, AccountManagementFunction.class),
+        new FunctionDef(AccountManagementFunction.FNS_PASSWD_HASH, AccountManagementFunction.class),
         
         new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_USERNAME, FindUserFunction.class),
         new FunctionDef(FindUserFunction.FNS_FIND_USERS_BY_NAME, FindUserFunction.class),
