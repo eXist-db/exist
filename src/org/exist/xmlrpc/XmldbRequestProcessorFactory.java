@@ -41,34 +41,31 @@ import org.exist.storage.BrokerPool;
 public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFactory.RequestProcessorFactory {
 
     private final static Logger LOG = LogManager.getLogger(XmldbRequestProcessorFactory.class);
-    
     public final static int CHECK_INTERVAL = 2000;
 
-    protected boolean useDefaultUser = true;
+    private final boolean useDefaultUser;
+    private final BrokerPool brokerPool;
+    protected final QueryResultCache resultSets = new QueryResultCache();
 
-    protected BrokerPool brokerPool;
+    private long lastCheck = System.currentTimeMillis();
 
-    protected int connections = 0;
-
-    protected long lastCheck = System.currentTimeMillis();
-
-    protected QueryResultCache resultSets = new QueryResultCache();
-
-    /** id of the database registred against the BrokerPool */
+    /**
+     * id of the database registered against the BrokerPool
+     */
     protected String databaseId = BrokerPool.DEFAULT_INSTANCE_NAME;
 
     public XmldbRequestProcessorFactory(final String databaseId, final boolean useDefaultUser) throws EXistException {
         this.useDefaultUser = useDefaultUser;
-        if(databaseId != null &&  !databaseId.isEmpty()) {
+        if (databaseId != null && !databaseId.isEmpty()) {
             this.databaseId = databaseId;
         }
-        brokerPool = BrokerPool.getInstance(this.databaseId);
+        this.brokerPool = BrokerPool.getInstance(this.databaseId);
     }
 
     @Override
     public Object getRequestProcessor(final XmlRpcRequest pRequest) throws XmlRpcException {
         checkResultSets();
-        final XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig)pRequest.getConfig();
+        final XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) pRequest.getConfig();
         final Subject user = authenticate(config.getBasicUserName(), config.getBasicPassword());
         return new RpcConnection(this, user);
     }
@@ -100,7 +97,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     }
 
     protected void checkResultSets() {
-        if(System.currentTimeMillis() - lastCheck > CHECK_INTERVAL) {
+        if (System.currentTimeMillis() - lastCheck > CHECK_INTERVAL) {
             resultSets.checkTimestamps();
             lastCheck = System.currentTimeMillis();
         }

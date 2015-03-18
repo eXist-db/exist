@@ -21,60 +21,59 @@
  */
 package org.exist.examples.xmlrpc;
 
-import java.util.Vector;
-import java.util.HashMap;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.util.SSLHelper;
 
 /**
- *  Retrieve a document from the database using XMLRPC.
+ * Retrieve a document from the database using XMLRPC.
  *
  * Execute bin\run.bat org.exist.examples.xmlrpc.Retrieve <remotedoc>
  *
- *  @author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *  created    August 1, 2002
+ * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ * created August 1, 2002
  */
 public class Retrieve {
 
-    protected final static String uri = "http://localhost:8080/exist/xmlrpc";
+    private final static String uri = "http://localhost:8080/exist/xmlrpc";
 
-    protected static void usage() {
-        System.out.println( "usage: org.exist.examples.xmlrpc.Retrieve path-to-document" );
-        System.exit( 0 );
+    private static void usage() {
+        System.out.println("usage: org.exist.examples.xmlrpc.Retrieve path-to-document");
+        System.exit(0);
     }
 
-    public static void main( String args[] ) throws Exception {
-        if ( args.length < 1 ) {
+    public static void main(final String args[]) throws Exception {
+        if (args.length < 1) {
             usage();
         }
-        
+
         // Initialize HTTPS connection to accept selfsigned certificates
         // and the Hostname is not validated 
         SSLHelper.initialize();
-        
-        
-        XmlRpcClient client = new XmlRpcClient();
-        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+
+        final XmlRpcClient client = new XmlRpcClient();
+        final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         config.setServerURL(new URL(uri));
         config.setBasicUserName("guest");
         config.setBasicPassword("guest");
         client.setConfig(config);
 
-        HashMap<String, String> options = new HashMap<String, String>();
+        final Map<String, String> options = new HashMap<>();
         options.put("indent", "yes");
         options.put("encoding", "UTF-8");
         options.put("expand-xincludes", "yes");
         options.put("process-xsl-pi", "no");
-        
-        Vector<Object> params = new Vector<Object>();
-        params.addElement( args[0] ); 
-        params.addElement( options );
-        String xml = (String)
-            client.execute( "getDocumentAsString", params );
-        System.out.println( xml );
+
+        final List<Object> params = new ArrayList<>();
+        params.add(args[0]);
+        params.add(options);
+        final String xml = (String) client.execute("getDocumentAsString", params);
+        System.out.println(xml);
     }
 }
-

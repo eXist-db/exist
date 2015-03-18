@@ -24,12 +24,15 @@ package org.exist.protocolhandler.xmlrpc;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Hashtable;
-import java.util.Vector;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
@@ -47,14 +50,13 @@ public class XmlrpcDownload {
     private final static Logger LOG = LogManager.getLogger(XmlrpcDownload.class);
     
     /**
-     *  Write document referred by the URL to the output stream.
-     * 
-     * 
+     * Write document referred by the URL to the output stream.
+     *
      * @param xmldbURL Document location in database.
      * @param os Stream to which the document is written.
-     * @throws ExistIOException
+     * @throws IOException
      */
-    public void stream(XmldbURL xmldbURL, OutputStream os) throws IOException {
+    public void stream(final XmldbURL xmldbURL, final OutputStream os) throws IOException {
         LOG.debug("Begin document download");
         try {
             final XmlRpcClient client = new XmlRpcClient();
@@ -71,18 +73,18 @@ public class XmlrpcDownload {
             client.setConfig(config);
 
             // Setup xml serializer
-            final Hashtable<String, String> options = new Hashtable<String, String>();
+            final Map<String, String> options = new HashMap<>();
             options.put("indent", "no");
             options.put("encoding", "UTF-8");
             
             // Setup client parameters
-            final Vector<Object> params = new Vector<Object>();
-            params.addElement( xmldbURL.getCollectionPath() );
-            params.addElement( options );
+            final List<Object> params = new ArrayList<>();
+            params.add( xmldbURL.getCollectionPath() );
+            params.add( options );
             
             // Shoot first method write data
-            Hashtable ht = (Hashtable) client.execute("getDocumentData", params);
-            int offset = ((Integer)ht.get("offset")).intValue();
+            Map ht = (Map) client.execute("getDocumentData", params);
+            int offset = (int)ht.get("offset");
             byte[]data= (byte[]) ht.get("data");
             final String handle = (String) ht.get("handle");
             os.write(data);
@@ -91,27 +93,24 @@ public class XmlrpcDownload {
             while(offset!=0){
                 // Clean and re-setup client parameters
                 params.clear();
-                params.addElement(handle);
-                params.addElement(Integer.valueOf(offset));
+                params.add(handle);
+                params.add(offset);
                 
                 // Get and write next chunk
-                ht = (Hashtable) client.execute("getNextChunk", params);
+                ht = (Map) client.execute("getNextChunk", params);
                 data= (byte[]) ht.get("data");
-                offset = ((Integer)ht.get("offset")).intValue();
+                offset = (int)ht.get("offset");
                 os.write(data);
             }
             
-        } catch (final IOException ex) {
-            LOG.error(ex);
-            throw ex;
-            
-        } catch (final Exception ex) {
+        } catch (final XmlRpcException ex) {
             LOG.error(ex);
             throw new IOException(ex.getMessage(), ex);
-                       
+        } catch(final IOException ex) {
+            LOG.error(ex);
+            throw ex;     
         } finally {
             LOG.debug("Finished document download"); 
-
         }
     }
     

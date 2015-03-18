@@ -34,28 +34,29 @@ import org.xmldb.api.base.XMLDBException;
  *
  */
 public class ResourceSetHelper {
-	public static ResourceSet intersection(ResourceSet s1, ResourceSet s2) throws XMLDBException {
-		final Map<String, Resource> m1 = new MapResourceSet(s1).getResourcesMap();
-		final Map<String, Resource> m2 = new MapResourceSet(s2).getResourcesMap();
-		final Set<String> set1 = m1.keySet();
-		final Set<String> set2 = m2.keySet();
-		set1.retainAll(set2);
-		final Map<String, Resource> m = new HashMap<String, Resource>();
-		final Iterator<String> iter = set1.iterator();
-		while ( iter.hasNext() ) {
-          final String key = iter.next();
-          final Resource resource = m1.get(key);
-          m.put(key, resource);
-		}
-		final MapResourceSet res = new MapResourceSet(m); 
-		/*
-		VectorResourceSet res = new VectorResourceSet(); 
-		Collection c1 = new VectorResourceSet(s1).getResources();
-		res.getResources().addAll( c1 );
-		Collection c2 = new VectorResourceSet(s2).getResources();
-		res.getResources().retainAll(c2);
-	 return res;
-	 */
-	 return res;
-	}
+
+    public static ResourceSet intersection(final ResourceSet s1, final ResourceSet s2) throws XMLDBException {
+        final Map<String, Resource> m1 = new MapResourceSet(s1).getResourcesMap();
+        final Map<String, Resource> m2 = new MapResourceSet(s2).getResourcesMap();
+        final Set<String> set1 = m1.keySet();
+        final Set<String> set2 = m2.keySet();
+        set1.retainAll(set2);
+        final Map<String, Resource> m = new HashMap<>();
+        final Iterator<String> iter = set1.iterator();
+        while (iter.hasNext()) {
+            final String key = iter.next();
+            final Resource resource = m1.get(key);
+            m.put(key, resource);
+        }
+        final MapResourceSet res = new MapResourceSet(m);
+        /*
+         VectorResourceSet res = new VectorResourceSet(); 
+         Collection c1 = new VectorResourceSet(s1).getResources();
+         res.getResources().addAll( c1 );
+         Collection c2 = new VectorResourceSet(s2).getResources();
+         res.getResources().retainAll(c2);
+         return res;
+         */
+        return res;
+    }
 }

@@ -26,7 +26,6 @@ import org.apache.xmlrpc.XmlRpcHandler;
 import org.apache.xmlrpc.server.AbstractReflectiveHandlerMapping;
 import org.apache.xmlrpc.server.RequestProcessorFactoryFactory;
 import org.apache.xmlrpc.server.XmlRpcHandlerMapping;
-import org.apache.xmlrpc.server.XmlRpcNoSuchHandlerException;
 import org.apache.xmlrpc.webserver.XmlRpcServlet;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
@@ -40,33 +39,32 @@ import java.io.IOException;
 public class RpcServlet extends XmlRpcServlet {
 
 	private static final long serialVersionUID = -1003413291835771186L;
-
     private static boolean useDefaultUser = true;
 
     public static boolean isUseDefaultUser() {
         return useDefaultUser;
     }
 
-    public static void setUseDefaultUser(boolean useDefaultUser) {
+    public static void setUseDefaultUser(final boolean useDefaultUser) {
         RpcServlet.useDefaultUser = useDefaultUser;
     }
 
-	@Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    @Override
+    public void doPost(HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         // Request logger
 
         final Descriptor descriptor = Descriptor.getDescriptorSingleton();
-        if( descriptor.allowRequestLogging() && !descriptor.requestsFiltered()) {
+        if (descriptor.allowRequestLogging() && !descriptor.requestsFiltered()) {
             // Wrap HttpServletRequest, because both request Logger and xmlrpc
             // need the request InputStream, which is consumed when read.
             request =
-                new HttpServletRequestWrapper(request, /*formEncoding*/ "utf-8" );
+                    new HttpServletRequestWrapper(request, /*formEncoding*/ "utf-8");
             descriptor.doLogRequestInReplayLog(request);
         }
 
         try {
             super.doPost(request, response);
-        } catch (final Throwable e){
+        } catch (final Throwable e) {
             log("Problem during XmlRpc execution", e);
             throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
         }
@@ -84,10 +82,12 @@ public class RpcServlet extends XmlRpcServlet {
 
         RequestProcessorFactory instance = null;
 
-        public RequestProcessorFactory getRequestProcessorFactory(Class pClass) throws XmlRpcException {
+        @Override
+        public RequestProcessorFactory getRequestProcessorFactory(final Class pClass) throws XmlRpcException {
             try {
-                if (instance == null)
-                    {instance = new XmldbRequestProcessorFactory("exist", useDefaultUser);}
+                if (instance == null) {
+                    instance = new XmldbRequestProcessorFactory("exist", useDefaultUser);
+                }
                 return instance;
             } catch (final EXistException e) {
                 throw new XmlRpcException("Failed to initialize XMLRPC interface: " + e.getMessage(), e);
@@ -100,13 +100,15 @@ public class RpcServlet extends XmlRpcServlet {
         private DefaultHandlerMapping() throws XmlRpcException {
         }
 
-        public void loadDefault(Class<?> clazz) throws XmlRpcException {
+        public void loadDefault(final Class<?> clazz) throws XmlRpcException {
             registerPublicMethods("Default", clazz);
         }
 
-        public XmlRpcHandler getHandler(String pHandlerName) throws XmlRpcNoSuchHandlerException, XmlRpcException {
-            if (pHandlerName.indexOf('.') < 0)
-                {pHandlerName = "Default." + pHandlerName;}
+        @Override
+        public XmlRpcHandler getHandler(String pHandlerName) throws XmlRpcException {
+            if (pHandlerName.indexOf('.') < 0) {
+                pHandlerName = "Default." + pHandlerName;
+            }
             return super.getHandler(pHandlerName);
         }
     }
