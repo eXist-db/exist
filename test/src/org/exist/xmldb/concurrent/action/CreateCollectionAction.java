@@ -44,11 +44,7 @@ public class CreateCollectionAction extends Action {
         Collection col = DatabaseManager.getCollection(collectionPath, "admin", null);
         Collection target = DBUtils.addCollection(col, "C" + ++collectionCnt);
         addFiles(target);
-        System.out.println("Resources in collection " + target.getName());
         String resources[] = target.listResources();
-        for (int i = 0; i < resources.length; i++) {
-            System.out.println(resources[i]);
-        }
         
         CollectionManagementServiceImpl mgt = (CollectionManagementServiceImpl)
             col.getService("CollectionManagementService", "1.0");
@@ -57,12 +53,8 @@ public class CreateCollectionAction extends Action {
            mgt.copyResource(target.getName() + '/' + resources[i], 
                    copy.getName(), null);
         }
-        
-        System.out.println("Resources in collection " + copy.getName());
+
         resources = copy.listResources();
-        for (int i = 0; i < resources.length; i++) {
-            System.out.println(resources[i]);
-        }
         return false;
     }
 

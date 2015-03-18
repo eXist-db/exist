@@ -44,36 +44,26 @@ public class XQueryTest extends TestCase {
                 "  <fruit name='persimmon'/>" +
                 "  <fruit name='pomegranate'/>" +
                 "</test>";
-        System.out.println("====> Creating test documents");
+
         admin.store(sessionId,data.getBytes(),"UTF-8",testColl + "/docA",true);
         admin.store(sessionId,data1.getBytes(),"UTF-8",testColl + "/docB",true);
-        System.out.println("====> getResource");
+
         String rd = query.getResource(sessionId,testColl + "/docA", true,false);
-        System.out.println(rd);
-        System.out.println("====> listCollection");
+
         Collection coll = query.listCollection(sessionId,testColl);
         String[] colls = coll.getCollections().getElements();
-        if (colls != null)
-            for (int i = 0; i < colls.length; i++) {
-            System.out.println("  collection " + colls[i]);
-            }
         String[] ress = coll.getResources().getElements();
         assertEquals(ress.length,2);
-        if (ress != null)
-            for (int i = 0; i < ress.length; i++) {
-            System.out.println("  resources " + ress[i]);
-            }
-        System.out.println("====> getResourceData");
+
         byte[] rd1 = query.getResourceData(sessionId,testColl + "/docB", true,false,false);
-        System.out.println(new String(rd1));
-        System.out.println("====> performing xquery with retrieve");
+
         String qry = "for $a in collection('" + testColl + "')/test/fruit return $a";
         assertEquals(doXQuery(qry),12);
-        System.out.println("====> performing xquery with retrieveData");
+
         assertEquals(doXQueryB(qry),12);
-        System.out.println("====> performing xquery with retrieveByDocument");
+
         assertEquals(doXQueryC(qry),6);
-        System.out.println("====> performing xquery, expecting 0 hits");
+
         String qry1 = "for $a in collection('" + testColl + "')/test/nuts return $a";
         assertEquals(doXQuery(qry1),0);
         String qry2 = "for $a in collection('" + testColl + "')/test/fruit[@name = 'apple'] return $a";
@@ -85,12 +75,7 @@ public class XQueryTest extends TestCase {
         int noHits = rsp.getHits();
         if (noHits > 0) {
             String[] rsps = query.retrieve(sessionId,1,noHits,true,false,"none");
-            for (int i = 0; i < rsps.length; i++) {
-                System.out.println(rsps[i]);
-            }
             assertEquals(noHits,rsps.length);
-        } else {
-            System.out.println("No hits");
         }
         return noHits;
     }
@@ -100,12 +85,7 @@ public class XQueryTest extends TestCase {
         int noHits = rsp.getHits();
         if (noHits > 0) {
             byte[][] rsps = query.retrieveData(sessionId,1,noHits,true,false,"none").getElements();
-            for (int i = 0; i < rsps.length; i++) {
-                System.out.println(new String(rsps[i]));
-            }
             assertEquals(noHits,rsps.length);
-        } else {
-            System.out.println("No hits");
         }
         return noHits;
     }
@@ -115,13 +95,8 @@ public class XQueryTest extends TestCase {
         int noHits = rsp.getHits();
         if (noHits > 0) {
             String[] rsps = query.retrieveByDocument(sessionId,1,noHits,testColl + "/docA",true,false,"none");
-            for (int i = 0; i < rsps.length; i++) {
-                System.out.println(rsps[i]);
-            }
             noHits = rsps.length;
 //			assertEquals(noHits,rsps.length);
-        } else {
-            System.out.println("No hits");
         }
         return noHits;
     }

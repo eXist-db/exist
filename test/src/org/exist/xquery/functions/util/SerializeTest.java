@@ -77,7 +77,6 @@ public class SerializeTest {
         } catch (SAXException sae) {
                 fail(sae.getMessage());
         } catch (XMLDBException e) {
-            System.out.println("testSerialize(): " + e);
             fail(e.getMessage());
         }
 
@@ -101,7 +100,6 @@ public class SerializeTest {
         } catch (SAXException sae) {
                 fail(sae.getMessage());
         } catch (XMLDBException e) {
-            System.out.println("testSerialize2(): " + e);
             fail(e.getMessage());
         }
 
@@ -121,7 +119,6 @@ public class SerializeTest {
             assertEquals(r,"test");
 
         } catch (XMLDBException e) {
-            System.out.println("testSerializeText(): " + e);
             fail(e.getMessage());
         }
 
@@ -146,7 +143,6 @@ public class SerializeTest {
         } catch (SAXException sae) {
                 fail(sae.getMessage());
         } catch (XMLDBException e) {
-            System.out.println("testSerializeIndent(): " + e);
             fail(e.getMessage());
         }
 
@@ -168,7 +164,6 @@ public class SerializeTest {
 
            result = service.query(query);
            r = (String) result.getResource(0).getContent();
-           System.out.println(r);
            assertXpathEvaluatesTo("2.0","/test//@version",r);
 
         } catch (IOException ioe) {
@@ -176,7 +171,6 @@ public class SerializeTest {
         } catch (SAXException sae) {
                 fail(sae.getMessage());
         } catch (XMLDBException e) {
-            System.out.println("testSerializeXincludes(): " + e);
             e.printStackTrace();
             fail(e.getMessage());
         }

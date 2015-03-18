@@ -61,7 +61,6 @@ public class TestDataGenerator {
             context.setStaticallyKnownDocuments(docs);
 
             String query = IMPORT + xqueryContent;
-            System.out.println("query: " + query);
 
             CompiledXQuery compiled = service.compile(context, query);
 
@@ -94,7 +93,6 @@ public class TestDataGenerator {
 
     public File[] generate(org.xmldb.api.base.Collection collection, String xqueryContent) throws SAXException {
         String query = IMPORT + xqueryContent;
-        System.out.println("query: " + query);
         try {
             XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
             service.declareVariable("filename", "");

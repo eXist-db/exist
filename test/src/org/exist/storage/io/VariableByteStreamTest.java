@@ -19,7 +19,6 @@ public class VariableByteStreamTest extends TestCase {
 	}
 
 	protected void setUp() {
-		System.out.println("generating " + (SIZE * 3) + " numbers ...");
 		Random rand = new Random(System.currentTimeMillis()); 
 		for(int i = 0; i < SIZE * 3; i++) {
 			values[i++] = rand.nextInt();
@@ -36,7 +35,6 @@ public class VariableByteStreamTest extends TestCase {
 			os.writeShort((short)values[i]);
 		}
 		byte[] data = os.toByteArray();
-		System.out.println("long data length: " + data.length + "; original: " + (SIZE * 8 + SIZE * 2 + SIZE * 4));
 		
 		VariableByteArrayInput is = new VariableByteArrayInput(data);
 		long l;
@@ -75,8 +73,6 @@ public class VariableByteStreamTest extends TestCase {
 		    }
 		    
 		    byte[] data = os.toByteArray();
-		    System.out.println(valuesWritten + " values written");
-			System.out.println("compressed data length: " + data.length + "; original: " + dataLen);
 			
 			int valuesCopied = 0;
 			dataLen = 0;
@@ -95,8 +91,6 @@ public class VariableByteStreamTest extends TestCase {
 			    }
 			}
 			data = os.toByteArray();
-			System.out.println("copied " + valuesCopied + " values; skipped " + (valuesWritten - valuesCopied));
-			System.out.println("compressed data length: " + data.length + "; original: " + dataLen);
 			
 			int valuesRead = 0;
 			is = new VariableByteArrayInput(data);

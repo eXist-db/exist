@@ -59,7 +59,7 @@ public class DOMFileRecoverTest extends TestCase {
         final NodeIdFactory idFact = pool.getNodeFactory();
 
 		try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
-			System.out.println("Add some random data and force db corruption ...\n");
+			//Add some random data and force db corruption
 
             broker.flush();
             final DOMFile domDb = ((NativeBroker) broker).getDOMFile();
@@ -70,7 +70,6 @@ public class DOMFileRecoverTest extends TestCase {
             long firstToRemove = -1;
 
             try(final Txn txn = mgr.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 // put 1000 values into the btree
                 for (int i = 1; i <= 10000; i++) {
@@ -102,11 +101,9 @@ public class DOMFileRecoverTest extends TestCase {
 
                 domDb.closeDocument();
                 mgr.commit(txn);
-                System.out.println("Transaction commited ...");
             }
             
             try(final Txn txn = mgr.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 // put 1000 new values into the btree
                 for (int i = 1; i <= 1000; i++) {
@@ -119,12 +116,10 @@ public class DOMFileRecoverTest extends TestCase {
 
                 domDb.closeDocument();
                 mgr.commit(txn);
-                System.out.println("Transaction commited ...");
             }
             
             // the following transaction is not committed and will be rolled back during recovery
             try(final Txn txn = mgr.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 for (int i = 1; i <= 200; i++) {
                     domDb.remove(txn, new NativeBroker.NodeRef(500, idFact.createInstance(i)));
@@ -138,11 +133,9 @@ public class DOMFileRecoverTest extends TestCase {
                 mgr.commit(txn);
             }
             mgr.getJournal().flushToLog(true);
-            System.out.println("Transaction interrupted ...");
-            
+
             Writer writer = new StringWriter();
             domDb.dump(writer);
-            System.out.println(writer.toString());
 	    } catch (Exception e) {
 	    	e.printStackTrace();
 	        fail(e.getMessage());               
@@ -153,7 +146,7 @@ public class DOMFileRecoverTest extends TestCase {
         
         DBBroker broker = null;
         try {
-        	System.out.println("Recover and read the data ...\n");        	
+        	//Recover and read the data
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             assertNotNull(broker);
             TransactionManager mgr = pool.getTransactionManager();
@@ -173,14 +166,11 @@ public class DOMFileRecoverTest extends TestCase {
                 assertNotNull(key);
                 Value value = domDb.get(key);
                 assertNotNull(value);
-                System.out.println(new String(value.data(), value.start(), value.getLength()));
             }
-            System.out.println("Values read: " + count);
             
             Writer writer = new StringWriter();
             domDb.dump(writer);
-            System.out.println(writer.toString());
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
 	        fail(e.getMessage());             
         } finally {
             pool.release(broker);

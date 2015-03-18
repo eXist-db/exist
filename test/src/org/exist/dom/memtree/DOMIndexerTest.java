@@ -124,7 +124,7 @@ public class DOMIndexerTest {
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             XQuery xquery = broker.getXQueryService();
             Sequence result = xquery.execute(XQUERY, null, AccessContext.TEST);
-            System.out.println("Found: " + result.getItemCount());
+            int count = result.getItemCount();
             StringWriter out = new StringWriter();
             Properties props = new Properties();
             props.setProperty(OutputKeys.INDENT, "yes");
@@ -135,7 +135,7 @@ public class DOMIndexerTest {
                 next.toSAX(broker, serializer, props);
             }
             serializer.endDocument();
-            System.out.println(out.toString());
+            out.toString();
         } finally {
             pool.release(broker);
         }

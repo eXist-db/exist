@@ -107,7 +107,7 @@ public class LexerTest extends TestCase {
 				}
 	
 				AST ast = xparser.getAST();
-				System.out.println("generated AST: " + ast.toStringTree());
+
 	
 				PathExpr expr = new PathExpr(context);
 				treeParser.xpath(ast, expr);
@@ -118,10 +118,9 @@ public class LexerTest extends TestCase {
 				expr.analyze(new AnalyzeContextInfo());
 				// execute the query
 				Sequence result = expr.eval(null, null);
-	
+
 				// check results
-				System.out.println("----------------------------------");
-				System.out.println("found: " + result.getItemCount());
+				int count = result.getItemCount();
 			} catch (Exception e) {
 	            e.printStackTrace();
 	            fail(e.getMessage());

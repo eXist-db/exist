@@ -75,12 +75,10 @@ public class SAXStorageTest extends TestCase {
 		ResourceSet result = null;
 		if ( xquery != "") {
 			// xquery = "/*/*[2]";
-			System.out.println("Querying \""+xquery+"\" ..." );
 			long t0 = System.currentTimeMillis();
 			result = service.queryResource( "big.xml", xquery );
 			// assertEquals(1, result.getSize());
 			long t1 = System.currentTimeMillis();
-			System.out.println("Time for query \""+xquery+"\" on "+ mess + ": " + ( t1-t0) + " ms." );
 		}
 		return result;
 	}
@@ -128,8 +126,6 @@ public class SAXStorageTest extends TestCase {
                                 File existDir = existHome==null ? new File(".") : new File(existHome);
 				doc.setContent(new File(existDir,FILE_STORED));
 				coll.storeResource(doc);
-				long t1 = System.currentTimeMillis();
-				System.out.println("Time for storing:  " + ( t1-t0) + " ms." );
 			}
 		} catch (XMLDBException e) {
 			fail(e.getMessage());

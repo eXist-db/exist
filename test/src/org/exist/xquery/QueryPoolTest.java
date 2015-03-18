@@ -49,7 +49,6 @@ public class QueryPoolTest extends TestCase {
         try {
             XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
             for (int i = 0; i < 10000; i++) {
-                System.out.println("Inserting node " + i + "...");
                 String query = "update insert <node id='id" + Integer.toHexString(i) + "'>" +
                         "<p>Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node. " +
                         "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node.</p>" +
@@ -67,7 +66,6 @@ public class QueryPoolTest extends TestCase {
         try {
             XMLResource res = (XMLResource) testCollection.getResource("large_list.xml");
             assertNotNull(res);
-            System.out.println(res.getContent());
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());

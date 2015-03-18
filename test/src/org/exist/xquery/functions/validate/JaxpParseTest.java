@@ -78,7 +78,6 @@ public class JaxpParseTest extends EmbeddedExistTester {
         try {
             results = executeQuery("validation:clear-grammar-cache()");
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
 
         } catch (Exception e) {
             LOG.error(e);
@@ -104,9 +103,6 @@ public class JaxpParseTest extends EmbeddedExistTester {
                 "    <color>red</color>\n" +
                 "    <shoesize country=\"nl\">43</shoesize>\n" +
                 "</ns1:root>";
-
-        System.out.println("Expected:" + expected);
-        System.out.println("Result:" + result);
 
         try {
             XMLAssert.assertXMLEqual(expected, result);

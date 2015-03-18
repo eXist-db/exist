@@ -55,7 +55,6 @@ public abstract class AbstractUpdateTest {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead() ...\n");  
         	
         	pool = startDB();
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -68,15 +67,12 @@ public abstract class AbstractUpdateTest {
             doc = broker.getXMLResource(TEST_COLLECTION_URI.append("test2/test.xml"), Lock.READ_LOCK);
             assertNotNull("Document '"+ TEST_COLLECTION_URI.append("test2/test.xml")+"' should not be null", doc);
             data = serializer.serialize(doc);
-            System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
             XQuery xquery = broker.getXQueryService();
             Sequence seq = xquery.execute("/products/product[last()]", null, AccessContext.TEST);
-            System.out.println("Found: " + seq.getItemCount());
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
-                System.out.println(serializer.serialize((NodeValue) next));
             }
         } catch (Exception e) {            
             fail(e.getMessage());
@@ -100,8 +96,7 @@ public abstract class AbstractUpdateTest {
 	        test.store(transaction, broker, info, TEST_XML, false);
 	
 	        mgr.commit(transaction);	
-	        System.out.println("Transaction commited ...");
-	        
+
 	    } catch (Exception e) {
 	        fail(e.getMessage());
 	    }  

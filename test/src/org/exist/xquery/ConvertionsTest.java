@@ -59,7 +59,6 @@ public class ConvertionsTest extends TestCase {
 			assertEquals( "XQuery: " + query, 3, result.getSize() );
 			
 		} catch (XMLDBException e) {
-			System.out.println("testQName2string(): " + e);
 			fail(e.getMessage());
 		}
 	}
@@ -91,7 +90,6 @@ public class ConvertionsTest extends TestCase {
 			DatabaseInstanceManager dim =
 				(DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
 			dim.shutdown();
-			//System.out.println("tearDown PASSED");
 	    } catch (Exception e) {            
 	        fail(e.getMessage());  
 	    }			

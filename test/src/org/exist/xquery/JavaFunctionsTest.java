@@ -93,7 +93,6 @@ public class JavaFunctionsTest extends TestCase {
 		DatabaseInstanceManager dim =
 			(DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
 		dim.shutdown();
-		//System.out.println("tearDown PASSED");
 	}
 
 }

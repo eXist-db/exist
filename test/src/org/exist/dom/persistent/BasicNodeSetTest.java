@@ -285,7 +285,7 @@ public class BasicNodeSetTest {
         serializer.reset();
         DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true);
 
-        System.out.println("------------ Testing NativeElementIndex.findChildNodesByTagName ---------");
+        //Testing NativeElementIndex.findChildNodesByTagName
         // parent set: 1.1.1; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
         ExtNodeSet nestedSet = (ExtNodeSet) executeQuery(broker, "//section[@n = '1.1.1']", 1, null);
         NodeSet children = 
@@ -345,8 +345,6 @@ public class BasicNodeSetTest {
             broker.getStructuralIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
                             Constants.DESCENDANT_ATTRIBUTE_AXIS, docs, nestedSet, -1);
         assertEquals(7, children.getLength());
-
-        System.out.println("------------ PASSED: NativeElementIndex.findChildNodesByTagName ---------");
     }
     
     @Test

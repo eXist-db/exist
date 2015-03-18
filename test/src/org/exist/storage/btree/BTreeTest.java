@@ -36,7 +36,6 @@ public class BTreeTest {
 
     @Test
     public void simpleUpdates() {
-        System.out.println("------------------ testStrings: START -------------------------");
         BTree btree = null;
         try {
             btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
@@ -48,24 +47,24 @@ public class BTreeTest {
                 btree.addValue(value, i);
             }
 
-            System.out.println("Testing IndexQuery.TRUNC_RIGHT");
+            //Testing IndexQuery.TRUNC_RIGHT
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(prefixStr));
             btree.query(query, new StringIndexCallback());
             assertEquals(COUNT, count);
             btree.flush();
 
-            System.out.println("Removing index entries ...");
+            //Removing index entries
             btree.remove(query, new StringIndexCallback());
             assertEquals(COUNT, count);
             btree.flush();
 
-            System.out.println("Readding data ...");
+            //Reading data
             for (int i = 1; i <= COUNT; i++) {
                 Value value = new Value(prefixStr + Integer.toString(i));
                 btree.addValue(value, i);
             }
 
-            System.out.println("Testing IndexQuery.TRUNC_RIGHT");
+            //Testing IndexQuery.TRUNC_RIGHT
             btree.query(query, new StringIndexCallback());
             assertEquals(COUNT, count);
             btree.flush();
@@ -85,12 +84,10 @@ public class BTreeTest {
                 } catch (DBException e) {
                 }
         }
-        System.out.println("------------------ testStrings: END -------------------------");
     }
 
     @Test
     public void strings() {
-        System.out.println("------------------ testStrings: START -------------------------");
         BTree btree = null;
         try {
             btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
@@ -103,43 +100,41 @@ public class BTreeTest {
             }
 
             btree.flush();
-            System.out.println("BTree size: " + file.length());
 
             StringWriter writer = new StringWriter();
             btree.dump(writer);
-            System.out.println(writer.toString());
-            
+
             for (int i = 1; i <= COUNT; i++) {
                 long p = btree.findValue(new Value(prefixStr + Integer.toString(i)));
                 assertEquals(p, i);
             }
 
-            System.out.println("Testing IndexQuery.TRUNC_RIGHT");
+            //Testing IndexQuery.TRUNC_RIGHT
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(prefixStr));
             btree.query(query, new StringIndexCallback());
             assertEquals(COUNT, count);
 
-            System.out.println("Testing IndexQuery.TRUNC_RIGHT");
+            //Testing IndexQuery.TRUNC_RIGHT
             query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(prefixStr + "1"));
             btree.query(query, new StringIndexCallback());
             assertEquals(1111, count);
 
-            System.out.println("Testing IndexQuery.NEQ");
+            //Testing IndexQuery.NEQ
             query = new IndexQuery(IndexQuery.NEQ, new Value(prefixStr + "10"));
             btree.query(query, new StringIndexCallback());
             assertEquals(COUNT - 1, count);
 
-            System.out.println("Testing IndexQuery.GT");
+            //Testing IndexQuery.GT
             query = new IndexQuery(IndexQuery.GT, new Value(prefixStr));
             btree.query(query, new StringIndexCallback());
             assertEquals(COUNT, count);
 
-            System.out.println("Testing IndexQuery.GT");
+            //Testing IndexQuery.GT
             query = new IndexQuery(IndexQuery.GT, new Value(prefixStr + "1"));
             btree.query(query, new StringIndexCallback());
             assertEquals(COUNT - 1, count);
 
-            System.out.println("Testing IndexQuery.LT");
+            //Testing IndexQuery.LT
             query = new IndexQuery(IndexQuery.LT, new Value(prefixStr));
             btree.query(query, new StringIndexCallback());
             assertEquals(count, 0);
@@ -159,13 +154,11 @@ public class BTreeTest {
                 } catch (DBException e) {
                 }
         }
-        System.out.println("------------------ testStrings: END -------------------------");
     }
 
     @Test
     public void longStrings() {
         // Test storage of long keys up to half of the page size (4k)
-        System.out.println("------------------ testLongStrings: START -------------------------");
         Random rand = new Random(System.currentTimeMillis());
 
         BTree btree = null;
@@ -194,11 +187,9 @@ public class BTreeTest {
             }
 
             btree.flush();
-            System.out.println("BTree size: " + (file.length() / 1024));
 
             for (Map.Entry<String, Integer> entry: keys.entrySet()) {
                 long p = btree.findValue(new Value(entry.getKey().toString()));
-                //System.out.println("Checking key " + entry.getKey());
                 assertEquals(p, entry.getValue().intValue());
             }
         } catch (DBException e) {
@@ -214,12 +205,10 @@ public class BTreeTest {
                 } catch (DBException e) {
                 }
         }
-        System.out.println("------------------ testLongStrings: END -------------------------");
     }
 
     @Test
     public void stringsTruncated() {
-        System.out.println("------------------ testStringsTruncated: START -------------------------");
         BTree btree = null;
         try {
             btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
@@ -236,7 +225,7 @@ public class BTreeTest {
 
             btree.flush();
 
-            System.out.println("Testing IndexQuery.TRUNC_RIGHT");
+            //Testing IndexQuery.TRUNC_RIGHT
             prefix = 'A';
             for (int i = 0; i < 24; i++) {
                 IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(Character.toString(prefix)));
@@ -260,12 +249,10 @@ public class BTreeTest {
                 } catch (DBException e) {
                 }
         }
-        System.out.println("------------------ testStringsTruncated: END -------------------------");
     }
 
     @Test
     public void removeStrings() {
-        System.out.println("------------------ testRemoveStrings: START -------------------------");
         BTree btree = null;
         try {
             btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
@@ -295,7 +282,7 @@ public class BTreeTest {
                 prefix++;
             }
 
-            System.out.println("Testing IndexQuery.TRUNC_RIGHT");
+            //Testing IndexQuery.TRUNC_RIGHT
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new Value(Character.toString('D')));
             btree.query(query, new StringIndexCallback());
             assertEquals(0, count);
@@ -315,12 +302,10 @@ public class BTreeTest {
                 } catch (DBException e) {
                 }
         }
-        System.out.println("------------------ testRemoveStrings: END -------------------------");
     }
 
     @Test
     public void numbers() throws TerminatedException {
-        System.out.println("------------------ testNumbers: START -------------------------");
         try {
             BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
             btree.create((short) -1);
@@ -336,7 +321,7 @@ public class BTreeTest {
                 assertEquals(p, i);
             }
 
-            System.out.println("Testing IndexQuery.GT");
+            //Testing IndexQuery.GT
             IndexQuery query;
             for (int i = 0; i < COUNT; i += 10) {
                 query = new IndexQuery(IndexQuery.GT, new SimpleValue(new DoubleValue(i)));
@@ -344,12 +329,12 @@ public class BTreeTest {
                 assertEquals(COUNT - i, count);
             }
 
-            System.out.println("Testing IndexQuery.GEQ");
+            //Testing IndexQuery.GEQ
             query = new IndexQuery(IndexQuery.GEQ, new SimpleValue(new DoubleValue(COUNT / 2)));
             btree.query(query, new SimpleCallback());
             assertEquals(COUNT / 2 + 1, count);
 
-            System.out.println("Testing IndexQuery.NEQ");
+            //Testing IndexQuery.NEQ
             for (int i = 1; i <= COUNT / 8; i++) {
                 query = new IndexQuery(IndexQuery.NEQ, new SimpleValue(new DoubleValue(i)));
                 btree.query(query, new SimpleCallback());
@@ -367,12 +352,10 @@ public class BTreeTest {
             e.printStackTrace();
             fail(e.getMessage());
         }
-        System.out.println("------------------ testNumbers: END -------------------------");
     }
 
     @Test
     public void numbersWithPrefix() {
-        System.out.println("------------------ testNumbersWithPrefix: START -------------------------");
         try {
             BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
             btree.create((short) -1);
@@ -388,7 +371,6 @@ public class BTreeTest {
             }
 
             btree.flush();
-            System.out.println("BTree size: " + file.length());
 
             for (int i = 1; i <= COUNT; i++) {
                 long p = btree.findValue(new PrefixValue(99, new DoubleValue(i)));
@@ -396,34 +378,34 @@ public class BTreeTest {
             }
             Value prefix = new PrefixValue(99);
 
-            System.out.println("Testing IndexQuery.TRUNC_RIGHT");
+            //Testing IndexQuery.TRUNC_RIGHT
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, new PrefixValue(99));
             btree.query(query, new PrefixIndexCallback());
             assertEquals(COUNT, count);
 
-            System.out.println("Testing IndexQuery.GT");
+            //Testing IndexQuery.GT
             for (int i = 0; i < COUNT; i += 10) {
                 query = new IndexQuery(IndexQuery.GT, new PrefixValue(99, new DoubleValue(i)));
                 btree.query(query, prefix, new PrefixIndexCallback());
                 assertEquals(COUNT - i, count);
             }
 
-            System.out.println("Testing IndexQuery.GEQ");
+            //Testing IndexQuery.GEQ
             query = new IndexQuery(IndexQuery.GEQ, new PrefixValue(99, new DoubleValue(COUNT / 2)));
             btree.query(query, prefix, new PrefixIndexCallback());
             assertEquals(COUNT / 2 + 1, count);
 
-            System.out.println("Testing IndexQuery.LT");
+            //Testing IndexQuery.LT
             query = new IndexQuery(IndexQuery.LT, new PrefixValue(99, new DoubleValue(COUNT / 2)));
             btree.query(query, prefix, new PrefixIndexCallback());
             assertEquals(COUNT / 2 - 1, count);
 
-            System.out.println("Testing IndexQuery.LEQ");
+            //Testing IndexQuery.LEQ
             query = new IndexQuery(IndexQuery.LEQ, new PrefixValue(99, new DoubleValue(COUNT / 2)));
             btree.query(query, prefix, new PrefixIndexCallback());
             assertEquals(COUNT / 2, count);
 
-            System.out.println("Testing IndexQuery.NEQ");
+            //Testing IndexQuery.NEQ
             for (int i = 1; i <= COUNT / 8; i++) {
                 count = 0;
                 query = new IndexQuery(IndexQuery.NEQ, new PrefixValue(99, new DoubleValue(i)));
@@ -445,7 +427,6 @@ public class BTreeTest {
             e.printStackTrace();
             fail(e.getMessage());
         }
-        System.out.println("------------------ testNumbersWithPrefix: END -------------------------");
     }
 
     @Before
@@ -498,7 +479,6 @@ public class BTreeTest {
             int prefix = ByteConversion.byteToInt(value.data(), value.start());
             assertEquals(99, prefix);
 //            XMLString key = UTF8.decode(value.data(), value.start() + 4, value.getLength() - 4);
-//            System.out.println(prefix + " : " + key);
             count++;
             return false;
         }
@@ -513,7 +493,6 @@ public class BTreeTest {
         public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             @SuppressWarnings("unused")
 			XMLString key = UTF8.decode(value.data(), value.start(), value.getLength());
-//            System.out.println("\"" + key + "\": " + count);
             count++;
             return false;
         }

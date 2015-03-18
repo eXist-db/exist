@@ -127,7 +127,6 @@ public class ValueIndexTest extends TestCase {
             (DatabaseInstanceManager) testCollection.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
         testCollection = null;
-        //System.out.println("tearDown PASSED");
     }
     
 	/**
@@ -151,7 +150,6 @@ public class ValueIndexTest extends TestCase {
             ResourceSet result = queryResource(service, "items.xml", "for $i in //item[stock <= 10] return $i/itemno", 5);
             for (long i = 0; i < result.getSize(); i++) {
                 Resource res = result.getResource(i);
-                System.out.println(res.getContent());
             }
 
             queryResource(service, "items.xml", "//item[stock > 20]", 1);
@@ -405,7 +403,6 @@ public class ValueIndexTest extends TestCase {
 
     public void testIndexScan() {
         try {
-            System.out.println("----- testIndexScan -----");
             configureCollection(CONFIG);
             String queryBody =
                 "declare namespace f=\'http://exist-db.org/xquery/test\';\n" + 
@@ -425,14 +422,14 @@ public class ValueIndexTest extends TestCase {
             String query = queryBody + "u:index-keys(//item/name, \'\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
             ResourceSet result = service.query(query);
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
-                System.out.println(i.nextResource().getContent());
+                i.nextResource().getContent();
             }
             assertEquals(7, result.getSize());
 
             query = queryBody + "u:index-keys(//item/stock, 0, util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
             result = service.query(query);
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
-                System.out.println(i.nextResource().getContent());
+                i.nextResource().getContent();
             }
             assertEquals(5, result.getSize());
         } catch (XMLDBException e) {

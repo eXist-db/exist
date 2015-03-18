@@ -77,19 +77,12 @@ public class GetXMLResourceNoLockTest {
 
 	@Before
 	public void setup() throws IOException, DatabaseConfigurationException {
-	
-		
-		System.out.println("Stuff before! dddd ");
-		
 		dataDirBackup = TestUtils.moveDataDirToTempAndCreateClean();
 		database = TestUtils.startupDatabase();
 	}
 	
 	@After
 	public void tearDown() throws IOException, DatabaseConfigurationException {
-		
-		System.out.println("Yay after!");
-		
 		TestUtils.stopDatabase(database);
 		TestUtils.moveDataDirBack(dataDirBackup);
 	}
@@ -103,8 +96,6 @@ public class GetXMLResourceNoLockTest {
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            System.out.println("Transaction started ...");
-            
             Collection collection = broker
                     .getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             
@@ -116,7 +107,6 @@ public class GetXMLResourceNoLockTest {
                     DOCUMENT_NAME_URI , EMPTY_BINARY_FILE.getBytes(), "text/text");
             
             transact.commit(transaction);
-            System.out.println("Transaction commited ...");
         } catch (Exception e) {
             fail(e.getMessage());
             

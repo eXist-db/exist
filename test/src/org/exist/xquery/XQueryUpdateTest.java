@@ -47,7 +47,6 @@ public class XQueryUpdateTest extends TestCase {
 	public void testAppend() {
         DBBroker broker = null;
         try {
-        	System.out.println("testAppend() ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
@@ -71,14 +70,13 @@ public class XQueryUpdateTest extends TestCase {
             assertEquals(seq.getItemCount(), 1);
             
             Serializer serializer = broker.getSerializer();
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            serializer.serialize((NodeValue) seq.itemAt(0));
             
             seq = xquery.execute("//product", null, AccessContext.TEST);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
             
             seq = xquery.execute("//product[price > 0.0]", null, AccessContext.TEST);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
-            System.out.println("testAppend: PASS");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -91,7 +89,6 @@ public class XQueryUpdateTest extends TestCase {
 		testAppend();
         DBBroker broker = null;
         try {
-        	System.out.println("testAppendAttributes() ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
@@ -111,7 +108,7 @@ public class XQueryUpdateTest extends TestCase {
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            serializer.serialize((NodeValue) seq.itemAt(0));
 
             seq = xquery.execute("//product", null, AccessContext.TEST);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
@@ -122,14 +119,12 @@ public class XQueryUpdateTest extends TestCase {
             store(broker, "attribs.xml", "<test attr1='aaa' attr2='bbb'>ccc</test>");
             query = "update insert attribute attr1 { 'eee' } into /test";
 
-            System.out.println("testing duplicate attribute ...");
+            //testing duplicate attribute ...
             xquery.execute(query, null, AccessContext.TEST);
 
             seq = xquery.execute("xmldb:document('" + TEST_COLLECTION + "/attribs.xml')/test[@attr1 = 'eee']", null, AccessContext.TEST);
             assertEquals(1, seq.getItemCount());
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
-
-            System.out.println("testAppendAttributes: PASS");
+            serializer.serialize((NodeValue) seq.itemAt(0));
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -141,7 +136,6 @@ public class XQueryUpdateTest extends TestCase {
     public void testInsertBefore() {
         DBBroker broker = null;
         try {
-            System.out.println("testInsertBefore() ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             String query =
@@ -176,14 +170,13 @@ public class XQueryUpdateTest extends TestCase {
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            serializer.serialize((NodeValue) seq.itemAt(0));
 
             seq = xquery.execute("//product", null, AccessContext.TEST);
             assertEquals(ITEMS_TO_APPEND + 1, seq.getItemCount());
 
             seq = xquery.execute("//product[price > 0.0]", null, AccessContext.TEST);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
-            System.out.println("testInsertBefore: PASS");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -195,7 +188,6 @@ public class XQueryUpdateTest extends TestCase {
     public void testInsertAfter() {
         DBBroker broker = null;
         try {
-            System.out.println("testInsertAfter() ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             String query =
@@ -230,14 +222,13 @@ public class XQueryUpdateTest extends TestCase {
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            serializer.serialize((NodeValue) seq.itemAt(0));
 
             seq = xquery.execute("//product", null, AccessContext.TEST);
             assertEquals(ITEMS_TO_APPEND + 1, seq.getItemCount());
 
             seq = xquery.execute("//product[price > 0.0]", null, AccessContext.TEST);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
-            System.out.println("testInsertAfter: PASS");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -250,7 +241,6 @@ public class XQueryUpdateTest extends TestCase {
     	testAppend();
         DBBroker broker = null;
         try {
-            System.out.println("testUpdate() ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             
             XQuery xquery = broker.getXQueryService();
@@ -266,17 +256,17 @@ public class XQueryUpdateTest extends TestCase {
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             Serializer serializer = broker.getSerializer();
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            serializer.serialize((NodeValue) seq.itemAt(0));
 
             for (int i = 1; i <= ITEMS_TO_APPEND; i++) {
                 seq = xquery.execute("//product[description &= 'Description" + i + "']", null, AccessContext.TEST);
                 assertEquals(1, seq.getItemCount());
-                System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+                serializer.serialize((NodeValue) seq.itemAt(0));
             }
             seq = xquery.execute("//product[description &= 'Updated']", null, AccessContext.TEST);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            serializer.serialize((NodeValue) seq.itemAt(0));
             
             query =
             	"declare option exist:output-size-limit '-1';\n" +
@@ -290,7 +280,7 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute("//product[stock &= '401']", null, AccessContext.TEST);
             assertEquals(seq.getItemCount(), 1);
 
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            serializer.serialize((NodeValue) seq.itemAt(0));
             
             query =
             	"declare option exist:output-size-limit '-1';\n" +
@@ -305,7 +295,7 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute("//product[@num = 3]", null, AccessContext.TEST);
             assertEquals(seq.getItemCount(), 1);
             
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            serializer.serialize((NodeValue) seq.itemAt(0));
             
             query =
             	"declare option exist:output-size-limit '-1';\n" +
@@ -319,8 +309,6 @@ public class XQueryUpdateTest extends TestCase {
             
             seq = xquery.execute("//product/stock/external[. = 1]", null, AccessContext.TEST);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
-            
-            System.out.println("testUpdate: PASS");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -346,7 +334,6 @@ public class XQueryUpdateTest extends TestCase {
         	seq = xquery.execute("//product", null, AccessContext.TEST);
         	assertEquals(seq.getItemCount(), 0);
 
-        	System.out.println("testRemove: PASS");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -359,7 +346,6 @@ public class XQueryUpdateTest extends TestCase {
     	testAppend();
         DBBroker broker = null;
         try {
-            System.out.println("testUpdate() ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
@@ -380,7 +366,6 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute("//product/@count", null, AccessContext.TEST);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
-            System.out.println("testUpdate: PASS");
         } catch (Exception e) {
         	e.printStackTrace();
             fail(e.getMessage());
@@ -393,7 +378,6 @@ public class XQueryUpdateTest extends TestCase {
     	testAppend();
         DBBroker broker = null;
         try {
-            System.out.println("testReplace() ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
@@ -421,8 +405,6 @@ public class XQueryUpdateTest extends TestCase {
 
             seq = xquery.execute("//product[starts-with(desc, 'A new')]", null, AccessContext.TEST);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
-
-            System.out.println("testUpdate: PASS");
         } catch (Exception e) {
         	e.printStackTrace();
             fail(e.getMessage());
@@ -434,7 +416,6 @@ public class XQueryUpdateTest extends TestCase {
     public void testAttrUpdate() {
         DBBroker broker = null;
         try {
-            System.out.println("testAttrUpdate() ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
             store(broker, "test.xml", UPDATE_XML);
 
@@ -449,8 +430,6 @@ public class XQueryUpdateTest extends TestCase {
             XQuery xquery = broker.getXQueryService();
             @SuppressWarnings("unused")
 			Sequence result = xquery.execute(query, null, AccessContext.TEST);
-
-            System.out.println("testAttrUpdate(): PASSED\n");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -462,7 +441,6 @@ public class XQueryUpdateTest extends TestCase {
     public void testAppendCDATA() {
         DBBroker broker = null;
         try {
-        	System.out.println("testAppendCDATA() ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             XQuery xquery = broker.getXQueryService();
@@ -483,12 +461,10 @@ public class XQueryUpdateTest extends TestCase {
             assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
-            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            serializer.serialize((NodeValue) seq.itemAt(0));
 
             seq = xquery.execute("//product", null, AccessContext.TEST);
             assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
-
-            System.out.println("testAppendCDATA: PASS");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -500,7 +476,6 @@ public class XQueryUpdateTest extends TestCase {
     public void bugtestInsertAttribDoc_1730726() {
         DBBroker broker = null;
         try {
-            System.out.println(this.getName()+" ...\n");
             broker = pool.get(pool.getSecurityManager().getSystemSubject());
 
             String query =
@@ -513,8 +488,6 @@ public class XQueryUpdateTest extends TestCase {
             XQuery xquery = broker.getXQueryService();
             @SuppressWarnings("unused")
 			Sequence result = xquery.execute(query, null, AccessContext.TEST);
-
-            System.out.println(this.getName()+"(): PASSED\n");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -543,7 +516,6 @@ public class XQueryUpdateTest extends TestCase {
         Collection root;
         final TransactionManager mgr = pool.getTransactionManager();
         try(final Txn transaction = mgr.beginTransaction()) {
-            System.out.println("Transaction started ...");
 
             root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
             broker.saveCollection(transaction, root);

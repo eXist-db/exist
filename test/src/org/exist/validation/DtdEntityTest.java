@@ -43,7 +43,6 @@ public class DtdEntityTest extends EmbeddedExistTester {
             storeResource(col, "docname.xml", input.getBytes());
 
             String result = getXMLResource(col, "docname.xml");
-            System.out.println(result);
             fail("Exception expected");
 
         } catch (XMLDBException ex) {
@@ -68,7 +67,6 @@ public class DtdEntityTest extends EmbeddedExistTester {
             storeResource(col, "docname.xml", input.getBytes());
 
             String result = getXMLResource(col, "docname.xml");
-            System.out.println(result);
             fail("Exception expected, document should be rejected");
 
         } catch (XMLDBException ex) {

@@ -72,7 +72,6 @@ public class CopyMoveTest extends TestCase {
         assertEquals(2,resources.length);
         assertTrue(resources[0].equals("duplicate") || resources[1].equals("duplicate"));
         String content = query.getResource(a_session,testColl + "/duplicate",true,false);
-        System.out.println(content);
     }
     
     public void testMoveResource() throws RemoteException {

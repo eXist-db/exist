@@ -91,8 +91,6 @@ public class UpdateRecoverTest {
 
             try(final Txn transaction = transact.beginTransaction()) {
 
-                System.out.println("Transaction started ...");
-
                 Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
@@ -108,11 +106,9 @@ public class UpdateRecoverTest {
                 test2.store(transaction, broker, info, TEST_XML, false);
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
             
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Transaction started ...");
 
                 MutableDocumentSet docs = new DefaultDocumentSet();
                 docs.add(info.getDocument());
@@ -122,7 +118,6 @@ public class UpdateRecoverTest {
                 String xupdate;
                 Modification modifications[];
 
-                System.out.println("Inserting new items  ...");
                 // insert some nodes
                 for (int i = 1; i <= 200; i++) {
                     xupdate =
@@ -143,7 +138,6 @@ public class UpdateRecoverTest {
                     proc.reset();
                 }
 
-                System.out.println("Adding attributes  ...");
                 // add attribute
                 for (int i = 1; i <= 200; i++) {
                     xupdate =
@@ -160,7 +154,6 @@ public class UpdateRecoverTest {
                     proc.reset();
                 }
 
-                System.out.println("Replacing elements  ...");
                 // replace some
                 for (int i = 1; i <= 100; i++) {
                     xupdate =
@@ -177,11 +170,9 @@ public class UpdateRecoverTest {
                     modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                     assertNotNull(modifications);
                     long mods = modifications[0].process(transaction);
-                    System.out.println("Modifications: " + mods);
                     proc.reset();
                 }
 
-                System.out.println("Removing some elements ...");
                 // remove some
                 for (int i = 1; i <= 100; i++) {
                     xupdate =
@@ -196,7 +187,6 @@ public class UpdateRecoverTest {
                     proc.reset();
                 }
 
-                System.out.println("Appending some elements ...");
                 for (int i = 1; i <= 100; i++) {
                     xupdate =
                             "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
@@ -217,7 +207,6 @@ public class UpdateRecoverTest {
                     proc.reset();
                 }
 
-                System.out.println("Renaming elements  ...");
                 // rename element "description" to "descript"
                 xupdate =
                         "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
@@ -230,7 +219,6 @@ public class UpdateRecoverTest {
                 modifications[0].process(transaction);
                 proc.reset();
 
-                System.out.println("Updating attribute values ...");
                 // update attribute values
                 for (int i = 1; i <= 200; i++) {
                     xupdate =
@@ -242,10 +230,9 @@ public class UpdateRecoverTest {
                     modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                     assertNotNull(modifications);
                     long mods = modifications[0].process(transaction);
-                    System.out.println(mods + " records modified.");
                     proc.reset();
                 }
-                System.out.println("Append new element to each item ...");
+
                 // append new element to records
                 for (int i = 1; i <= 200; i++) {
                     xupdate =
@@ -262,7 +249,6 @@ public class UpdateRecoverTest {
                     proc.reset();
                 }
 
-                System.out.println("Updating element content ...");
                 // update element content
                 for (int i = 1; i <= 200; i++) {
                     xupdate =
@@ -274,12 +260,10 @@ public class UpdateRecoverTest {
                     modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                     assertNotNull(modifications);
                     long mods = modifications[0].process(transaction);
-                    System.out.println(mods + " records modified.");
                     proc.reset();
                 }
 
                 transact.commit(transaction);
-                System.out.println("Transaction commited ...");
             }
         } catch (Exception e) {
         	fail(e.getMessage());  
@@ -291,7 +275,6 @@ public class UpdateRecoverTest {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-	        System.out.println("testRead() ...\n");
 	        pool = startDB();
 	        assertNotNull(pool);
        	    broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -304,7 +287,6 @@ public class UpdateRecoverTest {
             assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
-            System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
         } catch (Exception e) {            
         	fail(e.getMessage());                    
@@ -342,8 +324,7 @@ public class UpdateRecoverTest {
         	assertNotNull(service);
         
         	String xupdate;
-        
-	        System.out.println("Inserting new items  ...");
+
 	        // insert some nodes
 	        for (int i = 1; i <= 200; i++) {
 	            xupdate =
@@ -358,8 +339,7 @@ public class UpdateRecoverTest {
 	                "</xu:modifications>";
 	            service.updateResource("test_xmldb.xml", xupdate);
 	        }
-	        
-	        System.out.println("Adding attributes  ...");
+
 	        // add attribute
 	        for (int i = 1; i <= 200; i++) {
 	          xupdate =
@@ -370,8 +350,7 @@ public class UpdateRecoverTest {
 	              "</xu:modifications>";
 	          service.updateResource("test_xmldb.xml", xupdate);
 	      }
-	        
-	        System.out.println("Replacing elements  ...");
+
 	        // replace some
 	        for (int i = 1; i <= 100; i++) {
 	          xupdate =
@@ -385,8 +364,7 @@ public class UpdateRecoverTest {
 	              "</xu:modifications>";
 	          service.updateResource("test_xmldb.xml", xupdate);
 	      }
-	            
-	        System.out.println("Removing some elements ...");
+
 	        // remove some
 	        for (int i = 1; i <= 100; i++) {
 	            xupdate =
@@ -395,8 +373,7 @@ public class UpdateRecoverTest {
 	                "</xu:modifications>";
 	            service.updateResource("test_xmldb.xml", xupdate);
 	        }
-	        
-	        System.out.println("Appending some elements ...");
+
 	        for (int i = 1; i <= 100; i++) {
 	            xupdate =
 	                "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
@@ -411,16 +388,14 @@ public class UpdateRecoverTest {
 	                "</xu:modifications>";
 	            service.updateResource("test_xmldb.xml", xupdate);
 	        }
-	        
-	        System.out.println("Renaming elements  ...");
+
 	        // rename element "description" to "descript"
 	        xupdate =
 	            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
 	            "   <xu:rename select=\"/products/product/description\">descript</xu:rename>" +
 	            "</xu:modifications>";
 	        service.updateResource("test_xmldb.xml", xupdate);
-	        
-	        System.out.println("Updating attribute values ...");
+
 	        // update attribute values
 	        for (int i = 1; i <= 200; i++) {
 	            xupdate =
@@ -429,7 +404,7 @@ public class UpdateRecoverTest {
 	                "</xu:modifications>";
 	            service.updateResource("test_xmldb.xml", xupdate);
 	        }
-	        System.out.println("Append new element to each item ...");
+
 	        // append new element to records
 	        for (int i = 1; i <= 200; i++) {
 	            xupdate =
@@ -440,8 +415,7 @@ public class UpdateRecoverTest {
 	                "</xu:modifications>";
 	            service.updateResource("test_xmldb.xml", xupdate);
 	        }
-	        
-	        System.out.println("Updating element content ...");
+
 	        // update element content
 	        for (int i = 1; i <= 200; i++) {
 	            xupdate =
@@ -463,8 +437,6 @@ public class UpdateRecoverTest {
         	assertNotNull(test2);
         	Resource res = test2.getResource("test_xmldb.xml");
 	        assertNotNull("Document should not be null", res);
-	        System.out.println(res.getContent());
-	        
 	        org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
 	        assertNotNull(root);
 	        CollectionManagementServiceImpl mgr = (CollectionManagementServiceImpl) 

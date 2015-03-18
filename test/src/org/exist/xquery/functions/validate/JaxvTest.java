@@ -104,7 +104,6 @@ public class JaxvTest extends EmbeddedExistTester {
             assertEquals(1, results.getSize());
 
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
 
             assertXpathEvaluatesTo("valid", "//status/text()", r);
 
@@ -127,7 +126,6 @@ public class JaxvTest extends EmbeddedExistTester {
             assertEquals(1, results.getSize());
 
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
 
             assertXpathEvaluatesTo("invalid", "//status/text()", r);
 
@@ -148,7 +146,6 @@ public class JaxvTest extends EmbeddedExistTester {
             assertEquals(1, results.getSize());
 
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
 
             assertXpathEvaluatesTo("valid", "//status/text()", r);
 
@@ -169,7 +166,6 @@ public class JaxvTest extends EmbeddedExistTester {
             assertEquals(1, results.getSize());
 
             String r = (String) results.getResource(0).getContent();
-            System.out.println(r);
 
             assertXpathEvaluatesTo("invalid", "//status/text()", r);
 

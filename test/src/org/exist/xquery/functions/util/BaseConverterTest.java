@@ -84,7 +84,6 @@ public class BaseConverterTest {
             assertEquals("493", r);
 
         } catch (XMLDBException e) {
-            System.out.println("testBaseConverterOctalToInt(): " + e);
             fail(e.getMessage());
         }
 
@@ -102,7 +101,6 @@ public class BaseConverterTest {
             assertEquals("a", r);
 
         } catch (XMLDBException e) {
-            System.out.println("testBaseConverterIntToHex(): " + e);
             fail(e.getMessage());
         }
 
@@ -120,7 +118,6 @@ public class BaseConverterTest {
             assertEquals("100", r);
 
         } catch (XMLDBException e) {
-            System.out.println("testBaseConverterIntToBinary(): " + e);
             fail(e.getMessage());
         }
 

@@ -114,14 +114,12 @@ public class TestEXistXMLSerialize {
     @Test
     public void serialize1() throws TransformerException, XMLDBException, ParserConfigurationException, SAXException, IOException {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-        System.out.println("Xerces version: "+org.apache.xerces.impl.Version.getVersion( ));
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
 
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).
                         newDocumentBuilder().parse(testFile);
 
         resource.setContentAsDOM(doc);
-        System.out.println("Storing resource: "+resource.getId( ));
         testCollection.storeResource(resource);
 
         resource = (XMLResource)testCollection.getResource(resource.getId());
@@ -129,34 +127,27 @@ public class TestEXistXMLSerialize {
         Node node = resource.getContentAsDOM( );
         node = node.getOwnerDocument();
 
-        System.out.println("Attempting serialization 1");
+        //Attempting serialization
         DOMSource source = new DOMSource(node);
         ByteArrayOutputStream out = new ByteArrayOutputStream( );
         StreamResult result = new StreamResult(out);
 
         Transformer xformer = TransformerFactory.newInstance().newTransformer();
         xformer.transform(source, result);
-
-        System.out.println("Using javax.xml.transform.Transformer");
-        System.out.println("---------------------");
-        System.out.println(new String(out.toByteArray()));
-        System.out.println("--------------------- ");
     }
 
     @Test
     public void serialize2() throws ParserConfigurationException, SAXException, IOException, XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-        System.out.println("Xerces version: "+org.apache.xerces.impl.Version.getVersion( ));
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile);
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
         resource.setContentAsDOM(doc);
-        System.out.println("Storing resource: "+resource.getId( ));
         testCollection.storeResource(resource);
 
         resource = (XMLResource)testCollection.getResource(resource.getId());
         assertNotNull(resource);
         Node node = resource.getContentAsDOM();
-        System.out.println("Attempting serialization using XMLSerializer");
+
         OutputFormat format = new OutputFormat( );
         format.setLineWidth(0);
         format.setIndent(5);
@@ -171,63 +162,46 @@ public class TestEXistXMLSerialize {
         }else{
             fail("Can't serialize node type: "+node);
         }
-        System.out.println("Using org.apache.xml.serialize.XMLSerializer");
-        System.out.println("---------------------");
-        System.out.println(new String(out.toByteArray()));
-        System.out.println("--------------------- ");
     }
 
     @Test
     public void serialize3() throws ParserConfigurationException, SAXException, IOException, XMLDBException, TransformerException {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-        System.out.println("Xerces version: "+org.apache.xerces.impl.Version.getVersion( ));
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile);
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
         resource.setContentAsDOM(doc);
-        System.out.println("Storing resource: "+resource.getId( ));
         testCollection.storeResource(resource);
 
         resource = (XMLResource)testCollection.getResource(resource.getId());
         assertNotNull(resource);
         Node node = resource.getContentAsDOM();
-        System.out.println("Attempting serialization using eXist's serializer");
+
         StringWriter writer = new StringWriter();
         Properties outputProperties = new Properties();
         outputProperties.setProperty("indent", "yes");
         DOMSerializer serializer = new DOMSerializer(writer, outputProperties);
         serializer.serialize(node);
-
-        System.out.println("Using org.exist.util.serializer.DOMSerializer");
-        System.out.println("---------------------");
-        System.out.println(writer.toString());
-        System.out.println("---------------------");
     }
 
     @Test
     public void serialize4() throws ParserConfigurationException, SAXException, IOException, XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-        System.out.println("Xerces version: "+org.apache.xerces.impl.Version.getVersion( ));
+
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(testFile);
         XMLResource resource = (XMLResource) testCollection.createResource(null, "XMLResource");
         resource.setContentAsDOM(doc);
-        System.out.println("Storing resource: "+resource.getId( ));
+
         testCollection.storeResource(resource);
 
         resource = (XMLResource)testCollection.getResource(resource.getId());
         assertNotNull(resource);
         @SuppressWarnings("unused")
                 Node node = resource.getContentAsDOM();
-        System.out.println("Attempting serialization using eXist's SAX serializer");
         StringWriter writer = new StringWriter();
         Properties outputProperties = new Properties();
         outputProperties.setProperty("indent", "yes");
         SAXSerializer serializer = new SAXSerializer(writer, outputProperties);
         resource.getContentAsSAX(serializer);
-
-        System.out.println("Using org.exist.util.serializer.SAXSerializer");
-        System.out.println("---------------------");
-        System.out.println(writer.toString());
-        System.out.println("---------------------");
     }
 
     @Test
@@ -235,12 +209,11 @@ public class TestEXistXMLSerialize {
         Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
         XMLResource resource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
         resource.setContent(XML_DATA);
-        System.out.println("Storing resource: "+resource.getId( ));
+
         testCollection.storeResource(resource);
 
         XMLResource style = (XMLResource) testCollection.createResource("test.xsl", "XMLResource");
         style.setContent(XSL_DATA);
-        System.out.println("Storing resource: "+style.getId( ));
         testCollection.storeResource(style);
 
         Properties outputProperties = new Properties();
@@ -250,10 +223,5 @@ public class TestEXistXMLSerialize {
         StringWriter writer = new StringWriter();
         SAXSerializer serializer = new SAXSerializer(writer, outputProperties);
         resource.getContentAsSAX(serializer);
-
-        System.out.println("Using org.exist.util.serializer.SAXSerializer");
-        System.out.println("---------------------");
-        System.out.println(writer.toString());
-        System.out.println("---------------------");
     }
 }

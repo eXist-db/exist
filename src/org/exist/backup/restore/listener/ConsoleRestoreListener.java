@@ -25,7 +25,7 @@ package org.exist.backup.restore.listener;
  *
  * @author Adam Retter <adam@exist-db.org>
  */
-public class DefaultRestoreListener extends AbstractRestoreListener {
+public class ConsoleRestoreListener extends AbstractRestoreListener {
      
     @Override
     public void info(String message) {

@@ -141,7 +141,6 @@ public class QT3TS_To_junit {
     }
 
     private void loadDirectory(Txn txn, File folder, Collection col) throws Exception {
-    	//System.out.println("******* loadDirectory "+folder.getName());
     	if (!(folder.exists() && folder.canRead()))
     		return;
     	
@@ -162,8 +161,6 @@ public class QT3TS_To_junit {
     }
 
     private void loadFile(Txn txn, File file, Collection col) throws Exception {
-    	//System.out.println("******* loadFile "+file.getName());
-    	
     	if (file.getName().endsWith(".html") 
     			|| file.getName().endsWith(".xsd")
     			|| file.getName().equals("badxml.xml")
@@ -203,7 +200,6 @@ public class QT3TS_To_junit {
                 is.close();
             }
         }
-    	//System.out.println(file);
     }
 
     private MimeTable mtable = null;
@@ -290,8 +286,6 @@ public class QT3TS_To_junit {
         	"    private String file = \""+file+"\";\n\n");
 
         for (NodeProxy p : results.toNodeSet()) {
-//        	System.out.println(p);
-
         	Node testSet = p.getNode();
         	NamedNodeMap attrs = testSet.getAttributes();
         	

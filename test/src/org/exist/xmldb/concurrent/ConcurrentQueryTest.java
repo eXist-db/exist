@@ -81,18 +81,4 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
             fail(e.getMessage()); 
         }				
 	}
-	
-	/* (non-Javadoc)
-     * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
-     */
-    protected void tearDown() {    	
-        super.tearDown();
-        System.out.println("Avg. query time for " + action0.getQuery() + ": " + action0.avgExecTime());
-        System.out.println("Avg. query time for " + action1.getQuery() + ": " + action1.avgExecTime());
-        System.out.println("Avg. query time for " + action2.getQuery() + ": " + action2.avgExecTime());
-//        System.out.println("Avg. query time for " + action3.getQuery() + ": " + action3.avgExecTime());
-//        System.out.println("Avg. query time for " + action4.getQuery() + ": " + action4.avgExecTime());
-//        System.out.println("Avg. query time for " + action5.getQuery() + ": " + action5.avgExecTime());        
-//        System.out.println("element index: " + NativeElementIndex.getTime());	        
-    }
 }

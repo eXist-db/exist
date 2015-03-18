@@ -67,11 +67,9 @@ public class MultiResourcesAction extends Action {
         File[] files = d.listFiles();
 		for(int i = 0; i < files.length; i++) {
             if(files[i].isFile()) {
-                System.out.println("Storing " + files[i].getName());
             	DBUtils.addXMLResource(col, files[i].getName(), files[i]);
             }
         }
-		System.out.println("All files stored.");
 	}
 
 }

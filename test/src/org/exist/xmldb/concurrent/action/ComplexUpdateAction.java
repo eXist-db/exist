@@ -78,7 +78,6 @@ public class ComplexUpdateAction extends Action {
 	public boolean execute() throws Exception {
 		Collection col = DatabaseManager.getCollection(collectionPath, "admin", null);
 		for(int i = 0; i < repeat; i++) {
-			System.out.println("Starting run " + (i + 1));
 			query(col, i); 
 			col.close();
 			
@@ -101,13 +100,9 @@ public class ComplexUpdateAction extends Action {
 		XPathQueryService service = (XPathQueryService)col.getService("XPathQueryService", "1.0");
 		ResourceSet r = service.query("//USER-SESSION-DATA");
 		Assert.assertEquals(1, r.getSize());
-		System.out.println("------------------------------------------------------------------");
 		for(long i = 0; i < r.getSize(); i++) {
 			XMLResource res = (XMLResource)r.getResource(i);
-			System.out.println(res.getContent());
 		}
-		System.out.println("------------------------------------------------------------------");
-		
 		r = service.query("string(//USER-SESSION-DATA[1]/@version)");
 		Assert.assertEquals(1, r.getSize());
 		Assert.assertEquals(repeat, Integer.parseInt(r.getResource(0).getContent().toString()));
@@ -117,14 +112,10 @@ public class ComplexUpdateAction extends Action {
 		XUpdateQueryService service = (XUpdateQueryService)
 		col.getService("XUpdateQueryService", "1.0");
 		long mods = service.updateResource(resourceName, xupdate);
-		System.out.println("Processed " + mods + " modifications.");
 	}
 	
 	@SuppressWarnings("unused")
 	private void displayResource(Collection col) throws XMLDBException {
 		XMLResource res = (XMLResource)col.getResource(resourceName);
-		System.out.println("------------------------------------------------------------------");
-		System.out.println(res.getContent());
-		System.out.println("------------------------------------------------------------------");
 	}
 }

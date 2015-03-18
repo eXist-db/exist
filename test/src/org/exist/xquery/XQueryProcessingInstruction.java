@@ -51,7 +51,6 @@ public class XQueryProcessingInstruction {
         // clear instance variables
         service = null;
         root = null;
-    //System.out.println("tearDown PASSED");
     }
 
     @Test
@@ -75,7 +74,6 @@ public class XQueryProcessingInstruction {
         } catch (SAXException sae) {
                 fail(sae.getMessage());
         } catch (XMLDBException e) {
-            System.out.println("testPI(): " + e);
             fail(e.getMessage());
         }
 

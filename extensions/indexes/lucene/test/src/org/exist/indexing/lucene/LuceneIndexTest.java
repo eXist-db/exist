@@ -254,7 +254,6 @@ public class LuceneIndexTest {
 
     @Test
     public void simpleQueries() {
-        System.out.println("Test simple queries ...");
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "test.xml");
         DBBroker broker = null;
         try {
@@ -293,7 +292,6 @@ public class LuceneIndexTest {
             seq = xquery.execute("/section[ft:query(head/*, 'just')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
-            System.out.println("Test PASSED.");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -336,7 +334,6 @@ public class LuceneIndexTest {
 
     @Test
     public void inlineAndIgnore() {
-        System.out.println("Test simple queries ...");
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG5, XML5, "test.xml");
         DBBroker broker = null;
         try {
@@ -689,19 +686,16 @@ public class LuceneIndexTest {
 
     @Test
     public void dropSingleDoc() {
-        System.out.println("Test removal of single document ...");
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "dropDocument.xml");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
                 final Txn transaction = transact.beginTransaction()) {
 
-            System.out.println("Removing document dropDocument.xml");
             root.removeXMLResource(transaction, broker, XmldbURI.create("dropDocument.xml"));
             transact.commit(transaction);
 
             checkIndex(docs, broker, null, null, 0);
 
-            System.out.println("Test PASSED.");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -710,7 +704,6 @@ public class LuceneIndexTest {
 
     @Test
     public void dropDocuments() {
-        System.out.println("Test removal of multiple documents ...");
         configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject())) {
@@ -722,7 +715,6 @@ public class LuceneIndexTest {
                 assertNotNull(seq);
                 assertEquals(6, seq.getItemCount());
 
-                System.out.println("Removing document r_and_j.xml");
                 root.removeXMLResource(transaction, broker, XmldbURI.create("r_and_j.xml"));
                 transact.commit(transaction);
 
@@ -732,15 +724,12 @@ public class LuceneIndexTest {
             }
 
             try(final Txn transaction = transact.beginTransaction()) {
-                System.out.println("Removing document hamlet.xml");
                 root.removeXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"));
                 transact.commit(transaction);
 
                 Sequence seq = xquery.execute("//LINE[ft:query(., 'bark')]", null, AccessContext.TEST);
                 assertNotNull(seq);
                 assertEquals(1, seq.getItemCount());
-
-                System.out.println("Test PASSED.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -750,7 +739,6 @@ public class LuceneIndexTest {
 
     @Test
     public void removeCollection() {
-        System.out.println("Test removal of collection ...");
         DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, "samples/shakespeare");
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(pool.getSecurityManager().getSystemSubject());
@@ -760,10 +748,8 @@ public class LuceneIndexTest {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//SPEECH[ft:query(LINE, 'love')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            System.out.println("Found: " + seq.getItemCount());
             assertEquals(166, seq.getItemCount());
 
-            System.out.println("Removing collection");
             broker.removeCollection(transaction, root);
 
             root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -776,7 +762,6 @@ public class LuceneIndexTest {
             
             checkIndex(docs, broker, null, null, 0);
 
-            System.out.println("Test PASSED.");
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -929,10 +914,6 @@ public class LuceneIndexTest {
             proc.reset();
 
             Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 2);
-            System.out.println("prices: " + o.length);
-            for (int i = 0; i < o.length; i++) {
-                System.out.println("occurance: " + o[i].getTerm() + ": " + o[i].getOccurrences());
-            }
             checkIndex(docs, broker, new QName[] { new QName("description") }, null, 4);
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 6);
 
@@ -1265,7 +1246,6 @@ public class LuceneIndexTest {
             for (int j = 0; j < files.length; j++) {
                 MimeType mime = mimeTab.getContentTypeFor(files[j].getName());
                 if(mime != null && mime.isXMLType()) {
-                    System.out.println("Storing document " + files[j].getName());
                     InputSource is = new InputSource(files[j].getAbsolutePath());
                     IndexInfo info =
                             root.validateXMLResource(transaction, broker, XmldbURI.create(files[j].getName()), is);
@@ -1298,11 +1278,6 @@ public class LuceneIndexTest {
         }
         XQueryContext context = new XQueryContext(broker.getBrokerPool(), AccessContext.TEST);
         Occurrences[] occur = index.scanIndex(context, docs, null, hints);
-        if (occur != null && expected != occur.length) {
-            for (int i = 0; i < occur.length; i++) {
-                System.out.println("term: " + occur[i].getTerm());
-            }
-        }
         assertEquals(expected, occur.length);
         return occur;
     }

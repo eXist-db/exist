@@ -74,7 +74,6 @@ public class CounterTest {
             r = (String) result.getResource(0).getContent();
             assertEquals("true", r);
         } catch (XMLDBException e) {
-            System.out.println("testCreateAndDestroyCounter(): " + e.getMessage());
             fail(e.getMessage());
         }
     }
@@ -99,7 +98,6 @@ public class CounterTest {
             r = (String) result.getResource(0).getContent();
             assertEquals("true", r);
         } catch (XMLDBException e) {
-            System.out.println("testCreateAndDestroyCounter(): " + e.getMessage());
             fail(e.getMessage());
         }
     }
@@ -145,7 +143,7 @@ public class CounterTest {
 	        	for (int i=0; i<200; i++) {
 	        		query = IMPORT +"counter:next-value('jasper2')";
 	                result = service.query(query);
-	                System.out.println("Thread "+getId()+": Counter value:"+result.getResource(0).getContent());
+	                result.getResource(0).getContent();
 	        	}
         	} catch (XMLDBException e) {
         			e.printStackTrace();

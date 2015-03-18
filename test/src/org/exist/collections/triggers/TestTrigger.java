@@ -52,7 +52,6 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
     public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, parent, parameters);
         XmldbURI docPath = XmldbURI.create("messages.xml");
-        System.out.println("TestTrigger prepares");
         TransactionManager transactMgr = broker.getBrokerPool().getTransactionManager();
         Txn transaction = transactMgr.beginTransaction();
         try {

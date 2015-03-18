@@ -87,19 +87,18 @@ public class DebuggerTest implements ResponseListener {
 		try {
 			debugger = DebuggerImpl.getDebugger();
 
-			System.out.println("sending init request");
+			//sending init request
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
 
 			assertNotNull("Debugging source can't be NULL.", source);
 			
-			System.out.println("get stack frames");
+			//get stack frames
 			List<Location> stack = source.getStackFrames();
 			assertEquals(1, stack.size());
 			assertEquals(15, stack.get(0).getLineBegin());
 
-			System.out.print("sending step-into");
-			System.out.print(".");
+			//sending step-into
 			source.stepInto(this);
 			
 			try {
@@ -107,22 +106,20 @@ public class DebuggerTest implements ResponseListener {
 			} catch (InterruptedException e) {
 			}
 
-			System.out.println("get stack frames");
+			//"get stack frames
 			stack = source.getStackFrames();
 			assertEquals(1, stack.size());
 			assertEquals(16, stack.get(0).getLineBegin());
 
 			for (int i = 0; i < 9; i++) {
-				System.out.print(".");
 				source.stepInto(this);
 			}
 			try {
 				Thread.sleep(5000); //TODO: query current stage or wait for BREAK status ???
 			} catch (InterruptedException e) {
 			}
-			System.out.println("=");
 			
-			System.out.println("get stack frames");
+			//get stack frames
 			stack = source.getStackFrames();
 			assertEquals(3, stack.size());
 			assertEquals(8, stack.get(0).getLineBegin());
@@ -133,7 +130,7 @@ public class DebuggerTest implements ResponseListener {
 			assertEquals(24, stack.get(2).getLineBegin());
 			assertEquals(42, stack.get(2).getColumnBegin());
 			
-			System.out.println("sending get-variables first time");
+			//sending get-variables first time
 			List<Variable> vars = source.getVariables();
 			
 			assertEquals(2, vars.size());
@@ -145,7 +142,7 @@ public class DebuggerTest implements ResponseListener {
 					assertEquals("default", var.getValue());
 			}
 			
-			System.out.println("sending get-local-variables");
+			//sending get-local-variables
 			vars = source.getLocalVariables();
 			assertEquals(1, vars.size());
 			for (Variable var : vars) {
@@ -153,7 +150,7 @@ public class DebuggerTest implements ResponseListener {
 				assertEquals("1", var.getValue());
 			}
 
-			System.out.println("sending get-glocal-variables");
+			//sending get-glocal-variables
 			vars = source.getGlobalVariables();
 			assertEquals(1, vars.size());
 			for (Variable var : vars) {
@@ -161,14 +158,12 @@ public class DebuggerTest implements ResponseListener {
 				assertEquals("default", var.getValue());
 			}
 
-			System.out.print("sending step-into & waiting stop status");
+			//sending step-into & waiting stop status
 			for (int i = 0; i < 7; i++) {
-				System.out.print(".");
 				source.stepInto();
 			}
-			System.out.print("=");
 
-			System.out.println("sending get-variables second time");
+			//sending get-variables second time
 			vars = source.getVariables();
 			
 			assertEquals(2, vars.size());
@@ -180,13 +175,13 @@ public class DebuggerTest implements ResponseListener {
 					assertEquals("default", var.getValue());
 			}
 
-			System.out.println("sending step-over");
+			//sending step-over
 			source.stepOver(this);
 
-			System.out.println("sending step-out");
+			//sending step-out
 			source.stepOut(this);
 
-			System.out.println("sending run");
+			//sending run
 			source.run(this);
 
 		} catch (IOException e) {
@@ -203,7 +198,6 @@ public class DebuggerTest implements ResponseListener {
 		Debugger debugger = DebuggerImpl.getDebugger();
 		
 		try {
-			System.out.println("sending init request");
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
 
@@ -237,7 +231,7 @@ public class DebuggerTest implements ResponseListener {
 		Debugger debugger = DebuggerImpl.getDebugger();
 		
 		try {
-			System.out.println("sending init request");
+			//sending init request
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
 
@@ -275,7 +269,7 @@ public class DebuggerTest implements ResponseListener {
 		Debugger debugger = DebuggerImpl.getDebugger();
 		
 		try {
-			System.out.println("sending init request");
+			//sending init request
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/fibo.xql");
 
@@ -319,7 +313,7 @@ public class DebuggerTest implements ResponseListener {
 		Debugger debugger = DebuggerImpl.getDebugger();
 
 		try {
-			System.out.println("sending init request");
+			//sending init request
 			// jetty.port.jetty
 			DebuggingSource source = debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/debug-test.xql");
 
@@ -337,7 +331,7 @@ public class DebuggerTest implements ResponseListener {
 
             String res = source.evaluate("$t:XML");
 			assertNotNull(res);
-            System.out.println("$t:XML: " + res);
+            //$t:XML: " + res
             assertEquals("<root><a id=\"a1\"/><b id=\"b1\" type=\"t\"/><c id=\"c1\">text</c><d id=\"d1\"><e>text</e></d></root>", res);
 			breakpoint.remove();
 
@@ -359,7 +353,7 @@ public class DebuggerTest implements ResponseListener {
 		Exception exception = null;
 		
 		try {
-			System.out.println("sending init request");
+			//sending init request
 			// jetty.port.jetty
 			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/logo.jpg");
 
@@ -373,7 +367,7 @@ public class DebuggerTest implements ResponseListener {
 		assertEquals(exception.getClass().toString(), "class java.io.IOException");
 
 		try {
-			System.out.println("sending init request");
+			//sending init request
 			// jetty.port.jetty
 			debugger.init("http://127.0.0.1:" + System.getProperty("jetty.port") + "/notExist/fibo.xql");
 
@@ -393,25 +387,21 @@ public class DebuggerTest implements ResponseListener {
 		String url = "http://127.0.0.1:" + System.getProperty("jetty.port") + "/exist/xquery/json-test.xql";
 		for (int i = 0; i < 10; i++) {
 			Debugger debugger = DebuggerImpl.getDebugger();
-
-			System.out.println("init "+i);
 			DebuggingSource debuggerSource = debugger.init(url);
 
-			System.out.println("send stepInto");
+			//send stepInto
 			debuggerSource.stepInto();
 			//Thread.sleep(1000);
 
-			System.out.println("send getStackFrames");
+			//send getStackFrames
 			List<Location> stack = debuggerSource.getStackFrames();
 			assertEquals(1, stack.size());
 			assertEquals(8, stack.get(0).getLineBegin());
 			assertEquals(6, stack.get(0).getColumnBegin());
 
-			System.out.println("send stop");
+			//send stop
 			debuggerSource.stop();
 			//Thread.sleep(1000);
-			
-			System.out.println("stoped");
 
 			DebuggerImpl.shutdownDebugger();
 		} 
@@ -445,25 +435,23 @@ public class DebuggerTest implements ResponseListener {
 		
 		for (int i = 0; i < 10; i++) {
 			Debugger debugger = DebuggerImpl.getDebugger();
-
-			System.out.println("init "+i);
 			DebuggingSource debuggerSource = debugger.init(url);
 
-			System.out.println("send stepInto");
+			//send stepInto
 			debuggerSource.stepInto();
 			//Thread.sleep(1000);
 
-			System.out.println("send getStackFrames");
+			//send getStackFrames
 			List<Location> stack = debuggerSource.getStackFrames();
 			assertEquals(1, stack.size());
 			assertEquals(16, stack.get(0).getLineBegin());
 			assertEquals(18, stack.get(0).getColumnBegin());
 
-			System.out.println("send stop");
+			//send stop
 			debuggerSource.stop();
 			//Thread.sleep(1000);
 			
-			System.out.println("stoped");
+			//stoped
 
 			DebuggerImpl.shutdownDebugger();
 		} 
@@ -485,7 +473,7 @@ public class DebuggerTest implements ResponseListener {
     }
 
 	public void responseEvent(CommandContinuation command, Response response) {
-		System.out.println("getResponse command = "+command);
+		//System.out.println("getResponse command = "+command);
 	}
 	
     private void store(String name,  String data) throws EXistException {
