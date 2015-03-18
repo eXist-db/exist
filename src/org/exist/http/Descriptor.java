@@ -425,25 +425,28 @@ public class Descriptor implements ErrorHandler
     /**
      * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
      */
+    @Override
     public void error(SAXParseException exception) throws SAXException
     {
-        System.err.println("Error occured while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage());
+        LOG.error("Error occurred while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage(), exception);
     }
     
     /**
      * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
      */
+    @Override
     public void fatalError(SAXParseException exception) throws SAXException
 	{
-        System.err.println("Error occured while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage());
+        LOG.error("Error occurred while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage(), exception);
     }
     
     /** 
      * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
      */
+    @Override
     public void warning(SAXParseException exception) throws SAXException
     {
-        System.err.println("error occured while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage());
+        LOG.error("error occurred while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage(), exception);
     }
 		
 }

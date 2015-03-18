@@ -88,7 +88,6 @@ public class CallMathod {
         	}
         }
 
-        System.out.println("'callMethod' element '"+name+"' method can not be found, skip instance creation.");
 		Configurator.LOG.error("'callMethod' element '"+name+"' method can not be found, skip instance creation.");
 
 		return false;

@@ -26,6 +26,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.source.*;
 import org.exist.xmldb.XmldbURI;
 
@@ -36,6 +38,8 @@ import org.exist.xmldb.XmldbURI;
  */
 public class XACMLSource
 {
+    private final static Logger LOG = LogManager.getLogger(XACMLSource.class);
+
 	private static final String FILE_PROTOCOL = "file";
 	private final String type;
 	private final String key;
@@ -94,7 +98,7 @@ public class XACMLSource
 
 
             final String key = (String) o2;
-            System.out.println("Found CocoonSource with key "+key);
+            LOG.info("Found CocoonSource with key " + key);
 
 			return new XACMLSource(XACMLConstants.COCOON_SOURCE_TYPE, key);
 

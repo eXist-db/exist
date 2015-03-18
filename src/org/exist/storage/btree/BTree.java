@@ -2422,7 +2422,7 @@ public class BTree extends Paged implements Lockable {
             try {
                 System.arraycopy(keys, idx + 1, keys, idx, nKeys - idx - 1);
             } catch (ArrayIndexOutOfBoundsException e) {
-                System.err.println("keys: " + nKeys + " idx: " + idx);
+                LOG.error("keys: " + nKeys + " idx: " + idx);
             }
             pageHeader.setValueCount((short) --nKeys);
             saved = false;

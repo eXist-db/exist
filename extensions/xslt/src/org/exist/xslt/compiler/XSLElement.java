@@ -70,9 +70,6 @@ public class XSLElement implements org.w3c.dom.Element, INode, Names {
 		if (expr != null)
 			return expr;
 		
-		if (getQName() == null) //TODO: remove
-			System.out.println(getQName());
-		
 		Class<XSLPathExpr> clazz = Factory.qns.get(getQName());
 		
 		try {

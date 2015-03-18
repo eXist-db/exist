@@ -487,7 +487,6 @@ public class MetaDataImpl extends MetaData {
 			docByUUID.put(ms);
 
 			ms = (MetasImpl)getMetas(oldUri);
-			System.out.println(ms);
 		} else {
 			throw new RuntimeException("Metas NULL: " + oldUri + " in moveMetas");
 			//LOG.warn("Metas NULL for document: " + doc.getURI() + " in moveMetas");

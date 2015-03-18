@@ -1086,7 +1086,7 @@ public class SVNFileUtil {
             return ((Resource)file).getOutputStream(append);
 
     		
-		System.out.println(" !!! createFileOutputStream on File = "+file);
+		System.err.println(" !!! createFileOutputStream on File = "+file);
 		Exception e = new Exception();
 		e.printStackTrace();
 		

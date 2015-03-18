@@ -57,7 +57,7 @@ public class RemoteResourceSet implements ResourceSet {
         try {
             collection.getClient().execute("releaseQueryResult", params);
         } catch (final XmlRpcException e) {
-            System.err.println("Failed to release query result on server: " + e.getMessage());
+            LOG.error("Failed to release query result on server: " + e.getMessage(), e);
         }
         handle = -1;
         hash = -1;
