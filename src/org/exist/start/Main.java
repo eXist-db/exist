@@ -424,6 +424,12 @@ public class Main {
                 }
             }
 
+            //redirect JUL to log4j2 unless otherwise specified
+            final String jul = System.getProperty("java.util.logging.manager");
+            if(jul == null) {
+                System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+            }
+
             // clean up tempdir for Jetty...
             try {
                 final File tmpdir = new File(System.getProperty("java.io.tmpdir")).getCanonicalFile();

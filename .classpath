@@ -57,6 +57,7 @@
 	<classpathentry kind="lib" path="lib/core/log4j-api-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-core-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/log4j-slf4j-impl-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-jul-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/sunxacml-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis-ant-1.4.jar"/>
