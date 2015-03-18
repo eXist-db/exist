@@ -23,7 +23,8 @@ package org.exist.scheduler;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -48,7 +49,7 @@ public class SchedulerManager implements Plug {
     private final static XmldbURI COLLECTION_URI = XmldbURI.SYSTEM.append("scheduler");
     private final static XmldbURI CONFIG_FILE_URI = XmldbURI.create("scheduler.xml");
 
-    private final static Logger LOG = Logger.getLogger(SchedulerManager.class);
+    private final static Logger LOG = LogManager.getLogger(SchedulerManager.class);
     
     @ConfigurationFieldAsElement("job")
     @ConfigurationReferenceBy("id")

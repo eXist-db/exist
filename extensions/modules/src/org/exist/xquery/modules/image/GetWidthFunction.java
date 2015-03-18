@@ -25,7 +25,8 @@ import java.awt.Image;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -53,7 +54,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetWidthFunction extends BasicFunction {
 
-    private static final Logger logger = Logger.getLogger(GetWidthFunction.class);
+    private static final Logger logger = LogManager.getLogger(GetWidthFunction.class);
     public final static FunctionSignature signature =
             new FunctionSignature(
             new QName("get-width", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),

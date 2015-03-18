@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.text.Collator;
 import java.util.Map;
@@ -62,7 +63,7 @@ import org.w3c.dom.Node;
  */
 public class FunDeepEqual extends CollatingFunction {
 
-    protected static final Logger logger = Logger.getLogger(FunDeepEqual.class);
+    protected static final Logger logger = LogManager.getLogger(FunDeepEqual.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(

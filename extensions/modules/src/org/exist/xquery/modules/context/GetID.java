@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.modules.context;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -42,7 +43,7 @@ public class GetID extends Function
 {
 	public final static String ATTRIBUTES_CONTEXTVAR 			= "_eXist_xquery_context_attributes";
 		
-	protected static final Logger logger = Logger.getLogger( GetID.class );
+	protected static final Logger logger = LogManager.getLogger( GetID.class );
 
 	public final static FunctionSignature signatures[] = {
 		

@@ -21,7 +21,8 @@
  */
 package org.exist.xmlrpc;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.XmlRpcRequest;
 import org.apache.xmlrpc.common.XmlRpcHttpRequestConfig;
@@ -39,7 +40,7 @@ import org.exist.storage.BrokerPool;
  */
 public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFactory.RequestProcessorFactory {
 
-    private final static Logger LOG = Logger.getLogger(XmldbRequestProcessorFactory.class);
+    private final static Logger LOG = LogManager.getLogger(XmldbRequestProcessorFactory.class);
     
     public final static int CHECK_INTERVAL = 2000;
 

@@ -56,7 +56,7 @@ import org.xmldb.api.modules.BinaryResource;
  */
 public class Restore {
     
-//    private final static Logger LOG = Logger.getLogger(Restore.class);
+//    private final static Logger LOG = LogManager.getLogger(Restore.class);
 
     public void restore(RestoreListener listener, String username, String password, String newAdminPass, File f, String uri) throws XMLDBException, FileNotFoundException, IOException, SAXException, ParserConfigurationException, URISyntaxException {
         

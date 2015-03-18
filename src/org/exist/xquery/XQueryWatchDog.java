@@ -23,7 +23,8 @@ package org.exist.xquery;
 
 import java.text.NumberFormat;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -38,7 +39,7 @@ import org.exist.xquery.util.ExpressionDumper;
 @ConfigurationClass("watchdog")
 public class XQueryWatchDog {
 
-    private static final Logger LOG = Logger.getLogger(XQueryWatchDog.class);
+    private static final Logger LOG = LogManager.getLogger(XQueryWatchDog.class);
     
     public static final String CONFIGURATION_ELEMENT_NAME = "watchdog";
     

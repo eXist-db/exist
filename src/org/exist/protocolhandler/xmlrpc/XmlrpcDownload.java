@@ -28,7 +28,8 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
@@ -43,7 +44,7 @@ import org.exist.protocolhandler.xmldb.XmldbURL;
  */
 public class XmlrpcDownload {
     
-    private final static Logger LOG = Logger.getLogger(XmlrpcDownload.class);
+    private final static Logger LOG = LogManager.getLogger(XmlrpcDownload.class);
     
     /**
      *  Write document referred by the URL to the output stream.

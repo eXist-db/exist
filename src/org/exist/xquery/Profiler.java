@@ -23,7 +23,8 @@ package org.exist.xquery;
 
 import java.util.Stack;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;
@@ -62,7 +63,7 @@ public class Profiler {
     /**
      * The logger where all output goes.
      */
-    private Logger log = Logger.getLogger("xquery.profiling");
+    private Logger log = LogManager.getLogger("xquery.profiling");
     
     private Stack<ProfiledExpr> stack = new Stack<ProfiledExpr>();
     
@@ -109,7 +110,7 @@ public class Profiler {
                     logEnabled = "yes".equals(params[1]);
                 
                 } else if ("logger".equals(params[0])) {
-                    log = Logger.getLogger(params[1]);
+                    log = LogManager.getLogger(params[1]);
                 
                 } else if ("enabled".equals(params[0])) {
                     enabled = "yes".equals(params[1]);

@@ -21,7 +21,8 @@
  */
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
@@ -45,7 +46,7 @@ import java.util.List;
  */
 public class DefaultCacheManager implements CacheManager
 {
-    private final static Logger LOG                             = Logger.getLogger( DefaultCacheManager.class );
+    private final static Logger LOG                             = LogManager.getLogger( DefaultCacheManager.class );
 
     /** The maximum fraction of the total memory that can be used by a single cache. */
     public final static double  MAX_MEM_USE                     = 0.9;

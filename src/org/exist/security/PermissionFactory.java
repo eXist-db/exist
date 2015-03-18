@@ -22,7 +22,8 @@
 package org.exist.security;
 
 import java.io.IOException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
@@ -41,7 +42,7 @@ import org.exist.xquery.XPathException;
  */
 public class PermissionFactory {
 
-    private final static Logger LOG = Logger.getLogger(PermissionFactory.class);
+    private final static Logger LOG = LogManager.getLogger(PermissionFactory.class);
 
     public static SecurityManager sm = null;        //TODO The way this gets set is nasty AR
 

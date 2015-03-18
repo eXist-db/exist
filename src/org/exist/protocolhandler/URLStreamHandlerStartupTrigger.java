@@ -19,7 +19,8 @@
  */
 package org.exist.protocolhandler;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
 
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class URLStreamHandlerStartupTrigger implements StartupTrigger {
 
-    private final static Logger LOG = Logger.getLogger(URLStreamHandlerStartupTrigger.class);
+    private final static Logger LOG = LogManager.getLogger(URLStreamHandlerStartupTrigger.class);
 
     public final static String JAVA_PROTOCOL_HANDLER_PKGS="java.protocol.handler.pkgs";
     public final static String EXIST_PROTOCOL_HANDLER="org.exist.protocolhandler.protocols";

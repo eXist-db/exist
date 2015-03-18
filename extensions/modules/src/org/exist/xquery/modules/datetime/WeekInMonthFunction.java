@@ -24,7 +24,8 @@ package org.exist.xquery.modules.datetime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -45,7 +46,7 @@ import org.exist.xquery.value.Type;
  */
 public class WeekInMonthFunction extends BasicFunction
 {
-	protected static final Logger logger = Logger.getLogger(WeekInMonthFunction.class);
+	protected static final Logger logger = LogManager.getLogger(WeekInMonthFunction.class);
 	
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("week-in-month", DateTimeModule.NAMESPACE_URI, DateTimeModule.PREFIX),

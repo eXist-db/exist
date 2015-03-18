@@ -24,7 +24,8 @@ import java.io.ByteArrayInputStream;
 import java.util.Properties;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -51,7 +52,7 @@ import org.xml.sax.SAXException;
 public class RenderFunction extends BasicFunction {
 
     @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(RenderFunction.class);
+    private static final Logger logger = LogManager.getLogger(RenderFunction.class);
     public final static FunctionSignature signatures[] = {
 
         new FunctionSignature(

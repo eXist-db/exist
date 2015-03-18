@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.util.XMLChar;
@@ -50,7 +51,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunCodepointsToString extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(FunCodepointsToString.class);
+    protected static final Logger logger = LogManager.getLogger(FunCodepointsToString.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(

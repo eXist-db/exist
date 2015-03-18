@@ -21,7 +21,8 @@
  */
 package org.exist.storage.txn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
@@ -70,7 +71,7 @@ public class TransactionManager {
     /**
      * Logger for this class
      */
-    private static final Logger LOG = Logger.getLogger(TransactionManager.class);
+    private static final Logger LOG = LogManager.getLogger(TransactionManager.class);
 
     private long nextTxnId = 0;
 

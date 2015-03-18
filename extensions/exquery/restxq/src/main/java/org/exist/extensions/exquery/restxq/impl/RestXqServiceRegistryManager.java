@@ -26,7 +26,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exquery.restxq.RestXqServiceRegistry;
 import org.exquery.restxq.impl.RestXqServiceRegistryImpl;
@@ -37,7 +38,7 @@ import org.exquery.restxq.impl.RestXqServiceRegistryImpl;
  */
 public final class RestXqServiceRegistryManager {
     
-    private final static Logger LOG = Logger.getLogger(RestXqServiceRegistryManager.class);
+    private final static Logger LOG = LogManager.getLogger(RestXqServiceRegistryManager.class);
     
     private static RestXqServiceRegistryImpl registry = null;
     private static RestXqServiceRegistryPersistence persistence = null;

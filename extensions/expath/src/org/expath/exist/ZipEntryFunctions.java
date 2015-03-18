@@ -27,7 +27,8 @@ import java.io.Reader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.xml.transform.stream.StreamSource;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentImpl;
@@ -59,7 +60,7 @@ import org.xml.sax.SAXException;
  */
 public class ZipEntryFunctions extends BasicFunction {
 
-    private static final Logger logger = Logger.getLogger(ZipEntryFunctions.class);
+    private static final Logger logger = LogManager.getLogger(ZipEntryFunctions.class);
 
     private final static FunctionParameterSequenceType HREF_PARAM = new FunctionParameterSequenceType("href", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI for locating the Zip file");
     private final static FunctionParameterSequenceType ENTRY_PARAM = new FunctionParameterSequenceType("entry", Type.STRING, Cardinality.EXACTLY_ONE, "The entry within the Zip file to address");

@@ -24,7 +24,8 @@ package org.exist.xquery.functions.util;
 
 import java.net.URLDecoder;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -42,7 +43,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunUnEscapeURI extends BasicFunction {
 	
-	protected static final Logger logger = Logger.getLogger(FunUnEscapeURI.class);
+	protected static final Logger logger = LogManager.getLogger(FunUnEscapeURI.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

@@ -24,7 +24,8 @@ package org.exist.xquery.functions.system;
 import java.util.Calendar;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -43,7 +44,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetUptime extends BasicFunction {
 
-    protected final static Logger logger = Logger.getLogger(GetUptime.class);
+    protected final static Logger logger = LogManager.getLogger(GetUptime.class);
     
     public final static FunctionSignature signature = new FunctionSignature(
         new QName("get-uptime", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),

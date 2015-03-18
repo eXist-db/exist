@@ -31,7 +31,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.ExtArrayNodeSet;
@@ -60,7 +61,7 @@ import org.exist.xquery.value.BinaryValueFromInputStream;
 
 public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 
-    private static final Logger LOG = Logger.getLogger(GMLHSQLIndexWorker.class);
+    private static final Logger LOG = LogManager.getLogger(GMLHSQLIndexWorker.class);
 
     public GMLHSQLIndexWorker(GMLHSQLIndex index, DBBroker broker) {
         super(index, broker);

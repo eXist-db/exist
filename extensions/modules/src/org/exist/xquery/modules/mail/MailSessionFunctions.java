@@ -27,7 +27,8 @@ import java.util.Properties;
 
 import javax.mail.Session;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -57,7 +58,7 @@ import org.exist.xquery.value.Type;
  */
 public class MailSessionFunctions extends BasicFunction
 {
-	protected static final Logger logger = Logger.getLogger(MailSessionFunctions.class);
+	protected static final Logger logger = LogManager.getLogger(MailSessionFunctions.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

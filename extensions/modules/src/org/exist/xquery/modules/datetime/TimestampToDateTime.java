@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.modules.datetime;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -43,7 +44,7 @@ import java.util.Date;
  */
 public class TimestampToDateTime extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(TimestampToDateTime.class);
+	protected static final Logger logger = LogManager.getLogger(TimestampToDateTime.class);
 
 	public final static FunctionSignature signature[] = 
 	{

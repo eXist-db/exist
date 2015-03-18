@@ -1,6 +1,7 @@
 package org.exist.storage.serializers;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.indexing.MatchListener;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public class CustomMatchListenerFactory {
 
-    private final static Logger LOG = Logger.getLogger(CustomMatchListenerFactory.class);
+    private final static Logger LOG = LogManager.getLogger(CustomMatchListenerFactory.class);
 
     public final static String CONFIGURATION_ELEMENT = "custom-filter";
     public final static String CONFIGURATION_ATTR_CLASS = "class";

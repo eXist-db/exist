@@ -23,7 +23,8 @@
 
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
 import org.exist.util.Configuration;
@@ -42,7 +43,7 @@ import java.util.zip.ZipOutputStream;
 
 public class DataBackup implements SystemTask {
 
-    private final static Logger LOG = Logger.getLogger(DataBackup.class);
+    private final static Logger LOG = LogManager.getLogger(DataBackup.class);
     
     public final static SimpleDateFormat creationDateFormat = new SimpleDateFormat("yyyyMMddHHmmssS");
     

@@ -31,7 +31,8 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -52,7 +53,7 @@ import org.xml.sax.SAXException;
  */
 public class STXTransformerTrigger extends SAXTrigger implements DocumentTrigger {
 
-    protected Logger LOG = Logger.getLogger(getClass());
+    protected Logger LOG = LogManager.getLogger(getClass());
     
     private SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactory.newInstance("net.sf.joost.trax.TransformerFactoryImpl", getClass().getClassLoader());
     private TransformerHandler handler = null;

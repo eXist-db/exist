@@ -24,7 +24,8 @@ package org.exist.xquery.functions.util;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.Indexable;
@@ -57,7 +58,7 @@ import org.exist.xquery.value.Type;
  */
 public class QNameIndexLookup extends Function {
 	
-	protected static final Logger logger = Logger.getLogger(QNameIndexLookup.class);
+	protected static final Logger logger = LogManager.getLogger(QNameIndexLookup.class);
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("qname-index-lookup", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),

@@ -28,7 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.start.LatestFileResolver;
 
 /**
@@ -38,7 +39,7 @@ import org.exist.start.LatestFileResolver;
  */
 public class JnlpJarFiles {
     
-    private static Logger logger = Logger.getLogger(JnlpJarFiles.class);
+    private static Logger logger = LogManager.getLogger(JnlpJarFiles.class);
     
     private Map<String, File> allFiles = new HashMap<String, File>();
     

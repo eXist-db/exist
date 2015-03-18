@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
@@ -46,7 +47,7 @@ import org.exist.xquery.value.Type;
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
 public class XMLDBGetMimeType extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(XMLDBGetMimeType.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBGetMimeType.class);
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-mime-type", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

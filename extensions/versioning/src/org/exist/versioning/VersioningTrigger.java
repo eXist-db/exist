@@ -37,7 +37,8 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.FilteringTrigger;
@@ -65,7 +66,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class VersioningTrigger extends FilteringTrigger {
 
-    public final static Logger LOG = Logger.getLogger(VersioningTrigger.class);
+    public final static Logger LOG = LogManager.getLogger(VersioningTrigger.class);
 
     public final static XmldbURI VERSIONS_COLLECTION = XmldbURI.SYSTEM_COLLECTION_URI.append("versions");
 

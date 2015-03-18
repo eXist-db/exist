@@ -28,7 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
@@ -42,7 +43,7 @@ import org.exist.security.internal.GroupImpl;
 @ConfigurationClass("")
 public abstract class AbstractGroup extends AbstractPrincipal implements Comparable<Object>, Group {
 
-    private final static Logger LOG = Logger.getLogger(AbstractGroup.class);
+    private final static Logger LOG = LogManager.getLogger(AbstractGroup.class);
     
     @ConfigurationFieldAsElement("manager")
     @ConfigurationReferenceBy("name")

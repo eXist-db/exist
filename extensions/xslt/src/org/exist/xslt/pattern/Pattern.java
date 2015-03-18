@@ -25,7 +25,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.text.NumberFormat;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.xquery.AnalyzeContextInfo;
@@ -69,7 +70,7 @@ import antlr.collections.AST;
  */
 public class Pattern {
 
-    private final static Logger LOG = Logger.getLogger(Pattern.class);
+    private final static Logger LOG = LogManager.getLogger(Pattern.class);
 	
     static final String ELEMENT = "element()"; 
     static final String ELEMENT_A = "element(*)"; 

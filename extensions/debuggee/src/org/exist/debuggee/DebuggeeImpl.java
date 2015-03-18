@@ -25,7 +25,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.mina.core.session.IoSession;
 import org.exist.Database;
 import org.exist.debuggee.dbgp.packets.Init;
@@ -47,7 +48,7 @@ import org.exist.xquery.XQueryContext;
  */
 public class DebuggeeImpl implements Debuggee {
 
-    protected final static Logger LOG = Logger.getLogger(Debuggee.class);
+    protected final static Logger LOG = LogManager.getLogger(Debuggee.class);
 
 	protected static final Map<String, String> GET_FEATURES = new HashMap<String, String>();
 	protected static final Map<String, String> SET_GET_FEATURES = new HashMap<String, String>();

@@ -21,7 +21,8 @@
  */
 package org.exist.management.impl;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.management.Agent;
 import org.exist.management.TaskStatus;
 import org.exist.storage.BrokerPool;
@@ -46,7 +47,7 @@ import java.util.Stack;
  */
 public class JMXAgent implements Agent {
 
-    private final static Logger LOG = Logger.getLogger(JMXAgent.class);
+    private final static Logger LOG = LogManager.getLogger(JMXAgent.class);
 
     private static volatile Agent agent = null;
 

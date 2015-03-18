@@ -35,7 +35,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
@@ -82,7 +83,7 @@ import org.xml.sax.SAXParseException;
  */
 public class AtomProtocol extends AtomFeeds implements Atom {
 
-	protected final static Logger LOG = Logger.getLogger(AtomProtocol.class);
+	protected final static Logger LOG = LogManager.getLogger(AtomProtocol.class);
 	public static final String FEED_DOCUMENT_NAME = ".feed.atom";
 	public static final String ENTRY_COLLECTION_NAME = ".feed.entry";
 	public static final XmldbURI FEED_DOCUMENT_URI = XmldbURI.create(FEED_DOCUMENT_NAME);

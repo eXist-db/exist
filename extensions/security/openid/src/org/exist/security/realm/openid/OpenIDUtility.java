@@ -21,7 +21,8 @@
  */
 package org.exist.security.realm.openid;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.SchemaType;
@@ -46,7 +47,7 @@ import org.exist.security.AXSchemaType;
  */
 public class OpenIDUtility {
 
-    private final static Logger LOG = Logger.getLogger(OpenIDUtility.class);
+    private final static Logger LOG = LogManager.getLogger(OpenIDUtility.class);
     private static final String REGISTER_XQUERY_SCRIPT_PROPERTY = "org.exist.security.openid.verify_logging_script";
 
     //TODO: implement this at eXist's security core 

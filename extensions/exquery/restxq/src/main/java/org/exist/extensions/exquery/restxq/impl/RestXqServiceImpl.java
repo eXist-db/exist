@@ -31,7 +31,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.input.CloseShieldInputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.extensions.exquery.xdm.type.impl.BinaryTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.DocumentTypedValue;
 import org.exist.extensions.exquery.xdm.type.impl.StringTypedValue;
@@ -74,7 +75,7 @@ import org.xml.sax.XMLReader;
  */
 public class RestXqServiceImpl extends AbstractRestXqService {
     
-    private final static Logger LOG = Logger.getLogger(RestXqServiceImpl.class);
+    private final static Logger LOG = LogManager.getLogger(RestXqServiceImpl.class);
     
     private final BrokerPool brokerPool;
     private final BinaryValueManager binaryValueManager;

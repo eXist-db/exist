@@ -32,7 +32,8 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 
-//import org.apache.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
 import org.exist.storage.BrokerPool;
@@ -43,7 +44,7 @@ import org.exist.storage.BrokerPool;
  */
 public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 
-//	private final static Logger LOG = Logger.getLogger(EXistLoginModule.class);
+//	private final static Logger LOG = LogManager.getLogger(EXistLoginModule.class);
 
 	// initial state
 	private Subject subject;

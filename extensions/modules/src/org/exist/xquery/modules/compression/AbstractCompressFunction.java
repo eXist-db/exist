@@ -22,7 +22,8 @@
 package org.exist.xquery.modules.compression;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -56,7 +57,7 @@ import java.util.zip.ZipOutputStream;
  */
 public abstract class AbstractCompressFunction extends BasicFunction
 {
-    private final static Logger logger = Logger.getLogger(AbstractCompressFunction.class);
+    private final static Logger logger = LogManager.getLogger(AbstractCompressFunction.class);
 
     protected final static SequenceType SOURCES_PARAM = new FunctionParameterSequenceType("sources", Type.ANY_TYPE, Cardinality.ONE_OR_MORE,
             "The sequence of URI's and/or Entrys. If an URI points to a collection then the collection, its resources and sub-collections are zipped recursively. " +

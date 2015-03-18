@@ -29,7 +29,8 @@ import java.util.Stack;
 //import javax.xml.parsers.ParserConfigurationException;
 //import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.CDATASectionImpl;
@@ -84,7 +85,7 @@ public class Indexer extends Observable implements ContentHandler,
     public static final String ATTR_IDREF_TYPE = "IDREF";
     public static final String ATTR_IDREFS_TYPE = "IDREFS";
 
-    private final static Logger LOG = Logger.getLogger(Indexer.class);
+    private final static Logger LOG = LogManager.getLogger(Indexer.class);
 
     public static final String CONFIGURATION_ELEMENT_NAME = "indexer";
     public static final String CONFIGURATION_INDEX_ELEMENT_NAME = "index";

@@ -21,7 +21,8 @@
  */
 package org.exist.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
@@ -66,7 +67,7 @@ import java.util.HashMap;
  */
 public class DatabaseImpl implements Database {
 
-  private final static Logger LOG = Logger.getLogger(DatabaseImpl.class);
+  private final static Logger LOG = LogManager.getLogger(DatabaseImpl.class);
 
 	//TODO : discuss about other possible values
   protected final static String LOCAL_HOSTNAME = "";

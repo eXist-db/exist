@@ -21,7 +21,8 @@ package org.exist.xquery.modules.ngram.query;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
@@ -41,7 +42,7 @@ public class WildcardedExpressionTriple implements EvaluatableExpression {
     private final Wildcard wildcard;
     private final EvaluatableExpression tail;
 
-    protected static Logger LOG = Logger.getLogger(WildcardedExpressionTriple.class);
+    protected static Logger LOG = LogManager.getLogger(WildcardedExpressionTriple.class);
 
 
     public WildcardedExpressionTriple(final EvaluatableExpression head,

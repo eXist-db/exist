@@ -1,7 +1,8 @@
 package org.expath.exist;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentImpl;
@@ -28,7 +29,7 @@ import org.w3c.dom.Node;
  */
 public class ZipFileFunctions extends BasicFunction {
 
-    private static final Logger logger = Logger.getLogger(ZipFileFunctions.class);
+    private static final Logger logger = LogManager.getLogger(ZipFileFunctions.class);
 
     private final static FunctionParameterSequenceType HREF_PARAM =  new FunctionParameterSequenceType("href", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI for locating the Zip file");
     private final static FunctionParameterSequenceType ENTRY_PARAM = new FunctionParameterSequenceType("entry", Type.ELEMENT, Cardinality.EXACTLY_ONE, "A zip:entry element describing the contents of the file");

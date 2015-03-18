@@ -7,7 +7,8 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author dmitriy
@@ -15,7 +16,7 @@ import org.apache.log4j.Logger;
  */
 public class Client implements Runnable {
 
-	private static final Logger LOG = Logger.getLogger(Client.class);
+	private static final Logger LOG = LogManager.getLogger(Client.class);
 
     private boolean running;
 

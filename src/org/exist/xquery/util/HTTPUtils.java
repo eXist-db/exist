@@ -25,7 +25,8 @@ package org.exist.xquery.util;
 
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.http.servlets.ResponseWrapper;
@@ -39,7 +40,7 @@ import org.exist.xquery.value.Sequence;
 /** A place holder for static utility functions related to HTTP. 
  * @author jmv */
 public class HTTPUtils {
-    private final static Logger LOG = Logger.getLogger(XQuery.class);
+    private final static Logger LOG = LogManager.getLogger(XQuery.class);
 
     /** Feature "Guess last modification time for an XQuery result"; 
      *  the HTTP header Last-Modified is filled with most recent time stamp among all 

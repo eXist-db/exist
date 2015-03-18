@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.URISyntaxException;
 import org.exist.dom.QName;
@@ -46,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
 
-	protected static final Logger logger = Logger.getLogger(XMLDBMove.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBMove.class);
 	
 	protected static final FunctionParameterSequenceType ARG_SOURCE = new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI");
 	protected static final FunctionParameterSequenceType ARG_TARGET = new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The target collection URI");

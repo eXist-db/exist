@@ -35,7 +35,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.RawBackupSupport;
@@ -49,7 +50,7 @@ import org.w3c.dom.Element;
  */
 public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSupport {
 
-    private final static Logger LOG = Logger.getLogger(GMLHSQLIndex.class);
+    private final static Logger LOG = LogManager.getLogger(GMLHSQLIndex.class);
 
     public static String db_file_name_prefix = "spatial_index";
     //Keep this upper case ;-)

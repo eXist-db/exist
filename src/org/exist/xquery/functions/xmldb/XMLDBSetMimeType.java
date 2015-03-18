@@ -22,7 +22,8 @@
 package org.exist.xquery.functions.xmldb;
 
 import java.net.URISyntaxException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
@@ -49,7 +50,7 @@ import org.exist.xquery.value.Type;
  * @author Dannes Wessels (dannes@exist-db.org)
  */
 public class XMLDBSetMimeType extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(XMLDBSetMimeType.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBSetMimeType.class);
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-mime-type", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

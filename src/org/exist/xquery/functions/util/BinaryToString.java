@@ -27,7 +27,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
@@ -47,7 +48,7 @@ import org.exist.xquery.value.Type;
 
 public class BinaryToString extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(BinaryToString.class);
+    protected static final Logger logger = LogManager.getLogger(BinaryToString.class);
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
         new QName("binary-to-string", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),

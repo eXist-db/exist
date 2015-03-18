@@ -3,12 +3,13 @@ package org.exist.util;
 import java.io.File;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.DatabaseImpl;
 
 public class ConfigurationHelper {
-    private final static Logger LOG = Logger.getLogger(ConfigurationHelper.class); //Logger
+    private final static Logger LOG = LogManager.getLogger(ConfigurationHelper.class); //Logger
 
     /**
      * Returns a file handle for eXist's home directory.

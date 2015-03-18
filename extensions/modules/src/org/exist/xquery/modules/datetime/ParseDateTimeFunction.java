@@ -5,7 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -25,7 +26,7 @@ import org.exist.xquery.value.Type;
  */
 public class ParseDateTimeFunction extends BasicFunction
 {
-    protected static final Logger logger = Logger.getLogger(FormatDateFunction.class);
+    protected static final Logger logger = LogManager.getLogger(FormatDateFunction.class);
 
     public final static FunctionSignature signature =
         new FunctionSignature(

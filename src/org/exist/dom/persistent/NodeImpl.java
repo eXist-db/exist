@@ -21,7 +21,8 @@
  */
 package org.exist.dom.persistent;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.INode;
 import org.exist.dom.QName;
 import org.exist.storage.txn.Txn;
@@ -35,7 +36,7 @@ import javax.xml.XMLConstants;
 
 public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl, T> {
 
-    protected static final Logger LOG = Logger.getLogger(NodeImpl.class);
+    protected static final Logger LOG = LogManager.getLogger(NodeImpl.class);
 
     @Override
     public Node cloneNode(final boolean deep) {

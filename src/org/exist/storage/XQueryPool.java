@@ -25,7 +25,8 @@ package org.exist.storage;
 import java.text.NumberFormat;
 import java.util.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.security.Permission;
@@ -56,7 +57,7 @@ public class XQueryPool extends Object2ObjectHashMap {
 
 	public final static long TIMEOUT_CHECK_INTERVAL = 30000L;
 
-	private final static Logger LOG = Logger.getLogger(XQueryPool.class);
+	private final static Logger LOG = LogManager.getLogger(XQueryPool.class);
 
 	private long lastTimeOutCheck;
 	private long lastTimeOfCleanup;

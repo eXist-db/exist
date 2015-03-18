@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.response;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
@@ -48,7 +49,7 @@ import java.io.IOException;
  */
 public class RedirectTo extends BasicFunction
 {
-    protected static final Logger logger = Logger.getLogger(RedirectTo.class);
+    protected static final Logger logger = LogManager.getLogger(RedirectTo.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

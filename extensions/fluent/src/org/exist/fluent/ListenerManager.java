@@ -3,7 +3,8 @@ package org.exist.fluent;
 import java.lang.ref.*;
 import java.util.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -244,7 +245,7 @@ public class ListenerManager {
 	 * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
 	 */
 	public static class TriggerDispatcher extends SAXTrigger implements DocumentTrigger, CollectionTrigger {
-		private static final Logger LOG = Logger.getLogger(TriggerDispatcher.class);
+		private static final Logger LOG = LogManager.getLogger(TriggerDispatcher.class);
 		
 		public void configure(DBBroker broker, org.exist.collections.Collection parent, Map<String, List<? extends Object>> parameters)  {
 			// nothing to do

@@ -20,7 +20,8 @@
  */
 package org.exist.dom.persistent;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentFragment;
@@ -41,7 +42,7 @@ import javax.xml.transform.TransformerException;
  */
 public final class XMLUtil {
 
-    private static final Logger LOG = Logger.getLogger(XMLUtil.class.getName());
+    private static final Logger LOG = LogManager.getLogger(XMLUtil.class.getName());
 
     private XMLUtil() {
         //Utility class of static methods

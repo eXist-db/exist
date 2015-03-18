@@ -26,7 +26,8 @@ import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
@@ -58,7 +59,7 @@ import org.xmldb.api.base.XMLDBException;
 
 public class LocalResourceSet implements ResourceSet {
 
-        protected final static Logger LOG = Logger.getLogger(LocalResourceSet.class);
+        protected final static Logger LOG = LogManager.getLogger(LocalResourceSet.class);
 
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;

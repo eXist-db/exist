@@ -24,11 +24,12 @@ package org.exist.util.serializer.json;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class JSONObject extends JSONNode {
 
-    private final static Logger LOG = Logger.getLogger(JSONObject.class);
+    private final static Logger LOG = LogManager.getLogger(JSONObject.class);
     
     protected JSONNode firstChild = null;
     private boolean asSimpleValue = false;

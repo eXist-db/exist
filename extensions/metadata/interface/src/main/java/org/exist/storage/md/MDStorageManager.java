@@ -24,7 +24,8 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.backup.BackupHandler;
@@ -52,7 +53,7 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class MDStorageManager implements Plug, BackupHandler, RestoreHandler {
 	
-    protected final static Logger LOG = Logger.getLogger(MDStorageManager.class);
+    protected final static Logger LOG = LogManager.getLogger(MDStorageManager.class);
 
     public final static String PREFIX = "md";
 	public final static String NAMESPACE_URI = "http://exist-db.org/metadata";

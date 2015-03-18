@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.util.serializer.DOMSerializer;
@@ -53,7 +54,7 @@ import java.util.Properties;
  */
 public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 {
-	protected static final Logger logger = Logger.getLogger(XMLDBXUpdate.class);
+	protected static final Logger logger = LogManager.getLogger(XMLDBXUpdate.class);
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("update", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

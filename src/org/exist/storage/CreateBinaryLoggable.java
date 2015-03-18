@@ -11,7 +11,8 @@ package org.exist.storage;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
@@ -22,7 +23,7 @@ import org.exist.storage.txn.Txn;
  */
 public class CreateBinaryLoggable extends AbstractLoggable {
 
-   protected final static Logger LOG = Logger.getLogger(RenameBinaryLoggable.class);
+   protected final static Logger LOG = LogManager.getLogger(RenameBinaryLoggable.class);
    
    DBBroker broker;
    File original;

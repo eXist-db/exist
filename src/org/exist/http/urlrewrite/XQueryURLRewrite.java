@@ -31,7 +31,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.http.servlets.Authenticator;
 import org.exist.http.servlets.BasicAuthenticator;
@@ -115,7 +116,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class XQueryURLRewrite extends HttpServlet {
 
-    private static final Logger LOG = Logger.getLogger(XQueryURLRewrite.class);
+    private static final Logger LOG = LogManager.getLogger(XQueryURLRewrite.class);
 
     public final static String RQ_ATTR = "org.exist.forward";
     public final static String RQ_ATTR_REQUEST_URI = "org.exist.forward.request-uri";

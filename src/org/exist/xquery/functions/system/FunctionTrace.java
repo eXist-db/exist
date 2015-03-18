@@ -22,7 +22,8 @@
 
 package org.exist.xquery.functions.system;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.exist.dom.QName;
@@ -31,7 +32,7 @@ import org.exist.storage.BrokerPool;
 
 public class FunctionTrace extends BasicFunction {
 
-    protected final static Logger logger = Logger.getLogger(FunctionTrace.class);
+    protected final static Logger logger = LogManager.getLogger(FunctionTrace.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(

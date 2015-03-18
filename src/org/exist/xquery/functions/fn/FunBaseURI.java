@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,7 +52,7 @@ import org.w3c.dom.Node;
  */
 public class FunBaseURI extends BasicFunction {
 
-    protected static final Logger logger = Logger.getLogger(FunBaseURI.class);
+    protected static final Logger logger = LogManager.getLogger(FunBaseURI.class);
 
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(

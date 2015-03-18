@@ -26,7 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.io.BlockingInputStream;
 import org.exist.storage.io.BlockingOutputStream;
@@ -38,7 +39,7 @@ import org.exist.storage.io.BlockingOutputStream;
  */
 public class XmlrpcInputStream  extends InputStream {
     
-    private final static Logger logger = Logger.getLogger(XmlrpcInputStream.class);
+    private final static Logger logger = LogManager.getLogger(XmlrpcInputStream.class);
     private BlockingInputStream bis;
     private BlockingOutputStream bos;
     private XmlrpcDownloadThread rt;

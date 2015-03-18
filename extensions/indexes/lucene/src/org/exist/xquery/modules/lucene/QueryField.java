@@ -19,7 +19,8 @@
  */
 package org.exist.xquery.modules.lucene;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
@@ -35,7 +36,7 @@ import java.util.Properties;
 
 public class QueryField extends Query implements Optimizable {
 	
-	protected static final Logger logger = Logger.getLogger(Query.class);
+	protected static final Logger logger = LogManager.getLogger(Query.class);
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(

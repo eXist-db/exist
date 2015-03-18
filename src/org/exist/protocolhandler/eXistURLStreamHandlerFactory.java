@@ -24,7 +24,8 @@ package org.exist.protocolhandler;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.protocols.xmldb.Handler;
 
 /**
@@ -37,7 +38,7 @@ import org.exist.protocolhandler.protocols.xmldb.Handler;
  */
 public class eXistURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
-    private final static Logger LOG = Logger.getLogger(eXistURLStreamHandlerFactory.class);
+    private final static Logger LOG = LogManager.getLogger(eXistURLStreamHandlerFactory.class);
     private final static URLStreamHandler handler = new Handler();
 
     /**

@@ -22,7 +22,8 @@
  */
 package org.exist.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
 import org.exist.security.PermissionDeniedException;
@@ -65,7 +66,7 @@ import org.exist.xquery.XQueryContext;
 
 public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryService {
 
-	private final static Logger LOG = Logger.getLogger(LocalXPathQueryService.class);
+	private final static Logger LOG = LogManager.getLogger(LocalXPathQueryService.class);
 
 	protected BrokerPool brokerPool;
 	protected LocalCollection collection;

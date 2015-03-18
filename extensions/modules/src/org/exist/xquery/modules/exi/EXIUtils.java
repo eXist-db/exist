@@ -5,7 +5,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.XPathException;
@@ -16,7 +17,7 @@ import org.exist.xquery.value.Type;
 
 public class EXIUtils {
 	
-	private static final Logger LOG = Logger.getLogger(EXIUtils.class);
+	private static final Logger LOG = LogManager.getLogger(EXIUtils.class);
 	
 	protected static InputStream getInputStream(Item item, XQueryContext context) throws XPathException, MalformedURLException, IOException {
         if (item.getType() == Type.ANY_URI) {

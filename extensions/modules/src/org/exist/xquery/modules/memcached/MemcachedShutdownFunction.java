@@ -18,7 +18,8 @@
 package org.exist.xquery.modules.memcached;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -33,7 +34,7 @@ import org.exist.xquery.value.Type;
 
 public class MemcachedShutdownFunction extends BasicFunction
 {
-	protected static final Logger logger = Logger.getLogger(MemcachedShutdownFunction.class);
+	protected static final Logger logger = LogManager.getLogger(MemcachedShutdownFunction.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

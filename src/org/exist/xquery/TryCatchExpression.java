@@ -27,7 +27,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
                 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -48,7 +49,7 @@ import org.exist.xquery.value.*;
  */
 public class TryCatchExpression extends AbstractExpression {
 
-    private static final Logger LOG = Logger.getLogger(TryCatchExpression.class);
+    private static final Logger LOG = LogManager.getLogger(TryCatchExpression.class);
 
     private static final QName QN_CODE = new QName("code", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
     private static final QName QN_DESCRIPTION = new QName("description", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);

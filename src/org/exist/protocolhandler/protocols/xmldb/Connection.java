@@ -28,7 +28,8 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.embedded.EmbeddedOutputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
@@ -48,7 +49,7 @@ import org.exist.protocolhandler.xmlrpc.XmlrpcOutputStream;
  */
 public class Connection extends URLConnection {
     
-    private final static Logger LOG = Logger.getLogger(Connection.class);
+    private final static Logger LOG = LogManager.getLogger(Connection.class);
     
     /**
      * Constructs a URL connection to the specified URL.

@@ -28,7 +28,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
@@ -51,7 +52,7 @@ import org.xml.sax.InputSource;
  */
 public class EmbeddedUpload {
     
-    private final static Logger LOG = Logger.getLogger(EmbeddedUpload.class);
+    private final static Logger LOG = LogManager.getLogger(EmbeddedUpload.class);
     
     /**
      *   Read document from stream and write data to database.

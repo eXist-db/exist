@@ -27,7 +27,8 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
@@ -57,7 +58,7 @@ import org.exist.xquery.value.Type;
  */
 public class DocumentNameOrId extends BasicFunction {
 	
-	protected static final Logger logger = Logger.getLogger(DocumentNameOrId.class);
+	protected static final Logger logger = LogManager.getLogger(DocumentNameOrId.class);
 
         private final static QName QN_DOCUMENT_NAME = new QName("document-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
         private final static QName QN_DOCUMENT_ID = new QName("document-id", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);

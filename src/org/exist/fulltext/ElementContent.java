@@ -1,6 +1,7 @@
 package org.exist.fulltext;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.XMLString;
 
@@ -9,7 +10,7 @@ import org.exist.util.XMLString;
  */
 public class ElementContent {
 
-    private static final Logger LOG = Logger.getLogger(ElementContent.class);
+    private static final Logger LOG = LogManager.getLogger(ElementContent.class);
 
     public static class TextSpan {
         XMLString content;

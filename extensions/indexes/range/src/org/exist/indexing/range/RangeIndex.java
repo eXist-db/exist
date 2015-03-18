@@ -21,7 +21,8 @@
  */
 package org.exist.indexing.range;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.exist.indexing.IndexWorker;
@@ -35,7 +36,7 @@ import org.exist.storage.DBBroker;
  */
 public class RangeIndex extends LuceneIndex {
 
-    protected static final Logger LOG = Logger.getLogger(RangeIndex.class);
+    protected static final Logger LOG = LogManager.getLogger(RangeIndex.class);
 
     public final static String ID = RangeIndex.class.getName();
 

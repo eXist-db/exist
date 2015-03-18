@@ -78,7 +78,8 @@ import jline.Terminal;
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.SystemProperties;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.ACLPermission;
@@ -215,7 +216,7 @@ public class InteractiveClient {
     protected Writer traceWriter = null;
     protected ClientFrame frame;
     
-    private final static Logger LOG = Logger.getLogger(InteractiveClient.class.getName());
+    private final static Logger LOG = LogManager.getLogger(InteractiveClient.class.getName());
     
     //XXX:make pluggable
     private static boolean havePluggableCommands = false;

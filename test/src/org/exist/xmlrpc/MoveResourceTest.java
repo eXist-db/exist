@@ -2,7 +2,6 @@ package org.exist.xmlrpc;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
-import org.apache.log4j.BasicConfigurator;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -28,7 +27,6 @@ import java.util.Vector;
 public class MoveResourceTest extends TestCase {
 
     public static void main(String[] args) {
-        BasicConfigurator.configure();
         TestRunner.run(MoveResourceTest.class);
     }
     

@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.security.MessageDigester;
 import org.exist.xquery.BasicFunction;
@@ -44,7 +45,7 @@ import org.exist.xquery.value.Type;
  * @author dizzzz@exist-db.org
  */
 public class Hash extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(Hash.class);
+	protected static final Logger logger = LogManager.getLogger(Hash.class);
 	
 	private static final FunctionParameterSequenceType message = new FunctionParameterSequenceType("message", Type.ITEM, Cardinality.EXACTLY_ONE, "The string to generate the hashcode from");
 	private static final FunctionParameterSequenceType algorithm = new FunctionParameterSequenceType("algorithm", Type.STRING, Cardinality.EXACTLY_ONE, "The algorithm used to generate the hashcode");

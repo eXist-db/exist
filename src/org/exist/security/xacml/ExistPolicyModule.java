@@ -3,7 +3,8 @@ package org.exist.security.xacml;
 import java.net.URI;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
@@ -37,7 +38,7 @@ import org.exist.security.PermissionDeniedException;
 public class ExistPolicyModule extends PolicyFinderModule
 {
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(ExistPolicyModule.class);
+	private static final Logger LOG = LogManager.getLogger(ExistPolicyModule.class);
 
 	private ExistPDP pdp;
 

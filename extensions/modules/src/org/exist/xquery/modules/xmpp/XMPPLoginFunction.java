@@ -17,7 +17,8 @@
 package org.exist.xquery.modules.xmpp;
 
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -36,7 +37,7 @@ import org.jivesoftware.smack.XMPPException;
 
 public class XMPPLoginFunction extends BasicFunction
 {
-	protected static final Logger logger = Logger.getLogger(XMPPLoginFunction.class);
+	protected static final Logger logger = LogManager.getLogger(XMPPLoginFunction.class);
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(

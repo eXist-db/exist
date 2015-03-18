@@ -25,7 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
@@ -45,7 +46,7 @@ import org.w3c.dom.Element;
  */
 public class FTIndex extends AbstractIndex implements RawBackupSupport {
 
-    private final static Logger LOG = Logger.getLogger(FTIndex.class);
+    private final static Logger LOG = LogManager.getLogger(FTIndex.class);
 
     public final static String ID = FTIndex.class.getName();
 

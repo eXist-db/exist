@@ -24,7 +24,8 @@ package org.exist.xquery.modules.file;
 import java.io.File;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -60,7 +61,7 @@ import org.exist.xquery.value.Type;
  */
 public class DirectoryList extends BasicFunction {
 
-    private final static Logger logger = Logger.getLogger(DirectoryList.class);
+    private final static Logger logger = LogManager.getLogger(DirectoryList.class);
 
     final static String NAMESPACE_URI = FileModule.NAMESPACE_URI;
     final static String PREFIX = FileModule.PREFIX;

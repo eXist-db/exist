@@ -23,7 +23,8 @@ package org.exist.xquery.functions.xmldb;
 
 import java.net.URISyntaxException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -44,7 +45,7 @@ import org.exist.xquery.value.Type;
  * @author cgeorg
  */
 public class XMLDBURIFunctions extends BasicFunction {
-	protected static final Logger logger = Logger.getLogger(XMLDBURIFunctions.class);	
+	protected static final Logger logger = LogManager.getLogger(XMLDBURIFunctions.class);
 	public final static FunctionSignature signatures[] = new FunctionSignature[] {
 		new FunctionSignature(
 				new QName("encode", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

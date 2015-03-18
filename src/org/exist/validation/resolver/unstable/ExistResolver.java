@@ -31,7 +31,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
@@ -47,7 +48,7 @@ import org.xml.sax.ext.EntityResolver2;
  */
 public class ExistResolver implements EntityResolver2, URIResolver {
 
-    private final static Logger LOG = Logger.getLogger(ExistResolver.class);
+    private final static Logger LOG = LogManager.getLogger(ExistResolver.class);
     
     private BrokerPool brokerPool = null;
     

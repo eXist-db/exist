@@ -24,7 +24,8 @@ package org.exist.xquery.modules.context;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -47,7 +48,7 @@ public class ContextAttributes extends Function
 {
 	public final static String ATTRIBUTES_CONTEXTVAR 			= "_eXist_xquery_context_attributes";
 		
-	protected static final Logger logger = Logger.getLogger( ContextAttributes.class );
+	protected static final Logger logger = LogManager.getLogger( ContextAttributes.class );
 	
 	protected static final FunctionParameterSequenceType ATTRIBUTE_NAME_PARAM 	= new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name" );
 	protected static final FunctionParameterSequenceType ATTRIBUTE_VALUE_PARAM 	= new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value to be stored in the context by attribute name" );

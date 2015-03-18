@@ -27,7 +27,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
@@ -47,7 +48,7 @@ import org.xml.sax.XMLReader;
  */
 public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 
-    private final static Logger LOG = Logger.getLogger(XMLReaderObjectFactory.class);
+    private final static Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
 
     public static enum VALIDATION_SETTING {
         UNKNOWN, ENABLED, AUTO, DISABLED

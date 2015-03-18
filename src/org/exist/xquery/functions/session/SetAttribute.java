@@ -22,7 +22,8 @@
  */
 package org.exist.xquery.functions.session;
 
-//import org.apache.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.Cardinality;
@@ -46,7 +47,7 @@ import org.exist.xquery.value.Type;
  */
 public class SetAttribute extends Function 
 {
-//	private static final Logger logger = Logger.getLogger(SetAttribute.class);
+//	private static final Logger logger = LogManager.getLogger(SetAttribute.class);
 	
 	public final static FunctionSignature signature =
 		new FunctionSignature(

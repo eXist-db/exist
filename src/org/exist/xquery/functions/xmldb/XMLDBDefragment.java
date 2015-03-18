@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
@@ -44,7 +45,7 @@ import org.exist.xquery.value.Type;
  *
  */
 public class XMLDBDefragment extends BasicFunction {
-    private static final Logger logger = Logger.getLogger(XMLDBDefragment.class);
+    private static final Logger logger = LogManager.getLogger(XMLDBDefragment.class);
 
     public final static FunctionSignature signatures[] = {
             new FunctionSignature(

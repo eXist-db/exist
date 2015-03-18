@@ -9,13 +9,14 @@ import org.exist.storage.serializers.CustomMatchListener;
 import org.exist.xquery.XPathException;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
 public class VersioningFilter extends CustomMatchListener {
 
-    private final static Logger LOG = Logger.getLogger(VersioningFilter.class);
+    private final static Logger LOG = LogManager.getLogger(VersioningFilter.class);
 
     public final static QName ATTR_REVISION = new QName("revision", StandardDiff.NAMESPACE, StandardDiff.PREFIX);
     public final static QName ATTR_KEY = new QName("key", StandardDiff.NAMESPACE, StandardDiff.PREFIX);

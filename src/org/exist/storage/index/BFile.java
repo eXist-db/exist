@@ -20,7 +20,8 @@
  */
 package org.exist.storage.index;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
@@ -87,7 +88,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BFile extends BTree {
 
-    protected final static Logger LOGSTATS = Logger.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
+    protected final static Logger LOGSTATS = LogManager.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
 
     public final static short FILE_FORMAT_VERSION_ID = 13;
     

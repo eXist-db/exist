@@ -23,7 +23,8 @@ package org.exist.xquery.modules.xslfo;
 
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
@@ -34,7 +35,7 @@ import org.exist.xquery.FunctionDef;
  */
 public class XSLFOModule extends AbstractInternalModule {
 
-    private static final Logger logger = Logger.getLogger(XSLFOModule.class);
+    private static final Logger logger = LogManager.getLogger(XSLFOModule.class);
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslfo";
     public final static String PREFIX = "xslfo";

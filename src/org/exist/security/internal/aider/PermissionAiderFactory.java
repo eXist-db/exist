@@ -21,7 +21,8 @@
  */
 package org.exist.security.internal.aider;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Instantiates an appropriate Permission class based on the current configuration
@@ -30,7 +31,7 @@ import org.apache.log4j.Logger;
  */
 public class PermissionAiderFactory {
 
-    private final static Logger LOG = Logger.getLogger(PermissionAiderFactory.class);
+    private final static Logger LOG = LogManager.getLogger(PermissionAiderFactory.class);
 
     public static PermissionAider getPermission(String ownerName, String groupName, int mode) {
         PermissionAider permission = null;

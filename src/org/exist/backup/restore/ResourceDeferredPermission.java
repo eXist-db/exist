@@ -21,7 +21,8 @@
  */
 package org.exist.backup.restore;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.Permission;
 import org.exist.xmldb.UserManagementService;
@@ -35,7 +36,7 @@ import org.xmldb.api.base.XMLDBException;
 
 class ResourceDeferredPermission extends AbstractDeferredPermission<Resource> {
 
-    private final static Logger LOG = Logger.getLogger(ResourceDeferredPermission.class);
+    private final static Logger LOG = LogManager.getLogger(ResourceDeferredPermission.class);
     
     public ResourceDeferredPermission(RestoreListener listener, Resource resource, String owner, String group, Integer mode) {
         super(listener, resource, owner, group, mode);

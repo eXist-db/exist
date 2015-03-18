@@ -28,7 +28,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 
 /**
@@ -41,7 +42,7 @@ import org.exist.storage.DBBroker;
  */
 public class JournalReader {
 
-    private static final Logger LOG = Logger.getLogger(JournalReader.class);
+    private static final Logger LOG = LogManager.getLogger(JournalReader.class);
 
     private FileChannel fc;
     private ByteBuffer header = ByteBuffer.allocateDirect(Journal.LOG_ENTRY_HEADER_LEN);

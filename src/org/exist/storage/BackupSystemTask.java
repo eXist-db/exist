@@ -1,6 +1,7 @@
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.Backup;
 import org.exist.util.Configuration;
@@ -57,7 +58,7 @@ import java.util.TreeMap;
  */
 public class BackupSystemTask implements SystemTask {
 
-    private static final Logger LOG = Logger.getLogger(BackupSystemTask.class);
+    private static final Logger LOG = LogManager.getLogger(BackupSystemTask.class);
 
     private String user;
     private String password;
