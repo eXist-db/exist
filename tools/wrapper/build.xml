@@ -53,7 +53,7 @@
     	<chmod file="${bin}/exist.sh" perm="+x"/>
     	
     	<!-- Create log4j config based on general config file -->
-    	<xslt in="${server.dir}/log4j.xml" out="${conf}/log4j.xml" style="wrapper-log4j.xsl"/>
+    	<xslt in="${server.dir}/log4j2.xml" out="${conf}/log4j2.xml" style="wrapper-log4j.xsl"/>
     </target>
 
     <!-- =================================================================== -->
